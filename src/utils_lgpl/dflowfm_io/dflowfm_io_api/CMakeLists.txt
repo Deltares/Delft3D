@@ -26,15 +26,14 @@ if(CMAKE_Fortran_COMPILER)
     add_subdirectory(wrappers/fortran)
 endif()
 
-check_language(CSharp)
-if(CMAKE_CSharp_COMPILER)
+find_program(DOTNET_EXECUTABLE dotnet)
+if(DOTNET_EXECUTABLE)
     execute_process(
-        COMMAND dotnet --version
+        COMMAND ${DOTNET_EXECUTABLE} --version
         RESULT_VARIABLE DOTNET_SDK_RESULT
         OUTPUT_QUIET ERROR_QUIET
     )
     if(DOTNET_SDK_RESULT EQUAL 0)
-        enable_language(CSharp)
         add_subdirectory(wrappers/csharp)
     else()
         message(STATUS "No .NET SDK found. Skipping C# wrappers.")
