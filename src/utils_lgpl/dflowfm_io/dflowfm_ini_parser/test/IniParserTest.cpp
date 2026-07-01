@@ -653,23 +653,6 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserPropertyEmptyValueAndCommentTest,
                              ::testing::Values("", " ", "\t"));
 
-    TEST(IniParserTest, Parse_PropertyWithDelimitedValueAndCleanDelimitedValuesIsTrue_PropertyValueIsCleaned)
-    {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
-        options.cleanQuotedValues = true;
-
-        const std::string ini = "[section]\nproperty=#value# # comment";
-
-        const IniData iniData = parser.Parse(ini);
-        const IniSection section = iniData.GetSection("section");
-        const IniProperty property = section.GetProperty("property");
-
-        EXPECT_EQ(property.GetValue(), "value");
-        EXPECT_EQ(property.GetComment(), "comment");
-    }
-
     // -------------------------------------------------------------------------
     // Parse - multi-line values
     // -------------------------------------------------------------------------

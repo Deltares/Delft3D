@@ -101,7 +101,6 @@ namespace ini
         void FinalizeCurrentProperty();
 
         std::string CleanupMultiLineValue(std::string value) const;
-        std::string CleanupQuotedValue(std::string value) const;
     };
 
 } // namespace ini

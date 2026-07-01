@@ -195,16 +195,14 @@ namespace ini
         const std::string key = trim(currentLine.substr(0, assignmentIndex));
         ValidatePropertyKey(key);
 
-        const std::size_t commentIndex = currentLine.rfind(scheme.commentDelimiter);
         const std::size_t valueStartIndex = assignmentIndex + 1;
+        const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter, valueStartIndex);
 
-        std::string value = commentIndex > assignmentIndex
+        std::string value = commentIndex != std::string::npos
                                 ? trim(currentLine.substr(valueStartIndex, commentIndex - valueStartIndex))
                                 : trim(currentLine.substr(valueStartIndex));
         ValidatePropertyValue(value);
-
         value = CleanupMultiLineValue(std::move(value));
-        value = CleanupQuotedValue(std::move(value));
 
         const std::string comment = (commentIndex != std::string::npos && options.parseComments)
                                         ? trim(currentLine.substr(commentIndex + 1))
@@ -253,7 +251,7 @@ namespace ini
 
     void IniParser::ParseMultiLineValueLine()
     {
-        const std::size_t commentIndex = currentLine.rfind(scheme.commentDelimiter);
+        const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter);
 
         std::string value =
             commentIndex != std::string::npos ? trim(currentLine.substr(0, commentIndex)) : trim(currentLine);
@@ -312,19 +310,6 @@ namespace ini
         value = trim_end(std::move(value), scheme.multiLineValueDelimiter);
         value = trim_end(std::move(value), ' ');
         return value;
-    }
-
-    std::string IniParser::CleanupQuotedValue(std::string value) const
-    {
-        if (!options.cleanQuotedValues)
-        {
-            return value;
-        }
-
-        const std::size_t startIndex = value.find_first_not_of({scheme.valueQuoteDelimiter, ' '});
-        const std::size_t endIndex = value.find_last_not_of({scheme.valueQuoteDelimiter, ' '});
-
-        return startIndex == std::string::npos ? std::string{} : value.substr(startIndex, endIndex - startIndex + 1);
     }
 
 } // namespace ini

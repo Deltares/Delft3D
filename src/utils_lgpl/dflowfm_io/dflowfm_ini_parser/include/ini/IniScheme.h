@@ -9,7 +9,6 @@ namespace ini
     /// @details By default, the various delimiters for the INI file are set to:
     ///
     /// - `#` for one-line comments and inline comments
-    /// - `#` for delimiting a special value
     /// - `[` `]` for delimiting a section
     /// - `=` for property key / value pairs
     /// - `\` for multi-line property values
@@ -24,7 +23,6 @@ namespace ini
     /// key2 = value2 \
     /// value3 \
     /// value4 # inline property comment
-    /// key3 = #value5# # inline property comment
     /// @endcode
     struct IniScheme
     {
@@ -42,9 +40,6 @@ namespace ini
 
         /// @brief The delimiter used to indicate continuation of multi-line property values.
         char multiLineValueDelimiter = '\\';
-
-        /// @brief The character used to quote values in INI data.
-        char valueQuoteDelimiter = '#';
     };
 
 } // namespace ini

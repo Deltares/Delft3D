@@ -18,9 +18,6 @@ namespace ini
         /// @brief Indicates whether multi-line property values are allowed during parsing.
         bool allowMultiLineValues = false;
 
-        /// @brief Indicates whether surrounding quotes are stripped from property values during parsing.
-        bool cleanQuotedValues = false;
-
         /// @brief Indicates whether property and section comments are parsed.
         bool parseComments = true;
     };
