@@ -85,6 +85,7 @@ project {
         buildType(LinuxRunAllContainerExamples)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
+        buildType(LinuxNvhpcNightly)
         buildTypesOrder = arrayListOf(
             LinuxConanPackages,
             LinuxBuild,
@@ -93,7 +94,8 @@ project {
             LinuxRuntimeContainers,
             LinuxRunAllContainerExamples,
             LinuxUnitTest,
-            LinuxTest
+            LinuxTest,
+            LinuxNvhpcNightly
         )
     }
 
