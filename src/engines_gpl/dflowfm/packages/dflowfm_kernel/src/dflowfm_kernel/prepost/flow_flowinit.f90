@@ -33,8 +33,6 @@ module m_flow_flowinit
    use m_statisticsini, only: statisticsini
    use m_setzminmax, only: setzminmax
    use m_flow_settidepotential, only: flow_settidepotential
-   use m_set_saltem_nudge, only: set_saltem_nudge
-   use m_set_nudgerate, only: set_nudgerate
    use m_setvelocityfield, only: setvelocityfield
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
@@ -267,11 +265,31 @@ contains
       if (janudge == ON) then
          call setzcs()
       end if
+      
+      call initialize_salinity_from_bottom_or_top()
+      call initialize_temperature_3D()
+      call initialize_sediment_3D()
+
+      ! hk: and, make sure this is done prior to fill constituents
+      if (jarestart > OFF) then
+         call initialize_salinity_temperature_on_boundary()
+         call restore_au_q1_3D_for_1st_history_record()
+      end if
+
       call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
       if (is_error_at_any_processor(error)) then
          call qnerror('Error occurred when setting external forcings.', ' ', ' ')
          return
       end if
+
+      if (jasal > OFF) then
+         call fill_constituents_with_salinity()
+      end if
+      if (itemp > OFF) then
+         call fill_constituents_with_temperature()
+      end if
+
+      call initialise_density_at_cell_centres()
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
@@ -359,26 +377,6 @@ contains
 
       call set_initial_velocity_in_3D()
       call set_wave_modelling()
-      call initialize_salinity_from_bottom_or_top()
-      call initialize_temperature_3D()
-      call initialize_sediment_3D()
-
-      ! hk: and, make sure this is done prior to fill constituents
-      if (jarestart > OFF) then
-         call initialize_salinity_temperature_on_boundary()
-         call restore_au_q1_3D_for_1st_history_record()
-      end if
-
-      call initialize_salinity_and_temperature_with_nudge_variables()
-
-      if (jasal > OFF) then
-         call fill_constituents_with_salinity()
-      end if
-      if (itemp > OFF) then
-         call fill_constituents_with_temperature()
-      end if
-
-      call initialise_density_at_cell_centres()
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
@@ -1570,26 +1568,6 @@ contains
       end if
 
    end subroutine initialize_salinity_temperature_on_boundary
-
-!> initialize salinity and temperature with nudge variables
-   subroutine initialize_salinity_and_temperature_with_nudge_variables()
-      use m_flowparameters, only: janudge, jainiwithnudge
-      use m_nudge
-
-      implicit none
-
-      if (janudge == ON) then ! and here last actions on sal/tem nudging, before we set rho
-         call set_nudgerate()
-         if (jainiwithnudge > OFF) then
-            call set_saltem_nudge()
-            if (jainiwithnudge == 2) then
-               janudge = OFF
-               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
-            end if
-         end if
-      end if
-
-   end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 !> fill_constituents_with_salinity
    subroutine fill_constituents_with_salinity()

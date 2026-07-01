@@ -22,14 +22,13 @@ object TestBenchValidation : BuildType({
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.
     // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
-        +:test/deltares_testbench/report/*.* => report
-        +:test/deltares_testbench/report/htmlcov/* => coverage.zip
+        +:test/deltares_testbench/*.xml => report
+        +:test/deltares_testbench/ruff_format.patch => report
+        +:test/deltares_testbench/htmlcov/* => coverage.zip
     """.trimIndent()
 
     params {
-        param("env.IMAGE_NAME", "containers.deltares.nl/delft3d-dev/testbench-validation")
-        param("env.BUILD_BRANCH", "%teamcity.build.branch%")
-        param("env.PULL_REQUEST_SOURCE_BRANCH", "%teamcity.pullRequest.source.branch%")
+        param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
     }
 
     vcs {
@@ -55,10 +54,7 @@ object TestBenchValidation : BuildType({
                     +:/test/deltares_testbench/TestBench.py
                     +:/test/deltares_testbench/pip/*-requirements.txt
                     +:/test/deltares_testbench/pyproject.toml
-                    +:/test/deltares_testbench/ci/dockerfiles/testbench.Dockerfile
-                    +:/test/deltares_testbench/docker-bake.hcl
                     +:/ci/teamcity/Delft3D/ciUtilities/TestBenchValidation.kt
-                    +:/ci/teamcity/Delft3D/ciUtilities/scripts/validateReports.sh
                 """.trimIndent()
                 branchFilter = """
                     +:pull/*
@@ -70,23 +66,52 @@ object TestBenchValidation : BuildType({
     }
 
     steps {
-        dockerCommand {
-            name = "Run validation"
-            commandType = other {
-                subCommand = "buildx"
-                workingDir = "test/deltares_testbench"
-                commandArgs = "bake validate"
-            }
+        script {
+            name = "Install dependencies"
+            workingDir = "test/deltares_testbench"
+            scriptContent = """
+                #!/usr/bin/env bash
+                uv venv
+                source .venv/bin/activate
+                uv pip sync pip/lnx-dev-requirements.txt
+            """.trimIndent()
+            dockerImage = "%docker_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --mount type=volume,source=uv-cache-test-bench-validation,destination=/root/.cache/uv
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
         }
-        validateReports {}
+        script {
+            name = "Run checks"
+            workingDir = "test/deltares_testbench"
+            scriptContent = """
+                #!/usr/bin/env bash
+                source .venv/bin/activate
+                set -exo pipefail
+
+                ruff format --diff . > ruff_format.patch
+                ruff check --select F4,F5,F6,F7,W,I --output-format=junit --output-file=ruff_check.xml
+                pytest --junitxml=pytest.xml --cov-report=html --cov=.
+            """.trimIndent()
+            dockerImage = "%docker_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
+        }
     }
 
     features {
         xmlReport { 
             reportType = XmlReport.XmlReportType.JUNIT
             rules = """
-                +:test/deltares_testbench/report/ruff_check.xml
-                +:test/deltares_testbench/report/pytest.xml
+                +:test/deltares_testbench/ruff_check.xml
+                +:test/deltares_testbench/pytest.xml
             """.trimIndent()
         }
     }
@@ -95,16 +120,3 @@ object TestBenchValidation : BuildType({
         contains("teamcity.agent.jvm.os.name", "Linux")
     }
 })
-
-/**
- * Check if the report files exist, and fail the build if there's something wrong with them.
- */
-fun BuildSteps.validateReports(init: ScriptBuildStep.() -> Unit): BuildStep {
-    val result = ScriptBuildStep(init)
-    result.name = "Validate reports"
-    result.workingDir = "test/deltares_testbench"
-    val script = File(DslContext.baseDir, "ciUtilities/scripts/validateReports.sh")
-    result.scriptContent = Util.readScript(script)
-    step(result)
-    return result
-}

@@ -92,7 +92,10 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24
+                +:ci/teamcity/Delft3D/windows/buildEnvironment-i24.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
                 param("trigger.type", "vcs")

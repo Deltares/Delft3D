@@ -8,6 +8,10 @@ set bindir=..\..\..\..\install_fm-suite\bin
 set libdir=%bindir%\..\lib
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
+del /f /q fm\2dis_*_net.nc
+del /f /q fm\DFM_interpreted_idomain_2dis_net.nc
+del /f /q fm\FlowFM_*.mdu
+del /f /q fm\*.dia
 del /f /q fm\precice-exports\*.*
 del /f /q fm\precice-profiling\*.txt
 del /f /q cosumo\FF2NF\*.xml
