@@ -6,25 +6,27 @@ Usage: python generate_unc_put_var_map.py <output_file>
 import sys
 from pathlib import Path
 
-
 # --- Type definitions --------------------------------------------------------
+
 
 class FortranType:
     def __init__(self, dtype: str, name: str):
-        self.dtype = dtype                       # e.g. "real(kind=dp)"
-        self.name = name                         # suffix for procedure name, e.g. "dble"
+        self.dtype = dtype  # e.g. "real(kind=dp)"
+        self.name = name  # suffix for procedure name, e.g. "dble"
 
     @staticmethod
     def all_rank1():
         """Types that get the full rank-1 body (all iloc cases including 3D)."""
         return [
             FortranType("real(kind=dp)", "dble"),
-            FortranType("integer",       "int"),
-            FortranType("real(kind=4)",   "real"),
+            FortranType("integer", "int"),
+            FortranType("real(kind=4)", "real"),
             FortranType("integer(kind=1)", "byte"),
         ]
 
+
 # --- Rank-1 body (full select case with all iloc) ---------------------------
+
 
 def generate_rank1(ftype: FortranType) -> str:
     proc = f"unc_put_var_map_{ftype.name}"
@@ -47,7 +49,8 @@ def generate_rank1(ftype: FortranType) -> str:
 
    integer :: ndx2d, n1d_write
    integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
-   {T}, allocatable, save :: workL(:)
+   integer :: local_iloc
+   {T}, allocatable, save :: workL(:), workS(:)
    {T}, allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
 
    ierr = DFM_NOERR
@@ -59,8 +62,24 @@ def generate_rank1(ftype: FortranType) -> str:
 
    ndx2d = flowgeom%mesh2d%numFace
    n1d_write = flowgeom%mesh1D%numNode
+   local_iloc = iloc
 
-   select case (iloc)
+   if (local_iloc == UNC_LOC_S) then
+      workS = values
+   end if
+
+   if (write_surface_data_to_map_file) then
+      if (local_iloc == UNC_LOC_S3D) then
+         local_iloc = UNC_LOC_S
+         n1d_write = 0
+
+         do n = 1, ndx2d
+            workS(n) = values(ktop(n))
+         end do
+      end if
+   end if
+
+   select case (local_iloc)
    case (UNC_LOC_CN) ! Corner point location
       ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
@@ -74,11 +93,11 @@ def generate_rank1(ftype: FortranType) -> str:
    case (UNC_LOC_S) ! Pressure point location
       ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then
-         ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(1), workS(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
       end if
       ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
       if (id_var(2) > 0 .and. ndx2d > 0) then
-         ierr = nf90_put_var(ncid, id_var(2), values(1:ndx2d), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(2), workS(1:ndx2d), start=[1, id_tsp%idx_curtime])
       end if
 
    case (UNC_LOC_U) ! Horizontal velocity point location
@@ -278,6 +297,7 @@ def generate_rank1(ftype: FortranType) -> str:
 
 # --- Top-level generation ----------------------------------------------------
 
+
 def generate(output_file: Path) -> None:
     rank1_types = FortranType.all_rank1()
 
@@ -310,8 +330,9 @@ module m_unc_put_var_map_generated
    use m_get_layer_indices, only: getlayerindices
    use m_get_layer_indices_l_max, only: getlayerindiceslmax
    use m_get_Lbot_Ltop_max, only: getlbotltopmax
+   use m_flowparameters, only: write_surface_data_to_map_file
    use network_data, only: numl, numl1d
-   use m_flow, only: kmx
+   use m_flow, only: kmx, ktop
 
    implicit none(type, external)
 
