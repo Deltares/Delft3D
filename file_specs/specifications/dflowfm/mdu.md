@@ -393,7 +393,7 @@ This section contains the setting for sediment transport and morphology.
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `sedTrailsGrid` 🔬 | Grid file for sedtrails output locations on corners. |  |  |  | research |
 | `sedtrailsAnalysis` 🔬 | Sedtrails analysis. |  | <ul><li>**`all`**: </li><li>**`transport`**: </li><li>**`flowvelocity`**: </li><li>**`soulsby`**: </li></ul> |  | research |
-| `sedtrailsInterval` 🔬 | Sedtrails output, given as 'interval' 'start period' 'end period' |  |  |  | research |
+| `sedtrailsInterval` 🔬 | Sedtrails output, given as 'interval' 'start period' 'end period'. |  |  |  | research |
 | `sedtrailsOutputFile` 🔬 | Sedtrails time-averaged output file. |  |  |  | research |
 
 

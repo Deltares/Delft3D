@@ -2748,9 +2748,13 @@
                 {
                     "key": "sedtrailsInterval",
                     "value_type": "list[float]",
-                    "description": "Sedtrails output, given as 'interval' 'start period' 'end period'",
+                    "description": "Sedtrails output, given as 'interval' 'start period' 'end period'.", 
                     "status": {
                         "value": "research"
+                    },
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
                     }
                 },
                 {
@@ -3621,14 +3625,16 @@
                     ],
                     "value_type": "list[float]",
                     "description": "History output, given as 'interval' 'start period' 'end period'.",
-                    "unit": "s"
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
                 },
                 {
                     "key": "xlsInterval",
-                    "default_value": [
-                        0.0
-                    ],
-                    "value_type": "list[float]",
+                    "default_value": 0.0,
+                    "value_type": "float",
                     "description": "Interval between XLS history.",
                     "unit": "s"
                 },
@@ -3644,7 +3650,11 @@
                     ],
                     "value_type": "list[float]",
                     "description": "Map file output, given as 'interval' 'start period' 'end period'.",
-                    "unit": "s"
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
                 },
                 {
                     "key": "rstInterval",
@@ -3653,14 +3663,24 @@
                     ],
                     "value_type": "list[float]",
                     "description": "Restart file output, given as 'interval' 'start period' 'end period'.",
-                    "unit": "s"
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
                 },
                 {
                     "key": "comInterval",
-                    "default_value": 300.0,
-                    "value_type": "float",
+                    "default_value": [
+                        300.0
+                    ],
+                    "value_type": "list[float]",
                     "description": "Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`.",
-                    "unit": "s"
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
                 },
                 {
                     "key": "mapFormat",
