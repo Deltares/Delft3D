@@ -6,7 +6,7 @@ ARG BASE_IMAGE_URL=containers.deltares.nl/base_linux_containers/8-base:latest
 
 FROM ${BASE_IMAGE_URL} AS buildtools
 
-ARG INTEL_ONEAPI_VERSION=2026
+ARG INTEL_ONEAPI_VERSION=2024
 
 # Install intel C/C++ and Fortran compilers, the
 # math kernel library and MPI library/tools
