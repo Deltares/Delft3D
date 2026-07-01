@@ -253,7 +253,7 @@ contains
       do while ((.not. update_umag) .and. (itrt < trachy_fl%gen%ntrt))
          itrt = itrt + 1
          ! The statement could be optimized a bit more to be evaluated only if such area definitions exist.
-         if ((trachy_fl%gen%ittdef(itrt, 2) == 103) .or. (trachy_fl%gen%ittdef(itrt, 2) == 104) .or. (trachy_fl%gen%ittdef(itrt, 2) == 155)) then ! if Van Rijn roughness predictor or Struiksma roughness predictor or Vaestila vegetation roughness
+         if ((trachy_fl%gen%ittdef(itrt, 2) == 103) .or. (trachy_fl%gen%ittdef(itrt, 2) == 104) .or. (trachy_fl%gen%ittdef(itrt, 2) == 155) .or. (trachy_fl%gen%ittdef(itrt, 2) == 160)) then ! if Van Rijn roughness predictor or Struiksma roughness predictor or Vaestila vegetation roughness
             update_umag = .true.
          end if
       end do
