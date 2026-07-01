@@ -240,6 +240,7 @@ end function get_proj_string_from_epsg
    ! This subroutine uses the proj library for coordinate transformations.
    subroutine transform_coordinates(src_proj_string, dst_proj_string, src_x, src_y, dst_x, dst_y)
       use proj
+      use iso_c_binding, only: c_char, c_null_char
 
       implicit none
 
@@ -251,12 +252,30 @@ end function get_proj_string_from_epsg
       real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_y           !< transformed y coordinates in degrees/meters.
 
       type(pj_object) :: coord_trans !< Proj coordinate transformation.
+      character(kind=c_char, len=:), allocatable :: src_proj_c, dst_proj_c
+      character(len=1024) :: message
+
+      if (len_trim(src_proj_string) == 0 .or. len_trim(dst_proj_string) == 0) then
+         dst_x = src_x
+         dst_y = src_y
+         return
+      end if
+
+      src_proj_c = trim(src_proj_string)//c_null_char
+      dst_proj_c = trim(dst_proj_string)//c_null_char
 
       ! Initialize coordinate transformation
-      coord_trans = proj_create_crs_to_crs(pj_default_ctx, src_proj_string, dst_proj_string, pj_area_object())
+      coord_trans = proj_create_crs_to_crs(pj_default_ctx, src_proj_c, dst_proj_c, pj_area_object())
 
       if (proj_associated_pj(coord_trans)) then
          call transform(coord_trans, src_x, src_y, dst_x, dst_y)
+      else
+         ! Keep output deterministic when PROJ cannot create the transformation.
+         dst_x = src_x
+         dst_y = src_y
+         write(message, *) 'transform_coordinates: proj_create_crs_to_crs failed. len(src)=', &
+            len_trim(src_proj_string), ', len(dst)=', len_trim(dst_proj_string)
+         call mess(LEVEL_WARN, trim(message))
       end if
 
       coord_trans = proj_destroy(coord_trans)
