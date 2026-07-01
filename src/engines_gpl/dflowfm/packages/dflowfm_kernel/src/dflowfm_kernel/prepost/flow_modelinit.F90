@@ -131,13 +131,9 @@ contains
       use m_fill_constituents, only: fill_constituents
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
       use m_flowparameters, only: map_write_settings
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      use m_unc_build_flowgeom, only: build_flowgeom, flowgeom
-=======
       use m_unc_flowgeom, only: build_flowgeom
       use m_unstruc_netcdf_data, only: flowgeom
 
->>>>>>> main
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
       ! Activate the following line (See also statements below)

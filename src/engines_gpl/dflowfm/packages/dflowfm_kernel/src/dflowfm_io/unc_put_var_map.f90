@@ -1,12 +1,6 @@
 module m_unc_put_var_map
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-use m_unstruc_netcdf_data, only: t_unc_timespace_id
-use m_flowgeom, only: t_fm_flowgeom
-use m_unc_build_flowgeom, only: flowgeom
-=======
 use m_unstruc_netcdf_data, only: t_unc_timespace_id, flowgeom
 use m_unstruc_netcdf_types, only: t_fm_flowgeom
->>>>>>> main
 use io_ugrid, only: UG_NOTIMPLEMENTED, UG_INVALID_DATALOCATION
 use netcdf, only: nf90_put_var, nf90_inquire_variable, nf90_inquire_dimension
 
@@ -25,11 +19,7 @@ contains
       
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      use m_unc_build_flowgeom, only: flowgeom
-=======
       use m_unstruc_netcdf_data, only: flowgeom
->>>>>>> main
 
       implicit none
       integer, intent(in) :: ncid
@@ -41,21 +31,12 @@ contains
       integer, intent(in) :: tl !< last time in buffer to be written
       integer, optional, intent(in) :: jabndnd
 
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      integer :: ierr !< Result status, DFM_NOERR if successful.
-
-      integer :: tstart !< time index of t1
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: n1d_write !< Number of 1D nodes to write.
-      integer :: ndx2d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-=======
       integer :: ierr
 
       integer :: tstart
       integer :: jabndnd_
       integer :: n1d_write
       integer :: ndx2d 
->>>>>>> main
       
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
@@ -107,29 +88,17 @@ contains
       integer, optional, intent(in) :: locdim !< Optional index of the location dimension (default = 1)
       integer, optional, intent(in) :: jabndnd
 
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      integer :: ierr !< Result status, DFM_NOERR if successful.
-
-      integer :: n1d_write !< Number of 1D nodes to write.
-=======
       integer :: ierr 
 
       integer :: n1d_write
->>>>>>> main
       integer :: lnx2d, lnx2db, numl2d
       integer :: ilocdim
       integer :: lndim
       integer, dimension(3) :: dimids_var
       real(kind=dp), allocatable :: work(:, :)
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndx2d !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-=======
       integer :: jabndnd_
       integer :: ndx2d
       integer :: last_1d 
->>>>>>> main
 
       ierr = DFM_NOERR
 
@@ -276,29 +245,17 @@ contains
       integer, optional, intent(in) :: locdim !< Optional index of the location dimension (default = 1)
       integer, optional, intent(in) :: jabndnd
 
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      integer :: ierr !< Result status, DFM_NOERR if successful.
-
-      integer :: n1d_write !< Number of 1D nodes to write.
-=======
       integer :: ierr
 
       integer :: n1d_write
->>>>>>> main
       integer :: lnx2d, lnx2db, numl2d
       integer :: ilocdim
       integer :: lndim1, lndim2
       integer, dimension(4) :: dimids_var
       real(kind=dp), allocatable :: work(:, :, :)
-<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndx2d !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-=======
       integer :: jabndnd_
       integer :: ndx2d
       integer :: last_1d
->>>>>>> main
 
       ierr = DFM_NOERR
       if (present(locdim)) then
