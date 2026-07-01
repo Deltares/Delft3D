@@ -19,6 +19,12 @@ target_include_directories(dflowfm_io_api
         ${CMAKE_CURRENT_BINARY_DIR} # For the generated export header
 )
 
+install(TARGETS dflowfm_io_api
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
 include(CheckLanguage)
 check_language(Fortran)
 if(CMAKE_Fortran_COMPILER)
