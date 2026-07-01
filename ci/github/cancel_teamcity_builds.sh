@@ -222,8 +222,8 @@ function query_trigger() {
     kill_em_all=1
     ;;
   *)
-    printf "     %b Unknown state '%s'. Cannot proceed.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
-    kill_em_all=0
+    printf "     %b Unknown state '%s'. The build state is likely not available yet. Cannot proceed. Trying again later may result in successful cancellation.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
+    exit 1
     ;;
   esac
 

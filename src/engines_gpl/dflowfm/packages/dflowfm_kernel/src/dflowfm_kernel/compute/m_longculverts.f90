@@ -90,7 +90,7 @@ contains
    subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile, write_converted_files)
       use dfm_error, only: dfm_noerr, dfm_wronginput
       use m_missing, only: dmiss
-      use m_Roughness, only: frictiontypestringtointeger
+      use m_Roughness, only: frictiontypestringtointeger, frictionTypeIntegerToString
       use m_readstructures, only: allowedflowdirtoint, get_value_or_addto_forcinglist
       use messagehandling, only: mess, level_error, msgbuf, err_flush, setmessage
       use properties, only: tree_create, prop_inifile, tree_create_node, tree_put_data, node_value, tree_num_nodes, tree_get_name, prop_get, prop_set, tree_remove_child_by_name, prop_write_inifile, tree_destroy
@@ -105,6 +105,7 @@ contains
       use m_CrossSections, only: fill_hashtable
       use m_alloc, only: realloc
       use m_read_location_info, only: read_polyline_coordinates
+      use m_physcoef, only: IFRCTYPUNI, FRCUNI1D
 
       implicit none
 
@@ -287,20 +288,20 @@ contains
 
             call prop_get(str_ptr, '', 'frictionType', typestr, success)
             if (.not. success) then
-               longculverts(nlongculverts)%friction_type = -999
+               longculverts(nlongculverts)%friction_type = ifrctypuni
             else
                call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
             end if
+
             call tree_create_node(block_ptr, 'frictionType', node_ptr)
-            call tree_put_data(node_ptr, transfer(typestr, node_value), 'STRING')
+            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type),node_value), 'STRING')
 
             call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
             if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'frictionValue not found for long culvert: '//st_id)
+               longculverts(nlongculverts)%friction_value = frcuni1D
             end if
 
-            call prop_get(str_ptr, '', 'frictionValue', typestr)
-            call prop_set(block_ptr, '', 'frictionValue', trim(typestr))
+            call prop_set(block_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value)
 
             call get_value_or_addto_forcinglist(str_ptr, 'valveRelativeOpening', longculverts(nlongculverts)%valve_relative_opening, st_id, &
                                                 ST_LONGCULVERT, network%forcinglist, success)
@@ -449,6 +450,7 @@ contains
       use m_alloc, only: realloc
       use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
+      use m_physcoef, only: IFRCTYPUNI, FRCUNI1D
 
       implicit none
 
@@ -603,13 +605,13 @@ contains
                end if
                call prop_get(str_ptr, '', 'frictionType', typestr, success)
                if (.not. success) then
-                  longculverts(nlongculverts)%friction_type = -999
+                  longculverts(nlongculverts)%friction_type = ifrctypuni
                else
                   call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
                end if
                call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
                if (.not. success) then
-                  call SetMessage(LEVEL_ERROR, 'frictionValue not found for long culvert: '//st_id)
+                  longculverts(nlongculverts)%friction_value = frcuni1D
                end if
             end if
          end if
@@ -1015,7 +1017,7 @@ contains
       real(kind=dp), intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
 
-      integer :: jpoint, jstart, jend, ipoly
+      integer :: jpoint, jstart, jend, ipoly, inode
 
       if (meshgeom1d%numnode == -1 .and. meshgeom1d%nnodes == -1) then
          ! This is to allow more than one call to loadNetwork/unc_read_net_ugrid. Remove any previously read network state.
@@ -1025,6 +1027,19 @@ contains
          meshgeom1d%nnodes = 0
          meshgeom1d%numedge = 0
          meshgeom1d%numnode = 0
+      end if
+
+      if (.not. associated(meshgeom1d%nodeidx) .and. meshgeom1d%numnode > 0) then
+         !if an existing network is read but nodeidx and nodeidx_inverse are not allocated, fill them here.
+         allocate (meshgeom1d%nodeidx(meshgeom1d%numnode))
+         meshgeom1d%nodeidx = [(inode, inode=1, meshgeom1d%numnode)]
+         if (associated(meshgeom1d%nodeidx_inverse)) then
+            deallocate (meshgeom1d%nodeidx_inverse)
+         end if
+         allocate (meshgeom1d%nodeidx_inverse(meshgeom1d%numnode))
+         do inode = 1, meshgeom1d%numnode
+            meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(inode)) = inode
+         end do
       end if
 
       ipoly = 0
@@ -1215,8 +1230,8 @@ contains
 
       call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodex, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodey, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
 
       call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)
@@ -1371,128 +1386,128 @@ contains
 
       integer :: ierror
 
-         longculvert%flowlinks = 0
-         jafounds = 0 ! Found the starting node or not
-         jafounde = 0 ! Found the ending node or not
-         is = 1 ! the starting node of the polyline
-         ie = numcoords ! the ending node of the polyline
+      longculvert%flowlinks = 0
+      jafounds = 0 ! Found the starting node or not
+      jafounde = 0 ! Found the ending node or not
+      is = 1 ! the starting node of the polyline
+      ie = numcoords ! the ending node of the polyline
 
-         ! Find the flownode numbers for the starting and ending points of the long culvert polyline
-         call realloc(inode, 2, keepExisting=.false., fill=0)
-         call realloc(inodeGlob, 2, keepExisting=.false., fill=0)
+      ! Find the flownode numbers for the starting and ending points of the long culvert polyline
+      call realloc(inode, 2, keepExisting=.false., fill=0)
+      call realloc(inodeGlob, 2, keepExisting=.false., fill=0)
 
-         branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
-         contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
+      branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
+      contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
 
-         if (jampi == 0 .and. branch_idx <= 0 .and. contact_idx <= 0) then
-            call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '//trim(longculvert%branchId)//' '//trim(longculvert%contactId))
-            return
-         end if
-         !Find the last 1D node of the branch
-         if (branch_idx > 0 .and. network%BRS%size >= i) then
-            inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
-            inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
-         else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
-            L_net = contactnetlinks(contact_idx)
-            inode(1) = abs(lne(2, L_net)) !> reverse direction for 2D2D contact
-            inode(2) = abs(lne(1, L_net))
-         end if
+      if (jampi == 0 .and. branch_idx <= 0 .and. contact_idx <= 0) then
+         call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '//trim(longculvert%branchId)//' '//trim(longculvert%contactId))
+         return
+      end if
+      !Find the last 1D node of the branch
+      if (branch_idx > 0 .and. network%BRS%size >= i) then
+         inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
+         inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
+      else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
+         L_net = contactnetlinks(contact_idx)
+         inode(1) = abs(lne(2, L_net)) !> reverse direction for 2D2D contact
+         inode(2) = abs(lne(1, L_net))
+      end if
 
-         inodeGlob(1:2) = inode(1:2)
-         if (jampi > 0) then
-            ! Communicate inode in parallel run to get inodeGlob
-            call reduce_int_max(2, inodeGlob)
-         end if
+      inodeGlob(1:2) = inode(1:2)
+      if (jampi > 0) then
+         ! Communicate inode in parallel run to get inodeGlob
+         call reduce_int_max(2, inodeGlob)
+      end if
 
-         if (inodeGlob(1) <= 0 .or. inodeGlob(2) <= 0) then
-            ! The long culvert is not valid if its starting or ending node is outside the global network
-            longculvert%numlinks = 0
-            call mess(LEVEL_WARN, 'find1d2dculvertlinks: a long culvert is not valid if its starting or ending node is outside the global network.')
-            return
-         else ! This long culvert is valid on the current domain
-            ! check the starting node
-            if (inode(1) > 0) then ! The starting node is inside the current domain
-               nodenum = inode(1)
-               do i = 1, nd(nodenum)%lnx
-                  linkabs = abs(nd(nodenum)%ln(i))
-                  if (kcu(abs(linkabs)) == 5) then
-                     longculvert%flownode_up = ln(1, linkabs) + ln(2, linkabs) - nodenum
-                     ! For the later search
-                     jafounds = 1
-                  end if
-               end do
-            else
-               ! Find the first known flow node in the current partition (if 2D flow node was not found outside of the loop already)
-               call realloc(jnode, 1, keepExisting=.false., fill=0)
-               do j = is + 1, ie - 1
-                  call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
-                  if (ierror == 0 .and. jnode(1) > 0) then
-                     nodenum = jnode(1) ! For the later search
-                     is = j ! this will be the starting node of the long culvert in current domain
-                     jafounds = 1
-                     exit
-                  end if
-               end do
-            end if
-
-            ! check the ending node
-            if (inode(2) > 0) then ! The ending node is inside the current domain
-               do i = 1, nd(inode(2))%lnx
-                  linkabs = abs(nd(inode(2))%ln(i))
-                  if (kcu(abs(linkabs)) == 5) then
-                     longculvert%flownode_dn = ln(1, linkabs) + ln(2, linkabs) - inode(2)
-                     ! For the later search
-                     jafounde = 1
-                  end if
-               end do
-            else
-               ! Find the last known flow node in the current partition (if 2D flow ndoe was not found outside of the loop already)
-               call realloc(jnode, 1, keepExisting=.false., fill=0)
-               do j = ie - 1, is + 1, -1
-                  call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
-                  if (ierror == 0 .and. jnode(1) > 0) then
-                     ie = j ! this will be the ending node of the long culvert in current domain
-                     jafounde = 1
-                     exit
-                  end if
-               end do
-            end if
+      if (inodeGlob(1) <= 0 .or. inodeGlob(2) <= 0) then
+         ! The long culvert is not valid if its starting or ending node is outside the global network
+         longculvert%numlinks = 0
+         call mess(LEVEL_WARN, 'find1d2dculvertlinks: a long culvert is not valid if its starting or ending node is outside the global network.')
+         return
+      else ! This long culvert is valid on the current domain
+         ! check the starting node
+         if (inode(1) > 0) then ! The starting node is inside the current domain
+            nodenum = inode(1)
+            do i = 1, nd(nodenum)%lnx
+               linkabs = abs(nd(nodenum)%ln(i))
+               if (kcu(abs(linkabs)) == 5) then
+                  longculvert%flownode_up = ln(1, linkabs) + ln(2, linkabs) - nodenum
+                  ! For the later search
+                  jafounds = 1
+               end if
+            end do
+         else
+            ! Find the first known flow node in the current partition (if 2D flow node was not found outside of the loop already)
+            call realloc(jnode, 1, keepExisting=.false., fill=0)
+            do j = is + 1, ie - 1
+               call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
+               if (ierror == 0 .and. jnode(1) > 0) then
+                  nodenum = jnode(1) ! For the later search
+                  is = j ! this will be the starting node of the long culvert in current domain
+                  jafounds = 1
+                  exit
+               end if
+            end do
          end if
 
-         if (jafounds == 1 .and. jafounde == 1) then
-            if (contact_idx > 0) then
-               longculvert%flowlinks(1) = contactnetlinks(contact_idx)
-            else
-               do i = 1, nd(nodenum)%lnx
-                  linknum = nd(nodenum)%ln(i)
-                  if (kcu(abs(linknum)) == 5) then
-                     longculvert%flowlinks(1) = -1 * linknum
-                     is = is + 1
-                     exit
-                  end if
-               end do
-               ! For the interior polyline points
-               do j = is, ie - 1 ! j is link index, or , right node index
-                  if (j > is) then !> don't traverse 1D2D links
-                     nodenum = othernode
-                  end if
-                  if (nodenum > 0) then
-                     do i = 1, nd(nodenum)%lnx
-                        linknum = nd(nodenum)%ln(i)
-                        linkabs = abs(linknum)
-                        othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
+         ! check the ending node
+         if (inode(2) > 0) then ! The ending node is inside the current domain
+            do i = 1, nd(inode(2))%lnx
+               linkabs = abs(nd(inode(2))%ln(i))
+               if (kcu(abs(linkabs)) == 5) then
+                  longculvert%flownode_dn = ln(1, linkabs) + ln(2, linkabs) - inode(2)
+                  ! For the later search
+                  jafounde = 1
+               end if
+            end do
+         else
+            ! Find the last known flow node in the current partition (if 2D flow ndoe was not found outside of the loop already)
+            call realloc(jnode, 1, keepExisting=.false., fill=0)
+            do j = ie - 1, is + 1, -1
+               call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
+               if (ierror == 0 .and. jnode(1) > 0) then
+                  ie = j ! this will be the ending node of the long culvert in current domain
+                  jafounde = 1
+                  exit
+               end if
+            end do
+         end if
+      end if
 
-                        if (j <= ie) then
-                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
-                              longculvert%flowlinks(j) = -1 * linknum
-                              exit
-                           end if
+      if (jafounds == 1 .and. jafounde == 1) then
+         if (contact_idx > 0) then
+            longculvert%flowlinks(1) = contactnetlinks(contact_idx)
+         else
+            do i = 1, nd(nodenum)%lnx
+               linknum = nd(nodenum)%ln(i)
+               if (kcu(abs(linknum)) == 5) then
+                  longculvert%flowlinks(1) = -1 * linknum
+                  is = is + 1
+                  exit
+               end if
+            end do
+            ! For the interior polyline points
+            do j = is, ie - 1 ! j is link index, or , right node index
+               if (j > is) then !> don't traverse 1D2D links
+                  nodenum = othernode
+               end if
+               if (nodenum > 0) then
+                  do i = 1, nd(nodenum)%lnx
+                     linknum = nd(nodenum)%ln(i)
+                     linkabs = abs(linknum)
+                     othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
+
+                     if (j <= ie) then
+                        if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
+                           longculvert%flowlinks(j) = -1 * linknum
+                           exit
                         end if
-                     end do
-                  end if
-               end do
-            end if
+                     end if
+                  end do
+               end if
+            end do
          end if
+      end if
    end subroutine
 
    !> Find 2D netcell the longculvert endpoint is located in, add a new node and return its node number
@@ -1528,6 +1543,7 @@ contains
       use messageHandling
       use properties
       use unstruc_channel_flow
+      use m_unstruc_model_data, only: md_convertlongculverts
 
       character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
 
@@ -1572,6 +1588,7 @@ contains
          nlongculverts = num_longculverts
          if (num_newculverts > 0) then
             newculverts = .true.
+            md_convertlongculverts = 0
             if (num_newculverts /= num_longculverts) then
                call mess(LEVEL_ERROR, 'Error loading long culverts, only one input type is supported!')
             end if
@@ -1583,12 +1600,14 @@ contains
    subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files)
       use m_set_nod_adm, only: setnodadm
       use m_globalparameters, only: t_filenames
+      use network_data, only: numl1d
 
       type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       character(:), allocatable :: structure_files
       logical :: write_converted_files_
+      integer :: ilongc, num_longculvert_links
 
       write_converted_files_ = .false.
       if (present(write_converted_files)) then
@@ -1612,6 +1631,14 @@ contains
             end if
          end if
       end if
+
+      ! Determine whether all 1D netlinks belong to long culverts.
+      num_longculvert_links = 0
+      do ilongc = 1, nlongculverts
+         num_longculvert_links = num_longculvert_links + longculverts(ilongc)%numlinks
+      end do
+
+      only_longculvert_1D = (num_longculvert_links == numl1d)
 
    end subroutine initialize_long_culverts
 
@@ -1645,6 +1672,8 @@ contains
       use m_network, only: admin_network
       use m_1d_networkreader, only: construct_network_from_meshgeom
       use m_save_ugrid_state
+      use m_node, only: dealloc
+      use m_branch, only: dealloc
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
@@ -1689,6 +1718,8 @@ contains
             call realloc(nodeids, meshgeom1d%numnode)
             call realloc(nodelongnames, meshgeom1d%numnode)
             network%numl = meshgeom1d%numedge
+            call dealloc(network%nds)
+            call dealloc(network%brs)
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)

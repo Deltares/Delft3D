@@ -28,18 +28,32 @@
 !-------------------------------------------------------------------------------
 
 module m_get_surface_temperature
+   use precision_basics, only: dp
+   use m_flowgeom, only: ndx
+   use m_get_kbot_ktop, only: getkbotktop
+   
    implicit none
 
    public :: get_surface_temperature
 
-contains
+   contains
 
+   !> Returns the surface-layer temperature for all horizontal cells.
+   subroutine get_surface_temperature(surface_temperature, initialization)
+      real(kind=dp), intent(out) :: surface_temperature(ndx)   
+      logical, intent(in) :: initialization !< initialization phase
+      
+      if (initialization) then
+         call get_surface_temperature_from_tem1(surface_temperature)
+      else
+         call get_surface_temperature_from_constituents(surface_temperature)
+      end if
+      
+   end subroutine get_surface_temperature
+   
    !> Returns the surface-layer temperature from constituents(itemp,:) for all horizontal cells.
-   subroutine get_surface_temperature(surface_temperature)
-      use precision_basics, only: dp
+   subroutine get_surface_temperature_from_constituents(surface_temperature)
       use m_transport, only: constituents, itemp
-      use m_flowgeom, only: ndx
-      use m_get_kbot_ktop, only: getkbotktop
 
       real(kind=dp), intent(out) :: surface_temperature(ndx)
 
@@ -49,6 +63,20 @@ contains
          call getkbotktop(n, kb, kt)
          surface_temperature(n) = constituents(itemp, kt)
       end do
-   end subroutine get_surface_temperature
+   end subroutine get_surface_temperature_from_constituents
+
+   !> Returns the surface-layer temperature from tem1 for all horizontal cells.
+   subroutine get_surface_temperature_from_tem1(surface_temperature)
+      use m_flow, only: tem1
+
+      real(kind=dp), intent(out) :: surface_temperature(ndx)
+
+      integer :: n, kb, kt
+
+      do n = 1, ndx
+         call getkbotktop(n, kb, kt)
+         surface_temperature(n) = tem1(kt)
+      end do
+   end subroutine get_surface_temperature_from_tem1
 
 end module m_get_surface_temperature
