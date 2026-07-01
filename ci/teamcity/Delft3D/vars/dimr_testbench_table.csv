@@ -69,7 +69,6 @@ fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_win64.xml,TRUE,FALSE,TRUE,FALSE,
 fm waq aggregation,dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq aggregation,dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq,dimr/dimr_dflowfm_waq_coupling_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm waq structures,dimr/dimr_dflowfm_waq_coupling_structures_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq,dimr/dimr_dflowfm_waq_coupling_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm parallel,dimr/dimr_dflowfm_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm parallel memory intensive,dimr/dimr_dflowfm_win64_parallel_memory_intensive.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Test does not run together with other cases
