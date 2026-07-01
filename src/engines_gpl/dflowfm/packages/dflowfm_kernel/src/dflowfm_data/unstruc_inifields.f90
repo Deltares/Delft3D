@@ -1807,6 +1807,10 @@ contains
          target_location_type = UNC_LOC_S
          call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
          call assign_pointer_to_t_array(dicoww, target_array, ierr)
+      case ('backgroundverticaleddydiffusivityviscosity')
+         target_location_type = UNC_LOC_S
+         call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
+         call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
             allocate (stemdiam(ndx), stat=ierr)
@@ -2299,6 +2303,11 @@ contains
          target_location_type = UNC_LOC_S
          call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
          call assign_pointer_to_t_array(dicoww, target_array, ierr)
+
+      case ('backgroundverticaleddyviscosity')
+         target_location_type = UNC_LOC_S
+         call realloc(vicoww, ndx, keepExisting=.true., fill=constant_vicoww, stat=ierr)
+         call assign_pointer_to_t_array(vicoww, target_array, ierr)
 
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
