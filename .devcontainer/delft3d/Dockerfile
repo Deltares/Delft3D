@@ -14,7 +14,10 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked,id=dnf-install-${CACHE_SUFFIX} <<"EOF"
 
-PACKAGES=(sudo dos2unix tree strace)
+PACKAGES=( \
+    sudo strace tree netcdf dos2unix \
+    jq xmlstarlet ripgrep fd-find bat \
+)
 [[ "${ENABLE_JAVA}" == "0" ]] || PACKAGES+=(java-17-openjdk java-17-openjdk-devel maven)
 dnf install -y "${PACKAGES[@]}"
 
@@ -50,6 +53,7 @@ RUN <<"EOF"
 export UV_PYTHON_DOWNLOADS=never
 uv tool install fortls
 uv tool install fprettify
+uv tool install yq  # query yaml xml and toml with jq-like query syntax
 EOF
 
 # Configure interactive bash environment.
