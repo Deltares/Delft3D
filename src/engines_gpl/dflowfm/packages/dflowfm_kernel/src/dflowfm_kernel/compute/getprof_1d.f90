@@ -66,6 +66,7 @@ contains
       integer :: k1, k2
       integer :: jacustombnd1d
       real(kind=dp) :: u1L, q1L, s1L, dpt, factor, maxflowwidth
+      logical :: hysteresis_for_summerdike(2)
 
       LL = L
       if (L > lnxi) then ! for 1D boundary links, refer to attached link
@@ -126,8 +127,15 @@ contains
       else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. (network%loaded .or. has_flow1d_cross_section(LL))) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
          cz = 0.0_dp
 
-         if (japerim == 0) then ! calculate total area and volume
-            call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CSCalculationOption, network%adm%hysteresis_for_summerdike(:, LL))
+         if (japerim == 0) then ! calculate total area and volum
+            ! Summerdike hysteresis state is only available for 1D links.
+            if (abs(kcu(ll)) == 1) then
+               hysteresis_for_summerdike = network%adm%hysteresis_for_summerdike(:, LL)
+            else
+               hysteresis_for_summerdike = [.true. , .true.]
+            end if
+
+            call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CSCalculationOption, hysteresis_for_summerdike)
          else ! japerim = 1: calculate flow area, conveyance and perimeter.
             cz = 0.0_dp
             call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub)
