@@ -288,6 +288,517 @@
       </checks>
     </testCase>
 
+    <!-- TEST CASES FOR LATERALS -->
+
+    <testCase name="e02_f029_c020_laterals_2D" ref="dflowfm_default">
+      <path version="2026-07-02T20:00:00.000000">e02_dflowfm/f029_hyd_file/c020_laterals_2D</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.poi</argument>
+            <argument>DFM_DELWAQ_f34/f34.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="dimr-waq" seq="6">
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_2d_V-error-Max-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_2d_V-rel-error-Max" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_2d_f34_001" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_SourceSink01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Lateral01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Lateral02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Lateral03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Initial" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Continuity" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c021_laterals_3D_s" ref="dflowfm_default">
+      <path version="2026-07-02T20:00:00.000000">e02_dflowfm/f029_hyd_file/c021_laterals_3D_s</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.poi</argument>
+            <argument>DFM_DELWAQ_f34/f34.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="dimr-waq" seq="6">
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_f34_001" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_SourceSink01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Initial" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c022_laterals_3D_z" ref="dflowfm_default">
+      <path version="2026-07-02T20:00:00.000000">e02_dflowfm/f029_hyd_file/c022_laterals_3D_z</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.poi</argument>
+            <argument>DFM_DELWAQ_f34/f34.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="dimr-waq" seq="6">
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_f34_001" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_SourceSink01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Initial" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <!-- TEST CASES FOR LATERALS ON 3 DOMAINS -->
+
+    <testCase name="e02_f029_c023_laterals_2D_3dom" ref="dflowfm_default">
+      <path version="2026-07-02T20:00:00.000000">e02_dflowfm/f029_hyd_file/c023_laterals_2D_3dom</path>
+      <programs>
+        <program ref="dimr-mpi" seq="1">
+        </program>
+        <program ref="waqmerge" seq="2">
+          <arguments>
+            <argument>f34.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="checkhydbal" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="6">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.poi</argument>
+            <argument>DFM_DELWAQ_f34/f34.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="dimr-waq" seq="7">
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_2d_V-error-Max-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_2d_V-rel-error-Max" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_2d_f34_001" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_SourceSink01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Lateral01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Lateral02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Lateral03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Initial" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_2d_Continuity" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c024_laterals_3D_s_3dom" ref="dflowfm_default">
+      <path version="2026-07-02T20:00:00.000000">e02_dflowfm/f029_hyd_file/c024_laterals_3D_s_3dom</path>
+      <programs>
+        <program ref="dimr-mpi" seq="1">
+        </program>
+        <program ref="waqmerge" seq="2">
+          <arguments>
+            <argument>f34.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="checkhydbal" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="6">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.poi</argument>
+            <argument>DFM_DELWAQ_f34/f34.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="dimr-waq" seq="7">
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_f34_001" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_SourceSink01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Initial" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c025_laterals_3D_z_3dom" ref="dflowfm_default">
+      <path version="2026-07-02T20:00:00.000000">e02_dflowfm/f029_hyd_file/c025_laterals_3D_z_3dom</path>
+      <programs>
+        <program ref="dimr-mpi" seq="1">
+        </program>
+        <program ref="waqmerge" seq="2">
+          <arguments>
+            <argument>f34.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="checkhydbal" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_f34/f34_waqgeom.nc</argument>
+            <argument>10</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="6">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.poi</argument>
+            <argument>DFM_DELWAQ_f34/f34.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="dimr-waq" seq="7">
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1" toleranceRelative="1.0e+2"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_f34_001" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_SourceSink01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Lateral03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Initial" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
     <!-- MULTIDOMAIN WORKFLOW -->
 
     <testCase name="e02_f029_c101_westerschelde_2d_three_domains" ref="dflowfm_default">

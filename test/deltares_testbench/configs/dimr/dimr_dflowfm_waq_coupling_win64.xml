@@ -40,6 +40,16 @@
         <argument>dimr.xml</argument>
       </arguments>
     </program>
+    <program name="dimr-waq" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+      <shell ref="command_prompt"/>
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/x64</from>
+      </location>
+      <path>bin/run_dimr.bat</path>
+      <arguments>
+        <argument>dimr_waq.xml</argument>
+      </arguments>
+    </program>
     <program name="dimr-mpi" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
       <location ref="dsctestbench-references" type="reference">
         <from>win64</from>
