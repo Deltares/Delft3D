@@ -28,19 +28,13 @@
                     "description": "File type. Do not edit this.",
                     "enum_values": {
                         "modelDef": "model definition file"
-                    },
-                    "validation": {
-                        "is_required": true
                     }
                 },
                 {
                     "key": "fileVersion",
                     "default_value": "1.09",
                     "value_type": "string",
-                    "description": "File version. Do not edit this.",
-                    "validation": {
-                        "is_required": true
-                    }
+                    "description": "File version. Do not edit this."
                 },
                 {
                     "key": "guiVersion",
