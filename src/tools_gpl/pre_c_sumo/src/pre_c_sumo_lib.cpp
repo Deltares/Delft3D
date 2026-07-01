@@ -169,7 +169,7 @@ namespace pre_c_sumo
                 convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
 
             // sendSourcesSinksToFF(participant, sources_sinks);
-            connected_sink_sources.write_to_precice(participant, "sources_sink_nodes", sources_sinks.precice_ids);
+            connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;

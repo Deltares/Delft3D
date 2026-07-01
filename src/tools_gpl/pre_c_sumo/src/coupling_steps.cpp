@@ -231,7 +231,7 @@ namespace pre_c_sumo
     {
         ConnectedSinkSources connectedsinksources{};
 
-        for (std::size_t diffuser_index = 1; diffuser_index < readers.size(); diffuser_index++)
+        for (std::size_t diffuser_index = 0; diffuser_index < readers.size(); diffuser_index++)
         {
             const auto& diffuser = readers[diffuser_index];
             const auto& diffuser_setting = settings.diffusers()[diffuser_index];
@@ -291,6 +291,7 @@ namespace pre_c_sumo
                                                diffuser.intakeFlowRate(), 0.0, 0.0);
             }
         }
+        std::println("connectedsinksources size = {}", connectedsinksources.size());
         return connectedsinksources;
     }
 
