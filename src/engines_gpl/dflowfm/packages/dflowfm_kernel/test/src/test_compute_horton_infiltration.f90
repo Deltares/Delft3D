@@ -206,7 +206,7 @@ contains
    !$f90tw)
 
    !> Initializes the Horton infiltration test suite with default values
-   subroutine initialize_horton_test_suite(config, ierr, n, include_rain, time_step, inf_cap, waterdepth, rainfall, inf_cap_state) bind(C)
+   subroutine initialize_horton_test_suite(config, ierr, n, include_rain, time_step, inf_cap, waterdepth, rainfall, inf_cap_state)
       ! Declare variables
       type(t_HortonInfiltrationConfig), intent(out) :: config
       integer, intent(out) :: ierr
