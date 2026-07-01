@@ -1298,8 +1298,10 @@ contains
       real(kind=dp) :: area
       integer :: i_const
       integer :: ierr
+      integer :: target_index_linear
       logical :: is_successful
       logical :: is_read
+      real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d
 
       is_successful = .false.
       z_range_source(:) = dmiss
@@ -1339,10 +1341,14 @@ contains
          return
       end if
 
+      ! Use a contiguous 1D view to avoid compiler-dependent behavior for non-contiguous row slices.
+      source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
+
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), source_sinks%num_total, &
-                                                     1, source_sink_all_discharges(1, :))
+      target_index_linear = 1 + (source_sinks%num_total - 1) * (numconst + 1)
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), target_index_linear, &
+                                1, source_sink_all_discharges_1d)
 
       if (.not. is_successful) then
          write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
@@ -1386,8 +1392,9 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
-                                                              1, source_sink_all_discharges(1 + i_const, :))
+               target_index_linear = (1 + i_const) + (source_sinks%num_total - 1) * (numconst + 1)
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), target_index_linear, &
+                                                              1, source_sink_all_discharges_1d)
                continue
             end if
          end do
