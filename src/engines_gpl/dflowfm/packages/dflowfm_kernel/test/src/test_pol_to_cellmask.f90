@@ -812,7 +812,7 @@ contains
 
       real(kind=dp), allocatable :: xpoly(:), ypoly(:)
       integer, allocatable :: crossed_cells(:)
-      character, dimension(:), allocatable :: error
+      character(len=:), allocatable :: error
       integer :: i
       logical :: found_cell
 
@@ -882,7 +882,7 @@ contains
 
       real(kind=dp), allocatable :: xpoly(:), ypoly(:)
       integer, allocatable :: crossed_cells(:)
-      character, dimension(:), allocatable :: error
+      character(len=:), allocatable :: error
       integer :: i
       logical :: found_cell
 
@@ -945,7 +945,7 @@ contains
 
       real(kind=dp), allocatable :: xpoly(:), ypoly(:)
       integer, allocatable :: crossed_cells(:)
-      character, dimension(:), allocatable :: error
+      character(len=:), allocatable :: error
       integer :: i
       logical :: found_cell
 

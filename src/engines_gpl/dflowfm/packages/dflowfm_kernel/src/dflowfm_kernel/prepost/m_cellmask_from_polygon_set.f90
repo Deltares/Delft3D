@@ -364,12 +364,10 @@ contains
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
       integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
-      character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
+      character(len=:), allocatable, intent(out) :: error !> Error message, unallocated if no error, to be handled at call site
 
       integer :: npoly, i
       integer, allocatable :: cellmask(:) !< (nump) Mask array for net cells
-
-      error = ''
 
       npoly = size(xpoly)
       if (any(xpoly == dmiss) .or. any(ypoly == dmiss)) then
