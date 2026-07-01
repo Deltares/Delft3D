@@ -381,6 +381,7 @@ contains
             call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(structures_output)//''' for writing.')
          else
             call prop_write_inifile(mout, strs_ptr, ierr)
+            close (mout)
          end if
       end if
       call tree_destroy(strs_ptr)
