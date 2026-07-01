@@ -36,7 +36,7 @@ module unstruc_model
    use m_setgrainsizes, only: setgrainsizes
    use precision, only: dp, hp, comparereal
    use tree_structures, only: tree_data, print_tree
-   use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
+   use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, LEVEL_FATAL, msgbuf, mess
    use m_globalparameters, only: t_filenames
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
@@ -58,7 +58,13 @@ module unstruc_model
    private :: notify_default_change, notify_default_change_int, notify_default_change_real, notify_default_change_char, notify_default_change_impl
 contains
 
-!> Resets current model variables, generally prior to loading a new MDU.
+   subroutine terminate_on_error(message)
+      character(len=*), intent(in) :: message
+      !error stop 'FATAL ERROR IN TEST, ABORTING: '//trim(message)
+      call mess(LEVEL_FATAL, message)
+   end subroutine terminate_on_error
+   
+   !> Resets current model variables, generally prior to loading a new MDU.
 !!
 !! Add initialization/default values for all module variables here.
    subroutine resetModel()
@@ -513,7 +519,7 @@ contains
       use m_xbeach_avgoutput
       use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_set_nccompress, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
       use dfm_error
-      use unstruc_messages, only: unstruc_errorhandler, loglevel_StdOut
+      use unstruc_messages, only: unstruc_errorhandler, loglevel_StdOut, threshold_abort
       use system_utils, only: split_filename
       use m_commandline_option, only: iarg_usecaching
       use m_subsidence, only: sdu_update_s1
@@ -539,7 +545,8 @@ contains
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
       use m_array_or_scalar, only: realloc
-
+      use dflowfm_io ! TODO only statement
+	  
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -565,12 +572,44 @@ contains
       ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
       integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
       integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
+      
+      ! Dflowfm_io related variables
+      type(MduModel) :: mdu
+      type(MduIssue), allocatable :: mdu_issues(:)
+      integer :: temp_threshold
 
       ! Salinity and temperature vertical Forester filter is turned off by default (value 0)
       max_iterations_vertical_forester_sal = 0
       max_iterations_vertical_forester_tem = 0
 
       istat = 0 ! Success
+      
+      call set_mh_callback(unstruc_errorhandler)
+      
+      ! Load MDU file using dflowfm_io library
+      call mdu%create(success, terminate_on_error)
+      call mdu%load_from_file(trim(filename), success, terminate_on_error)
+      
+      ! Write MDU warnings and issues to diagnostics file
+      temp_threshold = threshold_abort
+      threshold_abort = LEVEL_FATAL
+      call mdu%get_issues(mdu_issues, success, terminate_on_error)
+      do i = 1, size(mdu_issues)
+         if (mdu_issues(i)%severity == MDU_SEVERITY_ERROR) then
+            istat = -1
+            call mess(LEVEL_ERROR, 'MDU issue: '//trim(mdu_issues(i)%message))
+         else if (mdu_issues(i)%severity == MDU_SEVERITY_WARNING) then
+            call mess(LEVEL_WARN, 'MDU issue: '//trim(mdu_issues(i)%message))
+         else if (mdu_issues(i)%severity == MDU_SEVERITY_INFO) then
+            !call mess(LEVEL_INFO, 'MDU issue: '//trim(mdu_issues(i)%message))
+         end if
+      end do
+      threshold_abort = temp_threshold
+      
+      if (istat /= 0) then
+         call mess(LEVEL_FATAL, 'Error(s) found in MDU file: '//trim(filename)//'. Aborting.')
+         return
+      end if
 
       ! Put .mdu file into a property tree
       call tree_create(trim(filename), md_ptr)
