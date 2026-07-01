@@ -189,7 +189,6 @@ contains
       integer :: original_size, data_l_index, data_u_index, shift_, new_size
       integer :: local_err
       logical :: keepExisting_
-      logical :: equal_bounds
       logical :: fill_available
 
       if (present(shift)) then
@@ -214,7 +213,9 @@ contains
 
       local_err = 0
       if (allocated(string)) then
-         original_size = len(string)
+         ! nvfortran may mishandle LEN() on deferred-length allocatables in some cases.
+         ! IOLENGTH returns the character storage length and preserves existing semantics.
+         inquire (iolength=original_size) string
          if (original_size == new_size .and. shift_ == 0) then
             if (.not. keepExisting_ .and. fill_available) then
                call fill_string(string, fill, 0)
@@ -243,7 +244,8 @@ contains
       elseif (fill_available) then
          call fill_string(temp, fill, 0)
       end if
-      call move_alloc(temp, string)
+      string = temp
+      deallocate (temp)
 999   continue
       if (present(stat)) then
          stat = local_err
