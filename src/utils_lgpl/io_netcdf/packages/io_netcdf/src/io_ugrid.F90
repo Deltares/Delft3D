@@ -4183,7 +4183,7 @@ contains
       integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
       integer :: ierr !< Result status (UG_NOERR if successful)
 
-      character(len=:), allocatable :: contact_attr, contact_name, error_message
+      character(len=:), allocatable :: contact_attr, error_message
       character(len=nf90_max_name) :: mesh1_name, mesh2_name, location1, location2, temp
       integer :: istart, icolon, ispace, mesh1_varid, mesh2_varid
 
@@ -4198,7 +4198,7 @@ contains
       if (ierr /= nf90_noerr) then
          call check_ug_error(UG_SOMEERR, 'Could not read contact, assuming default topology dimensions')
       end if
-      error_message = ' from mesh topology contacts "'//contact_name//'", assuming defaults.'
+      error_message = ' from mesh topology contacts "'//trim(temp)//'", assuming defaults.'
 
       ! Get the contact attribute value
       ierr = ncu_get_att(ncid, contactids%varids(cid_contacttopo), 'contact', contact_attr)
