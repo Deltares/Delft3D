@@ -110,7 +110,7 @@ pretty = true
 show_error_context = true
 
 [[tool.mypy.overrides]]
-module = ["junit_xml.*", "s3_path_wrangler.*", "minio.*", "boto3", "botocore.*"]
+module = ["junit_xml.*", "s3_path_wrangler.*", "minio.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
