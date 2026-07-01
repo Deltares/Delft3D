@@ -3102,6 +3102,9 @@ contains
       if (.not. allocated(dicoww)) then
          call realloc(dicoww, constant_dicoww)
       end if
+      if (.not. allocated(vicoww)) then
+         call realloc(vicoww, constant_vicoww)
+      end if
 
    end subroutine finalize
 
