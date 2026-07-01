@@ -1405,7 +1405,7 @@ contains
          return
       end if
       !Find the last 1D node of the branch
-      if (branch_idx > 0 .and. network%BRS%size >= i) then
+      if (branch_idx > 0 .and. branch_idx <= network%BRS%size) then
          inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
          inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
       else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
