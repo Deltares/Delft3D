@@ -12,7 +12,7 @@ module test_ec_module_block
 contains
 
    subroutine setup_block_from()
-      call create_file(BC_FILENAME, [ &
+      call create_file(BC_FILENAME, [character(len=512) :: &
                        "[General]", &
                        "    fileVersion           = 1.01", &
                        "    fileType              = boundConds", &
@@ -92,7 +92,7 @@ contains
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
-      call create_file(BC_FILENAME, [ &
+      call create_file(BC_FILENAME, [character(len=512) :: &
                        "[General]", &
                        "    fileVersion           = 1.01", &
                        "    fileType              = boundConds", &

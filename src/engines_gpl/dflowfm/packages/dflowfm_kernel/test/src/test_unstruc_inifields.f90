@@ -33,7 +33,7 @@ module test_unstruc_inifields
       integer :: success
       integer :: istat
 
-      call create_file(INI_FILENAME, [ &
+      call create_file(INI_FILENAME, [character(len=512) :: &
                        '[General]', &
                        'fileVersion         = 2.02', &
                        'fileType            = iniField', &
@@ -80,7 +80,7 @@ module test_unstruc_inifields
       integer :: istat
       integer :: log_level
 
-      call create_file(INI_FILENAME, [ &
+      call create_file(INI_FILENAME, [character(len=512) :: &
                        '[General]', &
                        'fileVersion         = 2.02', &
                        'fileType            = iniField', &
@@ -133,7 +133,7 @@ module test_unstruc_inifields
       integer :: istat
       integer :: log_level
 
-      call create_file(INI_FILENAME, [ &
+      call create_file(INI_FILENAME, [character(len=512) :: &
                        '[General]', &
                        'fileVersion         = 2.02', &
                        'fileType            = iniField', &

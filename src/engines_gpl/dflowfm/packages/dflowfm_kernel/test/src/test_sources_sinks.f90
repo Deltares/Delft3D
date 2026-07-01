@@ -76,7 +76,7 @@ contains
       integer :: error_level
       character(len=256) :: error_message
 
-      call create_file("my_polyline.pliz", [ &
+      call create_file("my_polyline.pliz", [character(len=512) :: &
                        "L1", &
                        "3 3", &
                        "25.0 5.0 -11.5", &
@@ -122,7 +122,7 @@ contains
       type(tree_data), pointer :: tree => null()
       type(tree_data), pointer :: block_ptr => null()
 
-      call create_file("my_polyline.pliz", [ &
+      call create_file("my_polyline.pliz", [character(len=512) :: &
                        "L1", &
                        "3 2", &
                        "25.0 5.0", &
@@ -181,7 +181,7 @@ contains
       type(tree_data), pointer :: tree => null()
       type(tree_data), pointer :: block_ptr => null()
 
-      call create_file("my_polyline.pliz", [ &
+      call create_file("my_polyline.pliz", [character(len=512) :: &
                        "L1", &
                        "3 3", &
                        "25.0 5.0 -11.5", &
@@ -238,7 +238,7 @@ contains
       type(tree_data), pointer :: tree => null()
       type(tree_data), pointer :: block_ptr => null()
 
-      call create_file("my_polyline.pliz", [ &
+      call create_file("my_polyline.pliz", [character(len=512) :: &
                        "L1", &
                        "3 4", &
                        "25.0 5.0 -11.5 -10.0", &
@@ -295,7 +295,7 @@ contains
       type(tree_data), pointer :: tree => null()
       type(tree_data), pointer :: block_ptr => null()
 
-      call create_file("my_polyline.pliz", [ &
+      call create_file("my_polyline.pliz", [character(len=512) :: &
                        "L1", &
                        "3 5", &
                        "25.0 5.0 -11.5 -10.0 0", &

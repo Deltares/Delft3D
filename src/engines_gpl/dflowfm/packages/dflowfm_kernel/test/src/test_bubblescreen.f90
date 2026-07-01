@@ -30,7 +30,7 @@ contains
       type(t_grid_helper) :: grid_helper
       grid_helper = t_grid_helper()
 
-      call create_file("FlowFM_sourcesink.bc", [ &
+      call create_file("FlowFM_sourcesink.bc", [character(len=512) :: &
                        "[General]", &
                        "    fileVersion           = 1.01", &
                        "    fileType              = boundConds", &
@@ -46,7 +46,7 @@ contains
                        "    0      1000", &
                        "    86400  2000" &
                        ])
-      call create_file("bubble_discharge.bc", [ &
+      call create_file("bubble_discharge.bc", [character(len=512) :: &
                        "[General]", &
                        "    fileVersion           = 1.01", &
                        "    fileType              = boundConds", &
@@ -63,14 +63,14 @@ contains
                        "    86400  600" &
                        ])
 
-      call create_file("bubbles.pli", [ &
+      call create_file("bubbles.pli", [character(len=512) :: &
                        "bubbles1", &
                        "    2    2", &
                        "736  1052", &
                        "1253  1046" &
                        ])
 
-      call create_file("FlowFM_bnd.ext", [ &
+      call create_file("FlowFM_bnd.ext", [character(len=512) :: &
                        "[SourceSink]", &
                        "   id=SourceSink01", &
                        "   numCoordinates=1", &

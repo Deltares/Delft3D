@@ -126,7 +126,7 @@ contains
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       ! ARRANGE: Create a bcascii forcing file for rainfall and an ext file that references it.
-      call create_file(BC_FILENAME, [ &
+      call create_file(BC_FILENAME, [character(len=512) :: &
                        "[General]", &
                        "    fileVersion           = 1.01", &
                        "    fileType              = boundConds", &
@@ -142,7 +142,7 @@ contains
                        "    0    1.0", &
                        "    100  2.0"])
 
-      call create_file(EXT_FILENAME, [ &
+      call create_file(EXT_FILENAME, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity        = rainfall", &
                        "    forcingFile     = "//BC_FILENAME, &
@@ -174,7 +174,7 @@ contains
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       ! ARRANGE: Create an ext file with a spatial block that references a quantity that init_spatial_fields does not recognize.
-      call create_file(EXT_FILENAME, [ &
+      call create_file(EXT_FILENAME, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity    = this_quantity_does_not_exist", &
                        "    forcingFile = dummy.nc"])
@@ -207,7 +207,7 @@ contains
       character(len=*), parameter :: SOLAR_EXT = "test_solar_conflict.ext"
 
       ! ARRANGE: Set up a bcascii forcing file for solar radiation and an ext file that references it.
-      call create_file(SOLAR_BC, [ &
+      call create_file(SOLAR_BC, [character(len=512) :: &
                        "[General]", &
                        "    fileVersion           = 1.01", &
                        "    fileType              = boundConds", &
@@ -223,7 +223,7 @@ contains
                        "    0    100.0", &
                        "    100  200.0"])
 
-      call create_file(SOLAR_EXT, [ &
+      call create_file(SOLAR_EXT, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity        = solarradiation", &
                        "    forcingFile     = "//SOLAR_BC, &
@@ -263,11 +263,11 @@ contains
       integer ierr
 
       ! ARRANGE: one sample point exactly at the single grid cell (0,0) with value 1.5.
-            call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+            call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  1.5", &
                                       " 1.0 -1.0  1.5", &
                                       " 0.0  1.0  1.5"])
 
-      call create_file(QEXT_EXT, [ &
+      call create_file(QEXT_EXT, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity        = qext", &
                        "    forcingFile     = "//SAMPLE_FILE, &
@@ -318,7 +318,7 @@ contains
       character(len=*), parameter :: QEXT_BC = "test_qext_tv.bc"
       character(len=*), parameter :: QEXT_EXT = "test_qext_tv.ext"
 
-      call create_file(QEXT_BC, [ &
+      call create_file(QEXT_BC, [character(len=512) :: &
                        "[General]", &
                        "    fileVersion = 1.01", &
                        "    fileType    = boundConds", &
@@ -334,7 +334,7 @@ contains
                        "    0    1.0", &
                        "    100  3.0"])
 
-      call create_file(QEXT_EXT, [ &
+      call create_file(QEXT_EXT, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity        = qext", &
                        "    forcingFile     = "//QEXT_BC, &
@@ -395,10 +395,10 @@ contains
       character(len=*), parameter :: SAMPLE_FILE = "test_wl.xyz"
       character(len=*), parameter :: EXT_FILE    = "test_wl.ext"
 
-      call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+      call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  1.5", &
                                      " 1.0 -1.0  1.5", &
                                      " 0.0  1.0  1.5"])
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity              = initialwaterlevel", &
                        "    forcingFile           = "//SAMPLE_FILE, &
@@ -457,10 +457,10 @@ contains
       character(len=*), parameter :: SAMPLE_FILE = "test_fr.xyz"
       character(len=*), parameter :: EXT_FILE    = "test_fr.ext"
 
-      call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
+      call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  0.02", &
                                      " 1.0 -1.0  0.02", &
                                      " 0.0  1.0  0.02"])
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity              = frictioncoefficient", &
                        "    forcingFile           = "//SAMPLE_FILE, &
@@ -525,10 +525,10 @@ contains
       character(len=*), parameter :: SAMPLE_FILE = "test_wd.xyz"
       character(len=*), parameter :: EXT_FILE    = "test_wd.ext"
 
-      call create_file(SAMPLE_FILE, ["-1.0 -1.0  2.0", &
+      call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  2.0", &
                                      " 1.0 -1.0  2.0", &
                                      " 0.0  1.0  2.0"])
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity            = initialwaterdepth", &
                        "    forcingFile         = "//SAMPLE_FILE, &
@@ -587,10 +587,10 @@ contains
       character(len=*), parameter :: SAMPLE_FILE = "test_sd.xyz"
       character(len=*), parameter :: EXT_FILE    = "test_sd.ext"
 
-      call create_file(SAMPLE_FILE, ["-1.0 -1.0  3.5", &
+      call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  3.5", &
                                      " 1.0 -1.0  3.5", &
                                      " 0.0  1.0  3.5"])
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity            = secchidepth", &
                        "    forcingFile         = "//SAMPLE_FILE, &
@@ -646,10 +646,10 @@ contains
       character(len=*), parameter :: SAMPLE_FILE = "test_frtype.xyz"
       character(len=*), parameter :: EXT_FILE    = "test_frtype.ext"
 
-      call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
+      call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  0.02", &
                                      " 1.0 -1.0  0.02", &
                                      " 0.0  1.0  0.02"])
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity            = frictioncoefficient", &
                        "    forcingFile         = "//SAMPLE_FILE, &
@@ -722,7 +722,7 @@ contains
       character(len=*), parameter :: EXT_FILE = "test_iadv.ext"
 
       ! ARRANGE: a polygon that fully encloses the single cell at (0,0).
-      call create_file(POL_FILE, [ &
+      call create_file(POL_FILE, [character(len=512) :: &
                        "enclosing_polygon", &
                        "5  2", &
                        "-2.0  -2.0", &
@@ -731,7 +731,7 @@ contains
                        "-2.0   2.0", &
                        "-2.0  -2.0"])
 
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity        = advectiontype", &
                        "    forcingFile     = "//POL_FILE, &
@@ -798,10 +798,10 @@ contains
       character(len=*), parameter :: SAMPLE_FILE = "test_sal.xyz"
       character(len=*), parameter :: EXT_FILE    = "test_sal.ext"
 
-      call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+      call create_file(SAMPLE_FILE, [character(len=512) :: "-1.0 -1.0  1.5", &
                                       " 1.0 -1.0  1.5", &
                                       " 0.0  1.0  1.5"])
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Initial]", &
                        "    quantity            = initialsalinity", &
                        "    forcingFile         = "//SAMPLE_FILE, &
@@ -876,13 +876,13 @@ contains
       ! ARRANGE: polygon profile file with a constant 35 PSU from bed (-10 m) to surface (0 m).
       ! reapol reads this format: name / M N / depth1 value1 / depth2 value2 ...
       ! lineinterp uses xpl=depth and ypl=salinity value.
-      call create_file(PROFILE_FILE, [ &
+      call create_file(PROFILE_FILE, [character(len=512) :: &
                        "salinityprofile", &
                        "2  2", &
                        "-10.0  35.0", &
                        "  0.0  35.0"])
 
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Spatial]", &
                        "    quantity        = initialverticalsalinityprofile", &
                        "    forcingFile     = "//PROFILE_FILE, &
@@ -959,7 +959,7 @@ contains
       character(len=*), parameter :: FIELD1D_FILE = "test_fr1d.ini"
       character(len=*), parameter :: EXT_FILE     = "test_fr1d.ext"
 
-      call create_file(FIELD1D_FILE, [ &
+      call create_file(FIELD1D_FILE, [character(len=512) :: &
                        "[General]", &
                        "    fileVersion = 1.00", &
                        "    fileType    = 1dField", &
@@ -969,7 +969,7 @@ contains
                        "    unit     = -", &
                        "    value    = 0.025"])
 
-      call create_file(EXT_FILE, [ &
+      call create_file(EXT_FILE, [character(len=512) :: &
                        "[Parameter]", &
                        "    quantity        = frictioncoefficient", &
                        "    forcingFile     = "//FIELD1D_FILE, &
@@ -1035,7 +1035,7 @@ contains
    !                               x_coord = 0.0_dp, &
    !                               y_coord = 0.0_dp)
    !
-   !   call create_file(EXT_FILE, [ &
+   !   call create_file(EXT_FILE, [character(len=512) :: &
    !                    "[Parameter]", &
    !                    "    quantity        = frictioncoefficient", &
    !                    "    forcingFile     = "//NC_FILE, &
