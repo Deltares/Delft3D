@@ -358,10 +358,12 @@ module waq
       integer :: noq12s !  number of horizontal WAQ exchanges (including sink/sources, excluding laterals)
       integer :: noq12sl !  number of horizontal WAQ exchanges (including sink/sources and laterals)
       integer :: numsrcbnd !  number of sinks/sources that are boundary conditions
-      integer :: numsrcwaq !  number of adition sources/sinks exchanges in waq (based on posible combinations)
-      integer :: numlatsectwaq !  number of lateral boundary sections
-      integer, allocatable :: numlatinsectwaq(:) !  number of lateral boundaries in this section
-      integer :: numlatwaq !  number of lateral boundary links
+      integer :: numsrcwaq !  number of addition sources/sinks exchanges in waq (based on posible combinations)
+      integer :: numlatsect !  number of lateral boundary sections
+      integer, allocatable :: numlatinsect(:) !  number of lateral boundaries in this section
+      integer :: numlatbnd !  number of lateral boundary conditions
+      integer :: numlatwaq !  number of addition lateral exchanges in waq (for all layers)
+      integer :: numbnd !  total number of boundary conditions including sinks/sources and laterals
       integer :: kmxnx ! maximum number of active layers
       integer :: kmxnxa ! maximum number of aggregated layers
       integer :: ndkxi ! nr of internal flowcells (3D)
@@ -1606,7 +1608,7 @@ contains
          nopenbndsectnonempty = nopenbndsectnonempty + 1
       end do
 
-      write (lunbnd, '(i8)') nopenbndsectnonempty + waqpar%numsrcbnd + waqpar%numlatsectwaq ! Nr of open boundary sections, sink sources and laterals.
+      write (lunbnd, '(i8)') nopenbndsectnonempty + waqpar%numsrcbnd + waqpar%numlatsect ! Nr of open boundary sections, sink sources and laterals.
       istart = 0
       do i = 1, nopenbndsect
          if (nopenbndlin(i) - istart == 0) then
@@ -1676,10 +1678,10 @@ contains
 
       if (numlatsg > 0) then
          do ilat = 1, numlatsg
-            if (waqpar%numlatinsectwaq(ilat) > 0) then
+            if (waqpar%numlatinsect(ilat) > 0) then
                sectionname = makesectionname('lat_', lat_ids(ilat))
                write (lunbnd, '(a)') trim(sectionname) ! Section name
-               write (lunbnd, '(i8)') waqpar%numlatinsectwaq(ilat) ! Nr of lateral links in section
+               write (lunbnd, '(i8)') waqpar%numlatinsect(ilat) ! Nr of lateral links in section
                do k1 = n1latsg(ilat), n2latsg(ilat)
                   kk = nnlat(k1)
                   if (kk > 0) then
@@ -2028,6 +2030,14 @@ contains
       ! Prepare arrays for sinks and sources.
       call waq_prepare_lat()
 
+      waqpar%numbnd = ndx - ndxi + waqpar%numsrcbnd + waqpar%numlatbnd ! total number of boudaries
+
+      ! Fill arrays for sinks and sources.
+      call waq_fill_src()
+
+      ! Fill arrays for sinks and sources.
+      call waq_fill_lat()
+
       ! allocate maximum possible number of exchanges before aggregation
       waqpar%noq12 = lnx * waqpar%kmxnxa
       if (waqpar%kmxnxa > 1) then
@@ -2182,7 +2192,7 @@ contains
                waqpar%iqaggr(LL) = ip + sign((waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%noq12, ip)
                iq = abs(waqpar%iqaggr(LL))
                dseg = (waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%nosegl
-               dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * (ndx - ndxi + waqpar%numsrcbnd) ! current number of external links in FM, account for sinks sources here too!
+               dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%numbnd ! current number of external links in FM, account for sinks sources and laterals too!
                if (waqpar%ifrmto(1, iq) == 0) then
                   if (waqpar%ifrmto(1, ipa) > 0) then
                      waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) + dseg
@@ -2204,7 +2214,7 @@ contains
                do LL = Lb - 1, Lbb, -1
                   if (waqpar%ifrmto(1, ipa) < 0 .or. waqpar%ifrmto(2, ipa) < 0) then
                      iq = ip + sign((waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%noq12, ip)
-                     dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * (ndx - ndxi + waqpar%numsrcbnd) ! current number of external links in FM, account for sinks sources here too!
+                     dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%numbnd ! current number of external links in FM, account for sinks sources and laterals too!
                      if (waqpar%ifrmto(1, iq) == 0) then
                         if (waqpar%ifrmto(1, ipa) < 0) then
                            waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
@@ -2276,7 +2286,7 @@ contains
       use messagehandling, only: msgbuf, err_flush
       implicit none
 
-      integer :: ibnd, nbnd, isrc, K, K1, K2, kk
+      integer :: isrc
       integer :: kk1
       integer :: kk2
 
@@ -2315,8 +2325,22 @@ contains
       call realloc(waqpar%ifrmtosrc, [2, waqpar%numsrcwaq], keepexisting=.true., fill=0)
       call realloc(source_sinks%cumulative_discharge_waq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
       call realloc(source_sinks%cumulative_discharge_waq_previous, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
-      nbnd = ndx - ndxi + waqpar%numsrcbnd ! total number of boudaries
-      ibnd = ndx - ndxi ! starting number for sink source boundaries
+   end subroutine waq_prepare_src
+
+!> Fill additional exchanges for waq to store sink/source discharges
+   subroutine waq_fill_src()
+      use m_flowgeom
+      use m_flow
+      use m_source_sink, only: source_sinks
+      use m_alloc
+      use messagehandling, only: msgbuf, err_flush
+      implicit none
+
+      integer :: ibnd, isrc, K, K1, K2, kk
+      integer :: kk1
+      integer :: kk2
+
+      ibnd = ndx - ndxi ! starting number for sink/source boundaries
 
       ! Create additional pointer for sink/sources
       do isrc = 1, source_sinks%num_total
@@ -2328,12 +2352,12 @@ contains
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
                   waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
-                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = -ibnd - waqpar%numbnd * (K - 1)
                end do
             else if (kk2 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = -ibnd - waqpar%numbnd * (K - 1)
                   waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
                end do
             end if
@@ -2357,7 +2381,7 @@ contains
             end if
          end if
       end do
-   end subroutine waq_prepare_src
+   end subroutine waq_fill_src
 !
 !------------------------------------------------------------------------------
 
@@ -2371,12 +2395,12 @@ contains
       use m_alloc
       implicit none
 
-      integer :: ilat, ilatwaq, ibnd, k1, kk
+      integer :: ilat, k1, kk
       logical :: firstinsection
 
       waqpar%numlatwaq = 0
-      waqpar%numlatsectwaq = 0
-      call realloc(waqpar%numlatinsectwaq, numlatsg, fill=0, keepExisting=.false.)
+      waqpar%numlatsect = 0
+      call realloc(waqpar%numlatinsect, numlatsg, fill=0, keepExisting=.false.)
 
       ! First determine the number of laterals actually used and the allocations needed
       do ilat = 1, numlatsg
@@ -2387,10 +2411,11 @@ contains
                if (kk > 0) then
                   if (.not. is_ghost_node(kk)) then
                      ! This is a lateral within the current domain
-                     waqpar%numlatwaq = waqpar%numlatwaq + 1
-                     waqpar%numlatinsectwaq(ilat) = waqpar%numlatinsectwaq(ilat) + 1
+                     waqpar%numlatbnd = waqpar%numlatbnd + 1
+                     waqpar%numlatwaq = waqpar%numlatwaq + waqpar%kmxnxa
+                     waqpar%numlatinsect(ilat) = waqpar%numlatinsect(ilat) + 1
                      if (firstinsection) then
-                        waqpar%numlatsectwaq = waqpar%numlatsectwaq + 1
+                        waqpar%numlatsect = waqpar%numlatsect + 1
                         firstinsection = .false.
                      end if
                   end if
@@ -2402,8 +2427,22 @@ contains
       call realloc(waqpar%ifrmtolat, [2, waqpar%numlatwaq], keepexisting=.true., fill=0)
       call realloc(qlatwaq, waqpar%numlatwaq, keepexisting=.true., fill=0.0_dp)
       call realloc(qlatwaq0, waqpar%numlatwaq, keepexisting=.true., fill=0.0_dp)
+   end subroutine waq_prepare_lat
 
-      ibnd = (ndx - ndxi + waqpar%numsrcbnd) * waqpar%kmxnxa
+!> Fill additional exchanges for waq to store lateral discharges
+   subroutine waq_fill_lat()
+      use m_partitioninfo, only: is_ghost_node
+      use m_flowgeom
+      use m_flow
+      use fm_external_forcings_data
+      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+      use m_alloc
+      implicit none
+
+      integer :: ilat, ilatwaq, ibnd, k1, kk, K
+
+      ibnd = ndx - ndxi + waqpar%numsrcbnd ! starting number for lateral boundaries
+
       ilatwaq = 0
       do ilat = 1, numlatsg
          if (nodeCountLat(ilat) > 0) then
@@ -2413,15 +2452,17 @@ contains
                   if (.not. is_ghost_node(kk)) then
                      ! This is a lateral within the current domain
                      ibnd = ibnd + 1
-                     ilatwaq = ilatwaq + 1
-                     waqpar%ifrmtolat(1, ilatwaq) = -ibnd
-                     waqpar%ifrmtolat(2, ilatwaq) = kk
+                     do K = 1, waqpar%kmxnxa
+                        ilatwaq = ilatwaq + 1
+                        waqpar%ifrmtolat(1, ilatwaq) = -ibnd - waqpar%numbnd * (K - 1)
+                        waqpar%ifrmtolat(2, ilatwaq) = waqpar%iapnt(kk) + (K - 1) * waqpar%nosegl
+                     end do
                   end if
                end if
             end do
          end if
       end do
-   end subroutine waq_prepare_lat
+   end subroutine waq_fill_lat
 !
 !------------------------------------------------------------------------------
 
