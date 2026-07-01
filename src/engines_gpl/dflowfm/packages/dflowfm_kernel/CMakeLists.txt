@@ -172,13 +172,11 @@ target_link_libraries(${library_name} PRIVATE
 
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
+    find_package(PETSc CONFIG REQUIRED)
 
     target_link_libraries(${library_name} PRIVATE
                           interacter_stub
-                          PkgConfig::PETSC
+                          PETSc::PETSc
                           uuid
     )
 endif(UNIX)
