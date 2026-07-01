@@ -33,15 +33,15 @@ def generate_rank1(ftype: FortranType) -> str:
     T = ftype.dtype
     return f"""\
    !> Write variable specified by id_var and values to netcdf file ncid on the location specified by iloc. 
-   function {proc}(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
+   function {proc}(ncid, id_tsp, id_var, iloc_in, values, default_value, jabndnd) result(ierr)
 
    implicit none
 
    integer, intent(in) :: ncid !< file ID of open netcdf file.
    type(t_unc_timespace_id), intent(in) :: id_tsp !> unc_timespace_id, only the index for current time is needed.
-   integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
-   integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
-   {T}, intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
+   integer, intent(in), dimension(:) :: id_var !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
+   integer, intent(in) :: iloc_in !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
+   {T}, intent(in), target, dimension(:) :: values !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
    {T}, optional, intent(in) :: default_value !< Optional default value to be written when no value is available.
    integer, optional, intent(in) :: jabndnd !< flag specifying whether boundary nodes are written (1) or not (0).
 
@@ -49,11 +49,15 @@ def generate_rank1(ftype: FortranType) -> str:
 
    integer :: ndx2d, n1d_write
    integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
-   integer :: local_iloc
-   {T}, allocatable, save :: workL(:), workS(:)
-   {T}, allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
+   integer :: iloc
+   {T}, allocatable, save :: workL(:)
+   {T}, pointer :: workS(:)
+   {T}, allocatable, save :: workS3D(:,:), workU3D(:,:), workW(:,:), workWU(:,:)
+   logical :: workS_allocated
 
    ierr = DFM_NOERR
+   nullify(workS)
+   workS_allocated = .false.
 
    if (present(jabndnd)) then
       associate (dummy => jabndnd)
@@ -62,24 +66,26 @@ def generate_rank1(ftype: FortranType) -> str:
 
    ndx2d = flowgeom%mesh2d%numFace
    n1d_write = flowgeom%mesh1D%numNode
-   local_iloc = iloc
+   iloc = iloc_in
 
-   if (local_iloc == UNC_LOC_S) then
-      workS = values
+   if (iloc == UNC_LOC_S) then
+      workS => values
    end if
 
    if (write_surface_data_to_map_file) then
-      if (local_iloc == UNC_LOC_S3D) then
-         local_iloc = UNC_LOC_S
+      if (iloc == UNC_LOC_S3D) then
+         iloc = UNC_LOC_S
          n1d_write = 0
 
+         allocate(workS(ndx2d))
+         workS_allocated = .true.
          do n = 1, ndx2d
             workS(n) = values(ktop(n))
          end do
       end if
    end if
 
-   select case (local_iloc)
+   select case (iloc)
    case (UNC_LOC_CN) ! Corner point location
       ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
@@ -290,8 +296,19 @@ def generate_rank1(ftype: FortranType) -> str:
       goto 888
    end select
 
+   if (workS_allocated) then
+      deallocate(workS)
+   end if
+   nullify(workS)
+
    return
 888 continue
+
+   if (workS_allocated) then
+      deallocate(workS)
+   end if
+   nullify(workS)
+
    end function {proc}"""
 
 
