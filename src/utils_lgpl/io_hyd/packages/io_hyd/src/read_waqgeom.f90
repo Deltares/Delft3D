@@ -65,6 +65,7 @@ contains
       integer :: ioncid
       integer :: ncid
       integer :: nmesh
+      integer :: nnet
       integer :: id_edgetypes
       integer :: id_idomain
       integer :: id_iglobal
@@ -102,13 +103,25 @@ contains
          return
       end if
       ! It is a valid UGRID file format
-      ierr = ionc_get_mesh_count(ioncid, nmesh) ! UGRID: required
+      ierr = ionc_get_mesh_count(ioncid, nmesh) ! Number of meshes in UGRID file
+      ierr = ionc_get_number_of_networks_ugrid(ioncid, nnet) ! Number of networks (1D) in UGRID file
+      ! Check if we have only one mesh or a valid combination of 1D and 2D meshes
       if (nmesh == 0) then
          call mess(LEVEL_ERROR, 'No mesh found in UGRID file: '//trim(filename))
          return
-      end if
-      if (nmesh > 1) then
-         call mess(LEVEL_ERROR, 'More than one mesh found in UGRID file: '//trim(filename))
+      else if (nmesh == 2) then
+         if (nnet /= 1) then
+            call mess(LEVEL_INFO, 'Two meshes is only allowed as a 1D-2D combination.')
+            if (nnet == 0) then
+               call mess(LEVEL_ERROR, 'Found two 2D meshes in UGRID file: '//trim(filename))
+               return
+            else if (nnet == 2) then
+               call mess(LEVEL_ERROR, 'Found two 1D meshes in UGRID file: '//trim(filename))
+               return
+            end if
+         end if
+      else if (nmesh > 2) then
+         call mess(LEVEL_ERROR, 'More than two meshes found in UGRID file: '//trim(filename))
          return
       end if
       i_mesh = 1
@@ -182,7 +195,7 @@ contains
       ! Deternmine layer type
       found_sigma = nf90_inq_varid(ncid, trim(waqgeom%meshname)//'_layer_sigma', varid) == nf90_noerr
       found_z = nf90_inq_varid(ncid, trim(waqgeom%meshname)//'_layer_z', varid) == nf90_noerr
-      if (found_sigma.and.found_z) then
+      if (found_sigma .and. found_z) then
          waqgeom%layertype = LAYERTYPE_OCEAN_SIGMA_Z
       else if (found_sigma) then
          waqgeom%layertype = LAYERTYPE_OCEANSIGMA
@@ -193,7 +206,7 @@ contains
       end if
 
       ! Read layer information when available
-      if(waqgeom%layertype > 0) then
+      if (waqgeom%layertype > 0) then
          ! Read number of layers
          ierr = nf90_inq_dimid(ncid, trim(waqgeom%meshname)//'_nLayers', varid)
          if (ierr /= nf90_noerr) then
@@ -205,15 +218,15 @@ contains
             call mess(LEVEL_ERROR, 'Unable to read layer_dimension in UGRID file: '//trim(filename))
             return
          end if
-         
+
          ! Allocate layer arrays
          call reallocP(waqgeom%layer_zs, waqgeom%num_layers, keepExisting=.false.)
          call reallocP(waqgeom%interface_zs, waqgeom%num_layers + 1, keepExisting=.false.)
-         
+
          ! Read layers and interfaces
          if (found_sigma) then
             call realloc(layer_s, waqgeom%num_layers, keepExisting=.false.)
-            layer_s = -999.0_dp            
+            layer_s = -999.0_dp
             ierr = nf90_inq_varid(ncid, trim(waqgeom%meshname)//"_layer_sigma", varid)
             if (ierr == nf90_noerr) then
                ierr = nf90_get_var(ncid, varid, layer_s, count=(/waqgeom%num_layers/))
@@ -265,7 +278,7 @@ contains
             ! Copy the z layers
             waqgeom%layer_zs = layer_z
             waqgeom%interface_zs = interface_z
-         else if  (waqgeom%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         else if (waqgeom%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
             ! Merge z and sigma layers
             ! Find number of sigma layers on top of z layers
             waqgeom%numtopsig = waqgeom%num_layers - count(abs(layer_s) > 1.0_dp)
@@ -285,4 +298,3 @@ contains
       success = .true.
    end function read_waqgeom_file
 end module
-   
