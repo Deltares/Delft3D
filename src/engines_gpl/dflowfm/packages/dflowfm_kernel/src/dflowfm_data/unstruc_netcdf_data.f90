@@ -1,14 +1,16 @@
 module m_unstruc_netcdf_data
 
-use m_ug_meta, only: t_ug_meta
-use m_ug_mesh, only: t_ug_mesh
-use m_ug_network, only: t_ug_network
-use m_ug_contacts, only: t_ug_contact
-use m_ug_crs, only: t_crs
+   use m_ug_meta, only: t_ug_meta
+   use m_ug_mesh, only: t_ug_mesh
+   use m_ug_meshgeom, only: t_ug_meshgeom
+   use m_ug_network, only: t_ug_network
+   use m_ug_contacts, only: t_ug_contact
+   use m_ug_crs, only: t_crs
+   use m_unstruc_netcdf_types, only: t_fm_flowgeom
 
    implicit none(type, external)
 
- integer :: nerr_
+   integer :: nerr_
    logical :: err_firsttime_
    character(len=255) :: err_firstline_
    integer :: err_level_
@@ -95,7 +97,7 @@ use m_ug_crs, only: t_crs
       integer :: id_erolaydim = -1 !< Dimension ID for location of erodable layer thickness.
       integer :: id_sedtotdim = -1 !< Dimension ID for number of all sediment fractions.
       integer :: id_sedsusdim = -1 !< Dimension ID for number of suspended sediment fractions.
-      ! arrays to identify 1d mesh and 1d2d contacts
+      ! arrays to identify 1d mesh and 1d2d contacts !> TODO: Remove these as they are already in t_fm_flowgeom
       integer, allocatable :: edgetoln(:)
       integer, allocatable :: contactstoln(:)
       ! geometry fieldss
@@ -502,6 +504,8 @@ use m_ug_crs, only: t_crs
       integer, allocatable :: inode_merge(:) !< like inode_own, but from the merged restart file
       integer, allocatable :: ilink_merge(:) !< like ilink_own, but from the merged restart file
    end type t_unc_merged
+
+   type(t_fm_flowgeom) :: flowgeom !< global flow geometry object to be built by build_flowgeom_2d and build_flowgeom_1d.
 
    type(t_unc_mapids) :: mapids !< Global descriptor for the (open) map-file
    integer :: ihisfile = 0 !< Global netcdf ID of the his-file

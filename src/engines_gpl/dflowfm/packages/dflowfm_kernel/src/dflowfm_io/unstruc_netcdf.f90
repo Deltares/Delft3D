@@ -60,7 +60,7 @@ module unstruc_netcdf
    use m_waveconst
    use m_get_Lbot_Ltop_max, only: getLbotLtopmax
    use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
-   use m_unc_build_flowgeom
+   use m_unc_flowgeom
    use m_unstruc_netcdf_data
    use m_unc_put_var_map
    use m_unc_put_var_map_generated
@@ -756,10 +756,10 @@ contains
 
    end function unc_put_att_int
 
-   !> Puts a normal NetCDF attribute into multiple variable ids, if they are valid.
-   !! Typically only used for variables that are defined on multiple meshes (e.g. 1d,2d,3d)
-   !! This routine assumes that unc_def_var_map has already left some id_var(:) values on -1,
-   !! if that mesh/location is not applicable.
+!> Puts a normal NetCDF attribute into multiple variable ids, if they are valid.
+!! Typically only used for variables that are defined on multiple meshes (e.g. 1d,2d,3d)
+!! This routine assumes that unc_def_var_map has already left some id_var(:) values on -1,
+!! if that mesh/location is not applicable.
    function unc_put_att_char(ncid, id_var, att_name, att_value) result(ierr)
       use dfm_error, only: dfm_noerr
       implicit none
@@ -784,13 +784,13 @@ contains
 
    end function unc_put_att_char
 
-   !> Puts a normal NetCDF attribute into multiple variable ids in a map file, if they are valid.
-   !! Typically only used for variables that are defined on multiple meshes (e.g. 1d,2d,3d)
-   !! This function is different from unc_put_att_char as follows: it checks whether the att_value
-   !! is a variable name that was already defined in the file. If so, it will correctly prefix that
-   !! variable name with the correct mesh names.
-   !! This routine assumes that unc_def_var_map has already left some id_var(:) values on -1,
-   !! if that mesh/location is not applicable.
+!> Puts a normal NetCDF attribute into multiple variable ids in a map file, if they are valid.
+!! Typically only used for variables that are defined on multiple meshes (e.g. 1d,2d,3d)
+!! This function is different from unc_put_att_char as follows: it checks whether the att_value
+!! is a variable name that was already defined in the file. If so, it will correctly prefix that
+!! variable name with the correct mesh names.
+!! This routine assumes that unc_def_var_map has already left some id_var(:) values on -1,
+!! if that mesh/location is not applicable.
    function unc_put_att_map_char(ncid, id_tsp, id_var, att_name, att_value) result(ierr)
       use dfm_error, only: dfm_noerr
       implicit none
@@ -842,8 +842,8 @@ contains
 
    end function unc_put_att_map_char
 
-   !> Puts global attributes in NetCDF data set.
-   !! This includes: institution, Conventions, etc.
+!> Puts global attributes in NetCDF data set.
+!! This includes: institution, Conventions, etc.
    subroutine unc_addglobalatts(ncid)
       use messagehandling, only: err_flush
       integer, intent(in) :: ncid
@@ -885,13 +885,13 @@ contains
       ierr = ncu_restore_mode(ncid, jaInDefine)
    end subroutine unc_addglobalatts
 
-   ! TODO: AvD: add these  (incrementally) to map/his files:
-   !>       :time_coverage_start = "2010-04-23T00:00:00+01:00" ;
-   !>       :time_coverage_end = "2010-05-20T00:00:00+01:00" ;
-   ! (can be done outside of definition mode, if att was already created before.)
+! TODO: AvD: add these  (incrementally) to map/his files:
+!>       :time_coverage_start = "2010-04-23T00:00:00+01:00" ;
+!>       :time_coverage_end = "2010-05-20T00:00:00+01:00" ;
+! (can be done outside of definition mode, if att was already created before.)
 
-   !> Opens a NetCDF file for reading.
-   !! The file is maintained in the open-file-list.
+!> Opens a NetCDF file for reading.
+!! The file is maintained in the open-file-list.
    function unc_open(filename, cmode, ncid)
       character(len=*), intent(in) :: filename
       integer, intent(in) :: cmode
@@ -911,8 +911,8 @@ contains
       end if
    end function unc_open
 
-   !> Creates or opens a NetCDF file for writing.
-   !! The file is maintained in the open-file-list.
+!> Creates or opens a NetCDF file for writing.
+!! The file is maintained in the open-file-list.
    function unc_create(filename, cmode, ncid)
       character(len=*), intent(in) :: filename !< Filename to be created
       integer, intent(in) :: cmode !< Creation mode, must be a valid NetCDF flags integer.
@@ -939,8 +939,8 @@ contains
 
    end function unc_create
 
-   !> Closes a NetCDF file.
-   !! The file is removed from the open-file-list
+!> Closes a NetCDF file.
+!! The file is removed from the open-file-list
    integer function unc_close(ncid)
       integer, intent(inout) :: ncid
       integer :: i, j
@@ -975,7 +975,7 @@ contains
       end if
    end function unc_close
 
-   !> Closes all NetCDF files that are still open.
+!> Closes all NetCDF files that are still open.
    subroutine unc_closeall()
       integer :: i, istat
       do i = nopen_files_, 1, -1
@@ -983,8 +983,8 @@ contains
       end do
    end subroutine unc_closeall
 
-   !> Adds coordinate attributes according to CF conventions, based on jsferic.
-   !! Non-standard attributes (such as long_name) should be set elsewhere.
+!> Adds coordinate attributes according to CF conventions, based on jsferic.
+!! Non-standard attributes (such as long_name) should be set elsewhere.
    function unc_addcoordatts(ncid, id_varx, id_vary, jsferic)
       integer, intent(in) :: ncid !< NetCDF dataset id
       integer, intent(in) :: id_varx !< NetCDF horizontal variable id
@@ -3778,6 +3778,8 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_flowgeom_interpolate, only: link_to_node_vector
 
       implicit none
 
@@ -3795,8 +3797,8 @@ contains
       integer :: Lf
       character(16) :: dxname
       character(64) :: dxdescr
-      real(kind=dp) :: rhol, mortime, wavfac, hmlwL, huL
-      real(kind=dp) :: moravg, dmorft, dmorfs, rhodt
+      real(kind=dp) :: mortime, wavfac, hmlwL, huL
+      real(kind=dp) :: moravg, dmorft, dmorfs
       real(kind=dp) :: um, ux, uy, dzu
       real(kind=dp), dimension(:, :), allocatable :: poros, toutputx, toutputy, sxtotori, sytotori
       real(kind=dp), dimension(:, :, :), allocatable :: frac
@@ -5423,16 +5425,8 @@ contains
                call realloc(toutputx, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
-                  end select
-                  toutputx(:, l) = sedtra%e_ssn(:, l) / rhol
-                  toutputy(:, l) = sedtra%e_sst(:, l) / rhol
+                  toutputx(:, l) = sedtra%e_ssn(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
+                  toutputy(:, l) = sedtra%e_sst(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
                end do
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ssn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sst, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
@@ -5442,16 +5436,8 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%e_sbn(:, l) / rhol
-               toutputy(:, l) = sedtra%e_sbt(:, l) / rhol
+               toutputx(:, l) = sedtra%e_sbn(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%e_sbt(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
@@ -5460,16 +5446,8 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%e_sbwn(:, l) / rhol
-               toutputy(:, l) = sedtra%e_sbwt(:, l) / rhol
+               toutputx(:, l) = sedtra%e_sbwn(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%e_sbwt(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
@@ -5478,16 +5456,8 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%e_sswn(:, l) / rhol
-               toutputy(:, l) = sedtra%e_sswt(:, l) / rhol
+               toutputx(:, l) = sedtra%e_sswn(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%e_sswt(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
@@ -5496,16 +5466,8 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%e_sbcn(:, l) / rhol
-               toutputy(:, l) = sedtra%e_sbct(:, l) / rhol
+               toutputx(:, l) = sedtra%e_sbcn(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%e_sbct(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbct, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
@@ -5598,16 +5560,8 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  toutputx(:, l) = sbcx_raw(:, l) / rhol
-                  toutputy(:, l) = sbcy_raw(:, l) / rhol
+                  toutputx(:, l) = sbcx_raw(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  toutputy(:, l) = sbcy_raw(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcx, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcy, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5617,16 +5571,8 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  toutputx(:, l) = sbwx_raw(:, l) / rhol
-                  toutputy(:, l) = sbwy_raw(:, l) / rhol
+                  toutputx(:, l) = sbwx_raw(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  toutputy(:, l) = sbwy_raw(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwx, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwy, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5636,16 +5582,8 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  toutputx(:, l) = sswx_raw(:, l) / rhol
-                  toutputy(:, l) = sswy_raw(:, l) / rhol
+                  toutputx(:, l) = sswx_raw(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  toutputy(:, l) = sswy_raw(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswx, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswy, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5660,16 +5598,8 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
-                  end select
-                  toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol
-                  toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
+                  toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
+                  toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
                end do
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sscx, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sscy, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5680,16 +5610,8 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%sbcx(:, l) / rhol
-               toutputy(:, l) = sedtra%sbcy(:, l) / rhol
+               toutputx(:, l) = sedtra%sbcx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%sbcy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcx_reconstructed, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbcy_reconstructed, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5699,16 +5621,8 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%sbwx(:, l) / rhol
-               toutputy(:, l) = sedtra%sbwy(:, l) / rhol
+               toutputx(:, l) = sedtra%sbwx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%sbwy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwx_reconstructed, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbwy_reconstructed, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5718,16 +5632,8 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               toutputx(:, l) = sedtra%sswx(:, l) / rhol
-               toutputy(:, l) = sedtra%sswy(:, l) / rhol
+               toutputx(:, l) = sedtra%sswx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+               toutputy(:, l) = sedtra%sswy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswx_reconstructed, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sswy_reconstructed, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5737,16 +5643,8 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedsus
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
-               end select
-               toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol
-               toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
+               toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
+               toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sscx_reconstructed, UNC_LOC_S, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sscy_reconstructed, UNC_LOC_S, toutputy, jabndnd=jabndnd_)
@@ -5770,16 +5668,8 @@ contains
          call realloc(toutputx, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
          call realloc(toutputy, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
          do l = 1, stmpar%lsedtot
-            select case (stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1.0_dp
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
-            toutputx(1:ndxndxi, l) = (sedtra%sxtot(1:ndxndxi, l)) / rhol
-            toutputy(1:ndxndxi, l) = (sedtra%sytot(1:ndxndxi, l)) / rhol
+            toutputx(1:ndxndxi, l) = (sedtra%sxtot(1:ndxndxi, l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+            toutputy(1:ndxndxi, l) = (sedtra%sytot(1:ndxndxi, l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
          end do
 
          if (stmpar%morpar%moroutput%sxytot) then
@@ -5818,16 +5708,8 @@ contains
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             if (dmorft > 0.0_dp) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhodt = dmorfs
-                  case (1)
-                     rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                  case (2)
-                     rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                  end select
-                  toutputx(:, l) = sedtra%sbxcum(:, l) / rhodt
-                  toutputy(:, l) = sedtra%sbycum(:, l) / rhodt
+                  toutputx(:, l) = sedtra%sbxcum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                  toutputy(:, l) = sedtra%sbycum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
                end do
             else
                toutputx = 0.0_dp
@@ -5842,16 +5724,8 @@ contains
             ! Suspended load
             if (dmorft > 0.0_dp) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhodt = dmorfs
-                  case (1)
-                     rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                  case (2)
-                     rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                  end select
-                  toutputx(:, l) = sedtra%ssxcum(:, l) / rhodt
-                  toutputy(:, l) = sedtra%ssycum(:, l) / rhodt
+                  toutputx(:, l) = sedtra%ssxcum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                  toutputy(:, l) = sedtra%ssycum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
                end do
             else
                toutputx = 0.0_dp
@@ -5867,16 +5741,8 @@ contains
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                if (dmorft > 0.0_dp) then
                   do l = 1, stmpar%lsedtot
-                     select case (stmpar%morpar%moroutput%transptype)
-                     case (0)
-                        rhodt = dmorfs
-                     case (1)
-                        rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                     case (2)
-                        rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                     end select
-                     toutputx(:, l) = sedtra%sbxcum(:, l) / rhodt
-                     toutputy(:, l) = sedtra%sbycum(:, l) / rhodt
+                     toutputx(:, l) = sedtra%sbxcum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                     toutputy(:, l) = sedtra%sbycum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
                   end do
                else
                   toutputx = 0.0_dp
@@ -5890,16 +5756,8 @@ contains
                ! Suspended load
                if (dmorft > 0.0_dp) then
                   do l = 1, stmpar%lsedtot
-                     select case (stmpar%morpar%moroutput%transptype)
-                     case (0)
-                        rhodt = dmorfs
-                     case (1)
-                        rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                     case (2)
-                        rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                     end select
-                     toutputx(:, l) = sedtra%ssxcum(:, l) / rhodt
-                     toutputy(:, l) = sedtra%ssycum(:, l) / rhodt
+                     toutputx(:, l) = sedtra%ssxcum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                     toutputy(:, l) = sedtra%ssycum(:, l) / (stmpar%morpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
                   end do
                else
                   toutputx = 0.0_dp
@@ -6110,7 +5968,7 @@ contains
          end if
 
          if (map_write_settings%wind > 0) then
-            call linktonode2(wx, wy, windx, windy, ndxndxi)
+            call link_to_node_vector(wx, wy, windx, windy, ndxndxi)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windx, UNC_LOC_S, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windy, UNC_LOC_S, windy, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windxu, UNC_LOC_U, wx, jabndnd=jabndnd_)
@@ -6118,7 +5976,7 @@ contains
          end if
 
          if (map_write_settings%windstress > 0) then
-            call linktonode2(wdsu_x, wdsu_y, windx, windy, ndxndxi)
+            call link_to_node_vector(wdsu_x, wdsu_y, windx, windy, ndxndxi)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressx, UNC_LOC_S, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressy, UNC_LOC_S, windy, jabndnd=jabndnd_)
          end if
@@ -6622,19 +6480,19 @@ contains
       !
       if (map_write_settings%near_field == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = num_source_sink - num_source_sink_for_nearfield + 1, num_source_sink
+         do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
             !
             ! Sinks
-            n = source_sink_indices(1, isrc)
+            n = source_sinks%indices(isrc, 1)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sink_z_bottom(1, isrc)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, 1)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sink_z_top(1, isrc)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, 1)) then
                      nktop = nk
                   end if
                end do
@@ -6644,16 +6502,16 @@ contains
             end if
             !
             ! Sources
-            n = source_sink_indices(4, isrc)
+            n = source_sinks%indices(isrc, 4)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sink_z_bottom(2, isrc)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, 2)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sink_z_top(2, isrc)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, 2)) then
                      nktop = nk
                   end if
                end do
@@ -6803,7 +6661,6 @@ contains
       real(kind=dp) :: vicc, dicc
       integer :: jaeulerloc
 
-      real(kind=dp) :: rhol
       character(16) :: dxname, zw_elem, zcc_elem, zwu_link, zu_link
       character(64) :: dxdescr
       character(len=255) :: tmpstr
@@ -9133,16 +8990,8 @@ contains
 
             if (stmpar%morpar%moroutput%sbcuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  sedtra%sbcx(:, l) = sedtra%sbcx(:, l) / rhol
-                  sedtra%sbcy(:, l) = sedtra%sbcy(:, l) / rhol
+                  sedtra%sbcx(:, l) = sedtra%sbcx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  sedtra%sbcy(:, l) = sedtra%sbcy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sbcx(iid), sedtra%sbcx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sbcy(iid), sedtra%sbcy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9150,16 +8999,8 @@ contains
 
             if (stmpar%morpar%moroutput%sbwuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  sedtra%sbwx(:, l) = sedtra%sbwx(:, l) / rhol
-                  sedtra%sbwy(:, l) = sedtra%sbwy(:, l) / rhol
+                  sedtra%sbwx(:, l) = sedtra%sbwx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  sedtra%sbwy(:, l) = sedtra%sbwy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sbwx(iid), sedtra%sbwx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sbwy(iid), sedtra%sbwy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9167,16 +9008,8 @@ contains
 
             if (stmpar%morpar%moroutput%sswuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  sedtra%sswx(:, l) = sedtra%sswx(:, l) / rhol
-                  sedtra%sswy(:, l) = sedtra%sswy(:, l) / rhol
+                  sedtra%sswx(:, l) = sedtra%sswx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  sedtra%sswy(:, l) = sedtra%sswy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sswx(iid), sedtra%sswx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sswy(iid), sedtra%sswy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9186,16 +9019,8 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(sedtot2sedsus(l)))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(sedtot2sedsus(l)))
-                  end select
-                  toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol ! mapping necessary because dim(sscx)=lsedtot
-                  toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
+                  toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l)) ! mapping necessary because dim(sscx)=lsedtot
+                  toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
                end do
                ierr = nf90_put_var(imapfile, id_sscx(iid), toutputx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
                ierr = nf90_put_var(imapfile, id_sscy(iid), toutputy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
@@ -9206,16 +9031,8 @@ contains
 
             if (stmpar%morpar%moroutput%sbcuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  sedtra%sbcx(:, l) = sedtra%sbcx(:, l) / rhol
-                  sedtra%sbcy(:, l) = sedtra%sbcy(:, l) / rhol
+                  sedtra%sbcx(:, l) = sedtra%sbcx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  sedtra%sbcy(:, l) = sedtra%sbcy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sbcx_reconstructed(iid), sedtra%sbcx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sbcy_reconstructed(iid), sedtra%sbcy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9223,16 +9040,8 @@ contains
 
             if (stmpar%morpar%moroutput%sbwuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  sedtra%sbwx(:, l) = sedtra%sbwx(:, l) / rhol
-                  sedtra%sbwy(:, l) = sedtra%sbwy(:, l) / rhol
+                  sedtra%sbwx(:, l) = sedtra%sbwx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  sedtra%sbwy(:, l) = sedtra%sbwy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sbwx_reconstructed(iid), sedtra%sbwx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sbwy_reconstructed(iid), sedtra%sbwy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9240,16 +9049,8 @@ contains
 
             if (stmpar%morpar%moroutput%sswuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  sedtra%sswx(:, l) = sedtra%sswx(:, l) / rhol
-                  sedtra%sswy(:, l) = sedtra%sswy(:, l) / rhol
+                  sedtra%sswx(:, l) = sedtra%sswx(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  sedtra%sswy(:, l) = sedtra%sswy(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sswx_reconstructed(iid), sedtra%sswx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sswy_reconstructed(iid), sedtra%sswy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9259,16 +9060,8 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(sedtot2sedsus(l)))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(sedtot2sedsus(l)))
-                  end select
-                  toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol ! mapping necessary because dim(sscx)=lsedtot
-                  toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
+                  toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l)) ! mapping necessary because dim(sscx)=lsedtot
+                  toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / stmpar%morpar%moroutput%unit_transport_conversion_factor(sedtot2sedsus(l))
                end do
                ierr = nf90_put_var(imapfile, id_sscx_reconstructed(iid), toutputx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
                ierr = nf90_put_var(imapfile, id_sscy_reconstructed(iid), toutputy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
@@ -9278,16 +9071,8 @@ contains
                do l = 1, stmpar%lsedtot
                   call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                   call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
-                  toutputx(:, l) = sedtra%sxtot(:, l) / rhol
-                  toutputy(:, l) = sedtra%sytot(:, l) / rhol
+                  toutputx(:, l) = sedtra%sxtot(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+                  toutputy(:, l) = sedtra%sytot(:, l) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
                end do
                ierr = nf90_put_var(imapfile, id_sxtot(iid), toutputx(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
                ierr = nf90_put_var(imapfile, id_sytot(iid), toutputy(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedtot, 1])
@@ -9637,7 +9422,7 @@ contains
       janetbnd_loc = 0
       jaidomain_loc = 0
       jaiglobal_s_loc = 0
-      iconv = UNC_CONV_CFOLD
+      iconv = UNC_CONV_UGRID
 
       if (present(janetcell)) then
          janetcell_loc = janetcell
@@ -9689,6 +9474,7 @@ contains
       use geometry_module, only: get_startend, normaloutchk
       use gridoperations
       use m_copynetboundstopol
+      use m_tpoly, only: polorientation
 
       integer, intent(in) :: inetfile
 
@@ -12996,28 +12782,33 @@ contains
                   if (ierr == 0) then
                      ierr = nf90_inquire_dimension(imapfile, id_ncrs, len=nCrs)
                   end if
-                  if (allocated(work1d_z)) then
-                     deallocate (work1d_z, work1d_n)
-                  end if
-                  allocate (work1d_z(1:jmax, 1:nCrs), work1d_n(1:jmax, 1:nCrs))
-                  ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_z', id_flowelemcrsz)
-                  ierr = nf90_get_var(imapfile, id_flowelemcrsz, work1d_z(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
-                  do i = 1, nCrs
-                     do j = 1, network%crs%cross(i)%tabdef%levelscount
-                        network%crs%cross(i)%tabdef%height(j) = work1d_z(j, i)
-                     end do
-                     network%crs%cross(i)%bedlevel = work1d_z(1, i)
-                  end do
-                  ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_n', id_flowelemcrsn)
-                  if (ierr == 0) then
-                     ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
-                  end if
-                  if (ierr == 0) then
+                  if (ierr /= nf90_noerr) then
+                     write (msgbuf, '(a)') 'Restart file '''//trim(filename)//''' contains no 1D cross section data, but model does.'
+                     call msg_flush()
+                  else
+                     if (allocated(work1d_z)) then
+                        deallocate (work1d_z, work1d_n)
+                     end if
+                     allocate (work1d_z(1:jmax, 1:nCrs), work1d_n(1:jmax, 1:nCrs))
+                     ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_z', id_flowelemcrsz)
+                     ierr = nf90_get_var(imapfile, id_flowelemcrsz, work1d_z(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
                      do i = 1, nCrs
                         do j = 1, network%crs%cross(i)%tabdef%levelscount
-                           network%crs%cross(i)%tabdef%flowwidth(j) = work1d_n(j, i)
+                           network%crs%cross(i)%tabdef%height(j) = work1d_z(j, i)
                         end do
+                        network%crs%cross(i)%bedlevel = work1d_z(1, i)
                      end do
+                     ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_n', id_flowelemcrsn)
+                     if (ierr == 0) then
+                        ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
+                     end if
+                     if (ierr == 0) then
+                        do i = 1, nCrs
+                           do j = 1, network%crs%cross(i)%tabdef%levelscount
+                              network%crs%cross(i)%tabdef%flowwidth(j) = work1d_n(j, i)
+                           end do
+                        end do
+                     end if
                   end if
                end if
             end if
@@ -13944,8 +13735,8 @@ contains
 
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
-      use m_flowgeom, only: t_fm_flowgeom, bl, bl_min, ba
-      use m_unc_build_flowgeom, only: flowgeom
+      use m_flowgeom, only: bl, bl_min, ba
+      use m_unstruc_netcdf_data, only: flowgeom
       use m_sferic
       use m_missing
       use netcdf
@@ -14067,8 +13858,8 @@ contains
          nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
       end if
 
-      if (allocated(flowgeom%face_map)) then
-         faces = flowgeom%face_map
+      if (allocated(flowgeom%face_map_2D)) then
+         faces = flowgeom%face_map_2D
       else
          faces = [(i, i=1, flowgeom%mesh2d%numFace)]
       end if
@@ -14180,7 +13971,7 @@ contains
       use precision, only: dp
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
-      use m_flowgeom, only: t_fm_flowgeom, nd
+      use m_flowgeom, only: nd
       use netcdf
       use m_alloc, only: realloc, reallocP
       use dfm_error
@@ -14191,7 +13982,7 @@ contains
       use Timers
       use m_modelbounds, only: mb_latmin, mb_latmax, mb_lonmin, mb_lonmax
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
-      use m_flowgeom, only: t_fm_flowgeom
+
       implicit none(type, external)
 
       type(t_fm_flowgeom), intent(inout) :: flowgeom1d
@@ -14268,10 +14059,10 @@ contains
          if (mesh1d%numNode <= 0) goto 999
 
          ! --- Copy mappings into id_tsp (needed by unc_put_var_map for time-dep writes) ---
-         call realloc(id_tsp%edgetoln, size(flowgeom1d%edgetoln), keepExisting=.false., fill=0)
-         call realloc(id_tsp%contactstoln, size(flowgeom1d%contactstoln), keepExisting=.false., fill=0)
-         id_tsp%edgetoln = flowgeom1d%edgetoln
-         id_tsp%contactstoln = flowgeom1d%contactstoln
+         call realloc(id_tsp%edgetoln, size(flowgeom1d%edge_map_1D), keepExisting=.false., fill=0)
+         call realloc(id_tsp%contactstoln, size(flowgeom1d%contacts_map), keepExisting=.false., fill=0)
+         id_tsp%edgetoln = flowgeom1d%edge_map_1D
+         id_tsp%contactstoln = flowgeom1d%contacts_map
 
 ! --- Build string metadata remapping (branch node ids in flowgeom order) ---
          if (associated(meshgeom1d%ngeopointx)) then
@@ -16660,36 +16451,6 @@ contains
 
       end if
    end subroutine convert_hysteresis_summerdike
-
-   subroutine linktonode2(u_x, u_y, s_x, s_y, ndxndxi) ! bring 2 scalars on u points to zeta points
-      use precision, only: dp
-
-      use m_flowgeom
-      use m_flow
-
-      implicit none
-
-      real(kind=dp) :: u_x(:), u_y(:), s_x(:), s_y(:)
-      integer :: ndxndxi
-
-      integer :: n, LL, LLL, k1, k2, k3
-
-      s_x = 0.0_dp
-      s_y = 0.0_dp
-      do n = 1, ndxndxi
-         do LL = 1, nd(n)%lnx
-            LLL = abs(nd(n)%ln(LL))
-            k1 = ln(1, LLL)
-            k2 = ln(2, LLL)
-            k3 = 1
-            if (nd(n)%ln(LL) > 0) then
-               k3 = 2
-            end if
-            s_x(n) = s_x(n) + u_x(LLL) * wcL(k3, LLL)
-            s_y(n) = s_y(n) + u_y(LLL) * wcL(k3, LLL)
-         end do
-      end do
-   end subroutine linktonode2
 
 !> write_array_with_dmiss_for_dry_cells_into_netcdf_file
    function write_array_with_dmiss_for_dry_cells_into_netcdf_file(ncid, id_tsp, id_var, data_location, array, jabndnd) result(ierr)

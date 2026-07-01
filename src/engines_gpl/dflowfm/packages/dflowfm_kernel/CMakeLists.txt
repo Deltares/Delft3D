@@ -85,6 +85,7 @@ list(REMOVE_ITEM dflowfm_utils ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}
 get_fortran_source_files(${src_path}/to_thirdparty to_thirdparty)
 
 # --- Generated unc_put_var_map ---
+<<<<<<< all/task/UNST-9894_write_surface_quantities_to_map_file
 if(NOT Python_FOUND)
     find_package(Python COMPONENTS Interpreter REQUIRED)
 endif()
@@ -101,6 +102,9 @@ add_custom_command(
 add_custom_target(generate_unc_put_var_map DEPENDS "${unc_put_var_map_output}")
 set_target_properties(generate_unc_put_var_map PROPERTIES FOLDER engines_gpl/dflowfm)
 set_source_files_properties("${unc_put_var_map_output}" PROPERTIES GENERATED TRUE)
+=======
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/unc_put_var_map.cmake)
+>>>>>>> main
 
 # Define library
 set(library_name dflowfm_kernel)
@@ -170,7 +174,7 @@ target_link_libraries(${library_name} PRIVATE
                       morphology_io
                       morphology_kernel
                       morphology_plugins_c
-                      netcdff
+                      netCDF::netcdff
                       polypack
                       precicef
                       trachytopes_io
@@ -215,14 +219,13 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_directories(${library_name} PUBLIC
-                                "${mpi_library_path}"
-    )
-
     target_link_libraries(${library_name} PRIVATE
-                            "${mpi_fortran_library}"
                             petsc
     )
+    if(NOT TARGET impi)
+      message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
+    endif()
+    target_link_libraries(${library_name} PRIVATE impi)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

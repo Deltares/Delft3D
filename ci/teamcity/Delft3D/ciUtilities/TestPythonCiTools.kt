@@ -7,6 +7,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.step.*
+import Delft3D.linux.containers.*
 
 
 object TestPythonCiTools : BuildType({
@@ -22,12 +23,14 @@ object TestPythonCiTools : BuildType({
     // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
         +:ci/python/*.xml => report
+        +:ci/python/ruff_format.patch => report
         +:ci/python/htmlcov/* => coverage.zip
     """.trimIndent()
 
     templates(
         TemplatePublishStatus,
-        TemplateMergeRequest
+        TemplateMergeRequest,
+        TemplateDockerRegistry,
     )
 
     vcs {
@@ -36,80 +39,51 @@ object TestPythonCiTools : BuildType({
         cleanCheckout = true
     }
 
+    params {
+        param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
+    }  
+
     triggers {
         vcs { 
-            // Trigger this build only if there are changes to the files matching these rules.
-            // Absolute paths match paths relative to the VCS root.
-            // See: https://www.jetbrains.com/help/teamcity/configuring-vcs-triggers.html#General+Syntax
-            triggerRules = """
-                +:/ci/python/**/*.py
-                +:/ci/python/pyproject.toml
-                +:/ci/python/uv.lock
-            """.trimIndent()
             branchFilter = "+:pull/*"
         }
     }
 
     steps {
-        python {
-            name = "Check code formatting"
+        script {
+            name = "Install dependencies"
             workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "ruff"
-                scriptArguments = "format --diff"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
+            scriptContent = """
+                #!/usr/bin/env bash
+                uv sync --extra=all
+            """.trimIndent()
+            dockerImage = "%docker_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
         }
-        python {
-            name = "Run linter"
+        script {
+            name = "Run checks"
             workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "ruff"
-                scriptArguments = "check --output-format=junit --output-file=ruff.xml"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-        }
-        python {
-            name = "Run type checker"
-            workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "mypy"
-                scriptArguments = "ci_tools --junit-xml=mypy.xml"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-        }
-        python {
-            name = "Run unit tests"
-            workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "pytest"
-                scriptArguments = """
-                    --junitxml=pytest.xml
-                    --cov-report=html
-                    --cov=.
-                """.trimIndent()
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
+            scriptContent = """
+                #!/usr/bin/env bash
+                set -exo pipefail
+                uv run ruff format --diff . > ruff_format.patch
+                uv run ruff check --output-format=junit --output-file=ruff.xml
+                uv run mypy ci_tools --junit-xml=mypy.xml
+                uv run pytest --junitxml=pytest.xml --cov-report=html --cov=.
+            """.trimIndent()
+            dockerImage = "%docker_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
         }
     }
 

@@ -253,7 +253,7 @@ def _print_example_json_file_structure() -> None:
     print("    ],")
     print('    "notSigned": [')
     print('        "file_3.dll",')
-    print('        "lib\\file_4.dll"')
+    print('        "bin\\file_4.dll"')
     print("    ]")
     print("}")
 

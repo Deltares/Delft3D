@@ -787,15 +787,15 @@ contains
           call str_lower(sOperandName)
           select case (trim(sOperandName))
           case ('undefined')
-             OperandNumber = operand_undefined
+             OperandNumber = EC_OPERAND_UNDEFINED
           case ('add')
-             OperandNumber = operand_add
+             OperandNumber = EC_OPERAND_ADD
           case ('replace')
-             OperandNumber = operand_replace
+             OperandNumber = EC_OPERAND_REPLACE
           case ('replace_element')
-             OperandNumber = operand_replace_element
+             OperandNumber = EC_OPERAND_REPLACE_ELEMENT
           case ('add_element')
-             OperandNumber = operand_add_element
+             OperandNumber = EC_OPERAND_ADD_ELEMENT
           case default
              OperandNumber = ec_undef_int
              call TCMessage(testname,'Unknown operand '//trim(OperandName),'testFailed')
