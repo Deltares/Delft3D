@@ -2,6 +2,8 @@
 #include <precice/precice.hpp>
 #include <connected_sinks_sources.hpp>
 
+#include <print>
+
 namespace pre_c_sumo
 {
     /**
@@ -22,6 +24,8 @@ namespace pre_c_sumo
                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
                                          double discharge, double momentum_magnitude, double momentum_direction)
     {
+        std::println("[DEBUG] sink: [x: {} y: {} z-:{} z+:{}] source: [x: {} y: {} z-: {}  z+: {}] Q: {}", sink_x,
+                     sink_y, sink_z_bottom, sink_z_top, source_x, source_y, source_z_bottom, source_z_top, discharge);
         sink_x_vector.push_back(sink_x);
         sink_y_vector.push_back(sink_y);
         sink_z_bottom_vector.push_back(sink_z_bottom);
