@@ -122,7 +122,7 @@ else
     # To obtain scriptdir: remove "/.." at the end of the string
     scriptdir=${D3D_HOME%"/.."}
 fi
-if [ ! -d $D3D_HOME ]; then
+if [ ! -d "$D3D_HOME" ]; then
     echo "ERROR: directory $D3D_HOME does not exist"
     print_usage_info
 fi
@@ -152,17 +152,17 @@ fi
     # Set the directories containing the binaries
     #
 
-bindir=$D3D_HOME/bin
-libdir=$D3D_HOME/lib
-sharedir=$D3D_HOME/share
+bindir="$D3D_HOME/bin"
+libdir="$D3D_HOME/lib"
+sharedir="$D3D_HOME/share"
 
     #
     # No adaptions needed below
     #
 
     # Run
-export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
-export PATH=$bindir:$PATH
+export LD_LIBRARY_PATH="$libdir:$LD_LIBRARY_PATH"
+export PATH="$bindir:$PATH"
 
 # For debugging only
 if [ $debuglevel -eq 0 ]; then
@@ -185,11 +185,11 @@ if [ $withrtc -ne 0 ] ; then
     # Separate block when running with RTC online
     #
     # Shared memory allocation
-    export DIO_SHM_ESM=`$bindir/esm_create`
+    export DIO_SHM_ESM=`"$bindir/esm_create"`
     # Start Delft3D-FLOW in the background
     echo "executing:"
     echo "$bindir/d_hydro $configfile &"
-          $bindir/d_hydro $configfile &
+         "$bindir/d_hydro" $configfile &
 
     # Be sure Delft3D-FLOW is started before RTC is started
     sleep 5
@@ -197,10 +197,10 @@ if [ $withrtc -ne 0 ] ; then
     # read dummy
 
     # Start RTC
-    $bindir/rtc $sharedir/rtc/RTC.FNM $workdir/RTC.RTN
+    "$bindir/rtc" $sharedir/rtc/RTC.FNM $workdir/RTC.RTN
 
     # Remove allocated shared memory
-    $bindir/esm_delete $DIO_SHM_ESM 
+    "$bindir/esm_delete" $DIO_SHM_ESM 
 
 
 else
@@ -216,18 +216,18 @@ else
         fi
         echo "executing in the background:"
         echo "$bindir/wave $wavefile 1 &"
-              $bindir/wave $wavefile 1 &
+             "$bindir/wave" $wavefile 1 &
     fi
     
     if [ $NSLOTS -eq 1 ]; then
         echo "executing:"
         echo "$bindir/d_hydro $configfile"
-              $bindir/d_hydro $configfile
+             "$bindir/d_hydro" $configfile
     else
         module load intelmpi/2021.11.0 &>/dev/null
         echo ----------------------------------------------------------------------
         echo "srun $bindir/d_hydro $configfile"
-              srun $bindir/d_hydro $configfile
+              srun "$bindir/d_hydro" $configfile
     fi
 fi
 

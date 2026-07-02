@@ -7,7 +7,7 @@
     #
     # Usage example:
     # Execute in the working directory:
-    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
+    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d_AL8.sh
 
 # Set bash options. Exit on failures (and propagate errors in pipes).
 set -eo pipefail
@@ -58,7 +58,7 @@ function print_usage_info {
 ## Defaults
 configfile=config_d_hydro.xml
 D3D_HOME=
-runscript_extraopts=
+runscript_extraopts=()
 wavefile=runwithoutwaveonlinebydefault
 withrtc=false
 
@@ -109,13 +109,14 @@ do
         shift
         ;;
         --)
-        echo "-- sign detected, remained options are going to be passed to dimr"
-        runscript_extraopts="$runscript_extraopts $*"
+        echo "-- sign detected, remaining options are going to be passed to dimr"
+        runscript_extraopts+=("$@")
         break       # exit loop, stop shifting, all remaining arguments without dashes handled below
         ;;
         -*)
         echo "option ${key} seems dedicated for dimr, therefore passing it and the following ones to the dimr"
-        runscript_extraopts="$key $*"
+        runscript_extraopts+=("$key")
+        runscript_extraopts+=("$@")
         break       # exit loop, $key+all remaining options to dflowfm executable
         ;;
     esac
@@ -130,16 +131,15 @@ fi
 
 workdir=`pwd`
 
-scriptdirname=`readlink \-f \$0`
-scriptdir=`dirname $scriptdirname`
-D3D_HOME=$scriptdir/..
+scriptdirname=`readlink -f "$0"`
+scriptdir=`dirname "$scriptdirname"`
+D3D_HOME="$scriptdir/.."
 if [ ! -d $D3D_HOME ]; then
     echo "ERROR: directory $D3D_HOME does not exist"
     print_usage_info
 fi
 export D3D_HOME
-RUNSCRIPT=$scriptdir/rd2d3d.sh
-runscript_opts="$runscript_opts --D3D_HOME ${D3D_HOME}"
+RUNSCRIPT="$scriptdir/rd2d3d.sh"
 
 JOB_NAME="${JOB_NAME}_${NODES}x${TASKS_PER_NODE}"
 
@@ -157,17 +157,19 @@ echo
     # Set the directories containing the binaries
     #
 
-
-runscript_opts="-m ${configfile} -c $TASKS_PER_NODE"
+runscript_opts=()
+runscript_opts+=(-m "${configfile}")
+runscript_opts+=(-c $TASKS_PER_NODE)
 if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
-    runscript_opts="$runscript_opts -w ${wavefile}"
+    runscript_opts+=(-w "${wavefile}")
 fi
 if $withrtc ; then
-    runscript_opts="$runscript_opts --rtc"
+    runscript_opts+=(--rtc)
 fi
-runscript_opts="$runscript_opts --NODES $NODES --D3D_HOME ${D3D_HOME}"
-runscript_opts="$runscript_opts $runscript_extraopts"
-echo "    run script options        : $runscript_opts"
+runscript_opts+=(--NODES $NODES)
+runscript_opts+=(--D3D_HOME "${D3D_HOME}")
+runscript_opts+=("${runscript_extraopts[@]}")
+echo "    run script options        : ${runscript_opts[@]}"
 # Run simulation
 echo "Run simulation..."
 sbatch --job-name=$JOB_NAME \
@@ -175,4 +177,4 @@ sbatch --job-name=$JOB_NAME \
     --time=$TIME_LIMIT \
     --nodes=$NODES \
     --ntasks-per-node=$TASKS_PER_NODE \
-    ${RUNSCRIPT} ${runscript_opts}
+    -- "${RUNSCRIPT}" "${runscript_opts[@]}"
