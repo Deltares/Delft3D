@@ -377,6 +377,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     real(hp), dimension(:,:,:),allocatable :: xy
     real(hp), dimension(4)                 :: xcell
     real(hp), dimension(4)                 :: ycell
+    real(hp), parameter                    :: tol
     integer                                :: etamax
     integer                                :: i
     integer                                :: ierr
@@ -394,6 +395,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
 !
     ! Default value for missing value: zero
     !
+    tol    = 1.0e-6_hp
     xymiss = 0.0_hp
     sferic = .false.
     open (newunit=irgf, file = filnam, form = 'formatted', status = 'old')
@@ -511,7 +513,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     !
     do i = 1, ksimax
        do j = 1, etamax
-          if (abs(xy(1, i, j))<1.0e-6_hp .and. abs(xy(2, i, j))<1.0e-6_hp) then
+          if (abs(xy(1, i, j)-xymiss)<1.0e-6_hp .and. abs(xy(2, i, j)-xymiss)<1.0e-6_hp) then
              codb(i,j) = 0
           endif
        enddo
