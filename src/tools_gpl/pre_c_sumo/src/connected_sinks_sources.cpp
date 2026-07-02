@@ -24,8 +24,6 @@ namespace pre_c_sumo
                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
                                          double discharge, double momentum_magnitude, double momentum_direction)
     {
-        std::println("[DEBUG] sink: [x: {} y: {} z-:{} z+:{}] source: [x: {} y: {} z-: {}  z+: {}] Q: {}", sink_x,
-                     sink_y, sink_z_bottom, sink_z_top, source_x, source_y, source_z_bottom, source_z_top, discharge);
         sink_x_vector.push_back(sink_x);
         sink_y_vector.push_back(sink_y);
         sink_z_bottom_vector.push_back(sink_z_bottom);
@@ -37,7 +35,6 @@ namespace pre_c_sumo
         discharge_vector.push_back(discharge);
         momentum_magnitude_vector.push_back(momentum_magnitude);
         momentum_direction_vector.push_back(momentum_direction);
-        // TODO: convert moment to sin/cos?
     }
 
     /**
@@ -84,7 +81,7 @@ namespace pre_c_sumo
         participant.writeData(mesh_name, "sources_z_min", precice_ids, source_z_bottom_vector);
         participant.writeData(mesh_name, "sources_z_max", precice_ids, source_z_top_vector);
         participant.writeData(mesh_name, "sources_sinks_discharge", precice_ids, discharge_vector);
-        // TODO: Momentum.
+        // TODO: Send Momentum.
 
         // After the write, we can clear the list.
         clear();

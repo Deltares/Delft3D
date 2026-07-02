@@ -263,8 +263,8 @@ namespace pre_c_sumo
                 for (const auto& source : diffuser.sources())
                 {
                     double discharge = delta_s * source.entrainment * (source.has_weight ? source.weight : 1.0);
-                    double source_z_top = -source.z_coordinate + source.half_plume_height;
-                    double source_z_bottom = -source.z_coordinate - source.half_plume_height;
+                    double source_z_top = -source.z_coordinate;
+                    double source_z_bottom = -source.z_coordinate;
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
                                                    source_z_top, discharge, 0.0, 0.0);
@@ -280,8 +280,8 @@ namespace pre_c_sumo
                 {
                     double discharge =
                         intake_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
-                    double source_z_top = -source.z_coordinate + source.half_plume_height;
-                    double source_z_bottom = -source.z_coordinate - source.half_plume_height;
+                    double source_z_top = -source.z_coordinate;
+                    double source_z_bottom = -source.z_coordinate;
                     connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
                                                    source_z_bottom, source_z_top, discharge, 0.0, 0.0);
                 }
