@@ -51,13 +51,12 @@ def generate_rank1(ftype: FortranType) -> str:
    integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
    integer :: iloc
    {T}, allocatable, save :: workL(:)
-   {T}, pointer :: workS(:)
+   {T}, pointer :: workS_ptr(:)
+   {T}, allocatable, target :: workS(:)
    {T}, allocatable, save :: workS3D(:,:), workU3D(:,:), workW(:,:), workWU(:,:)
-   logical :: workS_allocated
 
    ierr = DFM_NOERR
-   nullify(workS)
-   workS_allocated = .false.
+   nullify(workS_ptr)
 
    if (present(jabndnd)) then
       associate (dummy => jabndnd)
@@ -69,7 +68,7 @@ def generate_rank1(ftype: FortranType) -> str:
    iloc = iloc_in
 
    if (iloc == UNC_LOC_S) then
-      workS => values
+      workS_ptr => values
    end if
 
    if (write_surface_data_to_map_file) then
@@ -78,9 +77,9 @@ def generate_rank1(ftype: FortranType) -> str:
          n1d_write = 0
 
          allocate(workS(ndx2d))
-         workS_allocated = .true.
+         workS_ptr => workS
          do n = 1, ndx2d
-            workS(n) = values(ktop(n))
+            workS_ptr(n) = values(ktop(n))
          end do
       end if
    end if
@@ -90,7 +89,7 @@ def generate_rank1(ftype: FortranType) -> str:
       ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
          ierr = UG_NOTIMPLEMENTED
-         goto 888
+         return
       end if
       if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
          ierr = nf90_put_var(ncid, id_var(2), values(1:flowgeom%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
@@ -99,11 +98,11 @@ def generate_rank1(ftype: FortranType) -> str:
    case (UNC_LOC_S) ! Pressure point location
       ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then
-         ierr = nf90_put_var(ncid, id_var(1), workS(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(1), workS_ptr(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
       end if
       ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
       if (id_var(2) > 0 .and. ndx2d > 0) then
-         ierr = nf90_put_var(ncid, id_var(2), workS(1:ndx2d), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(2), workS_ptr(1:ndx2d), start=[1, id_tsp%idx_curtime])
       end if
 
    case (UNC_LOC_U) ! Horizontal velocity point location
@@ -293,21 +292,13 @@ def generate_rank1(ftype: FortranType) -> str:
 
    case default
       ierr = UG_INVALID_DATALOCATION
-      goto 888
+      return
    end select
 
-   if (workS_allocated) then
+   if (allocated(workS)) then
       deallocate(workS)
    end if
-   nullify(workS)
-
-   return
-888 continue
-
-   if (workS_allocated) then
-      deallocate(workS)
-   end if
-   nullify(workS)
+   nullify(workS_ptr)
 
    end function {proc}"""
 
