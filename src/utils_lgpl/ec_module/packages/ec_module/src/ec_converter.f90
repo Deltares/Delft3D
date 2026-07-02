@@ -1884,11 +1884,11 @@ contains
                   do k = 1, maxlay_tgt
                      from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                      thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
-                     if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_element) ) then
+                     if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE) .or. &
+                         (connection%converterPtr%operandType == EC_OPERAND_REPLACE_ELEMENT) ) then
                          connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
 
-                     else if (connection%converterPtr%operandType == operand_add) then
+                     else if (connection%converterPtr%operandType == EC_OPERAND_ADD) then
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) + val(1:vectormax)
                      end if
