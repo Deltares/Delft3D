@@ -3162,8 +3162,8 @@ contains
       character(len=*), intent(in) :: pliFile
       integer         , intent(out):: facdis
       
-      integer                        :: mpli, i_first, i_last, i_bndpnt, jakdtree 
-      real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, dist, distmin, vx,vy, wx, wy,cross    
+      integer                        :: mpli, i_first, i_last, jakdtree ! i_bndpnt
+      real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, vx,vy, wx, wy,cross ! dist, distmin,    
 
       character(len=4), dimension(1) :: tmpname
       integer         , dimension(1) :: kbnd_centre

@@ -245,6 +245,7 @@ contains
       use string_module, only: strcmpi
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
+      use fm_external_forcings_data, only: kbndu
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to boundary block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -392,7 +393,7 @@ contains
                      end if
                      ! fill kbndu(7,:) with multiplification discharge boundaries
                      do ibndu = 1, size(kbndu,2)
-                        if (kbndu(5,ibndu) == ib) then
+                        if (kbndu(4,ibndu) == ib) then
                             kbndu(7,ibndu) = facdis
                         end if
                      end do
