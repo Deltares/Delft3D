@@ -107,7 +107,7 @@ int sealock_load_timeseries(sealock_state_t *lock, char *filepath) {
   if (status == SEALOCK_OK) {
     lock->current_row = NO_CURRENT_ROW;
     num_rows = get_csv_num_rows(&lock->timeseries_data);
-    if (!num_rows) {
+    if (num_rows != 0) {
       log_error("Lock '%s': operational parameters file '%s' contains no data rows.\n", lock->id,
                 filepath);
       return SEALOCK_ERROR;
@@ -122,7 +122,7 @@ int sealock_load_timeseries(sealock_state_t *lock, char *filepath) {
             lock->times_len = num_rows;
           } else {
             // Report the first non-increasing record.
-            for (size_t i = 1; i < num_rows; i++) {
+            for (int i = 1; i < num_rows; i++) {
               if (lock->times[i] <= lock->times[i - 1]) {
                 log_error("Lock '%s': 'time' column not strictly increasing in '%s' at row %zu "
                           "(%.0f follows %.0f).\n",
@@ -356,49 +356,46 @@ static int sealock_update_phase_wise_parameters(sealock_state_t *lock, time_t ti
                 lock->operational_parameters_file);
       return status;
     }
-    {
-      // copy relevant args to lock.
-      lock->phase_args.run_update = 1;
-      lock->phase_args.routine = row_data.routine;
-      lock->parameters.density_current_factor_sea = row_data.density_current_factor_sea;
-      lock->parameters.density_current_factor_lake = row_data.density_current_factor_lake;
-      lock->parameters.ship_volume_sea_to_lake = 0;
-      lock->parameters.ship_volume_lake_to_sea = 0;
-      lock->parameters.distance_door_bubble_screen_lake = row_data.distance_door_bubble_screen_lake;
-      lock->parameters.distance_door_bubble_screen_sea = row_data.distance_door_bubble_screen_sea;
-      lock->parameters.flushing_discharge_high_tide = row_data.flushing_discharge_high_tide;
-      lock->parameters.flushing_discharge_low_tide = row_data.flushing_discharge_low_tide;
-      lock->parameters.sill_height_lake = row_data.sill_height_lake;
-      lock->parameters.sill_height_sea = row_data.sill_height_sea;
-      switch (row_data.routine) {
-      case 1:
-      case 3:
-        lock->phase_args.duration = row_data.t_level;
-        break;
-      case 2:
-        lock->phase_args.duration = row_data.t_open_lake;
-        lock->parameters.ship_volume_lake_to_sea = row_data.ship_volume_lake_to_sea;
-        break;
-      case 4:
-        lock->phase_args.duration = row_data.t_open_sea;
-        lock->parameters.ship_volume_sea_to_lake = row_data.ship_volume_sea_to_lake;
-        break;
-      default:
-        if (row_data.routine < 0) {
-          lock->phase_args.duration = row_data.t_flushing;
-        } else {
-          log_error("Lock '%s': invalid routine %d in '%s' at row %zu (expected 1-4 or negative "
-                    "for flushing).\n",
-                    lock->id, row_data.routine, lock->operational_parameters_file,
-                    lock->current_row + 1);
-          status = SEALOCK_ERROR;
-        }
-        break;
+    // copy relevant args to lock.
+    lock->phase_args.run_update = 1;
+    lock->phase_args.routine = row_data.routine;
+    lock->parameters.density_current_factor_sea = row_data.density_current_factor_sea;
+    lock->parameters.density_current_factor_lake = row_data.density_current_factor_lake;
+    lock->parameters.ship_volume_sea_to_lake = 0;
+    lock->parameters.ship_volume_lake_to_sea = 0;
+    lock->parameters.distance_door_bubble_screen_lake = row_data.distance_door_bubble_screen_lake;
+    lock->parameters.distance_door_bubble_screen_sea = row_data.distance_door_bubble_screen_sea;
+    lock->parameters.flushing_discharge_high_tide = row_data.flushing_discharge_high_tide;
+    lock->parameters.flushing_discharge_low_tide = row_data.flushing_discharge_low_tide;
+    lock->parameters.sill_height_lake = row_data.sill_height_lake;
+    lock->parameters.sill_height_sea = row_data.sill_height_sea;
+    switch (row_data.routine) {
+    case 1:
+    case 3:
+      lock->phase_args.duration = row_data.t_level;
+      break;
+    case 2:
+      lock->phase_args.duration = row_data.t_open_lake;
+      lock->parameters.ship_volume_lake_to_sea = row_data.ship_volume_lake_to_sea;
+      break;
+    case 4:
+      lock->phase_args.duration = row_data.t_open_sea;
+      lock->parameters.ship_volume_sea_to_lake = row_data.ship_volume_sea_to_lake;
+      break;
+    default:
+      if (row_data.routine < 0) {
+        lock->phase_args.duration = row_data.t_flushing;
+      } else {
+        log_error("Lock '%s': invalid routine %d in '%s' at row %zu (expected 1-4 or negative "
+                  "for flushing).\n",
+                  lock->id, row_data.routine, lock->operational_parameters_file,
+                  lock->current_row + 1);
+        status = SEALOCK_ERROR;
       }
-      lock->phase_args.time_duration_end =
-          lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
+      break;
     }
-  }
+    lock->phase_args.time_duration_end = lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
+    }
   return status;
 }
 
