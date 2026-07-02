@@ -1875,25 +1875,8 @@ contains
             case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
                ! Are the subproviders 3D or 2D?
-               if (.not. (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
-                          associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z))) then ! target has a vertical coordinate
-                  ! 2D subproviders
-                  val(1:vectormax) = wL * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kL - 1) * vectormax + 1:kL * vectormax) &
-                                   + wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax)
-                  ! Write value
-                  do k = 1, maxlay_tgt
-                     from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
-                     thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
-                     if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE) .or. &
-                         (connection%converterPtr%operandType == EC_OPERAND_REPLACE_ELEMENT) ) then
-                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
-
-                     else if (connection%converterPtr%operandType == EC_OPERAND_ADD) then
-                        connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) + val(1:vectormax)
-                     end if
-                  end do
-               else
+               if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
+                   associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
                   ! 3D subproviders
                   kbegin = maxlay_tgt * (i - 1) + 1 ! refers to target column
                   kend = maxlay_tgt * i
