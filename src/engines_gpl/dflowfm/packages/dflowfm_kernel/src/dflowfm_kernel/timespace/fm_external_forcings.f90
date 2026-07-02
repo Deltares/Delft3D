@@ -71,7 +71,8 @@ module fm_external_forcings
    end interface
 
    interface
-      module subroutine compute_air_water_interaction_most_fluxes()
+      module subroutine compute_air_water_interaction_most_fluxes(initialization)
+         logical, intent(in) :: initialization !< initialization phase
       end subroutine compute_air_water_interaction_most_fluxes
    end interface
 
