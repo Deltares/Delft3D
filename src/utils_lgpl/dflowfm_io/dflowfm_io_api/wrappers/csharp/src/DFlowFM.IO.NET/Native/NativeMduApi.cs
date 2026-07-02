@@ -22,76 +22,76 @@ internal static class NativeMduApi
     public static extern int mdu_destroy(ref IntPtr handle);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_load_from_file(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string filename);
+    public static extern int mdu_load_from_file(SafeMduHandle handle, byte[] filename);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     internal static extern int mdu_load_from_string(SafeMduHandle handle, byte[] data, ulong length);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_save_to_file(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string filename);
+    public static extern int mdu_save_to_file(SafeMduHandle handle, byte[] filename);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_save_to_string(SafeMduHandle handle, out IntPtr dataOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_int(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out int intOut);
+    public static extern int mdu_get_int(SafeMduHandle handle, byte[] key, out int intOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_bool(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out int boolOut);
+    public static extern int mdu_get_bool(SafeMduHandle handle, byte[] key, out int boolOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_double(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out double doubleOut);
+    public static extern int mdu_get_double(SafeMduHandle handle, byte[] key, out double doubleOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_string(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out IntPtr stringOut);
+    public static extern int mdu_get_string(SafeMduHandle handle, byte[] key, out IntPtr stringOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_path(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out IntPtr pathOut);
+    public static extern int mdu_get_path(SafeMduHandle handle, byte[] key, out IntPtr pathOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_datetime(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out long epochOut);
+    public static extern int mdu_get_datetime(SafeMduHandle handle, byte[] key, out long epochOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_enum(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out int enumOut);
+    public static extern int mdu_get_enum(SafeMduHandle handle, byte[] key, out int enumOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_string_list(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out IntPtr stringListOut, out ulong sizeOut);
+    public static extern int mdu_get_string_list(SafeMduHandle handle, byte[] key, out IntPtr stringListOut, out ulong sizeOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_path_list(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out IntPtr pathListOut, out ulong sizeOut);
+    public static extern int mdu_get_path_list(SafeMduHandle handle, byte[] key, out IntPtr pathListOut, out ulong sizeOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_double_list(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, out IntPtr doubleListOut, out ulong sizeOut);
+    public static extern int mdu_get_double_list(SafeMduHandle handle, byte[] key, out IntPtr doubleListOut, out ulong sizeOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_int(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, int value);
+    public static extern int mdu_set_int(SafeMduHandle handle, byte[] key, int value);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_bool(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, int value);
+    public static extern int mdu_set_bool(SafeMduHandle handle, byte[] key, int value);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_double(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, double value);
+    public static extern int mdu_set_double(SafeMduHandle handle, byte[] key, double value);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_string(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, [MarshalAs(UnmanagedType.LPStr)] string value);
+    public static extern int mdu_set_string(SafeMduHandle handle, byte[] key, byte[] value);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_path(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, [MarshalAs(UnmanagedType.LPStr)] string value);
+    public static extern int mdu_set_path(SafeMduHandle handle, byte[] key, byte[] value);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_datetime(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, long epoch);
+    public static extern int mdu_set_datetime(SafeMduHandle handle, byte[] key, long epoch);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_enum(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, int enumValue);
+    public static extern int mdu_set_enum(SafeMduHandle handle, byte[] key, int enumValue);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_string_list(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, IntPtr stringList, ulong size);
+    public static extern int mdu_set_string_list(SafeMduHandle handle, byte[] key, IntPtr stringList, ulong size);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_path_list(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, IntPtr pathList, ulong size);
+    public static extern int mdu_set_path_list(SafeMduHandle handle, byte[] key, IntPtr pathList, ulong size);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_double_list(SafeMduHandle handle, [MarshalAs(UnmanagedType.LPStr)] string key, IntPtr doubleList, ulong size);
+    public static extern int mdu_set_double_list(SafeMduHandle handle, byte[] key, IntPtr doubleList, ulong size);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_get_issue_list(SafeMduHandle handle, out IntPtr issueListOut, out ulong sizeOut);

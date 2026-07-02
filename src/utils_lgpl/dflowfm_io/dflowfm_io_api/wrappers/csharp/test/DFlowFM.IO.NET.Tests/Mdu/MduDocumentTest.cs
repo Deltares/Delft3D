@@ -1,4 +1,6 @@
-﻿using DFlowFM.IO.Mdu;
+﻿using System.Text;
+
+using DFlowFM.IO.Mdu;
 using DFlowFM.IO.Reporting;
 
 using NUnit.Framework;
@@ -25,6 +27,24 @@ public class MduDocumentTest
         using MduDocument document = new();
 
         Assert.That(document.Report, Is.EqualTo(IssueReport.Empty));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    public void LoadFromFile_NullOrWhitespacePath_ThrowsArgumentException(string? path)
+    {
+        using MduDocument document = new();
+
+        Assert.That(() => document.LoadFromFile(path!), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void LoadFromString_NullContent_ThrowsArgumentNullException()
+    {
+        using MduDocument document = new();
+
+        Assert.That(() => document.LoadFromString(null!), Throws.ArgumentNullException);
     }
 
     [Test]
@@ -63,13 +83,43 @@ public class MduDocumentTest
     }
 
     [Test]
+    public void LoadFromStream_NullStream_ThrowsArgumentNullException()
+    {
+        using MduDocument document = new();
+
+        Assert.That(() => document.LoadFromStream(null!), Throws.ArgumentNullException);
+    }
+
+    [Test]
+    public void LoadFromStream_ValidContentUnicode_DoesNotThrow()
+    {
+        using MduDocument document = new();
+
+        byte[] bytes = Encoding.UTF8.GetBytes(MduTestFixtures.ValidMduContentUnicode);
+        MemoryStream stream = new(bytes);
+
+        Assert.DoesNotThrow(() => document.LoadFromStream(stream));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    public void SaveToFile_NullOrWhitespacePath_ThrowsArgumentException(string? path)
+    {
+        using MduDocument document = new();
+
+        Assert.That(() => document.SaveToFile(path!), Throws.ArgumentException);
+    }
+
+    [Test]
     public void SaveToString_ContainsExpectedContent()
     {
         using MduDocument document = CreateWithValidContent();
 
         string content = document.SaveToString();
 
-        Assert.That(content, Is.Not.Null.And.Not.Empty);
+        Assert.That(content, Does.Contain("[general]"));
+        Assert.That(content, Does.Contain("D-Flow FM"));
     }
 
     [Test]
@@ -84,6 +134,60 @@ public class MduDocumentTest
         reloaded.LoadFromString(content);
 
         Assert.That(reloaded.GetProperty<string>("general.program"), Is.EqualTo("Round Trip"));
+    }
+
+    [Test]
+    public void SaveToStream_NullStream_ThrowsArgumentNullException()
+    {
+        using MduDocument document = new();
+
+        Assert.That(() => document.SaveToStream(null!), Throws.ArgumentNullException);
+    }
+
+    [Test]
+    public void SaveToStream_ContainsExpectedContent()
+    {
+        using MduDocument document = CreateWithValidContent();
+        using MemoryStream stream = new();
+
+        document.SaveToStream(stream);
+        string content = Encoding.UTF8.GetString(stream.ToArray());
+
+        Assert.That(content, Does.Contain("[general]"));
+        Assert.That(content, Does.Contain("D-Flow FM"));
+    }
+
+    [Test]
+    public void SaveToStream_UnicodeContent_RoundTrips()
+    {
+        using MduDocument document = CreateWithValidContentUnicode();
+        using MemoryStream stream = new();
+
+        document.SaveToStream(stream);
+        stream.Position = 0;
+
+        using MduDocument reloaded = new();
+        reloaded.LoadFromStream(stream);
+
+        Assert.That(reloaded.GetProperty<string>("general.program"), Is.EqualTo("D-Flow FM éü中文"));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    public void GetProperty_NullOrWhitespaceKey_ThrowsArgumentException(string? key)
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => document.GetProperty(key!), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void GetProperty_UnknownKey_ThrowsKeyNotFoundException()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => document.GetProperty("unknown.key"), Throws.TypeOf<KeyNotFoundException>());
     }
 
     [Test]
@@ -119,11 +223,27 @@ public class MduDocumentTest
     }
 
     [Test]
+    public void GetProperty_StringValueTypeUnicode_ReturnsUnicodeString()
+    {
+        using MduDocument document = CreateWithValidContentUnicode();
+
+        Assert.That(document.GetProperty("general.program"), Is.EqualTo("D-Flow FM éü中文"));
+    }
+
+    [Test]
     public void GetProperty_PathValueType_ReturnsString()
     {
         using MduDocument document = CreateWithValidContent();
 
         Assert.That(document.GetProperty("geometry.netfile"), Is.EqualTo("f34_net.nc"));
+    }
+
+    [Test]
+    public void GetProperty_PathValueTypeUnicode_ReturnsUnicodeString()
+    {
+        using MduDocument document = CreateWithValidContentUnicode();
+
+        Assert.That(document.GetProperty("geometry.netfile"), Is.EqualTo("réseau/données_éü中文.nc"));
     }
 
     [Test]
@@ -189,6 +309,24 @@ public class MduDocumentTest
         using MduDocument document = CreateWithValidContent();
 
         Assert.That(() => document.GetProperty<string>("geometry.kmx"), Throws.TypeOf<InvalidCastException>());
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    public void SetProperty_NullOrWhitespaceKey_ThrowsArgumentException(string? key)
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => document.SetProperty(key!, 1), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void SetProperty_UnknownKey_ThrowsKeyNotFoundException()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => document.SetProperty("unknown.key", 1), Throws.TypeOf<KeyNotFoundException>());
     }
 
     [Test]
@@ -284,6 +422,21 @@ public class MduDocumentTest
         Assert.That(() => document.SetProperty("geometry.kmx", "not-an-int"), Throws.TypeOf<InvalidCastException>());
     }
 
+    [Test]
+    public void Indexer_Get_UnknownKey_ThrowsKeyNotFoundException()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => _ = document["unknown.key"], Throws.TypeOf<KeyNotFoundException>());
+    }
+
+    [Test]
+    public void Indexer_Set_UnknownKey_ThrowsKeyNotFoundException()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => document["unknown.key"] = 1, Throws.TypeOf<KeyNotFoundException>());
+    }
 
     [Test]
     public void Indexer_Get_ReturnsSameAsGetProperty()
@@ -306,53 +459,15 @@ public class MduDocumentTest
     [TestCase(null)]
     [TestCase("")]
     [TestCase("   ")]
-    public void GetProperty_NullOrWhitespaceKey_ThrowsArgumentException(string? key)
+    public void GetPropertySchema_NullOrWhitespaceKey_ThrowsArgumentException(string? key)
     {
-        using MduDocument document = CreateWithValidContent();
-
-        Assert.That(() => document.GetProperty(key!), Throws.ArgumentException);
+        Assert.That(() => MduDocument.GetPropertySchema(key!), Throws.ArgumentException);
     }
 
     [Test]
-    public void GetProperty_UnknownKey_ThrowsKeyNotFoundException()
+    public void GetPropertySchema_UnknownKey_ThrowsKeyNotFoundException()
     {
-        using MduDocument document = CreateWithValidContent();
-
-        Assert.That(() => document.GetProperty("unknown.key"), Throws.TypeOf<KeyNotFoundException>());
-    }
-
-    [TestCase(null)]
-    [TestCase("")]
-    [TestCase("   ")]
-    public void SetProperty_NullOrWhitespaceKey_ThrowsArgumentException(string? key)
-    {
-        using MduDocument document = CreateWithValidContent();
-
-        Assert.That(() => document.SetProperty(key!, 1), Throws.ArgumentException);
-    }
-
-    [Test]
-    public void SetProperty_UnknownKey_ThrowsKeyNotFoundException()
-    {
-        using MduDocument document = CreateWithValidContent();
-
-        Assert.That(() => document.SetProperty("unknown.key", 1), Throws.TypeOf<KeyNotFoundException>());
-    }
-
-    [Test]
-    public void Indexer_Get_UnknownKey_ThrowsKeyNotFoundException()
-    {
-        using MduDocument document = CreateWithValidContent();
-
-        Assert.That(() => _ = document["unknown.key"], Throws.TypeOf<KeyNotFoundException>());
-    }
-
-    [Test]
-    public void Indexer_Set_UnknownKey_ThrowsKeyNotFoundException()
-    {
-        using MduDocument document = CreateWithValidContent();
-
-        Assert.That(() => document["unknown.key"] = 1, Throws.TypeOf<KeyNotFoundException>());
+        Assert.That(() => MduDocument.GetPropertySchema("unknown.key"), Throws.TypeOf<KeyNotFoundException>());
     }
 
     [Test]
@@ -369,20 +484,6 @@ public class MduDocumentTest
         MduPropertySchema schema = MduDocument.GetPropertySchema("GEOMETRY.NETFILE");
 
         Assert.That(schema.FullyQualifiedKey, Is.EqualTo("geometry.netfile"));
-    }
-
-    [TestCase(null)]
-    [TestCase("")]
-    [TestCase("   ")]
-    public void GetPropertySchema_NullOrWhitespaceKey_ThrowsArgumentException(string? key)
-    {
-        Assert.That(() => MduDocument.GetPropertySchema(key!), Throws.ArgumentException);
-    }
-
-    [Test]
-    public void GetPropertySchema_UnknownKey_ThrowsKeyNotFoundException()
-    {
-        Assert.That(() => MduDocument.GetPropertySchema("unknown.key"), Throws.TypeOf<KeyNotFoundException>());
     }
 
     [Test]
@@ -403,6 +504,11 @@ public class MduDocumentTest
     private static MduDocument CreateWithValidContent()
     {
         return CreateWithContent(MduTestFixtures.ValidMduContent);
+    }
+
+    private static MduDocument CreateWithValidContentUnicode()
+    {
+        return CreateWithContent(MduTestFixtures.ValidMduContentUnicode);
     }
 
     private static MduDocument CreateWithInvalidContent()

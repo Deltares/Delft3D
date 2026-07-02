@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 using DFlowFM.IO.Reporting;
 
@@ -6,6 +7,32 @@ namespace DFlowFM.IO.Native;
 
 internal static class NativeInterop
 {
+    private static readonly UTF8Encoding Utf8NoBom = new(false);
+
+    public static string PtrToStringUtf8(IntPtr ptr)
+    {
+        if (ptr == IntPtr.Zero)
+        {
+            return string.Empty;
+        }
+
+        int length = 0;
+        while (Marshal.ReadByte(ptr, length) != 0)
+        {
+            length++;
+        }
+
+        byte[] bytes = new byte[length];
+        Marshal.Copy(ptr, bytes, 0, length);
+
+        return Utf8NoBom.GetString(bytes);
+    }
+
+    public static byte[] StringToUtf8(string value)
+    {
+        return Utf8NoBom.GetBytes(value);
+    }
+
     public static double[] MarshalDoubleArray(IntPtr ptr, ulong count)
     {
         double[] result = new double[(int)count];
@@ -23,7 +50,7 @@ internal static class NativeInterop
         for (int i = 0; i < (int)count; i++)
         {
             IntPtr strPtr = Marshal.ReadIntPtr(ptr, i * IntPtr.Size);
-            result[i] = Marshal.PtrToStringAnsi(strPtr) ?? string.Empty;
+            result[i] = PtrToStringUtf8(strPtr);
         }
 
         return result;
@@ -44,21 +71,28 @@ internal static class NativeInterop
 
     public static void MarshalStringArray(string[] values, Action<IntPtr, ulong> action)
     {
-        IntPtr[] ptrs = Array.ConvertAll(values, Marshal.StringToHGlobalAnsi);
+        IntPtr[] ptrs = Array.ConvertAll(values, v =>
+        {
+            byte[] bytes = StringToUtf8(v);
+            IntPtr ptr = Marshal.AllocHGlobal(bytes.Length + 1);
+            
+            Marshal.Copy(bytes, 0, ptr, bytes.Length);
+            Marshal.WriteByte(ptr, bytes.Length, 0);
+            
+            return ptr;
+        });
+
         GCHandle pin = GCHandle.Alloc(ptrs, GCHandleType.Pinned);
         try
         {
-            action(pin.AddrOfPinnedObject(), (ulong)values.Length);
+            action(pin.AddrOfPinnedObject(), (ulong)ptrs.Length);
         }
         finally
         {
             pin.Free();
             foreach (IntPtr ptr in ptrs)
             {
-                if (ptr != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(ptr);
-                }
+                Marshal.FreeHGlobal(ptr);
             }
         }
     }
@@ -72,7 +106,7 @@ internal static class NativeInterop
     {
         return new Issue(
             (IssueSeverity)native.Severity,
-            Marshal.PtrToStringAnsi(native.Message) ?? string.Empty,
+            PtrToStringUtf8(native.Message),
             native.LineNumber > 0 ? native.LineNumber : null);
     }
 

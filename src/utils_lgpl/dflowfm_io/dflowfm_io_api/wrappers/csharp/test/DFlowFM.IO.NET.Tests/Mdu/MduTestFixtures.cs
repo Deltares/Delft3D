@@ -32,4 +32,15 @@ internal static class MduTestFixtures
         [output]
         hisInterval  = 300.0 500.0
         """;
+
+    public const string ValidMduContentUnicode =
+        """
+        [general]
+        fileType     = modelDef
+        fileVersion  = 1.09
+        program      = D-Flow FM éü中文
+
+        [geometry]
+        netFile      = réseau/données_éü中文.nc
+        """;
 }

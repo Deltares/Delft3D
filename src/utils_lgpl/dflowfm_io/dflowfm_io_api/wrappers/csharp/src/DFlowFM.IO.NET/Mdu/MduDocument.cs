@@ -1,3 +1,5 @@
+using System.Text;
+
 using DFlowFM.IO.Reporting;
 
 namespace DFlowFM.IO.Mdu;
@@ -7,6 +9,7 @@ namespace DFlowFM.IO.Mdu;
 /// </summary>
 public sealed partial class MduDocument : IDisposable
 {
+    private static readonly UTF8Encoding Utf8NoBom = new(false);
     private readonly MduApi _api = new();
 
     /// <summary>
@@ -36,8 +39,14 @@ public sealed partial class MduDocument : IDisposable
     /// Loads the MDU document from a file on disk.
     /// </summary>
     /// <param name="path">The path to the MDU file to load.</param>
+    /// <exception cref="ArgumentException">When <paramref name="path" /> is null or whitespace.</exception>
     public void LoadFromFile(string path)
     {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentException("The property path must not be null or whitespace.", nameof(path));
+        }
+
         _api.LoadFromFile(path);
         Report = _api.GetIssueReport();
     }
@@ -46,18 +55,46 @@ public sealed partial class MduDocument : IDisposable
     /// Loads the MDU document from a string containing the file contents.
     /// </summary>
     /// <param name="content">The MDU file contents as a string.</param>
+    /// <exception cref="ArgumentNullException">When <paramref name="content" /> is null.</exception>
     public void LoadFromString(string content)
     {
+        if (content == null)
+        {
+            throw new ArgumentNullException(nameof(content));
+        }
+
         _api.LoadFromString(content);
         Report = _api.GetIssueReport();
+    }
+
+    /// <summary>
+    /// Loads the MDU document from a stream.
+    /// </summary>
+    /// <param name="stream">The stream containing the MDU file contents.</param>
+    /// <exception cref="ArgumentNullException">When <paramref name="stream" /> is null.</exception>
+    public void LoadFromStream(Stream stream)
+    {
+        if (stream == null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        using StreamReader reader = new(stream, Utf8NoBom, true, 1024, true);
+        LoadFromString(reader.ReadToEnd());
     }
 
     /// <summary>
     /// Saves the MDU document to a file on disk.
     /// </summary>
     /// <param name="path">The path of the file to write.</param>
+    /// <exception cref="ArgumentException">When <paramref name="path" /> is null or whitespace.</exception>
     public void SaveToFile(string path)
     {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentException("The property path must not be null or whitespace.", nameof(path));
+        }
+
         _api.SaveToFile(path);
     }
 
@@ -68,6 +105,22 @@ public sealed partial class MduDocument : IDisposable
     public string SaveToString()
     {
         return _api.SaveToString();
+    }
+
+    /// <summary>
+    /// Saves the MDU document to a stream.
+    /// </summary>
+    /// <param name="stream">The stream to write the MDU file contents to.</param>
+    /// <exception cref="ArgumentNullException">When <paramref name="stream" /> is null.</exception>
+    public void SaveToStream(Stream stream)
+    {
+        if (stream == null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        byte[] bytes = Utf8NoBom.GetBytes(SaveToString());
+        stream.Write(bytes, 0, bytes.Length);
     }
 
     /// <summary>

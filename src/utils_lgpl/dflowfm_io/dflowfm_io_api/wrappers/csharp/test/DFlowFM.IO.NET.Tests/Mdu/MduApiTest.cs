@@ -29,24 +29,40 @@ public class MduApiTest
     }
 
     [Test]
-    public void LoadFromString_ValidContent_DoesNotThrow()
+    public void LoadFromString_EmptyContent_DoesNotThrow()
     {
         using MduApi api = new();
 
-        Assert.DoesNotThrow(() => api.LoadFromString(MduTestFixtures.ValidMduContent));
+        Assert.DoesNotThrow(() => api.LoadFromString(string.Empty));
     }
 
     [Test]
-    public void SaveToString_ContainsExpectedContent()
+    [TestCaseSource(nameof(GetValidContentCases))]
+    public void LoadFromString_ValidContent_DoesNotThrow(string content)
     {
-        using MduApi api = CreateWithValidContent();
+        using MduApi api = new();
 
-        string content = api.SaveToString();
+        Assert.DoesNotThrow(() => api.LoadFromString(content));
+    }
 
-        IEnumerable<string> actualLines = NormalizeMduLines(content);
-        IEnumerable<string> expectedLines = NormalizeMduLines(MduTestFixtures.ValidMduContent);
+    [Test]
+    [TestCaseSource(nameof(GetValidContentCases))]
+    public void SaveToString_ValidContent_ContainsExpectedContent(string content)
+    {
+        using MduApi api = CreateWithContent(content);
+
+        string savedContent = api.SaveToString();
+
+        IEnumerable<string> actualLines = NormalizeMduLines(savedContent);
+        IEnumerable<string> expectedLines = NormalizeMduLines(content);
 
         Assert.That(expectedLines, Is.SubsetOf(actualLines).IgnoreCase);
+    }
+
+    private static IEnumerable<TestCaseData> GetValidContentCases()
+    {
+        yield return new TestCaseData(MduTestFixtures.ValidMduContent).SetName("ValidMduContent");
+        yield return new TestCaseData(MduTestFixtures.ValidMduContentUnicode).SetName("ValidMduContentUnicode");
     }
 
     [Test]
@@ -164,6 +180,14 @@ public class MduApiTest
     }
 
     [Test]
+    public void GetString_UnicodeValue_ReturnsExpectedValue()
+    {
+        using MduApi api = CreateWithValidContentUnicode();
+
+        Assert.That(api.GetString("general.program"), Is.EqualTo("D-Flow FM éü中文"));
+    }
+
+    [Test]
     public void GetString_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
@@ -179,6 +203,16 @@ public class MduApiTest
         api.SetString("general.program", "My Program");
 
         Assert.That(api.GetString("general.program"), Is.EqualTo("My Program"));
+    }
+
+    [Test]
+    public void SetString_UnicodeValue_UpdatesValue()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        api.SetString("general.program", "D-Flow FM éü中文");
+
+        Assert.That(api.GetString("general.program"), Is.EqualTo("D-Flow FM éü中文"));
     }
 
     [Test]
@@ -200,6 +234,16 @@ public class MduApiTest
     }
 
     [Test]
+    public void GetPath_UnicodeValue_ReturnsExpectedValue()
+    {
+        using MduApi api = CreateWithValidContentUnicode();
+
+        string result = api.GetPath("geometry.netfile");
+
+        Assert.That(result, Is.EqualTo("réseau/données_éü中文.nc"));
+    }
+
+    [Test]
     public void GetPath_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
@@ -215,6 +259,16 @@ public class MduApiTest
         api.SetPath("geometry.netfile", "new_net.nc");
 
         Assert.That(api.GetPath("geometry.netfile"), Is.EqualTo("new_net.nc"));
+    }
+
+    [Test]
+    public void SetPath_UnicodeValue_UpdatesValue()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        api.SetPath("geometry.netfile", "réseau/données_éü中文.nc");
+
+        Assert.That(api.GetPath("geometry.netfile"), Is.EqualTo("réseau/données_éü中文.nc"));
     }
 
     [Test]
@@ -254,6 +308,39 @@ public class MduApiTest
         List<string> result = api.GetPathList("geometry.thindamfile").ToList();
 
         Assert.That(result, Is.EqualTo(newPaths));
+    }
+
+    [Test]
+    public void SetPathList_EmptyList_ResultsInEmptyList()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        api.SetPathList("geometry.thindamfile", []);
+
+        Assert.That(api.GetPathList("geometry.thindamfile").ToList(), Is.Empty);
+    }
+
+    [Test]
+    public void SetPathList_SingleValue_UpdatesValue()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        api.SetPathList("geometry.thindamfile", ["a.pol"]);
+
+        List<string> result = api.GetPathList("geometry.thindamfile").ToList();
+
+        Assert.That(result, Is.EqualTo(["a.pol"]));
+    }
+
+    [Test]
+    public void SetPathList_UnicodeValues_UpdatesValue()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        string[] unicodePaths = ["réseau/éü.pli", "données/中文.pli"];
+        api.SetPathList("geometry.thindamfile", unicodePaths);
+
+        Assert.That(api.GetPathList("geometry.thindamfile").ToList(), Is.EqualTo(unicodePaths));
     }
 
     [Test]
@@ -477,6 +564,11 @@ public class MduApiTest
     private static MduApi CreateWithValidContent()
     {
         return CreateWithContent(MduTestFixtures.ValidMduContent);
+    }
+
+    private static MduApi CreateWithValidContentUnicode()
+    {
+        return CreateWithContent(MduTestFixtures.ValidMduContentUnicode);
     }
 
     private static MduApi CreateWithInvalidContent()
