@@ -119,8 +119,18 @@ namespace pre_c_sumo
      */
     void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
-    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& settings,
-                                                                     const std::vector<NF2FFReader>& readers);
+    /**
+     * @brief Convert NF data to sources and sinks to be communicated via preCICE.
+     *
+     * Uses the data referenced in `nf2ff_readers' and 'csumoSettings` to perform the conversion.
+     *
+     * @param csumoSettings C-SUMO settings
+     * @param nf2ff_readers vector of NF2FFReader objects containing the latest NF2FF data
+     *
+     * @returns pre_c_sumo::ConnectedSinkSources object containing the converted sources and sinks.
+     */
+    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
+        const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers);
     /**
      * @brief Send computed sources/sinks to the farfield model.
      *

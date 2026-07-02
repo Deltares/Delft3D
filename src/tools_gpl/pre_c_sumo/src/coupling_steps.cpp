@@ -226,15 +226,15 @@ namespace pre_c_sumo
     }
 
     // TODO: Consider if we should make this a member function of ConnectedSinkSources.
-    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& settings,
-                                                                     const std::vector<NF2FFReader>& readers)
+    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
+        const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
 
-        for (std::size_t diffuser_index = 0; diffuser_index < readers.size(); diffuser_index++)
+        for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
-            const auto& diffuser = readers[diffuser_index];
-            const auto& diffuser_setting = settings.diffusers()[diffuser_index];
+            const auto& diffuser = nf2ff_readers[diffuser_index];
+            const auto& diffuser_setting = csumoSettings.diffusers()[diffuser_index];
 
             if (!isDiffuserModelled(diffuser))
             {
