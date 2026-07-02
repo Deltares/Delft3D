@@ -13,7 +13,7 @@ set -eo pipefail
 
 function print_usage_info {
     echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
-    echo "Run delft3d4 on H7."
+    echo "Run delft3d4 on Alma8."
     echo
     echo "Options:"
     echo "-c, --corespernode <M>"
@@ -49,6 +49,11 @@ debuglevel=-1
 runscript_extraopts=
 wavefile=runwithoutwaveonlinebydefault
 withrtc=0
+csumoscript=
+mcrdir=
+csumodeployed=true
+csumodir=
+matlabversion=
 
 
 ulimit -s unlimited
@@ -87,8 +92,28 @@ case $key in
     echo $wavefile
     shift
     ;;
+    -csumoscript)
+    csumoscript="$1"
+    shift
+    ;;
+    -mcrdir)
+    mcrdir="$1"
+    shift
+    ;;
     --D3D_HOME)
     D3D_HOME="$1"
+    shift
+    ;;
+    -csumodeployed)
+    csumodeployed="$1"
+    shift
+    ;;
+    -csumodir)
+    csumodir="$1"
+    shift
+    ;;
+    -matlabversion)
+    matlabversion="$1"
     shift
     ;;
     --)
@@ -103,6 +128,33 @@ case $key in
     ;;
 esac
 done
+
+# ------------- C-SUMO related stuff -----------------------
+if [ -n "$csumoscript" ]; then
+
+    echo "Preparing COSUMOsettings.xml"
+
+    # remove any old COSUMOsettings.xml file
+    rm -f COSUMOsettings.xml
+
+    # export paths
+    export rundir="$(pwd)"
+    export reldir=${PWD##*/}
+
+    export ff2nffolder="$rundir/FF2NFdir/"
+
+    # copy COSUMO_template_settings.xml to COSUMOsettings.xml
+    echo "    copying COSUMO_template_settings.xml to COSUMOsettings.xml"
+    cp COSUMO_template_settings.xml COSUMOsettings.xml
+
+    # replace keywords COSUMOsettings.xml
+    export find1=%FF2NFDIR%
+    export replace1="$ff2nffolder"
+
+    echo "    replacing %FF2NFDIR% in COSUMOsettings.xml with $ff2nffolder"
+    sed -i "s,$find1,$replace1," COSUMOsettings.xml
+fi
+# ------------------------------------------------------------
 
 # Check configfile    
 if [ ! -f $configfile ]; then
@@ -179,6 +231,37 @@ if [ $debuglevel -eq 0 ]; then
     echo ========================================================
 fi
 
+if [ -n "$csumoscript" ]; then
+
+    echo "--------------------------------------------------------------------------------"
+    echo "-----------------------Starting C-SUMO in the background------------------------"
+    echo "    create FF2NFdir folder (if it does not exist)"
+    echo "        FF2NFdir = $ff2nffolder" 
+    mkdir -p -- "$ff2nffolder"
+
+    if $csumodeployed ; then
+        echo "    Starting C-SUMO in deployed mode using this command:"
+        echo "        $csumoscript $mcrdir $ff2nffolder 0 &"
+        $csumoscript "$mcrdir" "$ff2nffolder" 0 &
+        csumo_pid=$!
+        echo "    The PID of the C-SUMO process is $csumo_pid"
+    else
+        echo "    Starting up a MATLAB instance to run C-SUMO"
+        echo "        cd /opt/apps/matlab/$matlabversion/bin/"
+        cd /opt/apps/matlab/$matlabversion/bin/
+        echo "        matlab -nodisplay -nosplash -nodesktop -r cd('$csumodir');COSUMO('$ff2nffolder',0); &"
+        ./matlab -nodisplay -nosplash -nodesktop -r "cd('$csumodir');COSUMO('$ff2nffolder',0);" &
+        cd "$rundir"
+        csumo_pid=$!
+        echo "    The PID of the C-SUMO process is $csumo_pid"
+    fi
+
+    # Give C-SUMO some time to start before Delft3D-FLOW starts
+    sleep 10
+
+    echo "--------------------------------------------------------------------------------"
+fi
+
 if [ $withrtc -ne 0 ] ; then
     #
     #
@@ -231,6 +314,11 @@ else
     fi
 fi
 
+if [ -n "$csumoscript" ]; then
+    # kill C-SUMO
+    echo "kill C-SUMO using the following command: kill -9 $csumo_pid"
+    kill -9 $csumo_pid
+fi
 
     # Wait until all child processes are finished
 wait

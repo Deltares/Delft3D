@@ -171,7 +171,7 @@ if [ ! -d $D3D_HOME ]; then
     print_usage_info
 fi
 export D3D_HOME
-RUNSCRIPT=$scriptdir/rd2d3d_csumo.sh
+RUNSCRIPT=$scriptdir/rd2d3d.sh
 runscript_opts="$runscript_opts --D3D_HOME ${D3D_HOME}"
 
 JOB_NAME="${JOB_NAME}_${NODES}x${TASKS_PER_NODE}"
