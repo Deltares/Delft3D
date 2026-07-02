@@ -330,10 +330,12 @@ contains
    !> compute fluxes based on Monin-Obukhov Stability Theory
    module subroutine compute_air_water_interaction_most_fluxes(initialization)
       use precision, only: dp
-      use m_flowgeom, only: ndx
+      use m_flowgeom, only: ndx, lnx
       use m_get_surface_temperature, only: get_surface_temperature
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
       use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
+      use m_relative_wind, only: compute_surface_relative_wind
+      use m_wind, only: relativewind
       use physicalconsts, only: celsius_to_kelvin
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity
@@ -343,6 +345,7 @@ contains
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature
       real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
+      real(kind=dp), dimension(lnx) :: windx_link, windy_link
       type(t_options) :: atm_stability_options
 
 
@@ -355,9 +358,9 @@ contains
          allocate(air_temperature_kelvin(ndx))
          allocate(dew_point_temperature_kelvin(ndx))
       end if
-      
 
-      call link_to_node_vector(wx, wy, windx, windy, ndx)
+      call compute_surface_relative_wind(wx, wy, relativewind, windx_link, windy_link)
+      call link_to_node_vector(windx_link, windy_link, windx, windy, ndx)
       call link_to_node_scalar(wcharnock, charnock, ndx)
 
       call get_surface_temperature(surface_temperature, initialization)
