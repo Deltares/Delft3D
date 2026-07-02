@@ -47,13 +47,16 @@ corespernode=$corespernodedefault
 NSLOTS=$SLURM_TASKS_PER_NODE
 debuglevel=-1
 runscript_extraopts=
-wavefile=runwithoutwaveonlinebydefault
+wavefile=
 withrtc=0
+withcsumo=0
+# deployed keys
 csumoscript=
 mcrdir=
+# MATLAB keys
 csumodeployed=true
 csumodir=
-matlabversion=
+matlabversion=2014a
 
 
 ulimit -s unlimited
@@ -92,27 +95,31 @@ case $key in
     echo $wavefile
     shift
     ;;
-    -csumoscript)
+    --D3D_HOME)
+    D3D_HOME="$1"
+    shift
+    ;;
+    -csumo|--csumo)
+    withcsumo=1
+    csumodeployed=false
     csumoscript="$1"
     shift
     ;;
-    -mcrdir)
+    -mcrdir|--mcrdir)
     mcrdir="$1"
-    shift
-    ;;
-    --D3D_HOME)
-    D3D_HOME="$1"
     shift
     ;;
     -csumodeployed)
     csumodeployed="$1"
     shift
     ;;
-    -csumodir)
+    -csumodir|--csumodir)
+    withcsumo=1
+    csumodeployed=true
     csumodir="$1"
     shift
     ;;
-    -matlabversion)
+    -matlabversion|--matlabversion)
     matlabversion="$1"
     shift
     ;;
@@ -129,8 +136,8 @@ case $key in
 esac
 done
 
-# ------------- C-SUMO related stuff -----------------------
-if [ -n "$csumoscript" ]; then
+# optionally prepare C-SUMO
+if [[ -n $csumoscript ]]; then
 
     echo "Preparing COSUMOsettings.xml"
 
@@ -154,17 +161,16 @@ if [ -n "$csumoscript" ]; then
     echo "    replacing %FF2NFDIR% in COSUMOsettings.xml with $ff2nffolder"
     sed -i "s,$find1,$replace1," COSUMOsettings.xml
 fi
-# ------------------------------------------------------------
 
 # Check configfile    
-if [ ! -f $configfile ]; then
+if [[ ! -f $configfile ]]; then
     echo "ERROR: configfile $configfile does not exist"
     print_usage_info
 fi
 
 workdir=`pwd`
 
-if [ -z "${D3D_HOME}" ]; then
+if [[ -z $D3D_HOME ]]; then
     scriptdirname=`readlink \-f \$0`
     scriptdir=`dirname $scriptdirname`
     export D3D_HOME=$scriptdir/..
@@ -174,7 +180,7 @@ else
     # To obtain scriptdir: remove "/.." at the end of the string
     scriptdir=${D3D_HOME%"/.."}
 fi
-if [ ! -d "$D3D_HOME" ]; then
+if [[ ! -d $D3D_HOME ]]; then
     echo "ERROR: directory $D3D_HOME does not exist"
     print_usage_info
 fi
@@ -192,47 +198,43 @@ echo "    nr of tasks per node : $SLURM_TASKS_PER_NODE"
 echo "    Number of partitions : $NSLOTS"
 echo "    FI_PROVIDER          : $FI_PROVIDER"
 echo "    I_MPI_FABRICS        : $I_MPI_FABRICS" 
-if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
+if [[ -n $wavefile ]]; then
     echo "    Wave file            : $wavefile"
 fi
-if [ $withrtc -ne 0 ] ; then
+if [[ $withrtc -ne 0 ]] ; then
     echo "    Online with RTC      : YES"
+fi
+if [[ $withcsumo -ne 0 ]] ; then
+    echo "    Online with C-SUMO   : YES"
 fi
 
 
-    #
-    # Set the directories containing the binaries
-    #
-
+# Set the directories containing the binaries
 bindir="$D3D_HOME/bin"
 libdir="$D3D_HOME/lib"
 sharedir="$D3D_HOME/share"
 
-    #
-    # No adaptions needed below
-    #
-
-    # Run
+# Run
 export LD_LIBRARY_PATH="$libdir:$LD_LIBRARY_PATH"
 export PATH="$bindir:$PATH"
 
 # For debugging only
-if [ $debuglevel -eq 0 ]; then
+if [[ $debuglevel -eq 0 ]]; then
     echo === LD_LIBRARY_PATH =========================================
-       echo $LD_LIBRARY_PATH
+    echo $LD_LIBRARY_PATH
     echo =========================================================
     echo " "
     echo === ldd $libdir/libflow2d3d.so =========================================
-             ldd $libdir/libflow2d3d.so
+    ldd "$libdir/libflow2d3d.so"
     echo =========================================================
     echo " "
     echo ===  ldd $bindir/d_hydro =========================================
-              ldd $bindir/d_hydro
+    ldd "$bindir/d_hydro"
     echo ========================================================
 fi
 
-if [ -n "$csumoscript" ]; then
-
+# optionally start C-SUMO
+if [[ $withcsumo -ne 0 ]]; then
     echo "--------------------------------------------------------------------------------"
     echo "-----------------------Starting C-SUMO in the background------------------------"
     echo "    create FF2NFdir folder (if it does not exist)"
@@ -262,17 +264,26 @@ if [ -n "$csumoscript" ]; then
     echo "--------------------------------------------------------------------------------"
 fi
 
-if [ $withrtc -ne 0 ] ; then
-    #
-    #
-    # Separate block when running with RTC online
-    #
+# Optionally, start D-Waves in the background
+if [[ -n $wavefile ]]; then
+    if [[ ! -f $wavefile ]]; then
+        echo "ERROR: Wave input file $wavefile does not exist"
+        print_usage_info
+    fi
+    echo "executing in the background:"
+    echo "$bindir/wave $wavefile 1 &"
+         "$bindir/wave" "$wavefile" 1 &
+fi
+    
+if [[ $withrtc -ne 0 ]] ; then # running with RTC online
+
     # Shared memory allocation
     export DIO_SHM_ESM=`"$bindir/esm_create"`
+    
     # Start Delft3D-FLOW in the background
     echo "executing:"
     echo "$bindir/d_hydro $configfile &"
-         "$bindir/d_hydro" $configfile &
+         "$bindir/d_hydro" "$configfile" &
 
     # Be sure Delft3D-FLOW is started before RTC is started
     sleep 5
@@ -286,45 +297,31 @@ if [ $withrtc -ne 0 ] ; then
     "$bindir/esm_delete" $DIO_SHM_ESM 
 
 
-else
-    #
-    #
-    # Without RTC online
-    #
-    # Optionally, start D-Waves in the background
-    if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
-        if [ ! -f $wavefile ]; then
-            echo "ERROR: Wave input file $wavefile does not exist"
-            print_usage_info
-        fi
-        echo "executing in the background:"
-        echo "$bindir/wave $wavefile 1 &"
-             "$bindir/wave" $wavefile 1 &
-    fi
-    
-    if [ $NSLOTS -eq 1 ]; then
+else # Without RTC online
+
+    if [[ $NSLOTS -eq 1 ]]; then
         echo "executing:"
         echo "$bindir/d_hydro $configfile"
-             "$bindir/d_hydro" $configfile
+             "$bindir/d_hydro" "$configfile"
     else
         module load intelmpi/2021.11.0 &>/dev/null
         echo ----------------------------------------------------------------------
         echo "srun $bindir/d_hydro $configfile"
-              srun "$bindir/d_hydro" $configfile
+              srun "$bindir/d_hydro" "$configfile"
     fi
 fi
 
-if [ -n "$csumoscript" ]; then
+if [[ $withcsumo -ne 0 ]] ; then
     # kill C-SUMO
     echo "kill C-SUMO using the following command: kill -9 $csumo_pid"
     kill -9 $csumo_pid
 fi
 
-    # Wait until all child processes are finished
+# Wait until all child processes are finished
 wait
 
-    # Nefis files don't get write permission for the group bit
-    # Add it explicitly, only when stderr = 0
-if [ $? -eq 0 ]; then
+# Nefis files don't get write permission for the group bit
+# Add it explicitly, only when stderr = 0
+if [[ $? -eq 0 ]]; then
     chmod -R g+rw *.dat *.def &>/dev/null || true
 fi

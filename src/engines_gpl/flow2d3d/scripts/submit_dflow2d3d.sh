@@ -2,12 +2,12 @@
   
 # Usage:
     #
-    # This script runs Delft3D-FLOW in parallel on Linux H7
+    # This script runs Delft3D-FLOW in parallel on Linux Alma8
     # Adapt and use it for your own purpose
     #
     # Usage example:
     # Execute in the working directory:
-    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d_AL8.sh
+    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
 
 # Set bash options. Exit on failures (and propagate errors in pipes).
 set -eo pipefail
@@ -46,6 +46,14 @@ function print_usage_info {
     echo "       Online with RTC. Not possible with parallel Delft3D-FLOW."
     echo "-w, --wavefile <wname>"
     echo "       name of mdw file"
+    echo "--csumo"
+    echo "       Path to .sh script for starting C-SUMO executable (compiled C-SUMO)"
+    echo "--mcrdir"
+    echo "       folder where the Matlab Runtime Compiler can be found (compiled C-SUMO)"
+    echo "--csumodir"
+    echo "       Folder where the COSUMO functions can be loaded from (C-SUMO from MATLAB)"
+    echo "--matlabversion"
+    echo "       MATLAB version to use (C-SUMO from MATLAB)"
     exit 1
 }
 
@@ -59,7 +67,7 @@ function print_usage_info {
 configfile=config_d_hydro.xml
 D3D_HOME=
 runscript_extraopts=()
-wavefile=runwithoutwaveonlinebydefault
+wavefile=
 withrtc=false
 
 ulimit -s unlimited
@@ -113,17 +121,14 @@ do
         runscript_extraopts+=("$@")
         break       # exit loop, stop shifting, all remaining arguments without dashes handled below
         ;;
-        -*)
-        echo "option ${key} seems dedicated for dimr, therefore passing it and the following ones to the dimr"
+        *)
         runscript_extraopts+=("$key")
-        runscript_extraopts+=("$@")
-        break       # exit loop, $key+all remaining options to dflowfm executable
         ;;
     esac
 done
 
 
-if [ ! -f $configfile ]; then
+if [[ ! -f $configfile ]]; then
     echo "ERROR: configfile $configfile does not exist"
     print_usage_info
 fi
@@ -134,7 +139,7 @@ workdir=`pwd`
 scriptdirname=`readlink -f "$0"`
 scriptdir=`dirname "$scriptdirname"`
 D3D_HOME="$scriptdir/.."
-if [ ! -d $D3D_HOME ]; then
+if [[ ! -d $D3D_HOME ]]; then
     echo "ERROR: directory $D3D_HOME does not exist"
     print_usage_info
 fi
@@ -160,7 +165,7 @@ echo
 runscript_opts=()
 runscript_opts+=(-m "${configfile}")
 runscript_opts+=(-c $TASKS_PER_NODE)
-if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
+if [ -n "$wavefile" ]; then
     runscript_opts+=(-w "${wavefile}")
 fi
 if $withrtc ; then
