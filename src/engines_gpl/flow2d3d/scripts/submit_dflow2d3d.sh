@@ -28,28 +28,27 @@ function print_usage_info {
     echo
     echo "Options:"
     echo "-c, --corespernode <M>"
-    echo "       number of partitions per node, default $TASKS_PER_NODE"
+    echo "       Number of partitions per node, default $TASKS_PER_NODE"
     echo "-h, --help"
-    echo "       print this help message and exit"
+    echo "       Print this help message and exit"
     echo "-j, --jobname <jobname>"
-    echo "       jobname prefix, default Delft3D4-FLOW"
+    echo "       Jobname prefix, default Delft3D4-FLOW"
     echo "-m, --masterfile <filename>"
     echo "       Delft3D-FLOW configuration filename, default config_d_hydro.xml"
     echo "-n, --NODES <N>"
-    echo "       number of nodes, default $NODES"
+    echo "       Number of nodes, default $NODES"
     echo "-p, --PARTITION <PARTITION>"
-    echo "       PARTITION, default $PARTITION"
-    echo "       see also: https://publicwiki.deltares.nl/display/Deltareken/Compute+nodes"
+    echo "       Slurm resource partition (queue), default $PARTITION"
     echo "-t, --TIME_LIMIT <TIME_LIMIT>"
-    echo "       TIME_LIMIT, default $TIME_LIMIT" 
+    echo "       Upper limit for run time days-hours:minutes:seconds, default $TIME_LIMIT" 
     echo "--rtc"
     echo "       Online with RTC. Not possible with parallel Delft3D-FLOW."
     echo "-w, --wavefile <wname>"
-    echo "       name of mdw file"
+    echo "       Name of mdw file"
     echo "--csumo"
     echo "       Path to .sh script for starting C-SUMO executable (compiled C-SUMO)"
     echo "--mcrdir"
-    echo "       folder where the Matlab Runtime Compiler can be found (compiled C-SUMO)"
+    echo "       Folder where the Matlab Runtime Compiler can be found (compiled C-SUMO)"
     echo "--csumodir"
     echo "       Folder where the COSUMO functions can be loaded from (C-SUMO from MATLAB)"
     echo "--matlabversion"
@@ -67,8 +66,6 @@ function print_usage_info {
 configfile=config_d_hydro.xml
 D3D_HOME=
 runscript_extraopts=()
-wavefile=
-withrtc=false
 
 ulimit -s unlimited
 
@@ -98,14 +95,6 @@ do
         ;;
         -t|--TIME_LIMIT)
         TIME_LIMIT="$1"
-        shift
-        ;;
-        --rtc)
-        withrtc=true
-        shift
-        ;;
-        -w|--wavefile)
-        wavefile="$1"
         shift
         ;;
         -j|--jobname)
@@ -165,12 +154,6 @@ echo
 runscript_opts=()
 runscript_opts+=(-m "${configfile}")
 runscript_opts+=(-c $TASKS_PER_NODE)
-if [ -n "$wavefile" ]; then
-    runscript_opts+=(-w "${wavefile}")
-fi
-if $withrtc ; then
-    runscript_opts+=(--rtc)
-fi
 runscript_opts+=(--NODES $NODES)
 runscript_opts+=(--D3D_HOME "${D3D_HOME}")
 runscript_opts+=("${runscript_extraopts[@]}")
