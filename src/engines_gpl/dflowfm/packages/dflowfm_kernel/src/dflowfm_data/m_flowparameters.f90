@@ -599,6 +599,8 @@ module m_flowparameters
    integer :: jarstbnd !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
 
+   logical :: write_surface_data_to_map_file
+
    ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
 
@@ -974,6 +976,8 @@ contains
       jalogtransportsolverlimiting = 0
 
       write_numlimdt_file = .false.
+
+      write_surface_data_to_map_file = .false.
 
       jarstignorebl = 0
 
