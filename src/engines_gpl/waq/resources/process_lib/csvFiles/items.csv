@@ -14369,3 +14369,4 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "WSSedPOC3 ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "
 "WSSedPOC4 ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "
 "WSSedPOC5 ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "
+"UseAveDYN ","x"," ",    0.00000    ,"(-)                 ","use average irradiation (1) or actual (0)         ","volume    ","volume    "," ","                              "

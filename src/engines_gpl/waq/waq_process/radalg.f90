@@ -53,8 +53,8 @@ contains
 
         real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(6) ! I  Array of pointers in process_space_real to get and store the data
-        integer(kind = int_wp) :: increm(6) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: ipoint(8) ! I  Array of pointers in process_space_real to get and store the data
+        integer(kind = int_wp) :: increm(8) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
         integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
@@ -63,7 +63,7 @@ contains
         integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
         integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
         integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-        integer(kind = int_wp) :: ipnt(6)   !    Local work array for the pointering
+        integer(kind = int_wp) :: ipnt(8)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
 
         !***********************************************************************
@@ -97,6 +97,8 @@ contains
         real(kind = real_wp) :: ExtDpt      !    product of extinction and depth                     (-)
         real(kind = real_wp) :: RadBot      !    radiation at the bottom of the cell                 (-)
 
+        integer(kind=int_wp) :: iprad       !    index of the WQ parameter to be used
+
         ipnt = ipoint
 
         LgtOpt = .true.
@@ -113,12 +115,23 @@ contains
             endif
         endif
 
+        !
+        ! Use instantaneous light or daily averaged?
+        ! Note that we do not distinguish two sets of process coefficients.
+        ! The user is responsible for that themselves!
+        !
+        if ( ipnt(6) == 0 ) then
+            iprad = 2
+        else
+            iprad = 7
+        endif
+
         do iseg = 1, num_cells
 
             if (btest(iknmrk(iseg), 0)) then
 
                 if (LgtOpt) then
-                    Rad = process_space_real(ipnt(2))
+                    Rad = process_space_real(ipnt(iprad))
                     RadSat = process_space_real(ipnt(3))
                     TFGro = process_space_real(ipnt(5))
                     RadSat = TFGro * RadSat
@@ -151,7 +164,7 @@ contains
                     endif
                 endif
 
-                process_space_real(ipnt(6)) = LimRad
+                process_space_real(ipnt(8)) = LimRad
 
             endif
 
