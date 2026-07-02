@@ -10,16 +10,8 @@ from pathlib import Path
 
 CONFIGURATIONS = [
     "all",
-    "all-testbench",
     "fm-suite",
-    "fm-testbench",
     "d3d4-suite",
-    "d3d4-testbench",
-    "waq-testbench",
-    "part-testbench",
-    "rr-testbench",
-    "wave-testbench",
-    "swan-testbench",
     "dflowfm_interacter",
     "dflowfm",
     "dimr",
@@ -170,8 +162,12 @@ def main() -> None:
     parser.add_argument(
         "--config",
         default="fm-suite",
-        choices=CONFIGURATIONS,
-        help="Configuration type to build (default: fm-suite).",
+        metavar="CONFIG",
+        help=(
+            "Configuration type to build (default: fm-suite). "
+            "The value is forwarded to CMake, which validates it. "
+            "Known configurations: " + ", ".join(CONFIGURATIONS) + "."
+        ),
     )
     parser.add_argument(
         "--build",

@@ -2258,7 +2258,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_restart">
-        <path version="2026-04-21T13:06:44.515000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+        <path version="2026-06-19T07:54:31.048000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">
@@ -3034,7 +3034,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:15.273000">e02_dflowfm/f010_structures/c011_gate_free</path>
+      <path version="2026-05-13T06:51:10.188000">e02_dflowfm/f010_structures/c011_gate_free</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
@@ -3086,7 +3086,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c021_gate_free_ini_newkeywords" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:19.232000">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
+      <path version="2026-05-13T09:40:30.045000">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
@@ -3099,7 +3099,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c022_sill_sub_ini_newkeywords" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:20.411000">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
+      <path version="2026-05-12T08:56:34.477000">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
       <maxRunTime>10.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
@@ -3182,7 +3182,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c019_gate" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f010_structures/c019_gate</path>
+      <path version="2026-05-13T06:51:28.471000">e02_dflowfm/f010_structures/c019_gate</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
          <file name="dflowfm/output/dflow-fm_his.nc" type="netCDF">
@@ -3934,6 +3934,18 @@
         <file name="output/FlowFM_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_Rhum" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f011_c210_spider_utm_transfo" ref="dflowfm_default">
+      <path version="2026-06-11T13:16:47.454000">e02_dflowfm/f011_wind/c210_spider_utm_transfo</path>
+      <maxRunTime>600</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_osaka_surge/osaka_surge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_windx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_windy" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>

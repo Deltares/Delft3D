@@ -32,6 +32,8 @@
 module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
+   use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   
    implicit none(type, external)
 
    private
@@ -39,14 +41,13 @@ module m_spatial_field
    public :: t_spatial_field_input, t_averaging_input
    public :: read_spatial_field_block, validate_spatial_field_input
    public :: read_averaging_input, averaging_params_to_transformcoef
-   public :: parse_location_type
 
    integer, parameter :: INI_VALUE_LEN = 256
 
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
       integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      real(dp) :: rel_size = RCEL_DEFAULT !< averagingRelSize= negative = use EC default.
       integer :: num_min = 1 !< averagingNumMin=
       real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
@@ -120,26 +121,24 @@ contains
    subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use unstruc_inifields, only: averagingTypeStringToInteger
 
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_averaging_input), intent(out) :: avg
 
       logical :: is_read
+      character(len=256) :: averagingType
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
-      if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
+      call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
+      if (is_read) then
+         call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      end if
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
-
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (is_read .and. avg%num_min < 1) avg%num_min = 1
-
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
-
    end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
@@ -179,29 +178,6 @@ contains
       end select
 
    end function is_static_file_type
-
-   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
-   !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns ILATTP_ALL when the string is absent or unrecognized.
-   function parse_location_type(location_type_string) result(ilattype)
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: location_type_string
-      integer :: ilattype
-
-      select case (str_tolower(trim(location_type_string)))
-      case ('1d')
-         ilattype = ILATTP_1D
-      case ('2d')
-         ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         ilattype = ILATTP_ALL
-      case default
-         ilattype = ILATTP_ALL
-      end select
-
-   end function parse_location_type
 
    !> Validate a t_spatial_field_input. Derives method and filetype.
    !! Returns .false. and writes error messages on failure.

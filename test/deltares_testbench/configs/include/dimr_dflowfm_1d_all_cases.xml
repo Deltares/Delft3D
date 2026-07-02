@@ -855,7 +855,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c01_weir" ref="dimr_default">
-		<path version="2025-10-15T15:12:23.140000">e02_dflowfm/f106_hydraulic-structures/c01_Weir</path>
+		<path version="2026-05-12T09:06:49.938000">e02_dflowfm/f106_hydraulic-structures/c01_Weir</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
@@ -877,7 +877,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c02_orifice" ref="dimr_default">
-		<path version="2025-10-15T15:12:29.969000">e02_dflowfm/f106_hydraulic-structures/c02_Orifice</path>
+		<path version="2026-05-12T09:06:56.111000">e02_dflowfm/f106_hydraulic-structures/c02_Orifice</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
@@ -964,7 +964,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c06_Universal_Weir" ref="dimr_default">
-		<path version="2025-10-15T15:12:42.606000">e02_dflowfm/f106_hydraulic-structures/c06_Universal_Weir</path>
+		<path version="2026-05-12T09:07:01.606000">e02_dflowfm/f106_hydraulic-structures/c06_Universal_Weir</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
@@ -986,7 +986,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c07_Compound" ref="dimr_default">
-		<path version="2025-10-15T15:12:47.516000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
+		<path version="2026-05-12T09:07:08.462000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
 		<checks>
 			<file name="DFM_OUTPUT_compound/compound_map.nc" type="netCDF">
 				<parameters>
@@ -1097,7 +1097,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c20_sewer_overflow_urban" ref="dimr_default">
-		<path version="2025-10-15T15:12:55.632000">e02_dflowfm/f106_hydraulic-structures/c20_sewer_overflow_urban</path>
+		<path version="2026-05-12T09:07:23.016000">e02_dflowfm/f106_hydraulic-structures/c20_sewer_overflow_urban</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
 				<parameters>
@@ -1163,7 +1163,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c23_AllowedFlowDir" ref="dimr_default">
-		<path version="2025-10-15T15:13:07.498000">e02_dflowfm/f106_hydraulic-structures/c23_AllowedFlowDir</path>
+		<path version="2026-05-12T09:07:28.012000">e02_dflowfm/f106_hydraulic-structures/c23_AllowedFlowDir</path>
 		<checks>
 			<file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
 				<parameters>
@@ -1198,7 +1198,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c24_control-pump-through-bmi" ref="dflowfm_bmi_default">
-		<path version="2026-06-10T12:49:39.490000">e02_dflowfm/f106_hydraulic-structures/c24_control-pump-through-bmi</path>
+		<path version="2026-06-22T14:48:35.560000">e02_dflowfm/f106_hydraulic-structures/c24_control-pump-through-bmi</path>
 		<checks>
 			<file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
 				<parameters>
