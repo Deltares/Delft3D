@@ -24,10 +24,7 @@ class SingleLineIfConverter(FortranConverter):
         # Pattern to match the beginning of an if statement
         # We'll manually parse the condition to handle nested parentheses
         # Use [ \t] instead of \s to avoid matching newlines in the indent
-        self.if_start_pattern = re.compile(
-            r'^(?P<indent>[ \t]*)if\s*\(',
-            re.MULTILINE | re.IGNORECASE
-        )
+        self.if_start_pattern = re.compile(r"^(?P<indent>[ \t]*)if\s*\(", re.MULTILINE | re.IGNORECASE)
 
     def get_name(self) -> str:
         return "SingleLineIfConverter"
@@ -45,7 +42,7 @@ class SingleLineIfConverter(FortranConverter):
         Returns:
             Text with continuations resolved into single logical lines
         """
-        lines = text.split('\n')
+        lines = text.split("\n")
         result_lines = []
         i = 0
 
@@ -54,10 +51,10 @@ class SingleLineIfConverter(FortranConverter):
 
             # Check if line ends with & (continuation character)
             stripped = line.rstrip()
-            if stripped.endswith('&'):
+            if stripped.endswith("&"):
                 # Start building the continued line
                 # Remove the trailing & and any comment after it
-                base_line = stripped.rstrip('&').rstrip()
+                base_line = stripped.rstrip("&").rstrip()
 
                 # Look ahead for continuation lines
                 i += 1
@@ -66,18 +63,18 @@ class SingleLineIfConverter(FortranConverter):
                     next_stripped = next_line.lstrip()
 
                     # Remove leading & if present (optional in Fortran)
-                    if next_stripped.startswith('&'):
+                    if next_stripped.startswith("&"):
                         next_stripped = next_stripped[1:].lstrip()
 
                     # Check if this line also continues
-                    if next_stripped.rstrip().endswith('&'):
+                    if next_stripped.rstrip().endswith("&"):
                         # Remove trailing & and continue
-                        next_stripped = next_stripped.rstrip().rstrip('&').rstrip()
-                        base_line += ' ' + next_stripped
+                        next_stripped = next_stripped.rstrip().rstrip("&").rstrip()
+                        base_line += " " + next_stripped
                         i += 1
                     else:
                         # This is the last continuation line
-                        base_line += ' ' + next_stripped
+                        base_line += " " + next_stripped
                         i += 1
                         break
 
@@ -86,7 +83,7 @@ class SingleLineIfConverter(FortranConverter):
                 result_lines.append(line)
                 i += 1
 
-        return '\n'.join(result_lines)
+        return "\n".join(result_lines)
 
     def _find_balanced_parentheses(self, text: str, start_pos: int) -> int:
         """
@@ -100,7 +97,7 @@ class SingleLineIfConverter(FortranConverter):
         Returns:
             Position of the matching closing parenthesis, or -1 if not found
         """
-        if start_pos >= len(text) or text[start_pos] != '(':
+        if start_pos >= len(text) or text[start_pos] != "(":
             return -1
 
         depth = 1
@@ -112,21 +109,21 @@ class SingleLineIfConverter(FortranConverter):
                 continue
 
             # Skip line continuation characters
-            if text[i] == '&':
+            if text[i] == "&":
                 # Skip the & and any whitespace/newlines until next content
                 i += 1
-                while i < len(text) and text[i] in ' \t\n':
+                while i < len(text) and text[i] in " \t\n":
                     i += 1
                 # Skip optional leading & on continuation line
-                if i < len(text) and text[i] == '&':
+                if i < len(text) and text[i] == "&":
                     i += 1
-                    while i < len(text) and text[i] in ' \t':
+                    while i < len(text) and text[i] in " \t":
                         i += 1
                 continue
 
-            if text[i] == '(':
+            if text[i] == "(":
                 depth += 1
-            elif text[i] == ')':
+            elif text[i] == ")":
                 depth -= 1
                 if depth == 0:
                     return i
@@ -147,10 +144,10 @@ class SingleLineIfConverter(FortranConverter):
         Returns:
             Cleaned condition string
         """
-        raw_condition = text[paren_start + 1:paren_end]
+        raw_condition = text[paren_start + 1 : paren_end]
 
         # Remove line continuations from the condition
-        lines = raw_condition.split('\n')
+        lines = raw_condition.split("\n")
         cleaned_parts = []
 
         for line in lines:
@@ -158,15 +155,15 @@ class SingleLineIfConverter(FortranConverter):
             stripped = line.strip()
 
             # Remove continuation characters
-            if stripped.endswith('&'):
+            if stripped.endswith("&"):
                 stripped = stripped[:-1].rstrip()
-            if stripped.startswith('&'):
+            if stripped.startswith("&"):
                 stripped = stripped[1:].lstrip()
 
             if stripped:
                 cleaned_parts.append(stripped)
 
-        return ' '.join(cleaned_parts)
+        return " ".join(cleaned_parts)
 
     def _parse_if_statement(self, text: str, start_pos: int):
         """
@@ -176,14 +173,14 @@ class SingleLineIfConverter(FortranConverter):
             Tuple of (indent, condition, statement, condition_comment, end_pos) or None if not a single-line if
         """
         # Find the line start to get indentation
-        line_start = text.rfind('\n', 0, start_pos) + 1
+        line_start = text.rfind("\n", 0, start_pos) + 1
 
         # Find the opening parenthesis
         match = self.if_start_pattern.match(text, line_start)
         if not match:
             return None
 
-        indent = match.group('indent')
+        indent = match.group("indent")
         paren_start = match.end() - 1  # Position of '('
 
         # Find the matching closing parenthesis
@@ -198,35 +195,35 @@ class SingleLineIfConverter(FortranConverter):
         after_paren = paren_end + 1
 
         # Skip whitespace
-        while after_paren < len(text) and text[after_paren] in ' \t':
+        while after_paren < len(text) and text[after_paren] in " \t":
             after_paren += 1
 
         # Check for continuation character and comment after condition
         condition_comment = ""
-        if after_paren < len(text) and text[after_paren] == '&':
+        if after_paren < len(text) and text[after_paren] == "&":
             # Look for a comment on this line after the &
-            line_end = text.find('\n', after_paren)
+            line_end = text.find("\n", after_paren)
             if line_end == -1:
                 line_end = len(text)
 
-            rest_of_line = text[after_paren + 1:line_end].lstrip()
-            if rest_of_line.startswith('!'):
-                condition_comment = ' ' + rest_of_line
+            rest_of_line = text[after_paren + 1 : line_end].lstrip()
+            if rest_of_line.startswith("!"):
+                condition_comment = " " + rest_of_line
 
             after_paren = line_end + 1  # Move to start of next line
 
             # Skip whitespace and optional leading & on continuation line
-            while after_paren < len(text) and text[after_paren] in ' \t':
+            while after_paren < len(text) and text[after_paren] in " \t":
                 after_paren += 1
-            if after_paren < len(text) and text[after_paren] == '&':
+            if after_paren < len(text) and text[after_paren] == "&":
                 after_paren += 1
-                while after_paren < len(text) and text[after_paren] in ' \t':
+                while after_paren < len(text) and text[after_paren] in " \t":
                     after_paren += 1
 
         # Check if it's already a then statement
         if after_paren < len(text) - 3:
-            next_word = text[after_paren:after_paren + 4].lower()
-            if next_word == 'then':
+            next_word = text[after_paren : after_paren + 4].lower()
+            if next_word == "then":
                 return None  # Already multi-line format
 
         # Find the end of the logical line, accounting for continuations
@@ -235,7 +232,7 @@ class SingleLineIfConverter(FortranConverter):
         statement_parts = []
 
         while current_pos < len(text):
-            line_end = text.find('\n', current_pos)
+            line_end = text.find("\n", current_pos)
             if line_end == -1:
                 line_end = len(text)
 
@@ -257,7 +254,7 @@ class SingleLineIfConverter(FortranConverter):
                         string_char = char
                     elif char == string_char:
                         in_string = False
-                elif char == '!' and not in_string:
+                elif char == "!" and not in_string:
                     comment_pos = i
                     break
 
@@ -268,9 +265,9 @@ class SingleLineIfConverter(FortranConverter):
             if comment_pos >= 0:
                 code_part = stripped_line[:comment_pos].rstrip()
 
-            if code_part.endswith('&'):
+            if code_part.endswith("&"):
                 has_continuation = True
-                code_part = code_part.rstrip('&').rstrip()
+                code_part = code_part.rstrip("&").rstrip()
 
             if has_continuation:
                 # Don't include the comment from the continuation line
@@ -281,22 +278,22 @@ class SingleLineIfConverter(FortranConverter):
                 # Skip leading & on next line if present
                 if current_pos < len(text):
                     # Skip whitespace and optional leading &
-                    while current_pos < len(text) and text[current_pos] in ' \t':
+                    while current_pos < len(text) and text[current_pos] in " \t":
                         current_pos += 1
-                    if current_pos < len(text) and text[current_pos] == '&':
+                    if current_pos < len(text) and text[current_pos] == "&":
                         current_pos += 1
                         # Skip more whitespace after &
-                        while current_pos < len(text) and text[current_pos] in ' \t':
+                        while current_pos < len(text) and text[current_pos] in " \t":
                             current_pos += 1
             else:
                 # No continuation, this is the end of the statement
                 # Include the comment if it's on the final line
                 statement_parts.append(stripped_line)
                 # Return the position at the end of this line
-                return (indent, condition, ' '.join(statement_parts).strip(), condition_comment, line_end)
+                return (indent, condition, " ".join(statement_parts).strip(), condition_comment, line_end)
 
         # If we get here, statement extends to end of text
-        statement = ' '.join(statement_parts).strip()
+        statement = " ".join(statement_parts).strip()
         if not statement:
             return None  # No statement, not a single-line if
 
@@ -330,7 +327,7 @@ class SingleLineIfConverter(FortranConverter):
             # Check if this match is in a string or comment
             if self._is_in_string_or_comment(text, match_start):
                 # Keep the matched portion as-is and continue searching
-                result.append(text[match_start:match.end()])
+                result.append(text[match_start : match.end()])
                 i = match.end()
                 continue
 
@@ -348,14 +345,14 @@ class SingleLineIfConverter(FortranConverter):
                 i = end_pos
             else:
                 # Couldn't parse (e.g., already multi-line if-then), keep original matched part
-                result.append(text[match_start:match.end()])
+                result.append(text[match_start : match.end()])
                 i = match.end()
 
         # Append any remaining text after the last match
         final_chunk = text[i:]
         result.append(final_chunk)
 
-        return ''.join(result), conversions_made
+        return "".join(result), conversions_made
 
     def check_text(self, text: str) -> List[ConversionIssue]:
         """Check for single-line if statements without modifying text."""
@@ -375,19 +372,21 @@ class SingleLineIfConverter(FortranConverter):
             if parsed:
                 indent, condition, statement, condition_comment, end_pos = parsed
 
-                line_num = text[:match_start].count('\n') + 1
-                line_start = text.rfind('\n', 0, match_start) + 1
-                line_end = text.find('\n', match_start)
+                line_num = text[:match_start].count("\n") + 1
+                line_start = text.rfind("\n", 0, match_start) + 1
+                line_end = text.find("\n", match_start)
                 if line_end == -1:
                     line_end = len(text)
                 original_line = text[line_start:line_end]
 
-                issues.append(ConversionIssue(
-                    line_number=line_num,
-                    error_code="STYLE006",
-                    message="Single-line if statement found: should use 'if (...) then' / 'end if' format",
-                    original_text=original_line.strip()
-                ))
+                issues.append(
+                    ConversionIssue(
+                        line_number=line_num,
+                        error_code="STYLE006",
+                        message="Single-line if statement found: should use 'if (...) then' / 'end if' format",
+                        original_text=original_line.strip(),
+                    )
+                )
 
         return issues
 
@@ -413,4 +412,4 @@ class SingleLineIfConverter(FortranConverter):
             if parsed:
                 count += 1
 
-        return {'single_line_ifs': count}
+        return {"single_line_ifs": count}

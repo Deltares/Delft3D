@@ -388,7 +388,8 @@ contains
                   "dewpoint_airtemperature_cloudiness", &
                   "dewpoint_airtemperature_cloudiness_solarradiation", &
                   "sea_ice_area_fraction", "sea_ice_thickness", &
-                  "solarradiation", "netsolarradiation", "longwaveradiation", "wavesignificantheight", &
+                  "solarradiation", "netsolarradiation", "longwaveradiation", & 
+                  "sensibleheatflux", "latentheatflux", "wavesignificantheight", &
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
@@ -2090,7 +2091,7 @@ contains
          end if
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2109,7 +2110,7 @@ contains
          nr_fourier_items = ecFileReaderGetNumberOfItems(instancePtr, fileReaderId)
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_fourier) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_passthrough) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2150,7 +2151,7 @@ contains
          ItemIDList(targetIndex) = magnitude
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2170,7 +2171,6 @@ contains
    ! =======================================================================
 
    !> Create source Items and their contained types, based on a spiderweb file's header.
-      !! meteo1.f90: reaspwheader
    function ecProviderCreateSpiderwebItems(instancePtr, fileReaderPtr) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2191,6 +2191,8 @@ contains
       type(tEcItem), pointer :: item2 !< Item containing quantity2
       type(tEcItem), pointer :: item3 !< Item containing quantity3
       character(len=maxNameLen) :: rec !< helper variable
+      character(len=maxNameLen) :: utmzone
+      character(len=maxNameLen) :: gridunit
       !
       success = .false.
       item1 => null()
@@ -2212,13 +2214,21 @@ contains
       spw_merge_frac = 0.5
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_merge_frac')
       if (len_trim(rec) > 0) read (rec, *) spw_merge_frac
+      utmzone = 'undefined'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_utm_zone_target')
+      if (len_trim(rec) > 0) read (rec, *) utmzone
+      gridunit = 'degree'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'grid_unit')
+      if (len_trim(rec) > 0) read (rec, *) gridunit
       !
       ! One common ElementSet.
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType_spw) .and. &
                  ecElementSetSetRadius(instancePtr, elementSetId, radius, spw_merge_frac, radius_unit) .and. &
-                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols))) then
+                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols) .and. &
+                 ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit))) then
          success = .false.
+         return
       end if
       !
       ! ===== quantity1: wind_speed =====
@@ -2406,7 +2416,7 @@ contains
 
       ! Initialize the new Converter.
       if (.not. (ecConverterSetType(instancePtr, converterId, convType_uniform))) return
-      if (.not. (ecConverterSetOperand(instancePtr, converterId, operand_replace_element))) return
+      if (.not. (ecConverterSetOperand(instancePtr, converterId, EC_OPERAND_REPLACE_ELEMENT))) return
       if (.not. (ecConverterSetInterpolation(instancePtr, converterId, interpolate_time_extrapolation_ok))) return
       if (.not. (ecConverterSetElement(instancePtr, converterId, targetIndex))) return
 

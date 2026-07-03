@@ -51,7 +51,6 @@ set D3D_HOME=%scriptDir%..
 set workdir=%CD%
 set dflow2d3ddir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
 
 
 if  %debugLevel% EQU 0 (
@@ -72,7 +71,7 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW
-set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
+set PATH=%dflow2d3ddir%;%sharedir%
 echo executing: "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 

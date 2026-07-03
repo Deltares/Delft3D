@@ -58,7 +58,7 @@ BEGIN
             VALUE "InternalName", modname_program
             VALUE "LegalCopyright", LEGAL_COPYRIGHT
             VALUE "LegalTrademarks", LEGAL_TRADEMARKS
-            VALUE "OriginalFilename", "dimr_dll.dll\0"
+            VALUE "OriginalFilename", "dimr.dll\0"
             VALUE "PrivateBuild", "-\0"
             VALUE "ProductName", "dimr\0"
             VALUE "ProductVersion", modname_version

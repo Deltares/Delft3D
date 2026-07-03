@@ -3770,6 +3770,8 @@ module m_meteo
    integer, target :: item_cloudiness !< 'cloudiness' quantity
    integer, target :: item_solar_radiation !< 'solarradiation' quantity
    integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
+   integer, target :: item_sensible_heat_flux !< 'sensibleheatflux' quantity
+   integer, target :: item_latent_heat_flux !< 'latentheathflux' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -3938,6 +3940,8 @@ contains
       item_cloudiness = ec_undef_int
       item_solar_radiation = ec_undef_int
       item_long_wave_radiation = ec_undef_int
+      item_sensible_heat_flux = ec_undef_int
+      item_latent_heat_flux = ec_undef_int
       item_hac_humidity = ec_undef_int
       item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
@@ -4098,17 +4102,25 @@ contains
 
    !> Translate FM's meteo1 'operand' enum to EC's 'operand' enum.
    subroutine operand_fm_to_ec(operand, ec_operand)
-      use timespace_parameters, only: FM_OVERRIDE => OPERAND_OVERRIDE, FM_ADD => OPERAND_ADD
+      use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_OVERRIDE_IF_MISSING, OPERAND_ADD, OPERAND_MULTIPLY, OPERAND_MINIMUM, OPERAND_MAXIMUM
       integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
       
       select case (operand)
-      case (FM_OVERRIDE)
-         ec_operand = operand_replace
-      case (FM_ADD)
-         ec_operand = operand_add
+      case (OPERAND_OVERRIDE)
+         ec_operand = EC_OPERAND_REPLACE
+      case (OPERAND_OVERRIDE_IF_MISSING)
+         ec_operand = EC_OPERAND_REPLACE_IF_MISSING
+      case (OPERAND_ADD)
+         ec_operand = EC_OPERAND_ADD
+      case (OPERAND_MULTIPLY)
+         ec_operand = EC_OPERAND_MULTIPLY
+      case (OPERAND_MINIMUM)
+         ec_operand = EC_OPERAND_MINIMUM
+      case (OPERAND_MAXIMUM)
+         ec_operand = EC_OPERAND_MAXIMUM
       case default
-         ec_operand = operand_undefined
+         ec_operand = EC_OPERAND_UNDEFINED
       end select
    end subroutine operand_fm_to_ec
 
@@ -4405,6 +4417,12 @@ contains
       case ('longwaveradiation')
          itemPtr1 => item_long_wave_radiation
          dataPtr1 => long_wave_radiation
+      case ('sensibleheatflux')
+         itemPtr1 => item_sensible_heat_flux
+         dataPtr1 => sensible_heat_flux
+      case ('latentheatflux')
+          itemPtr1 => item_latent_heat_flux
+         dataPtr1 => latent_heat_flux
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
@@ -4502,8 +4520,6 @@ contains
          isfun = find_name(sfunname, waqinput)
          itemPtr1 => item_waqsfun(isfun)
          dataPtr1 => sfuninp(isfun, :)
-      case ('initialtracer')
-         continue
       case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')

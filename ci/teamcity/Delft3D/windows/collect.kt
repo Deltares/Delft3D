@@ -30,7 +30,7 @@ object WindowsCollect : BuildType({
 
     params {
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
-        param("container.tag", "collect-environment")
+        param("container.tag", "collect-environment-ltsc2025")
     }
 
     vcs {
@@ -58,7 +58,7 @@ object WindowsCollect : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             scriptContent = """
-                copy /Y C:\Windows\System32\vcomp140.dll x64\lib\
+                copy /Y C:\Windows\System32\vcomp140.dll x64\bin\
             """.trimIndent()
         }
         python {
@@ -90,7 +90,7 @@ object WindowsCollect : BuildType({
         }
         script {
             name = "Prepare artifact to upload"
-            dockerImage = "containers.deltares.nl/base_windows_containers/server:ltsc2022"
+            dockerImage = "containers.deltares.nl/mcr-proxy/windows/server:ltsc2025"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             scriptContent = """
@@ -141,7 +141,6 @@ object WindowsCollect : BuildType({
             artifacts {
                 artifactRules = """
                     oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
-                    oss_artifacts_x64_*.zip!/x64/lib/** => x64/lib
                     ?:oss_artifacts_x64_*.zip!/x64/share/** => x64/share
                 """.trimIndent()
             }

@@ -70,6 +70,62 @@ namespace pre_c_sumo
         }
     };
 
+    struct SourcesSinks
+    {
+        std::vector<double> coordinates;
+        std::vector<int> precice_ids;
+        std::vector<double> sinks_x;
+        std::vector<double> sinks_y;
+        std::vector<double> sinks_z_min;
+        std::vector<double> sinks_z_max;
+        std::vector<double> sources_x;
+        std::vector<double> sources_y;
+        std::vector<double> sources_z_min;
+        std::vector<double> sources_z_max;
+        std::vector<double> discharges;
+
+        void clear()
+        {
+            coordinates.clear();
+            precice_ids.clear();
+            clearData();
+        }
+
+        void clearData()
+        {
+            sinks_x.clear();
+            sinks_y.clear();
+            sinks_z_min.clear();
+            sinks_z_max.clear();
+            sources_x.clear();
+            sources_y.clear();
+            sources_z_min.clear();
+            sources_z_max.clear();
+            discharges.clear();
+        }
+
+        void setCoordinatesDimension(const std::size_t dimension)
+        {
+            coordinates.resize(dimension * 2, 0.0);
+            precice_ids.resize(dimension, 0); // Assuming 2D coordinates (x, y)
+        }
+
+        void addData(const double new_sink_x, const double new_sink_y, const double new_sink_z_min,
+                     const double new_sink_z_max, const double new_source_x, const double new_source_y,
+                     const double new_source_z_min, const double new_source_z_max, const double new_discharge)
+        {
+            sinks_x.push_back(new_sink_x);
+            sinks_y.push_back(new_sink_y);
+            sinks_z_min.push_back(new_sink_z_min);
+            sinks_z_max.push_back(new_sink_z_max);
+            sources_x.push_back(new_source_x);
+            sources_y.push_back(new_source_y);
+            sources_z_min.push_back(new_source_z_min);
+            sources_z_max.push_back(new_source_z_max);
+            discharges.push_back(new_discharge);
+        }
+    };
+
     /**
      * @brief Entry point into the C-SUMO preCICE library.
      *

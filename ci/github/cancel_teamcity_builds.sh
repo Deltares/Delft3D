@@ -222,8 +222,8 @@ function query_trigger() {
     kill_em_all=1
     ;;
   *)
-    printf "     %b Unknown state '%s'. Cannot proceed.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
-    kill_em_all=0
+    printf "     %b Unknown state '%s'. The build state is likely not available yet. Cannot proceed. Trying again later may result in successful cancellation.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
+    exit 1
     ;;
   esac
 
@@ -238,7 +238,7 @@ function cancel_all_builds() {
 
   local locator
   printf -v locator \
-    "affectedProject:%s,branch:%s,revision:%s,sinceBuild:%s,state:any,count:1000,lookupLimit:5000,defaultFilter:false&fields=build(id)" \
+    "affectedProject:%s,branch:%s,revision:%s,sinceBuild:%s,state:any,count:200,defaultFilter:false&fields=build(id)" \
     "${TEAMCITY_PROJECT_ID}" \
     "${BRANCH}" \
     "${COMMIT_HASH}" \

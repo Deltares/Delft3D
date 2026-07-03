@@ -716,7 +716,7 @@ static void printAbout(char* exeName)
 %s \n\
 Copyright (C)  Stichting Deltares, 2011-2026. \n\
 GNU General Public License, see <http://www.gnu.org/licenses/>. \n\n\
-sales@deltaressystems.nl \n",
+sales@deltares.nl \n",
         getfullversionstring_dimr_exe());
     printf("%s\n\n", geturlstring_dimr_exe());
 }

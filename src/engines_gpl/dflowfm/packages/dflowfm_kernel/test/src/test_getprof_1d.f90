@@ -291,7 +291,7 @@ contains
       use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
       use m_flowgeom, only: lnx
       use m_flow_geominit, only: flow_geominit
-      use m_network, only: initialize_1dadmin
+      use m_network, only: initialize_1dadmin, deallocnetwork
       use m_physcoef, only: default_physcoef, ag
       use unstruc_channel_flow, only: network, default_channel_flow
       use m_Roughness, only: R_MANNING
@@ -303,6 +303,7 @@ contains
       integer :: i, new_link, error_code
       real(kind=dp) :: area, width, perim, hydrad, chezy
 
+      call deallocNetwork(network)
       call disable_timers_logging_and_mpi()
       call default_physcoef()
       grid_helper = t_grid_helper()
@@ -357,7 +358,7 @@ contains
    subroutine test_getprof_1d__network1d__full() bind(C)
       use network_data, only: numl
       use m_flow_geominit, only: flow_geominit
-      use m_network, only: initialize_1dadmin
+      use m_network, only: initialize_1dadmin, deallocnetwork
       use unstruc_channel_flow, only: network, default_channel_flow
 
       type(t_grid_helper) :: grid_helper
@@ -368,6 +369,7 @@ contains
       real(kind=dp) :: area, width, perim
 
       call disable_timers_logging_and_mpi()
+      call deallocNetwork(network)
       grid_helper = t_grid_helper()
       call grid_helper%make_square_grid( &
          bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -456,11 +458,12 @@ contains
 
       type(t_grid_helper) :: grid_helper
       integer, parameter :: japerim = 1
-      integer, parameter :: calcconv = 0
+      integer, parameter :: calcconv = 1
       integer :: new_link, error_code
       real(kind=dp) :: area, width, perim, hydrad, chezy
 
       ! Arrange
+      call default_physcoef()
       call disable_timers_logging_and_mpi()
       ! Generate mesh
       grid_helper = t_grid_helper()
@@ -530,7 +533,9 @@ contains
 
       ! Initialize `prof1d` without `profiles1D`
       call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
-      network%loaded = .false. ! Skip the channel_flow branch
+      if (associated(network%adm%line2cross)) then
+         deallocate(network%adm%line2cross)
+      end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
       ! Act
@@ -659,7 +664,9 @@ contains
 
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile(width=2.0_dp, height=1.5_dp)
-      network%loaded = .false. ! Trick to skip the branch
+      if (associated(network%adm%line2cross)) then
+         deallocate(network%adm%line2cross)
+      end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
       call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
