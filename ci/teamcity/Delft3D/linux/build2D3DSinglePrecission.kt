@@ -37,6 +37,8 @@ object LinuxBuild2D3DSP : BuildType({
         param("generator", """"Unix Makefiles"""")
         param("product", "auto-select")
         select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
+        // param("third_party_libs_image_tag", "%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%")
+        param("third_party_libs_image_tag", "oneapi-2024-ifx-release-delft3d-2026.02")
     }
 
     vcs {
@@ -80,20 +82,20 @@ object LinuxBuild2D3DSP : BuildType({
                 cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=flow2d3d -D CMAKE_BUILD_TYPE=%build_type% -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install
                 cmake --build build_flow2d3d --parallel --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%third_party_libs_image_tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
         }
     }
 
-    dependencies {
-        dependency(LinuxThirdPartyLibs) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-        }
-    }
+    // dependencies {
+    //     dependency(LinuxThirdPartyLibs) {
+    //         snapshot {
+    //             onDependencyFailure = FailureAction.FAIL_TO_START
+    //             onDependencyCancel = FailureAction.CANCEL
+    //         }
+    //     }
+    // }
 
 })
