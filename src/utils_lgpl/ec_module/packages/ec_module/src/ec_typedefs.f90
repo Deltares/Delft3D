@@ -181,7 +181,7 @@ module m_ec_typedefs
       integer :: ncid !< unique NetCDF ncid
       character(len=maxFileNameLen) :: ncfilename !< netCDF filename
       integer, allocatable, dimension(:) :: dimlen !< lengths of dimensions
-      integer, allocatable, dimension(:) :: variable_dimension !< lengths of dimensions
+      integer, allocatable, dimension(:) :: variable_ndims !< lengths of dimensions
       type(str), allocatable, dimension(:) :: vector_definitions !< list of vector names
       character(len=maxFileNameLen), allocatable, dimension(:) :: variable_names !< list of variable names
       real(hp), allocatable, dimension(:) :: fillvalues !< missing/fillvalue for each variable

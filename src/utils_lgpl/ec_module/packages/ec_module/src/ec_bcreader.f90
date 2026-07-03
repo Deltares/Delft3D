@@ -115,10 +115,10 @@ contains
           end if
        end do
                               
-       if (bc%ncptr%variable_dimension(nrVar) == 2) then 
+       if (bc%ncptr%variable_ndims(nrVar) == 2) then 
           bc%func = BC_FUNC_TSERIES
        end if
-       if (bc%ncptr%variable_dimension(nrVar) == 3) then
+       if (bc%ncptr%variable_ndims(nrVar) == 3) then
          bc%func = BC_FUNC_TIM3D
        end if
        

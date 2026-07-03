@@ -1579,6 +1579,9 @@ contains
             do idIdx = 1, size(sourceItemIds)
                sourceItemId = sourceItemIds(idIdx)
                success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (.not. success) then
+                  goto 1234
+               end if
                if (present(targetIndex)) then
                   if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
                      goto 1234

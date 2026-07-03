@@ -183,7 +183,7 @@ contains
       if (ierr /= 0) then
          return
       end if
-      allocate (ncptr%variable_dimension(nVars), stat=ierr)
+      allocate (ncptr%variable_ndims(nVars), stat=ierr)
       if (ierr /= 0) then
          return
       end if
@@ -235,7 +235,7 @@ contains
             ncptr%offsets(iVars) = 0.0_dp
          end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
-         ncptr%variable_dimension(iVars) = var_ndims(iVars)
+         ncptr%variable_ndims(iVars) = var_ndims(iVars)
                   
          ! Check for important var: was it the stations?
          if (strcmpi(ncptr%variable_names(iVars),'station_id') .or. strcmpi(ncptr%variable_names(iVars),'location') ) then        
@@ -290,7 +290,7 @@ contains
 
       if (ncptr%vertical_coordinate_id /= -1) then
             ierr = ncu_get_att(ncptr%ncid, ncptr%vertical_coordinate_id, 'positive', positive)
-            ncptr%is_vertical_coord_time_varying = ncptr%variable_dimension(ncptr%vertical_coordinate_id) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
+            ncptr%is_vertical_coord_time_varying = ncptr%variable_ndims(ncptr%vertical_coordinate_id) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
             if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
                ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
                ncptr%layerdimid = var_dimids(1, ncptr%vertical_coordinate_id) ! For convenience also store the dimension ID explicitly
@@ -461,10 +461,10 @@ contains
       integer, intent(in) :: l_id
       integer, dimension(:), intent(in) :: dims
       integer, intent(in) :: timelevel
-      integer, intent(in) :: func
       real(dp), dimension(:), intent(out) :: nctime
       real(dp), dimension(:), intent(out) :: ncvalue
       real(dp), dimension(:), intent(inout), allocatable :: buffer
+      integer, intent(in) :: func !< should be a BC_FUNC_* enum value that specifies the type of timeseries
 
       integer :: vectormax, iv, il, ierr
 

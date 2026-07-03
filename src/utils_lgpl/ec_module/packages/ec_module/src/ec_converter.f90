@@ -1848,7 +1848,7 @@ contains
             end if
 
             select case (connection%converterPtr%operandType)
-            case (EC_operand_replace_element, EC_operand_replace, EC_operand_add)
+            case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
                ! Are the subproviders 3D or 2D?
                if (.not. (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                           associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z))) then ! target has a vertical coordinate
@@ -1875,15 +1875,6 @@ contains
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
                         val(1:vectormax) &
                      )
-
-                     ! if ((connection%converterPtr%operandType == EC_operand_replace) .or. &
-                     !     (connection%converterPtr%operandType == EC_operand_replace_element) ) then
-                     !     connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
-
-                     ! else if (connection%converterPtr%operandType == EC_operand_add) then
-                     !    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-                     !       connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) + val(1:vectormax)
-                     ! end if
                   end do
                else
                   ! 3D subproviders
@@ -1994,14 +1985,6 @@ contains
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                            val(1:vectormax) &
                         )
-
-                        ! if ((connection%converterPtr%operandType == EC_operand_replace) .or. &
-                        !     (connection%converterPtr%operandType == EC_operand_replace_element) ) then 
-                        !    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-                        ! else if (connection%converterPtr%operandType == EC_operand_add) then
-                        !    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                        !       = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-                        ! end if
                      end do ! target layers
                   else
                      do k = kbegin, kend
@@ -2054,15 +2037,6 @@ contains
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                            val(1:vectormax) &
                         )
-
-                        ! if ((connection%converterPtr%operandType == EC_operand_replace) .or. &
-                        !     (connection%converterPtr%operandType == EC_operand_replace_element) ) then      
-                        !    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-                        ! else if (connection%converterPtr%operandType == EC_operand_add) then
-                        !    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                        !       = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-                        ! end if
-                        !
                      end do ! target layers
                   end if ! are we averaging the source in the vertical direction ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
