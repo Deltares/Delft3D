@@ -2244,7 +2244,7 @@ contains
                   
                   subconverterId = ecInstanceCreateConverter(instancePtr)
                   if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                           ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                           ecConverterSetOperand(instancePtr, subconverterId, EC_operand_replace_element) .and. &
                            ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                            ecConverterSetElement(instancePtr, subconverterId, targetIndex))) then 
                               return
