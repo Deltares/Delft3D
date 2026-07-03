@@ -6444,6 +6444,17 @@
         <file name="tst_bed.xyz" ignore="true" />
       </checks>
     </testCase>
+    <testCase name="e02_f033_c011_write_surface_quantities_to_map_file" ref="dflowfm_default">
+        <path version="2026-07-03T09:26:46.172000">e02_dflowfm/f033_statistical_output/c011_write_surface_quantities_to_map_file</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/SimpleBucket_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f033_c01_statistics_boundary_discharge"  ref="dflowfm_default">
       <path version="2025-10-15T15:18:39.492000">e02_dflowfm/f033_statistical_output/c01_statistics_boundary_discharge</path>
       <maxRunTime>10.0000000</maxRunTime>
