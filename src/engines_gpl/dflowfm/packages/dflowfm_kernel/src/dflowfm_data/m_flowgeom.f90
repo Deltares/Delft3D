@@ -40,6 +40,7 @@ module m_flowgeom
    use m_flowparameters, only: jawave
    use m_cell_geometry
    use m_waveconst
+   use m_ug_meshgeom, only: t_ug_meshgeom
 
    implicit none
 
@@ -353,4 +354,5 @@ contains
          ntheta_s = 0
       end if
    end subroutine reset_flowgeom
+
 end module m_flowgeom
