@@ -760,7 +760,7 @@ contains
    !
    !    ! Initialize the new Converter.
    !    if (.not. (ecConverterSetType(instancePtr, converterId, convType_uniform))) return
-   !    if (.not. (ecConverterSetOperand(instancePtr, converterId, operand_replace_element))) return
+   !    if (.not. (ecConverterSetOperand(instancePtr, converterId, EC_OPERAND_REPLACE_ELEMENT))) return
    !    if (.not. (ecConverterSetInterpolation(instancePtr, converterId, interpolate_timespace))) return
    !    if (.not. (ecConverterSetElement(instancePtr, converterId, targetIndex))) return
    !

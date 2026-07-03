@@ -238,7 +238,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -305,7 +305,19 @@ contains
       operand = OPERAND_UNKNOWN
       call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
       if (is_successful) then
-         operand = convert_legacy_operand_string_to_integer(property_value)
+         operand = convert_operand_string_to_integer(property_value)
+
+         if (len_trim(property_value) == 1) then
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+               //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
+            call warn_flush()
+         end if
+
+         if (operand == OPERAND_UNKNOWN) then
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+               //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
+            call err_flush()
+         end if 
       end if
 
       num_items_in_block = 0
@@ -332,7 +344,8 @@ contains
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
                call resolvePath(forcing_file, base_dir)
-               if (operand /= OPERAND_OVERRIDE .and. operand /= OPERAND_ADD) then
+
+               if (operand == OPERAND_UNKNOWN) then ! If no operand value is given, use default (override, but add if quantity-pli combination already registered)
                   operand = OPERAND_OVERRIDE
                   if (quantity_pli_combination_is_registered(quantity, location_file)) then
                      operand = OPERAND_ADD
