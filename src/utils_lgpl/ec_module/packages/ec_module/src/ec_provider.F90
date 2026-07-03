@@ -1779,7 +1779,7 @@ contains
       character(len=:), allocatable :: polyline_name !< polyline name read from pli-file
       character(len=4) :: cnum !< temp integer converted to a string
       integer :: id !< dummy, catches ids which are not used
-      integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID, zBCBlockId
+      integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID, zBCBlockId, ZQuantityId
       integer :: maxLay
       type(tEcItem), pointer :: itemPT, zItemPT
       type(tEcItem), pointer :: itemt3D
@@ -1963,13 +1963,17 @@ contains
             zTargetItemId = ecInstanceCreateItem(instancePtr)
 
             fieldId = ecInstanceCreateField(instancePtr)            
+            zQuantityId = ecInstanceCreateQuantity(instancePtr)
+            if (.not. (ecQuantitySet(instancePtr, zQuantityId, name='polytim_item'))) then
+               return
+            end if
             if (.not. ecItemSetRole(instancePtr, zTargetItemId, itemPT%role)) then 
                return
             end if
             if (.not. ecItemSetType(instancePtr, zTargetItemId, itemPT%accessType)) then
                return
             end if
-            if (.not. ecItemSetQuantity(instancePtr, zTargetItemId, itemPT%quantityPtr%id)) then
+            if (.not. ecItemSetQuantity(instancePtr, zTargetItemId, zQuantityId)) then
                return
             end if
             if (.not. ecItemSetElementSet(instancePtr, zTargetItemId, itemPT%elementSetPtr%id)) then
@@ -2244,7 +2248,7 @@ contains
                   
                   subconverterId = ecInstanceCreateConverter(instancePtr)
                   if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                           ecConverterSetOperand(instancePtr, subconverterId, EC_operand_replace_element) .and. &
+                           ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                            ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                            ecConverterSetElement(instancePtr, subconverterId, targetIndex))) then 
                               return
@@ -2254,7 +2258,7 @@ contains
                   if (.not. ecConnectionSetConverter(instancePtr, connectionId, subconverterId)) then 
                      return
                   end if
-                  zItemId = ecFileReaderFindItem(instancePtr, zFileReaderId, trim("uniform_item"))
+                  zItemId = ecFileReaderFindItem(instancePtr, zFileReaderId, "uniform_item")
                   if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, zItemId)) then
                      return
                   end if
