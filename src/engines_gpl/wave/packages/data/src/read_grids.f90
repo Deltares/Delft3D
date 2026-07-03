@@ -377,7 +377,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     real(hp), dimension(:,:,:),allocatable :: xy
     real(hp), dimension(4)                 :: xcell
     real(hp), dimension(4)                 :: ycell
-    real(hp), parameter                    :: tol
+    real(hp),                              :: tol
     integer                                :: etamax
     integer                                :: i
     integer                                :: ierr
@@ -513,7 +513,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     !
     do i = 1, ksimax
        do j = 1, etamax
-          if (abs(xy(1, i, j)-xymiss)<1.0e-6_hp .and. abs(xy(2, i, j)-xymiss)<1.0e-6_hp) then
+          if (abs(xy(1, i, j)-xymiss)<tol .and. abs(xy(2, i, j)-xymiss)<tol) then
              codb(i,j) = 0
           endif
        enddo
