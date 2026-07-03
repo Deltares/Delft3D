@@ -36,7 +36,7 @@ object LinuxBuild2D3DSP : BuildType({
     params {
         param("generator", """"Unix Makefiles"""")
         param("product", "auto-select")
-        select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
+        // select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
         // param("third_party_libs_image_tag", "%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%")
         param("third_party_libs_image_tag", "oneapi-2024-ifx-release-delft3d-2026.02")
     }
