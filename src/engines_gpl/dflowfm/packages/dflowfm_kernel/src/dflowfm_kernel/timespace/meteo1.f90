@@ -4444,7 +4444,7 @@ contains
          itemPtr1 => item_bubblescreen_discharge
          ! Do not point to an array here as it might be reallocated after initialization
          nullify (dataPtr1)
-      case ('sourcesink_constituent', 'sourcesink_constituentdelta')
+      case ('sourcesink_constituentdelta')
          if (strcmpi(constituent_name, 'salinity')) then
             iconst = ISALT
          else

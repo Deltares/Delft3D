@@ -67,7 +67,7 @@ contains
       call get_constituent_name("sourcesink_sedFracBar", constituent_name, base_quantity)
 
       call F90_ASSERT_STREQ(cstr(constituent_name), cstr("Bar"), cstr("Unexpected constituent_name"))
-      call F90_ASSERT_STREQ(cstr(base_quantity), cstr("sourcesink_constituent"), cstr("Unexpected base_quantity"))
+      call F90_ASSERT_STREQ(cstr(base_quantity), cstr("sourcesink_constituentDelta"), cstr("Unexpected base_quantity"))
    end subroutine test_get_constituent_name__without_delta
    !$f90tw)
 

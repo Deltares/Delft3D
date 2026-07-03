@@ -158,7 +158,7 @@ contains
    !! If the original_quantity does not involve consituents, then the passed base_quantity is unchanged (and empty constituent name).
    !! The quantity can have a postfix 'Delta', but this is optional:
    !! For example: 'sourcesink_salinityDelta' -> 'sourcesink_constituentDelta', 'salinity'.
-   !! Or:          'sourcesink_salinity' -> 'sourcesink_constituent', 'salinity'.
+   !! Or:          'sourcesink_salinity' -> 'sourcesink_constituentDelta', 'salinity'.
    !!
    !! This subroutine currently only covers source sinks, because they are the only external forcings that generalize on
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
@@ -185,11 +185,10 @@ contains
             return  ! Discharge is not a constituent. Do nothing.
          end if
 
+         base_quantity = 'sourcesink_constituentDelta'
          if (strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
-            base_quantity = 'sourcesink_constituentDelta'
             constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
          else
-            base_quantity = 'sourcesink_constituent'
             constituent_name = original_quantity(index_prefix_end + 1:)
          end if
 
