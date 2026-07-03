@@ -1812,6 +1812,19 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e02_f006_c014_spatially_varying_vicoww" ref="dflowfm_default">
+        <path version="2026-07-03T14:05:49.062000">e02_dflowfm/f006_external_forcing/c014_spatially_varying_vicoww</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/spatial_vicoww_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="vicwwu" toleranceAbsolute="0.0001" />
+                    <parameter name="vicwws_total" toleranceAbsolute="0.0001" />
+                    <parameter name="vicwws" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f006_c021_basinnofriction_squaresfine" ref="dflowfm_default">
       <path version="2026-03-26T16:06:44.519000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
