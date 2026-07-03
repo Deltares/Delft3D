@@ -19,8 +19,7 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(mduJson, static (ctx, file) =>
         {
             string json = file.GetText(ctx.CancellationToken)?.ToString()!;
-            JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
-            MduSchema schema = JsonSerializer.Deserialize<MduSchema>(json, options)!;
+            MduSchema schema = JsonSerializer.Deserialize<MduSchema>(json)!;
 
             WriteDocument(ctx, schema);
             WriteSchema(ctx, schema);
@@ -45,9 +44,10 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
         sb.AppendLine("public sealed partial class MduDocument");
         sb.AppendLine("{");
 
-        // Constructor
-        sb.AppendLine("    /// <summary>Initializes a new instance of <see cref=\"MduDocument\"/> class.</summary>");
-        sb.AppendLine("    public MduDocument()");
+        // Initialize sections
+        sb.AppendLine(
+            "    /// <summary>Initializes all MDU section properties with their corresponding API-backed instances.</summary>");
+        sb.AppendLine("    private void InitializeSections()");
         sb.AppendLine("    {");
 
         foreach (string sectionName in schema.Sections.Select(section => ToPascalCase(section.Name)))
@@ -63,7 +63,7 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
         {
             string sectionName = ToPascalCase(section.Name);
             sb.AppendLine($"    /// <summary>{EscapeXml(section.Description)}</summary>");
-            sb.AppendLine($"    public {sectionName}Section {sectionName} {{ get; }}");
+            sb.AppendLine($"    public {sectionName}Section {sectionName} {{ get; private set; }}");
             sb.AppendLine();
         }
 
@@ -249,18 +249,67 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
     {
         string fullyQualifiedKey = ToFullyQualifiedKey(section.Name, property.Key);
         string valueType = ToMduValueType(property.ValueType);
+        string status = ToMduPropertyStatus(property.Status);
 
         sb.AppendLine("                new MduPropertySchema");
         sb.AppendLine("                {");
         sb.AppendLine($"                    Key = \"{property.Key}\",");
-        sb.AppendLine($"                    FullyQualifiedKey = \"{fullyQualifiedKey}\",");
         sb.AppendLine($"                    Section = \"{section.Name}\",");
-        sb.AppendLine($"                    ValueType = MduValueType.{valueType},");
+        sb.AppendLine($"                    FullyQualifiedKey = \"{fullyQualifiedKey}\",");
         sb.AppendLine($"                    Description = \"{EscapeString(property.Description)}\",");
+        sb.AppendLine($"                    ValueType = MduValueType.{valueType},");
+        sb.AppendLine($"                    Status = MduPropertyStatus.{status},");
 
         if (!string.IsNullOrEmpty(property.Unit))
         {
             sb.AppendLine($"                    Unit = \"{EscapeString(property.Unit!)}\",");
+        }
+
+        if (!string.IsNullOrEmpty(property.DefaultValue))
+        {
+            sb.AppendLine($"                    DefaultValue = \"{EscapeString(property.DefaultValue!)}\",");
+        }
+
+        MduRange? range = property.Validation?.Range;
+        if (range != null)
+        {
+            string? minValue = range.MinInclusive ?? range.MinExclusive;
+            string? maxValue = range.MaxInclusive ?? range.MaxExclusive;
+
+            if (!string.IsNullOrEmpty(minValue))
+            {
+                sb.AppendLine($"                    MinValue = \"{minValue}\",");
+            }
+
+            if (!string.IsNullOrEmpty(maxValue))
+            {
+                sb.AppendLine($"                    MaxValue = \"{maxValue}\",");
+            }
+        }
+
+        if (property.EnumValues.Any())
+        {
+            sb.AppendLine("                    EnumValues =");
+            sb.AppendLine("                    [");
+
+            bool isIntEnum = property.ValueType == "intenum";
+            int index = 0;
+            foreach (KeyValuePair<string, string> pair in property.EnumValues)
+            {
+                int intValue = isIntEnum ? int.Parse(pair.Key) : index;
+                string stringValue = isIntEnum ? pair.Key : EscapeString(pair.Key);
+
+                sb.AppendLine("                        new MduEnumValue");
+                sb.AppendLine("                        {");
+                sb.AppendLine($"                            IntValue = {intValue},");
+                sb.AppendLine($"                            StringValue = \"{stringValue}\",");
+                sb.AppendLine($"                            Description = \"{EscapeString(pair.Value)}\",");
+                sb.AppendLine("                        },");
+
+                index++;
+            }
+
+            sb.AppendLine("                    ],");
         }
 
         sb.AppendLine("                },");
@@ -301,6 +350,16 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
             "list[path]" => "PathList",
             "datetime" => "DateTime",
             _ => "String"
+        };
+    }
+
+    private static string ToMduPropertyStatus(string? status)
+    {
+        return status switch
+        {
+            "research" => "Research",
+            "deprecated" => "Deprecated",
+            _ => "Available"
         };
     }
 

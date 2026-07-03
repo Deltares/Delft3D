@@ -72,16 +72,6 @@ public sealed class MduSchemaTest
     }
 
     [Test]
-    public void EveryProperty_HasRequiredMetadata()
-    {
-        Assert.That(MduSchema.AllProperties,
-            Has.All.Matches<MduPropertySchema>(property =>
-                !string.IsNullOrEmpty(property.Key)
-                && !string.IsNullOrEmpty(property.FullyQualifiedKey)
-                && !string.IsNullOrEmpty(property.Section)));
-    }
-
-    [Test]
     public void EverySection_HasProperties()
     {
         Assert.That(MduSchema.Sections,
@@ -96,6 +86,32 @@ public sealed class MduSchemaTest
             MduSchema.Sections.Select(section => section.Name);
 
         Assert.That(names, Is.Unique);
+    }
+
+    [Test]
+    public void EveryProperty_HasRequiredMetadata()
+    {
+        Assert.That(MduSchema.AllProperties,
+            Has.All.Matches<MduPropertySchema>(property =>
+                !string.IsNullOrEmpty(property.Key)
+                && !string.IsNullOrEmpty(property.FullyQualifiedKey)
+                && !string.IsNullOrEmpty(property.Section)));
+    }
+
+    [Test]
+    public void EveryEnumProperty_HasEnumValues()
+    {
+        Assert.That(
+            MduSchema.AllProperties.Where(p => p.ValueType is MduValueType.Enum),
+            Has.All.Matches<MduPropertySchema>(p => p.EnumValues.Any()));
+    }
+
+    [Test]
+    public void EveryNonEnumProperty_HasNoEnumValues()
+    {
+        Assert.That(
+            MduSchema.AllProperties.Where(p => p.ValueType is not MduValueType.Enum),
+            Has.All.Matches<MduPropertySchema>(p => !p.EnumValues.Any()));
     }
 
     [Test]

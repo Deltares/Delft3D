@@ -13,6 +13,14 @@ public sealed partial class MduDocument : IDisposable
     private readonly MduApi _api = new();
 
     /// <summary>
+    /// Initializes a new instance of <see cref="MduDocument" /> class.
+    /// </summary>
+    public MduDocument()
+    {
+        InitializeSections();
+    }
+
+    /// <summary>
     /// Gets the issue report produced after the last load operation.
     /// </summary>
     public IssueReport Report { get; private set; } = IssueReport.Empty;

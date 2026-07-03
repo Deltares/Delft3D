@@ -2590,7 +2590,7 @@
                 {
                     "key": "wind_eachstep",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "intenum",
                     "description": "Switch for wind and air pressure each time step or each user time step.",
                     "status": "research",
                     "enum_values": {
