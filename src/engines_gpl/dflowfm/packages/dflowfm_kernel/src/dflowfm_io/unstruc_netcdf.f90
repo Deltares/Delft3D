@@ -65,7 +65,7 @@ module unstruc_netcdf
    use m_unc_put_var_map
    use m_unc_put_var_map_generated
 
-   implicit none
+   implicit none(type,external)
 
    private :: nerr_, err_firsttime_, err_firstline_, &
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
@@ -3766,9 +3766,10 @@ contains
       use m_get_chezy, only: get_chezy
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
-      use m_turbulence, only: in_situ_density, potential_density
+      use m_turbulence, only: in_situ_density, potential_density, vicwws_total, difwws_total
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_flowgeom_interpolate, only: link_to_node_vector
+      use m_links_to_centers, only: links_to_centers
 
       implicit none
 
@@ -4354,6 +4355,8 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, nc_precision, UNC_LOC_WU, 'vicwwu', 'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, nc_precision, UNC_LOC_W, 'vicwws', 'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, nc_precision, UNC_LOC_W, 'vicwws_total', 'eddy_viscosity', 'total vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, nc_precision, UNC_LOC_W, 'difwws_total', 'eddy_diffusivity', 'total vertical eddy diffusivity of salinity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                if (iturbulencemodel == 3) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
                else if (iturbulencemodel == 4) then
@@ -5336,9 +5339,20 @@ contains
       ! Turbulence.
       if (map_write_settings%tur > 0 .and. kmx > 0) then
          if (iturbulencemodel >= 3) then
+            vicwwu_total = 0.0_dp
+            vicwws_total = 0.0_dp
+            do LL = 1, lnx
+               call getLbotLtopmax(LL, Lb, Ltx)
+               do L = Lb - 1, Ltx
+                  vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+               end do
+            end do
+            call links_to_centers(vicwws_total, vicwwu_total)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, UNC_LOC_WU, turkin1, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, UNC_LOC_WU, vicwwu, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, UNC_LOC_W, vicwws, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, UNC_LOC_W, vicwws_total, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, UNC_LOC_W, difwws_total, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, UNC_LOC_WU, tureps1, jabndnd=jabndnd_)
          end if
       end if
@@ -6586,7 +6600,8 @@ contains
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
       use m_get_chezy, only: get_chezy
-      use m_turbulence, only: in_situ_density, potential_density
+      use m_turbulence, only: in_situ_density, potential_density, vicwwu_total, vicwws_total, difwws_total
+      use m_physcoef, only: vicoww
       use m_waves, only: uorb
 
       implicit none
@@ -6630,7 +6645,7 @@ contains
          id_duneheight, id_dunelength, id_ksd, id_ksr, id_ksmr, id_ks, &
          id_taurat, id_dm, id_dg, id_dgsd, id_frac, id_mudfrac, id_sandfrac, id_fixfac, id_hidexp, id_mfluff, id_scrn, id_urmscc, id_Fxcc, id_Fycc, &
          id_sscx, id_sscy, id_sscx_reconstructed, id_sscy_reconstructed, &
-         id_turkin1, id_tureps1, id_vicwwu, id_vicwws, id_swanbl, &
+         id_turkin1, id_tureps1, id_vicwwu, id_vicwws, id_vicwws_total, id_difwws_total, id_swanbl, &
          id_rnveg, id_diaveg, id_veg_stemheight
 
       integer, dimension(:, :), allocatable, save :: id_dxx ! fractions
@@ -7206,6 +7221,18 @@ contains
                   ierr = nf90_put_att(imapfile, id_vicwws(iid), 'long_name', 'turbulent vertical eddy viscosity at pressure points')
                   ierr = nf90_put_att(imapfile, id_vicwws(iid), 'units', 'm2 s-1')
                   ierr = nf90_put_att(imapfile, id_vicwws(iid), '_FillValue', dmiss)
+
+                  ierr = nf90_def_var(imapfile, 'vicwws_total', nf90_double, [id_wdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_vicwws_total(iid))
+                  ierr = nf90_put_att(imapfile, id_vicwws_total(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                  ierr = nf90_put_att(imapfile, id_vicwws_total(iid), 'long_name', 'total vertical eddy viscosity at pressure points')
+                  ierr = nf90_put_att(imapfile, id_vicwws_total(iid), 'units', 'm2 s-1')
+                  ierr = nf90_put_att(imapfile, id_vicwws_total(iid), '_FillValue', dmiss)
+
+                  ierr = nf90_def_var(imapfile, 'difwws_total', nf90_double, [id_wdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_difwws_total(iid))
+                  ierr = nf90_put_att(imapfile, id_difwws_total(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                  ierr = nf90_put_att(imapfile, id_difwws_total(iid), 'long_name', 'total vertical eddy diffusivity of salinity at pressure points')
+                  ierr = nf90_put_att(imapfile, id_difwws_total(iid), 'units', 'm2 s-1')
+                  ierr = nf90_put_att(imapfile, id_difwws_total(iid), '_FillValue', dmiss)
 
                   ierr = nf90_def_var(imapfile, 'tureps1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_tureps1(iid))
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
@@ -8652,6 +8679,24 @@ contains
                   end do
                end do
                ierr = nf90_put_var(imapfile, id_vicwws(iid), work0(0:kmx, 1:ndxi), [1, 1, itim], [kmx + 1, ndxi, 1])
+               work0 = dmiss
+               do kk = 1, ndxi
+                  call getkbotktop(kk, kb, kt)
+                  call getlayerindices(kk, nlayb, nrlay)
+                  do k = kb - 1, kt
+                     work0(k - kb + nlayb, kk) = vicwws_total(k)
+                  end do
+               end do
+               ierr = nf90_put_var(imapfile, id_vicwws_total(iid), work0(0:kmx, 1:ndxi), [1, 1, itim], [kmx + 1, ndxi, 1])
+               work0 = dmiss
+               do kk = 1, ndxi
+                  call getkbotktop(kk, kb, kt)
+                  call getlayerindices(kk, nlayb, nrlay)
+                  do k = kb - 1, kt
+                     work0(k - kb + nlayb, kk) = difwws_total(k)
+                  end do
+               end do
+               ierr = nf90_put_var(imapfile, id_difwws_total(iid), work0(0:kmx, 1:ndxi), [1, 1, itim], [kmx + 1, ndxi, 1])
             end if
 
          end if

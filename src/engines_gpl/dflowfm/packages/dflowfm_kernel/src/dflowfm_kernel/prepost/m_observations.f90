@@ -141,7 +141,9 @@ contains
       IVAL_TEPS = 0
       IVAL_VIU = 0
       IVAL_VICWWS = 0
+      IVAL_VICWWS_TOTAL = 0
       IVAL_DIFWWS = 0
+      IVAL_DIFWWS_TOTAL = 0
       IVAL_VICWWU = 0
       IVAL_RICH = 0
       IVAL_RICHS = 0
@@ -389,7 +391,9 @@ contains
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)
+            IVAL_VICWWS_TOTAL = next_index(i)
             IVAL_DIFWWS = next_index(i)
+            IVAL_DIFWWS_TOTAL = next_index(i)
             IVAL_VICWWU = next_index(i)
          end if
          if (idensform > 0) then
@@ -465,7 +469,9 @@ contains
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
       IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
+      IPNT_VICWWS_TOTAL = ivalpoint(IVAL_VICWWS_TOTAL, kmx, nlyrs)
       IPNT_DIFWWS = ivalpoint(IVAL_DIFWWS, kmx, nlyrs)
+      IPNT_DIFWWS_TOTAL = ivalpoint(IVAL_DIFWWS_TOTAL, kmx, nlyrs)
       IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
       IPNT_RICH = ivalpoint(IVAL_RICH, kmx, nlyrs)
       IPNT_RICHS = ivalpoint(IVAL_RICHS, kmx, nlyrs)
