@@ -142,6 +142,14 @@ class TestCase:
             program_config.shell_arguments = shell_arguments
             program_config.shell = shell
             program_config.case_name = self.__config.name
+            # The test case's maxRunTime (computed in __init__) is only ever used for
+            # logging unless we apply it here. Without this, a program whose own
+            # <program> element has no maxRunTime falls back to max_run_time == 0,
+            # which subprocess.run() interprets as "no timeout" (see program.py),
+            # letting a hung/deadlocked process block indefinitely until the CI
+            # system's own (much coarser) global build timeout eventually kills it.
+            if program_config.max_run_time == 0:
+                program_config.max_run_time = self.__maxRunTime
             program_copy.overwriteConfiguration(program_config)
 
             # add runner sequence number and runner configuration to local storage

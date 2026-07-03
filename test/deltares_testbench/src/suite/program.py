@@ -155,8 +155,15 @@ class Program:
                 else:
                     logger.warning(f"{prog_path} contained error message - {error_message}")
                     self.__error = subprocess.CalledProcessError(-1, self.__program_config.path, error_message)
+        except subprocess.TimeoutExpired as e:
+            timeout_msg = (
+                f"Program {self.__program_config.path} exceeded its max run time of "
+                f"{self.__program_config.max_run_time}s and was terminated: {e!r}"
+            )
+            logger.exception(timeout_msg)
+            self.__error = e
         except Exception as e:
-            logger.exception(f"{repr(e)} Could not execute program: {e.filename}")
+            logger.exception(f"{repr(e)} Could not execute program: {getattr(e, 'filename', 'unknown')}")
             self.__error = e
 
     def __handle_process_output(self, logger: ILogger, completed_process: subprocess.CompletedProcess) -> None:

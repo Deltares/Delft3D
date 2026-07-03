@@ -301,11 +301,18 @@ class TestSetRunner(ABC):
             if not skip_testcase:
                 logger.test_Result(TestResultType.Exception, str(exception))
 
-        logger.test_finished()
-        if in_use is not None:
-            with idle_process:
-                in_use.value -= config.process_count
-                idle_process.notify_all()
+        finally:
+            # Always release this testcase's process slot and wake up anyone waiting for
+            # one, no matter how run_test_case exits (including exceptions not covered by
+            # the `except Exception` above, such as a KeyboardInterrupt/SystemExit, or an
+            # error raised by test_finished()/logging itself). Skipping this on any exit
+            # path would leak the slot forever, deadlocking the main process in
+            # idle_process.wait() for the rest of the run.
+            logger.test_finished()
+            if in_use is not None:
+                with idle_process:
+                    in_use.value -= config.process_count
+                    idle_process.notify_all()
 
         return test_result
 
