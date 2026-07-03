@@ -15,10 +15,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("proj/9.3.1")
         self.requires("gdal/3.12.1")
         self.requires("expat/2.8.0")
-        # PETSc is Intel/oneAPI + Linux only for now; on Windows it is still
-        # built from third_party_open via add_subdirectory.
-        if self.settings.os == "Linux":
-            self.requires("petsc/3.25.3")
+        self.requires("petsc/3.25.3")
 
     def generate(self):
         save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")

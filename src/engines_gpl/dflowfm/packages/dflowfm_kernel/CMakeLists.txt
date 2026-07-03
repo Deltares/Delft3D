@@ -168,15 +168,12 @@ target_link_libraries(${library_name} PRIVATE
                       waq_utils_c
                       waq_utils_f
                       spherepack
+                      PETSc::PETSc
 )
 
-# Add dependencies
 if (UNIX)
-    find_package(PETSc CONFIG REQUIRED)
-
     target_link_libraries(${library_name} PRIVATE
                           interacter_stub
-                          PETSc::PETSc
                           uuid
     )
 endif(UNIX)
@@ -198,9 +195,6 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_libraries(${library_name} PRIVATE
-                            petsc
-    )
     if(NOT TARGET impi)
       message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
     endif()
