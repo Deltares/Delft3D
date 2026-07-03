@@ -1,13 +1,13 @@
 #! /bin/bash
   
-# Usage:
-    #
-    # This script runs Delft3D-FLOW in parallel on Linux Alma8
-    # Adapt and use it for your own purpose
-    #
-    # Usage example:
-    # Execute in the working directory:
-    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
+# Purpose:
+# This script runs (coupled) Delft3D-FLOW simulations on Linux Alma8 slurm system.
+# This is the master script for submitting a job to a slurm partition.
+# Adapt and use it for your own purpose
+#
+# Usage example:
+# Execute in the working directory:
+# /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
 
 # Set bash options. Exit on failures (and propagate errors in pipes).
 set -eo pipefail
@@ -123,10 +123,10 @@ if [[ ! -f $configfile ]]; then
 fi
 
 
-workdir=`pwd`
+workdir=$PWD
 
-scriptdirname=`readlink -f "$0"`
-scriptdir=`dirname "$scriptdirname"`
+scriptdirname=$(readlink -f "$0")
+scriptdir=${scriptdirname%/*}
 D3D_HOME="$scriptdir/.."
 if [[ ! -d $D3D_HOME ]]; then
     echo "ERROR: directory $D3D_HOME does not exist"

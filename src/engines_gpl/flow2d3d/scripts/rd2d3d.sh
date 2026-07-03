@@ -1,36 +1,49 @@
 #! /bin/bash  
+
+# Purpose:
+# This script runs (coupled) Delft3D-FLOW simulations on Linux Alma8 slurm system.
+# This is the script for starting the actual simulation on a slurm partition.
+# Submit using the submit_dflow2d3d.sh script or directly using sbatch.
+
 # Specify Slurm SBATCH directives 
-#SBATCH --nodes=1              # Number of nodes.
+#SBATCH --nodes=1               # Number of nodes.
 #SBATCH --ntasks-per-node=1     # The number of tasks to be invoked on each node.
                                 # For sequential runs, the number of tasks should be '1'.
                                 # Note: SLURM_NTASKS is equal to "--nodes" multiplied by "--ntasks-per-node".
 #SBATCH --job-name=delft3d4     # Specify a name for the job allocation.
 #SBATCH --time=00:15:00         # Set a limit on the total run time of the job allocation.
 #SBATCH --partition=4vcpu       # Request a specific partition for the resource allocation.
-                                # See: https://publicwiki.deltares.nl/display/Deltareken/Compute+nodes.
 
 set -eo pipefail
 
 function print_usage_info {
     echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
-    echo "Run delft3d4 on Alma8."
+    echo "Run (coupled) Delft3D-FLOW simulations on Alma8 slurm system."
     echo
     echo "Options:"
     echo "-c, --corespernode <M>"
-    echo "       number of partitions per node, default $corespernodedefault"
+    echo "       Number of partitions per node, default $corespernodedefault"
     echo "-h, --help"
-    echo "       print this help message and exit"
+    echo "       Print this help message and exit"
     echo "-m, --masterfile <filename>"
     echo "       Delft3D-FLOW configuration filename, default config_d_hydro.xml"
-    echo "-w, --wavefile <wname>"
-    echo "       name of mdw file"
     echo "--rtc"
     echo "       Online with RTC. Not possible with parallel Delft3D-FLOW."
-    echo "The following arguments are used when called by submit_dflow2d3d_h7.sh:"
-    echo "--D3D_HOME <path>"
-    echo "       path to binaries and scripts"
-    echo "    --NODES <N>"
-    echo "       number of partitions=NODES*CoresPerNode, default 1 (not parallel)"
+    echo "-w, --wavefile <wname>"
+    echo "       Name of mdw file"
+    echo "--D3D_HOME"
+    echo "       Folder where Delft3D 4 is installed (derived from the location of this file if not specified)"
+    echo "--csumodeployed"
+    echo "       Logical specifying whether C-SUMO executable (true) or C-SUMO from MATLAB (false) is to be used."
+    echo "       Derived from specified keyword --csumo or csumodir if not specified."
+    echo "--csumo"
+    echo "       Path to .sh script for starting C-SUMO executable (compiled C-SUMO)"
+    echo "--mcrdir"
+    echo "       Folder where the Matlab Runtime Compiler can be found (compiled C-SUMO)"
+    echo "--csumodir"
+    echo "       Folder where the COSUMO functions can be loaded from (C-SUMO from MATLAB)"
+    echo "--matlabversion"
+    echo "       MATLAB version to use (C-SUMO from MATLAB)"
     exit 1
 }
 
@@ -44,7 +57,7 @@ function print_usage_info {
 configfile=config_d_hydro.xml
 corespernodedefault=1
 corespernode=$corespernodedefault
-NSLOTS=$SLURM_TASKS_PER_NODE
+NSLOTS=${SLURM_NTASKS:-1}
 debuglevel=-1
 runscript_extraopts=
 wavefile=
@@ -64,6 +77,7 @@ export I_MPI_FABRICS=ofi
 export FI_PROVIDER=tcp
 export I_MPI_OFI_PROVIDER=tcp
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS_SWAN=$SLURM_CPUS_PER_TASK
 
 #
 ## Start processing command line options:
@@ -109,7 +123,7 @@ case $key in
     mcrdir="$1"
     shift
     ;;
-    -csumodeployed)
+    -csumodeployed|--csumodeployed)
     csumodeployed="$1"
     shift
     ;;
@@ -168,11 +182,11 @@ if [[ ! -f $configfile ]]; then
     print_usage_info
 fi
 
-workdir=`pwd`
+workdir=$PWD
 
 if [[ -z $D3D_HOME ]]; then
-    scriptdirname=`readlink \-f \$0`
-    scriptdir=`dirname $scriptdirname`
+    scriptdirname=$(readlink \-f "\$0")
+    scriptdir=${scriptdirname%/*}
     export D3D_HOME=$scriptdir/..
 else
     # D3D_HOME is passed through via argument --D3D_HOME
@@ -278,7 +292,7 @@ fi
 if [[ $withrtc -ne 0 ]] ; then # running with RTC online
 
     # Shared memory allocation
-    export DIO_SHM_ESM=`"$bindir/esm_create"`
+    export DIO_SHM_ESM=$("$bindir/esm_create")
     
     # Start Delft3D-FLOW in the background
     echo "executing:"
