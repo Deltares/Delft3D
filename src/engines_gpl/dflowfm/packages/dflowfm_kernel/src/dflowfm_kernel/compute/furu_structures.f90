@@ -107,7 +107,6 @@ contains
                if (hu(l) > 0) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
-
                   select case (network%sts%struct(istru)%type)
                   case (ST_GENERAL_ST)
                      firstiter = .true.
@@ -189,6 +188,7 @@ contains
                      pstru%generalst%fu(:, L0) = 0.0_dp
                      pstru%generalst%ru(:, L0) = 0.0_dp
                      pstru%generalst%au(:, L0) = 0.0_dp
+                     pstru%generalst%au_max(L0) = 0.0_dp
                      pstru%generalst%state(:, L0) = 0
                   else if (pstru%type == ST_CULVERT) then
                      pstru%culvert%state = 0

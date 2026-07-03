@@ -71,7 +71,8 @@ module fm_external_forcings
    end interface
 
    interface
-      module subroutine compute_air_water_interaction_most_fluxes()
+      module subroutine compute_air_water_interaction_most_fluxes(initialization)
+         logical, intent(in) :: initialization !< initialization phase
       end subroutine compute_air_water_interaction_most_fluxes
    end interface
 
@@ -539,8 +540,8 @@ contains
          if (jawel) then
             ext_force_bnd_used = .true.
          else
-            call qnerror('Boundary external forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(md_extfile_new), ''' not found.'
+            call qnerror('External forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
+            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile_new), ''' not found.'
             call err_flush()
          end if
       end if
@@ -862,7 +863,7 @@ contains
       call tree_create(trim(filename), bnd_ptr)
       call prop_file('ini', trim(filename), bnd_ptr, istat)
       if (istat /= 0) then
-         call qnerror('Boundary external forcing file ', trim(filename), ' could not be read')
+         call qnerror('External forcing file ', trim(filename), ' could not be read.')
          return
       end if
 
