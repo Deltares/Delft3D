@@ -39,6 +39,7 @@ object LinuxBuild : BuildType({
         param("build_type", "%build_type%")
         param("commit_id", "%build.revisions.revision%")
         param("commit_id_short", "%build.revisions.short%")
+        param("build_tools_image_tag", "oneapi-2024-delft3d-2026.02")
         // param("third_party_libs_image_tag", "%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%")
         param("third_party_libs_image_tag", "oneapi-2024-ifx-release-delft3d-2026.02")
     }
