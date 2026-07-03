@@ -1,7 +1,7 @@
 module test_fm_external_forcings_utils
    use assertions_gtest
    use fm_external_forcings_utils, only: get_constituent_name
-   use m_util_helpers, only: cstr
+   use iso_c_utils, only: cstr
 
    implicit none(type, external)
 

@@ -2,7 +2,7 @@ module test_longculverts
     use assertions_gtest
     use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
     use m_network_helpers, only: t_grid_helper
-    use m_util_helpers, only: cstr
+    use iso_c_utils, only: cstr
     use m_file_helpers, only: create_file
 
     implicit none(type, external)
