@@ -107,7 +107,7 @@ int sealock_load_timeseries(sealock_state_t *lock, char *filepath) {
   if (status == SEALOCK_OK) {
     lock->current_row = NO_CURRENT_ROW;
     num_rows = get_csv_num_rows(&lock->timeseries_data);
-    if (num_rows != 0) {
+    if (num_rows == 0) {
       log_error("Lock '%s': operational parameters file '%s' contains no data rows.\n", lock->id,
                 filepath);
       return SEALOCK_ERROR;
