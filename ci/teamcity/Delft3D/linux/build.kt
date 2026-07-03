@@ -39,7 +39,8 @@ object LinuxBuild : BuildType({
         param("build_type", "%build_type%")
         param("commit_id", "%build.revisions.revision%")
         param("commit_id_short", "%build.revisions.short%")
-        param("build_tools_image_tag", "%dep.${LinuxBuildTools.id}.env.IMAGE_TAG%")
+        // param("third_party_libs_image_tag", "%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%")
+        param("third_party_libs_image_tag", "oneapi-2024-ifx-release-delft3d-2026.02")
     }
 
     params {
@@ -78,7 +79,7 @@ object LinuxBuild : BuildType({
                 cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
                 cmake --build build_%product% --parallel --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%third_party_libs_image_tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
@@ -92,7 +93,7 @@ object LinuxBuild : BuildType({
 
                 ctest --test-dir build_%product% --build-config %build_type% --output-junit ../unit-test-report-linux.xml --output-on-failure
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%third_party_libs_image_tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
@@ -106,7 +107,7 @@ object LinuxBuild : BuildType({
 
                 cmake --install build_%product% --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%third_party_libs_image_tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
@@ -120,13 +121,13 @@ object LinuxBuild : BuildType({
         }
     }
 
-    dependencies {
-        dependency(LinuxThirdPartyLibs) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-        }
-    }
+    // dependencies {
+    //     dependency(LinuxThirdPartyLibs) {
+    //         snapshot {
+    //             onDependencyFailure = FailureAction.FAIL_TO_START
+    //             onDependencyCancel = FailureAction.CANCEL
+    //         }
+    //     }
+    // }
 
 })
