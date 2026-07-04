@@ -18,7 +18,7 @@
 #
 # Build:  docker build -f ci/dockerfiles/linux/third-party-libs-nvhpc.Dockerfile -t delft3d-third-party-libs:nvhpc .
 
-ARG NVHPC_TAG=nvcr.io/nvidia/nvhpc:26.3-devel-cuda_multi-ubuntu22.04
+ARG NVHPC_TAG=26.3-devel-cuda_multi-ubuntu22.04
 FROM nvcr.io/nvidia/nvhpc:${NVHPC_TAG} AS base
 
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
@@ -37,7 +37,8 @@ RUN <<"EOF"
 apt-get update
 apt-get install -y --no-install-recommends \
     build-essential gcc g++ make cmake wget ca-certificates \
-    pkg-config m4 file uuid-dev libxml2-dev patch
+    pkg-config m4 file uuid-dev libxml2-dev patch \
+    libgtest-dev
 rm -rf /var/lib/apt/lists/*
 EOF
 
@@ -46,6 +47,19 @@ EOF
 # If a future tag changes that, add the SDK bin dirs to PATH explicitly.
 
 WORKDIR /src
+
+# --- googletest (C++) --------------------------------------------------------
+RUN <<"EOF"
+set -eo pipefail
+# On Ubuntu 22.04, libgtest-dev provides sources that need to be compiled
+cd /usr/src/googletest
+cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_CXX_COMPILER=g++
+cmake --build build --parallel "$(nproc)"
+cmake --install build
+EOF
 
 # --- zlib + zstd (C) ---------------------------------------------------------
 RUN <<"EOF"

@@ -18,7 +18,7 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 RUN <<"EOF"
 apt-get update
 apt-get install -y --no-install-recommends \
-    sudo dos2unix tree strace git curl ca-certificates less
+    sudo dos2unix tree strace git curl ca-certificates less unzip
 rm -rf /var/lib/apt/lists/*
 EOF
 
@@ -28,6 +28,44 @@ useradd --uid ${USER_UID} -ms /bin/bash dev
 echo "dev ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/dev
 chmod 0440 /etc/sudoers.d/dev
 EOF
+
+# ninja is required for building cmake
+RUN --mount=type=cache,target=/var/cache/ninja <<"EOF"
+set -eo pipefail
+
+URL=https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+INSTALLER_DIR=/var/cache/ninja/$(basename $(dirname "$URL"))
+if [[ -d "$INSTALLER_DIR" ]]; then
+    echo "CACHED $INSTALLER_DIR"
+else
+    mkdir -p $INSTALLER_DIR
+    wget --quiet --output-document="${INSTALLER_DIR}/ninja-linux.zip" $URL
+fi
+
+pushd $INSTALLER_DIR
+unzip ninja-linux.zip
+chmod +x ninja
+mv ninja /usr/bin/
+popd
+EOF
+
+RUN --mount=type=cache,target=/var/cache/cmake <<"EOF"
+set -eo pipefail
+
+URL=https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3-linux-x86_64.sh
+INSTALLER_DIR=/var/cache/cmake/$(basename -s '.sh' "$URL")
+if [[ -d "$INSTALLER_DIR" ]]; then
+    echo "CACHED $INSTALLER_DIR"
+else
+    mkdir -p $INSTALLER_DIR
+    wget --quiet --output-document="${INSTALLER_DIR}/install_cmake.sh" $URL
+fi
+
+pushd $INSTALLER_DIR
+sh install_cmake.sh --skip-license --prefix=/usr
+popd
+EOF
+
 
 USER dev
 WORKDIR /home/dev
@@ -42,7 +80,16 @@ EOF
 ENV PATH=/home/dev/.local/bin:$PATH UV_LINK_MODE=copy
 RUN <<"EOF"
 curl -LsSf https://astral.sh/uv/install.sh | sh
-export UV_PYTHON_DOWNLOADS=never
+
+# Configure `uv` to install python and tools in the dev user's home directory.
+export UV_PYTHON_INSTALL_DIR=/home/dev/.local/share/uv/python
+export UV_TOOL_DIR=/home/dev/.local/share/uv/tools
+export UV_PYTHON_BIN_DIR=/home/dev/.local/bin
+export UV_TOOL_BIN_DIR=/home/dev/.local/bin
+
+# Install python 3.12 and python tools.
+uv python install 3.12 --default
+uv tool install 'conan ~= 2.29.0'
 uv tool install fortls || true
 uv tool install fprettify || true
 EOF
