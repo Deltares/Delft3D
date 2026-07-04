@@ -166,6 +166,49 @@ cmake --build build --parallel "$(nproc)"
 cmake --install build
 EOF
 
+
+# --- ESMF (Earth System Modeling Framework) ---------------------------------
+FROM base AS esmf
+
+RUN --mount=type=cache,target=/var/cache/src/,id=esmf-nvhpc <<"EOF-esmf"
+set -eo pipefail
+
+URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.9.1.tar.gz'
+BASEDIR='esmf-8.9.1'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+export ESMF_DIR="/var/cache/src/${BASEDIR}"
+export ESMF_COMM=mpiuni # we do not need mpi
+export ESMF_COMPILER=nvhpc
+export ESMF_C=nvc
+export ESMF_CXX=nvc++
+export ESMF_F90=nvfortran
+export ESMF_NETCDF=split
+export ESMF_NETCDF_INCLUDE=/usr/local/include
+export ESMF_NETCDF_LIBPATH=/usr/local/lib
+export ESMF_INSTALL_PREFIX=/usr/local
+export ESMF_INSTALL_BINDIR=bin
+export ESMF_INSTALL_LIBDIR=lib
+export ESMF_INSTALL_HEADERDIR=include
+export ESMF_INSTALL_MODDIR=include
+export ESMF_INSTALL_DOCDIR=doc
+export ESMF_CXXSTD=sysdefault
+export ESMF_BOPT=O
+export ESMF_OPTLEVEL=2
+
+make --jobs=$(nproc)
+make install
+popd
+EOF-esmf
+
+
 # Final environment for downstream FM build.
 RUN cat >> /etc/profile.d/delft3d-env.sh <<'EOT'
 export FC=mpif90

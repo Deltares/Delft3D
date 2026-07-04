@@ -29,7 +29,9 @@ echo "dev ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/dev
 chmod 0440 /etc/sudoers.d/dev
 EOF
 
-# ninja is required for building cmake
+# --- ninja build tool --------------------------------------------------------
+FROM base AS ninja
+
 RUN --mount=type=cache,target=/var/cache/ninja <<"EOF"
 set -eo pipefail
 
@@ -49,6 +51,9 @@ mv ninja /usr/bin/
 popd
 EOF
 
+# --- CMake build tool --------------------------------------------------------
+FROM ninja AS cmake
+
 RUN --mount=type=cache,target=/var/cache/cmake <<"EOF"
 set -eo pipefail
 
@@ -66,12 +71,40 @@ sh install_cmake.sh --skip-license --prefix=/usr
 popd
 EOF
 
-
-RUN --mount=type=cache,target=/var/cache/src/,id=esmf-nvhpc <<"EOF-esmf"
+RUN --mount=type=cache,target=/var/cache/src/,id=xerces-c-nvhpc <<"EOF-xerces-c"
 set -eo pipefail
 
-URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.9.1.tar.gz'
-BASEDIR='esmf-8.9.1'
+URL='https://github.com/apache/xerces-c/archive/refs/tags/v3.2.5.tar.gz'
+BASEDIR='xerces-c-3.2.5'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
+if [[ "$DEBUG" = "0" ]]; then
+    cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+        -DCMAKE_C_FLAGS="-O3 -DNDEBUG -fPIC" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG -fPIC" \
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release
+else
+    cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+        -DCMAKE_C_FLAGS="-g -O0 -fPIC" -DCMAKE_CXX_FLAGS="-g -O0 -fPIC" \
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
+fi
+make --jobs=$(nproc)
+make install
+popd
+EOF-xerces-c
+
+
+RUN --mount=type=cache,target=/var/cache/src/,id=pugixml-nvhpc <<"EOF-pugixml"
+set -eo pipefail
+
+URL='https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz'
+BASEDIR='pugixml-1.15'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
@@ -81,30 +114,18 @@ fi
 
 pushd "/var/cache/src/${BASEDIR}"
 
-export ESMF_DIR="/var/cache/src/${BASEDIR}"
-export ESMF_COMM=mpiuni # we do not need mpi
-export ESMF_COMPILER=nvhpc
-export ESMF_C=nvc
-export ESMF_CXX=nvc++
-export ESMF_F90=nvfortran
-export ESMF_NETCDF=split
-export ESMF_NETCDF_INCLUDE=/usr/local/include
-export ESMF_NETCDF_LIBPATH=/usr/local/lib
-export ESMF_INSTALL_PREFIX=/usr/local
-export ESMF_INSTALL_BINDIR=bin
-export ESMF_INSTALL_LIBDIR=lib
-export ESMF_INSTALL_HEADERDIR=include
-export ESMF_INSTALL_MODDIR=include
-export ESMF_INSTALL_DOCDIR=doc
-export ESMF_CXXSTD=sysdefault
-export ESMF_BOPT=O
-export ESMF_OPTLEVEL=2
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
-make --jobs=$(nproc)
-make install
+cmake -S . -B build \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D BUILD_SHARED_LIBS=ON \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib
+
+cmake --build build --parallel $(nproc)
+cmake --install build
 popd
-EOF-esmf
-
+EOF-pugixml
 
 
 USER dev
