@@ -262,7 +262,7 @@ contains
       do while ((.not. trachy_resistance) .and. (itrt < trachy_fl%gen%ntrt))
          itrt = itrt + 1
          ! The statement could be optimized a bit more to be evaluated only if such area definitions exist (see above).
-         if ((trachy_fl%gen%ittdef(itrt, 2) == 154) .or. (trachy_fl%gen%ittdef(itrt, 2) == 155) .or. (trachy_fl%gen%ittdef(itrt, 2) == 156)) then ! if Baptist type 154
+         if ((trachy_fl%gen%ittdef(itrt, 2) == 154) .or. (trachy_fl%gen%ittdef(itrt, 2) == 155) .or. (trachy_fl%gen%ittdef(itrt, 2) == 156) .or. (trachy_fl%gen%ittdef(itrt, 2) == 160)) then ! if Baptist type 154
             trachy_resistance = .true.
          end if
       end do
