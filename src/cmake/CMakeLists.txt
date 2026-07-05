@@ -163,7 +163,8 @@ if (UNIX)
     #MPI
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
-    set(mpi_module_path ${mpi_include_path})
+    # For UNIX, use the MPI Fortran include directories which contains the module path
+    set(mpi_module_path ${MPI_Fortran_COMPILER_INCLUDE_DIRS})
 
     # Petsc (disabled for the NVHPC proof-of-concept: serial dflowfm uses the
     # internal Saad solver, Icgsolver=4, and PETSc source is #ifdef HAVE_PETSC guarded).

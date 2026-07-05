@@ -39,24 +39,28 @@ endif(WIN32)
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-if (WIN32)
-    include_directories(${mpi_module_path}
-                        ${version_include_dir}
-    )
+# Include MPI module path for both Windows and Unix
+include_directories(${mpi_module_path}
+                    ${version_include_dir}
+)
 
+if (WIN32)
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
-
+    
+    # Link MPI libraries for Windows
+    target_link_directories(${executable_name} PRIVATE "${mpi_library_path}")
+    target_link_libraries(${executable_name} PRIVATE "${mpi_fortran_library}")
 endif(WIN32)
 
-target_link_directories(${executable_name} PRIVATE
-                        "${mpi_library_path}")
-
-target_link_libraries(${executable_name} PRIVATE "${mpi_fortran_library}")
+if(UNIX)
+    # Link MPI libraries for Unix using CMake's MPI targets
+    target_link_libraries(${executable_name} PRIVATE MPI::MPI_Fortran)
+endif(UNIX)
 
 # Create the folder structure in Visual Studio
 source_group("Resources" FILES
