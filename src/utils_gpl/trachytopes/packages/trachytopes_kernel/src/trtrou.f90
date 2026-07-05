@@ -1098,6 +1098,8 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
              expchifoliage  = rttdef(itrt, 9)
              cbed           = rttdef(itrt, 10)
              karmanalpha    = rttdef(itrt, 11)
+             !blockage_factor      =  rttdef(itrt, 12)
+             !blockage_power       =  rttdef(itrt, 13)
              
              ! Relative vegetation height
              hk     = max(1.0_fp, depth/vheigh)
@@ -1118,6 +1120,8 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                     ! Vegetation parameter
                     phi = drag*densit*(uc/uchistem)**expchistem + &
                         & densitfoliage*dragfoliage*(uc/uchifoliage)**expchifoliage
+                    !phi = drag*densit*(uc/uchistem)**expchistem + &
+                    !    & densitfoliage*dragfoliage*(uc/uchifoliage)**expchifoliage*blockage_factor**blockage_power
                     
                     ! Effective bed friction 
                     ch_icode = cbed + sqrt(ag)/(karmanalpha*vonkar)*log(hk)* &
