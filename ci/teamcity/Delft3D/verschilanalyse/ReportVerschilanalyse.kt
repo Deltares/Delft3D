@@ -103,30 +103,6 @@ object ReportVerschilanalyse: BuildType({
                 """.trimIndent()
             }
         }
-        python {
-            name = "Publish artifacts to S3"
-            pythonVersion = customPython {
-                executable = "python3.11"
-            }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable ./ci/python[verschilanalyse]"
-            }
-            command = module {
-                module = "ci_tools.verschilanalyse.publish_artifacts_to_s3"
-                scriptArguments = """
-                    --endpoint-url=%env.AWS_ENDPOINT_URL%
-                    --access-key-id=%env.AWS_ACCESS_KEY_ID%
-                    --secret-access-key=%env.AWS_SECRET_ACCESS_KEY%
-                    --bucket=%env.AWS_BUCKET_NAME%
-                    --prefix=output
-                    --project-id=%teamcity.project.id%
-                    --build-type-id=%system.teamcity.buildType.id%
-                    --build-id=%teamcity.build.id%
-                    --checkout-dir=%teamcity.build.checkoutDir%
-                """.trimIndent()
-            }
-        }
     }
 
     dependencies {

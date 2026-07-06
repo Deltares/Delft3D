@@ -6,40 +6,42 @@ Usage: python generate_unc_put_var_map.py <output_file>
 import sys
 from pathlib import Path
 
-
 # --- Type definitions --------------------------------------------------------
+
 
 class FortranType:
     def __init__(self, dtype: str, name: str):
-        self.dtype = dtype                       # e.g. "real(kind=dp)"
-        self.name = name                         # suffix for procedure name, e.g. "dble"
+        self.dtype = dtype  # e.g. "real(kind=dp)"
+        self.name = name  # suffix for procedure name, e.g. "dble"
 
     @staticmethod
     def all_rank1():
         """Types that get the full rank-1 body (all iloc cases including 3D)."""
         return [
             FortranType("real(kind=dp)", "dble"),
-            FortranType("integer",       "int"),
-            FortranType("real(kind=4)",   "real"),
+            FortranType("integer", "int"),
+            FortranType("real(kind=4)", "real"),
             FortranType("integer(kind=1)", "byte"),
         ]
 
+
 # --- Rank-1 body (full select case with all iloc) ---------------------------
+
 
 def generate_rank1(ftype: FortranType) -> str:
     proc = f"unc_put_var_map_{ftype.name}"
     T = ftype.dtype
     return f"""\
    !> Write variable specified by id_var and values to netcdf file ncid on the location specified by iloc. 
-   function {proc}(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
+   function {proc}(ncid, id_tsp, id_var, iloc_in, values, default_value, jabndnd) result(ierr)
 
    implicit none
 
    integer, intent(in) :: ncid !< file ID of open netcdf file.
    type(t_unc_timespace_id), intent(in) :: id_tsp !> unc_timespace_id, only the index for current time is needed.
-   integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
-   integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
-   {T}, intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
+   integer, intent(in), dimension(:) :: id_var !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
+   integer, intent(in) :: iloc_in !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
+   {T}, intent(in), target, dimension(:) :: values !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
    {T}, optional, intent(in) :: default_value !< Optional default value to be written when no value is available.
    integer, optional, intent(in) :: jabndnd !< flag specifying whether boundary nodes are written (1) or not (0).
 
@@ -47,10 +49,14 @@ def generate_rank1(ftype: FortranType) -> str:
 
    integer :: ndx2d, n1d_write
    integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
+   integer :: iloc
    {T}, allocatable, save :: workL(:)
-   {T}, allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
+   {T}, pointer :: workS_ptr(:)
+   {T}, allocatable, target :: workS(:)
+   {T}, allocatable, save :: workS3D(:,:), workU3D(:,:), workW(:,:), workWU(:,:)
 
    ierr = DFM_NOERR
+   nullify(workS_ptr)
 
    if (present(jabndnd)) then
       associate (dummy => jabndnd)
@@ -59,13 +65,31 @@ def generate_rank1(ftype: FortranType) -> str:
 
    ndx2d = flowgeom%mesh2d%numFace
    n1d_write = flowgeom%mesh1D%numNode
+   iloc = iloc_in
+
+   if (iloc == UNC_LOC_S) then
+      workS_ptr => values
+   end if
+
+   if (write_surface_data_to_map_file) then
+      if (iloc == UNC_LOC_S3D) then
+         iloc = UNC_LOC_S
+         n1d_write = 0
+
+         allocate(workS(ndx2d))
+         workS_ptr => workS
+         do n = 1, ndx2d
+            workS_ptr(n) = values(ktop(n))
+         end do
+      end if
+   end if
 
    select case (iloc)
    case (UNC_LOC_CN) ! Corner point location
       ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
          ierr = UG_NOTIMPLEMENTED
-         goto 888
+         return
       end if
       if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
          ierr = nf90_put_var(ncid, id_var(2), values(1:flowgeom%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
@@ -74,11 +98,11 @@ def generate_rank1(ftype: FortranType) -> str:
    case (UNC_LOC_S) ! Pressure point location
       ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then
-         ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(1), workS_ptr(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
       end if
       ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
       if (id_var(2) > 0 .and. ndx2d > 0) then
-         ierr = nf90_put_var(ncid, id_var(2), values(1:ndx2d), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(2), workS_ptr(1:ndx2d), start=[1, id_tsp%idx_curtime])
       end if
 
    case (UNC_LOC_U) ! Horizontal velocity point location
@@ -268,15 +292,19 @@ def generate_rank1(ftype: FortranType) -> str:
 
    case default
       ierr = UG_INVALID_DATALOCATION
-      goto 888
+      return
    end select
 
-   return
-888 continue
+   if (allocated(workS)) then
+      deallocate(workS)
+   end if
+   nullify(workS_ptr)
+
    end function {proc}"""
 
 
 # --- Top-level generation ----------------------------------------------------
+
 
 def generate(output_file: Path) -> None:
     rank1_types = FortranType.all_rank1()
@@ -310,8 +338,9 @@ module m_unc_put_var_map_generated
    use m_get_layer_indices, only: getlayerindices
    use m_get_layer_indices_l_max, only: getlayerindiceslmax
    use m_get_Lbot_Ltop_max, only: getlbotltopmax
+   use m_flowparameters, only: write_surface_data_to_map_file
    use network_data, only: numl, numl1d
-   use m_flow, only: kmx
+   use m_flow, only: kmx, ktop
 
    implicit none(type, external)
 
