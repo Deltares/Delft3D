@@ -107,8 +107,8 @@ contains
       bc = 0.0_dp
       cc = 0.0_dp
       dc = 0.0_dp
-      difwws = 0.0_dp
-      difwws_total = 0.0_dp
+      difwws(:) = 0.0_dp
+      difwws_total(:) = 0.0_dp
 
       call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
@@ -182,8 +182,8 @@ contains
                else
                   fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid) * dtbazi
                   if (j == ISALT) then
-                     difwws(k) = (sigdifi(j) * vicwws(k) + ozmid)
-                     difwws_total(k) = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid)
+                     difwws(k) = sigdifi(j) * vicwws(k) + ozmid
+                     difwws_total(k) = difwws(k) + get_difsedw(kk, j)
                   end if
                end if
 

@@ -182,7 +182,7 @@ contains
 
             if (iturbulencemodel == 1) then
 
-               vicwref = constant_vicoww
+               vicwref = vicoww%get(LL)
 
             else if (iturbulencemodel == 2) then
 
@@ -353,7 +353,7 @@ contains
 
          else if (frcuni > 0 .and. ndraw(35) == 1 .and. LL > 0) then
             ! if (jaref > 0) call TEKFN(5, 9, 0, teps1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'teps1'      , 0, 1 , 0d0,0)   ! interfaces
-            dijdij(1:km - 1) = (vicwwu(Lb:Lt - 1) + constant_vicoww) * (u1(Lb + 1:Lt) - u1(Lb:Lt - 1)) * 2.0_dp / (hu(Lb + 1:Lt) + hu(Lb:Lt - 1))
+            dijdij(1:km - 1) = (vicwwu(Lb:Lt - 1) + vicoww%get(LL)) * (u1(Lb + 1:Lt) - u1(Lb:Lt - 1)) * 2.0_dp / (hu(Lb + 1:Lt) + hu(Lb:Lt - 1))
             dijdij(0) = ustb(L) * ustb(L)
             if (csu(L) * u1(Lb) < 0) then
                dijdij(0) = -dijdij(0)
