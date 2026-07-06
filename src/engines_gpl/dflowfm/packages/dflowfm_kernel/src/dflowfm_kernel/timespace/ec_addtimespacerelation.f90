@@ -32,6 +32,37 @@ submodule(m_meteo) m_ec_addtimespacerelation
    implicit none
 
 contains
+
+   !> Wrapper function to work around NVFortran bug with character(len=*) passing from submodule to parent.
+   !! This wrapper ensures proper string length descriptors are passed by copying to fixed-length variables.
+   function call_fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
+                                               itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
+                                               dataPtr1, dataPtr2, dataPtr3, dataPtr4) result(success)
+      use fm_external_forcings_data, only: NAMTRACLEN
+      use m_transportdata, only: NAMLEN
+      logical :: success
+      character(len=*), intent(in) :: trname, sfname, waqinput, constituent_name, qidname
+      integer, pointer :: itemPtr1, itemPtr2, itemPtr3, itemPtr4
+      real(kind=dp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
+      
+      ! Fixed-length local copies to work around NVFortran bug
+      character(len=NAMTRACLEN) :: trname_local, sfname_local, qidname_local
+      character(len=NAMLEN) :: constituent_name_local
+      character(len=20) :: waqinput_local
+      
+      ! Copy to fixed-length strings
+      trname_local = trname
+      sfname_local = sfname
+      waqinput_local = waqinput
+      constituent_name_local = constituent_name
+      qidname_local = qidname
+      
+      ! Call parent module function with fixed-length strings
+      success = fm_ext_force_name_to_ec_item(trname_local, sfname_local, waqinput_local, &
+                                             constituent_name_local, qidname_local, &
+                                             itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
+                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)
+   end function call_fm_ext_force_name_to_ec_item
    ! ==========================================================================
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
@@ -361,7 +392,7 @@ contains
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
 
-      quantity_found = fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
+      quantity_found = call_fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
                                                     dataPtr1, dataPtr2, dataPtr3, dataPtr4)
 
       if (.not. quantity_found .and. .not. present(tgt_item1)) then
