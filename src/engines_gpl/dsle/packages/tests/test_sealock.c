@@ -18,10 +18,8 @@ void setUp(void) {}
 
 void tearDown(void) {}
 
-// Write the given contents to a fresh CSV file alongside the running test
-// (rather than relying on a pre-generated fixture being found on the path).
-// Returns the path; caller must remove(path) when done.
-static const char *write_temp_csv(const char *filename, const char *contents) {
+// simple wrapper around fopen, fput, fclose to write a string to a file.
+static const char *write_textfile(const char *filename, const char *contents) {
   FILE *fp = fopen(filename, "w");
   TEST_ASSERT_NOT_NULL(fp);
   fputs(contents, fp);
@@ -1245,7 +1243,7 @@ test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_conce
   "tide; flushing_discharge_low_tide; sill_height_lake; sill_height_sea\n"
 
 static void test_sealock_load_timeseries__non_increasing__reports_offending_row(void) {
-  const char *path = write_temp_csv(
+  const char *path = write_textfile(
       "tmp_non_increasing.csv",
       TIME_AVERAGED_HEADER "197001011200.0; 1.0; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0\n"
                            "197001011200.0; 9.0; 10.0; 11.0; 12.0; 13.0; 14.0; 15.0; 16.0\n");
@@ -1263,7 +1261,7 @@ static void test_sealock_load_timeseries__non_increasing__reports_offending_row(
 }
 
 static void test_sealock_load_timeseries__empty_file__reports_no_rows(void) {
-  const char *path = write_temp_csv("tmp_empty.csv", TIME_AVERAGED_HEADER);
+  const char *path = write_textfile("tmp_empty.csv", TIME_AVERAGED_HEADER);
   sealock_state_t lock = {
       .id = "A", .computation_mode = cycle_average_mode, .current_row = NO_CURRENT_ROW};
   char log_buf[256];
@@ -1289,7 +1287,7 @@ static void test_sealock_load_timeseries__bad_file__reports_read_failure(void) {
 
 static void test_sealock_set_parameters__phase_wise__invalid_routine_reports_row(void) {
   const char *path =
-      write_temp_csv("tmp_bad_routine.csv",
+      write_textfile("tmp_bad_routine.csv",
                      PHASE_WISE_HEADER "197001011200.0; 1; 0; 0; 0; 5; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0\n"
                                        "197001021200.0; 7; 0; 0; 0; 5; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0\n");
   sealock_state_t lock = {
