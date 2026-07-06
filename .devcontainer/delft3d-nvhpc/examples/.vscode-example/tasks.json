@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+            "DELFT3D_CONAN_PROFILE": "delft3d_ubuntu22_nvhpc",
+            "OMPI_CC": "gcc",
+            "OMPI_CXX": "g++",
+            "OMPI_FC": "nvfortran"
+        }
+    },
+    "tasks": [
+        {
+            "label": "nvfortran: conan install (build deps from source)",
+            "type": "shell",
+            "command": "python3.14 run_conan.py install --rebuild-packages --build-type Release --output-folder build_dflowfm_release/conan",
+            "problemMatcher": []
+        },
+        {
+            "label": "nvfortran: cmake configure dflowfm",
+            "type": "shell",
+            "command": "python3.14 build.py --config dflowfm --build-type Release --build-dir build_dflowfm_release --keep-build",
+            "problemMatcher": []
+        },
+        {
+            "label": "nvfortran: build dflowfm",
+            "type": "shell",
+            "command": "[ -f build_dflowfm_release/conan/generators/conanrun.sh ] && source build_dflowfm_release/conan/generators/conanrun.sh; cmake --build build_dflowfm_release --config Release --parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "nvfortran: cmake configure dflowfm Debug",
+            "type": "shell",
+            "command": "python3.14 build.py --config dflowfm --build-type Debug --build-dir build_dflowfm_debug --keep-build",
+            "problemMatcher": []
+        },
+        {
+            "label": "nvfortran: build dflowfm debug",
+            "type": "shell",
+            "command": "[ -f build_dflowfm_debug/conan/generators/conanrun.sh ] && source build_dflowfm_debug/conan/generators/conanrun.sh; cmake --build build_dflowfm_debug --config Debug --parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "nvfortran: build dflowfm (keep going, collect all errors)",
+            "type": "shell",
+            "command": "[ -f build_dflowfm_release/conan/generators/conanrun.sh ] && source build_dflowfm_release/conan/generators/conanrun.sh; cmake --build build_dflowfm_release --config Release --parallel -- -k",
+            "problemMatcher": []
+        }
+    ]
+}

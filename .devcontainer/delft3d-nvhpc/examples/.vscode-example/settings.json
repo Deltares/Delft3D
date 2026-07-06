@@ -1,0 +1,11 @@
+{
+    "cmake.sourceDirectory": "/workspaces/Delft3D/src/cmake",
+    "cmake.buildBeforeRun": false,
+    "cmake.automaticReconfigure": false,
+    "cmake.buildDirectory": "${workspaceFolder}/build_dflowfm_debug",
+    "cmake.configureOnOpen": false,
+    "cmake.configureOnEdit": false,
+    "cmake.ctestPath": "${workspaceFolder}/tools/ctest_with_conanrun.sh",
+    "cmake.ctest.testExplorerIntegrationEnabled": true,
+    "cmake.ctest.debugLaunchTarget": "ctest"
+}

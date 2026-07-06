@@ -42,9 +42,19 @@ EOF
 ENV PATH=/home/dev/.local/bin:$PATH UV_LINK_MODE=copy
 RUN <<"EOF"
 curl -LsSf https://astral.sh/uv/install.sh | sh
-export UV_PYTHON_DOWNLOADS=never
-uv tool install fortls || true
-uv tool install fprettify || true
+export UV_PYTHON_DOWNLOADS=automatic
+
+# Pin the Python runtime used by build/test tasks and ensure python3.14 resolves.
+uv python install 3.14
+ln -sf "$(uv python find 3.14)" /home/dev/.local/bin/python3.14
+
+# Install build tools from uv-managed environments so versions stay reproducible.
+uv tool install --python 3.14 conan
+uv tool install --python 3.14 cmake
+
+# Nice-to-have developer tooling.
+uv tool install --python 3.14 fortls || true
+uv tool install --python 3.14 fprettify || true
 EOF
 
 # Interactive bash environment + toolchain exports for the nvfortran PoC.
