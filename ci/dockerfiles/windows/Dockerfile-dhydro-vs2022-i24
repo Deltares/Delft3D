@@ -87,8 +87,8 @@ RUN Start-Process -FilePath 'C:\cygwin-setup-x86_64.exe' -Wait -NoNewWindow -Arg
     Remove-Item -Force C:\cygwin-setup-x86_64.exe; \
     Remove-Item -Recurse -Force C:\cygwin-packages
 
-# Cygwin's link.exe conflicts with the Intel ifort/ifx compiler. Rename it so the
-# Intel/MSVC linker is picked up instead (per PETSc Windows install instructions).
+# Cygwin's link.exe conflicts with the Intel ifort/ifx compiler. Rename it so the Intel/MSVC linker is
+# picked up instead (see https://petsc.org/main/install/windows/#native-microsoft-intel-windows-compilers).
 RUN if (Test-Path 'C:\cygwin64\bin\link.exe') { Move-Item 'C:\cygwin64\bin\link.exe' 'C:\cygwin64\bin\link-cygwin.exe' }
 
 # Add Cygwin to the PATH (appended so it does not shadow the explicitly installed tools).
