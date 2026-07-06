@@ -526,6 +526,7 @@ contains
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
+
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -1760,6 +1761,7 @@ contains
       call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
+      call prop_get(md_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file)
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
@@ -3623,7 +3625,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'OutputDir', trim(md_OutputDir), 'Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.')
       call prop_set(prop_ptr, 'output', 'FlowGeomFile', trim(md_flowgeomfile), 'Flow geometry NetCDF *_flowgeom.nc')
-
+      
       call prop_set(prop_ptr, 'output', 'ObsFile', trim(md_obsfile), 'Points file *.xyn with observation stations with rows x, y, station name')
       call prop_set(prop_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, '0 - do not delete, 1 - delete')
       call prop_set(prop_ptr, 'output', 'CrsFile', trim(md_crsfile), 'Polyline file *_crs.pli defining observation cross sections')
@@ -3633,6 +3635,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
+      call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss
