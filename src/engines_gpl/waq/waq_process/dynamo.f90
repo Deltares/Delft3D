@@ -39,10 +39,15 @@ contains
 
       !     Type    Name         I/O Description
 
-      real(kind=real_wp) :: process_space_real(*) !I/O Process Manager System Array, window of routine to process library
+      integer, parameter :: number_input  = 29
+      integer, parameter :: number_output = 13
+      integer, parameter :: number_total  = number_input + number_output
+      integer, parameter :: idout         = number_input ! Offset for index of output parameters
+
+      real(kind=real_wp) :: process_space_real(*)  ! I/O Process Manager System Array, window of routine to process library
       real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) :: ipoint(40) ! I  Array of pointers in process_space_real to get and store the data
-      integer(kind=int_wp) :: increm(40) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: ipoint(number_total) ! I  Array of pointers in process_space_real to get and store the data
+      integer(kind=int_wp) :: increm(number_total) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
       integer(kind=int_wp) :: num_cells ! I  Number of computational elements in the whole model schematisation
       integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
@@ -51,7 +56,8 @@ contains
       integer(kind=int_wp) :: num_exchanges_v_dir ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
       integer(kind=int_wp) :: num_exchanges_z_dir ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
       integer(kind=int_wp) :: num_exchanges_bottom_dir ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer(kind=int_wp) :: ipnt(40) !    Local work array for the pointering
+
+      integer(kind=int_wp) :: ipnt(number_total)  !    Local work array for the pointering
       integer(kind=int_wp) :: iseg !    Local loop counter for computational element loop
       integer(kind=int_wp) :: ILUMON !    monitoring and log file handle
       integer(kind=int_wp) :: iflux !    Local loop counter for computational element loop
@@ -61,6 +67,8 @@ contains
       logical TMPOPT
       logical LgtOpt !    False if RadSat, Frad and LnFrad are equal for all cells
       integer(kind=int_wp), save :: NR_MES = 0
+      integer(kind=int_wp)       :: idrad       ! Index for the irradiation parameter
+
       real(kind=real_wp) :: ALGMIN
 
       real(kind=real_wp) :: AMOPRF ! Ammonium preference factor for nitrate uptake
@@ -125,11 +133,18 @@ contains
          TMPOPT = .true.
       end if
 
+      ! Select the index for the irradation
+      if ( process_space_real(ipnt(28)) == 1.0 ) then
+         idrad = 15
+      else
+         idrad = 29
+      endif
+
       ! Light efficiency function (uniform values)
       LgtOpt = .true.
       if (increm(15) == 0 .and. increm(16) == 0) then
          LgtOpt = .false. !  This is constant for all cells
-         Rad = process_space_real(ipnt(15))
+         Rad = process_space_real(ipnt(idrad))
          RadSat = process_space_real(ipnt(16))
          RadSat = TFGro * RadSat !  Correct RadSat for temperature
          if (RadSat > 1e-20) then
@@ -155,8 +170,8 @@ contains
                TFM = TCM**TEMP20
             end if
             ! Output of limiting factors
-            process_space_real(ipnt(28)) = TFGro
-            process_space_real(ipnt(29)) = TFM
+            process_space_real(ipnt(idout+1)) = TFGro
+            process_space_real(ipnt(idout+2)) = TFM
 
             !
             ! Daylength function (local values)
@@ -168,7 +183,7 @@ contains
 
             ! Daylength function (local values)
             LimDayLength = min(DayL, OptDayLength) / OptDayLength
-            process_space_real(ipnt(30)) = LimDayLength
+            process_space_real(ipnt(idout+3)) = LimDayLength
 
             !
             ! Nutrient limiation function for green algae
@@ -207,17 +222,17 @@ contains
 
             FNUT = min(FN, FP, FS)
             ! Output of limiting factors
-            process_space_real(ipnt(31)) = FN
-            process_space_real(ipnt(32)) = FP
-            process_space_real(ipnt(33)) = FS
-            process_space_real(ipnt(34)) = FNUT
+            process_space_real(ipnt(idout+4)) = FN
+            process_space_real(ipnt(idout+5)) = FP
+            process_space_real(ipnt(idout+6)) = FS
+            process_space_real(ipnt(idout+7)) = FNUT
 
             !
             ! Light efficiency function (local values)
             !
 
             if (LgtOpt) then
-               Rad = process_space_real(ipnt(15))
+               Rad = process_space_real(ipnt(idrad))
                RadSat = process_space_real(ipnt(16))
                RadSat = TFGro * RadSat
                if (RadSat > 1e-20) then
@@ -248,7 +263,7 @@ contains
                   end if
                end if
             end if
-            process_space_real(ipnt(35)) = LimRad
+            process_space_real(ipnt(idout+8)) = LimRad
 
             ALG = process_space_real(ipnt(18))
             if (ALG < 0.0) then
@@ -307,11 +322,11 @@ contains
             !     Mortality, including processes as autolysis and zooplankton 'graas
             FL(2 + IFLUX) = ACTMOR * TFM * max(ALG - ALGMIN, 0.0)
 
-            process_space_real(ipnt(36)) = PPROD - RESP
-            process_space_real(ipnt(37)) = ACTMOR * TFM
-            process_space_real(ipnt(38)) = RESP
-            process_space_real(ipnt(39)) = (PPROD - RESP) * ALG
-            process_space_real(ipnt(40)) = ACTMOR * TFM * max(ALG - ALGMIN, 0.0)
+            process_space_real(ipnt(idout+ 9)) = PPROD - RESP
+            process_space_real(ipnt(idout+10)) = ACTMOR * TFM
+            process_space_real(ipnt(idout+11)) = RESP
+            process_space_real(ipnt(idout+12)) = (PPROD - RESP) * ALG
+            process_space_real(ipnt(idout+13)) = ACTMOR * TFM * max(ALG - ALGMIN, 0.0)
 
          end if
          !
