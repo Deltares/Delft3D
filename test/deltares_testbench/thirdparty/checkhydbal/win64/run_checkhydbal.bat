@@ -11,7 +11,7 @@ set PATH=%bindir%;%PATH%
 
 echo "    bin dir           : %bindir%"
 
-echo executing in this window: "%bindir%\checkhydbal.exe" %*
-"%bindir%\checkhydbal.exe" %*
+echo executing in this window: "%bindir%\checkhydbal.exe" %* > checkhydbal.log 2>&1
+"%bindir%\checkhydbal.exe" %* > checkhydbal.log 2>&1
 
 rem pause
