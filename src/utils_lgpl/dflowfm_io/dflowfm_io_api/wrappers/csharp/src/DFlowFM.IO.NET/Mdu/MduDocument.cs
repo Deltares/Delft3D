@@ -7,6 +7,11 @@ namespace DFlowFM.IO.Mdu;
 /// <summary>
 /// Represents a D-Flow FM Model Definition Unstructured (MDU) file.
 /// </summary>
+/// <remarks>
+/// Properties are identified by a fully-qualified, case-insensitive key in the format
+/// <c>"&lt;section&gt;.&lt;property&gt;"</c>, e.g. <c>"geometry.netfile"</c> refers to
+/// the <c>netFile</c> property in the <c>[geometry]</c> section.
+/// </remarks>
 public sealed partial class MduDocument : IDisposable
 {
     private static readonly UTF8Encoding Utf8NoBom = new(false);
@@ -26,9 +31,9 @@ public sealed partial class MduDocument : IDisposable
     public IssueReport Report { get; private set; } = IssueReport.Empty;
 
     /// <summary>
-    /// Gets or sets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// Gets or sets a property value by its fully-qualified key.
     /// </summary>
-    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
     public object this[string key]
@@ -132,9 +137,9 @@ public sealed partial class MduDocument : IDisposable
     }
 
     /// <summary>
-    /// Gets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// Gets a property value by its fully-qualified key.
     /// </summary>
-    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
     /// <returns>The property value.</returns>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
@@ -160,10 +165,10 @@ public sealed partial class MduDocument : IDisposable
     }
 
     /// <summary>
-    /// Gets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// Gets a property value by its fully-qualified key.
     /// </summary>
     /// <typeparam name="T">The type of the property value.</typeparam>
-    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
     /// <returns>The property value.</returns>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
@@ -173,9 +178,9 @@ public sealed partial class MduDocument : IDisposable
     }
 
     /// <summary>
-    /// Sets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// Sets a property value by its fully-qualified key.
     /// </summary>
-    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
     /// <param name="value">The value to assign.</param>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
@@ -204,7 +209,7 @@ public sealed partial class MduDocument : IDisposable
     /// <summary>
     /// Gets the schema for the property with the given fully-qualified key.
     /// </summary>
-    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
     /// <returns>The property schema.</returns>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
