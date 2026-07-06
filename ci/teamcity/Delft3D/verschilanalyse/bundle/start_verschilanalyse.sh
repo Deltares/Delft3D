@@ -136,7 +136,7 @@ DOWNLOAD_INPUT_JOB_ID=$(
 # Download reference output data.
 DOWNLOAD_REFS_JOB_ID=$(
     sbatch --parsable \
-	    --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}" \
+        --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}" \
         --output="${LOG_DIR}/va-download-refs-%j.out" \
         ./jobs/download_references.sh
 )
