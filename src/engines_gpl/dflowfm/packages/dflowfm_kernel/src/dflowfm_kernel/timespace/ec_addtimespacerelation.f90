@@ -136,7 +136,7 @@ contains
       type(tEcMask) :: srcmask
 
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
-      logical :: exist, opened, withCharnock, withStress
+      logical :: exist, opened, withCharnock, withStress, quantity_found
 
       real(kind=dp) :: relrow, relcol
       real(kind=dp), allocatable :: transformcoef(:)
@@ -172,7 +172,7 @@ contains
          return
       end if
       call operand_fm_to_ec(operand, ec_operand)
-      if (ec_operand == operand_undefined) then
+      if (ec_operand == EC_OPERAND_UNDEFINED) then
          write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
             ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
          call err_flush()
@@ -361,26 +361,27 @@ contains
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
 
-      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
-                                             targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
+      quantity_found = fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
+                                                    dataPtr1, dataPtr2, dataPtr3, dataPtr4)
 
-         ! If item not recognised, we can still try to set a connection if the right optional arguments were passed.
-         if (present(tgt_item1)) then
-            targetItemPtr1 => tgt_item1
-            if (present(tgt_data1)) then
-               if (associated(tgt_data1)) then
-                  dataPtr1 => tgt_data1
-               end if !> tgt_item without tgt_data is allowed, for example dambreaks.
-            end if
-         else
-            return !> no known name or target_item provided.
-         end if
+      if (.not. quantity_found .and. .not. present(tgt_item1)) then
+         return ! a target item must be supplied from either source
       end if
 
-      continue
+      ! we don not want to override fm_ext_force_name_to_ec_item result, unless multuni is present.
+      if (present(tgt_item1) .and. (present(multuni1) .or. .not. quantity_found)) then
+         targetItemPtr1 => tgt_item1
+      end if
+      if (present(tgt_item2) .and. (present(multuni2) .or. .not. quantity_found)) then
+         targetItemPtr2 => tgt_item2
+      end if
+      if (present(tgt_item3) .and. (present(multuni3) .or. .not. quantity_found)) then
+         targetItemPtr3 => tgt_item3
+      end if
+      if (present(tgt_item4) .and. (present(multuni4) .or. .not. quantity_found)) then
+         targetItemPtr4 => tgt_item4
+      end if
 
-      ! Overrule hard-coded pointers to target data by optional pointers passed in the call
       if (present(tgt_data1)) then
          if (associated(tgt_data1)) then
             dataPtr1 => tgt_data1
@@ -401,27 +402,13 @@ contains
             dataPtr4 => tgt_data4
          end if
       end if
+      
+      ! When a multuni item is provided from the call site, we assume that those
+      ! multuni1..4 item(s) are the ones to be used. Any targetItemPtr1..4 just set
+      ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
+      ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
+      ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
 
-      if (present(tgt_item1) .and. present(tgt_data1)) then
-         if (associated(tgt_data1)) then
-            targetItemPtr1 => tgt_item1
-         end if
-      end if
-      if (present(tgt_item2) .and. present(tgt_data2)) then
-         if (associated(tgt_data2)) then
-            targetItemPtr2 => tgt_item2
-         end if
-      end if
-      if (present(tgt_item3) .and. present(tgt_data3)) then
-         if (associated(tgt_data3)) then
-            targetItemPtr3 => tgt_item3
-         end if
-      end if
-      if (present(tgt_item4) .and. present(tgt_data4)) then
-         if (associated(tgt_data4)) then
-            targetItemPtr4 => tgt_item4
-         end if
-      end if
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
@@ -579,7 +566,7 @@ contains
             call mess(LEVEL_ERROR, message)
             return
          end if
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, operand_replace_element, ec_method)
+         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, EC_OPERAND_REPLACE_ELEMENT, ec_method)
          if (success) then
             success = ecSetConverterElement(ecInstancePtr, converterId, targetIndex)
          end if
@@ -587,7 +574,7 @@ contains
          ! count qh boundaries
          n_qhbnd = n_qhbnd + 1
          inputptr => atqh_all(n_qhbnd)
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, operand_replace_element, interpolate_passthrough, inputptr=inputptr)
+         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, EC_OPERAND_REPLACE_ELEMENT, interpolate_passthrough, inputptr=inputptr)
          if (success) then
             success = ecSetConverterElement(ecInstancePtr, converterId, n_qhbnd)
          end if
@@ -595,7 +582,7 @@ contains
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
             'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
-            'cloudiness', 'solarradiation', 'longwaveradiation')
+            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -866,7 +853,12 @@ contains
       case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
             'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
          ! the name of the source item created by the file reader will be the same as the ext.force. var name
-
+         if (.not. present(varname)) then !> these variables will crash without a varname
+            write (msgbuf, '(3a)') 'm_meteo::ec_addtimespacerelation: ''dataVariableName'' is required for quantity ''', &
+               trim(target_name), ''' but was not provided. Add dataVariableName= to the [Parameter] block.'
+            call err_flush()
+            goto 1234
+         end if
          ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
          ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
@@ -1451,6 +1443,10 @@ contains
          end if
       case ('longwaveradiation')
          sourceItemName = 'surface_net_downward_longwave_flux'
+      case ('sensibleheatflux')
+         sourceItemName = 'surface_upward_sensible_heat_flux'
+      case ('latentheatflux')
+         sourceItemName = 'surface_upward_latent_heat_flux'
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')

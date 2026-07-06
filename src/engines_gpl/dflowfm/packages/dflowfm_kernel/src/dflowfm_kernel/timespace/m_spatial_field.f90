@@ -32,6 +32,8 @@
 module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
+   use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   
    implicit none(type, external)
 
    private
@@ -39,14 +41,13 @@ module m_spatial_field
    public :: t_spatial_field_input, t_averaging_input
    public :: read_spatial_field_block, validate_spatial_field_input
    public :: read_averaging_input, averaging_params_to_transformcoef
-   public :: parse_location_type
 
    integer, parameter :: INI_VALUE_LEN = 256
 
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
       integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      real(dp) :: rel_size = RCEL_DEFAULT !< averagingRelSize= negative = use EC default.
       integer :: num_min = 1 !< averagingNumMin=
       real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
@@ -74,13 +75,15 @@ module m_spatial_field
 
 contains
 
-   !> Read all keyword values from a [Spatial] or [Meteo] block.
+   !> Read all keyword values from a [Spatial] block.
    function read_spatial_field_block(block_ptr) result(res)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
 
+      integer :: extrapolation_method_legacy
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_spatial_field_input) :: res
+      extrapolation_method_legacy = 0
 
       call prop_get(block_ptr, '', 'quantity', res%quantity)
       call prop_get(block_ptr, '', 'forcingFileType', res%forcing_file_type)
@@ -95,6 +98,22 @@ contains
       call prop_get(block_ptr, '', 'locationType', res%location_type)
       call read_averaging_input(block_ptr, res%averaging_input)
 
+      !Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
+      if (len_trim(res%forcing_file_type) == 0) then
+         call prop_get(block_ptr, '', 'dataFileType', res%forcing_file_type)
+      end if
+      if (len_trim(res%forcing_file) == 0) then
+         call prop_get(block_ptr, '', 'dataFile', res%forcing_file)
+      end if
+      if (len_trim(res%variable_name) == 0) then
+         call prop_get(block_ptr, '', 'dataVariableName', res%variable_name)
+      end if
+
+      call prop_get(block_ptr, '', 'extrapolationMethod', extrapolation_method_legacy)
+      if (extrapolation_method_legacy /= 0) then
+         res%is_extrapolation_allowed = .true.
+      end if
+
    end function read_spatial_field_block
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
@@ -102,26 +121,24 @@ contains
    subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use unstruc_inifields, only: averagingTypeStringToInteger
 
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_averaging_input), intent(out) :: avg
 
       logical :: is_read
+      character(len=256) :: averagingType
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
-      if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
+      call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
+      if (is_read) then
+         call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      end if
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
-
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (is_read .and. avg%num_min < 1) avg%num_min = 1
-
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
-
    end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
@@ -143,42 +160,24 @@ contains
    !> Returns .true. when the given forcingFileType string describes a static
    !! spatial field (no time dimension). Static fields are read once at
    !! initialisation; the EC relation is never updated during the time loop.
-   pure function is_static_file_type(forcing_file_type) result(is_static)
+   pure function is_static_file_type(forcing_file_type, method) result(is_static)
       use string_module, only: str_tolower
+      use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
+
       character(len=*), intent(in) :: forcing_file_type
+      integer, intent(in) :: method
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff')
+      case ('sample', 'geotiff', 'polygon', '1dfield')
          is_static = .true.
+      case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
+         is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
       case default
          is_static = .false.
       end select
 
    end function is_static_file_type
-
-   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
-   !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns ILATTP_ALL when the string is absent or unrecognized.
-   function parse_location_type(location_type_string) result(ilattype)
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: location_type_string
-      integer :: ilattype
-
-      select case (str_tolower(trim(location_type_string)))
-      case ('1d')
-         ilattype = ILATTP_1D
-      case ('2d')
-         ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         ilattype = ILATTP_ALL
-      case default
-         ilattype = ILATTP_ALL
-      end select
-
-   end function parse_location_type
 
    !> Validate a t_spatial_field_input. Derives method and filetype.
    !! Returns .false. and writes error messages on failure.
@@ -191,7 +190,7 @@ contains
       use string_module, only: strcmpi
       use unstruc_files, only: resolvePath
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
-
+      use m_meteo, only: quantity_name_config_file_to_internal_name
       type(t_spatial_field_input), intent(inout) :: input
       character(len=*), intent(in) :: file_name
       character(len=*), intent(in) :: group_name
@@ -201,6 +200,8 @@ contains
       logical :: has_interpolation_method, target_mask_file_exists
 
       is_successful = .false.
+
+      input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
       if (len_trim(input%quantity) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
@@ -240,20 +241,18 @@ contains
          return
       end if
 
-      input%is_static_field = is_static_file_type(input%forcing_file_type)
-
       ! Parse operand. Legacy single-character values are supported but will trigger a warning.
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
          if (input%oper == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'Invalid block in file ''' // file_name // ''': [' // group_name // ']. Unknown operand ''' // input%operand_string // '''.'
+            write (msgbuf, '(a)') 'Invalid block in file '''//file_name//''': ['//group_name//']. Unknown operand '''//trim(input%operand_string)//'''.'
             call err_flush()
             return
          end if
-         
+
          if (len_trim(input%operand_string) == 1) then
-            write (msgbuf, '(a)') 'Block in file ''' // file_name // ''': [' // group_name // ']. Operand value ''' // input%operand_string // '''. is deprecated, ' &
-               // 'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(input%operand_string)//''' is deprecated. ' &
+               //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
       end if
@@ -277,6 +276,8 @@ contains
          call err_flush()
          return
       end if
+
+      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method)
 
       call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
 
@@ -318,6 +319,8 @@ contains
          conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
       case ('.spw')
          conflicts = str_tolower(trim(forcing_file_type)) /= 'spiderweb'
+      case ('.pol')
+         conflicts = str_tolower(trim(forcing_file_type)) /= 'polygon'
       end select
 
    end function file_extension_conflicts_with_type

@@ -68,6 +68,7 @@ module m_output_config
    integer, public :: IDX_HIS_RUG_RUX
    integer, public :: IDX_HIS_RUG_RUY
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE
+   integer, public :: IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE

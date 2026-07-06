@@ -1,31 +1,23 @@
-# Use the  Windows Server Core 2022 image form ICT.
-FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
+FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025
 
-# Restore the default Windows shell for correct batch processing.
-SHELL ["cmd", "/S", "/C"]
-
-# Download the VS19 bootstrapper from https://aka.ms/vs/17/release/vs_community.exe
-# This one is cached on a fileshare because the curl commando is not stable
-ADD vs_Community.exe C:/
-
-# Install visual studio with workloads, excluding workloads and components with known issues.
-RUN (start /w vs_Community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
-    --installPath "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community" \
-    --add Microsoft.VisualStudio.Workload.NativeDesktop;includeRecommended \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 \
-    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
-    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
-    --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
-    --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
-    --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
-    --remove Microsoft.VisualStudio.Component.Windows81SDK \
-    || IF "%ERRORLEVEL%"=="3010" EXIT 0)
-
-# Set powershell as shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
 
-# Enable long pathnames
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
+SHELL ["cmd", "/S", "/C"]
+
+ADD vs_Community.exe C:/
+
+RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
+    --installPath "C:\\Program Files\\Microsoft Visual Studio\\17\\Community" \
+    --add Microsoft.VisualStudio.Workload.NativeDesktop \
+    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
+    --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
+    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
+    || IF "%ERRORLEVEL%"=="3010" EXIT 0)
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
 
 # Install the Intel toolkits
 ADD w_fortran-compiler_p_2024.2.1.81_offline.exe C:/
@@ -49,20 +41,61 @@ RUN Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
 ENV VS2022INSTALLDIR="C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\"
 
-# Download and install Python 3.12.7
-ADD python-3.12.7-amd64.exe C:\\python-3.12.7-amd64.exe
-RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
-RUN Remove-Item C:\\python-3.12.7-amd64.exe
-RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
+# Add the Git that ships with Visual Studio to the PATH. The location is resolved
+# with vswhere (whose own path is stable across VS versions/editions) so the exact
+# VS install folder never needs to be hard-coded.
+RUN $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'; \
+    if (-not (Test-Path $vswhere)) { throw "vswhere.exe not found at $vswhere" }; \
+    $gitCmd = & $vswhere -latest -products * -find '**\cmd\git.exe' | Select-Object -First 1; \
+    if (-not $gitCmd) { throw 'Could not locate git.exe in the Visual Studio installation.' }; \
+    $gitDir = Split-Path -Parent $gitCmd; \
+    Write-Host ('Adding Git to PATH: ' + $gitDir); \
+    setx /M PATH ($Env:PATH + ';' + $gitDir)
 
-# Download and install git
-ADD Git-2.47.0-64-bit.exe C:\\Git-2.47.0-64-bit.exe
-RUN Start-Process -FilePath "C:\\Git-2.47.0-64-bit.exe" -ArgumentList "/SILENT" -Wait
-RUN Remove-Item C:\\Git-2.47.0-64-bit.exe
-RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\Git\\usr\\bin')
+# Install uv
+ENV UV_INSTALL_DIR="C:\Program Files\uv\install"
+RUN irm https://astral.sh/uv/0.11.26/install.ps1 | iex
+
+ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
+    UV_TOOL_DIR="C:\Program Files\uv\tools" \
+    UV_PYTHON_BIN_DIR="C:\Program Files\uv\bin" \
+    UV_TOOL_BIN_DIR="C:\Program Files\uv\bin"
+
+# Install python and conan
+RUN setx /M PATH \"C:\Program Files\uv\bin;C:\Program Files\uv\install;$env:PATH\"
+RUN uv python install 3.12 --default
+RUN uv tool install 'conan ~= 2.30.0'
+
+ADD setup-x86_64.exe C:\\cygwin-setup-x86_64.exe
+# Install and clean up the package cache in a single layer. The cache uses very
+# long, URL-encoded directory names (e.g. https%3a%2f%2fmirrors.kernel.org%2f...)
+# which break the Windows container layer import (hcsshim::ImportLayer) if they
+# are ever committed to a layer, so they must never persist beyond this RUN.
+RUN Start-Process -FilePath 'C:\cygwin-setup-x86_64.exe' -Wait -NoNewWindow -ArgumentList \
+    '--quiet-mode', \
+    '--no-shortcuts', \
+    '--no-startmenu', \
+    '--no-desktop', \
+    '--no-admin', \
+    '--upgrade-also', \
+    '--root', 'C:\cygwin64', \
+    '--local-package-dir', 'C:\cygwin-packages', \
+    '--site', 'https://mirrors.kernel.org/sourceware/cygwin/', \
+    '--site', 'https://cygwin.mirror.constant.com/', \
+    '--only-site', \
+    '--packages', 'python3,make,git,cmake'; \
+    Remove-Item -Force C:\cygwin-setup-x86_64.exe; \
+    Remove-Item -Recurse -Force C:\cygwin-packages
+
+# Cygwin's link.exe conflicts with the Intel ifort/ifx compiler. Rename it so the Intel/MSVC linker is
+# picked up instead (see https://petsc.org/main/install/windows/#native-microsoft-intel-windows-compilers).
+RUN if (Test-Path 'C:\cygwin64\bin\link.exe') { Move-Item 'C:\cygwin64\bin\link.exe' 'C:\cygwin64\bin\link-cygwin.exe' }
+
+# Add Cygwin to the PATH (appended so it does not shadow the explicitly installed tools).
+RUN setx /M PATH ($Env:PATH + ';C:\cygwin64\bin')
 
 # Copy the setup script into the container
 COPY set-env-vs2022.cmd C:\\set-env-vs2022.cmd
 
 # Set the default command to run the setup script
-CMD ["cmd", "/S", "/C", "C:\\set-env-vs2022.cmd"]
+CMD ["cmd", "/S", "/K", "C:\\set-env-vs2022.cmd"]

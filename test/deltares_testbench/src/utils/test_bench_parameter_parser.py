@@ -84,7 +84,7 @@ class TestBenchParameterParser:
         settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
         settings.copy_failed_cases = cls.__get_argument_value("copy_failed_cases", args) or False
-        
+
         return settings
 
     @staticmethod
@@ -110,7 +110,7 @@ class TestBenchParameterParser:
         required_columns = {"Test Name", "Status"}
         if not required_columns.issubset(reader.fieldnames or []):
             missing = required_columns - set(reader.fieldnames or [])
-            raise ValueError(f"CSV file is missing required columns: {missing}. " f"Found: {reader.fieldnames}")
+            raise ValueError(f"CSV file is missing required columns: {missing}. Found: {reader.fieldnames}")
         return [
             row["Test Name"].strip()
             for row in reader

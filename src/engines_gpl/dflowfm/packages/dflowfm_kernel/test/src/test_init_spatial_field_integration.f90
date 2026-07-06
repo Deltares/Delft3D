@@ -4,7 +4,7 @@ module test_init_spatial_fields_integration
    use m_meteo, only: initialize_ec_module, jarain
    use m_wind, only: rain
    use m_cell_geometry, only: xz, yz, ndx
-   use m_flowgeom, only: kcs
+   use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
    use precision_basics, only: dp
    use unstruc_messages, only: threshold_abort
@@ -23,9 +23,10 @@ module test_init_spatial_fields_integration
 contains
 
    !> Set up a minimal 1-cell s-point grid so that get_location_target_properties
-   !! and construct_target_mask do not dereference unallocated arrays.
+   !! and construct_mask do not dereference unallocated arrays.
    subroutine setup_minimal_grid()
       ndx = 1
+      ndxi = 1
       if (.not. allocated(xz)) allocate (xz(ndx))
       if (.not. allocated(yz)) allocate (yz(ndx))
       if (.not. allocated(kcs)) allocate (kcs(ndx))
@@ -63,6 +64,7 @@ contains
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_create, tree_destroy
       use properties, only: prop_file
+      use m_ec_interpolationsettings, only: RCEL_DEFAULT
 
       type(tree_data), pointer :: tree
       type(t_averaging_input) :: avg
@@ -77,7 +79,7 @@ contains
 
       ! ASSERT
       call f90_expect_eq(avg%averaging_type, 1, "default averaging_type should be 1 (mean)")
-      call f90_expect_lt(avg%rel_size, 0.0_dp, "default rel_size should be negative (use EC default)")
+      call f90_expect_eq(avg%rel_size, RCEL_DEFAULT, "default rel_size should be RCEL_DEFAULT (use EC default)")
       call f90_expect_eq(avg%num_min, 1, "default num_min should be 1")
       call f90_expect_eq(avg%percentile, 0.0_dp, "default percentile should be 0")
    end subroutine test_averaging_params_defaults
@@ -109,21 +111,6 @@ contains
       call f90_expect_eq(tc(1), -999.0_dp, "transformcoef(1) should be untouched")
       call f90_expect_eq(tc(2), -999.0_dp, "transformcoef(2) should be untouched")
    end subroutine test_averaging_params_to_transformcoef
-   !$f90tw)
-
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_parse_location_type, test_parse_location_type,
-   !> parse_location_type must map all recognized strings and default to ALL for unknown/empty.
-   subroutine test_parse_location_type() bind(C)
-      use m_spatial_field, only: parse_location_type
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-
-      call f90_expect_eq(parse_location_type('1d'), ILATTP_1D, "'1d' should map to ILATTP_1D")
-      call f90_expect_eq(parse_location_type('2d'), ILATTP_2D, "'2d' should map to ILATTP_2D")
-      call f90_expect_eq(parse_location_type('1d2d'), ILATTP_ALL, "'1d2d' should map to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type('all'), ILATTP_ALL, "'all' should map to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type(' '), ILATTP_ALL, "empty string should default to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type('bogus'), ILATTP_ALL, "unknown string should default to ILATTP_ALL")
-   end subroutine test_parse_location_type
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_rainfall_bcascii_registers_ec_connection, test_rainfall_bcascii_registers_ec_connection,
@@ -419,7 +406,7 @@ contains
                        "    interpolationMethod   = triangulation"])
 
       ! ARRANGE
-      ndxi  = ndx
+
       ndx2D = 0
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
@@ -713,5 +700,455 @@ contains
       call teardown_minimal_grid()
    end subroutine test_frictioncoefficient_with_explicit_frictiontype
    !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_advectiontype_integer_field_populated, test_advectiontype_integer_field_populated,
+   !> Verifies that an advectiontype [Spatial] block populates the iadv integer array
+   !! via the resolve_integer_target + timespaceinitialfield_int path.
+   !! Uses forcingFileType=insidePolygon since triangulation is not supported by
+   !! timespaceinitialfield_int. The value comes from the value= keyword (transformcoef(1)),
+   !! not from the polygon file itself.
+   !! iadv is pointered to (not allocated) by resolve_integer_target and must therefore
+   !! be pre-allocated here before init_spatial_fields is called.
+   subroutine test_advectiontype_integer_field_populated() bind(C)
+      use m_flowgeom, only: ndx2D, ndxi, lnx, xu, yu, iadv
+      use m_alloc, only: realloc, aerr
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: POL_FILE = "test_iadv.pol"
+      character(len=*), parameter :: EXT_FILE = "test_iadv.ext"
+
+      ! ARRANGE: a polygon that fully encloses the single cell at (0,0).
+      call create_file(POL_FILE, [ &
+                       "enclosing_polygon", &
+                       "5  2", &
+                       "-2.0  -2.0", &
+                       " 2.0  -2.0", &
+                       " 2.0   2.0", &
+                       "-2.0   2.0", &
+                       "-2.0  -2.0"])
+
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity        = advectiontype", &
+                       "    forcingFile     = "//POL_FILE, &
+                       "    forcingFileType = Polygon", &
+                       "    value           = 3"])
+
+      call setup_minimal_grid()
+      ndxi  = ndx
+      ndx2D = 0
+      lnx   = 1
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx), stat=ierr)
+      call aerr('xu/yu(lnx)', ierr, lnx)
+      xu = [0.0_dp]
+      yu = [0.0_dp]
+      ! iadv is only pointered to by resolve_integer_target, not allocated there.
+      ! Pre-allocate here so the pointer assignment does not dereference garbage.
+      call realloc(iadv, lnx, fill=0, keepExisting=.false.)
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for advectiontype insidePolygon block")
+      call f90_assert_true(allocated(iadv), "iadv should be allocated after init")
+      call f90_expect_eq(iadv(1), 3, "iadv(1) should be 3 (value= keyword via transformcoef(1))")
+
+      ! CLEANUP
+      lnx   = 0
+      ndxi  = 0
+      ndx2D = 0
+      if (allocated(xu))   deallocate (xu)
+      if (allocated(yu))   deallocate (yu)
+      if (allocated(iadv)) deallocate (iadv)
+      call teardown_minimal_grid()
+   end subroutine test_advectiontype_integer_field_populated
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialsalinity_3d_field_populated, test_initialsalinity_3d_field_populated,
+   !> Verifies that an initialsalinity [Initial] block populates constituents(ISALT,:)
+   !! via the static 3D path: timespaceinitialfield (2D interp) + initialfield2Dto3D_dbl_indx.
+   !! constituents is pointered to by resolve_initial_3D_target and must be pre-allocated.
+   !! kbot and ktop must also be pre-allocated for initialfield2Dto3D_dbl_indx to iterate layers.
+   subroutine test_initialsalinity_3d_field_populated() bind(C)
+      use m_transportdata, only: constituents, ISALT, NUMCONST
+      use m_flow, only: ndkx, kmx, kbot, ktop, sa1
+      use m_flowparameters, only: jasal
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_alloc, only: realloc
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: SAMPLE_FILE = "test_sal.xyz"
+      character(len=*), parameter :: EXT_FILE    = "test_sal.ext"
+
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+                                      " 1.0 -1.0  1.5", &
+                                      " 0.0  1.0  1.5"])
+      call create_file(EXT_FILE, [ &
+                       "[Initial]", &
+                       "    quantity            = initialsalinity", &
+                       "    forcingFile         = "//SAMPLE_FILE, &
+                       "    forcingFileType     = sample", &
+                       "    interpolationMethod = triangulation"])
+
+      ! ARRANGE
+      call setup_minimal_grid()
+      ndxi    = ndx
+      ndx2D   = 0
+      kmx     = 0
+      ndkx    = ndx   ! for kmx=0: ndkx == ndx, one layer per cell
+      NUMCONST = 1
+      ISALT    = 1
+      jasal    = 1
+
+      constituents = 0.0_dp
+      call realloc(kbot, ndx, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=1, keepExisting=.false.)
+      call realloc(sa1, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Initial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for initialsalinity sample block")
+      call f90_expect_near(sa1(1), 1.5_dp, 1.0e-6_dp, &
+                           "sa1 should match the sample value after 2D interp + 3D expansion")
+
+      ! CLEANUP
+      jasal    = 0
+      NUMCONST = 0
+      ISALT    = 0
+      ndkx     = 0
+      kmx      = 0
+      ndxi     = 0
+      ndx2D    = 0
+      if (allocated(constituents)) deallocate (constituents)
+      if (allocated(kbot))         deallocate (kbot)
+      if (allocated(ktop))         deallocate (ktop)
+      call teardown_minimal_grid()
+   end subroutine test_initialsalinity_3d_field_populated
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsalinityprofile, test_initialverticalsalinityprofile,
+   !> Verifies that an initialverticalsalinityprofile [Spatial] block populates sa1
+   !! via the UNC_LOC_3DV path in init_spatial_fields, which bypasses EC entirely and
+   !! calls setinitialverticalprofile directly with the polygon profile file..
+   subroutine test_initialverticalsalinityprofile() bind(C)
+      use m_flow, only: sa1, kmx, kmxx, kbot, ktop, zws, layertype, ndkx
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_flowparameters, only: jasal
+      use m_alloc, only: realloc
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      real(dp), parameter :: EXPECTED_SALINITY = 35.0_dp
+      character(len=*), parameter :: PROFILE_FILE = "test_ivsp.pol"
+      character(len=*), parameter :: EXT_FILE = "test_ivsp.ext"
+
+      ! ARRANGE: polygon profile file with a constant 35 PSU from bed (-10 m) to surface (0 m).
+      ! reapol reads this format: name / M N / depth1 value1 / depth2 value2 ...
+      ! lineinterp uses xpl=depth and ypl=salinity value.
+      call create_file(PROFILE_FILE, [ &
+                       "salinityprofile", &
+                       "2  2", &
+                       "-10.0  35.0", &
+                       "  0.0  35.0"])
+
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity        = initialverticalsalinityprofile", &
+                       "    forcingFile     = "//PROFILE_FILE, &
+                       "    forcingFileType = Polygon", &
+                       "    value           = 35.0"])
+
+      ! Minimal flow geometry: 1 node, 1 sigma layer.
+      call setup_minimal_grid()
+      ndxi = ndx        ! ndx == 1, set by setup_minimal_grid
+      ndx2D = 0
+      ndkx = ndx        ! for kmx=1 and 1 node: ndkx = 1
+
+      ! Resolver guard: jasal>0 and kmx>0 are required by resolve_initial_target.
+      jasal = 1
+      kmx = 1
+      layertype = 0      ! sigma layers, avoids the LAYTP_Z branch
+
+      call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
+      call realloc(sa1, ndkx, fill=0.0_dp, keepExisting=.false.)
+
+      ! zws(0:ndkx): zws(0)=bed interface, zws(1)=surface interface.
+      ! setinitialverticalprofile computes z_center(1) = 0.5*(zws(1)+zws(0)) = -5 m.
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws(0) = -10.0_dp
+      zws(1) = 0.0_dp
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, &
+                           "init_spatial_fields must succeed for initialverticalsalinityprofile")
+      ! lineinterp: z_center=-5 lies in the profile range [-10,0], constant value 35 PSU.
+      call f90_expect_near(sa1(1), EXPECTED_SALINITY, 1.0e-10_dp, &
+                           "sa1(1) must equal the profile value interpolated at z_center=-5 m")
+
+      ! CLEANUP
+      jasal = 0
+      kmx = 0
+      ndkx = 0
+      ndxi = 0
+      ndx2D = 0
+      if (allocated(sa1))  deallocate (sa1)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(zws))  deallocate (zws)
+      call teardown_minimal_grid()
+   end subroutine test_initialverticalsalinityprofile
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_field1d_global_value_applied_to_frictioncoefficient, test_field1d_global_value_applied_to_frictioncoefficient,
+   !> Verifies that a frictioncoefficient block with forcingFileType=1dField applies
+   !! the [Global] value to all 1D links when no [Branch] blocks are present.
+   !! Does not require a real 1D network: with no [Branch] blocks, spaceInit1dField
+   !! is never called and the global fallback in init_field1d_block is the only code path.
+   subroutine test_field1d_global_value_applied_to_frictioncoefficient() bind(C)
+      use m_flow, only: frcu
+      use m_flowgeom, only: lnx, lnx1d
+      use unstruc_inifields, only: finalize_1dfield_global_values
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: FIELD1D_FILE = "test_fr1d.ini"
+      character(len=*), parameter :: EXT_FILE     = "test_fr1d.ext"
+
+      call create_file(FIELD1D_FILE, [ &
+                       "[General]", &
+                       "    fileVersion = 1.00", &
+                       "    fileType    = 1dField", &
+                       "", &
+                       "[Global]", &
+                       "    quantity = frictioncoefficient", &
+                       "    unit     = -", &
+                       "    value    = 0.025"])
+
+      call create_file(EXT_FILE, [ &
+                       "[Parameter]", &
+                       "    quantity        = frictioncoefficient", &
+                       "    forcingFile     = "//FIELD1D_FILE, &
+                       "    forcingFileType = 1dField"])
+
+      ! ARRANGE: one 1D flow link; no 1D network needed because there are no [Branch] blocks.
+      lnx   = 1
+      lnx1d = 1
+      call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Parameter')
+      call tree_destroy(bnd_ptr)
+      call finalize_1dfield_global_values()
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for a 1dField frictioncoefficient block")
+      call f90_expect_near(frcu(1), 0.025_dp, 1.0e-6_dp, &
+                           "frcu(1) should equal the global value from the [Global] block")
+
+      ! CLEANUP
+      lnx   = 0
+      lnx1d = 0
+      if (allocated(frcu)) deallocate (frcu)
+      call teardown_minimal_grid()
+   end subroutine test_field1d_global_value_applied_to_frictioncoefficient
+   !$f90tw)
+
+   !!$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_timedep_uses_item_frcu, test_frictioncoefficient_timedep_uses_item_frcu,
+   !!> Regression test for the ec_addtimespacerelation bug where targetItemPtr1 was
+   !!! unconditionally overridden by tgt_item1 even when fm_ext_force_name_to_ec_item
+   !!! had already wired item_frcu. The symptom was: frcu never updated during the run
+   !!! because the EC connection pointed at a disconnected scratch item.
+   !!!
+   !!! Proof: after init_spatial_fields, calling ec_gettimespacevalue_by_itemID with
+   !!! item_frcu (the registered hardcoded item) must update frcu. If the bug were
+   !!! still present, item_frcu would have no connection and the call would silently
+   !!! leave frcu unchanged.
+   !subroutine test_frictioncoefficient_timedep_uses_item_frcu() bind(C)
+   !   use m_meteo,      only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_frcu, initialize_ec_module
+   !   use m_flow,       only: frcu
+   !   use m_flowgeom,   only: lnx, xu, yu
+   !   use m_flowtimes,  only: irefdate, tzone, tunit, tstart_user
+   !   use m_alloc,      only: realloc
+   !   use m_polygon,    only: m_polygon_destructor
+   !   use netcdf
+   !
+   !   type(tree_data), pointer :: bnd_ptr, block_ptr
+   !   logical :: success
+   !   real(dp) :: value_at_t0, value_at_t50
+   !   integer :: ierr
+   !   character(len=*), parameter :: NC_FILE  = "test_frcu_tv.nc"
+   !   character(len=*), parameter :: EXT_FILE = "test_frcu_tv.ext"
+   !
+   !   ! ARRANGE: create a minimal 2-timestep NetCDF with friction_coefficient at one grid point.
+   !   call create_friction_netcdf(NC_FILE, &
+   !                               times   = [0.0_dp, 100.0_dp], &
+   !                               values  = [0.02_dp, 0.04_dp], &
+   !                               x_coord = 0.0_dp, &
+   !                               y_coord = 0.0_dp)
+   !
+   !   call create_file(EXT_FILE, [ &
+   !                    "[Parameter]", &
+   !                    "    quantity        = frictioncoefficient", &
+   !                    "    forcingFile     = "//NC_FILE, &
+   !                    "    forcingFileType = netcdf"])
+   !
+   !   call setup_minimal_grid()
+   !   lnx = 1
+   !   if (allocated(xu)) deallocate(xu)
+   !   if (allocated(yu)) deallocate(yu)
+   !   allocate(xu(lnx), yu(lnx))
+   !   xu = [0.0_dp]
+   !   yu = [0.0_dp]
+   !   call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
+   !
+   !   irefdate    = 20000101
+   !   tzone       = 0.0_dp
+   !   tstart_user = 0.0_dp
+   !   threshold_abort = LEVEL_FATAL
+   !   call initialize_ec_module()
+   !   ierr = m_polygon_destructor()
+   !
+   !   ! ACT
+   !   call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+   !   success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Parameter')
+   !   call tree_destroy(bnd_ptr)
+   !
+   !   call f90_assert_true(success, "init_spatial_fields should succeed for netcdf frictioncoefficient")
+   !
+   !   ! KEY ASSERTION: item_frcu must be a valid registered item. If targetItemPtr1 had
+   !   ! been overridden by the bug, fm_ext_force_name_to_ec_item would have set item_frcu
+   !   ! but then it would have been replaced by a disconnected scratch item.
+   !   call f90_assert_true(item_frcu > 0, "item_frcu must be registered (> 0)")
+   !
+   !   ! Verify the EC relation is live by querying item_frcu at two timesteps.
+   !   success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_frcu, &
+   !                                            irefdate, tzone, tunit, 0.0_dp, target_array = frcu)
+   !   call f90_assert_true(success, "ec_gettimespacevalue_by_itemID must succeed at t=0")
+   !   value_at_t0 = frcu(1)
+   !
+   !   success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_frcu, &
+   !                                            irefdate, tzone, tunit, 50.0_dp, target_array = frcu)
+   !   call f90_assert_true(success, "ec_gettimespacevalue_by_itemID must succeed at t=50")
+   !   value_at_t50 = frcu(1)
+   !
+   !   call f90_expect_near(value_at_t0,  0.02_dp, 1.0e-6_dp, "frcu at t=0 should be 0.02")
+   !   call f90_expect_near(value_at_t50, 0.03_dp, 1.0e-6_dp, "frcu at t=50 should be 0.03 (linearly interpolated)")
+   !   ! Crucially, the two values must differ: if item_frcu had no connection (bug) both
+   !   ! would remain at the initial fill value 0.0.
+   !   call f90_expect_true(abs(value_at_t50 - value_at_t0) > 1.0e-6_dp, &
+   !                        "frcu must change over time, proving item_frcu is live")
+   !
+   !   ! CLEANUP
+   !   lnx = 0
+   !   if (allocated(xu))   deallocate(xu)
+   !   if (allocated(yu))   deallocate(yu)
+   !   if (allocated(frcu)) deallocate(frcu)
+   !   call teardown_minimal_grid()
+   !end subroutine test_frictioncoefficient_timedep_uses_item_frcu
+   !!$f90tw)
+   !
+   !!> Creates a minimal CF-compliant NetCDF file with a single spatial point and
+   !!! a `friction_coefficient` variable varying over time.
+   !subroutine create_friction_netcdf(filename, times, values, x_coord, y_coord)
+   !   use netcdf
+   !   character(len=*), intent(in) :: filename
+   !   real(dp),         intent(in) :: times(:)    !< seconds since 2000-01-01
+   !   real(dp),         intent(in) :: values(:)   !< friction_coefficient values
+   !   real(dp),         intent(in) :: x_coord, y_coord
+   !
+   !   integer :: ncid, time_dimid, x_dimid, y_dimid
+   !   integer :: time_varid, x_varid, y_varid, frcu_varid
+   !   integer :: n
+   !
+   !   n = size(times)
+   !   call check_nc(nf90_create(filename, NF90_CLOBBER, ncid))
+   !
+   !   ! Dimensions
+   !   call check_nc(nf90_def_dim(ncid, 'time', NF90_UNLIMITED, time_dimid))
+   !   call check_nc(nf90_def_dim(ncid, 'y',    1,              y_dimid))
+   !   call check_nc(nf90_def_dim(ncid, 'x',    1,              x_dimid))
+   !
+   !   ! time variable
+   !   call check_nc(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+   !   call check_nc(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+   !   call check_nc(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+   !
+   !   ! x / y coordinate variables
+   !   call check_nc(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
+   !   call check_nc(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+   !   call check_nc(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
+   !   call check_nc(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+   !
+   !   ! friction_coefficient data variable (time, y, x)
+   !   call check_nc(nf90_def_var(ncid, 'friction_coefficient', NF90_DOUBLE, &
+   !                              [x_dimid, y_dimid, time_dimid], frcu_varid))
+   !   call check_nc(nf90_put_att(ncid, frcu_varid, 'standard_name', 'friction_coefficient'))
+   !   call check_nc(nf90_put_att(ncid, frcu_varid, 'coordinates',   'x y'))
+   !
+   !   call check_nc(nf90_enddef(ncid))
+   !
+   !   ! Write data
+   !   call check_nc(nf90_put_var(ncid, time_varid, times))
+   !   call check_nc(nf90_put_var(ncid, x_varid,    [x_coord]))
+   !   call check_nc(nf90_put_var(ncid, y_varid,    [y_coord]))
+   !   call check_nc(nf90_put_var(ncid, frcu_varid, reshape(values, [1, 1, n])))
+   !
+   !   call check_nc(nf90_close(ncid))
+   !end subroutine create_friction_netcdf
+   !
+   !subroutine check_nc(ierr)
+   !   use netcdf
+   !   integer, intent(in) :: ierr
+   !   if (ierr /= NF90_NOERR) error stop nf90_strerror(ierr)
+   !end subroutine check_nc
 
 end module test_init_spatial_fields_integration

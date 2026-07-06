@@ -130,6 +130,9 @@ contains
       use m_tauwavefetch, only: tauwavefetch
       use m_fill_constituents, only: fill_constituents
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
+      use m_flowparameters, only: map_write_settings
+      use m_unc_flowgeom, only: build_flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -591,6 +594,8 @@ contains
       call mess(LEVEL_INFO, '**')
       call timstop(handle_extra(34)) ! end writeMDUFilepointer
 
+      flowgeom = build_flowgeom(map_write_settings%bnd)
+
       call timstrt('Flowgeom            ', handle_extra(35)) ! write flowgeom ugrid
       if (len_trim(md_flowgeomfile) > 0) then ! Save initial flow geometry to file.
          if (md_unc_conv == UNC_CONV_UGRID) then
@@ -625,6 +630,11 @@ contains
          call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
          call fm_precice_adapter_builder%set_cell_center_mesh_2d("fm_flow_cells", ndx, xz, yz)
          call fm_precice_adapter_builder%set_cell_center_mesh_3d("fm_flow_cells_3d", ndx, kmx, xz, yz, zws)
+         call fm_precice_adapter_builder%set_sources_sinks_mesh_name("sources_sinks_nodes")
+         if (jampi == 1) then
+             call fm_precice_adapter_builder%set_mpi_rank(my_rank, numranks)
+             call fm_precice_adapter_builder%set_mpi_communicator(DFM_COMM_DFMWORLD)
+         end if
       end if
 
       iresult = DFM_NOERR

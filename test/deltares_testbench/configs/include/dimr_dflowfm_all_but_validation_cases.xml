@@ -29,7 +29,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
-      <path version="2026-02-10T15:09:03.103000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
+      <path version="2026-06-09T14:45:54.686000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -51,7 +51,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c101_longculvert_timeseries_valve" ref="dflowfm_config">
-      <path version="2026-02-10T15:09:24.270000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
+      <path version="2026-06-09T14:49:17.605000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -2258,7 +2258,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_restart">
-        <path version="2026-04-21T13:06:44.515000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+        <path version="2026-06-19T07:54:31.048000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">
@@ -3034,7 +3034,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:15.273000">e02_dflowfm/f010_structures/c011_gate_free</path>
+      <path version="2026-05-13T06:51:10.188000">e02_dflowfm/f010_structures/c011_gate_free</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
@@ -3086,7 +3086,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c021_gate_free_ini_newkeywords" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:19.232000">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
+      <path version="2026-05-13T09:40:30.045000">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
@@ -3099,7 +3099,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c022_sill_sub_ini_newkeywords" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:20.411000">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
+      <path version="2026-05-12T08:56:34.477000">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
       <maxRunTime>10.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
@@ -3182,7 +3182,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c019_gate" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f010_structures/c019_gate</path>
+      <path version="2026-05-13T06:51:28.471000">e02_dflowfm/f010_structures/c019_gate</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
          <file name="dflowfm/output/dflow-fm_his.nc" type="netCDF">
@@ -3934,6 +3934,18 @@
         <file name="output/FlowFM_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_Rhum" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f011_c210_spider_utm_transfo" ref="dflowfm_default">
+      <path version="2026-06-11T13:16:47.454000">e02_dflowfm/f011_wind/c210_spider_utm_transfo</path>
+      <maxRunTime>600</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_osaka_surge/osaka_surge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_windx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_windy" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>
@@ -4819,6 +4831,42 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f019_c091_tracer_diffusion_explicit_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-06-10T03:18:28.317000">e02_dflowfm/f019_transport/c091_tracer_diffusion_explicit_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_map.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately 1.2e-4 --> 
+      			<parameter name="mesh2d_tracer" toleranceAbsolute="1.5e-4" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -1e-12 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="1e-11" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>    
+    <testCase name="e02_f019_c092_tracer_diffusion_explicit_local_timestep_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-05-29T13:20:35.560000">e02_dflowfm/f019_transport/c092_tracer_diffusion_explicit_local_timestep_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_map.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately +-3.0e-4 --> 
+      			<parameter name="mesh2d_tracer" toleranceAbsolute="3e-4" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -7e-10 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="1e-9" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>       
     <testCase name="e02_f020_c034_salinity_freezing" ref="dflowfm_default">
       <path version="2025-12-12T14:33:06.073000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
       <maxRunTime>60.0000000</maxRunTime>
@@ -6110,7 +6158,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f022_c108_settling_mass_balance" ref="dflowfm_default"> 
-      <path version="2026-05-06T07:31:54.202000">e02_dflowfm/f022_morphology_2D/c108_settling_mass_balance</path>
+      <path version="2026-05-06T14:00:28.379000">e02_dflowfm/f022_morphology_2D/c108_settling_mass_balance</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/masscon_his.nc" type="netCDF">

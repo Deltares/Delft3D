@@ -1,4 +1,5 @@
 """Tests for the single-line if statement converter."""
+
 import pytest
 from deltares_fortran_styler.single_line_if_converter import SingleLineIfConverter
 
@@ -204,7 +205,7 @@ if (z == 0) w = 1"""
 
         # Assert
         # Should count only single-line ifs (3), not the multi-line one
-        assert stats['single_line_ifs'] == 3
+        assert stats["single_line_ifs"] == 3
 
     def test_needs_import_returns_false(self, converter):
         """Test that single-line if converter doesn't need imports."""
