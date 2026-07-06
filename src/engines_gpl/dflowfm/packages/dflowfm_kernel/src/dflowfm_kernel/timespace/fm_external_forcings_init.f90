@@ -391,10 +391,10 @@ contains
                      if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then
                         call det_sign_discharge(location_file,facdis)
                      end if
-                     ! fill kbndu(7,:) with multiplification discharge boundaries
+                     ! fill kbndu(8,:) with multiplification discharge boundaries
                      do ibndu = 1, size(kbndu,2)
-                        if (kbndu(4,ibndu) == ib) then
-                            kbndu(7,ibndu) = facdis
+                        if (kbndu(7,ibndu) == ib) then
+                            kbndu(8,ibndu) = facdis
                         end if
                      end do
                  end if
