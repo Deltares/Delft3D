@@ -87,6 +87,7 @@ module fm_external_forcings_data
                                                         !! 1,*=boundary typ, see type indicator kbndz(4,*) below
    integer, allocatable :: itpeu(:) !< hulp (numl) edge oriented,
                                                         !! 1,*=boundary typ, see type indicator kbndz(4,*) below
+   integer, allocatable :: itpeu_ib(:) !< hulp (numl) for storing boundary segment number
    integer, allocatable :: itpenz(:) !< temp (numl) edge oriented,
                                                         !! 1,*=boundary number (nopenbndsect), see type indicator kbndz(5,*) below
    integer, allocatable :: itpenu(:) !< temp (numl) edge oriented,

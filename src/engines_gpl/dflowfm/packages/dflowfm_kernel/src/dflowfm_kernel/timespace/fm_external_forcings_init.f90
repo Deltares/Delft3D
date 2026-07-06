@@ -377,6 +377,19 @@ contains
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
                                                                   operand=operand, forcing_file=forcing_file)
+                  ! TK_temp: Determine sign needed for discharge boundaries from history file
+                  if (quantity == 'dischargebnd') then
+                     facdis = 1
+                     if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then
+                        call det_sign_discharge(location_file,facdis)
+                     end if
+                     ! fill kbndu(8,:) with multiplification discharge boundaries
+                     do ibndu = 1, size(kbndu,2)
+                        if (kbndu(7,ibndu) == ib) then
+                            kbndu(8,ibndu) = facdis
+                        end if
+                     end do
+                 end if
                end if
                res = res .and. is_successful ! Remember any previous errors.
                operand = OPERAND_UNKNOWN
