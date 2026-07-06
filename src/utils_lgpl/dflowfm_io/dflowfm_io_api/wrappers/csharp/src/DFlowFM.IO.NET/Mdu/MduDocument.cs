@@ -12,18 +12,10 @@ namespace DFlowFM.IO.Mdu;
 /// <c>"&lt;section&gt;.&lt;property&gt;"</c>, e.g. <c>"geometry.netfile"</c> refers to
 /// the <c>netFile</c> property in the <c>[geometry]</c> section.
 /// </remarks>
-public sealed partial class MduDocument : IDisposable
+public sealed class MduDocument : IDisposable
 {
     private static readonly UTF8Encoding Utf8NoBom = new(false);
     private readonly MduApi _api = new();
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="MduDocument" /> class.
-    /// </summary>
-    public MduDocument()
-    {
-        InitializeSections();
-    }
 
     /// <summary>
     /// Gets the issue report produced after the last load operation.
