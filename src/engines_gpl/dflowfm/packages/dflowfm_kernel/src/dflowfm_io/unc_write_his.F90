@@ -1526,8 +1526,12 @@ contains
       end if
       call unc_put_his_structure_names(ncid, his_write_settings%weir, id_weirgen_id, structure_names)
 
-      indices = [(network%sts%orificeIndices(i), i=1, network%sts%numOrifices)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numOrifices)]
+      if (network%sts%numOrifices > 0) then
+         indices = [(network%sts%orificeIndices(i), i=1, network%sts%numOrifices)]
+         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numOrifices)]
+      else
+         structure_names = [("", i=1, 0)]
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%orifice, id_orifgen_id, structure_names)
 
       structure_names = [(pump_ids(i), i=1, npumpsg)]
@@ -1548,19 +1552,31 @@ contains
       end if
       call unc_put_his_structure_names(ncid, his_write_settings%cgen, id_genstru_id, structure_names)
 
-      indices = [(network%sts%uniweirIndices(i), i=1, network%sts%numuniweirs)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numuniweirs)]
+      if (network%sts%numUniWeirs > 0) then
+         indices = [(network%sts%uniweirIndices(i), i=1, network%sts%numUniWeirs)]
+         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numUniWeirs)]
+      else
+         structure_names = [("", i=1, 0)]
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%universal_weir, id_uniweir_id, structure_names)
 
       structure_names = get_dambreak_names()
       call unc_put_his_structure_names(ncid, his_write_settings%dambreak, id_dambreak_id, structure_names)
 
-      indices = [(network%sts%culvertIndices(i), i=1, network%sts%numCulverts)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numCulverts)]
+      if (network%sts%numCulverts > 0) then
+         indices = [(network%sts%culvertIndices(i), i=1, network%sts%numCulverts)]
+         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numCulverts)]
+      else
+         structure_names = [("", i=1, 0)]
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%culvert, id_culvert_id, structure_names)
 
-      indices = [(network%sts%bridgeIndices(i), i=1, network%sts%numBridges)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numBridges)]
+      if (network%sts%numBridges > 0) then
+         indices = [(network%sts%bridgeIndices(i), i=1, network%sts%numBridges)]
+         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), i=1, network%sts%numBridges)]
+      else
+         structure_names = [("", i=1, 0)]
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%bridge, id_bridge_id, structure_names)
 
       structure_names = [(network%cmps%compound(i)%id, i=1, network%cmps%count)]
