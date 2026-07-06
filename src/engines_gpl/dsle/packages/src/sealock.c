@@ -395,7 +395,7 @@ static int sealock_update_phase_wise_parameters(sealock_state_t *lock, time_t ti
       break;
     }
     lock->phase_args.time_duration_end = lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
-    }
+  }
   return status;
 }
 
