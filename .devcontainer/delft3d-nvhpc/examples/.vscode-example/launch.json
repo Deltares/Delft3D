@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ctest",
+      "type": "cppdbg",
+      "request": "launch",
+      "cwd": "${cmake.testWorkingDirectory}",
+      "program": "${cmake.testProgram}",
+      "args": ["${cmake.testArgs}"],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set language to Fortran",
+          "text": "set language fortran",
+          "ignoreFailures": false
+        }
+      ]
+    }
+  ]
+}
