@@ -97,11 +97,12 @@ contains
       ! First cycle, validate all external forcing files and add their contents to the bnd_ptrs list.
       do i_ext = 1, size(extfile_new_list)
 
-         call validate_and_open_external_forcing_file(extfile_new_list(i_ext), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
+         call validate_and_open_external_forcing_file(trim(extfile_new_list(i_ext)), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
          if (iresult /= DFM_NOERR) then
             cycle ! Skip this external forcing file if it could not be validated or opened.
          end if
 
+         file_names(i_ext) = trim(extfile_new_list(i_ext))
          call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
 
       end do
