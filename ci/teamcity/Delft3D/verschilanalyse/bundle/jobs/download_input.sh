@@ -21,13 +21,13 @@ mkdir -p "${VAHOME}/${MODELS_PATH}" "${VAHOME}/${JSON_CONFIGS_PATH}"
 # Get the model input and verschillentool configs from MinIO.
 minio_paths=("${MODELS_PATH}" "${JSON_CONFIGS_PATH}")
 for path in "${minio_paths[@]}"; do
-	docker run \
-		--rm \
-		--volume="${HOME}/.aws:/root/.aws:ro" \
-		--volume="${VAHOME}/${path}:/data" \
-		--env AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
-		docker.io/amazon/aws-cli:2.32.14 \
-			--profile=verschilanalyse \
-			--endpoint-url=https://s3.deltares.nl \
-			s3 sync --delete --no-progress "${BUCKET}/${path}/" /data
+    docker run \
+        --rm \
+        --volume="${HOME}/.aws:/root/.aws:ro" \
+        --volume="${VAHOME}/${path}:/data" \
+        --env AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
+        docker.io/amazon/aws-cli:2.32.14 \
+            --profile=verschilanalyse \
+            --endpoint-url=https://s3.deltares.nl \
+            s3 sync --delete --no-progress "${BUCKET}/${path}/" /data
 done
