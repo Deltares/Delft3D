@@ -330,12 +330,13 @@ contains
    !> compute fluxes based on Monin-Obukhov Stability Theory
    module subroutine compute_air_water_interaction_most_fluxes(initialization)
       use precision, only: dp
-      use m_flowgeom, only: ndx, lnx
+      use m_flowgeom, only: ndx, lnx, csu, snu
       use m_get_surface_temperature, only: get_surface_temperature
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
       use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
-      use m_relative_wind, only: compute_surface_relative_wind
+      use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       use m_wind, only: relativewind
+      use m_flow, only: ltop, u1, v
       use physicalconsts, only: celsius_to_kelvin
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity
@@ -359,7 +360,8 @@ contains
          allocate(dew_point_temperature_kelvin(ndx))
       end if
 
-      call compute_surface_relative_wind(wx, wy, relativewind, windx_link, windy_link)
+      call compute_wind_relative_to_surface_on_link(wx(1:lnx), wy(1:lnx), relativewind, u1(ltop(1:lnx)), v(ltop(1:lnx)), &
+                               csu(1:lnx), snu(1:lnx), windx_link, windy_link)
       call link_to_node_vector(windx_link, windy_link, windx, windy, ndx)
       call link_to_node_scalar(wcharnock, charnock, ndx)
 

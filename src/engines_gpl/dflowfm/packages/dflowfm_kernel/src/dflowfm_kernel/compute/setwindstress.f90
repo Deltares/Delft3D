@@ -42,11 +42,11 @@ contains
 
    subroutine setwindstress()
       use precision, only: dp
-      use m_relative_wind, only: compute_surface_relative_wind_on_link
+      use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       use m_setcdwcoefficient, only: setcdwcoefficient
       use m_flowgeom, only: ln, lnx, snu, csu
       use m_flow, only: map_write_settings, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-               viskinair, ag, vonkarw, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw
+               viskinair, ag, vonkarw, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
@@ -120,7 +120,7 @@ contains
 
                    wxL = wx(L)
                    wyL = wy(L)
-                   call compute_surface_relative_wind_on_link(L, wxL, wyL, relativewind, wxL, wyL, uwi)
+                   call compute_wind_relative_to_surface_on_link(wxL, wyL, relativewind, u1(ltop(L)), v(ltop(L)), csu(L), snu(L), wxL, wyL, uwi)
                    if (jaspacevarcharn == 1) then
                       cdb(1) = wcharnock(L)
                    end if
