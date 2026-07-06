@@ -267,7 +267,6 @@ contains
       use m_sferic                 , only: jsferic, jasfer3D
       use fm_external_forcings_data, only: transformcoef
       use m_polygon                , only: npl, xpl, ypl, zpl
-      use m_samples                , only: mxsam, mysam 
       use precision                , only: dp
       use m_alloc
       
@@ -296,7 +295,7 @@ contains
       call realloc(wfxx, [3, numobs + nummovobs], keepexisting=.false., fill=0.0_dp)
             
       call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
-                                 jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
+                                 jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
       
        do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
