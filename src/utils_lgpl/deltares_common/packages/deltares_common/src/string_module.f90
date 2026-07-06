@@ -995,6 +995,14 @@ contains
             exit
          end if
       end do
+      ! Strip trailing carriage return (for Windows line endings, particularly with nvfortran)
+      if (allocated(line)) then
+         if (len(line) > 0) then
+            if (line(len(line):len(line)) == char(13)) then
+               line = line(1:len(line)-1)
+            end if
+         end if
+      end if
    end subroutine GetLine
 
    !> convert an integer into a string
