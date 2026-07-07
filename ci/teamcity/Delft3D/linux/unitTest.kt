@@ -23,7 +23,8 @@ object LinuxUnitTest : BuildType({
         TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplatePullRequestConcurrency
     )
 
     params {

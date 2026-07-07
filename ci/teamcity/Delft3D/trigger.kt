@@ -18,7 +18,8 @@ object Trigger : BuildType({
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplatePullRequestConcurrency
     )
 
     name = "Trigger"
