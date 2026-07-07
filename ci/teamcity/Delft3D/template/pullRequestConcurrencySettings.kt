@@ -1,7 +1,7 @@
 package Delft3D.template
 
 import jetbrains.buildServer.configs.kotlin.Template
-import jetbrains.buildServer.configs.kotlin.buildTypes.BuildsLimitingMode
+import jetbrains.buildServer.configs.kotlin.BuildsLimitingMode
 
 object TemplatePullRequestConcurrency : Template({
     name = "Pull Request Concurrency Settings"
