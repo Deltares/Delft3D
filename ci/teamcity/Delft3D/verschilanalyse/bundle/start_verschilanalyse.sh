@@ -161,6 +161,7 @@ if [[ "$RUN_MODELS" = 'true' ]]; then
         echo "Model directory: ${MODEL_DIR}"
         JOB_ID=$(
             sbatch --parsable \
+                --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}" \
                 --chdir="$(dirname "$SCRIPT")" \
                 --output="${LOG_DIR}/models/$(basename "$MODEL_DIR").out" \
                 "$SCRIPT" --apptainer "$DELFT3D_SIF" --model-dir "$MODEL_DIR"
