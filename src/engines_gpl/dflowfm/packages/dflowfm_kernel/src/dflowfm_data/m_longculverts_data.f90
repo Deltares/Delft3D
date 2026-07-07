@@ -78,7 +78,7 @@ contains
       class(t_longculvert), intent(in) :: self
       logical :: res
       res = .false.
-      if (newculverts .and. allocated(self%netlinks)) then
+      if (allocated(self%netlinks)) then
          res = size(self%netlinks) == 1
       end if
    end function is_2D2D

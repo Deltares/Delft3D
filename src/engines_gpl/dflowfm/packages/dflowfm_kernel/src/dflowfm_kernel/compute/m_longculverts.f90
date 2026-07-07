@@ -644,8 +644,7 @@ contains
       use gridoperations
       use m_save_ugrid_state, only: contactnetlinks, contactnlinks, contact_cell_idx, hashlist_contactids
       use m_alloc, only: realloc
-      integer :: Lnet, i, ilongc, icontact
-      logical :: already_registered
+      integer :: Lnet, i, ilongc
 
       ! NOTE: IF setnodadm() is again called after this subroutine has completed, with more netlink permutations,
       !! Then the longculvert()%netlinks array is incorrect. This can be fixed if we change our approach
@@ -669,16 +668,6 @@ contains
             cycle
          end if
          Lnet = longculverts(ilongc)%netlinks(1)
-         already_registered = .false.
-         do icontact = 1, contactnlinks
-            if (contactnetlinks(icontact) == Lnet) then
-               already_registered = .true.
-               exit
-            end if
-         end do
-         if (already_registered) then
-            cycle
-         end if
          contactnlinks = contactnlinks + 1
          call realloc(contactnetlinks, contactnlinks, keepExisting=.true., fill=0)
          call realloc(contact_cell_idx, [2, contactnlinks], keepExisting=.true., fill=0)
