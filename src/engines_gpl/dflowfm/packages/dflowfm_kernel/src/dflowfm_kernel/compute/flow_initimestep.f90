@@ -159,7 +159,7 @@ contains
          end if
 
          if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
-            call compute_air_water_interaction_most_fluxes(.false.)
+            call compute_air_water_interaction_most_fluxes(initialization=.false.)
          end if
 
          call calculate_wind_stresses(iresult)

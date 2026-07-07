@@ -42,17 +42,18 @@ contains
 
    subroutine setwindstress()
       use precision, only: dp
+      use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       use m_setcdwcoefficient, only: setcdwcoefficient
       use m_flowgeom, only: ln, lnx, snu, csu
       use m_flow, only: map_write_settings, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-                        viskinair, ag, vonkarw, u1, ltop, v, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw
+               viskinair, ag, vonkarw, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_atmospheric_stability, only: get_wind_stress
       use m_flowgeom_interpolate, only: node_to_link_vector
 
-      real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, uL, vL, uxL, uyL, ust, ust2, tau, z0w, roa, row
+      real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, ust, ust2, tau, z0w, roa, row
       real(kind=dp) :: local_ice_area_fraction
       real(kind=dp), allocatable :: wind_stress_x_node(:), wind_stress_y_node(:)
       integer :: L, numwav, k
@@ -119,15 +120,7 @@ contains
 
                    wxL = wx(L)
                    wyL = wy(L)
-                   if (relativewind > 0.0_dp) then
-                      uL = relativewind * U1(Ltop(L))
-                      vL = relativewind * v(Ltop(L))
-                      uxL = uL * csu(L) - vL * snu(L)
-                      uyL = uL * snu(L) + vL * csu(L)
-                      wxL = wxL - uxL
-                      wyL = wyL - uyL
-                   end if
-                   uwi = sqrt(wxL * wxL + wyL * wyL)
+                   call compute_wind_relative_to_surface_on_link(wxL, wyL, relativewind, u1(ltop(L)), v(ltop(L)), csu(L), snu(L), wxL, wyL, uwi)
                    if (jaspacevarcharn == 1) then
                       cdb(1) = wcharnock(L)
                    end if
