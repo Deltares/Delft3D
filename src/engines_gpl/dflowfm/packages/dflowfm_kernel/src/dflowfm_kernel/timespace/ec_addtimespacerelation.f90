@@ -1566,18 +1566,37 @@ contains
 
       if (sourceItemName /= ' ') then
          ! not a special case, connect source and target
-         sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-         if (sourceItemId == ec_undef_int) then
-            goto 1234
-         end if
-         if (.not. initializeConnection(ecInstancePtr, connectionId, sourceItemId, targetItemPtr1)) then
-            goto 1234
-         end if
-         if (present(targetIndex)) then
-            if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
+         block
+            integer, dimension(:), allocatable :: sourceItemIds
+            integer :: idIdx
+            ! with nesting there can be more than one source item now. But the first is always the main one
+            ! The second is made for nesting to be able to interpolate z-values in time
+            sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
+            if (.not. allocated(sourceItemIds)) then
                goto 1234
             end if
-         end if
+
+            do idIdx = 1, size(sourceItemIds)
+               sourceItemId = sourceItemIds(idIdx)
+               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (.not. success) then
+                  goto 1234
+               end if
+               if (present(targetIndex)) then
+                  if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
+                     goto 1234
+                  end if
+               end if
+            end do
+
+            if (success) then
+               success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
+            end if
+            if (success) then
+               success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
+            end if
+
+         end block
       end if
 
       success = ecSetConnectionIndexWeights(ecInstancePtr, connectionId)
