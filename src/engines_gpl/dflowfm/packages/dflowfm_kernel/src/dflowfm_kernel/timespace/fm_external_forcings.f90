@@ -1844,6 +1844,7 @@ contains
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
+
       integer :: iresult
 
       call setup(iresult)
@@ -2599,6 +2600,9 @@ contains
       integer :: flownode_nr !< Flow node number
       logical, dimension(:), allocatable :: is_source_sink_bubblescreen
 
+      if (source_sinks%num_total == 0) then
+         return ! No source/sinks, nothing to do
+      end if
       ! actually compute is_source_sink_bubble and then negate it
       call realloc(is_source_sink_bubblescreen, source_sinks%num_total, fill=.false.)
 
