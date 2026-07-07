@@ -5,6 +5,7 @@
     <File Path="Directory.Build.props"/>
     <File Path="Directory.Packages.props"/>
     <File Path="global.json"/>
+    <File Path="Nuget.config"/>
   </Folder>
 
   <Project Path="src/DFlowFM.IO.NET.Generators/DFlowFM.IO.NET.Generators.csproj"/>
