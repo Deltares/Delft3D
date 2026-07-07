@@ -294,9 +294,10 @@
                 {
                     "key": "nonLin1D",
                     "value_type": "intenum",
-                    "default_value": 1,
+                    "default_value": 0,
                     "description": "Non-linear 1D volumes, applicable for models with closed cross sections.",
                     "enum_values": {
+                        "0": "none",
                         "1": "treat closed sections as partially open by using a Preissmann slot",
                         "2": "Nested Newton approach",
                         "3": "partial Nested Newton approach"
@@ -531,15 +532,17 @@
                 },
                 {
                     "key": "zLayBot",
-                    "value_type": "int",
-                    "default_value": -999,
-                    "description": "If specified, first z-layer starts from `zLayBot`, if not, it starts from the lowest bed point."
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "If specified, first z-layer starts from `zLayBot`, if not, it starts from the lowest bed point.",
+                    "unit": "m"
                 },
                 {
                     "key": "zLayTop",
-                    "value_type": "int",
-                    "default_value": -999,
-                    "description": "If specified, highest z-layer starts from `zLayTop`, if not, it ends at the initial water level."
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "If specified, highest z-layer starts from `zLayTop`, if not, it ends at the initial water level.",
+                    "unit": "m"
                 },
                 {
                     "key": "stretchType",
@@ -548,6 +551,7 @@
                     "description": "Stretching type for non-uniform layers.",
                     "enum_values": {
                         "-1": "uniform",
+                        "0": "uniform",
                         "1": "user defined",
                         "2": "exponential"
                     }
@@ -851,13 +855,8 @@
                 {
                     "key": "advecType",
                     "default_value": 33,
-                    "value_type": "intenum",
-                    "description": "Advection type.",
-                    "enum_values": {
-                        "0": "no",
-                        "3": "Perot q(uiou)",
-                        "33": "Perot q(uio-u) fast"
-                    }
+                    "value_type": "int",
+                    "description": "Advection type."
                 },
                 {
                     "key": "advecCorrection1D2D",
@@ -878,8 +877,8 @@
                     "enum_values": {
                         "0": "only transport",
                         "1": "transport + velocity update",
-                        "2": "full implicit step_reduce",
-                        "3": "step_jacobi",
+                        "2": "full implicit step-reduce",
+                        "3": "step-Jacobi",
                         "4": "explicit"
                     }
                 },
@@ -959,7 +958,11 @@
                     "value_type": "intenum",
                     "description": "Solver type.",
                     "enum_values": {
+                        "1": "sobekGS_OMP",
+                        "2": "sobekGS_OMPthreadsafe",
+                        "3": "sobekGS",
                         "4": "sobekGS + Saad-ILUD (default sequential)",
+                        "5": "parallel/global Saad",
                         "6": "PETSc (default parallel)",
                         "7": "CG+MILU (parallel)"
                     }
@@ -982,6 +985,7 @@
                     "value_type": "intenum",
                     "description": "Fixed weir scheme.",
                     "enum_values": {
+                        "0": "none",
                         "6": "semi-subgrid scheme",
                         "8": "Tabellenboek",
                         "9": "Villemonte"
@@ -2057,6 +2061,7 @@
                     "value_type": "intenum",
                     "description": "Uniform friction type.",
                     "enum_values": {
+                        "-1": "hydraulically smooth",
                         "0": "Chezy",
                         "1": "Manning",
                         "2": "White-Colebrook",
@@ -2195,7 +2200,8 @@
                     "description": "Wall friction.",
                     "enum_values": {
                         "0": "free slip",
-                        "1": "partial slip using `wall_ks`"
+                        "1": "partial slip using `wall_ks`",
+                        "2": "no slip"
                     }
                 },
                 {
@@ -2779,7 +2785,8 @@
                         "5": "Hwang 2005",
                         "6": "Wuest 2005",
                         "7": "Hersbach 2011 (2 pts)",
-                        "8": "`4`+viscous"
+                        "8": "Charnock+viscous",
+                        "9": "Garratt 1977"
                     }
                 },
                 {
@@ -2940,6 +2947,7 @@
                     "value_type": "enum",
                     "description": "Friction model for wave induced shear stress.",
                     "enum_values": {
+                        "none": "none",
                         "FR84": "Fredsøe (1984)",
                         "MS90": "Myrhaug and Slaattelid (1990)",
                         "HT91": "Huynh-Thanh and Temperville (1991)",
@@ -2970,10 +2978,16 @@
                 },
                 {
                     "key": "waveSwartDelwaq",
-                    "value_type": "intbool",
+                    "value_type": "intenum",
                     "description": "If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb.",
                     "status": {
                         "value": "research"
+                    },
+                    "default_value": 0,
+                    "enum_values": {
+                        "0": "Communicate only the current-related shear stress (taucur) to Delwaq.",
+                        "1": "Communicate the linear sum taucur + tauwave to Delwaq.",
+                        "2": "Communicate the maximum shear stress (taubxu) to Delwaq."
                     }
                 },
                 {
@@ -3019,6 +3033,7 @@
                         "value": "research"
                     },
                     "enum_values": {
+                        "0": "none",
                         "1": "Sana"
                     }
                 },
@@ -4393,6 +4408,19 @@
                     "description": "Write Eulerian velocities."
                 },
                 {
+                    "key": "avgWaveOutputInterval",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Average wave output, given as 'interval' 'start period' 'end period'.",
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
+                },
+                {
                     "key": "classMapFile",
                     "value_type": "path",
                     "description": "Name of class map file."
@@ -4419,8 +4447,12 @@
                         0.0
                     ],
                     "value_type": "list[float]",
-                    "description": "Interval between class map file outputs.",
-                    "unit": "s"
+                    "description": "Interval between class map file outputs, given as 'interval' 'start period' 'end period'.",
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
                 },
                 {
                     "key": "waqInterval",
@@ -4428,8 +4460,12 @@
                         0.0
                     ],
                     "value_type": "list[float]",
-                    "description": "Interval between DELWAQ file outputs.",
-                    "unit": "s"
+                    "description": "Interval between DELWAQ file outputs, given as 'interval' 'start period' 'end period'.",
+                    "unit": "s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
                 },
                 {
                     "key": "statsInterval",

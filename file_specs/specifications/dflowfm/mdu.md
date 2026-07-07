@@ -86,7 +86,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `angLat` | Angle of latitude S-N, 0=on Equator (and thus no Coriolis force). Only required for Coriolis on Cartesian grids and for heat flux modelling. | `0.0` |  | [deg] |  |
 | `angLon` | Angle of longitude E-W, 0=Greenwich Mean Time. Only required for heat flux modelling. | `0.0` |  | [deg] |  |
 | `conveyance2D` | 2D analytic conveyance description. | `-1` | <ul><li>**`-1`**: R=HU</li><li>**`0`**: R=H</li><li>**`1`**: R=A/P</li><li>**`2`**: K=analytic-1D conv</li><li>**`3`**: K=analytic-2D conv</li></ul> |  |  |
-| `nonLin1D` | Non-linear 1D volumes, applicable for models with closed cross sections. | `1` | <ul><li>**`1`**: treat closed sections as partially open by using a Preissmann slot</li><li>**`2`**: Nested Newton approach</li><li>**`3`**: partial Nested Newton approach</li></ul> |  |  |
+| `nonLin1D` | Non-linear 1D volumes, applicable for models with closed cross sections. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: treat closed sections as partially open by using a Preissmann slot</li><li>**`2`**: Nested Newton approach</li><li>**`3`**: partial Nested Newton approach</li></ul> |  |  |
 | `nonLin2D` | Non-linear 2D volumes, only i.c.m. `bedLevType`=3 and `conveyance2D`>=1. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `slotw1D` | Minimum slotwidth 1D. | `0.001` |  | [m] |  |
 | `slotw2D` | Minimum slotwidth 2D. | `0.001` |  | [m] |  |
@@ -115,9 +115,9 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `dzTop` | z-layer thickness of layers above level `dzTopUniAboveZ`. | `-999.0` |  | [m] |  |
 | `dzTopUniAboveZ` | The level above which the layers will have uniform thickness of `dzTop`. | `-999.0` |  | [m] |  |
 | `numTopSigUniform` | The number of sigma-layers in a z-sigma-model is constant or decreasing (depending on local depth). | `1` | <ul><li>**`0`**: decreasing</li><li>**`1`**: constant</li></ul> |  |  |
-| `zLayBot` | If specified, first z-layer starts from `zLayBot`, if not, it starts from the lowest bed point. | `-999` |  |  |  |
-| `zLayTop` | If specified, highest z-layer starts from `zLayTop`, if not, it ends at the initial water level. | `-999` |  |  |  |
-| `stretchType` | Stretching type for non-uniform layers. | `-1` | <ul><li>**`-1`**: uniform</li><li>**`1`**: user defined</li><li>**`2`**: exponential</li></ul> |  |  |
+| `zLayBot` | If specified, first z-layer starts from `zLayBot`, if not, it starts from the lowest bed point. | `-999.0` |  | [m] |  |
+| `zLayTop` | If specified, highest z-layer starts from `zLayTop`, if not, it ends at the initial water level. | `-999.0` |  | [m] |  |
+| `stretchType` | Stretching type for non-uniform layers. | `-1` | <ul><li>**`-1`**: uniform</li><li>**`0`**: uniform</li><li>**`1`**: user defined</li><li>**`2`**: exponential</li></ul> |  |  |
 | `stretchCoef` | Coefficients for sigma layer. For `stretchType`=1: percentages of the layers, user defined, laycof(`kmx`). For `stretchType`=2: Stretching level, and two coefficients for layer growth, laycof(3). |  |  | [-] |  |
 | `dxMin1D` | Minimum 1D link length. | `0.001` |  | [m] |  |
 | `dxDoubleAt1DEndNodes` | Extend a 1D grid cell at the end of a network with 0.5∆x. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -168,9 +168,9 @@ This section contains the settings of specific parts of the flow solver, such as
 | Keyword | Description | Default | Supported values | Unit | Status |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `cflMax` | Maximum Courant nr. | `0.7` |  | [-] |  |
-| `advecType` | Advection type. | `33` | <ul><li>**`0`**: no</li><li>**`3`**: Perot q(uiou)</li><li>**`33`**: Perot q(uio-u) fast</li></ul> |  |  |
+| `advecType` | Advection type. | `33` |  |  |  |
 | `advecCorrection1D2D` | Advection correction of 1D2D link volume. | `0` | <ul><li>**`0`**: regular advection</li><li>**`1`**: link volume au*dx</li><li>**`2`**: advection on 1D2D switched off</li></ul> |  |  |
-| `timeStepType` | Type of time stepping. | `2` | <ul><li>**`0`**: only transport</li><li>**`1`**: transport + velocity update</li><li>**`2`**: full implicit step_reduce</li><li>**`3`**: step_jacobi</li><li>**`4`**: explicit</li></ul> |  |  |
+| `timeStepType` | Type of time stepping. | `2` | <ul><li>**`0`**: only transport</li><li>**`1`**: transport + velocity update</li><li>**`2`**: full implicit step-reduce</li><li>**`3`**: step-Jacobi</li><li>**`4`**: explicit</li></ul> |  |  |
 | `maxNonLinearIterations` | Maximal iterations in non-linear iteration loop before a time step reduction is applied. | `100` |  |  |  |
 | `setHorizontalBobsFor1D2D` | Bobs are set to 2D bedlevel, to prevent incorrect storage in sewer system. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `limTypHu` | Limiter type for waterdepth in continuity eq. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: minmod</li><li>**`2`**: vanLeer</li><li>**`3`**: Koren</li><li>**`4`**: Monotone Central</li></ul> |  |  |
@@ -178,10 +178,10 @@ This section contains the settings of specific parts of the flow solver, such as
 | `limTypSa` | Limiter type for salinity transport. | `4` | <ul><li>**`0`**: no</li><li>**`1`**: minmod</li><li>**`2`**: vanLeer</li><li>**`4`**: Monotone Central</li></ul> |  |  |
 | `pure1D` | Purely 1D advection. | `0` | <ul><li>**`0`**: original advection using velocity vector</li><li>**`1`**: pure 1D using flow volume vol1_f</li><li>**`2`**: pure 1D using volume vol1</li></ul> |  |  |
 | `junction1D` | Advection at 1D junctions. | `0` | <ul><li>**`0`**: original 1D advection using velocity vector</li><li>**`1`**: same as along 1D channels using `pure1D`=1</li></ul> |  |  |
-| `icgSolver` | Solver type. | `4` | <ul><li>**`4`**: sobekGS + Saad-ILUD (default sequential)</li><li>**`6`**: PETSc (default parallel)</li><li>**`7`**: CG+MILU (parallel)</li></ul> |  |  |
+| `icgSolver` | Solver type. | `4` | <ul><li>**`1`**: sobekGS_OMP</li><li>**`2`**: sobekGS_OMPthreadsafe</li><li>**`3`**: sobekGS</li><li>**`4`**: sobekGS + Saad-ILUD (default sequential)</li><li>**`5`**: parallel/global Saad</li><li>**`6`**: PETSc (default parallel)</li><li>**`7`**: CG+MILU (parallel)</li></ul> |  |  |
 | `logSolverConvergence` | Print time step, number of solver iterations and solver residual to diagnostic output. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `maxDegree` | Maximum degree in Gauss elimination. | `6` |  |  |  |
-| `fixedWeirScheme` | Fixed weir scheme. | `9` | <ul><li>**`6`**: semi-subgrid scheme</li><li>**`8`**: Tabellenboek</li><li>**`9`**: Villemonte</li></ul> |  |  |
+| `fixedWeirScheme` | Fixed weir scheme. | `9` | <ul><li>**`0`**: none</li><li>**`6`**: semi-subgrid scheme</li><li>**`8`**: Tabellenboek</li><li>**`9`**: Villemonte</li></ul> |  |  |
 | `fixedWeirContraction` | flow width = flow width\*`fixedWeirContraction`. | `1.0` |  | [-] |  |
 | `fixedWeirTopWidth` | Uniform width of the groyne part of fixed weirs. | `3.0` |  | [m] |  |
 | `fixedWeirTalud` | Uniform talud slope of fixed weirs. | `4.0` |  |  |  |
@@ -298,7 +298,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | Keyword | Description | Default | Supported values | Unit | Status |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `unifFrictCoef` | Uniform friction coefficient. | `0.023` | `≥0.0` | [depends on `unifFrictType`] |  |
-| `unifFrictType` | Uniform friction type. | `1` | <ul><li>**`0`**: Chezy</li><li>**`1`**: Manning</li><li>**`2`**: White-Colebrook</li><li>**`3`**: White-Colebrook in WAQUA</li></ul> |  |  |
+| `unifFrictType` | Uniform friction type. | `1` | <ul><li>**`-1`**: hydraulically smooth</li><li>**`0`**: Chezy</li><li>**`1`**: Manning</li><li>**`2`**: White-Colebrook</li><li>**`3`**: White-Colebrook in WAQUA</li></ul> |  |  |
 | `unifFrictCoef1D` | Uniform friction coefficient in 1D links. | `0.023` | `≥0.0` | [depends on `unifFrictType`] |  |
 | `unifFrictCoef1D2D` 🔬 | Uniform friction coefficient in 1D2D links. | `0.023` | `≥0.0` | [depends on `unifFrictType`] | research |
 | `unifFrictCoefLin` | Uniform linear friction coefficient. | `0.0` | `≥0.0` | [m/s] |  |
@@ -313,7 +313,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `TAUMin` 🔬 | Minimum turbulent time scale (TAU) value in k-tau turbulence model. | `1e-32` |  | [m²/s²] | research |
 | `Smagorinsky` | Add Smagorinsky horizontal turbulence: vicu = vicu + ((`Smagorinsky`\*dx)^2)\*S. | `0.2` |  | [-] |  |
 | `Elder` | Add Elder contribution: vicu = vicu + (`Elder`\*kappa\*ustar\*H/6); e.g. 1.0. | `0.0` |  | [-] |  |
-| `irov` | Wall friction. | `0` | <ul><li>**`0`**: free slip</li><li>**`1`**: partial slip using `wall_ks`</li></ul> |  |  |
+| `irov` | Wall friction. | `0` | <ul><li>**`0`**: free slip</li><li>**`1`**: partial slip using `wall_ks`</li><li>**`2`**: no slip</li></ul> |  |  |
 | `wall_ks` | Nikuradse roughness for side walls, wall_z0=`wall_ks`/30. | `0.0` |  | [m] |  |
 | `rhoMean` | Average water density. | `1000.0` |  | [kg/m³] |  |
 | `iDensForm` | Density calculation. | `2` | <ul><li>**`0`**: uniform</li><li>**`1`**: Eckart</li><li>**`2`**: UNESCO</li><li>**`3`**: UNESCO83</li><li>**`13`**: `3`+pressure</li></ul> |  |  |
@@ -403,7 +403,7 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 
 | Keyword | Description | Default | Supported values | Unit | Status |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `icdTyp` | Wind drag coefficient type. | `2` | <ul><li>**`1`**: Constant</li><li>**`2`**: Smith&Banke (2 pts)</li><li>**`3`**: Smith&Banke (3 pts)</li><li>**`4`**: Charnock 1955</li><li>**`5`**: Hwang 2005</li><li>**`6`**: Wuest 2005</li><li>**`7`**: Hersbach 2011 (2 pts)</li><li>**`8`**: `4`+viscous</li></ul> |  |  |
+| `icdTyp` | Wind drag coefficient type. | `2` | <ul><li>**`1`**: Constant</li><li>**`2`**: Smith&Banke (2 pts)</li><li>**`3`**: Smith&Banke (3 pts)</li><li>**`4`**: Charnock 1955</li><li>**`5`**: Hwang 2005</li><li>**`6`**: Wuest 2005</li><li>**`7`**: Hersbach 2011 (2 pts)</li><li>**`8`**: Charnock+viscous</li><li>**`9`**: Garratt 1977</li></ul> |  |  |
 | `cdBreakPoints` | Wind drag breakpoints. | `0.00063 0.00723` |  | [-] |  |
 | `windSpeedBreakpoints` | Wind speed breakpoints. | `0.0 100.0` |  | [m/s] |  |
 | `rhoAir` | Air density. | `1.2` |  | [kg/m³] |  |
@@ -426,16 +426,16 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | Keyword | Description | Default | Supported values | Unit | Status |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `waveModelNr` | Wave model nr. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited Hurdle-Stive</li><li>**`2`**: fetch/depth limited Young-Verhagen</li><li>**`3`**: SWAN</li><li>**`5`**: uniform</li><li>**`7`**: Offline Wave Coupling</li></ul> |  |  |
-| `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |  |
+| `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`none`**: none</li><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |  |
 | `gammaX` | Maximum wave height/water depth ratio. | `0.5` |  |  |  |
 | `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `surfBeatInput` | File with surf beat input conditions. |  |  |  |  |
-| `waveSwartDelwaq` 🔬 | If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  | research |
+| `waveSwartDelwaq` 🔬 | If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb. | `0` | <ul><li>**`0`**: Communicate only the current-related shear stress (taucur) to Delwaq.</li><li>**`1`**: Communicate the linear sum taucur + tauwave to Delwaq.</li><li>**`2`**: Communicate the maximum shear stress (taubxu) to Delwaq.</li></ul> |  | research |
 | `hwavuni` 🔬 | Root mean square wave height. |  |  | [m] | research |
 | `tiFetchComp` 🔬 | Time interval fetch comp if `waveModelNr`=1,2. |  |  | [s] | research |
 | `phiwavuni` 🔬 | Root mean square wave direction, math convention. |  |  | [deg] | research |
 | `3DWaveStreaming` 🔬 | Influence of wave streaming. 0: no, 1: added to adve. |  |  |  | research |
-| `3DWaveBoundaryLayer` 🔬 | Boundary layer formulation. |  | <ul><li>**`1`**: Sana</li></ul> |  | research |
+| `3DWaveBoundaryLayer` 🔬 | Boundary layer formulation. |  | <ul><li>**`0`**: none</li><li>**`1`**: Sana</li></ul> |  | research |
 | `twavuni` 🔬 | Root mean square wave period. |  |  | [s] | research |
 | `uorbfac` 🔬 | Orbital velocities. |  | <ul><li>**`0`**: D3D style</li><li>**`1`**: Guza style</li></ul> |  | research |
 | `3DStokesProfile` 🔬 | Stokes profile. |  | <ul><li>**`0`**: no</li><li>**`1`**: uniform over depth</li><li>**`2`**: second-order Stokes theory</li><li>**`3`**: `2` with vertical stokes gradient in adve.</li></ul> |  | research |
@@ -689,11 +689,12 @@ This section contains the settings for various output files.
 | `comOutputTimeVector` | File (.ctv) containing fixed comfile write times (s) w.r.t. `refDate`. |  |  |  |  |
 | `fullGridOutput` | Full grid output mode for layer positions. | `0` | <ul><li>**`0`**: compact</li><li>**`1`**: full time-varying grid layer data</li></ul> |  |  |
 | `eulerVelocities` | Write Eulerian velocities. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `avgWaveOutputInterval` | Average wave output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `classMapFile` | Name of class map file. |  |  |  |  |
 | `waterLevelClasses` | Series of values between which water level classes are computed. | `0.0` |  |  |  |
 | `waterDepthClasses` | Series of values between which water depth classes are computed. | `0.0` |  |  |  |
-| `classMapInterval` | Interval between class map file outputs. | `0.0` |  | [s] |  |
-| `waqInterval` | Interval between DELWAQ file outputs. | `0.0` |  | [s] |  |
+| `classMapInterval` | Interval between class map file outputs, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
+| `waqInterval` | Interval between DELWAQ file outputs, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `statsInterval` | Interval between screen step outputs in seconds simulation time, if negative in seconds wall clock time. | `-60.0` |  | [s] |  |
 | `timingsInterval` | Timings output interval. | `0.0` |  | [s] |  |
 | `richardsonOnOutput` | Write Richardson number. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
