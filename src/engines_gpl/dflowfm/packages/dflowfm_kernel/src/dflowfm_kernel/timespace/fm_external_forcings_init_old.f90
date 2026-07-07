@@ -1713,7 +1713,7 @@ contains
                numlatsg = numlatsg + 1
 
                L = index(filename, '.', back=.true.) - 1
-               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(1, :))
+               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(max(1, kmx), :))
                if (success) then
                   ! assign id derived from pol file
                   lat_ids(numlatsg) = filename(1:L)

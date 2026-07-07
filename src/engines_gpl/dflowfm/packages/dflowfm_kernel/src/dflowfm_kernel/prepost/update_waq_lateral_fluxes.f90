@@ -56,19 +56,27 @@ contains
       use m_flowtimes
       use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat, qlatwaq
 
-      integer :: i_node, k1
-      integer :: i_lat, i_latwaq, i_layer, i_layer_waq
+      integer :: k, k1
+      integer :: i_lat, i_latwaq, i_layer, i_layer_latwaq, index_active_bottom_layer, index_max_top_layer, layer_index
 
 ! Accumulate lateral discharges for waq
       i_latwaq = 0
       do i_lat = 1, numlatsg
          do k1 = n1latsg(i_lat), n2latsg(i_lat)
-            i_node = nnlat(k1)
-            if (i_node > 0) then
-               if (.not. is_ghost_node(i_node)) then
+            k = nnlat(k1)
+            if (k > 0) then
+               if (.not. is_ghost_node(k)) then
+                  index_active_bottom_layer = max(1, kmx) - kmxn(k) + 1
+                  index_max_top_layer = kbot(k) + kmxn(k) - 1
                   do i_layer = 1, num_layers
-                     i_layer_waq = i_latwaq + waqpar%ilaggr(min(num_layers - i_layer + 1, kmxn(i_node)))
-                     qlatwaq(i_layer_waq) = qlatwaq(i_layer_waq) + dts * qqLat(i_layer, k1)
+                     layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                     if (layer_index < kbot(k)) then
+                        layer_index = kbot(k)
+                     else if (layer_index > ktop(k)) then
+                        layer_index = ktop(k)
+                     end if
+                     i_layer_latwaq = i_latwaq + waqpar%ilaggr(index_max_top_layer - layer_index + 1)
+                     qlatwaq(i_layer_latwaq) = qlatwaq(i_layer_latwaq) + dts * qqLat(i_layer, k1)
                   end do
                   i_latwaq = i_latwaq + waqpar%kmxnxa
                end if
