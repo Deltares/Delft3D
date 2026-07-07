@@ -10215,7 +10215,7 @@ contains
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
          call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
-         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.true., fill='')
+         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.false., fill='')
          do i = 1, n2d2dcontacts
             L = temp_indices(i)
             n1 = abs(lne(1, L))

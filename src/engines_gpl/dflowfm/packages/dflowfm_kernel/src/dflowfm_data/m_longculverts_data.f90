@@ -33,6 +33,7 @@
 module m_longculverts_data
    use precision, only: dp
    use messagehandling, only: idlen
+   use network_data, only: Lperm
    implicit none
 
    private
@@ -89,9 +90,18 @@ contains
    elemental subroutine is_2D2D_longculvertlink(L, i)
       integer, intent(in) :: L !< Flowlink number
       integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
+      integer :: Lorg
+
+      Lorg = L
+      if (allocated(Lperm)) then
+         if (L > 0 .and. L <= size(Lperm) .and. Lperm(L) > 0) then
+            Lorg = Lperm(L)
+         end if
+      end if
+
       do i = 1, nlongculverts
          if (longculverts(i)%is_2D2D()) then
-            if ((longculverts(i)%netlinks(1) == L)) then
+            if ((longculverts(i)%netlinks(1) == Lorg)) then
                return
             end if
          end if
