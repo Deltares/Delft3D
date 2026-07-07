@@ -14,7 +14,8 @@ object WindowsBuild2D3DSP : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplatePullRequestConcurrency
     )
  
     name = "Build 2D3D single-precision"

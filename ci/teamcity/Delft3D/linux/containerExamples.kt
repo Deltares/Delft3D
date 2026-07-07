@@ -19,7 +19,8 @@ object LinuxRunAllContainerExamples : BuildType({
         TemplateMergeRequest,
         TemplateDockerRegistry,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplatePullRequestConcurrency
     )
 
     vcs {

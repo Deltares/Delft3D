@@ -20,7 +20,8 @@ object LinuxRuntimeContainers : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplatePullRequestConcurrency
     )
 
     name = "Runtime Containers"
