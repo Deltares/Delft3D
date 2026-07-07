@@ -2324,7 +2324,7 @@
                     "default_value": 30.0,
                     "value_type": "float",
                     "description": "Background salinity for eqn. of state if salinity not computed.",
-                    "unit": "psu"
+                    "unit": "ppt"
                 },
                 {
                     "key": "temperature",

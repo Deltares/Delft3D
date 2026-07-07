@@ -330,7 +330,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `initialSalinity` | Initial salinity concentration. | `0.0` |  | [ppt] |  |
 | `sal0AboveZLev` | Salinity 0 above level. | `-999.0` |  | [m] |  |
 | `deltaSalinity` | Uniform initial salinity. | `-999.0` |  | [ppt] |  |
-| `backgroundSalinity` | Background salinity for eqn. of state if salinity not computed. | `30.0` |  | [psu] |  |
+| `backgroundSalinity` | Background salinity for eqn. of state if salinity not computed. | `30.0` |  | [ppt] |  |
 | `temperature` | Include temperature. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: only transport</li><li>**`3`**: excess model of D3D</li><li>**`5`**: composite (ocean) model</li></ul> |  |  |
 | `initialTemperature` | Initial temperature. | `6.0` |  | [°C] |  |
 | `backgroundWaterTemperature` | Background water temperature for eqn. of state if temperature not computed. | `20.0` |  | [°C] |  |
