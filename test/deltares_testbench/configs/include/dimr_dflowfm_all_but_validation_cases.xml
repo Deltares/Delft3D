@@ -4701,7 +4701,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f017_c010_sourcesink_2D" ref="dflowfm_default">
-      <path version="2025-10-15T15:17:42.035000">e02_dflowfm/f017_sources_sinks/c010_sourcesink_2D</path>
+      <path version="2026-07-03T12:08:46.804000">e02_dflowfm/f017_sources_sinks/c010_sourcesink_2D</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sourcesink_2D_his.nc" type="netCDF">
@@ -4709,6 +4709,7 @@
             <parameter name="source_sink_current_discharge" toleranceAbsolute="0.0001" />
             <parameter name="source_sink_geom_node_count" toleranceAbsolute="0.0001" />
             <parameter name="source_sink_geom_node_coordx" toleranceAbsolute="0.0001" />
+            <parameter name="source_sink_prescribed_salinity_increment" toleranceAbsolute="0.1" />
           </parameters>
         </file>
         <file name="dflowfmoutput/sourcesink_2D_map.nc" type="netCDF">
