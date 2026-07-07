@@ -1802,7 +1802,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
-        <path version="2026-07-06T10:21:24.776000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <path version="2026-07-07T10:06:35.334000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>           
             <file name="output/spatial_dicoww_his.nc" type="netcdf">
@@ -1814,7 +1814,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c014_spatially_varying_vicoww" ref="dflowfm_default">
-        <path version="2026-07-06T10:09:35.943000">e02_dflowfm/f006_external_forcing/c014_spatially_varying_vicoww</path>
+        <path version="2026-07-07T10:03:26.706000">e02_dflowfm/f006_external_forcing/c014_spatially_varying_vicoww</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/spatial_vicoww_his.nc" type="netcdf">
