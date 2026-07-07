@@ -46,12 +46,13 @@ Prerequisites:
 - CMake 3.19 or higher (required)
 - A C++20 compatible compiler (required)
 - Git (required)
+- Python 3 (required for code generation and Python bindings)
 - A Fortran compiler (optional; required only to build the Fortran bindings)
 - .NET 10 SDK (optional; required only to build the C# bindings)
-- Python 3 (optional; required only to build the Python bindings)
 
 
-### Configuring and Building
+
+### Building standalone
 
 Follow the steps below to configure and build dflowfm_io standalone.
 
@@ -71,16 +72,14 @@ cmake -S <path-to-source-dir> -B <path-to-build-dir> -G "Visual Studio 17 2022"
 2. To build the project's targets, use:
 
 ```cmd
-cmake --build <path-to-build-dir> --config <cfg> --parallel <jobs>
-```
-
-where
-
-- `<cfg>` is the build type (`Debug`, `Release`, `RelWithDebInfo` and `MinSizeRel`), see `CMAKE_BUILD_TYPE`.
-- `<jobs>` is the maximum number of concurrent processes to use when building.
+cmake --build <path-to-build-dir>
+ ```
 
 The build produces the C++ core and, for each language binding whose required tools are installed, the corresponding wrapper.
 
+### Building as part of Delft3D
+
+dflowfm_io is also built (and tested) as part of the Delft3D cmake build. For more information, refer to the build instructions in the Delft3D repository.
 
 ## Testing
 
