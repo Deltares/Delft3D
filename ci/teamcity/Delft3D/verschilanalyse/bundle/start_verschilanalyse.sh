@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+set -x
+
 # Import bash utility functions.
 # shellcheck source=ci/teamcity/Delft3D/verschilanalyse/bundle/util.sh
 source util.sh
@@ -201,3 +203,5 @@ RUN_VERSCHILLENTOOL_JOB_ID=$(
 
 # Trigger report build on TeamCity
 sbatch --dependency="afterany:${RUN_VERSCHILLENTOOL_JOB_ID}" ./jobs/trigger_teamcity_build.sh
+
+set +x
