@@ -1658,8 +1658,6 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
-      use m_physcoef, only: dicoww
-      use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
 
       implicit none
 
@@ -1803,10 +1801,6 @@ contains
             time_dependent_array = .true.
             secchi_depth_is_time_varying = .true.
          end if
-      case ('backgroundverticaleddydiffusivitycoefficient')
-         target_location_type = UNC_LOC_S
-         call realloc(dicoww, ndx, keepExisting=.true., fill=dicoww%get(1), stat=ierr)
-         call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
             allocate (stemdiam(ndx), stat=ierr)
@@ -2194,7 +2188,6 @@ contains
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use m_nudge, only: nudge_time, nudge_rate
       use m_physcoef, only: dicoww, vicoww
-      use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
@@ -2297,13 +2290,13 @@ contains
 
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
-         call realloc(dicoww, ndx, keepExisting=.true., fill=dicoww%get(1), stat=ierr)
-         call assign_pointer_to_t_array(dicoww, target_array, ierr)
+         call realloc(dicoww%values, ndx, keepExisting=.true., fill=dicoww%scalar, stat=ierr)
+         target_array => dicoww%values
 
       case ('backgroundverticaleddyviscositycoefficient')
          target_location_type = UNC_LOC_U
-         call realloc(vicoww, lnx, keepExisting=.true., fill=vicoww%get(1), stat=ierr)
-         call assign_pointer_to_t_array(vicoww, target_array, ierr)
+         call realloc(vicoww%values, lnx, keepExisting=.true., fill=vicoww%scalar, stat=ierr)
+         target_array => vicoww%values
 
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then

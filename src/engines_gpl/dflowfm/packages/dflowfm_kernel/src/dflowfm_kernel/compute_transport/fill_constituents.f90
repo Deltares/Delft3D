@@ -107,9 +107,8 @@ contains
       molecular_diffusion_coeff = 0.0_dp
       sigdifi = 0.0_dp
 
-      ! Keep a single global switch for molecular diffusion coefficients.
-      ! With spatial dicoww, the first value is used as representative switch.
-      use_vertical_molecular_diffusion = dicoww%get(1) >= 0.0_dp
+      ! if the user supplied a positive value for dicoww, then use vertical molecular diffusion for salinity and temperature
+      use_vertical_molecular_diffusion = dicoww%scalar >= 0.0_dp
 
 !  diffusion coefficients
 

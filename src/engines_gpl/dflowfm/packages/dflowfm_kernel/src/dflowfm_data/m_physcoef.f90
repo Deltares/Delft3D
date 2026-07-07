@@ -67,8 +67,8 @@ module m_physcoef
    real(kind=dp) :: Elder !< add Elder viscosity
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
 
-   class(t_array_or_scalar), allocatable, target :: dicoww !< background vertical eddy diffusivity (m2/s)
-   class(t_array_or_scalar), allocatable, target :: vicoww !< background vertical eddy viscosity (m2/s)
+   type(t_array_or_scalar), target :: dicoww !< background vertical eddy diffusivity (m2/s)
+   type(t_array_or_scalar), target :: vicoww !< background vertical eddy viscosity (m2/s)
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -129,7 +129,6 @@ contains
 
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
-   use m_array_or_scalar, only: realloc
 
       ag = 9.81_dp
       frcuni = 0.023_dp
@@ -145,8 +144,8 @@ contains
       dicouv = 0.1_dp
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp
-      call realloc(dicoww, 1e-6_dp)
-      call realloc(vicoww, 1e-6_dp)
+      dicoww%scalar = 1e-6_dp
+      vicoww%scalar = 1e-6_dp
       rhomean = 1000.0_dp
       backgroundwatertemperature = 20.0_dp
       backgroundsalinity = 30.0_dp
