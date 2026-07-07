@@ -63,10 +63,10 @@ class FileLogger(ILogger):
         os.makedirs(log_folder, exist_ok=True)
 
         if os.path.isfile(self.__path):
-            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10, encoding="utf-8")
             handler.doRollover()
         else:
-            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10, encoding="utf-8")
 
         handler.setLevel(log_level)
         format_str = "%(asctime)s [%(levelname)-7s] : %(message)s"
