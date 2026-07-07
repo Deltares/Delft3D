@@ -136,7 +136,6 @@ DOWNLOAD_INPUT_JOB_ID=$(
 # Download reference output data.
 DOWNLOAD_REFS_JOB_ID=$(
     sbatch --parsable \
-        --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}" \
         --output="${LOG_DIR}/va-download-refs-%j.out" \
         ./jobs/download_references.sh
 )
@@ -186,6 +185,7 @@ else
     # Reuse existing archived output from CURRENT_PREFIX.
     OUTPUT_READY_JOB_ID=$(
         sbatch --parsable \
+		    --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}" \
             --output="${LOG_DIR}/va-download-current-output-%j.out" \
             ./jobs/download_current_output.sh
     )
@@ -195,7 +195,7 @@ fi
 RUN_VERSCHILLENTOOL_JOB_ID=$(
     sbatch --parsable \
         --output="${LOG_DIR}/va-run-verschillentool-%j.out" \
-        --dependency="afterany:${DOWNLOAD_REFS_JOB_ID}:${OUTPUT_READY_JOB_ID}" \
+        --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}:${DOWNLOAD_REFS_JOB_ID}:${OUTPUT_READY_JOB_ID}" \
         ./jobs/run_verschillentool.sh
 )
 
