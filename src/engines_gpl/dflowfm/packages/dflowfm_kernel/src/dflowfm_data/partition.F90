@@ -253,6 +253,7 @@ module m_partitioninfo
    integer, private, pointer :: edgebranchidx_g(:) !< backup for edgebranchidx during partitioning
    real(kind=hp), private, pointer :: edgeoffsets_g(:) !< backup for edgeoffsets during partitioning
    logical, private :: branches_partitioned = .false. !< 1D arrays above are in use
+   integer, private, allocatable :: contactnetlinks_g(:) !< backup for contactnetlinks (global net link numbering) during partitioning
 
    private :: partition_make_1dugrid_in_domain, get_1d_edges_in_domain
    private :: hp, ug_idsLen
@@ -605,7 +606,7 @@ contains
       use messagehandling, only: mess, level_warn
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_polygon, only: npl
-      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, lperminv, netcell, numl1d
       use m_alloc, only: realloc
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
@@ -626,6 +627,20 @@ contains
       character(len=128) :: message
 
       ierror = DFM_GENERICERROR
+
+!     Make sure the 2D-2D contact administration starts from the global net link numbering for this
+!     domain. contactnetlinks is remapped to the domain-local numbering after findcells() below, but
+!     the original global numbering must be restored at the start of each domain (findcells()/
+!     setnodadm_grd_op() used here do not maintain contactnetlinks themselves).
+      if (allocated(contactnetlinks)) then
+         if (.not. allocated(contactnetlinks_g)) then
+            call realloc(contactnetlinks_g, size(contactnetlinks), keepExisting=.false.)
+            contactnetlinks_g = contactnetlinks
+         else
+            call realloc(contactnetlinks, size(contactnetlinks_g), keepExisting=.false.)
+            contactnetlinks = contactnetlinks_g
+         end if
+      end if
 
 !     set the ghostcells level in module variables ighostlev, ighostlev_cellbased and ighostlev_nodebased
       call partition_set_ghostlevels(idmn, numlay_cell, numlay_node, 0, ierror)
@@ -695,6 +710,20 @@ contains
       call findcells(100000) ! output link permutation array "Lperm" (only used if jacells.eq.1)
       call find1dcells()
       netstat = NETSTAT_OK
+
+!     Remap the 2D-2D contact administration to the domain-local net link numbering produced by
+!     findcells() above, so that the net writer can look up the contact ids directly from the
+!     current net links (Lperminv maps original global -> current net link numbers).
+      if (allocated(contactnetlinks) .and. allocated(contactnetlinks_g) .and. allocated(Lperminv)) then
+         do icontact = 1, size(contactnetlinks_g)
+            L = contactnetlinks_g(icontact)
+            if (L > 0 .and. L <= size(Lperminv)) then
+               contactnetlinks(icontact) = Lperminv(L)
+            else
+               contactnetlinks(icontact) = 0
+            end if
+         end do
+      end if
 
       call delete_dry_points_and_areas(update_blcell=.false.)
 
@@ -917,9 +946,17 @@ contains
    !> restore 1D arrays that are partitioned in partition_make_1dugrid_in_domain
    !! also clean up of 1D arrays from the last domain
    subroutine restore_1dugrid_state()
-      use m_save_ugrid_state, only: meshgeom1d, nodeids, nodelongnames
+      use m_save_ugrid_state, only: meshgeom1d, nodeids, nodelongnames, contactnetlinks
+      use m_alloc, only: realloc
 
       implicit none
+
+      ! Restore the 2D-2D contact administration to the global net link numbering and drop the backup.
+      if (allocated(contactnetlinks_g)) then
+         call realloc(contactnetlinks, size(contactnetlinks_g), keepExisting=.false.)
+         contactnetlinks = contactnetlinks_g
+         deallocate (contactnetlinks_g)
+      end if
 
       if (branches_partitioned) then
          ! clean up last domain

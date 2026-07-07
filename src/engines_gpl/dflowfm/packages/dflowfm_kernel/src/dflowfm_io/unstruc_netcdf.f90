@@ -10128,7 +10128,6 @@ contains
       use m_set_nod_adm
       use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
-      use m_longculverts_data, only: longculverts, is_2D2D_longculvertlink
       use array_module, only: convert_mask_to_indices
 
       implicit none
@@ -10151,7 +10150,7 @@ contains
       integer :: i, k, k1, k2, numl2d, numk2d, L, Lnew, nv, n1, n2, n
       integer :: num_1d_nodes, node_index
       logical :: jaInDefine
-      integer :: longculvertindex
+      integer :: icontact
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
       integer :: n1dedges, n1d2dcontacts, n2d2dcontacts, start_index
@@ -10221,9 +10220,16 @@ contains
             n1 = abs(lne(1, L))
             n2 = abs(lne(2, L))
             contacts_2D2D(1:2, i) = [n1, n2]
-            call is_2D2D_longculvertlink(L, longculvertindex)
-            if (longculvertindex > 0) then
-               contactids_2D2D(i) = longculverts(longculvertindex)%contactID !< reuse branchid for long culvert contacts
+            ! Look up the original contact id for this net link via the read-in contact administration.
+            ! contactnetlinks is kept up-to-date with the current net link numbering (see setnodadm),
+            ! both after partitioning and after adding long culverts.
+            if (allocated(contactnetlinks)) then
+               do icontact = 1, size(contactnetlinks)
+                  if (contactnetlinks(icontact) == L) then
+                     contactids_2D2D(i) = hashlist_contactids%id_list(icontact)
+                     exit
+                  end if
+               end do
             end if
          end do
       end if

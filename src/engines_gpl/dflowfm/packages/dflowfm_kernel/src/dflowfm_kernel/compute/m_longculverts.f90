@@ -642,7 +642,10 @@ contains
    subroutine finalizeLongCulvertsInNetwork()
       use network_data
       use gridoperations
-      integer :: Lnet, i, ilongc
+      use m_save_ugrid_state, only: contactnetlinks, contactnlinks, contact_cell_idx, hashlist_contactids
+      use m_alloc, only: realloc
+      integer :: Lnet, i, ilongc, icontact
+      logical :: already_registered
 
       ! NOTE: IF setnodadm() is again called after this subroutine has completed, with more netlink permutations,
       !! Then the longculvert()%netlinks array is incorrect. This can be fixed if we change our approach
@@ -656,6 +659,37 @@ contains
             longculverts(ilongc)%netlinks(i) = Lnet
          end do
       end do
+
+      ! Register any 2D-2D long culvert contacts in the contact administration, so that consumers
+      ! (e.g. the net writer) can look up the contactId directly from the net link number, without
+      ! having to search the long culvert list. contactnetlinks holds the current net link numbering
+      ! and is kept up-to-date by every subsequent setnodadm() call (see setnodadm.f90).
+      do ilongc = 1, nlongculverts
+         if (.not. longculverts(ilongc)%is_2D2D()) then
+            cycle
+         end if
+         Lnet = longculverts(ilongc)%netlinks(1)
+         already_registered = .false.
+         do icontact = 1, contactnlinks
+            if (contactnetlinks(icontact) == Lnet) then
+               already_registered = .true.
+               exit
+            end if
+         end do
+         if (already_registered) then
+            cycle
+         end if
+         contactnlinks = contactnlinks + 1
+         call realloc(contactnetlinks, contactnlinks, keepExisting=.true., fill=0)
+         call realloc(contact_cell_idx, [2, contactnlinks], keepExisting=.true., fill=0)
+         call realloc(hashlist_contactids%id_list, contactnlinks, keepExisting=.true., fill='')
+         contactnetlinks(contactnlinks) = Lnet
+         contact_cell_idx(1, contactnlinks) = abs(lne(1, Lnet))
+         contact_cell_idx(2, contactnlinks) = abs(lne(2, Lnet))
+         hashlist_contactids%id_list(contactnlinks) = longculverts(ilongc)%contactId
+         hashlist_contactids%id_count = contactnlinks
+      end do
+
    end subroutine finalizeLongCulvertsInNetwork
 
    !> Reallocates a given longculvert array to larger size.

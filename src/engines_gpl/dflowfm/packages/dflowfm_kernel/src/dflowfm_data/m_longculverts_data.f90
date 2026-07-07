@@ -33,12 +33,9 @@
 module m_longculverts_data
    use precision, only: dp
    use messagehandling, only: idlen
-   use network_data, only: Lperm
    implicit none
 
    private
-
-   public :: is_2D2D_longculvertlink
 
    !> Type definition for longculvert data.
    type, public :: t_longculvert
@@ -85,28 +82,5 @@ contains
          res = size(self%netlinks) == 1
       end if
    end function is_2D2D
-
-   !> simple routine which checks if a given flowlink L is part of a 2D-2D longculvert. Lives here to avoid cyclic dependency.
-   elemental subroutine is_2D2D_longculvertlink(L, i)
-      integer, intent(in) :: L !< Flowlink number
-      integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
-      integer :: Lorg
-
-      Lorg = L
-      if (allocated(Lperm)) then
-         if (L > 0 .and. L <= size(Lperm) .and. Lperm(L) > 0) then
-            Lorg = Lperm(L)
-         end if
-      end if
-
-      do i = 1, nlongculverts
-         if (longculverts(i)%is_2D2D()) then
-            if ((longculverts(i)%netlinks(1) == Lorg)) then
-               return
-            end if
-         end if
-      end do
-      i = 0 !> No early return, no match found, return 0
-   end subroutine is_2D2D_longculvertlink
 
 end module m_longculverts_data
