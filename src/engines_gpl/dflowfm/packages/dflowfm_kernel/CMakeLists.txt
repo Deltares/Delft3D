@@ -263,7 +263,7 @@ set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Define preprocessor definitions
-set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS "${openmp_flag}")
 target_compile_definitions(${library_name} PRIVATE DFLOWFM_STACK_SIZE_BYTES=${DFLOWFM_STACK_SIZE_BYTES})
 if (WIN32)
     if(WITH_INTERACTER)

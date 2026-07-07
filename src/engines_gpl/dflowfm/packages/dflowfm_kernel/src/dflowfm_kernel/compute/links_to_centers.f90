@@ -65,7 +65,7 @@ contains
             end do
          end do
 
-         !$OMP PARALLEL DO PRIVATE(kk, k_start, k_end, k)
+         !$OMP target teams distribute PARALLEL DO PRIVATE(kk, k_start, k_end, k) map(to: vnod, ktop, kbot, kmxn) map(tofrom: vnod)
          do kk = 1, ndx
             k_start = ktop(kk) + 1
             k_end = kbot(kk) + kmxn(kk) - 1
@@ -76,7 +76,7 @@ contains
                end if
             end do
          end do
-         !$OMP END PARALLEL DO
+         !$OMP end target teams distribute PARALLEL DO
       end if
 
    end subroutine links_to_centers

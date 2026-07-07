@@ -30,9 +30,8 @@ if(UNIX)
 endif(UNIX)
 
 
-if(WIN32)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-endif(WIN32)
+set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS "${openmp_flag}")
+target_link_options(${executable_name} PRIVATE "${openmp_flag}")
 
 
 # Define additional compilation flags

@@ -6,6 +6,9 @@
         "dockerfile": "Dockerfile"
     },
     "postCreateCommand": "bash .devcontainer/delft3d-nvhpc/scripts/post_create_command.sh",
+    "containerEnv": {
+        "NVIDIA_VISIBLE_DEVICES": "all"
+    },
     "mounts": [
         {
             "type": "volume",
@@ -23,7 +26,7 @@
     // NVIDIA Container Toolkit on the host; leave it out for the CPU-only phase.
     "runArgs": [
         "--ulimit", "stack=-1:-1"
-        // , "--gpus", "all"
+        , "--gpus", "all"
     ],
     "customizations": {
         "vscode": {
