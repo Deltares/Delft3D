@@ -2300,7 +2300,7 @@ contains
          call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
          call assign_pointer_to_t_array(dicoww, target_array, ierr)
 
-      case ('backgroundverticaleddyviscosity')
+      case ('backgroundverticaleddyviscositycoefficient')
          target_location_type = UNC_LOC_U
          call realloc(vicoww, lnx, keepExisting=.true., fill=constant_vicoww, stat=ierr)
          call assign_pointer_to_t_array(vicoww, target_array, ierr)
