@@ -2017,8 +2017,8 @@ contains
             success = .false.
             return
          end if
-         first_index = iconst - ISED1 + 1
-         target_array_3d => sed
+         indx = iconst
+         target_array_3d => constituents
 
       case ('initialsediment')
          if (jased <= 0) then
