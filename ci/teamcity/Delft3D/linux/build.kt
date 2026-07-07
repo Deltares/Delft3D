@@ -19,7 +19,8 @@ object LinuxBuild : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplatePullRequestConcurrency
     )
 
     name = "Build"
