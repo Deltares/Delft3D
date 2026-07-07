@@ -16,7 +16,8 @@ object WindowsBuild : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplatePullRequestConcurrency
     )
  
     name = "Build"
