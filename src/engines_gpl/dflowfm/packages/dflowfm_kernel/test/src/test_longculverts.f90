@@ -1,21 +1,13 @@
 module test_longculverts
     use assertions_gtest
-   use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
+    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
     use m_network_helpers, only: t_grid_helper
-   use m_file_helpers, only: create_file
+    use iso_c_utils, only: cstr
+    use m_file_helpers, only: create_file
 
-     implicit none(type, external)
+    implicit none(type, external)
    
 contains
-    function to_c_string(string) result(res)
-        use iso_c_binding, only: c_null_char
-        implicit none
-        character(len=*), intent(in) :: string
-        character(len=:), allocatable :: res
-        res = trim(string) // c_null_char
-    end function to_c_string
-    
-
     !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts__single_four_point, test_convert1d2dlongculverts__single_four_point,
     subroutine test_convert1d2dlongculverts__single_four_point() bind(C)
         use precision, only: dp
@@ -63,9 +55,9 @@ contains
         call F90_ASSERT_EQ(numk, 10) ! 6 Netnodes for the grid, 4 For the long culvert.
         call F90_ASSERT_EQ(numl, 10) ! 7 Netlinks for the grid, 3 For the long culvert.
 
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, to_c_string("Expected middle link to be a 1D link."))
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, to_c_string("Expected last new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, cstr("Expected first new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, cstr("Expected middle link to be a 1D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, cstr("Expected last new link to be a 1D2D link."))
     end subroutine test_convert1d2dlongculverts__single_four_point
     !$f90tw )
 
@@ -121,7 +113,7 @@ contains
         call F90_ASSERT_EQ(numk, 8) ! 6 Netnodes for the grid, 2 For the long culvert.
         call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
 
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, cstr("Expected first new link to be a 1D2D link."))
     end subroutine test_convert1d2dlongculverts__single_two_point
     !$f90tw )
 
@@ -399,7 +391,7 @@ contains
 
       ! ARRANGE: Create all input files
       call create_minimal_netfile(NET_FILE, ierr)
-      call f90_assert_eq(ierr, nf90_noerr, to_c_string("NetCDF net file creation should succeed"))
+      call f90_assert_eq(ierr, nf90_noerr, cstr("NetCDF net file creation should succeed"))
 
       call create_structure_file(TEST_STR_FILE)
       call create_mdu_file(TEST_MDU_FILE, NET_FILE, TEST_STR_FILE)
@@ -416,8 +408,8 @@ contains
       call loadModel(mdu_local)
       iresult = flow_modelinit()
 
-      call f90_expect_eq(iresult, DFM_NOERR, to_c_string("flow_modelinit should return DFM_NOERR for a valid model with a long culvert"))
-      call f90_expect_eq(nlongculverts, 1, to_c_string("one long culvert should be registered"))
+      call f90_expect_eq(iresult, DFM_NOERR, cstr("flow_modelinit should return DFM_NOERR for a valid model with a long culvert"))
+      call f90_expect_eq(nlongculverts, 1, cstr("one long culvert should be registered"))
 
       do i = 1, ndx
          if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
@@ -436,8 +428,8 @@ contains
 
       ! ASSERT: Flow should pass through the culvert from left to right.
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid (> 0)"))
-      call f90_expect_true(q1(lc_link) > 0.0_dp, to_c_string("discharge through culvert should be positive (left to right)"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid (> 0)"))
+      call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge through culvert should be positive (left to right)"))
 
       call default_longculverts
 
@@ -494,11 +486,11 @@ contains
 
       call setup_longculvert_model(iresult)
 
-      call f90_expect_eq(iresult, DFM_NOERR, to_c_string("flow_modelinit should return DFM_NOERR"))
-      call f90_expect_true(ndx > 0, to_c_string("ndx should be > 0"))
-      call f90_expect_true(lnx > 0, to_c_string("lnx should be > 0"))
-      call f90_expect_eq(nlongculverts, 1, to_c_string("one long culvert should be registered"))
-      call f90_expect_true(longculverts(1)%flowlinks(1) > 0, to_c_string("culvert should have a valid flow link"))
+      call f90_expect_eq(iresult, DFM_NOERR, cstr("flow_modelinit should return DFM_NOERR"))
+      call f90_expect_true(ndx > 0, cstr("ndx should be > 0"))
+      call f90_expect_true(lnx > 0, cstr("lnx should be > 0"))
+      call f90_expect_eq(nlongculverts, 1, cstr("one long culvert should be registered"))
+      call f90_expect_true(longculverts(1)%flowlinks(1) > 0, cstr("culvert should have a valid flow link"))
 
       call default_longculverts
    end subroutine test_modelinit_succeeds
@@ -520,7 +512,7 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_longculvert_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       ! Raise bed level on middle cells to block overland flow.
       do i = 1, ndx
@@ -540,8 +532,8 @@ contains
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_true(q1(lc_link) > 0.0_dp, to_c_string("discharge should be positive (left to right)"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge should be positive (left to right)"))
 
       call default_longculverts
    end subroutine test_flow_head_difference_drives_discharge
@@ -561,7 +553,7 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_longculvert_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       ! Uniform water level everywhere no driving force.
       do i = 1, ndx
@@ -571,8 +563,8 @@ contains
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, to_c_string("discharge should be ~zero with no head difference"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero with no head difference"))
 
       call default_longculverts
    end subroutine test_flow_no_head_difference_no_discharge
@@ -593,7 +585,7 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_longculvert_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       ! Close the valve completely.
       longculverts(1)%valve_relative_opening = 0.0_dp
@@ -615,8 +607,8 @@ contains
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, to_c_string("discharge should be ~zero when valve is closed"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero when valve is closed"))
 
       call default_longculverts
    end subroutine test_valve_closed_blocks_flow
@@ -637,7 +629,7 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_longculvert_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       ! Raise barrier in middle cells.
       do i = 1, ndx
@@ -657,8 +649,8 @@ contains
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_true(q1(lc_link) < 0.0_dp, to_c_string("discharge should be negative (right to left)"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_true(q1(lc_link) < 0.0_dp, cstr("discharge should be negative (right to left)"))
 
       call default_longculverts
    end subroutine test_flow_reverse_head_gives_negative_discharge
@@ -870,16 +862,16 @@ contains
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       call flow_spatietimestep()
 
       q_full = q1(longculverts(1)%flowlinks(1))
       q_half = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_full > 0.0_dp, to_c_string("full-open discharge should be positive"))
-      call f90_expect_true(q_half > 0.0_dp, to_c_string("half-open discharge should be positive"))
-      call f90_expect_true(q_half < q_full, to_c_string("half-open discharge should be less than fully-open"))
+      call f90_expect_true(q_full > 0.0_dp, cstr("full-open discharge should be positive"))
+      call f90_expect_true(q_half > 0.0_dp, cstr("half-open discharge should be positive"))
+      call f90_expect_true(q_half < q_full, cstr("half-open discharge should be less than fully-open"))
       call default_longculverts
    end subroutine test_valve_half_open_reduces_discharge
    !$f90tw)
@@ -934,8 +926,8 @@ contains
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       do i = 1, 4 !> multiple timesteps, from rest friction has no effect
          call flow_spatietimestep()
@@ -943,9 +935,9 @@ contains
 
       q_low_friction = q1(longculverts(1)%flowlinks(1)) ! lc01: Manning n=0.01
       q_high_friction = q1(longculverts(2)%flowlinks(1)) ! lc02: Manning n=0.05
-      call f90_expect_true(q_low_friction > 0.0_dp, to_c_string("low-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction > 0.0_dp, to_c_string("high-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction < q_low_friction, to_c_string("higher Manning friction should produce less discharge"))
+      call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction < q_low_friction, cstr("higher Manning friction should produce less discharge"))
       call default_longculverts
    end subroutine test_friction_higher_value_reduces_discharge
    !$f90tw)
@@ -1001,10 +993,10 @@ contains
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
       call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
       call init_two_culvert_scenario(mdu_file, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(longculverts(1)%numlinks, 1, to_c_string("2-point culvert should have 1 link"))
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(longculverts(1)%numlinks, 1, cstr("2-point culvert should have 1 link"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       do i = 1, 4
          call flow_spatietimestep()
@@ -1012,9 +1004,9 @@ contains
 
       q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction > 0.0_dp, to_c_string("low-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction > 0.0_dp, to_c_string("high-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction < q_low_friction, to_c_string("higher Manning friction should produce less discharge"))
+      call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction < q_low_friction, cstr("higher Manning friction should produce less discharge"))
       call default_longculverts
    end subroutine test_2pt_friction_converted
    !$f90tw)
@@ -1068,10 +1060,10 @@ contains
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
       call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
       call init_two_culvert_scenario(mdu_file, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(longculverts(1)%numlinks, 1, to_c_string("2-point culvert should have 1 link"))
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(longculverts(1)%numlinks, 1, cstr("2-point culvert should have 1 link"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       do i = 1, 4
          call flow_spatietimestep()
@@ -1079,9 +1071,9 @@ contains
 
       q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction > 0.0_dp, to_c_string("low-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction > 0.0_dp, to_c_string("high-friction discharge should be positive"))
-      call f90_expect_near(q_high_friction, q_low_friction, 1.0e-10_dp, to_c_string("discharge should be equal due to equal roughness"))
+      call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
+      call f90_expect_near(q_high_friction, q_low_friction, 1.0e-10_dp, cstr("discharge should be equal due to equal roughness"))
       call default_longculverts
    end subroutine test_2pt_default_friction_converted
    !$f90tw)
@@ -1136,8 +1128,8 @@ contains
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       do i = 1, 4 !> multiple timesteps, from rest friction has no effect
          call flow_spatietimestep()
@@ -1145,10 +1137,10 @@ contains
 
       q_manning = q1(longculverts(1)%flowlinks(1))
       q_colebrook = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_manning > 0.0_dp, to_c_string("Manning culvert discharge should be positive"))
-      call f90_expect_true(q_colebrook > 0.0_dp, to_c_string("WhiteColebrook culvert discharge should be positive"))
+      call f90_expect_true(q_manning > 0.0_dp, cstr("Manning culvert discharge should be positive"))
+      call f90_expect_true(q_colebrook > 0.0_dp, cstr("WhiteColebrook culvert discharge should be positive"))
       call f90_expect_true(abs(q_manning - q_colebrook) > 1.0e-6_dp, &
-                           to_c_string("different friction types with same coefficient should give different discharge"))
+                           cstr("different friction types with same coefficient should give different discharge"))
       call default_longculverts
    end subroutine test_friction_type_affects_discharge
    !$f90tw)
@@ -1296,9 +1288,9 @@ contains
 
       call setup_3pt_model(iresult)
 
-      call f90_expect_eq(iresult, DFM_NOERR, to_c_string("flow_modelinit should succeed for 3-point culvert"))
-      call f90_expect_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
-      call f90_expect_eq(longculverts(1)%numlinks, 2, to_c_string("3-point culvert should have 2 links"))
+      call f90_expect_eq(iresult, DFM_NOERR, cstr("flow_modelinit should succeed for 3-point culvert"))
+      call f90_expect_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
+      call f90_expect_eq(longculverts(1)%numlinks, 2, cstr("3-point culvert should have 2 links"))
 
       call default_longculverts
    end subroutine test_3pt_modelinit_succeeds
@@ -1317,13 +1309,13 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_3pt_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_true(q1(lc_link) > 0.0_dp, to_c_string("discharge should be positive (left to right)"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge should be positive (left to right)"))
 
       call default_longculverts
    end subroutine test_3pt_head_difference_drives_discharge
@@ -1342,15 +1334,15 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_3pt_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       longculverts(1)%valve_relative_opening = 0.0_dp
 
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, to_c_string("discharge should be ~zero when valve is closed"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero when valve is closed"))
 
       call default_longculverts
    end subroutine test_3pt_valve_closed_blocks_flow
@@ -1406,8 +1398,8 @@ contains
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       do i = 1, 4
          call flow_spatietimestep()
@@ -1415,10 +1407,10 @@ contains
 
       q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction > 0.0_dp, to_c_string("low-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction > 0.0_dp, to_c_string("high-friction discharge should be positive"))
+      call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_true(q_high_friction < q_low_friction, &
-                           to_c_string("higher Manning friction should produce less discharge"))
+                           cstr("higher Manning friction should produce less discharge"))
       call default_longculverts
    end subroutine test_3pt_friction_higher_value_reduces_discharge
    !$f90tw)
@@ -1474,10 +1466,10 @@ contains
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
       call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
       call init_two_culvert_scenario(mdu_file, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(longculverts(1)%numlinks, 2, to_c_string("3-point culvert should have 0 links"))
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(longculverts(1)%numlinks, 2, cstr("3-point culvert should have 0 links"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
       !> the test stops here, as a 3 PT culvert cannot be written to the netfile in a ugrid compliant way
 
    end subroutine test_3pt_friction_converted
@@ -1561,9 +1553,9 @@ contains
 
       call setup_4pt_model(iresult)
 
-      call f90_expect_eq(iresult, DFM_NOERR, to_c_string("flow_modelinit should succeed for 4-point culvert"))
-      call f90_expect_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
-      call f90_expect_eq(longculverts(1)%numlinks, 3, to_c_string("4-point culvert should have 3 links"))
+      call f90_expect_eq(iresult, DFM_NOERR, cstr("flow_modelinit should succeed for 4-point culvert"))
+      call f90_expect_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
+      call f90_expect_eq(longculverts(1)%numlinks, 3, cstr("4-point culvert should have 3 links"))
 
       call default_longculverts
    end subroutine test_4pt_modelinit_succeeds
@@ -1582,13 +1574,13 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_4pt_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_true(q1(lc_link) > 0.0_dp, to_c_string("discharge should be positive (left to right)"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge should be positive (left to right)"))
 
       call default_longculverts
    end subroutine test_4pt_head_difference_drives_discharge
@@ -1607,15 +1599,15 @@ contains
       integer :: iresult, i, lc_link
 
       call setup_4pt_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
 
       longculverts(1)%valve_relative_opening = 0.0_dp
 
       call flow_spatietimestep()
 
       lc_link = longculverts(1)%flowlinks(1)
-      call f90_expect_true(lc_link > 0, to_c_string("culvert flow link should be valid"))
-      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, to_c_string("discharge should be ~zero when valve is closed"))
+      call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero when valve is closed"))
 
       call default_longculverts
    end subroutine test_4pt_valve_closed_blocks_flow
@@ -1671,8 +1663,8 @@ contains
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
 
       do i = 1, 4
          call flow_spatietimestep()
@@ -1680,10 +1672,10 @@ contains
 
       q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction > 0.0_dp, to_c_string("low-friction discharge should be positive"))
-      call f90_expect_true(q_high_friction > 0.0_dp, to_c_string("high-friction discharge should be positive"))
+      call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_true(q_high_friction < q_low_friction, &
-                           to_c_string("higher Manning friction should produce less discharge"))
+                           cstr("higher Manning friction should produce less discharge"))
       call default_longculverts
 
    end subroutine test_4pt_friction_higher_value_reduces_discharge
@@ -1704,8 +1696,8 @@ contains
       integer :: iresult, i, L1, L2, L3
 
       call setup_4pt_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(longculverts(1)%numlinks, 3, to_c_string("4-point culvert should have 3 links"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(longculverts(1)%numlinks, 3, cstr("4-point culvert should have 3 links"))
 
       do i = 1, 15
          call flow_spatietimestep()
@@ -1715,13 +1707,13 @@ contains
       L2 = abs(longculverts(1)%flowlinks(2))
       L3 = abs(longculverts(1)%flowlinks(3))
 
-      call f90_expect_true(q1(L1) > 0.0_dp, to_c_string("discharge at link 1 should be positive"))
+      call f90_expect_true(q1(L1) > 0.0_dp, cstr("discharge at link 1 should be positive"))
       ! In steady state, Q should be equal across all links (continuity).
       ! After a few timesteps it wont be perfectly steady, but should be close enough (15%)
       call f90_expect_near(q1(L1), q1(L2), 0.15_dp * abs(q1(L1)), &
-                           to_c_string("discharge at links 1 and 2 should be similar (continuity)"))
+                           cstr("discharge at links 1 and 2 should be similar (continuity)"))
       call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
-                           to_c_string("discharge at links 2 and 3 should be similar (continuity)"))
+                           cstr("discharge at links 2 and 3 should be similar (continuity)"))
 
       call default_longculverts
    end subroutine test_4pt_flow_continuity_across_links
@@ -1749,8 +1741,8 @@ contains
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
       call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
       call init_two_culvert_scenario(mdu_file, iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
-      call f90_assert_eq(longculverts(1)%numlinks, 3, to_c_string("4-point culvert should have 3 links"))
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("model init must succeed"))
+      call f90_assert_eq(longculverts(1)%numlinks, 3, cstr("4-point culvert should have 3 links"))
 
       do i = 1, 15
          call flow_spatietimestep()
@@ -1760,13 +1752,13 @@ contains
       L2 = abs(longculverts(1)%flowlinks(2))
       L3 = abs(longculverts(1)%flowlinks(3))
 
-      call f90_expect_true(q1(L1) < 0.0_dp, to_c_string("discharge at link 1 should be negative"))
+      call f90_expect_true(q1(L1) < 0.0_dp, cstr("discharge at link 1 should be negative"))
       ! In steady state, Q should be equal across all links (continuity).
       ! After a few timesteps it wont be perfectly steady, but should be close enough (15%)
       call f90_expect_near(-q1(L1), q1(L2), 0.15_dp * abs(q1(L1)), &
-                           to_c_string("discharge at links 1 and 2 should be similar (continuity)"))
+                           cstr("discharge at links 1 and 2 should be similar (continuity)"))
       call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
-                           to_c_string("discharge at links 2 and 3 should be similar (continuity)"))
+                           cstr("discharge at links 2 and 3 should be similar (continuity)"))
 
       call default_longculverts
    end subroutine test_4pt_flow_continuity_converted
@@ -1803,7 +1795,7 @@ contains
 
       ! Create a net file that includes a 1D network (branch) alongside the 2D grid.
       call create_net_with_1d_branch(NET_FILE, ierr)
-      call f90_assert_eq(ierr, 0, to_c_string("Net file with 1D branch creation should succeed"))
+      call f90_assert_eq(ierr, 0, cstr("Net file with 1D branch creation should succeed"))
 
       ! Create structure file with a 4-point long culvert
       call create_structure_file_4pt(STR_FILE)
@@ -1811,9 +1803,9 @@ contains
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
       call init_two_culvert_scenario(MDU_FILE, iresult)
 
-      call f90_expect_eq(iresult, DFM_NOERR, to_c_string("flow_modelinit should succeed with existing 1D network + long culvert"))
-      call f90_expect_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
-      call f90_expect_eq(longculverts(1)%numlinks, 3, to_c_string("4-point culvert should have 3 links"))
+      call f90_expect_eq(iresult, DFM_NOERR, cstr("flow_modelinit should succeed with existing 1D network + long culvert"))
+      call f90_expect_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
+      call f90_expect_eq(longculverts(1)%numlinks, 3, cstr("4-point culvert should have 3 links"))
 
       call flow_spatietimestep()
 
@@ -1821,9 +1813,9 @@ contains
       L2 = abs(longculverts(1)%flowlinks(2))
       L3 = abs(longculverts(1)%flowlinks(3))
 
-      call f90_expect_true(L1 > 0, to_c_string("entry link should be valid"))
-      call f90_expect_true(au(L2) > 0.0_dp, to_c_string("au on interior link should be > 0 with existing 1D network"))
-      call f90_expect_true(q1(L1) > 0.0_dp, to_c_string("discharge at entry should be positive with existing 1D network"))
+      call f90_expect_true(L1 > 0, cstr("entry link should be valid"))
+      call f90_expect_true(au(L2) > 0.0_dp, cstr("au on interior link should be > 0 with existing 1D network"))
+      call f90_expect_true(q1(L1) > 0.0_dp, cstr("discharge at entry should be positive with existing 1D network"))
 
       call default_longculverts
    end subroutine test_4pt_with_existing_1d_network

@@ -41,7 +41,7 @@ contains
 !! Results are stored in `m_observations` state arrays.
    subroutine obs_on_flowgeom(iobstype)
 
-      use m_observations_data, only: numobs, nummovobs, kobs, namobs, neighbour_nodes_obs, neighbour_weights_obs
+      use m_observations_data, only: numobs, nummovobs, kobs, namobs, neighbour_nodes_obs, neighbour_weights_obs, intobs
       use unstruc_messages, only: loglevel_StdOut
       use messagehandling, only: LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
@@ -86,7 +86,7 @@ contains
          call find_flownodes_and_links_for_all_observation_stations(n1, n2)
       end if
       if (n2 - n1 >= 0) then 
-            call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
+            call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs,intobs)
       end if
 
       if (loglevel_StdOut == LEVEL_DEBUG) then
@@ -259,15 +259,16 @@ contains
    end subroutine find_flownodes_and_links_for_all_observation_stations
 
    !> Inits interpolation neighbours and weights for observation stations using 2D triangulation.
-   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
+   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs,intobs)
       
-      use m_observations_data      , only: xobs, yobs, numobs, nummovobs  
+      use m_observations_data      , only: xobs, yobs, numobs, nummovobs, kobs, namobs  
       use m_flowgeom               , only: xz, yz, ndx2d
       use m_missing                , only: dmiss
       use m_sferic                 , only: jsferic, jasfer3D
       use fm_external_forcings_data, only: transformcoef
       use m_polygon                , only: npl, xpl, ypl, zpl
       use precision                , only: dp
+      use messagehandling          , only: msgbuf, msg_flush
       use m_alloc
       
       use m_ec_basic_interpolation, only: triinterp2
@@ -275,6 +276,7 @@ contains
       
       integer, intent(in) :: n_start !< Start index of observation stations set (typically 1, but allows to restrict to movoing observation points).
       integer, intent(in) :: n_end   !< End index of observation stations set (typically numobs + nummovobs, but allows to restrict to moving observation points).
+      integer, dimension(:)  , intent(in   ) :: intobs              !< Flag indicating whether interpolation is needed or not    
       integer, dimension(:,:), intent(inout) :: neighbour_nodes_obs !< Table of nearby flow node numbers for each station.
       real(kind=dp), dimension(:,:), intent(inout) :: neighbour_weights_obs !< Table of interpolation weights for nearby flow node numbers for each station.
       
@@ -300,6 +302,10 @@ contains
        do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
+         if (intobs(i) == 1 .and. neighbour_nodes_obs(1,i) == 0 .and. kobs(i) > 0) then
+            write (msgbuf, '(a,i0,a,a,a)') 'No interpolation possible for support point from boundary pli. Observation station nr:', i, ' (', trim(namobs(i)), '). Taking nearest support point with valid signals.'
+            call msg_flush()
+         end if
       end do
       
       jagetwf = jagetwf_org

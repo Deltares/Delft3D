@@ -39,7 +39,7 @@ RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
 RUN Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi
 
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
-ENV VS2022INSTALLDIR="C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\"
+ENV VS2022INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\17\\Community\\"
 
 # Add the Git that ships with Visual Studio to the PATH. The location is resolved
 # with vswhere (whose own path is stable across VS versions/editions) so the exact
