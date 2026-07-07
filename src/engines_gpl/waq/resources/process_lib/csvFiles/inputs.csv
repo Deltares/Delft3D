@@ -592,7 +592,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalcRadAve","a_enh     ",   4,"Y","x",1
 "CalcRadAve","Surf      ",   5,"N","x",1
 "CalcRadAve","SwEmersion",   6,"Y","x",1
-"CalcRadAve","RadAve    ",   7,"N"," ",1
+"CalcRadAve","RadAve    ",   7,"Y"," ",1
 "CalcRadAve","fRefl     ",   8,"Y","x",1
 "Daylength ","ITIME     ",   1,"N","x",1
 "Daylength ","Latitude  ",   2,"Y","x",1
@@ -2985,7 +2985,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "OXIDCH4   ","Poros     ",  17,"Y","x",1
 "OXIDCH4   ","DELT      ",  18,"N","x",1
 "OXIDCH4   ","RadMetInh ",  19,"Y","x",1
-"OXIDCH4   ","RadAve    ",  20,"N","x",1
+"OXIDCH4   ","RadAve    ",  20,"Y","x",1
 "OXIDCH4   ","KSRadFr   ",  21,"O","x",1
 "OXIDCH4   ","KSRadSh   ",  22,"Y","x",1
 "SPECIRON  ","FeIIId    ",   1,"Y","x",1
@@ -12538,7 +12538,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "VB09_Upt3D","fPVB09up  ",  24,"N","x",1
 "VB09_Upt3D","fSVB09up  ",  25,"N","x",1
 "Rad_SM01  ","ITopSeg01 ",   1,"N","x",1
-"Rad_SM01  ","RadAve    ",   2,"N","x",1
+"Rad_SM01  ","RadAve    ",   2,"Y","x",1
 "Rad_SM01  ","HactSM01  ",   3,"N","x",1
 "Rad_SM01  ","TotalDepth",   4,"N","x",1
 "Rad_SM01  ","LocalDepth",   5,"N","x",1
@@ -12546,7 +12546,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM01  ","ExtVl     ",   7,"N","x",1
 "Rad_SM01  ","RadSatSM01",   8,"Y","x",1
 "Rad_SM02  ","ITopSeg02 ",   1,"N","x",1
-"Rad_SM02  ","RadAve    ",   2,"N","x",1
+"Rad_SM02  ","RadAve    ",   2,"Y","x",1
 "Rad_SM02  ","HactSM02  ",   3,"N","x",1
 "Rad_SM02  ","TotalDepth",   4,"N","x",1
 "Rad_SM02  ","LocalDepth",   5,"N","x",1
@@ -12554,7 +12554,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM02  ","ExtVl     ",   7,"N","x",1
 "Rad_SM02  ","RadSatSM02",   8,"Y","x",1
 "Rad_SM03  ","ITopSeg03 ",   1,"N","x",1
-"Rad_SM03  ","RadAve    ",   2,"N","x",1
+"Rad_SM03  ","RadAve    ",   2,"Y","x",1
 "Rad_SM03  ","HactSM03  ",   3,"N","x",1
 "Rad_SM03  ","TotalDepth",   4,"N","x",1
 "Rad_SM03  ","LocalDepth",   5,"N","x",1
@@ -12562,7 +12562,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM03  ","ExtVl     ",   7,"N","x",1
 "Rad_SM03  ","RadSatSM03",   8,"Y","x",1
 "Rad_SM04  ","ITopSeg04 ",   1,"N","x",1
-"Rad_SM04  ","RadAve    ",   2,"N","x",1
+"Rad_SM04  ","RadAve    ",   2,"Y","x",1
 "Rad_SM04  ","HactSM04  ",   3,"N","x",1
 "Rad_SM04  ","TotalDepth",   4,"N","x",1
 "Rad_SM04  ","LocalDepth",   5,"N","x",1
@@ -12570,7 +12570,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM04  ","ExtVl     ",   7,"N","x",1
 "Rad_SM04  ","RadSatSM04",   8,"Y","x",1
 "Rad_SM05  ","ITopSeg05 ",   1,"N","x",1
-"Rad_SM05  ","RadAve    ",   2,"N","x",1
+"Rad_SM05  ","RadAve    ",   2,"Y","x",1
 "Rad_SM05  ","HactSM05  ",   3,"N","x",1
 "Rad_SM05  ","TotalDepth",   4,"N","x",1
 "Rad_SM05  ","LocalDepth",   5,"N","x",1
