@@ -143,6 +143,13 @@ contains
       select type (array => array_or_scalar)
       type is (t_array)
          call m_alloc_realloc(array%values, n, keepExisting=keepExisting_, fill=fill_, stat=stat_)
+      type is (t_scalar) ! we support going from scalar to array. Unfortunately with nested select case.
+         deallocate (array_or_scalar)
+         allocate (t_array :: array_or_scalar)
+         select type (array => array_or_scalar)
+         type is (t_array)
+            call m_alloc_realloc(array%values, n, keepExisting=.false., fill=fill_, stat=stat_)
+         end select
       end select
    end subroutine realloc_t_array
 

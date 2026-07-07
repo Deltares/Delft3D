@@ -48,7 +48,7 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
+      use m_physcoef, only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
@@ -75,6 +75,7 @@ contains
       integer :: iconst, kk, kkk, k, kb, kt, n, kk2, imba, jamba_src
       integer :: jsed ! counter for suspended sediment fractions
       integer :: jtra ! counter for tracers
+      logical :: use_vertical_molecular_diffusion
       real(kind=dp), parameter :: dtol = 1e-8_dp
       real(kind=dp) :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
 
@@ -106,13 +107,17 @@ contains
       molecular_diffusion_coeff = 0.0_dp
       sigdifi = 0.0_dp
 
+      ! Keep a single global switch for molecular diffusion coefficients.
+      ! With spatial dicoww, the first value is used as representative switch.
+      use_vertical_molecular_diffusion = dicoww%get(1) >= 0.0_dp
+
 !  diffusion coefficients
 
       if (ISALT /= 0) then
          if (dicouv >= 0.0_dp) then
             difsedu(ISALT) = difmolsal
          end if
-         if (constant_dicoww >= 0) then
+         if (use_vertical_molecular_diffusion) then
             molecular_diffusion_coeff(ISALT) = difmolsal
             sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
          end if
@@ -122,7 +127,7 @@ contains
          if (dicouv >= 0.0_dp) then
             difsedu(ITEMP) = difmoltem
          end if
-         if (constant_dicoww >= 0) then
+         if (use_vertical_molecular_diffusion) then
             molecular_diffusion_coeff(ITEMP) = difmoltem
             sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
          end if
@@ -140,7 +145,7 @@ contains
             if (dicouv >= 0.0_dp) then
                difsedu(iconst) = 0.0_dp
             end if
-            if (constant_dicoww >= 0) then
+            if (use_vertical_molecular_diffusion) then
                molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
@@ -153,7 +158,7 @@ contains
       if (ITRA1 > 0) then
          do jtra = ITRA1, ITRAN
             difsedu(jtra) = difmoltracer
-            if (constant_dicoww >= 0) then
+            if (use_vertical_molecular_diffusion) then
                molecular_diffusion_coeff(jtra) = difmoltracer
                sigdifi(jtra) = 1.0_dp / Schmidt_number_tracer
             end if
