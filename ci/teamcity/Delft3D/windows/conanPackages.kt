@@ -44,16 +44,6 @@ object WindowsConanPackages : BuildType({
             scriptContent = """
                 call C:/set-env-vs2022.cmd
 
-                rem TeamCity points TEMP/TMP/TMPDIR at the agent's temp folder, which is
-                rem bind-mounted into the container. PETSc's configure builds AND runs test
-                rem executables in the temp dir, and executing a freshly-built binary from a
-                rem Windows bind mount inside a container fails ("Cannot run executables
-                rem created with C"). Redirect temp to a container-local directory.
-                if not exist C:\build-temp mkdir C:\build-temp
-                set TEMP=C:\build-temp
-                set TMP=C:\build-temp
-                set TMPDIR=C:\build-temp
-
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
