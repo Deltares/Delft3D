@@ -134,10 +134,10 @@ contains
       end if
 
       ! Select the index for the irradation
-      if ( process_space_real(ipnt(28)) == 1.0 ) then
-         idrad = 15
+      if ( nint(process_space_real(ipnt(28))) == 0.0 ) then
+         idrad = 15  ! Actual irradiation
       else
-         idrad = 29
+         idrad = 29  ! Averaged over the day
       endif
 
       ! Light efficiency function (uniform values)
