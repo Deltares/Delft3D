@@ -134,7 +134,7 @@ contains
       end if
 
       ! Select the index for the irradation
-      if ( nint(process_space_real(ipnt(28))) == 0.0 ) then
+      if ( nint(process_space_real(ipnt(28))) == 0 ) then
          idrad = 15  ! Actual irradiation
       else
          idrad = 29  ! Averaged over the day
