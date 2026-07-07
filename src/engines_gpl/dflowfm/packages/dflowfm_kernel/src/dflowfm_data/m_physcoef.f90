@@ -68,7 +68,7 @@ module m_physcoef
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
 
    real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
-   real(kind=dp) :: constant_vicoww !< user specified constant vertical eddy viscosity
+   real(kind=dp) :: constant_vicoww !< user specified constant vertical eddy viscosity (m2/s)
    class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
    class(t_array_or_scalar), allocatable, target :: vicoww !< abstract class instance for vicoww, either scalar or array depending on user input
 
