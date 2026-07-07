@@ -52,16 +52,17 @@ contains
       use m_missing
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
-      use string_module, only: strcmpi
-      use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
+      use string_module, only: strcmpi, str_tolower
       use dfm_error
       use unstruc_netcdf
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID, parse_spatial_location_type
       use m_delpol
       use m_timespaceinitialfield_mpi
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input
+      use tree_structures, only: tree_create, tree_destroy, tree_num_nodes, tree_get_name
 
       logical :: bl_set_from_zkuni = .false.
-      integer :: ja, ja1, ja2, method, iprimpos
+      integer :: ja, ja1, method, iprimpos
       integer :: k, L, k1, k2, mx
       integer, allocatable :: kcc(:), kc1D(:), kc2D(:)
       integer :: ibathyfiletype
@@ -76,12 +77,14 @@ contains
       type(tree_data), pointer :: node_ptr
       integer :: istat
       integer :: num_items_in_file
-      integer, parameter :: ini_key_len = 32
-      integer, parameter :: ini_value_len = 256
-      character(len=ini_key_len) :: groupname
       character(len=255) :: fnam
       character(len=255) :: basedir
       integer :: i, iLocType
+      character(len=:), allocatable :: groupname
+      logical :: parse_ok
+      type(t_spatial_field_input) :: input
+      character(len=256) :: ext_file_name
+      character(len=256) :: preferred_bedlevel_file
 
       kc_size_store = 0
       inifield_ptr => null()
@@ -104,7 +107,7 @@ contains
          mx = numk
       end select
 
-      if (mext /= 0 .or. len_trim(md_inifieldfile) > 0) then
+      if (mext /= 0 .or. len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0) then
          ! 0.a Prepare masks for 1D/2D distinctions
          kc_size_store = size(kc)
          allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi, mx)))
@@ -143,107 +146,147 @@ contains
 
          ja = 0
          ja1 = 0
-         ja2 = 0
          ! 0.b Prepare loop across old ext file:
          if (mext /= 0) then
             rewind (mext)
             ja1 = 1
          end if
 
-         ! 0.c Prepare loop across new initial field file:
-         if (len_trim(md_inifieldfile) > 0) then
-            call tree_create(trim(md_inifieldfile), inifield_ptr)
-            call prop_file('ini', trim(md_inifieldfile), inifield_ptr, istat)
-            call split_filename(md_inifieldfile, basedir, fnam)
-            istat = checkIniFieldFileVersion(md_inifieldfile, inifield_ptr)
-            if (istat /= DFM_NOERR) then
-               num_items_in_file = 0
-            end if
-            if (associated(inifield_ptr%child_nodes)) then
-               num_items_in_file = size(inifield_ptr%child_nodes)
-            end if
-            if (num_items_in_file > 0) then
-               i = 1
-               ja2 = 1
-            end if
-         end if
-
-         ! Trick: loop across the 2 supported file types (*.ext and *.ini), most inner do-loop code is the same for both.
-         bft: do ibathyfiletype = 1, 2
+         ! 0.c Read new-format initial/spatial fields from IniFieldFile and ExtForceFileNew.
+         do ibathyfiletype = 1, 2
             if (ibathyfiletype == 1) then
-               call split_filename(md_extfile, basedir, fnam) ! Remember base dir of *.ext file, to resolve all refenced files below w.r.t. that base dir.
-               if (ja1 == 1) then
-                  ja = 1
-               end if
-            else if (ibathyfiletype == 2) then
-               call split_filename(md_inifieldfile, basedir, fnam) ! Remember base dir of *.ini file, to resolve all refenced files below w.r.t. that base dir.
-               if (ja2 == 1) then
-                  ja = 1
-               end if
+               ext_file_name = trim(md_inifieldfile)
+            else
+               ext_file_name = trim(md_extfile_new)
             end if
 
-            do while (ja == 1)
-               if (ibathyfiletype == 1) then ! read *.ext file
-                  call delpol()
-                  call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
-               else if (ibathyfiletype == 2) then ! read *.ini file
-                  if (i > num_items_in_file) then
-                     ja = 0
-                     exit
-                  end if
-                  node_ptr => inifield_ptr%child_nodes(i)%node_ptr
-                  call readIniFieldProvider(md_inifieldfile, node_ptr, groupname, qid, filename, filetype, method, iLocType, operand, transformcoef, ja, varname)
-                  i = i + 1
-                  if (.not. strcmpi(groupname, 'Initial')) then
+            if (len_trim(ext_file_name) == 0) then
+               cycle
+            end if
+
+            call tree_create(ext_file_name, inifield_ptr)
+            call prop_file('ini', ext_file_name, inifield_ptr, istat)
+            if (istat /= 0) then
+               call tree_destroy(inifield_ptr)
+               cycle
+            end if
+
+            call split_filename(ext_file_name, basedir, fnam)
+            num_items_in_file = tree_num_nodes(inifield_ptr)
+
+            do i = 1, num_items_in_file
+               node_ptr => inifield_ptr%child_nodes(i)%node_ptr
+               groupname = trim(tree_get_name(node_ptr))
+
+               select case (str_tolower(groupname))
+               case ('spatial', 'meteo', 'parameter', 'initial')
+                  ! supported
+               case default
+                  cycle
+               end select
+
+               input = read_spatial_field_block(node_ptr)
+               parse_ok = validate_spatial_field_input(input, ext_file_name, groupname, basedir)
+               if (.not. parse_ok) then
+                  cycle
+               end if
+
+               qid = input%quantity
+               filename = input%forcing_file
+               filetype = input%filetype
+               method = input%method
+               operand = input%oper
+               varname = input%variable_name
+               iLocType = parse_spatial_location_type(trim(input%location_type))
+
+               success = .true.
+                  if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. iLocType == SPATIAL_LOCATION_1D)) then
+                  call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 1D bedlevel from file '''//trim(filename)//''' (from '''//trim(ext_file_name)//''').')
+                  kc(1:mx) = kc1D
+                  success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, UNC_LOC_CN, kc)
+               else if (strcmpi(qid, 'bedlevel', 8)) then
+                     if (strcmpi(qid, 'bedlevel') .and. (iLocType == SPATIAL_LOCATION_ALL .or. iLocType == SPATIAL_LOCATION_INVALID)) then
+                     call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting both 1D and 2D bedlevel from file '''//trim(filename)//''' (from '''//trim(ext_file_name)//''').')
+                     kc(1:mx) = kcc
+                  else if (strcmpi(qid, 'bedlevel2D') .or. (strcmpi(qid, 'bedlevel') .and. iLocType == SPATIAL_LOCATION_2D)) then
+                     call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 2D bedlevel from file '''//trim(filename)//''' (from '''//trim(ext_file_name)//''').')
+                     kc(1:mx) = kc2D
+                  else
                      cycle
                   end if
-               end if
 
-               ! Initialize bedlevel based on the read provider info
-               if (ja == 1) then
-                  call resolvePath(filename, basedir)
-                  if (index(qid, 'bedlevel') > 0 .and. ibathyfiletype == 1 .and. len_trim(md_inifieldfile) > 0) then
-                     ! Don't support bedlevel in *.ext file when there is ALSO a *.ini file.
-                     call mess(LEVEL_WARN, 'Bed level info should be defined in file '''//trim(md_inifieldfile)//'''. Quantity '//trim(qid)//' ignored in external forcing file '''//trim(md_extfile)//'''.')
-                     cycle bft ! Try ini field file next
-                  end if
-                  success = .true.
-                  if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == SPATIAL_LOCATION_1D)) then
-                     call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 1D bedlevel from file '''//trim(filename)//'''.')
-                     kc(1:mx) = kc1D
-                     success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, UNC_LOC_CN, kc) ! see meteo module
-                  else if (strcmpi(qid, 'bedlevel', 8)) then
-                     if ((strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 1) .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == SPATIAL_LOCATION_ALL)) then
-                        call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting both 1D and 2D bedlevel from file '''//trim(filename)//'''.')
-                        kc(1:mx) = kcc
-                     else if (strcmpi(qid, 'bedlevel2D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == SPATIAL_LOCATION_2D)) then
-                        call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 2D bedlevel from file '''//trim(filename)//'''.')
-                        kc(1:mx) = kc2D
-                     end if
-
-                     if (ibedlevtyp == 3) then
-                        success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, iprimpos, kc) ! see meteo module
-                     else if (ibedlevtyp == 2) then
-                        success = timespaceinitialfield_mpi(xu, yu, blu, lnx, filename, filetype, method, operand, transformcoef, iprimpos, kc) ! see meteo module
-                     else if (ibedlevtyp == 1) then
-                        success = timespaceinitialfield_mpi(xz, yz, bl, ndx, filename, filetype, method, operand, transformcoef, iprimpos, kc) ! see meteo module
-                     end if
-                  end if
-                  if (.not. success) then
-                     call mess(LEVEL_FATAL, "Error reading "//trim(qid)//" from "//trim(filename)//".")
+                  if (ibedlevtyp == 3) then
+                     success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, iprimpos, kc)
+                  else if (ibedlevtyp == 2) then
+                     success = timespaceinitialfield_mpi(xu, yu, blu, lnx, filename, filetype, method, operand, transformcoef, iprimpos, kc)
+                  else if (ibedlevtyp == 1) then
+                     success = timespaceinitialfield_mpi(xz, yz, bl, ndx, filename, filetype, method, operand, transformcoef, iprimpos, kc)
                   end if
                end if
 
-            end do ! ja==1 provider loop
-         end do bft ! ibathyfiletype=1,2
+               if (.not. success) then
+                  call mess(LEVEL_FATAL, 'Error reading '//trim(qid)//' from '//trim(filename)//'.')
+               end if
+            end do
+
+            call tree_destroy(inifield_ptr)
+         end do
+
+         ! 0.d Legacy support for old *.ext format.
+         if (ja1 == 1) then
+            call split_filename(md_extfile, basedir, fnam)
+            ja = 1
+         end if
+
+         do while (ja == 1)
+            call delpol()
+            call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
+
+            ! Initialize bedlevel based on the read provider info
+            if (ja == 1) then
+               call resolvePath(filename, basedir)
+               if (index(qid, 'bedlevel') > 0 .and. (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0)) then
+                  ! Prefer new-format files over old *.ext when both are present.
+                  preferred_bedlevel_file = trim(md_extfile_new)
+                  if (len_trim(preferred_bedlevel_file) == 0) then
+                     preferred_bedlevel_file = trim(md_inifieldfile)
+                  end if
+                  call mess(LEVEL_WARN, 'Bed level info should be defined in file '''//trim(preferred_bedlevel_file)//'''. Quantity '//trim(qid)//' ignored in external forcing file '''//trim(md_extfile)//'''.')
+                  cycle
+               end if
+               success = .true.
+               if (strcmpi(qid, 'bedlevel1D')) then
+                  call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 1D bedlevel from file '''//trim(filename)//'''.')
+                  kc(1:mx) = kc1D
+                  success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, UNC_LOC_CN, kc)
+               else if (strcmpi(qid, 'bedlevel', 8)) then
+                  if (strcmpi(qid, 'bedlevel')) then
+                     call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting both 1D and 2D bedlevel from file '''//trim(filename)//'''.')
+                     kc(1:mx) = kcc
+                  else if (strcmpi(qid, 'bedlevel2D')) then
+                     call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 2D bedlevel from file '''//trim(filename)//'''.')
+                     kc(1:mx) = kc2D
+                  end if
+
+                  if (ibedlevtyp == 3) then
+                     success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, iprimpos, kc)
+                  else if (ibedlevtyp == 2) then
+                     success = timespaceinitialfield_mpi(xu, yu, blu, lnx, filename, filetype, method, operand, transformcoef, iprimpos, kc)
+                  else if (ibedlevtyp == 1) then
+                     success = timespaceinitialfield_mpi(xz, yz, bl, ndx, filename, filetype, method, operand, transformcoef, iprimpos, kc)
+                  end if
+               end if
+               if (.not. success) then
+                  call mess(LEVEL_FATAL, 'Error reading '//trim(qid)//' from '//trim(filename)//'.')
+               end if
+            end if
+
+         end do ! ja==1 provider loop
 
          ! Clean up *.ext file
          if (mext /= 0) then
             rewind (mext)
          end if
-
-         ! Clean up *.ini file.
-         call tree_destroy(inifield_ptr)
 
          ! Interpreted values for debugging.
          if (md_exportnet_bedlevel == 1) then
