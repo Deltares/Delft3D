@@ -10,6 +10,8 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
+from src.config.credentials import Credentials
+from src.config.dependency import Dependency
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
 from src.config.program_config import ProgramConfig
@@ -200,19 +202,21 @@ class TestComparisonRunner:
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
         mocker.patch.object(ComparisonRunner, "show_summary")
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
 
         runner = ComparisonRunner(settings, logger)
 
         # Act
         runner.run()
 
-        # Assert
+        # Assert — batch download is called with both DVC file paths
         remote_ref_path = os.path.abspath("data/cases/abc/prefix/reference_win64.dvc")
         remote_case_path = os.path.abspath("data/cases/abc/prefix/input.dvc")
-        expected_log_message1 = f"Downloading reference result, from DVC file at {remote_ref_path}"
-        expected_log_message2 = f"Downloading input of case, from DVC file at {remote_case_path}"
-        assert call(expected_log_message1) in logger.debug.call_args_list
-        assert call(expected_log_message2) in logger.debug.call_args_list
+        mock_handler = mock_dvc_handler_cls.return_value
+        mock_handler.download_batch.assert_called_once()
+        dvc_files_arg = mock_handler.download_batch.call_args[0][0]
+        assert remote_ref_path in dvc_files_arg
+        assert remote_case_path in dvc_files_arg
 
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error(self) -> None:
         # Arrange
@@ -510,10 +514,10 @@ class TestComparisonRunner:
         mocker.patch.object(runner, "_TestSetRunner__update_programs", return_value=[])
         mocker.patch.object(runner, "_TestSetRunner__download_dependencies")
         mocker.patch.object(runner, "show_summary", return_value=None)
-        prepare_mock = mocker.patch.object(
+        prepare_batch_mock = mocker.patch.object(
             runner,
-            "prepare_test_case",
-            side_effect=lambda config, _logger: call_order.append(f"prepare:{config.name}"),
+            "_TestSetRunner__prepare_dvc_test_cases",
+            side_effect=lambda: call_order.append("prepare_dvc_batch"),
         )
         parallel_mock = mocker.patch.object(
             runner,
@@ -524,9 +528,9 @@ class TestComparisonRunner:
         # Act
         runner.run()
 
-        # Assert
-        assert call_order == ["prepare:Name_1", "prepare:Name_2", "dispatch:parallel"]
-        prepare_mock.assert_has_calls([call(config1, logger), call(config2, logger)])
+        # Assert — batch DVC preparation happens before parallel dispatch
+        assert call_order == ["prepare_dvc_batch", "dispatch:parallel"]
+        prepare_batch_mock.assert_called_once()
         parallel_mock.assert_called_once()
 
     def test_run_test_case_raises_error_when_paths_not_prepared(self) -> None:
@@ -572,17 +576,15 @@ class TestComparisonRunner:
         mocker.patch.object(runner, "run_tests_sequentially", return_value=[MagicMock()])
         mocker.patch.object(runner, "show_summary", return_value=None)
 
-        test_exception = Exception("Test preparation failed")
-
-        mocker.patch.object(runner, "prepare_test_case", side_effect=test_exception)
         cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
 
         # Act
         runner.run()
 
-        # Assert
-        expected_error_message = f"Failed to prepare test case 'Name_1': {test_exception}"
-        logger.error.assert_called_with(expected_error_message)
+        # Assert — validation fails because config has no locations
+        logger.error.assert_called()
+        error_message = logger.error.call_args[0][0]
+        assert "Name_1" in error_message
         cleanup_mock.assert_called_once_with(config)
 
     def test_cleanup_failed_preparation_removes_directories(self, fs: FakeFilesystem) -> None:
@@ -661,3 +663,304 @@ class TestComparisonRunner:
     @staticmethod
     def assert_is_file(path: str) -> None:
         assert pl.Path(path).resolve().is_file(), f"File does not exist: {str(path)}"
+
+    def test_prepare_dvc_test_cases_skips_when_no_dvc_configs(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        settings.command_line_settings.parallel = False
+
+        ref_location = self.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = self.create_location(name="case", location_type=PathType.INPUT)
+        config = self.create_test_case_config(
+            "Name_1", testcase_path=TestCasePath("prefix", "v1"), locations=[ref_location, case_location]
+        )
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act — non-DVC config means __prepare_dvc_test_cases should not create handler
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert
+        mock_dvc_handler_cls.assert_not_called()
+
+    def test_prepare_dvc_test_cases_collects_files_from_multiple_configs(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        ref1 = self.create_location(name="ref", root="data/cases/", location_type=PathType.REFERENCE)
+        in1 = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config1 = self.create_test_case_config("C1", testcase_path=TestCasePath("path1", "DVC"), locations=[ref1, in1])
+
+        ref2 = self.create_location(name="ref", root="data/cases/", location_type=PathType.REFERENCE)
+        in2 = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config2 = self.create_test_case_config("C2", testcase_path=TestCasePath("path2", "DVC"), locations=[ref2, in2])
+
+        settings.configs_to_run = [config1, config2]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — all 4 DVC files (2 configs × input + reference) in one batch call
+        mock_handler = mock_dvc_handler_cls.return_value
+        mock_handler.download_batch.assert_called_once()
+        dvc_files = mock_handler.download_batch.call_args[0][0]
+        assert len(dvc_files) == 4
+
+    def test_prepare_dvc_test_cases_skips_check_locations(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        check_loc = self.create_location(name="check", root="data/cases/", location_type=PathType.CHECK)
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config = self.create_test_case_config(
+            "C1", testcase_path=TestCasePath("path1", "DVC"), locations=[check_loc, input_loc]
+        )
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — only 1 DVC file (input), CHECK was skipped
+        mock_handler = mock_dvc_handler_cls.return_value
+        mock_handler.download_batch.assert_called_once()
+        dvc_files = mock_handler.download_batch.call_args[0][0]
+        assert len(dvc_files) == 1
+
+    def test_prepare_dvc_test_cases_cleans_up_on_batch_failure(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        ref_loc = self.create_location(name="ref", root="data/cases/", location_type=PathType.REFERENCE)
+        config = self.create_test_case_config(
+            "C1", testcase_path=TestCasePath("path1", "DVC"), locations=[input_loc, ref_loc]
+        )
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mock_dvc_handler_cls.return_value.download_batch.side_effect = RuntimeError("network error")
+        cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — cleanup called for each DVC config
+        cleanup_mock.assert_called_once_with(config)
+        logger.error.assert_called()
+
+    def test_prepare_dvc_sets_absolute_paths(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        ref_loc = self.create_location(name="ref", root="data/cases/", location_type=PathType.REFERENCE)
+        config = self.create_test_case_config(
+            "C1", testcase_path=TestCasePath("abc/prefix", "DVC"), locations=[input_loc, ref_loc]
+        )
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — paths are set on the config
+        assert config.absolute_test_case_path != ""
+        assert "input_work" in config.absolute_test_case_path
+        assert config.absolute_test_case_reference_path != ""
+
+    def test_run_test_case_dvc_copies_work_folder(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_post_processing = True
+
+        logger = MagicMock(spec=ConsoleLogger)
+        test_case_logger = MagicMock()
+        logger.create_test_case_logger.return_value = test_case_logger
+
+        runner = ComparisonRunner(settings, logger)
+
+        config = self.create_test_case_config("Name_1", testcase_path=TestCasePath("path", "DVC"))
+
+        # Set up path so _work suffix logic triggers
+        fs.create_dir("/cases/input")
+        fs.create_file("/cases/input/data.txt", contents="test data")
+        config.absolute_test_case_path = "/cases/input_work"
+        config.absolute_test_case_reference_path = "/refs/reference"
+        fs.create_dir("/refs/reference")
+
+        run_data = RunData(1, 1)
+
+        # Act
+        runner.run_test_case(config, run_data)
+
+        # Assert — work folder was created from source
+        assert fs.exists("/cases/input_work")
+        assert fs.exists("/cases/input_work/data.txt")
+
+    def test_process_test_case_locations_skips_check_type(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="/cases", references_path="/refs")
+        settings.command_line_settings.skip_download = []
+
+        check_loc = self.create_location(name="check", root="/check/", location_type=PathType.CHECK)
+        input_loc = self.create_location(name="case", location_type=PathType.INPUT)
+        config = self.create_test_case_config(
+            "Name_1", testcase_path=TestCasePath("prefix", "v1"), locations=[check_loc, input_loc]
+        )
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        download_mock = patch_fake_download(mocker, fs, FakeDownloadMode.ALL)
+
+        # Act
+        runner.prepare_test_case(config, logger)
+
+        # Assert — only 1 download for INPUT, CHECK was skipped
+        assert download_mock.call_count == 1
+
+    def test_prepare_dvc_location_validation_failure_cleans_up(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config = self.create_test_case_config("C1", testcase_path=TestCasePath("path1", "DVC"), locations=[input_loc])
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mocker.patch.object(
+            runner,
+            "_TestSetRunner__validate_location",
+            side_effect=ValueError("bad location"),
+        )
+        cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — location validation failure triggers cleanup and skips download
+        cleanup_mock.assert_called_once_with(config)
+        logger.error.assert_any_call("Failed to validate location for 'C1': bad location")
+
+    def test_prepare_dvc_find_credentials_returns_first_with_username(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        creds = Credentials()
+        creds.username = "my_user"
+        creds.password = "my_pass"
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        input_loc.credentials = creds
+
+        config = self.create_test_case_config("C1", testcase_path=TestCasePath("path1", "DVC"), locations=[input_loc])
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — handler received the actual credentials, not empty defaults
+        mock_handler = mock_dvc_handler_cls.return_value
+        actual_creds = mock_handler.download_batch.call_args[0][1]
+        assert actual_creds.username == "my_user"
+        assert actual_creds.password == "my_pass"
+
+    def test_prepare_dvc_apply_paths_handles_set_absolute_paths_failure(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config = self.create_test_case_config("C1", testcase_path=TestCasePath("path1", "DVC"), locations=[input_loc])
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mocker.patch.object(
+            runner,
+            "_TestSetRunner__set_absolute_paths",
+            side_effect=OSError("disk full"),
+        )
+        cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — error logged and cleanup called for the failing config
+        cleanup_mock.assert_called_once_with(config)
+        logger.error.assert_any_call("Failed post-download steps for 'C1': disk full")
+
+    def test_copy_dvc_dependency_uses_input_subdirectory(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        # Arrange — DVC dependency source has an 'input' subdirectory containing the actual data
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config = self.create_test_case_config(
+            "tc1", testcase_path=TestCasePath("e03_waq/f02_hongkong/c04_statistics", "DVC"), locations=[input_loc]
+        )
+        config.dependency = Dependency(
+            local_dir="f02_hongkong_c00_hydro",
+            case_path="e03_waq/f02_hongkong/c00_hydro",
+            version="DVC",
+        )
+        config.path = TestCasePath("e03_waq/f02_hongkong/c04_statistics", "DVC")
+        settings.configs_to_run = [config]
+
+        # Create the DVC source structure: cases_path/input/ contains data
+        fs.create_file("data/cases/e03_waq/f02_hongkong/c00_hydro/input/1992/com-92d.hyd", contents="hydro data")
+        fs.create_file("data/cases/e03_waq/f02_hongkong/c00_hydro/input.dvc", contents="dvc meta")
+        fs.create_file("data/cases/e03_waq/f02_hongkong/c04_statistics/input/dimr_config.xml", contents="cfg")
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — data copied from input/ subdirectory, not the parent
+        dest = pl.Path("data/cases/e03_waq/f02_hongkong/c04_statistics/f02_hongkong_c00_hydro/1992/com-92d.hyd")
+        assert dest.exists(), f"Expected dependency data at {dest}"
