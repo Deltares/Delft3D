@@ -248,6 +248,7 @@ module m_unstruc_netcdf_data
       integer :: id_air_temperature(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_relative_humidity(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_cloudiness(MAX_ID_VAR) = -1 !< Variable ID for
+      integer :: id_secchi_depth(MAX_ID_VAR) = -1 !< Variable ID for Secchi depth
       integer :: id_E(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_R(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_hwav(MAX_ID_VAR) = -1 !< Variable ID for

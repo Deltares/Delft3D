@@ -4345,6 +4345,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, nc_precision, UNC_LOC_S, 'Secc', 'secchi_depth', 'Secchi depth', 'm', jabndnd=jabndnd_)
 
                if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, nc_precision, UNC_LOC_S, 'Qsun', 'surface_net_downward_shortwave_flux', 'Solar influx', 'W m-2', jabndnd=jabndnd_)
@@ -6045,6 +6046,7 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, UNC_LOC_S, air_temperature, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, UNC_LOC_S, relative_humidity, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, UNC_LOC_S, cloudiness, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, UNC_LOC_S, spatial_secchi_depth, jabndnd=jabndnd_)
 
             if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, UNC_LOC_S, Qsunmap, jabndnd=jabndnd_)
@@ -6632,7 +6634,7 @@ contains
          id_q1main, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
          id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
-         id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
+         id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_secchi_depth, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
          id_ice_s1, id_ice_zmax, id_ice_zmin, id_ice_area_fraction, id_ice_thickness, id_ice_pressure, id_ice_temperature, id_snow_thickness, id_snow_temperature, &
          id_cwav, id_cgwav, id_sigmwav, &
          id_ust, id_vst, id_windx, id_windy, id_windxu, id_windyu, id_numlimdt, id_hs, id_bl, id_zk, &
@@ -6774,6 +6776,7 @@ contains
                   call definencvar(imapfile, id_air_temperature(iid), nf90_double, idims, 'Tair', 'air temperature', 'degC', 'FlowElem_xcc FlowElem_ycc')
                   call definencvar(imapfile, id_relative_humidity(iid), nf90_double, idims, 'rhum', 'Relative humidity', ' ', 'FlowElem_xcc FlowElem_ycc')
                   call definencvar(imapfile, id_cloudiness(iid), nf90_double, idims, 'clou', 'cloudiness', ' ', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile, id_secchi_depth(iid), nf90_double, idims, 'Secc', 'Secchi depth', 'm', 'FlowElem_xcc FlowElem_ycc')
 
                   if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                      call definencvar(imapfile, id_qsun(iid), nf90_double, idims, 'Qsun', 'solar influx', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
@@ -9339,6 +9342,7 @@ contains
             ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_cloudiness(iid), cloudiness, [1, itim], [ndxndxi, 1])
+            ierr = nf90_put_var(imapfile, id_secchi_depth(iid), spatial_secchi_depth, [1, itim], [ndxndxi, 1])
 
             if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                ierr = nf90_put_var(imapfile, id_qsun(iid), Qsunmap, [1, itim], [ndxndxi, 1])
