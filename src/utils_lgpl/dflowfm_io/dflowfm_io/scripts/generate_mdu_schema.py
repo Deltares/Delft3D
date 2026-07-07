@@ -82,7 +82,8 @@ def render_property(prop, indent):
         return f"{inner}{name.ljust(width)} = {value}"
 
     lines.append(field(".key", f'"{prop["key"]}",'))
-    lines.append(field(".required", f"{'true' if required else 'false'},"))
+    if required:
+        lines.append(field(".required", "true,"))
     if nullable:
         lines.append(field(".nullable", "true,"))
     lines.append(field(".value_type", f"ValueType::{value_type},"))
@@ -117,7 +118,8 @@ def render_section(section, indent):
 
     lines = [pad + "SectionSchema {"]
     lines.append(f'{inner}.name        = "{section["name"]}",')
-    lines.append(f"{inner}.required    = {'true' if required else 'false'},")
+    if required:
+        lines.append(f"{inner}.required    = true,")
     lines.append(f'{inner}.description = "{section.get("description", "")}",')
     lines.append(f"{inner}.properties  = {{")
 
