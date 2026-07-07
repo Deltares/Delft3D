@@ -245,6 +245,7 @@ contains
       use string_module, only: strcmpi
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
+      use fm_external_forcings_data, only: kbndu
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to boundary block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -260,9 +261,11 @@ contains
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
-      integer :: operand
-      logical :: is_successful
-      integer :: method, num_items_in_block, j
+      integer       :: operand, ibndu,facdis
+      
+
+      logical       :: is_successful
+      integer       :: method, num_items_in_block, j
 
       res = .true.
 
@@ -382,6 +385,19 @@ contains
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
                                                                   operand=operand, forcing_file=forcing_file)
+                  ! TK_temp: Determine sign needed for discharge boundaries from history file
+                  if (quantity == 'dischargebnd') then
+                     facdis = 1
+                     if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then
+                        call det_sign_discharge(location_file,facdis)
+                     end if
+                     ! fill kbndu(8,:) with multiplification discharge boundaries
+                     do ibndu = 1, size(kbndu,2)
+                        if (kbndu(7,ibndu) == ib) then
+                            kbndu(8,ibndu) = facdis
+                        end if
+                     end do
+                 end if
                end if
                res = res .and. is_successful ! Remember any previous errors.
                operand = OPERAND_UNKNOWN

@@ -143,7 +143,7 @@ contains
       case ('*')
          operand = OPERAND_MULTIPLY
       case ('v')
-         ! This used to map to operand_replace_if_value in the ec module, but this has been replaced by regular overriding behavior.
+         ! This used to map to EC_OPERAND_REPLACE_if_value in the ec module, but this has been replaced by regular overriding behavior.
          operand = OPERAND_OVERRIDE
       case ('n')
          operand = OPERAND_MINIMUM

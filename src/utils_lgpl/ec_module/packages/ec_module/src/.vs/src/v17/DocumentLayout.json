@@ -1,0 +1,81 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\checkouts\\delft3d_tmp\\src\\utils_lgpl\\ec_module\\packages\\ec_module\\src\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\checkouts\\delft3d_tmp\\src\\utils_lgpl\\ec_module\\packages\\ec_module\\src\\ec_bcreader.f90||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ec_bcreader.f90||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 11,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:135:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:136:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ec_bcreader.f90",
+              "DocumentMoniker": "C:\\checkouts\\delft3d_tmp\\src\\utils_lgpl\\ec_module\\packages\\ec_module\\src\\ec_bcreader.f90",
+              "RelativeDocumentMoniker": "ec_bcreader.f90",
+              "ToolTip": "C:\\checkouts\\delft3d_tmp\\src\\utils_lgpl\\ec_module\\packages\\ec_module\\src\\ec_bcreader.f90",
+              "RelativeToolTip": "ec_bcreader.f90",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAACYAAAATAAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGdSURBVDhP7ZSxa1pRFIe/qAl9RJJAAg2CpYqYl5AhlzRTJ12yZXMsQgZFSjO4mMHFCpmyBnHuX9EgCt0ckgedgtBJLAkkqJAXKnrfzRB80ZeXxErHfnCW3\u002BF8lwOHi1KKer3OpBQKhSPTNC23Qik1o5RCSrnT6/UmsV4Ct0Cke36NspTd8K8v4ZufZUxoGAatVmvMMMTr9aLrOqFQCIDvb78hb/t2/\u002BOPPRa3V/CNzFCr1ahWq6ORjcfjQQhBMpkkHA4DMLeqoX/9AID23g8wLhxSKpWcEZ1Oh3w\u002BjxDCFvZvevw6/knkcIu55TcIITY8zkGAYDD4pAKBAFJK\u002Bv3HNZW0\u002BPP7DmkOAGg0GheuwkmZjyyye/WJd/trdua6shuappFIJNB1HYDQwSa\u002BhVkAKpXKqWEYZwAopRgMBjumaVrFYtGKxWJP7uu1SqfTn4cPT71yKpUil8s54\u002BmF7XabbrfrjKcXPsd/4QPNZvPVsizLOQbPHXYmk3FGEzMmjMfjRKPR0ehF/P6HH2aUv/1gXclms1/K5fIJQ\u002BG/5B6MC/MMF6TcdgAAAABJRU5ErkJggg==",
+              "WhenOpened": "2026-06-25T09:32:08.209Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

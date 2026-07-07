@@ -184,7 +184,7 @@ module m_ec_module
    interface ecSetElementSetZArray
       module procedure ecElementSetSetZArray
    end interface ecSetElementSetZArray
-
+   
    interface ecSetElementSetvptyp
       module procedure ecElementSetSetvptyp
    end interface ecSetElementSetvptyp

@@ -3920,7 +3920,6 @@ contains
 
          call setmdia(mdia)
          call initMessaging(mdia)
-
          if (line_copied) then
             write (MDIA, *) 'Until here copy of previous diagnostic file'
          end if
