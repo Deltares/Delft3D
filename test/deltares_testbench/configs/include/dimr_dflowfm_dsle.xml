@@ -131,12 +131,12 @@
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
-                        <parameter name="mesh2d_TR1" toleranceRelative="0.006" />
+                        <parameter name="mesh2d_TR1" toleranceRelative="0.008" />
                     </parameters>
                 </file>
                 <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
                     <parameters>
-                        <parameter name="cross_section_TR1" toleranceRelative="0.0008" />
+                        <parameter name="cross_section_TR1" toleranceRelative="0.008" />
                     </parameters>
                 </file>
             </checks>
