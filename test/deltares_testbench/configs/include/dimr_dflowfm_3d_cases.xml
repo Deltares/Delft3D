@@ -265,7 +265,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c030_lock_exchange_2m_3d" ref="platform_specific">
-     <path version="2025-07-21T08:52:56.851000">e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d</path>
+     <path version="2026-07-06T14:49:25.460000">e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -279,7 +279,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c031_lock_exchange_300m_sigma_3d" ref="dflowfm_default">
-     <path version="2025-07-24T17:00:00">e02_dflowfm/f019_transport/c031_lock_exchange_300m_sigma_3d</path>
+     <path version="2026-07-06T14:49:27.629000">e02_dflowfm/f019_transport/c031_lock_exchange_300m_sigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -293,7 +293,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c032_lock_exchange_300m_zmodel_3d" ref="dflowfm_default">
-     <path version="2025-07-24T17:00:00">e02_dflowfm/f019_transport/c032_lock_exchange_300m_zmodel_3d</path>
+     <path version="2026-07-06T14:49:29.223000">e02_dflowfm/f019_transport/c032_lock_exchange_300m_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -556,7 +556,7 @@
     </testCase>
 
     <testCase name="e02_f018_c020_uxuyadvectionvelocitybnd3d_bc" ref="dflowfm_default">
-      <path version="2026-03-13T16:21:12.834000">e02_dflowfm/f018_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc</path>
+      <path version="2026-07-07T12:17:17.242000">e02_dflowfm/f018_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/uxuy_3d_map.nc" type="netCDF">
@@ -589,7 +589,7 @@
     </testCase>
 
     <testCase name="e02_f019_c033_lock_exchange_300m_unst_3d" ref="platform_specific">
-      <path version="2025-10-13T09:24:11.530000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
+      <path version="2026-07-06T14:49:31.161000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -859,7 +859,7 @@
     </testCase>
 
     <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:56.216000">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
+      <path version="2026-07-06T14:49:40.966000">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
@@ -1606,7 +1606,7 @@
     </testCase>
 	
     <testCase name="e02_f045_c010_nudgerate" ref="dflowfm_default">
-      <path version="2025-10-07T07:16:58.261000">e02_dflowfm/f045_nudging/c010_nudgerate</path>
+      <path version="2026-07-06T14:49:32.842000">e02_dflowfm/f045_nudging/c010_nudgerate</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">
