@@ -234,7 +234,9 @@ contains
 
             ! Initialize bedlevel based on the read provider info
             if (ja == 1) then
-               call resolvePath(filename, basedir)
+               if (ibathyfiletype == 1) then
+                  call resolvePath(filename, basedir)
+               end if
                if (index(qid, 'bedlevel') > 0 .and. ibathyfiletype == 1 .and. (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0)) then
                   ! Don't support bedlevel in old *.ext file when there is ALSO a new-format file.
                   call mess(LEVEL_WARN, 'Bed level info should be defined in ExtForceFileNew. Quantity '//trim(qid)//' ignored in external forcing file '''//trim(md_extfile)//'''.')
