@@ -558,6 +558,7 @@ This section contains the settings for various output files.
 | `wrishp_src` | Writing sources and sinks to shape file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wrishp_thd` | Writing thin dams to shape file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wrishp_weir` | Writing weirs to shape file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `writeSurfaceDataToMapFile` | Only write surface data to map file for 3D quantities. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `outputDir` | Output directory of map-, his-, rst-, dat- and timins files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir. |  |  |  |  |
 | `waqOutputDir` | Output directory of Water Quality files. |  |  |  |  |
 | `flowGeomFile` | \*_flowgeom.nc Flow geometry file in NetCDF format. |  |  |  |  |
