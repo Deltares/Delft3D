@@ -10,6 +10,7 @@
 #include <thread>
 #include <chrono>
 #include <numbers> // for std::numbers::pi
+#include <cmath>   // for atan2,sin,cos
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
