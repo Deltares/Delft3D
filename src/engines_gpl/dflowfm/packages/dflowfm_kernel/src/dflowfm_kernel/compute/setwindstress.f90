@@ -46,7 +46,7 @@ contains
       use m_setcdwcoefficient, only: setcdwcoefficient
       use m_flowgeom, only: ln, lnx, snu, csu
       use m_flow, only: map_write_settings, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-                        viskinair, ag, vonkarw, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v, dmiss, &
+                        viskinair, ag, vonkarw, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v, &
                         w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
@@ -57,36 +57,15 @@ contains
       real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, ust, ust2, tau, z0w, roa, row
       real(kind=dp) :: local_ice_area_fraction
       real(kind=dp), allocatable :: wind_stress_x_node(:), wind_stress_y_node(:)
-      real(kind=dp), allocatable :: w_star_node(:), obukhov_length_node(:), c_d_node(:), c_h_node(:), c_e_node(:)
       integer :: L, numwav, k
 
       windxav = 0.0_dp
       windyav = 0.0_dp
 
-      if (allocated(w_star)) then
-         w_star = dmiss
-         obukhov_length = dmiss
-         transfer_coeff_momentum = dmiss
-         transfer_coeff_sensible_heat = dmiss
-         transfer_coeff_latent_heat = dmiss
-      end if
-
       if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call get_wind_stress(wind_stress_x_node, wind_stress_y_node)
-         call get_bulk_exchange_diagnostics(w_star_node, obukhov_length_node, c_d_node, c_h_node, c_e_node)
-
-         if (allocated(w_star)) then
-            deallocate (w_star)
-            deallocate (obukhov_length)
-            deallocate (transfer_coeff_momentum)
-            deallocate (transfer_coeff_sensible_heat)
-            deallocate (transfer_coeff_latent_heat)
-         end if
-         call move_alloc(w_star_node, w_star)
-         call move_alloc(obukhov_length_node, obukhov_length)
-         call move_alloc(c_d_node, transfer_coeff_momentum)
-         call move_alloc(c_h_node, transfer_coeff_sensible_heat)
-         call move_alloc(c_e_node, transfer_coeff_latent_heat)
+         call get_bulk_exchange_diagnostics(w_star, obukhov_length, transfer_coeff_momentum, &
+                                            transfer_coeff_sensible_heat, transfer_coeff_latent_heat)
 
          call node_to_link_vector(wind_stress_x_node, wind_stress_y_node, wdsu_x, wdsu_y, lnx)
          do L = 1, lnx

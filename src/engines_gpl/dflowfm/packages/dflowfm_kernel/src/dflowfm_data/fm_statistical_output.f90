@@ -1543,15 +1543,15 @@ contains
               'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'Wrihis_windstress', 'C_D', 'Bulk transfer coefficient of momentum flux', '', &
+                    'Wrihis_windstress', 'c_d', 'Bulk transfer coefficient of momentum flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'Wrihis_windstress', 'C_H', 'Bulk transfer coefficient of sensible heat flux', '', &
+                    'Wrihis_windstress', 'c_h', 'Bulk transfer coefficient of sensible heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'Wrihis_windstress', 'C_E', 'Bulk transfer coefficient of latent heat flux', '', &
+                    'Wrihis_windstress', 'c_e', 'Bulk transfer coefficient of latent heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &

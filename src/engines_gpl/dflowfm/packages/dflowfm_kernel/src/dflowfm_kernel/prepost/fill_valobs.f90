@@ -438,18 +438,17 @@ contains
                end do
 
                if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+                  valobs(i, IPNT_wstar) = dmiss
+                  valobs(i, IPNT_obukhov_length) = dmiss
+                  valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss
+                  valobs(i, IPNT_TRANSFER_COEFF_SENSIBLE_HEAT) = dmiss
+                  valobs(i, IPNT_TRANSFER_COEFF_LATENT_HEAT) = dmiss
                   if (allocated(w_star)) then
                      valobs(i, IPNT_wstar) = w_star(k)
                      valobs(i, IPNT_obukhov_length) = obukhov_length(k)
                      valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = transfer_coeff_momentum(k)
                      valobs(i, IPNT_TRANSFER_COEFF_SENSIBLE_HEAT) = transfer_coeff_sensible_heat(k)
                      valobs(i, IPNT_TRANSFER_COEFF_LATENT_HEAT) = transfer_coeff_latent_heat(k)
-                  else
-                     valobs(i, IPNT_wstar) = dmiss
-                     valobs(i, IPNT_obukhov_length) = dmiss
-                     valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss
-                     valobs(i, IPNT_TRANSFER_COEFF_SENSIBLE_HEAT) = dmiss
-                     valobs(i, IPNT_TRANSFER_COEFF_LATENT_HEAT) = dmiss
                   end if
                end if
             end if
