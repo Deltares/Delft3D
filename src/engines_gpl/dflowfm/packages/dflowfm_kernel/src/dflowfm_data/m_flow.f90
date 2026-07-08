@@ -348,6 +348,11 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: wdsu(:) !< windstress/rhow u point  (m2/s2)
    real(kind=dp), allocatable, target :: wdsu_x(:) !< windstress u point  (N/m2) x-component
    real(kind=dp), allocatable, target :: wdsu_y(:) !< windstress u point  (N/m2) y-component
+   real(kind=dp), allocatable, target :: w_star(:) !< [m/s] free convective velocity scale at cell centers
+   real(kind=dp), allocatable, target :: obukhov_length(:) !< [m] Obukhov length at cell centers
+   real(kind=dp), allocatable, target :: transfer_coeff_momentum(:) !< [-] bulk transfer coefficient for momentum flux at cell centers
+   real(kind=dp), allocatable, target :: transfer_coeff_sensible_heat(:) !< [-] bulk transfer coefficient for sensible heat flux at cell centers
+   real(kind=dp), allocatable, target :: transfer_coeff_latent_heat(:) !< [-] bulk transfer coefficient for latent heat flux at cell centers
    real(kind=dp), allocatable :: wavmubnd(:) !< wave-induced mass flux (on open boundaries)
    integer :: number_steps_limited_visc_flux_links = 0 !< number of steps with limited viscosity/flux on links
    integer, parameter :: MAX_PRINTS_LIMITED_VISC_FLUX_LINKS = 10 !< number of messages in dia file on limited viscosity/flux links

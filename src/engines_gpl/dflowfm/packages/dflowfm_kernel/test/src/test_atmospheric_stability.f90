@@ -16,7 +16,7 @@ contains
       real(kind=dp), allocatable :: wind_stress_u(:), wind_stress_v(:)
       real(kind=dp), allocatable :: latent_heat_flux(:), sensible_heat_flux(:)
       real(kind=dp), allocatable :: u_star(:), t_star(:), q_star(:), z0_momentum(:), z0_heat(:), z0_humidity(:), &
-                                    monin_obukhov_length(:), richardson_number(:)
+                                    obukhov_length(:), richardson_number(:)
       type(t_options) :: options
       
       options%include_stability = .true.
@@ -37,7 +37,7 @@ contains
       call get_z0_momentum(z0_momentum)
       call get_z0_heat(z0_heat)
       call get_z0_humidity(z0_humidity)
-      call get_monin_obukhov_length(monin_obukhov_length)
+      call get_obukhov_length(obukhov_length)
       call get_richardson_number(richardson_number)
       call get_wind_stress(wind_stress_u, wind_stress_v)
       call get_latent_heat_flux(latent_heat_flux)
@@ -49,7 +49,7 @@ contains
       call f90_expect_near(z0_momentum(1), 0.000766075070655_dp, 1e-7_dp, "z0_momentum(1) does not match expected value.")
       call f90_expect_near(z0_heat(1), 0.000012407831933_dp, 1e-9_dp, "z0_heat(1) does not match expected value.")
       call f90_expect_near(z0_humidity(1), 0.000019232139496_dp, 1e-9_dp, "z0_humidity(1) does not match expected value.")
-      call f90_expect_near(monin_obukhov_length(1), -574.507255494245101_dp, 1e-1_dp, "monin_obukhov_length(1) does not match expected value.")
+      call f90_expect_near(obukhov_length(1), -574.507255494245101_dp, 1e-1_dp, "obukhov_length(1) does not match expected value.")
       call f90_expect_near(richardson_number(1), -0.002646973390076_dp, 1e-7_dp, "richardson_number(1) does not match expected value.")
       call f90_expect_near(wind_stress_u(1), 0.19827531947147781_dp, 1e-9_dp, "wind_stress_u(1) does not match expected value.")
       call f90_expect_near(wind_stress_v(1), 0.20706103307367529_dp, 1e-9_dp, "wind_stress_v(1) does not match expected value.")
@@ -62,7 +62,7 @@ contains
       call f90_expect_near(z0_momentum(2), 0.000075442471892_dp, 1e-8_dp, "z0_momentum(2) does not match expected value.")
       call f90_expect_near(z0_heat(2), 0.000272922727444_dp, 1e-7_dp, "z0_heat(2) does not match expected value.")
       call f90_expect_near(z0_humidity(2), 0.000423030227538_dp, 1e-6_dp, "z0_humidity(2) does not match expected value.")
-      call f90_expect_near(monin_obukhov_length(2), -0.401534400984983_dp, 1e-4_dp, "monin_obukhov_length(2) does not match expected value.")
+      call f90_expect_near(obukhov_length(2), -0.401534400984983_dp, 1e-4_dp, "obukhov_length(2) does not match expected value.")
       call f90_expect_near(richardson_number(2), -1.974372173626931_dp, 1e-4_dp, "richardson_number(2) does not match expected value.")
       call f90_expect_near(wind_stress_u(2), 0.00014672001126972184_dp, 1e-9_dp, "wind_stress_u(2) does not match expected value.")
       call f90_expect_near(wind_stress_v(2), -0.00056730769523640964_dp, 1e-9_dp, "wind_stress_v(2) does not match expected value.")
@@ -75,7 +75,7 @@ contains
       call f90_expect_near(z0_momentum(3), 0.010276823644789_dp, 1e-6_dp, "z0_momentum(3) does not match expected value.")
       call f90_expect_near(z0_heat(3), 0.000004758824805_dp, 1e-9_dp, "z0_heat(3) does not match expected value.")
       call f90_expect_near(z0_humidity(3), 0.000007376178448_dp, 1e-9_dp, "z0_humidity(3) does not match expected value.")
-      call f90_expect_near(monin_obukhov_length(3), -1479.651083435764122_dp, 2e-1_dp, "monin_obukhov_length(3) does not match expected value.")
+      call f90_expect_near(obukhov_length(3), -1479.651083435764122_dp, 2e-1_dp, "obukhov_length(3) does not match expected value.")
       call f90_expect_near(richardson_number(3), -0.002086552554703_dp, 1e-7_dp, "richardson_number(3) does not match expected value.")
       call f90_expect_near(wind_stress_u(3), 1.6948223957543_dp, 1e-9_dp, "wind_stress_u(3) does not match expected value.")
       call f90_expect_near(wind_stress_v(3), -1.014329321639416_dp, 1e-9_dp, "wind_stress_v(3) does not match expected value.")
@@ -94,7 +94,7 @@ contains
       real(kind=dp), allocatable :: wind_stress_u(:), wind_stress_v(:)
       real(kind=dp), allocatable :: latent_heat_flux(:), sensible_heat_flux(:)
       real(kind=dp), allocatable :: u_star(:), t_star(:), q_star(:), z0_momentum(:), z0_heat(:), z0_humidity(:), &
-                                    monin_obukhov_length(:), richardson_number(:)
+                                    obukhov_length(:), richardson_number(:)
       real(kind=dp) :: tolerance = 1e-5_dp
       type(t_options) :: options
       
@@ -116,7 +116,7 @@ contains
       call get_z0_momentum(z0_momentum)
       call get_z0_heat(z0_heat)
       call get_z0_humidity(z0_humidity)
-      call get_monin_obukhov_length(monin_obukhov_length)
+      call get_obukhov_length(obukhov_length)
       call get_richardson_number(richardson_number)
       call get_wind_stress(wind_stress_u, wind_stress_v)
       call get_latent_heat_flux(latent_heat_flux)
@@ -128,7 +128,7 @@ contains
       call f90_expect_near(z0_momentum(1), 0.000752955407655_dp, 1e-7_dp, "z0_momentum(1) does not match expected value.")
       call f90_expect_near(z0_heat(1), 0.000012516200200_dp, 1e-9_dp, "z0_heat(1) does not match expected value.")
       call f90_expect_near(z0_humidity(1), 0.000019400110310_dp, 1e-9_dp, "z0_humidity(1) does not match expected value.")
-      call f90_expect_near(monin_obukhov_length(1), 0.0_dp, 0.0_dp, "monin_obukhov_length(1) does not match expected value.")
+      call f90_expect_near(obukhov_length(1), 0.0_dp, 0.0_dp, "obukhov_length(1) does not match expected value.")
       call f90_expect_near(richardson_number(1), 0.0_dp, 0.0_dp, "richardson_number(1) does not match expected value.")
       call f90_expect_near(wind_stress_u(1), 0.19488370311667183_dp, 1e-9_dp, "wind_stress_u(1) does not match expected value.")
       call f90_expect_near(wind_stress_v(1), 0.20351913190267898_dp, 1e-9_dp, "wind_stress_v(1) does not match expected value.")
@@ -141,7 +141,7 @@ contains
       call f90_expect_near(z0_momentum(2), 0.000101038350813_dp, 1e-8_dp, "z0_momentum(2) does not match expected value.")
       call f90_expect_near(z0_heat(2), 0.000366628877207_dp, 1e-7_dp, "z0_heat(2) does not match expected value.")
       call f90_expect_near(z0_humidity(2), 0.000568274759671_dp, 1e-6_dp, "z0_humidity(2) does not match expected value.")
-      call f90_expect_near(monin_obukhov_length(2), 0.0_dp, 0.0_dp, "monin_obukhov_length(2) does not match expected value.")
+      call f90_expect_near(obukhov_length(2), 0.0_dp, 0.0_dp, "obukhov_length(2) does not match expected value.")
       call f90_expect_near(richardson_number(2), 0.0_dp, 0.0_dp, "richardson_number(2) does not match expected value.")
       call f90_expect_near(wind_stress_u(2), 8.130856993426958e-05_dp, 1e-9_dp, "wind_stress_u(2) does not match expected value.")
       call f90_expect_near(wind_stress_v(2), -0.00031438777173743298_dp, 1e-9_dp, "wind_stress_v(2) does not match expected value.")
@@ -154,7 +154,7 @@ contains
       call f90_expect_near(z0_momentum(3), 0.010166908002376_dp, 1e-6_dp, "z0_momentum(3) does not match expected value.")
       call f90_expect_near(z0_heat(3), 0.000004784484715_dp, 1e-9_dp, "z0_heat(3) does not match expected value.")
       call f90_expect_near(z0_humidity(3), 0.000007415951308_dp, 1e-9_dp, "z0_humidity(3) does not match expected value.")
-      call f90_expect_near(monin_obukhov_length(3), 0.0_dp, 0.0_dp, "monin_obukhov_length(3) does not match expected value.")
+      call f90_expect_near(obukhov_length(3), 0.0_dp, 0.0_dp, "obukhov_length(3) does not match expected value.")
       call f90_expect_near(richardson_number(3), 0.0_dp, 0.0_dp, "richardson_number(3) does not match expected value.")
       call f90_expect_near(wind_stress_u(3), 1.6767200204232942_dp, 1e-9_dp, "wind_stress_u(3) does not match expected value.")
       call f90_expect_near(wind_stress_v(3), -1.0034952837275031_dp, 1e-9_dp, "wind_stress_v(3) does not match expected value.")

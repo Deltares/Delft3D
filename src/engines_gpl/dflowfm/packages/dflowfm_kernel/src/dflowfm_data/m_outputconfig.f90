@@ -244,6 +244,15 @@ module m_output_config
    integer, public :: IDX_HIS_WINDX_SFERIC
    integer, public :: IDX_HIS_WINDY
    integer, public :: IDX_HIS_WINDY_SFERIC
+   integer, public :: IDX_HIS_WINDSTRESSX
+   integer, public :: IDX_HIS_WINDSTRESSX_SFERIC
+   integer, public :: IDX_HIS_WINDSTRESSY
+   integer, public :: IDX_HIS_WINDSTRESSY_SFERIC
+   integer, public :: IDX_HIS_WSTAR
+   integer, public :: IDX_HIS_OBUKHOV_LENGTH
+   integer, public :: IDX_HIS_TRANSFER_COEFF_MOMENTUM
+   integer, public :: IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT
+   integer, public :: IDX_HIS_TRANSFER_COEFF_LATENT_HEAT
    integer, public :: IDX_HIS_RAIN
    integer, public :: IDX_HIS_INFILTRATION_CAP
    integer, public :: IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL

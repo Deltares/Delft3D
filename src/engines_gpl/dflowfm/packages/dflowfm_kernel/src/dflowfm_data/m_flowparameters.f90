@@ -477,6 +477,7 @@ module m_flowparameters
       integer :: bubblescreens = 1 !< Write bubble screen parameters to his file, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
       integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
+      integer :: windstress = 1 !< Write wind stress to his file, 0: no, 1: yes
       integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
       integer :: infilt = 1 !< Write infiltration rate to this file, 0: no, 1: yes
       integer :: tem = 1 !< Write temperature to his file, 0: no, 1: yes
