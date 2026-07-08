@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 import Delft3D.linux.*
 import Delft3D.windows.*
+import Delft3D.template.*
 
 object PublishToGui : BuildType({
     name = "Publish to GUI"
