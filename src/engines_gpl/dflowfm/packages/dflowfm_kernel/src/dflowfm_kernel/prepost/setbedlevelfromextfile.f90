@@ -53,6 +53,7 @@ contains
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
       use string_module, only: strcmpi, str_tolower
+      use properties, only: prop_get
       use dfm_error
       use unstruc_netcdf
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID, parse_spatial_location_type
@@ -225,6 +226,7 @@ contains
                   varname = input%variable_name
                   transformcoef = -999.0_dp
                   call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+                  call prop_get(node_ptr, '', 'value', transformcoef(1))
                   iLocType = parse_spatial_location_type(trim(input%location_type))
                   if (iLocType == SPATIAL_LOCATION_INVALID) then
                      iLocType = SPATIAL_LOCATION_ALL
