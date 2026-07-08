@@ -115,7 +115,9 @@ module m_observations_data
    integer :: IVAL_TEPS
    integer :: IVAL_VIU
    integer :: IVAL_VICWWS
+   integer :: IVAL_VICWWS_TOTAL
    integer :: IVAL_DIFWWS
+   integer :: IVAL_DIFWWS_TOTAL
    integer :: IVAL_VICWWU
    integer :: IVAL_WS1
    integer :: IVAL_WSN
@@ -234,7 +236,9 @@ module m_observations_data
    integer :: IPNT_TEPS
    integer :: IPNT_VIU
    integer :: IPNT_VICWWS
+   integer :: IPNT_VICWWS_TOTAL
    integer :: IPNT_DIFWWS
+   integer :: IPNT_DIFWWS_TOTAL
    integer :: IPNT_VICWWU
    integer :: IPNT_WS1
    integer :: IPNT_WSN
