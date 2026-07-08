@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <thread>
 #include <chrono>
+#include <numbers> // for std::numbers::pi
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -235,10 +236,15 @@ namespace pre_c_sumo
         {
             const auto& diffuser = nf2ff_readers[diffuser_index];
             const auto& diffuser_setting = csumoSettings.diffusers()[diffuser_index];
+            std::vector<SourceOrSinkData> sources;
 
             if (!isDiffuserModelled(diffuser))
             {
-                createDiffuserModel(); // Placeholder call.
+                sources = createDiffuserModel(diffuser);
+            }
+            else
+            {
+                sources = diffuser.sources();
             }
 
             // Send (created) diffuser
@@ -297,12 +303,53 @@ namespace pre_c_sumo
     bool isDiffuserModelled(const NF2FFReader& diffuser)
     {
         // (Placeholder) logic to determine if the diffuser is modelled
-        return diffuser.sources().size() > 1;
+        return diffuser.sources().size() > 1 || diffuser.sinks().size() == 0;
     }
 
     // Do we still need this?
     void processSourceLocations() { std::println("Processing source locations..."); }
 
-    void createDiffuserModel() { std::println("Creating diffuser model..."); }
+    // Determine the flow nodes over which to distribute the diluted discharge:
+    // Both sink and source point needed for direction connection line.
+    // Define the line through the source point, perpendicular to the line connecting the
+    // last sink point with the source point. Define the line piece on this line, using
+    // the specified source-width. Walk with 1000 steps over this line piece
+    std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFReader& diffuser)
+    {
+        std::println("Creating diffuser model...");
+        std::vector<SourceOrSinkData> new_sources;
+        constexpr int num_steps = 1000;
+
+        const auto& sources = diffuser.sources();
+        const auto& sinks = diffuser.sinks();
+
+        assert(sources.size() == 1);
+        assert(sinks.size() > 0);
+
+        double ang_end = atan2(sources[0].y_coordinate - sinks[sinks.size() - 1].y_coordinate,
+                               sources[0].x_coordinate - sinks[sinks.size() - 1].x_coordinate);
+        double x_range = sources[0].half_plume_width * cos(std::numbers::pi / 2 - ang_end);
+        double y_range = sources[0].half_plume_width * sin(std::numbers::pi / 2 - ang_end);
+        double x_start = sources[0].x_coordinate - x_range;
+        double y_start = sources[0].y_coordinate - y_range;
+        double dx = 2.0 * x_range / (num_steps - 1);
+        double dy = 2.0 * y_range / (num_steps - 1);
+
+        for (int i = 0; i < num_steps; i++)
+        {
+            new_sources.emplace_back(SourceOrSinkData{.x_coordinate = x_start + i * dx,
+                                                      .y_coordinate = y_start + i * dy,
+                                                      .z_coordinate = sources[0].z_coordinate,
+                                                      .half_plume_height = sources[0].half_plume_height,
+                                                      .half_plume_width = 0,
+                                                      .u_magnitude = sources[0].u_magnitude,
+                                                      .u_direction = sources[0].u_direction,
+                                                      .weight = 1.0 / num_steps,
+                                                      .has_u = sources[0].has_u,
+                                                      .has_weight = true});
+        }
+
+        return new_sources;
+    }
 
 } // namespace pre_c_sumo
