@@ -4,7 +4,7 @@ import jetbrains.buildServer.configs.kotlin.Template
 import jetbrains.buildServer.configs.kotlin.BuildsLimitingMode
 
 object TemplateBuildConcurrency : Template({
-    name = "Pull Request Concurrency Settings"
+    name = "Build Concurrency Settings"
 
     maxRunningBuildsPerBranch = """
         pull/*:1
