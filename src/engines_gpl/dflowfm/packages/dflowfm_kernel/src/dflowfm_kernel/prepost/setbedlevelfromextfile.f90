@@ -58,7 +58,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID, parse_spatial_location_type
       use m_delpol
       use m_timespaceinitialfield_mpi
-      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, averaging_params_to_transformcoef
       use tree_structures, only: tree_create, tree_destroy, tree_num_nodes, tree_get_name
 
       logical :: bl_set_from_zkuni = .false.
@@ -223,6 +223,8 @@ contains
                   method = input%method
                   operand = input%oper
                   varname = input%variable_name
+                  transformcoef = -999.0_dp
+                  call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
                   iLocType = parse_spatial_location_type(trim(input%location_type))
                   if (iLocType == SPATIAL_LOCATION_INVALID) then
                      iLocType = SPATIAL_LOCATION_ALL
@@ -235,7 +237,7 @@ contains
                call resolvePath(filename, basedir)
                if (index(qid, 'bedlevel') > 0 .and. ibathyfiletype == 1 .and. (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0)) then
                   ! Don't support bedlevel in old *.ext file when there is ALSO a new-format file.
-                  call mess(LEVEL_WARN, 'Bed level info should be defined in IniFieldFile or ExtForceFileNew. Quantity '//trim(qid)//' ignored in external forcing file '''//trim(md_extfile)//'''.')
+                  call mess(LEVEL_WARN, 'Bed level info should be defined in ExtForceFileNew. Quantity '//trim(qid)//' ignored in external forcing file '''//trim(md_extfile)//'''.')
                   cycle
                end if
                success = .true.
