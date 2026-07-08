@@ -30,6 +30,9 @@ namespace dflowfm_io
     class MduDocument
     {
     public:
+        /// @brief Constructs an @ref MduDocument.
+        explicit MduDocument();
+
         /// @brief Loads and validates an MDU file from a stream.
         /// @param in Input stream positioned at the start of the MDU content.
         /// @post GetReport() contains any issues found during loading.

@@ -1,14 +1,12 @@
 #pragma once
 
-#include <dflowfm_io/MduConverter.h>
+#include <dflowfm_io/MduDataConverter.h>
 #include <dflowfm_io/MduSchema.h>
 
 #include <ini/IniData.h>
 #include <ini/IniFormatter.h>
 #include <ini/IniSection.h>
-#include <ini/IniValueConverter.h>
 
-#include <algorithm>
 #include <filesystem>
 #include <format>
 #include <sstream>
@@ -17,37 +15,6 @@
 
 namespace dflowfm_io::test
 {
-
-    inline Value ConvertToValue(const PropertySchema& propSchema)
-    {
-        const auto& str = propSchema.default_value;
-        switch (propSchema.value_type)
-        {
-            case ValueType::Int:
-                return ini::IniValueConverter::FromString<int>(str);
-            case ValueType::Float:
-                return ini::IniValueConverter::FromString<double>(str);
-            case ValueType::IntBool:
-                return ini::IniValueConverter::FromString<bool>(str);
-            case ValueType::Enum: {
-                const auto it = std::find_if(propSchema.enum_values.begin(), propSchema.enum_values.end(),
-                                             [&](const auto& pair) { return pair.second == str; });
-                return EnumValue{it->first};
-            }
-            case ValueType::IntEnum: {
-                const auto val = ini::IniValueConverter::FromString<int>(str);
-                const auto it = std::find_if(propSchema.enum_values.begin(), propSchema.enum_values.end(),
-                                             [&](const auto& pair) { return pair.first == val; });
-                return EnumValue{it->first};
-            }
-            case ValueType::FloatList:
-                return ini::IniValueConverter::FromMultiValueString<double>(str);
-            case ValueType::DateTime:
-                return ini::IniValueConverter::FromString<std::chrono::system_clock::time_point>(str);
-            default:
-                return str;
-        }
-    }
 
     inline std::pair<const SectionSchema*, const PropertySchema*> FirstRequiredProperty()
     {
@@ -108,12 +75,7 @@ namespace dflowfm_io::test
 
     inline MduData MakeCompliantMduData()
     {
-        MduData mduData;
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
-            for (const auto& propSchema : sectionSchema.properties)
-                if (propSchema.required || !propSchema.default_value.empty())
-                    mduData.data_entries[FormatKey(sectionSchema.name, propSchema.key)] = ConvertToValue(propSchema);
-
+        MduData mduData = MduData::CreateFromSchema();
         mduData.data_entries[FormatKey("general", "fileType")] = EnumValue{0};
         mduData.data_entries[FormatKey("general", "fileVersion")] = std::string{"1.09"};
         mduData.data_entries[FormatKey("geometry", "netFile")] = std::filesystem::path{"test_net.nc"};

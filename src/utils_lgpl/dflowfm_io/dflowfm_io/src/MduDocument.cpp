@@ -1,5 +1,5 @@
 #include <dflowfm_io/MduDocument.h>
-#include <dflowfm_io/MduConverter.h>
+#include <dflowfm_io/MduDataConverter.h>
 
 #include <ini/IniFile.h>
 #include <ini/IniParserOptions.h>
@@ -26,6 +26,8 @@ namespace dflowfm_io
             },
     };
 
+    MduDocument::MduDocument() : mduData(MduData::CreateFromSchema()) {}
+
     void MduDocument::Load(std::istream& in)
     {
         if (in.fail())
@@ -35,7 +37,7 @@ namespace dflowfm_io
         iniFile.Load(in);
         ini::IniData& iniData = iniFile.GetData();
 
-        std::pair<MduData, IssueReport> result = MduConverter::Convert(iniData);
+        std::pair<MduData, IssueReport> result = MduDataConverter::Convert(iniData);
         mduData = std::move(result.first);
         issues = std::move(result.second);
     }
@@ -57,7 +59,7 @@ namespace dflowfm_io
         if (out.fail())
             throw std::ios_base::failure("Stream is not in a writable state.");
 
-        ini::IniData iniData = MduConverter::Convert(mduData);
+        ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         ini::IniFile iniFile{mduIniOptions};
         iniFile.SetData(iniData);

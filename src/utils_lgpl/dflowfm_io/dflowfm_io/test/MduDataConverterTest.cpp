@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <dflowfm_io/MduConverter.h>
+#include <dflowfm_io/MduDataConverter.h>
 #include <dflowfm_io/MduSchema.h>
 
 #include "MduTestData.h"
@@ -12,7 +12,7 @@ namespace dflowfm_io::test
     // Fixture
     // -------------------------------------------------------------------------
 
-    class MduConverterTest : public ::testing::Test
+    class MduDataConverterTest : public ::testing::Test
     {
     protected:
         static void SetUpTestSuite()
@@ -38,29 +38,29 @@ namespace dflowfm_io::test
     // Convert IniData → MduData — fully compliant input
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertIniData_FullyCompliantInput_ReportHasNoErrors)
+    TEST_F(MduDataConverterTest, ConvertIniData_FullyCompliantInput_ReportHasNoErrors)
     {
         const ini::IniData iniData = CompliantIniData();
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_FullyCompliantInput_ReportHasNoWarnings)
+    TEST_F(MduDataConverterTest, ConvertIniData_FullyCompliantInput_ReportHasNoWarnings)
     {
         const ini::IniData iniData = CompliantIniData();
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasWarnings());
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_FullyCompliantInput_MduDataIsNotEmpty)
+    TEST_F(MduDataConverterTest, ConvertIniData_FullyCompliantInput_MduDataIsNotEmpty)
     {
         const ini::IniData iniData = CompliantIniData();
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(mduData.data_entries.empty());
     }
@@ -69,14 +69,14 @@ namespace dflowfm_io::test
     // Convert IniData → MduData — validation issues forwarded to report
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertIniData_MissingRequiredProperty_ReportHasError)
+    TEST_F(MduDataConverterTest, ConvertIniData_MissingRequiredProperty_ReportHasError)
     {
         const auto [targetSection, targetProperty] = FirstRequiredProperty();
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).RemoveAllProperties(targetProperty->key);
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_TRUE(report.HasErrors());
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -85,14 +85,14 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find(targetProperty->key), std::string::npos);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_UnknownProperty_ReportHasWarning)
+    TEST_F(MduDataConverterTest, ConvertIniData_UnknownProperty_ReportHasWarning)
     {
         const auto [targetSection, targetProperty] = FirstRequiredProperty();
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).AddProperty("UnknownProperty_XYZ", "value");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_TRUE(report.HasWarnings());
         const Issue* warning = FirstIssue(report, Severity::Warning);
@@ -101,14 +101,14 @@ namespace dflowfm_io::test
         EXPECT_NE(warning->message.find("UnknownProperty_XYZ"), std::string::npos);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_MissingOptionalProperty_ReportHasInfo)
+    TEST_F(MduDataConverterTest, ConvertIniData_MissingOptionalProperty_ReportHasInfo)
     {
         const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault();
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).RemoveAllProperties(targetProperty->key);
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_TRUE(report.HasInfos());
         const Issue* error = FirstIssue(report, Severity::Info);
@@ -121,18 +121,18 @@ namespace dflowfm_io::test
     // Convert IniData → MduData — invalid property value
     // -------------------------------------------------------------------------
 
-    class MduConverterInvalidValueTest : public MduConverterTest, public ::testing::WithParamInterface<ValueType>
+    class MduDataConverterInvalidValueTest : public MduDataConverterTest, public ::testing::WithParamInterface<ValueType>
     {
     };
 
-    TEST_P(MduConverterInvalidValueTest, ConvertIniData_InvalidValue_ReportHasError)
+    TEST_P(MduDataConverterInvalidValueTest, ConvertIniData_InvalidValue_ReportHasError)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(GetParam());
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "##invalid##");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_TRUE(report.HasErrors());
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -141,7 +141,7 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find(targetProperty->key), std::string::npos);
     }
 
-    INSTANTIATE_TEST_SUITE_P(MduConverterTest, MduConverterInvalidValueTest,
+    INSTANTIATE_TEST_SUITE_P(MduDataConverterTest, MduDataConverterInvalidValueTest,
                              // Note: String and Path types are excluded because any raw string
                              // is a valid value for those types.
                              ::testing::Values(ValueType::Int, ValueType::Float, ValueType::IntBool, ValueType::Enum,
@@ -151,42 +151,42 @@ namespace dflowfm_io::test
     // Convert IniData → MduData — absent property with default falls back to schema default
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertIniData_AbsentIntPropertyWithDefault_UsesCorrectDefaultValue)
+    TEST_F(MduDataConverterTest, ConvertIniData_AbsentIntPropertyWithDefault_UsesCorrectDefaultValue)
     {
         const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Int);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).RemoveAllProperties(targetProperty->key);
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<int>(key), std::stoi(targetProperty->default_value));
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_AbsentFloatPropertyWithDefault_UsesCorrectDefaultValue)
+    TEST_F(MduDataConverterTest, ConvertIniData_AbsentFloatPropertyWithDefault_UsesCorrectDefaultValue)
     {
         const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Float);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).RemoveAllProperties(targetProperty->key);
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_DOUBLE_EQ(mduData.getValueAs<double>(key), std::stod(targetProperty->default_value));
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_AbsentEnumPropertyWithDefault_UsesCorrectDefaultValue)
+    TEST_F(MduDataConverterTest, ConvertIniData_AbsentEnumPropertyWithDefault_UsesCorrectDefaultValue)
     {
         const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Enum);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).RemoveAllProperties(targetProperty->key);
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         const auto it =
@@ -201,14 +201,14 @@ namespace dflowfm_io::test
     // Convert IniData → MduData — valid property values per type
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidStringValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidStringValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::String);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "some_string");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -216,14 +216,14 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<std::string>(key), "some_string");
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidIntValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidIntValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Int);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "42");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -231,14 +231,14 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<int>(key), 42);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidFloatValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidFloatValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Float);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "3.14");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -246,14 +246,14 @@ namespace dflowfm_io::test
         EXPECT_DOUBLE_EQ(mduData.getValueAs<double>(key), 3.14);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidIntBoolValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidIntBoolValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::IntBool);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "1");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -261,14 +261,14 @@ namespace dflowfm_io::test
         EXPECT_TRUE(mduData.getValueAs<bool>(key));
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidPathValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidPathValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Path);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "some/path/file.nc");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -276,7 +276,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<std::filesystem::path>(key), std::filesystem::path("some/path/file.nc"));
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidEnumValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidEnumValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Enum);
 
@@ -284,7 +284,7 @@ namespace dflowfm_io::test
         const auto& [number, name] = *targetProperty->enum_values.begin();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, name);
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -292,7 +292,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, number);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidIntEnumValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidIntEnumValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::IntEnum);
 
@@ -300,7 +300,7 @@ namespace dflowfm_io::test
         const auto& [number, name] = *targetProperty->enum_values.begin();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, std::to_string(number));
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -308,14 +308,14 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, number);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidPathListValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidPathListValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::PathList);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "path/a.nc path/b.nc path/c.nc");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -327,14 +327,14 @@ namespace dflowfm_io::test
         EXPECT_EQ(paths[2], std::filesystem::path("path/c.nc"));
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidFloatListValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidFloatListValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::FloatList);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "1.0 2.0 3.0");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -346,14 +346,14 @@ namespace dflowfm_io::test
         EXPECT_DOUBLE_EQ(values[2], 3.0);
     }
 
-    TEST_F(MduConverterTest, ConvertIniData_ValidDateTimeValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidDateTimeValue_ConvertsSuccessfully)
     {
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::DateTime);
 
         ini::IniData iniData = CompliantIniData();
         iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "20230115120000");
 
-        const auto [mduData, report] = MduConverter::Convert(iniData);
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
@@ -368,20 +368,20 @@ namespace dflowfm_io::test
     // Convert MduData → IniData — fully compliant input
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_ReturnsNonEmptyIniData)
+    TEST_F(MduDataConverterTest, ConvertMduData_FullyCompliantInput_ReturnsNonEmptyIniData)
     {
         const MduData mduData = CompliantMduData();
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         EXPECT_FALSE(iniData.empty());
     }
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_AllPropertiesPresentInIniData)
+    TEST_F(MduDataConverterTest, ConvertMduData_FullyCompliantInput_AllPropertiesPresentInIniData)
     {
         const MduData mduData = CompliantMduData();
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         for (const auto& [key, value] : mduData.data_entries)
         {
@@ -394,7 +394,7 @@ namespace dflowfm_io::test
         }
     }
 
-    TEST_F(MduConverterTest, ConvertMduData_PropertyAbsentInMduData_OmittedFromIniData)
+    TEST_F(MduDataConverterTest, ConvertMduData_PropertyAbsentInMduData_OmittedFromIniData)
     {
         const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault();
 
@@ -402,7 +402,7 @@ namespace dflowfm_io::test
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         mduData.data_entries.erase(key);
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         ASSERT_TRUE(iniData.HasSection(targetSection->name));
         EXPECT_FALSE(iniData.GetSection(targetSection->name).HasProperty(targetProperty->key))
@@ -410,11 +410,11 @@ namespace dflowfm_io::test
             << targetProperty->key;
     }
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_PropertiesInSchemaOrder)
+    TEST_F(MduDataConverterTest, ConvertMduData_FullyCompliantInput_PropertiesInSchemaOrder)
     {
         const MduData mduData = CompliantMduData();
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         std::size_t previousIndex = 0;
         for (const auto& section : iniData)
@@ -442,60 +442,36 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Convert MduData → IniData — missing required property throws
-    // -------------------------------------------------------------------------
-
-    TEST_F(MduConverterTest, ConvertMduData_MissingRequiredProperty_ThrowsLogicError)
-    {
-        const auto [targetSection, targetProperty] = FirstRequiredProperty();
-
-        MduData mduData = CompliantMduData();
-        const std::string key = FormatKey(targetSection->name, targetProperty->key);
-        mduData.data_entries.erase(key);
-
-        try
-        {
-            MduConverter::Convert(mduData);
-            FAIL() << "Expected std::logic_error";
-        }
-        catch (const std::logic_error& e)
-        {
-            EXPECT_NE(std::string(e.what()).find(targetSection->name), std::string::npos);
-            EXPECT_NE(std::string(e.what()).find(targetProperty->key), std::string::npos);
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // Convert MduData → IniData — comments
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_FirstSectionHasCommentBlock)
+    TEST_F(MduDataConverterTest, ConvertMduData_FullyCompliantInput_FirstSectionHasCommentBlock)
     {
         const MduData mduData = CompliantMduData();
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         ASSERT_FALSE(iniData.empty());
         const auto& firstSection = *iniData.begin();
         EXPECT_FALSE(firstSection.GetComments().empty());
     }
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_NonFirstSectionsHaveNoCommentBlock)
+    TEST_F(MduDataConverterTest, ConvertMduData_FullyCompliantInput_NonFirstSectionsHaveNoCommentBlock)
     {
         const MduData mduData = CompliantMduData();
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         ASSERT_GT(std::distance(iniData.begin(), iniData.end()), 1);
         for (auto it = std::next(iniData.begin()); it != iniData.end(); ++it)
             EXPECT_TRUE(it->GetComments().empty()) << "Unexpected comment block on section: " << it->GetName();
     }
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_AllPropertiesHaveComment)
+    TEST_F(MduDataConverterTest, ConvertMduData_FullyCompliantInput_AllPropertiesHaveComment)
     {
         const MduData mduData = CompliantMduData();
 
-        const ini::IniData iniData = MduConverter::Convert(mduData);
+        const ini::IniData iniData = MduDataConverter::Convert(mduData);
 
         for (const auto& section : iniData)
             for (const auto& property : section)
@@ -507,14 +483,14 @@ namespace dflowfm_io::test
     // Round-trip: IniData → MduData → IniData
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, RoundTrip_IniToMduToIni_PropertyValuesPreserved)
+    TEST_F(MduDataConverterTest, RoundTrip_IniToMduToIni_PropertyValuesPreserved)
     {
         ini::IniData original = CompliantIniData();
 
-        const auto [mduData, report] = MduConverter::Convert(original);
+        const auto [mduData, report] = MduDataConverter::Convert(original);
         ASSERT_FALSE(report.HasErrors());
 
-        const ini::IniData roundTripped = MduConverter::Convert(mduData);
+        const ini::IniData roundTripped = MduDataConverter::Convert(mduData);
 
         for (const auto& sectionSchema : MDU_SCHEMA.sections)
         {

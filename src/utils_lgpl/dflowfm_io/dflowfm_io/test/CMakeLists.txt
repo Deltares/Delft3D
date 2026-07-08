@@ -13,13 +13,14 @@ enable_testing()
 
 add_executable(dflowfm_io_tests
     MduTestData.h
-    
+
     IssueReportTest.cpp
-    MduConverterTest.cpp
+    MduDataConverterTest.cpp
     MduDataTest.cpp
     MduDocumentTest.cpp
     MduSchemaTest.cpp
     MduValidatorTest.cpp
+    MduValueConverterTest.cpp
     StringUtilsTest.cpp
 )
 

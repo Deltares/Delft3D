@@ -66,6 +66,24 @@ public class MduApiTest
     }
 
     [Test]
+    public void SaveToString_NewDocument_ContainsSchemaDefaults()
+    {
+        using MduApi api = new();
+
+        string savedContent = api.SaveToString();
+
+        IReadOnlyList<string> actualLines = NormalizeMduLines(savedContent).ToArray();
+        Assert.That(actualLines, Does.Contain("fileType = modelDef"));
+        Assert.That(actualLines, Does.Contain("program = D-Flow FM"));
+        Assert.That(actualLines, Does.Contain("bedLevUni = -5.0"));
+        Assert.That(actualLines, Does.Contain("bedLevType = 3"));
+        Assert.That(actualLines, Does.Contain("useCaching = 1"));
+        Assert.That(actualLines, Does.Contain("cflMax = 0.7"));
+        Assert.That(actualLines, Does.Contain("cdBreakPoints = 0.00063 0.00723"));
+        Assert.That(actualLines, Does.Contain("refDate = 20010101"));
+    }
+
+    [Test]
     public void GetInt_KnownKey_ReturnsExpectedValue()
     {
         using MduApi api = CreateWithValidContent();
@@ -73,6 +91,14 @@ public class MduApiTest
         int result = api.GetInt("geometry.kmx");
 
         Assert.That(result, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void GetInt_NewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetInt("geometry.kmx"), Is.EqualTo(0));
     }
 
     [Test]
@@ -112,6 +138,14 @@ public class MduApiTest
     }
 
     [Test]
+    public void GetDouble_NewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetDouble("numerics.cflmax"), Is.EqualTo(0.7));
+    }
+
+    [Test]
     public void GetDouble_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
@@ -146,6 +180,14 @@ public class MduApiTest
     }
 
     [Test]
+    public void GetBool_NewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetBool("geometry.usecaching"), Is.True);
+    }
+
+    [Test]
     public void GetBool_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
@@ -175,6 +217,14 @@ public class MduApiTest
     public void GetString_KnownKey_ReturnsExpectedValue()
     {
         using MduApi api = CreateWithValidContent();
+
+        Assert.That(api.GetString("general.program"), Is.EqualTo("D-Flow FM"));
+    }
+
+    [Test]
+    public void GetString_NewDocument_ReturnsDefault()
+    {
+        using MduApi api = new();
 
         Assert.That(api.GetString("general.program"), Is.EqualTo("D-Flow FM"));
     }
@@ -362,6 +412,14 @@ public class MduApiTest
     }
 
     [Test]
+    public void GetDoubleList_NewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetDoubleList("wind.cdbreakpoints"), Is.EqualTo([0.00063, 0.00723]));
+    }
+
+    [Test]
     public void GetDoubleList_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
@@ -429,6 +487,22 @@ public class MduApiTest
     }
 
     [Test]
+    public void GetEnum_StringEnumNewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetEnum("time.tunit"), Is.EqualTo(3));
+    }
+
+    [Test]
+    public void GetEnum_IntEnumNewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetEnum("numerics.timesteptype"), Is.EqualTo(2));
+    }
+
+    [Test]
     public void GetEnum_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
@@ -480,6 +554,14 @@ public class MduApiTest
         DateTime result = api.GetDateTime("time.refdate");
 
         Assert.That(result, Is.EqualTo(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+    }
+
+    [Test]
+    public void GetDateTime_NewDocument_ReturnsSchemaDefault()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetDateTime("time.refdate"), Is.EqualTo(new DateTime(2001, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
     }
 
     [Test]

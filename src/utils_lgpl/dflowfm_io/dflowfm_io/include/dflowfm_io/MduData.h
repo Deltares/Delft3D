@@ -13,15 +13,21 @@ namespace dflowfm_io
 {
     /// @brief Stores the typed property values of an MDU model definition.
     ///
-    /// Keys are fully qualified in the form "section.property", stored in lowercase, 
-    /// and all lookups are case-insensitive. Values are stored as @ref Value variants 
+    /// Keys are fully qualified in the form "section.property", stored in lowercase,
+    /// and all lookups are case-insensitive. Values are stored as @ref Value variants
     /// whose type is determined by the @ref MduSchema.
     struct MduData
     {
+        /// @brief Creates an @ref MduData populated with the default values defined by the MDU schema.
+        /// @return An @ref MduData containing one entry per property that defines a default value.
+        /// @throws std::logic_error if a property's default value cannot be converted to its
+        ///         declared @ref ValueType.
+        static MduData CreateFromSchema();
+
         /// @brief Returns true if a value is stored for the given key.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
         bool hasValue(std::string_view key) const
-        {
+        { 
             return data_entries.contains(dflowfm_io::tolower(key));
         }
 

@@ -14,7 +14,7 @@ namespace dflowfm_io
 {
     /// @brief Converts between the parsed INI file representation and the typed @ref MduData.
     ///
-    /// MduConverter provides two conversion directions:
+    /// MduDataConverter provides two conversion directions:
     ///
     /// - **IniData → MduData**: Validates the parsed INI file representation and converts
     ///   it to a typed @ref MduData. All issues found during validation and conversion are
@@ -22,7 +22,7 @@ namespace dflowfm_io
     ///
     /// - **MduData → IniData**: Converts a typed @ref MduData back to an @ref ini::IniData,
     ///   in the section and property order defined by the MDU schema.
-    class MduConverter
+    class MduDataConverter
     {
     public:
         /// @brief Converts the parsed INI file representation to a typed @ref MduData.

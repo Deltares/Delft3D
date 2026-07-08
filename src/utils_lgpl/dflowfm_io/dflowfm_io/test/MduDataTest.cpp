@@ -2,6 +2,8 @@
 
 #include <dflowfm_io/MduData.h>
 
+#include "MduTestData.h"
+
 namespace dflowfm_io::test
 {
 
@@ -25,6 +27,73 @@ namespace dflowfm_io::test
             return data;
         }
     } // namespace
+
+    // -------------------------------------------------------------------------
+    // CreateFromSchema
+    // -------------------------------------------------------------------------
+
+    TEST(MduDataTest, CreateFromSchema_PopulatesDataEntries)
+    {
+        const MduData data = MduData::CreateFromSchema();
+
+        EXPECT_FALSE(data.data_entries.empty());
+    }
+
+    TEST(MduDataTest, CreateFromSchema_ContainsAllPropertiesWithDefaults)
+    {
+        const MduData data = MduData::CreateFromSchema();
+
+        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+            for (const auto& propertySchema : sectionSchema.properties)
+                if (!propertySchema.default_value.empty())
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_TRUE(data.hasValue(key));
+                }
+    }
+
+    TEST(MduDataTest, CreateFromSchema_DoesNotContainPropertiesWithoutDefaults)
+    {
+        const MduData data = MduData::CreateFromSchema();
+
+        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+            for (const auto& propertySchema : sectionSchema.properties)
+                if (propertySchema.default_value.empty())
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_FALSE(data.hasValue(key));
+                }
+    }
+
+    TEST(MduDataTest, CreateFromSchema_IntPropertyHasCorrectDefaultValue)
+    {
+        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Int);
+        const std::string key = FormatKey(targetSection->name, targetProperty->key);
+
+        const MduData data = MduData::CreateFromSchema();
+
+        EXPECT_EQ(data.getValueAs<int>(key), std::stoi(targetProperty->default_value));
+    }
+
+    TEST(MduDataTest, CreateFromSchema_FloatPropertyHasCorrectDefaultValue)
+    {
+        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Float);
+        const std::string key = FormatKey(targetSection->name, targetProperty->key);
+
+        const MduData data = MduData::CreateFromSchema();
+
+        EXPECT_DOUBLE_EQ(data.getValueAs<double>(key), std::stod(targetProperty->default_value));
+    }
+
+    TEST(MduDataTest, CreateFromSchema_StringPropertyHasCorrectDefaultValue)
+    {
+        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::String);
+        const std::string key = FormatKey(targetSection->name, targetProperty->key);
+
+        const MduData data = MduData::CreateFromSchema();
+
+        EXPECT_EQ(data.getValueAs<std::string>(key), targetProperty->default_value);
+    }
 
     // -------------------------------------------------------------------------
     // hasValue

@@ -10,24 +10,11 @@ from dflowfm_io import MduDocument
 
 MDU_PATH = os.path.join(os.path.dirname(__file__), "tide-2.mdu")
 
-MDU_MINIMAL_REQUIRED_ONLY = [
-    "[general]",
-    "fileType      = modelDef",
-    "fileVersion   = 1.09",
-    "",
-    "[geometry]",
-    "NetFile       = simplechannel_net.nc",
-]
-
 def _loaded_doc(path=MDU_PATH):
     doc = MduDocument()
     doc.load_from_file(path)
     return doc
 
-def _minimal_doc():
-    doc = MduDocument()
-    doc.load_from_lines(MDU_MINIMAL_REQUIRED_ONLY)
-    return doc
 
 class TestMduModel(unittest.TestCase):
 
@@ -133,38 +120,38 @@ class TestMduModel(unittest.TestCase):
     # --- get: default values ---
 
     def test_get_int_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         self.assertEqual(doc.model.get_int("geometry.kmx"), 0)
 
     def test_get_double_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         self.assertAlmostEqual(doc.model.get_double("numerics.cflmax"), 0.7)
 
     def test_get_bool_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         self.assertTrue(doc.model.get_bool("geometry.usecaching"))
 
     def test_get_string_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         self.assertEqual(doc.model.get_string("general.program"), "D-Flow FM")
 
     def test_get_intenum_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         self.assertEqual(doc.model.get_enum("general.autoStart"), 0)
 
     def test_get_enum_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         self.assertEqual(doc.model.get_enum("numerics.flowSolver"), 0)
 
     def test_get_double_list_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         result = doc.model.get_double_list("wind.cdbreakpoints")
         self.assertEqual(len(result), 2)
         self.assertAlmostEqual(result[0], 0.00063)
         self.assertAlmostEqual(result[1], 0.00723)
 
     def test_get_datetime_default_value(self):
-        doc = _minimal_doc()
+        doc = MduDocument()
         result = doc.model.get_datetime("time.refdate")
         self.assertEqual(result, datetime(2001, 1, 1, tzinfo=timezone.utc))
 
