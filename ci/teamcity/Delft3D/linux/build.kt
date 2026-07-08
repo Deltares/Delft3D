@@ -20,7 +20,7 @@ object LinuxBuild : BuildType({
         TemplateMonitorPerformance,
         TemplateFailureCondition,
         TemplateDockerRegistry,
-        TemplatePullRequestConcurrency
+        TemplateBuildConcurrency
     )
 
     name = "Build"

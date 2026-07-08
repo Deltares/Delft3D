@@ -23,7 +23,7 @@ object WindowsUnitTest : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplatePullRequestConcurrency
+        TemplateBuildConcurrency
     )
 
     params {

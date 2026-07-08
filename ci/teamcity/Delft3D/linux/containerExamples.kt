@@ -20,7 +20,7 @@ object LinuxRunAllContainerExamples : BuildType({
         TemplateDockerRegistry,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplatePullRequestConcurrency
+        TemplateBuildConcurrency
     )
 
     vcs {

@@ -19,7 +19,7 @@ object Trigger : BuildType({
         TemplateDetermineProduct,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplatePullRequestConcurrency
+        TemplateBuildConcurrency
     )
 
     name = "Trigger"

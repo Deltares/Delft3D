@@ -20,7 +20,7 @@ object LinuxConanPackages : BuildType({
         TemplateMonitorPerformance,
         TemplateFailureCondition,
         TemplateDockerRegistry,
-        TemplatePullRequestConcurrency
+        TemplateBuildConcurrency
     )
 
     name = "Conan packages"

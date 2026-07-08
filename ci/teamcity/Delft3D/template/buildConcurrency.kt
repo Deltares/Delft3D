@@ -3,7 +3,7 @@ package Delft3D.template
 import jetbrains.buildServer.configs.kotlin.Template
 import jetbrains.buildServer.configs.kotlin.BuildsLimitingMode
 
-object TemplatePullRequestConcurrency : Template({
+object TemplateBuildConcurrency : Template({
     name = "Pull Request Concurrency Settings"
 
     maxRunningBuildsPerBranch = """

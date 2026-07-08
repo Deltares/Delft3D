@@ -21,7 +21,7 @@ object WindowsTest : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateDockerRegistry,
-        TemplatePullRequestConcurrency
+        TemplateBuildConcurrency
     )
 
     name = "Test"

@@ -49,7 +49,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
-    template(TemplatePullRequestConcurrency)
+    template(TemplateBuildConcurrency)
 
     subProject {
         id("Linux")
