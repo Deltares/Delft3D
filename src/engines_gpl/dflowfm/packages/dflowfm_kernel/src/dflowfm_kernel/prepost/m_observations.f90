@@ -1089,26 +1089,36 @@ contains
    !! Set intobs to 1 as .pli files are interpolated (not snapped to the grid).
    subroutine loadObservations_from_pli(filename)
       
-      use m_filez,   only: oldfil
+      use m_filez,   only: oldfil, doclose
       use m_polygon
       use m_reapol_nampli, only: reapol_nampli
-      
 
       implicit none
       character(len=*), intent(in) :: filename
       
       ! locals
-      integer                       :: minp,istat, ipli 
+      integer                       :: mpli,istat, ipli, ipnt 
       character(5)                  :: numstr 
 
-      call oldfil(minp, filename)
+      call oldfil(mpli, filename)
       ipli = 0
-      call reapol_nampli(minp, 0, 1, ipli)
+      call reapol_nampli(mpli, 0, 1, ipli)
       
-      do istat = 1, npl
-          write(numstr,'(i4.4)') istat
-          call addObservation(xpl(istat), ypl(istat), trim(nampli(1))//'_'//numstr)
-          intobs(numobs) = 1
+      ipli  = 1
+      istat = 1
+      do ipnt = 1, npl
+          if (xpl(ipnt) /=dmiss) then
+                write(numstr,'(i4.4)') istat
+                call addObservation(xpl(ipnt), ypl(ipnt), trim(nampli(ipli))//'_'//numstr)
+                intobs(numobs) = 1
+                istat          = istat + 1
+          else
+              istat = 1
+              ipli  = ipli + 1
+          end if
+          
       end do
+      
+       call doclose(mpli)
    end subroutine loadObservations_from_pli
 end module m_observations

@@ -85,11 +85,6 @@ contains
          return
       end if
 
-      if (file_name(len_trim(file_name) - 3:) == '.ini') then
-         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '//trim(file_name)//' to the external forcings file.'
-         call warn_flush()
-      end if
-
       res = .true.
 
       call tree_create(file_name, bnd_ptr)
@@ -1393,8 +1388,13 @@ contains
                end if
             end if
 
-            property_name = trim(const_name_with_prefix)//'Delta'
+            ! Try `{constituent}` first, and if we can't find that property try `{constituent}Delta` instead.
+            property_name = const_name_with_prefix
             call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+            if (.not. is_read) then
+               property_name = trim(const_name_with_prefix)//'Delta'
+               call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+            end if
 
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
