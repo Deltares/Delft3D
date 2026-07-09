@@ -437,7 +437,7 @@ contains
                   end if
                end do
 
-               if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_wstar) = dmiss
                   valobs(i, IPNT_obukhov_length) = dmiss
                   valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss

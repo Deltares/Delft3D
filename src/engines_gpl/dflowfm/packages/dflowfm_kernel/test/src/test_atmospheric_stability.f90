@@ -9,14 +9,14 @@ contains
 
    !$f90tw TESTCODE(TEST, test_atmospheric_stability, test_compute_scales_and_fluxes_moninobukhov_true, test_compute_scales_and_fluxes_moninobukhov_true,
    subroutine test_compute_scales_and_fluxes_moninobukhov_true() bind(C)
-      real(kind=dp), allocatable :: wind_velocity_u(:), wind_velocity_v(:), air_temperature(:), dew_point_temperature(:), &
-                                    air_pressure(:), charnock(:), surface_temperature(:)
-      type(t_scales), allocatable :: scaling_parameter_array(:)
-      type(t_fluxes), allocatable :: flux_array(:)
-      real(kind=dp), allocatable :: wind_stress_u(:), wind_stress_v(:)
-      real(kind=dp), allocatable :: latent_heat_flux(:), sensible_heat_flux(:)
-      real(kind=dp), allocatable :: u_star(:), t_star(:), q_star(:), w_star(:), z0_momentum(:), z0_heat(:), z0_humidity(:), &
-                                    obukhov_length(:), richardson_number(:), c_d(:), c_h(:), c_e(:)
+      real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+                                    air_pressure, charnock, surface_temperature
+      type(t_scales), allocatable, dimension(:) :: scaling_parameter_array
+      type(t_fluxes), allocatable, dimension(:) :: flux_array
+      real(kind=dp), allocatable, dimension(:) :: wind_stress_u, wind_stress_v
+      real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
+      real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
+                                    obukhov_length, richardson_number, c_d, c_h, c_e
       type(t_options) :: options
       
       options%include_stability = .true.
@@ -103,14 +103,14 @@ contains
 
    !$f90tw TESTCODE(TEST, test_atmospheric_stability, test_compute_scales_and_fluxes_moninobukhov_false, test_compute_scales_and_fluxes_moninobukhov_false,
    subroutine test_compute_scales_and_fluxes_moninobukhov_false() bind(C)
-      real(kind=dp), allocatable :: wind_velocity_u(:), wind_velocity_v(:), air_temperature(:), dew_point_temperature(:), &
-                                    air_pressure(:), charnock(:), surface_temperature(:)
-      type(t_scales), allocatable :: scaling_parameter_array(:)
-      type(t_fluxes), allocatable :: flux_array(:)
-      real(kind=dp), allocatable :: wind_stress_u(:), wind_stress_v(:)
-      real(kind=dp), allocatable :: latent_heat_flux(:), sensible_heat_flux(:)
-      real(kind=dp), allocatable :: u_star(:), t_star(:), q_star(:), w_star(:), z0_momentum(:), z0_heat(:), z0_humidity(:), &
-                                    obukhov_length(:), richardson_number(:), c_d(:), c_h(:), c_e(:)
+      real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+                                    air_pressure, charnock, surface_temperature
+      type(t_scales), allocatable, dimension(:) :: scaling_parameter_array
+      type(t_fluxes), allocatable, dimension(:) :: flux_array
+      real(kind=dp), allocatable, dimension(:) :: wind_stress_u, wind_stress_v
+      real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
+      real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
+                                    obukhov_length, richardson_number, c_d, c_h, c_e
       real(kind=dp) :: tolerance = 1e-5_dp
       type(t_options) :: options
       
@@ -198,14 +198,14 @@ contains
 
    !$f90tw TESTCODE(TEST, test_atmospheric_stability, test_compute_scales_and_fluxes_moninobukhov_free_convection, test_compute_scales_and_fluxes_moninobukhov_free_convection,
    subroutine test_compute_scales_and_fluxes_moninobukhov_free_convection() bind(C)
-      real(kind=dp), allocatable :: wind_velocity_u(:), wind_velocity_v(:), air_temperature(:), dew_point_temperature(:), &
-                                    air_pressure(:), charnock(:), surface_temperature(:)
-      type(t_scales), allocatable :: scaling_parameter_array(:)
-      type(t_fluxes), allocatable :: flux_array(:)
-      real(kind=dp), allocatable :: wind_stress_u(:), wind_stress_v(:)
-      real(kind=dp), allocatable :: latent_heat_flux(:), sensible_heat_flux(:)
-      real(kind=dp), allocatable :: u_star(:), t_star(:), q_star(:), w_star(:), z0_momentum(:), z0_heat(:), z0_humidity(:), &
-                                    obukhov_length(:), richardson_number(:), c_d(:), c_h(:), c_e(:)
+      real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+                                    air_pressure, charnock, surface_temperature
+      type(t_scales), allocatable, dimension(:) :: scaling_parameter_array
+      type(t_fluxes), allocatable, dimension(:) :: flux_array
+      real(kind=dp), allocatable, dimension(:) :: wind_stress_u, wind_stress_v
+      real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
+      real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
+                                    obukhov_length, richardson_number, c_d, c_h, c_e
       type(t_options) :: options
       
       options%include_stability = .true.

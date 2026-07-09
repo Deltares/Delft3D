@@ -1535,23 +1535,23 @@ contains
                     'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                     nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WSTAR, &
-                    'Wrihis_windstress', 'w_star', 'Free convective velocity scale', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'w_star', 'Free convective velocity scale', '', &
               'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_OBUKHOV_LENGTH, &
-                    'Wrihis_windstress', 'obukhov_length', 'Obukhov length', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
               'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'Wrihis_windstress', 'c_d', 'Bulk transfer coefficient of momentum flux', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'c_d', 'Bulk transfer coefficient of momentum flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'Wrihis_windstress', 'c_h', 'Bulk transfer coefficient of sensible heat flux', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'c_h', 'Bulk transfer coefficient of sensible heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'Wrihis_windstress', 'c_e', 'Bulk transfer coefficient of latent heat flux', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'c_e', 'Bulk transfer coefficient of latent heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
@@ -2802,7 +2802,7 @@ contains
             end if
          end if
          
-         if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WSTAR), valobs(:, IPNT_wstar))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBUKHOV_LENGTH), valobs(:, IPNT_obukhov_length))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TRANSFER_COEFF_MOMENTUM), valobs(:, IPNT_TRANSFER_COEFF_MOMENTUM))
