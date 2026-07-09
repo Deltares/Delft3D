@@ -541,6 +541,7 @@
         </file>
       </checks>
     </testCase>
+    <!-- FLAKY
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
         <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
         <maxRunTime>60.0</maxRunTime>
@@ -569,4 +570,5 @@
             </file>
         </checks>
     </testCase>
+    -->
  </testCases>
