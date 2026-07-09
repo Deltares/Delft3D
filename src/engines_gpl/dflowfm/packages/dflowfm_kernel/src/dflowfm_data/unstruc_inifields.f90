@@ -1958,7 +1958,7 @@ contains
       use messagehandling, only: mess, LEVEL_WARN
       use m_flow, only: sa1
       use m_flowparameters, only: jasal
-      use m_transport, only: const_names, ISED1
+      use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
       use m_fm_wq_processes, only: wqbotnames, wqbot
@@ -1983,7 +1983,8 @@ contains
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=20) :: tracunit
       integer :: iconst, itrac, isednum, iwqbot, janew, iostat
-
+      integer :: indx !< Index of the quantity.
+      
       target_array_3d => null()
       first_index = 1
       target_location_type = UNC_LOC_S
