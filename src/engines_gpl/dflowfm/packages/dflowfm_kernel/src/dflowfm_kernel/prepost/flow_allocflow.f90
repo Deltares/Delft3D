@@ -90,7 +90,7 @@ contains
                         qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
+      use m_turbulence, only: potential_density, in_situ_density, difwws, difwws_total, vicwwu_total, vicwws_total, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
@@ -880,10 +880,16 @@ contains
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
+         call realloc(vicwwu_total, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwwu_total(lnkx)', ierr, lnkx)
          call realloc(vicwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwws(ndkx)', ierr, ndkx)
+         call realloc(vicwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwws_total(ndkx)', ierr, ndkx)
          call realloc(difwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('difwws(ndkx)', ierr, ndkx)
+         call realloc(difwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('difwws_total(ndkx)', ierr, ndkx)
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
