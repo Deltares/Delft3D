@@ -403,7 +403,7 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 
 | Keyword | Description | Default | Supported values | Unit | Status |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `icdTyp` | Wind drag coefficient type. | `2` | <ul><li>**`1`**: Constant</li><li>**`2`**: Smith&Banke (2 pts)</li><li>**`3`**: Smith&Banke (3 pts)</li><li>**`4`**: Charnock 1955</li><li>**`5`**: Hwang 2005</li><li>**`6`**: Wuest 2005</li><li>**`7`**: Hersbach 2011 (2 pts)</li><li>**`8`**: Charnock+viscous</li><li>**`9`**: Garratt 1977</li></ul> |  |  |
+| `icdTyp` | Wind drag coefficient type. | `2` | <ul><li>**`0`**: None</li><li>**`1`**: Constant</li><li>**`2`**: Smith&Banke (2 pts)</li><li>**`3`**: Smith&Banke (3 pts)</li><li>**`4`**: Charnock 1955</li><li>**`5`**: Hwang 2005</li><li>**`6`**: Wuest 2005</li><li>**`7`**: Hersbach 2011 (2 pts)</li><li>**`8`**: Charnock+viscous</li><li>**`9`**: Garratt 1977</li></ul> |  |  |
 | `cdBreakPoints` | Wind drag breakpoints. | `0.00063 0.00723` |  | [-] |  |
 | `windSpeedBreakpoints` | Wind speed breakpoints. | `0.0 100.0` |  | [m/s] |  |
 | `rhoAir` | Air density. | `1.2` |  | [kg/m³] |  |

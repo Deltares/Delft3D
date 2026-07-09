@@ -2778,6 +2778,7 @@
                     "value_type": "intenum",
                     "description": "Wind drag coefficient type.",
                     "enum_values": {
+                        "0": "None",
                         "1": "Constant",
                         "2": "Smith&Banke (2 pts)",
                         "3": "Smith&Banke (3 pts)",
