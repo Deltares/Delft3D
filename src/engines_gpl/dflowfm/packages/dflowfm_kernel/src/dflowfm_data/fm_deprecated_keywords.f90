@@ -28,6 +28,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'sigmaGrowthFactor', DEPRECATED, 'Use zLayerGrowthFactor instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterMethod', DEPRECATED, 'Once the keyword is removed/becomes obsolete, the "allNetlinksLoop" method will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterTolerance', DEPRECATED, 'Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'VertplizFile', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'tSigma', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterSal', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterTem', DEPRECATED, 'Use maxItVerticalForester instead.')
