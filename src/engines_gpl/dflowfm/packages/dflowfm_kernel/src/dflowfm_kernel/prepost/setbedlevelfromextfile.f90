@@ -240,9 +240,7 @@ contains
                   call resolvePath(filename, basedir)
                end if
                if (index(qid, 'bedlevel') > 0 .and. ibathyfiletype == 1 .and. (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0)) then
-                  ! Don't support bedlevel in old *.ext file when there is ALSO a new-format file.
-                  call mess(LEVEL_WARN, 'Bed level info should be defined in ExtForceFileNew. Quantity '//trim(qid)//' ignored in external forcing file '''//trim(md_extfile)//'''.')
-                  cycle
+                  call mess(LEVEL_WARN, 'Bed level info should be defined in ExtForceFileNew.')
                end if
                success = .true.
                if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype /= 1 .and. iLocType == SPATIAL_LOCATION_1D)) then
