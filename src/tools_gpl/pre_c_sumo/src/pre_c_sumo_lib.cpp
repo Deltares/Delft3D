@@ -165,10 +165,11 @@ namespace pre_c_sumo
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
             waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-            convertNFToSourcesSinks(csumo_settings.value());
+            ConnectedSinkSources connected_sink_sources =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
 
-            sendSourcesSinksToFF(participant, sources_sinks);
-            // connected_sink_sources.write_to_precice(participant, "sources_sink_nodes", sources_sinks.precice_ids);
+            // sendSourcesSinksToFF(participant, sources_sinks);
+            connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;

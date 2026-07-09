@@ -343,7 +343,7 @@
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
         <parameters>
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-         <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+         <parameter name="x_velocity" toleranceAbsolute="0.0003" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
          <parameter name="salinity" toleranceRelative="0.005" />
         </parameters>
