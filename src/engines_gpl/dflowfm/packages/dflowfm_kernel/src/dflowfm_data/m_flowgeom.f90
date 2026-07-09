@@ -132,6 +132,7 @@ module m_flowgeom
    integer, dimension(:, :), allocatable, target :: ln !< [-] 1D link (2,*) node   administration, 1=nd1,  2=nd2   linker en rechter celnr {"shape": [2, "lnkx"]}
    integer, dimension(:, :), allocatable, target :: LLkkk !< [-]    Link Link admin (5,*) , 1=lowL 2=hihL, 3=leftk, 4= midk, 5=rightk {"shape": [5, "lnx"]}
    integer, dimension(:, :), allocatable, target :: lncn !< [-] 2D link (2,*) corner administration, 1=nod1, 2=nod2  linker en rechter netnr {"shape": [2, "lnkx"]}
+   ! use the LINK_* parameters defined in the network_data module to set and compare values in the kcu array
    integer, dimension(:), allocatable, target :: kcu !< [-] link code, 1=1D link, 2=2D link, -1= bc 1D, -2=bc 2D, 3=lateral_1d2d_link, 4=longitudinal_1d2d_link, 5=street_inlet_1d2d_link, 7=roof_gutter_1d2d_link {"shape": ["lnx"]}
    integer, dimension(:), allocatable :: Linkdried !< [-] latest dried links
 
