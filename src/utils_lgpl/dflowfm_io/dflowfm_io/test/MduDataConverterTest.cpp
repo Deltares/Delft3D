@@ -2,6 +2,7 @@
 
 #include <dflowfm_io/MduDataConverter.h>
 #include <dflowfm_io/MduSchema.h>
+#include <dflowfm_io/StringUtils.h>
 
 #include "MduTestData.h"
 

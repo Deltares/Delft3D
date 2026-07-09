@@ -9,15 +9,9 @@ namespace dflowfm_io::test
     // iequals
     // -------------------------------------------------------------------------
 
-    TEST(StringUtilsTest, IEquals_IdenticalStrings_ReturnsTrue)
-    {
-        EXPECT_TRUE(iequals("hello", "hello"));
-    }
+    TEST(StringUtilsTest, IEquals_IdenticalStrings_ReturnsTrue) { EXPECT_TRUE(iequals("hello", "hello")); }
 
-    TEST(StringUtilsTest, IEquals_EmptyStrings_ReturnsTrue)
-    {
-        EXPECT_TRUE(iequals("", ""));
-    }
+    TEST(StringUtilsTest, IEquals_EmptyStrings_ReturnsTrue) { EXPECT_TRUE(iequals("", "")); }
 
     TEST(StringUtilsTest, IEquals_DifferentCase_ReturnsTrue)
     {
@@ -26,15 +20,9 @@ namespace dflowfm_io::test
         EXPECT_TRUE(iequals("hElLo", "HeLlO"));
     }
 
-    TEST(StringUtilsTest, IEquals_AllUppercase_ReturnsTrue)
-    {
-        EXPECT_TRUE(iequals("HELLO", "HELLO"));
-    }
+    TEST(StringUtilsTest, IEquals_AllUppercase_ReturnsTrue) { EXPECT_TRUE(iequals("HELLO", "HELLO")); }
 
-    TEST(StringUtilsTest, IEquals_DifferentContent_ReturnsFalse)
-    {
-        EXPECT_FALSE(iequals("hello", "world"));
-    }
+    TEST(StringUtilsTest, IEquals_DifferentContent_ReturnsFalse) { EXPECT_FALSE(iequals("hello", "world")); }
 
     TEST(StringUtilsTest, IEquals_DifferentLength_ReturnsFalse)
     {
@@ -48,10 +36,7 @@ namespace dflowfm_io::test
         EXPECT_FALSE(iequals("hello", ""));
     }
 
-    TEST(StringUtilsTest, IEquals_StringsWithDigits_ReturnsTrue)
-    {
-        EXPECT_TRUE(iequals("abc123", "ABC123"));
-    }
+    TEST(StringUtilsTest, IEquals_StringsWithDigits_ReturnsTrue) { EXPECT_TRUE(iequals("abc123", "ABC123")); }
 
     TEST(StringUtilsTest, IEquals_StringsWithDigits_DifferentDigits_ReturnsFalse)
     {
@@ -67,30 +52,15 @@ namespace dflowfm_io::test
     // tolower
     // -------------------------------------------------------------------------
 
-    TEST(StringUtilsTest, ToLower_AllUppercase_ReturnsAllLowercase)
-    {
-        EXPECT_EQ(tolower("HELLO"), "hello");
-    }
+    TEST(StringUtilsTest, ToLower_AllUppercase_ReturnsAllLowercase) { EXPECT_EQ(tolower("HELLO"), "hello"); }
 
-    TEST(StringUtilsTest, ToLower_AllLowercase_ReturnsSameString)
-    {
-        EXPECT_EQ(tolower("hello"), "hello");
-    }
+    TEST(StringUtilsTest, ToLower_AllLowercase_ReturnsSameString) { EXPECT_EQ(tolower("hello"), "hello"); }
 
-    TEST(StringUtilsTest, ToLower_MixedCase_ReturnsAllLowercase)
-    {
-        EXPECT_EQ(tolower("HeLlO"), "hello");
-    }
+    TEST(StringUtilsTest, ToLower_MixedCase_ReturnsAllLowercase) { EXPECT_EQ(tolower("HeLlO"), "hello"); }
 
-    TEST(StringUtilsTest, ToLower_EmptyString_ReturnsEmptyString)
-    {
-        EXPECT_EQ(tolower(""), "");
-    }
+    TEST(StringUtilsTest, ToLower_EmptyString_ReturnsEmptyString) { EXPECT_EQ(tolower(""), ""); }
 
-    TEST(StringUtilsTest, ToLower_StringWithDigits_DigitsUnchanged)
-    {
-        EXPECT_EQ(tolower("ABC123"), "abc123");
-    }
+    TEST(StringUtilsTest, ToLower_StringWithDigits_DigitsUnchanged) { EXPECT_EQ(tolower("ABC123"), "abc123"); }
 
     TEST(StringUtilsTest, ToLower_StringWithSpecialCharacters_SpecialCharactersUnchanged)
     {
@@ -111,6 +81,20 @@ namespace dflowfm_io::test
         const std::string result2 = tolower("HELLO");
 
         EXPECT_EQ(result1, result2);
+    }
+
+    // -------------------------------------------------------------------------
+    // FormatKey
+    // -------------------------------------------------------------------------
+
+    TEST(MduSchemaTest, FormatKey_ProducesLowercaseDotSeparatedKey)
+    {
+        EXPECT_EQ(FormatKey("General", "FileType"), "general.filetype");
+    }
+
+    TEST(MduSchemaTest, FormatKey_AlreadyLowerCase_Unchanged)
+    {
+        EXPECT_EQ(FormatKey("general", "filetype"), "general.filetype");
     }
 
 } // namespace dflowfm_io::test

@@ -1,5 +1,6 @@
 #include <dflowfm_io/MduData.h>
 #include <dflowfm_io/MduValueConverter.h>
+#include <dflowfm_io/StringUtils.h>
 
 #include <format>
 #include <stdexcept>

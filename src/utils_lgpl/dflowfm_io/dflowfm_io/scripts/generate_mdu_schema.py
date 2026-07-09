@@ -28,12 +28,16 @@ CPP_TEMPLATE = """\
 namespace dflowfm_io
 {{
 
-    const MduSchema MDU_SCHEMA {{
-        .description = "{description}",
-        .sections = {{
+    const MduSchema& GetMduSchema()
+    {{
+        static const MduSchema instance {{
+            .description = "{description}",
+            .sections = {{
 {body}
-        }}
-    }};
+            }}
+        }};
+        return instance;
+    }}
 
 }} // namespace dflowfm_io
 """

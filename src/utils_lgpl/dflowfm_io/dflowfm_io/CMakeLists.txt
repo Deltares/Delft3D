@@ -21,6 +21,7 @@ add_library(dflowfm_io STATIC
     include/dflowfm_io/MduDataConverter.h
     include/dflowfm_io/MduDocument.h
     include/dflowfm_io/MduSchema.h
+    include/dflowfm_io/MduSchemaIndex.h
     include/dflowfm_io/MduValidator.h
     include/dflowfm_io/MduValueConverter.h
     include/dflowfm_io/StringUtils.h
@@ -30,6 +31,7 @@ add_library(dflowfm_io STATIC
     src/MduDataConverter.cpp
     src/MduDocument.cpp
     ${MDU_SCHEMA_GENERATED}
+    src/MduSchemaIndex.cpp
     src/MduValidator.cpp
     src/MduValueConverter.cpp
 )

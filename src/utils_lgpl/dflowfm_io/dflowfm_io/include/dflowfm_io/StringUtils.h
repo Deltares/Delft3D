@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <string>
 #include <string_view>
 
 namespace dflowfm_io
@@ -27,6 +28,15 @@ namespace dflowfm_io
         std::string result(str);
         std::ranges::transform(result, result.begin(), [](unsigned char c) { return std::tolower(c); });
         return result;
+    }
+
+    /// @brief Formats a fully qualified property key from a section name and property key.
+    /// @param section The section name.
+    /// @param property The property key.
+    /// @return A lowercase dot-separated string in the form "sectionname.propertykey".
+    inline std::string FormatKey(const std::string& section, const std::string& property)
+    {
+        return tolower(section + "." + property);
     }
 
 } // namespace dflowfm_io

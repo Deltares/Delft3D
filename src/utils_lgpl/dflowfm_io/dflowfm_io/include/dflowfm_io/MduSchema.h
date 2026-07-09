@@ -1,5 +1,7 @@
 #pragma once
 
+#include <dflowfm_io/StringUtils.h>
+
 #include <chrono>
 #include <filesystem>
 #include <locale>
@@ -7,8 +9,6 @@
 #include <string>
 #include <variant>
 #include <vector>
-
-#include <dflowfm_io/StringUtils.h>
 
 namespace dflowfm_io
 {
@@ -64,16 +64,6 @@ namespace dflowfm_io
     /// @brief Schema definition for a single section within an MDU file.
     struct SectionSchema
     {
-        /// @brief Finds a property schema by key (case-insensitive).
-        /// @param key The property key to look up.
-        /// @return Pointer to the matching PropertySchema, or nullptr if not found.
-        const PropertySchema* FindProperty(const std::string& key) const
-        {
-            for (const auto& ps : properties)
-                if (iequals(ps.key, key)) return &ps;
-            return nullptr;
-        }
-
         std::string name; ///< Case-insensitive section name as it appears in the MDU file.
         bool required; ///< Whether this section must be present in the MDU file.
         std::string description; ///< Human-readable description of the section.
@@ -86,43 +76,13 @@ namespace dflowfm_io
     /// properties are listed in the order they should appear in the MDU file.
     struct MduSchema
     {
-        /// @brief Finds a section schema by name (case-insensitive).
-        /// @param name The section name to look up.
-        /// @return Pointer to the matching SectionSchema, or nullptr if not found.
-        const SectionSchema* FindSection(const std::string& name) const
-        {
-            for (const auto& ss : sections)
-                if (iequals(ss.name, name)) return &ss;
-            return nullptr;
-        }
-
-        /// @brief Finds a property schema by its fully qualified "section.property" key (case-insensitive).
-        /// @param key The dot-separated key in the form "sectionName.propertyKey".
-        /// @return Pointer to the matching PropertySchema, or nullptr if not found.
-        const PropertySchema* FindProperty(const std::string& key) const
-        {
-            auto dot = key.find('.');
-            if (dot == std::string::npos) return nullptr;
-
-            const auto* ss = FindSection(key.substr(0, dot));
-            if (!ss) return nullptr;
-            return ss->FindProperty(key.substr(dot + 1));
-        }
-
         std::string description; ///< Human-readable description of the MDU file format.
         std::vector<SectionSchema> sections; ///< Ordered list of section schemas.
     };
 
-    /// @brief Formats a fully qualified property key from a section name and property key.
-    /// @param section The section name.
-    /// @param property The property key.
-    /// @return A lowercase dot-separated string in the form "sectionname.propertykey".
-    inline std::string FormatKey(const std::string& section, const std::string& property)
-    {
-        return tolower(section + "." + property);
-    }
-
-    /// @brief The global MDU schema instance, generated from mdu.json.
-    extern const MduSchema MDU_SCHEMA;
+    /// @brief Returns the global MDU schema instance, generated from mdu.json.
+    const MduSchema& GetMduSchema();
 
 } // namespace dflowfm_io
+
+#define MDU_SCHEMA GetMduSchema()
