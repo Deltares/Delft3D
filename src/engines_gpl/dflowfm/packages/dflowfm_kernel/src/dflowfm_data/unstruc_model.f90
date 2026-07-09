@@ -1712,13 +1712,13 @@ contains
          if (len_trim(md_inifieldfile) > 0) then
             allocate(extfile_new_list(1))
             extfile_new_list(1) = md_inifieldfile
+         else
+            ! If no new external forcing files or initial field file is specified, allocate an empty list to avoid issues later on
+            if (allocated(extfile_new_list)) then
+               deallocate(extfile_new_list)
+            end if
+            allocate(extfile_new_list(0))
          end if
-
-         ! If no new external forcing files or initial field file is specified, allocate an empty list to avoid issues later on
-         if (allocated(extfile_new_list)) then
-            deallocate(extfile_new_list)
-         end if
-         allocate(extfile_new_list(0))
       end if
 
       call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
