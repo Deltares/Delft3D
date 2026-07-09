@@ -72,17 +72,27 @@ class PetscConan(ConanFile):
             )
         # Validate the compiler / fortran_compiler combination
         _ = self._wrappers()
-        # On Windows PETSc has no native build system: it is configured and built
-        # from a Cygwin bash shell using the win32fe wrapper around the native compilers.
+
+    def _validate_windows_bash(self):
+        # On Windows PETSc is configured and built from a Cygwin bash shell using
+        # the win32fe wrapper around the native compilers. Check for the configuration
+        # pointing to cygwin here (and not in validate()) because the conf injected by
+        # the cygwin tool_requires is only merged into self.conf after validate()
+        subsystem = self.conf.get("tools.microsoft.bash:subsystem")
+        bash_path = self.conf.get("tools.microsoft.bash:path")
+        if subsystem != "cygwin" or not bash_path:
+            raise ConanInvalidConfiguration(
+                "petsc on Windows requires a Cygwin bash. This is normally "
+                "provided by the cygwin tool_requires; if you override it in a "
+                "profile, set tools.microsoft.bash:subsystem=cygwin and "
+                "tools.microsoft.bash:path=<...>/cygwin64/bin/bash.exe."
+            )
+
+    def build_requirements(self):
         if self.settings.os == "Windows":
-            subsystem = self.conf.get("tools.microsoft.bash:subsystem")
-            bash_path = self.conf.get("tools.microsoft.bash:path")
-            if subsystem != "cygwin" or not bash_path:
-                raise ConanInvalidConfiguration(
-                    "petsc on Windows requires a Cygwin bash. Define in the profile: "
-                    "tools.microsoft.bash:subsystem=cygwin and "
-                    "tools.microsoft.bash:path=<...>/cygwin64/bin/bash.exe."
-                )
+            # PETSc builds with the native MSVC/Intel toolchain, so Cygwin's
+            # link.exe must be renamed to not shadow the MSVC/Intel linker.
+            self.tool_requires("cygwin/3.6.9", options={"rename_link": True})
 
     def configure(self):
         if self.settings.os == "Windows":
@@ -103,6 +113,7 @@ class PetscConan(ConanFile):
 
     def build(self):
         if self.settings.os == "Windows":
+            self._validate_windows_bash()
             self._build_windows()
         else:
             self._build_unix()
@@ -159,10 +170,18 @@ class PetscConan(ConanFile):
 
         src_dir = unix_path(self, self.source_folder)
         self.run(
-            f'cd "{src_dir}" && {self._oneapi_env()} && ./configure {args} '
-            f"&& {self._windows_make('all')}",
+            f'{self._home_export()} && cd "{src_dir}" && {self._oneapi_env()} '
+            f"&& ./configure {args} && {self._windows_make('all')}",
             cwd=self.source_folder,
         )
+
+    def _home_export(self):
+        # Cygwin's first bash invocation copies skeleton dotfiles into $HOME and
+        # honours any ~-relative writes. By default $HOME resolves inside the
+        # cygwin tool_requires package folder, which Conan treats as immutable;
+        # writing there corrupts that cached package. Redirect $HOME to the
+        # (writable, disposable) PETSc build folder instead.
+        return f'export HOME="{unix_path(self, self.build_folder)}"'
 
     @staticmethod
     def _oneapi_env():
@@ -190,8 +209,11 @@ class PetscConan(ConanFile):
         )
         if self.settings.os == "Windows":
             src_dir = unix_path(self, self.source_folder)
-            self.run(f'cd "{src_dir}" && {self._windows_make("install")}',
-                     cwd=self.source_folder)
+            self.run(
+                f'{self._home_export()} && cd "{src_dir}" '
+                f'&& {self._windows_make("install")}',
+                cwd=self.source_folder,
+            )
         else:
             self.run("make install", cwd=self.source_folder)
 

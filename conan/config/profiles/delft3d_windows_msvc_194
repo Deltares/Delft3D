@@ -9,5 +9,3 @@ os=Windows
 
 [conf]
 tools.cmake.cmaketoolchain:extra_variables={'CMAKE_GENERATOR_TOOLSET': {'value': 'fortran=ifx', 'cache': True, 'type': 'STRING', 'force': True}}
-petsc/*:tools.microsoft.bash:subsystem=cygwin
-petsc/*:tools.microsoft.bash:path=C:\cygwin64\bin\bash.exe
