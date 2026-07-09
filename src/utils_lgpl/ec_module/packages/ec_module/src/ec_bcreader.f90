@@ -76,6 +76,7 @@ contains
     character(len=*), optional,    intent(in)      :: funtype
 
     integer(kind=8)                                :: fhandle
+    integer                                        :: nrVar    
     success = .false.
     bc%qname = quantityName
     bc%bcname = plilabel
@@ -106,11 +107,21 @@ contains
                               bc%dimvector, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
        endif
-       if (bc%numlay<=1) then
+       
+       ! Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
+       do nrVar = 1, size(bc%ncptr%variable_names)
+          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
+            exit
+          end if
+       end do
+                              
+       if (bc%ncptr%variable_ndims(nrVar) == 2) then 
           bc%func = BC_FUNC_TSERIES
-       else
-          bc%func = BC_FUNC_TIM3D
-       endif
+       end if
+       if (bc%ncptr%variable_ndims(nrVar) == 3) then
+         bc%func = BC_FUNC_TIM3D
+       end if
+       
        ! TODO:
        ! Support specification of the time-interpolation type in the netcdf timeseries variable as an attribute
        bc%timeunit         = bc%ncptr%timeunit
@@ -888,9 +899,10 @@ contains
           call set_ec_message("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
           return
        endif
+                 
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
-          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer)) then
-          call set_ec_message("Read failure in file: "//trim(bcPtr%fname))
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%func)) then
+          call set_ec_message("Read failure in file: "//trim(BCPtr%fname))
           return
        else
           BCPtr%nctimndx = BCPtr%nctimndx + 1
