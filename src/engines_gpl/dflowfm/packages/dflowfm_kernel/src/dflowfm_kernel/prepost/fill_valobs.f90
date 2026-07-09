@@ -49,7 +49,7 @@ contains
                         vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
-                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
                         use_density
@@ -68,7 +68,7 @@ contains
                                      ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, &
                                      ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, &
                                      ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
-                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, &
+                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_vicwws_total, ipnt_difwws, ipnt_difwws_total, ipnt_bruv, ipnt_richs, ival_seddif1, &
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs,xobs,yobs,namobs 
@@ -86,6 +86,8 @@ contains
       use m_get_link1, only: getlink1
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
       use m_xbeach_data, only: R
+      use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total
+      use m_physcoef, only: vicoww
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
@@ -168,6 +170,18 @@ contains
       ! get velocities here (and not at velocity writing)
       if (his_write_settings%taucurrent > 0 .or. his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
          call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, his_write_settings%velocity)
+      end if
+
+      if (model_is_3D() .and. his_write_settings%tur > 0 .and. iturbulencemodel >= 2) then
+         vicwwu_total = 0.0_dp
+         vicwws_total = 0.0_dp
+         do LL = 1, lnx
+            call getLbotLtop(LL, Lb, Lt)
+            do L = Lb - 1, Lt
+               vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+            end do
+         end do
+         call links_to_centers(vicwws_total, vicwwu_total)
       end if
 
       if (his_write_settings%taucurrent > 0) then
@@ -658,7 +672,9 @@ contains
 !                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
                   if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+                     valobs(i, IPNT_VICWWS_TOTAL + klay - 1) = vicwws_total(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
+                     valobs(i, IPNT_DIFWWS_TOTAL + klay - 1) = difwws_total(kk)
                   end if
                   if (use_density() .and. his_write_settings%rho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then

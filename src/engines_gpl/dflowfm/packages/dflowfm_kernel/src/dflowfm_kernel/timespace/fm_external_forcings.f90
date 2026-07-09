@@ -2658,7 +2658,7 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
-      use m_physcoef, only: constant_dicoww, dicoww
+      use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use unstruc_inifields, only: finalize_1dfield_global_values
@@ -3101,11 +3101,6 @@ contains
       ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
-
-      ! Set dicoww to scalar value if not read from inifields file
-      if (.not. allocated(dicoww)) then
-         call realloc(dicoww, constant_dicoww)
-      end if
 
    end subroutine finalize
 
