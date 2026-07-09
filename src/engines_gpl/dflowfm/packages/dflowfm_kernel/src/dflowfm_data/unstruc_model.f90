@@ -1715,6 +1715,9 @@ contains
          end if
 
          ! If no new external forcing files or initial field file is specified, allocate an empty list to avoid issues later on
+         if (allocated(extfile_new_list)) then
+            deallocate(extfile_new_list)
+         end if
          allocate(extfile_new_list(0))
       end if
 
