@@ -341,6 +341,7 @@ namespace pre_c_sumo
             new_sources.emplace_back(SourceOrSinkData{.x_coordinate = x_start + i * dx,
                                                       .y_coordinate = y_start + i * dy,
                                                       .z_coordinate = sources[0].z_coordinate,
+                                                      .entrainment = sources[0].entrainment,
                                                       .half_plume_height = sources[0].half_plume_height,
                                                       .half_plume_width = 0,
                                                       .u_magnitude = sources[0].u_magnitude,
