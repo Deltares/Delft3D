@@ -14,7 +14,6 @@ RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart 
     --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.Component.VC.ATLMFC \
-    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0)
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
@@ -65,34 +64,6 @@ ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
 RUN setx /M PATH \"C:\Program Files\uv\bin;C:\Program Files\uv\install;$env:PATH\"
 RUN uv python install 3.12 --default
 RUN uv tool install 'conan ~= 2.30.0'
-
-ADD setup-x86_64.exe C:\\cygwin-setup-x86_64.exe
-# Install and clean up the package cache in a single layer. The cache uses very
-# long, URL-encoded directory names (e.g. https%3a%2f%2fmirrors.kernel.org%2f...)
-# which break the Windows container layer import (hcsshim::ImportLayer) if they
-# are ever committed to a layer, so they must never persist beyond this RUN.
-RUN Start-Process -FilePath 'C:\cygwin-setup-x86_64.exe' -Wait -NoNewWindow -ArgumentList \
-    '--quiet-mode', \
-    '--no-shortcuts', \
-    '--no-startmenu', \
-    '--no-desktop', \
-    '--no-admin', \
-    '--upgrade-also', \
-    '--root', 'C:\cygwin64', \
-    '--local-package-dir', 'C:\cygwin-packages', \
-    '--site', 'https://mirrors.kernel.org/sourceware/cygwin/', \
-    '--site', 'https://cygwin.mirror.constant.com/', \
-    '--only-site', \
-    '--packages', 'python3,make,git,cmake'; \
-    Remove-Item -Force C:\cygwin-setup-x86_64.exe; \
-    Remove-Item -Recurse -Force C:\cygwin-packages
-
-# Cygwin's link.exe conflicts with the Intel ifort/ifx compiler. Rename it so the Intel/MSVC linker is
-# picked up instead (see https://petsc.org/main/install/windows/#native-microsoft-intel-windows-compilers).
-RUN if (Test-Path 'C:\cygwin64\bin\link.exe') { Move-Item 'C:\cygwin64\bin\link.exe' 'C:\cygwin64\bin\link-cygwin.exe' }
-
-# Add Cygwin to the PATH (appended so it does not shadow the explicitly installed tools).
-RUN setx /M PATH ($Env:PATH + ';C:\cygwin64\bin')
 
 # Copy the setup script into the container
 COPY set-env-vs2022.cmd C:\\set-env-vs2022.cmd
