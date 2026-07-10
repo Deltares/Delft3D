@@ -64,7 +64,7 @@ module m_flow ! flow arrays-999
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
-   integer, allocatable, dimension(:) :: ndkx_to_ndx  ! Maps NDKX → NDX
+   integer, allocatable, dimension(:) :: ndkx_to_ndx  ! Maps NDKX to NDX
 
    real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
