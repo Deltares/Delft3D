@@ -46,7 +46,7 @@ contains
       use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
-      use m_waves, only: ustokes, vstokes, wblt
+      use m_waves, only: ustokes, vstokes, wblt, jawavevellogprof, strlyrfac
       use m_waveconst, only: NO_WAVES, NO_STOKES_DRIFT, WAVE_STREAMING_OFF
       use m_sediment, only: stm_included
       use m_flowtimes, only: dts
@@ -64,7 +64,7 @@ contains
       real(kind=dp) :: taubxuLL ! taubxu = ymxpar*(taucur+tauwav)
 
       real(kind=dp) :: csw, snw ! wave direction cosines
-      real(kind=dp) :: Dfu, Dfu0, Dfu1, htop, dzu ! wave dissipation by bed friction, / (rhomean*c*deltau)
+      real(kind=dp) :: Dfu, Dfu0, Dfu1, htop ! wave dissipation by bed friction, / (rhomean*c*deltau)
       real(kind=dp) :: deltau ! wave dissipation layer thickness
       real(kind=dp) :: u2dh
       real(kind=dp) :: z0urouL, rhoL, uorbu
@@ -75,6 +75,7 @@ contains
       real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
       real(kind=dp) :: cphi, sphi
       real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
+      real(kind=dp) :: slfacdeltau
 
       cfuhi3D = 0.0_dp
       ustbLL = 0.0_dp
@@ -121,7 +122,7 @@ contains
                   hdzb = 0.5_dp * hu(Lb) + z00
                   sqcf = vonkar / (log(1.0_dp + 0.5_dp * hu(Lb) / z00))
                else if (jaustarint == 4) then
-                  !hdzb  = 0.5d0*hu(Lb)     + c9of1*z00/0.65d0
+                  !hdzb  = 0.5_dp*hu(Lb)     + c9of1*z00/0.65_dp
                   dzb = hu(Lb) / ee + c9of1 * z00 * 0.66_dp
                   sqcf = vonkar / (log(dzb / z00))
                else if (jaustarint == 5) then
@@ -164,18 +165,13 @@ contains
                   u2dh = umod
                else
                   ! here we assume that z0/dzb is small and c9of1==1, ie we use jaustarint==1 approach, cf 3D validation doc Mohamed
-                  !u2dh = umod*(log((1d0+hu(LL))/z0urou(LL))-1d0)/(log(dzb/z0urou(LL))-1d0)
-
-                  ! UNST-6297 formulation above gives u2dh of order too big in very shallow water
-
-                  ! Delft3D:
-                  !u2dh = (umod/hu(LL)                                             &
-                  !     & *((hu(LL) + z0urou(LL))*log(1d0 + hu(LL)/z0urou(LL))     &
-                  !     & - hu(LL)))/log(1d0 + 0.5d0*(max(dzb,0.01d0))/z0urou(LL))
-
-                  ! use available depth-averaged u1, v
-                  u2dh = sqrt((u1(LL) - ustokes(LL))**2 + &
-                              (v(LL) - vstokes(LL))**2)
+                  if (jawavevellogprof == 0) then
+                     u2dh = umod * (log((1_dp + hu(LL)) / z0urou(LL)) - 1_dp) / (log(dzb / z0urou(LL)) - 1_dp)
+                  else
+                     ! use available depth-averaged u1, v
+                     u2dh = sqrt((u1(LL) - ustokes(LL))**2 + &
+                                 (v(LL) - vstokes(LL))**2)
+                  end if
                end if
                !
                if (cz > 0.0_dp) then
@@ -194,7 +190,6 @@ contains
                   sphi = -csw * snu(LL) + snw * csu(LL)
                   abscos = abs(cphi * uu + sphi * vv) / umod
                   call getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
-                  ! ustbLL = sqrt(umod*taubpuLL)
                else if (modind == 9) then ! wave-current interaction van Rijn (2004)
                   call getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
                   taubxuLL = rhoL * (ustc2 + ustw2) ! depth-averaged, see taubot
@@ -208,7 +203,7 @@ contains
                   end if
                else if (modind == 0) then ! exception where you don't want wave influence on bed shear stress with jawave>0
                   if (sqcf > 0.0_dp) then
-                     z0urouL = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above
+                     z0urouL = z00 ! no wave enhancement
                      taubpuLL = ustbLL * ustbLL / umod ! use flow ustar
                      taubxuLL = rhoL * taubpuLL * umod
                   else
@@ -234,42 +229,44 @@ contains
                   z0urou(LL) = z0urouL
                end if
                z00 = z0urou(LL) ! wave enhanced z0 for turbulence
-               !
-               if (stm_included) then
-                  wblt(LL) = deltau
-               end if
-               !
-               ! Streaming below deltau with linear distribution
-               if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1.0e-7_dp) then ! Streaming below deltau with linear distribution
-                  Dfu0 = Dfuc ! (m/s2)
-                  do L = Lb, Ltop(LL)
-                     if (hu(L) <= deltau) then
-                        htop = min(hu(L), deltau) ! max height within waveboundarylayer
-                        alin = 1.0_dp - htop / deltau ! linear from 1 at bed to 0 at deltau
-                        Dfu1 = Dfuc * alin
-                        dzu = htop - hu(L - 1)
-                        adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1) * dzu / deltau
-                        Dfu0 = Dfu1
-                     end if
-                     if (hu(L) > deltau) then
-                        if (L == Lb) then
-                           adve(L) = adve(L) - Dfuc * deltau / (2.0 * hu(L)) ! everything in bottom layer
-                        end if
-                        exit
-                     end if
-                  end do
-               end if
             else
-               if (sqcf > 0.0_dp) then
+               if (sqcf > 0_dp) then
                   ! taubu for too small wave case needs to be filled
                   z0urou(LL) = z00 ! just use current only z0
                   taubpuLL = ustbLL * ustbLL / umod ! use flow ustar
                   taubxuLL = rhoL * taubpuLL * umod
                else
-                  taubu(LL) = 0.0_dp
-                  taubxu(LL) = 0.0_dp
+                  taubu(LL) = 0_dp
+                  taubxu(LL) = 0_dp
                   z0urou(LL) = epsz0
                end if
+            end if
+            !
+            if (stm_included) wblt(LL) = deltau
+            !
+            ! Streaming below strlyrfac*deltau with linear distribution, see van Rijn 2011 p9.177
+            if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
+               slfacdeltau = strlyrfac * deltau
+               Dfu0 = Dfuc ! (m/s2)
+               do L = Lb, Ltop(LL)
+                  if (hu(L) <= slfacdeltau) then
+                     htop = min(hu(L), slfacdeltau) ! max height within streaming layer
+                     alin = 1_dp - htop / slfacdeltau ! linear from 1 at bed to 0 at slfacdeltau (= strlyrfac * deltau)
+                     Dfu1 = Dfuc * alin
+                     adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1)
+                     Dfu0 = Dfu1
+                  end if
+                  if (hu(L) > slfacdeltau) then
+                     if (L == Lb) then
+                        adve(L) = adve(L) - Dfuc * slfacdeltau / (2.0_dp * hu(L)) ! everything in bottom layer
+                     else
+                        alin = (min(hu(L), slfacdeltau) - hu(L - 1)) / (2.0_dp * (hu(L) - hu(L - 1)))
+                        Dfu1 = Dfuc * alin
+                        adve(L) = adve(L) - Dfu1
+                     end if
+                     exit
+                  end if
+               end do
             end if
          end if ! end jawave
 
@@ -277,7 +274,7 @@ contains
          cfuhi3D = cfuhiLL * umod ! cfuhi3D = frc. contr. to diagonal
 
          if (jawave == NO_WAVES .or. flow_without_waves) then
-            z0urou(LL) = z0ucur(LL) ! morfo, bedforms, trachytopes
+            z0urou(LL) = z00 ! morfo, bedforms, trachytopes
          end if
 
       else if (friction_type == 10) then ! Hydraulically smooth, glass etc
@@ -336,7 +333,7 @@ contains
 
       else if (friction_type == 11) then ! Noslip
 
-         !    advi(Lb) = advi(Lb) +  2d0*(vicwwu(Lb)+vicouv)/hu(Lb)**2
+         !    advi(Lb) = advi(Lb) +  2_dp*(vicwwu(Lb)+vicouv)/hu(Lb)**2
          cfuhi3D = 2.0_dp * (vicwwu(Lb) + vicoww%get(LL)) / hu(Lb)**2
 
       end if
