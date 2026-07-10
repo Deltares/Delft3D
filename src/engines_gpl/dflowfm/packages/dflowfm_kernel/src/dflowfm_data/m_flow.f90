@@ -1,4 +1,4 @@
-﻿!----- AGPL --------------------------------------------------------------------
+!----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2026.
 !
@@ -64,7 +64,7 @@ module m_flow ! flow arrays-999
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
-   integer, allocatable, dimension(:) :: ndkx_to_ndx  ! Maps NDKX â†’ NDX
+   integer, allocatable, dimension(:) :: ndkx_to_ndx  ! Maps NDKX → NDX
 
    real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
@@ -331,6 +331,8 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target, dimension(:) :: cftrtfac !< array for optional multiplication factor for trachytopes's returned roughness values
    integer :: jacftrtfac !< Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
    real(kind=dp), allocatable, dimension(:) :: czu !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable :: frcu0(:) !< array for Manning friction at flow links at start of the run {"location": "edge", "shape": ["lnx"]}
+   logical, allocatable :: dynveg(:) !< vegetation present or not {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target, dimension(:) :: frculin !< friction coefficient set by initial fields ( todo mag later ook single real worden)
    integer, allocatable, dimension(:) :: ifrcutp !< friction coefficient type   initial fields ( todo mag later ook single real worden)
    real(kind=dp), allocatable, target, dimension(:) :: Cdwusp !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
