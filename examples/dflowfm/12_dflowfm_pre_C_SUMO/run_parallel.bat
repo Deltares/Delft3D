@@ -7,7 +7,6 @@ set startPreCSUMO=1
 set NPROC=2
 
 set bindir=..\..\..\install_fm-suite\bin
-set libdir=%bindir%\..\lib
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
 del /f /q fm\2dis_*_net.nc
@@ -29,7 +28,7 @@ rmdir /s /q precice-run
 if %usePreCICE% EQU 1 (
     if %startPreCSUMO% EQU 1 (
         cd cosumo
-        set PATH=..\%bindir%;..\%libdir%
+        set PATH=..\%bindir%
         start ..\%bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml
         cd ..
     ) else (
@@ -38,7 +37,7 @@ if %usePreCICE% EQU 1 (
     
     if %startFM% EQU 1 (
         cd fm
-        set PATH=..\%bindir%;..\%libdir%
+        set PATH=..\%bindir%
         call ..\%bindir%\dflowfm-cli.exe --partition:ndomains=%NPROC%:icgsolver=6 FlowFM.mdu
         call mpiexec -n %NPROC% ..\%bindir%\dflowfm-cli.exe FlowFM.mdu --precice
         cd ..

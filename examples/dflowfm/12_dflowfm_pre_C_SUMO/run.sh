@@ -5,9 +5,8 @@ startFM=1
 startPreCSUMO=1
 
 bindir=$(readlink -f ../../../install_fm-suite/bin)
-libdir=$(readlink -f $bindir/../lib)
 export PATH=$bindir:$PATH
-export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$bindir:$LD_LIBRARY_PATH
 
 rm -rf fm/DFM_OUTPUT_FlowFM
 rm -rf fm/precice-exports
