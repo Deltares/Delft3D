@@ -747,7 +747,7 @@ contains
       integer, dimension(:), allocatable :: kp
       integer, dimension(:), allocatable :: kcsveg
    
-      if (.not. dynroughveg) then
+      if (dynroughveg == 0) then
          return
       end if
    
