@@ -10402,7 +10402,7 @@ contains
                call mess(LEVEL_ERROR, 'Could not put header in net geometry file.')
                return
             end if
-         else
+         else if (num_1d_nodes > 0) then
             ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, num_1d_nodes, n1dedges, 0, 0, &
                                         edge_nodes, face_nodes, null(), null(), null(), xn, yn, xe, ye, xzw(1:1), yzw(1:1), &
                                         crs, -999, dmiss, start_index)
