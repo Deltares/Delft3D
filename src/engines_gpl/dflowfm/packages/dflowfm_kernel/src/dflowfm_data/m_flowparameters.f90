@@ -135,6 +135,9 @@ module m_flowparameters
    integer, parameter :: FREE_CONVECTION_ON = 1 !< Free convection on
    
    real(kind=dp) :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
+   real(kind=dp) :: height_wind_velocity !< Height of prescribed wind velocity [m]
+   real(kind=dp) :: height_air_temperature !< Height of prescribed air temperature [m]
+   real(kind=dp) :: height_humidity !< Height of prescribed humidity [m]
 
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
@@ -760,6 +763,9 @@ contains
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model
       salinity_reduction_factor_saturation_humidity = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
+      height_wind_velocity = 10.0_dp !< Height of prescribed wind velocity
+      height_air_temperature = 2.0_dp !< Height of prescribed air temperature
+      height_humidity = 2.0_dp !< Height of prescribed humidity
 
       janudge = 0 ! temperature and salinity nudging
       jainiwithnudge = 0 !< initialize salinity and temperature with nudge variables

@@ -41,9 +41,6 @@ module m_atmospheric_stability
    public :: get_monin_obukhov_length
    public :: get_richardson_number
    
-   real(kind=dp), parameter :: HEIGHT_WIND_VELOCITY = 10.0_dp ! sensor height for wind velocity [m]
-   real(kind=dp), parameter :: HEIGHT_TEMPERATURE = 2.0_dp ! sensor height for temperature [m]
-   real(kind=dp), parameter :: HEIGHT_HUMIDITY = 2.0_dp ! sensor height for specific humidity [m]
    real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
    real(kind=dp), parameter :: CONST_Md = 28.9644e-3_dp ! dry air molar mass [kg/mol]
@@ -62,9 +59,12 @@ module m_atmospheric_stability
    !> Optional switches controlling physical parameterizations.
    !! Enable terms only when they are needed for the target conditions.
    type :: t_options
-      logical :: include_free_convection = .false.  !< Use in weak-wind unstable conditions (buoyancy-driven turbulence matters); usually unnecessary in moderate/strong wind or neutral/stable cases.
-      logical :: include_stability = .true.     !< Use for stability-aware similarity corrections; disable for neutral conditions.
-      real(kind=dp) :: fqsat = 1.0_dp               !< Salinity reducing factor of saturation humidity.
+      logical :: include_free_convection = .false.     !< Use in weak-wind unstable conditions (buoyancy-driven turbulence matters); usually unnecessary in moderate/strong wind or neutral/stable cases.
+      logical :: include_stability = .true.            !< Use for stability-aware similarity corrections; disable for neutral conditions.
+      real(kind=dp) :: fqsat = 1.0_dp                  !< Salinity reducing factor of saturation humidity.
+      real(kind=dp) :: height_wind_velocity = 10.0_dp  !< Height of prescribed wind velocity [m]
+      real(kind=dp) :: height_humidity = 2.0_dp        !< Height of prescribed humidity [m]
+      real(kind=dp) :: height_air_temperature = 2.0_dp !< Height of prescribed air temperature [m]
    end type t_options
 
    !> Scaling parameters data type.
@@ -131,6 +131,14 @@ contains
       integer, parameter :: MAXIMUM_ITERATION = 50
       real(kind=dp), parameter :: EPSILON = 1.0e-4_dp
 
+      real(kind=dp) :: height_wind_velocity
+      real(kind=dp) :: height_humidity
+      real(kind=dp) :: height_air_temperature
+      
+      height_wind_velocity = options%height_wind_velocity
+      height_humidity = options%height_humidity
+      height_air_temperature = options%height_air_temperature
+
       wind_velocity_magnitude = sqrt(wind_velocity_x**2 + wind_velocity_y**2)
       vapor_pressure = compute_saturation_pressure(dew_point_temperature)
       air_humidity = compute_specific_humidity(vapor_pressure, air_pressure)
@@ -140,9 +148,9 @@ contains
       surface_humidity = salt_saturation_humidity_reduction_factor * surface_humidity
       
       ! Convert temperature and specific humidity to equivalent values at wind sensor height using logarithmic profiles.
-      temperature_pfactor = 0.04_dp * log(HEIGHT_WIND_VELOCITY / HEIGHT_TEMPERATURE) / vonkarw
+      temperature_pfactor = 0.04_dp * log(height_wind_velocity / height_air_temperature) / vonkarw
       temperature_at_wind_height = (air_temperature - temperature_pfactor*surface_temperature) / (1.0_dp - temperature_pfactor)
-      humidity_pfactor = 0.04_dp * log(HEIGHT_WIND_VELOCITY / HEIGHT_HUMIDITY) / vonkarw
+      humidity_pfactor = 0.04_dp * log(height_wind_velocity / height_humidity) / vonkarw
       humidity_at_wind_height = (air_humidity - humidity_pfactor*surface_humidity) / (1.0_dp - humidity_pfactor)
 
       if (options%include_free_convection) then
@@ -178,46 +186,46 @@ contains
          if (options%include_stability) then
              richardson_number = compute_richardson_number(delta_wind_speed, surface_temperature, &
                               temperature_at_wind_height, air_pressure, humidity_at_wind_height, &
-                              salt_saturation_humidity_reduction_factor)
+                              salt_saturation_humidity_reduction_factor, height_wind_velocity)
 
-             log_denominator_momentum = log(HEIGHT_WIND_VELOCITY) - log(z0_momentum) - psi_momentum
+             log_denominator_momentum = log(height_wind_velocity) - log(z0_momentum) - psi_momentum
              log_denominator_momentum = sign(max(abs(log_denominator_momentum), SMALL_NUMBER), log_denominator_momentum)
-             log_denominator_heat = log(HEIGHT_WIND_VELOCITY) - log(z0_heat) - psi_heat
+             log_denominator_heat = log(height_wind_velocity) - log(z0_heat) - psi_heat
 
-             obukhov_length = (HEIGHT_WIND_VELOCITY / richardson_number) * log_denominator_heat / log_denominator_momentum**2
+             obukhov_length = (height_wind_velocity / richardson_number) * log_denominator_heat / log_denominator_momentum**2
              obukhov_length = sign(min(abs(obukhov_length), OBUKHOV_LENGTH_LIMIT), obukhov_length)
              inverse_obukhov_length = 1.0_dp / obukhov_length
 
-             psi_momentum = stability_profile_momentum((HEIGHT_WIND_VELOCITY + z0_momentum) * inverse_obukhov_length) - &
+             psi_momentum = stability_profile_momentum((height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
                             stability_profile_momentum(z0_momentum * inverse_obukhov_length)
-             psi_heat = stability_profile_heat_humidity((HEIGHT_WIND_VELOCITY + z0_momentum) * inverse_obukhov_length) - &
+             psi_heat = stability_profile_heat_humidity((height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
                         stability_profile_heat_humidity(z0_heat * inverse_obukhov_length)
-             psi_humidity = stability_profile_heat_humidity((HEIGHT_WIND_VELOCITY + z0_momentum) * inverse_obukhov_length) - &
+             psi_humidity = stability_profile_heat_humidity((height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
                             stability_profile_heat_humidity(z0_humidity * inverse_obukhov_length)
 
-             if (abs(HEIGHT_WIND_VELOCITY - HEIGHT_TEMPERATURE) > 0.01_dp) then
-                heat_profile_correction = log(HEIGHT_WIND_VELOCITY) - log(HEIGHT_TEMPERATURE) &
-                     - stability_profile_heat_humidity((HEIGHT_WIND_VELOCITY + z0_momentum) * inverse_obukhov_length) &
-                     + stability_profile_heat_humidity((HEIGHT_TEMPERATURE + z0_momentum) * inverse_obukhov_length)
+             if (abs(height_wind_velocity - height_air_temperature) > 0.01_dp) then
+                heat_profile_correction = log(height_wind_velocity) - log(height_air_temperature) &
+                     - stability_profile_heat_humidity((height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
+                     + stability_profile_heat_humidity((height_air_temperature + z0_momentum) * inverse_obukhov_length)
                 temperature_at_wind_height = air_temperature + (t_star / vonkarw) * heat_profile_correction
                 delta_temperature = temperature_at_wind_height - surface_temperature
              end if
 
-             if (abs(HEIGHT_WIND_VELOCITY - HEIGHT_HUMIDITY) > 0.01_dp) then
-                humidity_profile_correction = log(HEIGHT_WIND_VELOCITY) - log(HEIGHT_HUMIDITY) &
-                     - stability_profile_heat_humidity((HEIGHT_WIND_VELOCITY + z0_momentum) * inverse_obukhov_length) &
-                     + stability_profile_heat_humidity((HEIGHT_HUMIDITY + z0_momentum) * inverse_obukhov_length)
+             if (abs(height_wind_velocity - height_humidity) > 0.01_dp) then
+                humidity_profile_correction = log(height_wind_velocity) - log(height_humidity) &
+                     - stability_profile_heat_humidity((height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
+                     + stability_profile_heat_humidity((height_humidity + z0_momentum) * inverse_obukhov_length)
                 humidity_at_wind_height = air_humidity + (q_star / vonkarw) * humidity_profile_correction
                 delta_specific_humidity = humidity_at_wind_height - surface_humidity
              end if
              
-            log_denominator_momentum = log(HEIGHT_WIND_VELOCITY) - log(z0_momentum) - psi_momentum
-            log_denominator_heat = log(HEIGHT_WIND_VELOCITY) - log(z0_heat) - psi_heat
-            log_denominator_humidity = log(HEIGHT_WIND_VELOCITY) - log(z0_humidity) - psi_humidity
+            log_denominator_momentum = log(height_wind_velocity) - log(z0_momentum) - psi_momentum
+            log_denominator_heat = log(height_wind_velocity) - log(z0_heat) - psi_heat
+            log_denominator_humidity = log(height_wind_velocity) - log(z0_humidity) - psi_humidity
          else
-            log_denominator_momentum = log(HEIGHT_WIND_VELOCITY) - log(z0_momentum)
-            log_denominator_heat = log(HEIGHT_TEMPERATURE) - log(z0_heat)
-            log_denominator_humidity = log(HEIGHT_HUMIDITY) - log(z0_humidity)
+            log_denominator_momentum = log(height_wind_velocity) - log(z0_momentum)
+            log_denominator_heat = log(height_air_temperature) - log(z0_heat)
+            log_denominator_humidity = log(height_humidity) - log(z0_humidity)
          end if
          
          log_denominator_momentum = sign(max(abs(log_denominator_momentum), SMALL_NUMBER), log_denominator_momentum)
@@ -565,13 +573,14 @@ contains
 
    !> Bulk Richardson number based on virtual temperature difference (Richardson).
    pure function compute_richardson_number(wind_speed, surface_temperature, air_temperature, air_pressure, &
-                                   air_specific_humidity, saturated_humidity_reduction_factor) result(richardson_number)
+                  air_specific_humidity, saturated_humidity_reduction_factor, height_wind_velocity) result(richardson_number)
       real(kind=dp), intent(in) :: wind_speed             !< Wind speed magnitude [m/s].
       real(kind=dp), intent(in) :: surface_temperature    !< Surface temperature [K].
       real(kind=dp), intent(in) :: air_temperature        !< Air temperature [K].
       real(kind=dp), intent(in) :: air_pressure           !< Air pressure [Pa].
       real(kind=dp), intent(in) :: air_specific_humidity  !< Air specific humidity [kg/kg].
       real(kind=dp), intent(in) :: saturated_humidity_reduction_factor !< Saturation reduction factor [-].
+      real(kind=dp), intent(in) :: height_wind_velocity   !< Height of prescribed wind velocity [m]
       real(kind=dp) :: richardson_number             !< Richardson number [-].
       real(kind=dp) :: surface_specific_humidity
       real(kind=dp) :: surface_virtual_temperature
@@ -584,7 +593,7 @@ contains
       air_virtual_temperature = air_temperature * (1.0_dp + CONST_EST*air_specific_humidity)
       virtual_temperature_difference = air_virtual_temperature - surface_virtual_temperature
 
-      richardson_number = CONST_GRAVITY * virtual_temperature_difference * HEIGHT_WIND_VELOCITY / &
+      richardson_number = CONST_GRAVITY * virtual_temperature_difference * height_wind_velocity / &
                                max(air_virtual_temperature*wind_speed*wind_speed, 1.0e-10_dp)
    end function compute_richardson_number
 
