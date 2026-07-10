@@ -9580,7 +9580,7 @@ contains
          maxbnd = ceiling(sqrt(real(numl))) ! First estimate of numbnd
          allocate (ibndlink(maxbnd))
          do L = 1, numl
-            if (lnn(L) < 2 .and. kn(3, L) == 2) then
+            if (lnn(L) < 2 .and. kn(3, L) == LINK_2D) then
                numbnd = numbnd + 1
                if (numbnd > maxbnd) then
                   maxbnd = max(NUMBND, nint(1.2 * maxbnd))
@@ -11007,7 +11007,7 @@ contains
          end if
 
          ! TODO: AvD: replace by read-in edge_type
-         ! NOTE: AvD: even meshgeom%dim is not entirely suitable, because if a net file was saved without cell info, then we currently write topology_dimension=1, whereas we actually intend to have kn(3,:)=2.
+         ! NOTE: AvD: even meshgeom%dim is not entirely suitable, because if a net file was saved without cell info, then we currently write topology_dimension=1, whereas we actually intend to have kn(3,:)=LINK_2D.
          kn3(:) = meshgeom%dim ! was 2, Needs to be read from file at some point
 
          ! Backwards compatibility
@@ -11397,7 +11397,7 @@ contains
       ! Repair invalid kn3 codes (e.g. 0, always set to default 2==2D, i.e., don't read in thin dam codes)
       do L = numl_keep + 1, numl_keep + numl_read
          if (kn(3, L) < 1) then
-            kn(3, L) = 2
+            kn(3, L) = LINK_2D
          end if
       end do
 
@@ -15232,7 +15232,7 @@ contains
                ierr = ionc_get_edge_nodes(ioncid, im2d, kn12, 1)
                do L = 1, numl2d_read
                   kn(1:2, numl1d + L) = numk1d + kn12(1:2, L)
-                  kn(3, numl1d + L) = 2
+                  kn(3, numl1d + L) = LINK_2D
                end do
             end if
          else
@@ -15578,7 +15578,7 @@ contains
                   numl = numl + 1
                   kn(1, numl) = pbr%grd(k)
                   kn(2, numl) = pbr%grd(k + 1)
-                  kn(3, numl) = 1
+                  kn(3, numl) = LINK_1D
                end do
 
             end do
