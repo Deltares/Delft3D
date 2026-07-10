@@ -92,7 +92,6 @@ contains
       allocate (base_dirs(size(extfile_new_list)))
 
       call init_registered_items()
-      call build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
 
       ! First cycle, validate all external forcing files and add their contents to the bnd_ptrs list.
       do i_ext = 1, size(extfile_new_list)
@@ -152,6 +151,8 @@ contains
 
          num_items_in_file = tree_num_nodes(bnd_ptr)
 
+         call build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
+
          ib = 0
          ibqh = 0
          initial_threshold_abort = threshold_abort
@@ -190,15 +191,15 @@ contains
 
          call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''')
 
+         if (allocated(itpenzr)) then
+            deallocate (itpenzr)
+         end if
+
+         if (allocated(itpenur)) then
+            deallocate (itpenur)
+         end if
+
       end do
-
-      if (allocated(itpenzr)) then
-         deallocate (itpenzr)
-      end if
-
-      if (allocated(itpenur)) then
-         deallocate (itpenur)
-      end if
 
       call finalize_lateral_forcings()
 
