@@ -2119,6 +2119,8 @@ contains
       integer :: ii, jj
       integer :: nmiss
       real(dp), dimension(:, :), pointer :: s2D_T0, s2D_T1 !< 2D representation of linearly indexed array arr1D
+      real(dp) :: sourceValue !< sourceValue to be applied to the targetValues
+      logical :: status !< status of undefined values check
       integer :: n_cols, n_rows, n_points
       integer :: mp, np
       integer :: i, j
@@ -2185,19 +2187,24 @@ contains
                   end do
 
                   if (nmiss == 0) then ! if sufficient data for bi-linear interpolation
-                     if (connection%converterPtr%operandType == EC_OPERAND_REPLACE) then
-                        targetValues(i) = 0.0_dp
-                     end if
+
                      wf_i = indexWeight%weightFactors(1:4, i)
-                     targetValues(i) = targetValues(i) &
-                                       + a0 * (wf_i(1) * s2D_T0(mp, np) + &
-                                               wf_i(2) * s2D_T0(mp + 1, np) + &
-                                               wf_i(3) * s2D_T0(mp + 1, np + 1) + &
-                                               wf_i(4) * s2D_T0(mp, np + 1)) &
-                                       + a1 * (wf_i(1) * s2D_T1(mp, np) + &
-                                               wf_i(2) * s2D_T1(mp + 1, np) + &
-                                               wf_i(3) * s2D_T1(mp + 1, np + 1) + &
-                                               wf_i(4) * s2D_T1(mp, np + 1))
+                     sourceValue = a0 * (wf_i(1) * s2D_T0(mp, np) + &
+                                         wf_i(2) * s2D_T0(mp + 1, np) + &
+                                         wf_i(3) * s2D_T0(mp + 1, np + 1) + &
+                                         wf_i(4) * s2D_T0(mp, np + 1)) &
+                                 + a1 * (wf_i(1) * s2D_T1(mp, np) + &
+                                         wf_i(2) * s2D_T1(mp + 1, np) + &
+                                         wf_i(3) * s2D_T1(mp + 1, np + 1) + &
+                                         wf_i(4) * s2D_T1(mp, np + 1))
+
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(i)], status)
+                     if (.not. status) then
+                        return
+                     end if
+
+                     call apply_operand(connection%converterPtr%operandType, targetValues(i), sourceValue)
+
                   end if
                end if
             end do
@@ -2445,6 +2452,7 @@ contains
       integer :: j
       integer :: start_j
       integer :: grid_width, tgtndx
+      logical :: status !< status of undefined values check
       
       success = .false.
       
@@ -2454,7 +2462,7 @@ contains
 
          select case (connection%converterPtr%operandType)
 
-         case (EC_OPERAND_REPLACE_ELEMENT)
+         case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
             tgtndx = connection%converterPtr%targetIndex
             grid_width = connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
@@ -2462,11 +2470,39 @@ contains
 
             if (input < connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)) then
 
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(1) ! waterlevel(i)
+               call check_undefined_values_for_operand( &
+                  connection%converterPtr%operandType, &
+                  [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
+                  status &
+               )
+
+               if (.not. status) then
+                  return
+               end if
+
+               call apply_operand( &
+                  connection%converterPtr%operandType, &
+                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
+                  connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(1) & ! waterlevel(i)
+               )
 
             else if (input > connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width)) then
 
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width) ! waterlevel(grid_width)
+               call check_undefined_values_for_operand( &
+                  connection%converterPtr%operandType, &
+                  [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
+                  status &
+               )
+
+               if (.not. status) then
+                  return
+               end if
+
+               call apply_operand( &
+                  connection%converterPtr%operandType, &
+                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
+                  connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width) & ! waterlevel(grid_width)
+               )
 
             else
 
@@ -2476,8 +2512,24 @@ contains
                      exit
                   end if
                end do
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(3)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) * input &
-                                                                                  + connection%sourceItemsPtr(4)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1)
+
+               call check_undefined_values_for_operand( &
+                  connection%converterPtr%operandType, &
+                  [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
+                  status &
+               )
+
+               if (.not. status) then
+                  return
+               end if
+
+               call apply_operand( &
+                  connection%converterPtr%operandType, &
+                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
+                  connection%sourceItemsPtr(3)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) * input + &
+                  connection%sourceItemsPtr(4)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) &
+               )
+
             end if
 
          case default
