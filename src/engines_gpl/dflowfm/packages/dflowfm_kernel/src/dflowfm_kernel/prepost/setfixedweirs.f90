@@ -67,6 +67,7 @@ contains
       use m_find_crossed_links_kdtree2
       use m_filez, only: oldfil, doclose, newfil
       use precision_basics, only: comparereal
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_STREETINLET
 
       integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
       integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
@@ -296,7 +297,7 @@ contains
          n1 = ln(1, L)
          n2 = ln(2, L)
 
-         if (kcu(L) == 1 .or. kcu(L) == 5) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D2D_STREETINLET) then
             cycle ! UNST-2226: test code for forbidding fixed weirs on 1D
          end if
 
@@ -317,7 +318,7 @@ contains
             bob(1, L) = max(bob(1, L), zc)
             bob(2, L) = max(bob(2, L), zc)
 
-            if (kcu(L) /= 2 .and. kcu(L) /= 1) then
+            if (kcu(L) /= LINK_2D .and. kcu(L) /= LINK_1D) then
                cycle ! weirs only on regular links
             end if
 

@@ -6,9 +6,9 @@ module m_atmospheric_stability
 !! by updating roughness lengths and stability corrections (psi functions) until convergence. 
 !! From these, surface fluxes are derived via:
 !!
-!!   tau   = rho_air * u_star^2 = rho_air * C_D * |U| * U
-!!   Qh    = rho_air * Cp * u_star * t_star = rho_air * C_H * C_P * (T_air - T_surface) * U
-!!   Qe    = rho_air * Lv * u_star * q_star = rho_air * L_V * C_E * (q_air - q_surface) * U
+!!   tau   = rho_air * u_star^2 = rho_air * c_d * |U| * U
+!!   Qh    = rho_air * Cp * u_star * t_star = rho_air * c_h * C_P * (T_air - T_surface) * U
+!!   Qe    = rho_air * Lv * u_star * q_star = rho_air * L_V * c_e * (q_air - q_surface) * U
 !!
 !! Inputs required:
 !!   - Wind velocity components (u, v)
@@ -20,6 +20,7 @@ module m_atmospheric_stability
    use precision, only: dp
    use m_sferic, only: pi
    use m_physcoef, only: vonkarw
+   use m_flowparameters, only: EPS8
    
    implicit none(type, external)
    
@@ -38,8 +39,13 @@ module m_atmospheric_stability
    public :: get_z0_momentum
    public :: get_z0_heat
    public :: get_z0_humidity
-   public :: get_monin_obukhov_length
+   public :: get_obukhov_length
    public :: get_richardson_number
+   public :: get_bulk_exchange_diagnostics
+   public :: get_w_star
+   public :: get_transfer_coeff_momentum
+   public :: get_transfer_coeff_sensible_heat
+   public :: get_transfer_coeff_latent_heat
    
    real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
@@ -54,7 +60,6 @@ module m_atmospheric_stability
    real(kind=dp), parameter :: CONST_E0 = 611.21_dp ! water vapour saturation pressure over water (Pa) at triple point temperature (Tt) [Pa]
    real(kind=dp), parameter :: CONST_TT = 273.16_dp ! triple point temperature [K]
    real(kind=dp), parameter :: OBUKHOV_LENGTH_LIMIT = 1.0e4_dp ! limit of Obukhov length to prevent numerical issues [m]
-   real(kind=dp), parameter :: SMALL_NUMBER = 1.0e-8_dp
    
    !> Optional switches controlling physical parameterizations.
    !! Enable terms only when they are needed for the target conditions.
@@ -73,11 +78,14 @@ module m_atmospheric_stability
       real(kind=dp) :: t_star = 0.0_dp                 !< Temperature scale [K].
       real(kind=dp) :: q_star = 0.0_dp                 !< Humidity scale [kg/kg].
       real(kind=dp) :: w_star = 0.0_dp                 !< Free convective velocity scale [m/s].
-      real(kind=dp) :: monin_obukhov_length = 0.0_dp   !< Obukhov length [m].
+      real(kind=dp) :: obukhov_length = 0.0_dp         !< Obukhov length [m].
       real(kind=dp) :: richardson_number = 0.0_dp      !< Bulk Richardson number [-].
       real(kind=dp) :: z0_momentum = 0.0_dp            !< Momentum roughness [m].
       real(kind=dp) :: z0_heat = 0.0_dp                !< Heat roughness [m].
       real(kind=dp) :: z0_humidity = 0.0_dp            !< Humidity roughness [m].
+      real(kind=dp) :: c_d = 0.0_dp                    !< Bulk transfer coefficient of momentum flux [-]
+      real(kind=dp) :: c_h = 0.0_dp                    !< Bulk transfer coefficient of sensible heat flux [-]
+      real(kind=dp) :: c_e = 0.0_dp                    !< Bulk transfer coefficient of latent heat flux [-]
    end type t_scales
 
    !> Fluxes data type.
@@ -126,6 +134,7 @@ contains
       real(kind=dp) :: heat_profile_correction, humidity_profile_correction
       real(kind=dp) :: convective_velocity_scale
       real(kind=dp) :: inverse_obukhov_length
+      real(kind=dp) :: denom_d, denom_h, denom_e
       integer :: iteration
       integer, parameter :: MINIMUM_ITERATION = 5
       integer, parameter :: MAXIMUM_ITERATION = 50
@@ -228,17 +237,17 @@ contains
             log_denominator_humidity = log(height_humidity) - log(z0_humidity)
          end if
          
-         log_denominator_momentum = sign(max(abs(log_denominator_momentum), SMALL_NUMBER), log_denominator_momentum)
-         log_denominator_heat = sign(max(abs(log_denominator_heat), SMALL_NUMBER), log_denominator_heat)
-         log_denominator_humidity = sign(max(abs(log_denominator_humidity), SMALL_NUMBER), log_denominator_humidity)
+         log_denominator_momentum = sign(max(abs(log_denominator_momentum), EPS8), log_denominator_momentum)
+         log_denominator_heat = sign(max(abs(log_denominator_heat), EPS8), log_denominator_heat)
+         log_denominator_humidity = sign(max(abs(log_denominator_humidity), EPS8), log_denominator_humidity)
 
          result%u_star = vonkarw * delta_wind_speed / log_denominator_momentum
          result%t_star = vonkarw * delta_temperature / log_denominator_heat
          result%q_star = vonkarw * delta_specific_humidity / log_denominator_humidity
 
-         convergence_error = sqrt(((result%u_star - u_star)/max(abs(u_star), SMALL_NUMBER))**2 + &
-                             ((result%t_star - t_star)/max(abs(t_star), SMALL_NUMBER))**2 + &
-                             ((result%q_star - q_star)/max(abs(q_star), SMALL_NUMBER))**2)
+         convergence_error = sqrt(((result%u_star - u_star)/max(abs(u_star), EPS8))**2 + &
+                             ((result%t_star - t_star)/max(abs(t_star), EPS8))**2 + &
+                             ((result%q_star - q_star)/max(abs(q_star), EPS8))**2)
 
          u_star = result%u_star
          t_star = result%t_star
@@ -253,11 +262,18 @@ contains
       result%t_star = t_star
       result%q_star = q_star
       result%w_star = convective_velocity_scale
-      result%monin_obukhov_length = obukhov_length
+      result%obukhov_length = obukhov_length
       result%richardson_number = richardson_number
       result%z0_momentum = z0_momentum
       result%z0_heat = z0_heat
       result%z0_humidity = z0_humidity
+      
+      denom_d = max(wind_velocity_magnitude, EPS8)
+      denom_h = max(abs(delta_temperature), EPS8)
+      denom_e = max(abs(delta_specific_humidity), EPS8)
+      result%c_d = (u_star / denom_d)**2
+      result%c_h = abs((u_star / denom_d)*(t_star / denom_h))
+      result%c_e = abs((u_star / denom_d)*(q_star / denom_e))
    end function compute_scaling_parameters
 
    !> Compute arrays of scaling parameters and bulk surface fluxes.
@@ -322,8 +338,8 @@ contains
 
    !> Return wind-stress component arrays from module-stored fluxes.
    subroutine get_wind_stress(wind_stress_x, wind_stress_y)
-      real(kind=dp), allocatable, intent(out) :: wind_stress_x(:)
-      real(kind=dp), allocatable, intent(out) :: wind_stress_y(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: wind_stress_x !< Wind-stress x-component [N/m^2].
+      real(kind=dp), allocatable, dimension(:), intent(out) :: wind_stress_y !< Wind-stress y-component [N/m^2].
       integer :: index
       integer :: number_of_elements
 
@@ -343,7 +359,7 @@ contains
 
    !> Return latent heat flux array [W/m^2] from module-stored fluxes.
    subroutine get_latent_heat_flux(heat_flux)
-      real(kind=dp), allocatable, intent(out) :: heat_flux(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: heat_flux !< Latent heat flux [W/m^2].
       integer :: index
       integer :: number_of_elements
 
@@ -361,7 +377,7 @@ contains
 
    !> Return sensible heat flux array [W/m^2] from module-stored fluxes.
    subroutine get_sensible_heat_flux(heat_flux)
-      real(kind=dp), allocatable, intent(out) :: heat_flux(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: heat_flux !< Sensible heat flux [W/m^2].
       integer :: index
       integer :: number_of_elements
 
@@ -379,7 +395,7 @@ contains
 
    !> Return u* array [m/s] from module-stored scaling parameters.
    subroutine get_u_star(u_star)
-      real(kind=dp), allocatable, intent(out) :: u_star(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: u_star !< Friction velocity u* [m/s].
       integer :: index
       integer :: number_of_elements
 
@@ -397,7 +413,7 @@ contains
 
    !> Return t* array [K] from module-stored scaling parameters.
    subroutine get_t_star(t_star)
-      real(kind=dp), allocatable, intent(out) :: t_star(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: t_star !< Temperature scale t* [K].
       integer :: index
       integer :: number_of_elements
 
@@ -415,7 +431,7 @@ contains
 
    !> Return q* array [kg/kg] from module-stored scaling parameters.
    subroutine get_q_star(q_star)
-      real(kind=dp), allocatable, intent(out) :: q_star(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: q_star !< Humidity scale q* [kg/kg].
       integer :: index
       integer :: number_of_elements
 
@@ -431,9 +447,81 @@ contains
       end do
    end subroutine get_q_star
 
+   !> Return w* array [m/s] from module-stored scaling parameters.
+   subroutine get_w_star(w_star)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: w_star !< Convective velocity scale w* [m/s].
+      integer :: index
+      integer :: number_of_elements
+
+      if (.not. allocated(scaling_parameters)) then
+         error stop 'get_w_star: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
+      end if
+
+      number_of_elements = size(scaling_parameters)
+      allocate(w_star(number_of_elements))
+
+      do index = 1, number_of_elements
+         w_star(index) = scaling_parameters(index)%w_star
+      end do
+   end subroutine get_w_star
+
+   !> Return bulk transfer coefficient of momentum flux [-] from module-stored scaling parameters.
+   subroutine get_transfer_coeff_momentum(c_d)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: c_d !< Bulk momentum transfer coefficient [-].
+      integer :: index
+      integer :: number_of_elements
+
+      if (.not. allocated(scaling_parameters)) then
+         error stop 'get_transfer_coeff_momentum: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
+      end if
+
+      number_of_elements = size(scaling_parameters)
+      allocate(c_d(number_of_elements))
+
+      do index = 1, number_of_elements
+         c_d(index) = scaling_parameters(index)%c_d
+      end do
+   end subroutine get_transfer_coeff_momentum
+
+   !> Return bulk transfer coefficient of sensible heat flux [-] from module-stored scaling parameters.
+   subroutine get_transfer_coeff_sensible_heat(c_h)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: c_h !< Bulk sensible-heat transfer coefficient [-].
+      integer :: index
+      integer :: number_of_elements
+
+      if (.not. allocated(scaling_parameters)) then
+         error stop 'get_transfer_coeff_sensible_heat: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
+      end if
+
+      number_of_elements = size(scaling_parameters)
+      allocate(c_h(number_of_elements))
+
+      do index = 1, number_of_elements
+         c_h(index) = scaling_parameters(index)%c_h
+      end do
+   end subroutine get_transfer_coeff_sensible_heat
+
+   !> Return bulk transfer coefficient of latent heat flux [-] from module-stored scaling parameters.
+   subroutine get_transfer_coeff_latent_heat(c_e)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: c_e !< Bulk latent-heat transfer coefficient [-].
+      integer :: index
+      integer :: number_of_elements
+
+      if (.not. allocated(scaling_parameters)) then
+         error stop 'get_transfer_coeff_latent_heat: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
+      end if
+
+      number_of_elements = size(scaling_parameters)
+      allocate(c_e(number_of_elements))
+
+      do index = 1, number_of_elements
+         c_e(index) = scaling_parameters(index)%c_e
+      end do
+   end subroutine get_transfer_coeff_latent_heat
+
    !> Return momentum roughness length array [m] from module-stored scaling parameters.
    subroutine get_z0_momentum(z0_momentum)
-      real(kind=dp), allocatable, intent(out) :: z0_momentum(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: z0_momentum !< Momentum roughness length [m].
       integer :: index
       integer :: number_of_elements
 
@@ -451,7 +539,7 @@ contains
 
    !> Return heat roughness length array [m] from module-stored scaling parameters.
    subroutine get_z0_heat(z0_heat)
-      real(kind=dp), allocatable, intent(out) :: z0_heat(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: z0_heat !< Heat roughness length [m].
       integer :: index
       integer :: number_of_elements
 
@@ -469,7 +557,7 @@ contains
 
    !> Return humidity roughness length array [m] from module-stored scaling parameters.
    subroutine get_z0_humidity(z0_humidity)
-      real(kind=dp), allocatable, intent(out) :: z0_humidity(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: z0_humidity !< Humidity roughness length [m].
       integer :: index
       integer :: number_of_elements
 
@@ -486,26 +574,26 @@ contains
    end subroutine get_z0_humidity
 
    !> Return Obukhov length array [m] from module-stored scaling parameters.
-   subroutine get_monin_obukhov_length(monin_obukhov_length)
-      real(kind=dp), allocatable, intent(out) :: monin_obukhov_length(:)
+   subroutine get_obukhov_length(obukhov_length)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: obukhov_length !< Obukhov length [m].
       integer :: index
       integer :: number_of_elements
 
       if (.not. allocated(scaling_parameters)) then
-         error stop 'get_monin_obukhov_length: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
+         error stop 'get_obukhov_length: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
       end if
 
       number_of_elements = size(scaling_parameters)
-      allocate(monin_obukhov_length(number_of_elements))
+      allocate(obukhov_length(number_of_elements))
 
       do index = 1, number_of_elements
-         monin_obukhov_length(index) = scaling_parameters(index)%monin_obukhov_length
+         obukhov_length(index) = scaling_parameters(index)%obukhov_length
       end do
-   end subroutine get_monin_obukhov_length
+   end subroutine get_obukhov_length
 
    !> Return bulk Richardson number array [-] from module-stored scaling parameters.
    subroutine get_richardson_number(richardson_number)
-      real(kind=dp), allocatable, intent(out) :: richardson_number(:)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: richardson_number !< Bulk Richardson number [-].
       integer :: index
       integer :: number_of_elements
 
@@ -521,6 +609,36 @@ contains
       end do
    end subroutine get_richardson_number
 
+   !> Return a batch of atmospheric-stability diagnostics from module-stored scaling parameters.
+   subroutine get_bulk_exchange_diagnostics(w_star, obukhov_length, c_d, c_h, c_e)
+      real(kind=dp), allocatable, dimension(:), intent(out) :: w_star !< Convective velocity scale w* [m/s].
+      real(kind=dp), allocatable, dimension(:), intent(out) :: obukhov_length !< Obukhov length [m].
+      real(kind=dp), allocatable, dimension(:), intent(out) :: c_d !< Bulk momentum transfer coefficient [-].
+      real(kind=dp), allocatable, dimension(:), intent(out) :: c_h !< Bulk sensible-heat transfer coefficient [-].
+      real(kind=dp), allocatable, dimension(:), intent(out) :: c_e !< Bulk latent-heat transfer coefficient [-].
+      integer :: index
+      integer :: number_of_elements
+
+      if (.not. allocated(scaling_parameters)) then
+         error stop 'get_bulk_exchange_diagnostics: module scaling parameters are not available. Call compute_scales_and_fluxes first.'
+      end if
+
+      number_of_elements = size(scaling_parameters)
+      allocate(w_star(number_of_elements))
+      allocate(obukhov_length(number_of_elements))
+      allocate(c_d(number_of_elements))
+      allocate(c_h(number_of_elements))
+      allocate(c_e(number_of_elements))
+
+      do index = 1, number_of_elements
+         w_star(index) = scaling_parameters(index)%w_star
+         obukhov_length(index) = scaling_parameters(index)%obukhov_length
+         c_d(index) = scaling_parameters(index)%c_d
+         c_h(index) = scaling_parameters(index)%c_h
+         c_e(index) = scaling_parameters(index)%c_e
+      end do
+   end subroutine get_bulk_exchange_diagnostics
+
    !> Compute roughness lengths following an ECMWF-style parameterization.
    pure subroutine compute_roughness_lengths(u_star, charnock, z0_momentum, z0_heat, z0_humidity)
       real(kind=dp), intent(in) :: u_star, charnock          !< u* [m/s], Charnock [-].
@@ -530,7 +648,7 @@ contains
       real(kind=dp), parameter :: ALPHA_Q = 0.62_dp ! roughness length coefficient for humidity
       real(kind=dp) :: inverse_u_star
 
-      inverse_u_star = 1.0_dp / sign(max(abs(u_star), SMALL_NUMBER), u_star)
+      inverse_u_star = 1.0_dp / sign(max(abs(u_star), EPS8), u_star)
       z0_momentum = ALPHA_M*CONST_NU_AIR*inverse_u_star + charnock*u_star*u_star/CONST_GRAVITY
       z0_heat = ALPHA_H*CONST_NU_AIR*inverse_u_star
       z0_humidity = ALPHA_Q*CONST_NU_AIR*inverse_u_star
