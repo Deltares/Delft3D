@@ -63,6 +63,9 @@ int sealock_init(sealock_state_t *lock, time_t start_time, unsigned int max_num_
     // Initialize parameters consistent with current and given settings.
     status = dsle_initialize_state(&lock->parameters, &lock->phase_state,
                                    lock->phase_state.salinity_lock, lock->phase_state.head_lock);
+    if (status != SEALOCK_OK) {
+      log_error("Lock '%s': failed to initialize state: %s!\n", lock->id, dsle_error_msg(status));
+    }
   }
 
   if (status == SEALOCK_OK) {
@@ -91,15 +94,24 @@ int sealock_load_timeseries(sealock_state_t *lock, char *filepath) {
         load_phase_wise_timeseries(&lock->timeseries_data, filepath) ? SEALOCK_ERROR : SEALOCK_OK;
     break;
   default:
+    log_error("Lock '%s': unknown computation_mode %d while loading '%s'.\n", lock->id,
+              lock->computation_mode, filepath);
     status = SEALOCK_ERROR;
     break;
+  }
+  if (status != SEALOCK_OK) {
+    log_error("Lock '%s': failed to read operational parameters file '%s'.\n", lock->id, filepath);
+    return status;
   }
 
   if (status == SEALOCK_OK) {
     lock->current_row = NO_CURRENT_ROW;
     num_rows = get_csv_num_rows(&lock->timeseries_data);
-    if (!num_rows)
+    if (num_rows == 0) {
+      log_error("Lock '%s': operational parameters file '%s' contains no data rows.\n", lock->id,
+                filepath);
       return SEALOCK_ERROR;
+    }
     time_column = malloc(num_rows * sizeof(double));
     if (time_column != NULL) {
       status = get_csv_column_data(&lock->timeseries_data, "time", time_column, num_rows);
@@ -109,15 +121,29 @@ int sealock_load_timeseries(sealock_state_t *lock, char *filepath) {
           if (times_strictly_increasing(lock->times, num_rows)) {
             lock->times_len = num_rows;
           } else {
+            // Report the first non-increasing record.
+            for (int i = 1; i < num_rows; i++) {
+              if (lock->times[i] <= lock->times[i - 1]) {
+                log_error("Lock '%s': 'time' column not strictly increasing in '%s' at row %zu "
+                          "(%.0f follows %.0f).\n",
+                          lock->id, filepath, i + 1, time_column[i], time_column[i - 1]);
+                break;
+              }
+            }
             free(lock->times);
             lock->times = NULL;
             status = SEALOCK_ERROR;
           }
         } else {
+          log_error("Lock '%s': failed to parse 'time' values in '%s'!\n", lock->id, filepath);
           status = SEALOCK_ERROR;
         }
+      } else {
+        log_error("Lock '%s': missing or invalid 'time' column in '%s'!\n", lock->id, filepath);
       }
       free(time_column);
+    } else {
+      status = SEALOCK_ERROR;
     }
   }
 
@@ -141,9 +167,12 @@ static int sealock_update_current_row(sealock_state_t *lock, time_t time) {
 
 static int sealock_update_cycle_average_parameters(sealock_state_t *lock, time_t time) {
   sealock_update_current_row(lock, time);
-  return get_csv_row_data(&lock->timeseries_data, lock->current_row, &lock->parameters) == CSV_OK
-             ? SEALOCK_OK
-             : SEALOCK_ERROR;
+  if (get_csv_row_data(&lock->timeseries_data, lock->current_row, &lock->parameters) != CSV_OK) {
+    log_error("Lock '%s': failed to read row %zu from '%s'.\n", lock->id, lock->current_row + 1,
+              lock->operational_parameters_file);
+    return SEALOCK_ERROR;
+  }
+  return SEALOCK_OK;
 }
 
 static int sealock_cycle_average_step(sealock_state_t *lock, time_t time) {
@@ -155,7 +184,7 @@ static int sealock_cycle_average_step(sealock_state_t *lock, time_t time) {
     lock->results.discharge_from_lake = -lock->results.discharge_from_lake;
     lock->results.discharge_from_sea = -lock->results.discharge_from_sea;
   } else {
-    log_error("dsle_calc_steady(..) returned %d: %s!\n", status, dsle_error_msg(status));
+    log_error("dsle_calc_steady(..) returned %d: %s.\n", status, dsle_error_msg(status));
   }
 
   return status;
@@ -234,7 +263,7 @@ static int sealock_apply_phase_wise_result_correction(sealock_state_t *lock, tim
 // concentrations to results3d. Three cases depending on phase routine:
 //
 // Phases 1 and 3 (leveling): pure volume mass balance, no flushing.
-// Phases 2 and 4 (door open): volume mass balance corrected for flush passthrough —
+// Phases 2 and 4 (door open): volume mass balance corrected for flush passthrough,
 //   passthrough water enters from lake and exits to sea carrying c_lake, not c_lock.
 // flush_doors_closed (routine < 0): analytical exponential decay mirroring dsle.c's
 //   step_flush_doors_closed, using constituent concentrations in place of salinity.
@@ -274,14 +303,14 @@ static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const ds
       } else {
         double lam_c = flushing_discharge / volume_lock_before;
         c_lock_new = c_lake + (c_lock - c_lake) * exp(-lam_c * lock->phase_args.duration);
-        double c_mass_out = (c_lock - c_lock_new) * volume_lock_before;
+        double c_mass_out = (c_lock - c_lock_new) * volume_lock_before + c_lake * tp->volume_from_lake;
         c_to_sea = tp->volume_to_sea > DBL_EPSILON ? c_mass_out / tp->volume_to_sea : c_lock;
       }
       c_to_lake = c_lock_new;
     } else {
       // Phases 1-4: volume mass balance.
       // volume_flush_passthrough (non-zero for phases 2 and 4) carries c_lake to sea,
-      // not c_lock — subtract the error and add the correct contribution.
+      // not c_lock, subtract the error and add the correct contribution.
       double mass_after = c_lock * volume_lock_before + c_lake * tp->volume_from_lake +
                           c_sea * tp->volume_from_sea - c_lock * tp->volume_to_lake -
                           c_lock * (tp->volume_to_sea - tp->volume_flush_passthrough) -
@@ -322,44 +351,50 @@ static int sealock_update_phase_wise_parameters(sealock_state_t *lock, time_t ti
   // Update when we enter a new phase, or don't know the time_step yet (at start).
   if (sealock_update_current_row(lock, time)) {
     status = get_csv_row_data(&lock->timeseries_data, lock->current_row, &row_data);
-    if (status == SEALOCK_OK) {
-      // copy relevant args to lock.
-      lock->phase_args.run_update = 1;
-      lock->phase_args.routine = row_data.routine;
-      lock->parameters.density_current_factor_sea = row_data.density_current_factor_sea;
-      lock->parameters.density_current_factor_lake = row_data.density_current_factor_lake;
-      lock->parameters.ship_volume_sea_to_lake = 0;
-      lock->parameters.ship_volume_lake_to_sea = 0;
-      lock->parameters.distance_door_bubble_screen_lake = row_data.distance_door_bubble_screen_lake;
-      lock->parameters.distance_door_bubble_screen_sea = row_data.distance_door_bubble_screen_sea;
-      lock->parameters.flushing_discharge_high_tide = row_data.flushing_discharge_high_tide;
-      lock->parameters.flushing_discharge_low_tide = row_data.flushing_discharge_low_tide;
-      lock->parameters.sill_height_lake = row_data.sill_height_lake;
-      lock->parameters.sill_height_sea = row_data.sill_height_sea;
-      switch (row_data.routine) {
-      case 1:
-      case 3:
-        lock->phase_args.duration = row_data.t_level;
-        break;
-      case 2:
-        lock->phase_args.duration = row_data.t_open_lake;
-        lock->parameters.ship_volume_lake_to_sea = row_data.ship_volume_lake_to_sea;
-        break;
-      case 4:
-        lock->phase_args.duration = row_data.t_open_sea;
-        lock->parameters.ship_volume_sea_to_lake = row_data.ship_volume_sea_to_lake;
-        break;
-      default:
-        if (row_data.routine < 0) {
-          lock->phase_args.duration = row_data.t_flushing;
-        } else {
-          status = SEALOCK_ERROR;
-        }
-        break;
-      }
-      lock->phase_args.time_duration_end =
-          lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
+    if (status != SEALOCK_OK) {
+      log_error("Lock '%s': failed to read row %zu from '%s'.\n", lock->id, lock->current_row + 1,
+                lock->operational_parameters_file);
+      return status;
     }
+    // copy relevant args to lock.
+    lock->phase_args.run_update = 1;
+    lock->phase_args.routine = row_data.routine;
+    lock->parameters.density_current_factor_sea = row_data.density_current_factor_sea;
+    lock->parameters.density_current_factor_lake = row_data.density_current_factor_lake;
+    lock->parameters.ship_volume_sea_to_lake = 0;
+    lock->parameters.ship_volume_lake_to_sea = 0;
+    lock->parameters.distance_door_bubble_screen_lake = row_data.distance_door_bubble_screen_lake;
+    lock->parameters.distance_door_bubble_screen_sea = row_data.distance_door_bubble_screen_sea;
+    lock->parameters.flushing_discharge_high_tide = row_data.flushing_discharge_high_tide;
+    lock->parameters.flushing_discharge_low_tide = row_data.flushing_discharge_low_tide;
+    lock->parameters.sill_height_lake = row_data.sill_height_lake;
+    lock->parameters.sill_height_sea = row_data.sill_height_sea;
+    switch (row_data.routine) {
+    case 1:
+    case 3:
+      lock->phase_args.duration = row_data.t_level;
+      break;
+    case 2:
+      lock->phase_args.duration = row_data.t_open_lake;
+      lock->parameters.ship_volume_lake_to_sea = row_data.ship_volume_lake_to_sea;
+      break;
+    case 4:
+      lock->phase_args.duration = row_data.t_open_sea;
+      lock->parameters.ship_volume_sea_to_lake = row_data.ship_volume_sea_to_lake;
+      break;
+    default:
+      if (row_data.routine < 0) {
+        lock->phase_args.duration = row_data.t_flushing;
+      } else {
+        log_error("Lock '%s': invalid routine %d in '%s' at row %zu (expected 1-4 or negative "
+                  "for flushing).\n",
+                  lock->id, row_data.routine, lock->operational_parameters_file,
+                  lock->current_row + 1);
+        status = SEALOCK_ERROR;
+      }
+      break;
+    }
+    lock->phase_args.time_duration_end = lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
   }
   return status;
 }
@@ -406,7 +441,7 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
     if (status == 2 && (lock->phase_args.routine == 2 || lock->phase_args.routine == 4)) {
       // There was a larger than allowed difference between the head and the lock when opening the doors.
       // Calculations should continue, but we do need to log a warning.
-      log_warning("dsle_step_phase_%d(..) returned %d: %s!\n", lock->phase_args.routine, status,
+      log_warning("dsle_step_phase_%d(..) returned %d: %s.\n", lock->phase_args.routine, status,
                   dsle_error_msg(status));
       status = SEALOCK_OK;
     }
@@ -416,10 +451,10 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
       status = sealock_phase_results_to_results(lock);
     } else {
       if (lock->phase_args.routine > 0) {
-        log_error("dsle_step_phase_%d(..) returned %d: %s!\n", lock->phase_args.routine, status,
+        log_error("dsle_step_phase_%d(..) returned %d: %s.\n", lock->phase_args.routine, status,
                   dsle_error_msg(status));
       } else if (lock->phase_args.routine < 0) {
-        log_error("dsle_step_flush_doors_closed(..) returned %d: %s!\n", status,
+        log_error("dsle_step_flush_doors_closed(..) returned %d: %s.\n", status,
                   dsle_error_msg(status));
       }
     }
@@ -462,6 +497,7 @@ int sealock_set_parameters_for_time(sealock_state_t *lock, time_t time) {
     status = sealock_update_phase_wise_parameters(lock, time);
     break;
   default:
+    log_error("Lock '%s': unknown computation_mode %d!\n", lock->id, lock->computation_mode);
     status = SEALOCK_ERROR; // Should never happen.
     break;
   }

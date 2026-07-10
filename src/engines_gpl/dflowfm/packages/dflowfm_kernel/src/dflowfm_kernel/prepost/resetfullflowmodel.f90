@@ -72,6 +72,7 @@ contains
       use m_ec_interpolationsettings
       use unstruc_channel_flow
       use m_sobekdfm
+      use m_fm_icecover, only: default_fm_icecover
       use m_waves, only: default_waves
       use m_save_ugrid_state
       use m_xbeach_avgoutput, only: default_xbeach_avgoutput
@@ -87,6 +88,7 @@ contains
       use fm_deprecated_keywords, only: default_fm_deprecated_keywords
       use m_sediment, only: deallocgrains, default_sediment
       use m_flow_validatestate, only: default_flow_validatestate
+      use m_prefetch, only: cleanup_prefetch_arrays
 
       implicit none
 
@@ -156,6 +158,8 @@ contains
 
       call default_flow()
 
+      call default_fm_icecover()
+
       call default_interpolationsettings()
 
       call default_xbeach_avgoutput()
@@ -181,6 +185,12 @@ contains
       call delCrossSections()
       call delThinDams()
       call delFixedWeirs()
+
+      if (allocated(kbndz)) then
+         deallocate(kbndz)
+      end if
+
+      call cleanup_prefetch_arrays()
 
    end subroutine resetFullFlowModel
 

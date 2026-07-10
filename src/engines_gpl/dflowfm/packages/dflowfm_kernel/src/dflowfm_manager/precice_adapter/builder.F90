@@ -16,14 +16,20 @@ module precice_adapter_builder
       integer(kind=c_int) :: communicator = 0_c_int
       logical :: is_communicator_set = .false.
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_name ! mesh name
+      character(kind=c_char, len=:), allocatable :: cell_center_mesh_3d_name ! mesh name
+      character(kind=c_char, len=:), allocatable :: sources_sinks_mesh_name ! mesh name
       integer(kind=c_int) :: cell_center_mesh_size = 0_c_int ! mesh size (number of points): N
+      integer(kind=c_int) :: cell_center_mesh_3d_size = 0_c_int ! mesh size (number of points): N*kmax
       real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_2d ! mesh coordinates: x1,y1,x2,y2,...,xN,yN
+      real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_3d ! mesh coordinates: x1,y1,z1,x2,y2,z2,...,xN,yN,zN
    contains
       procedure :: set_config_file => builder_set_config_file
       procedure :: set_name => builder_set_name
       procedure :: set_mpi_rank => builder_set_mpi_rank
       procedure :: set_mpi_communicator => builder_set_mpi_communicator
       procedure :: set_cell_center_mesh_2d => builder_set_cell_center_mesh_2d
+      procedure :: set_cell_center_mesh_3d => builder_set_cell_center_mesh_3d
+      procedure :: set_sources_sinks_mesh_name => builder_set_sources_sinks_mesh_name
       procedure :: build => builder_build
    end type
 
@@ -85,7 +91,7 @@ contains
       self%cell_center_mesh_size = cell_center_mesh_size
 
       if (allocated(self%cell_center_mesh_coordinates_2d)) then
-         deallocate(self%cell_center_mesh_coordinates_2d)
+         deallocate (self%cell_center_mesh_coordinates_2d)
       end if
       allocate (self%cell_center_mesh_coordinates_2d(cell_center_mesh_size * 2))
 
@@ -96,13 +102,59 @@ contains
 
    end subroutine builder_set_cell_center_mesh_2d
 
+   subroutine builder_set_cell_center_mesh_3d(self, cell_center_mesh_3d_name, count_2d_cells, count_layers, cell_center_mesh_coordinates_3d_x, cell_center_mesh_coordinates_3d_y, zws)
+      use precision, only: dp
+      use precice_adapter_utils, only: set_cell_center_mesh_zcoords
+
+      class(precice_adapter_builder_t), intent(inout) :: self
+      character(len=*) :: cell_center_mesh_3d_name
+      integer(kind=c_int), intent(in) :: count_2d_cells
+      integer(kind=c_int), intent(in) :: count_layers
+      real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_3d_x
+      real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_3d_y
+      real(kind=c_double), dimension(:), intent(in) :: zws
+      ! Local variables
+      integer :: i
+      integer :: k
+      integer :: id_3d
+
+      self%cell_center_mesh_3d_name = cell_center_mesh_3d_name
+      self%cell_center_mesh_3d_size = count_2d_cells * count_layers
+
+      if (allocated(self%cell_center_mesh_coordinates_3d)) then
+         deallocate (self%cell_center_mesh_coordinates_3d)
+      end if
+      allocate (self%cell_center_mesh_coordinates_3d(self%cell_center_mesh_3d_size * 3))
+
+      ! Add 2D coordinates
+      do i = 1, count_2d_cells
+         do k = 1, count_layers
+            id_3d = (i - 1) * count_layers + k
+            self%cell_center_mesh_coordinates_3d(3 * id_3d - 2) = cell_center_mesh_coordinates_3d_x(i)
+            self%cell_center_mesh_coordinates_3d(3 * id_3d - 1) = cell_center_mesh_coordinates_3d_y(i)
+         end do
+      end do
+      ! Add z coordinates
+      call set_cell_center_mesh_zcoords(count_2d_cells, count_layers, zws, self%cell_center_mesh_coordinates_3d)
+   end subroutine builder_set_cell_center_mesh_3d
+
+   subroutine builder_set_sources_sinks_mesh_name(self, sources_sinks_mesh_name)
+      use precision, only: dp
+      class(precice_adapter_builder_t), intent(inout) :: self
+      character(len=*) :: sources_sinks_mesh_name
+
+      self%sources_sinks_mesh_name = sources_sinks_mesh_name
+
+   end subroutine builder_set_sources_sinks_mesh_name
+
    function builder_build(self) result(adapter_instance)
       class(precice_adapter_builder_t), intent(inout) :: self
       type(precice_adapter_t), pointer :: adapter_instance
 
       adapter_instance => precice_adapter_t(self%config_file, self%name, self%is_communicator_set, self%communicator, &
-                                            self%my_rank, self%number_of_ranks, self%cell_center_mesh_name, &
-                                            self%cell_center_mesh_size, self%cell_center_mesh_coordinates_2d)
+                                            self%my_rank, self%number_of_ranks, self%cell_center_mesh_name, self%cell_center_mesh_3d_name, &
+                                            self%cell_center_mesh_size, self%cell_center_mesh_3d_size, self%cell_center_mesh_coordinates_2d, &
+                                            self%cell_center_mesh_coordinates_3d, self%sources_sinks_mesh_name)
    end function builder_build
 
 end module precice_adapter_builder

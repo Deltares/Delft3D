@@ -74,6 +74,7 @@ module m_fm_erosed
    !     sedpar
    integer, pointer :: nmudfrac
    logical, dimension(:), pointer :: cmpupdfrac
+   logical, pointer :: spatial_d50
    real(fp), dimension(:), pointer :: rhosol
    real(fp), dimension(:), pointer :: cdryb
    real(fp), dimension(:, :, :), pointer :: logseddia
@@ -105,6 +106,8 @@ module m_fm_erosed
    integer, dimension(:, :), pointer :: floclist
    real(fp), pointer :: tbreakup
    real(fp), pointer :: tfloc
+   real(fp), pointer :: difparam
+   real(fp), pointer :: seddif_cal
 
    ! morpar
    real(fp), pointer :: thresh

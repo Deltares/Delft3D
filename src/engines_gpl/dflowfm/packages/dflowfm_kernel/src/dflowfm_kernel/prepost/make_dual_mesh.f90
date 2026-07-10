@@ -95,7 +95,7 @@ contains
       numL_new = 0
       numcur_L = ubound(kn_new, 2)
       do L = 1, numL
-         if (lnn(L) > 1 .and. kn(3, L) == 2) then
+         if (lnn(L) > 1 .and. kn(3, L) == LINK_2D) then
             numL_new = numL_new + 1
             call increaselinks(numL_new, numcur_L)
 

@@ -56,10 +56,10 @@ contains
       use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
       use dfm_error
       use unstruc_netcdf
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_delpol
       use m_timespaceinitialfield_mpi
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D_MAINBRANCH
 
       logical :: bl_set_from_zkuni = .false.
       integer :: ja, ja1, ja2, method, iprimpos
@@ -115,7 +115,7 @@ contains
          call realloc(kc, mx, keepExisting=.false., fill=0)
 
          do L = 1, numL1D
-            if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! TODO: AvD: why not also type 3/4/5/7?
+            if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then ! TODO: AvD: why not also type 3/4/5/7?
                k1 = kn(1, L)
                k2 = kn(2, L)
                if (nmk(k1) > 1) then
@@ -129,7 +129,7 @@ contains
 
          if (iprimpos == 3) then
             do L = 1, numL
-               if (kn(3, L) == 2) then
+               if (kn(3, L) == LINK_2D) then
                   k1 = kn(1, L)
                   k2 = kn(2, L)
                   kc2D(k1) = 1
@@ -209,15 +209,15 @@ contains
                      cycle bft ! Try ini field file next
                   end if
                   success = .true.
-                  if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == ILATTP_1D)) then
+                  if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == SPATIAL_LOCATION_1D)) then
                      call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 1D bedlevel from file '''//trim(filename)//'''.')
                      kc(1:mx) = kc1D
                      success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, UNC_LOC_CN, kc) ! see meteo module
                   else if (strcmpi(qid, 'bedlevel', 8)) then
-                     if ((strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 1) .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == ILATTP_ALL)) then
+                     if ((strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 1) .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == SPATIAL_LOCATION_ALL)) then
                         call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting both 1D and 2D bedlevel from file '''//trim(filename)//'''.')
                         kc(1:mx) = kcc
-                     else if (strcmpi(qid, 'bedlevel2D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == ILATTP_2D)) then
+                     else if (strcmpi(qid, 'bedlevel2D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == SPATIAL_LOCATION_2D)) then
                         call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 2D bedlevel from file '''//trim(filename)//'''.')
                         kc(1:mx) = kc2D
                      end if

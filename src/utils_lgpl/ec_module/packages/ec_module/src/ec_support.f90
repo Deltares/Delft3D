@@ -494,6 +494,16 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
+      case ('sensibleheatflux')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'sshf'
+         ncstdnames(1) = 'surface_upward_sensible_heat_flux'
+      case ('latentheatflux')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'slhf'
+         ncstdnames(1) = 'surface_upward_latent_heat_flux'
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          allocate (ncvarnames(1:2))
          allocate (ncstdnames(1:2))
@@ -750,7 +760,7 @@ contains
    !
    !    ! Initialize the new Converter.
    !    if (.not. (ecConverterSetType(instancePtr, converterId, convType_uniform))) return
-   !    if (.not. (ecConverterSetOperand(instancePtr, converterId, operand_replace_element))) return
+   !    if (.not. (ecConverterSetOperand(instancePtr, converterId, EC_OPERAND_REPLACE_ELEMENT))) return
    !    if (.not. (ecConverterSetInterpolation(instancePtr, converterId, interpolate_timespace))) return
    !    if (.not. (ecConverterSetElement(instancePtr, converterId, targetIndex))) return
    !

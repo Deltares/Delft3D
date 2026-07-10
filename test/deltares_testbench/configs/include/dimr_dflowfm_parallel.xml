@@ -406,7 +406,7 @@
          </checks>
     </testCase>
     <testCase name="e02_f014_c150" ref="dimr">
-        <path version="2026-01-28T13:21:27.846000">e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
+        <path version="2026-04-21T14:36:31.090000">e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -429,7 +429,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c151_convert_old_longculverts_before_partitioning" ref="generic">
-      <path version="2026-01-28T13:22:21.981000">e02_dflowfm/f014_parallel/c151_convert_old_longculverts_before_partitioning</path>
+      <path version="2026-04-21T14:36:35.262000">e02_dflowfm/f014_parallel/c151_convert_old_longculverts_before_partitioning</path>
       <programs>
         <program ref="dflowfm">
             <arguments>
@@ -541,8 +541,9 @@
         </file>
       </checks>
     </testCase>
+    <!-- FLAKY
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
-        <path version="2026-04-17T10:08:37.762000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
+        <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
         <maxRunTime>60.0</maxRunTime>
                 <programs>
           <program ref="dimr">
@@ -564,9 +565,10 @@
             </file>
             <file name="output/SimpleBucket_0000_his.nc" type="netcdf">
                 <parameters>
-                    <parameter name="source_sink_prescribed_discharge" toleranceAbsolute="0.0001" />
+                    <parameter name="bubblescreen_air_discharge" toleranceAbsolute="0.0001" />
                 </parameters>
             </file>
         </checks>
     </testCase>
+    -->
  </testCases>

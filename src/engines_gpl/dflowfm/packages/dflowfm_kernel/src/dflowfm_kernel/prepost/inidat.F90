@@ -39,7 +39,9 @@ module m_inidat
 
    private
 
-   public :: inidat, loadfile, savefile
+   public :: inidat, loadfile, savefile, jaSkipCmdLineArgs
+
+   integer :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
 
 contains
 
@@ -79,7 +81,6 @@ contains
       integer :: k
       real(kind=dp) :: rk
       real(kind=dp) :: rmiss
-      integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
 
       deprecate_pound_wrapped_values = .true.
 

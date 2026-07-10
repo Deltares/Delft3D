@@ -24,7 +24,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
     }
 
     vcs {
@@ -92,9 +92,14 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24
+                +:ci/teamcity/Delft3D/windows/buildEnvironment-i24.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
-            param("trigger.type", "vcs")
+            buildParams {
+                param("trigger.type", "vcs")
+            }
         }
         schedule {
             schedulingPolicy = weekly {
@@ -105,7 +110,9 @@ object WindowsBuildEnvironmentI24 : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
-            param("trigger.type", "schedule")
+            buildParams {
+                param("trigger.type", "schedule")
+            }
         }
     }
 

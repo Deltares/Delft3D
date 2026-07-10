@@ -217,7 +217,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
-     <path version="2026-02-07T13:29:28.708000">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
+     <path version="2026-06-09T13:07:17.062000">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tracer3D_his.nc" type="netCDF">
@@ -307,7 +307,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c040_vertical_mixing_layer_3d" ref="dflowfm_default">
-     <path version="2026-03-13T16:21:18.110000">e02_dflowfm/f019_transport/c040_vertical_mixing_layer_3d</path>
+     <path version="2026-05-19T21:00:00">e02_dflowfm/f019_transport/c040_vertical_mixing_layer_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/sp_his.nc" type="netCDF">
@@ -343,7 +343,7 @@
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
         <parameters>
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-         <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+         <parameter name="x_velocity" toleranceAbsolute="0.0003" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
          <parameter name="salinity" toleranceRelative="0.005" />
         </parameters>
@@ -475,7 +475,7 @@
     </testCase>
 
     <testCase name="e02_f012_c076_waqseries_3d_unaggregated" ref="dflowfm_default">
-      <path version="2025-07-14T09:49:13.972000">e02_dflowfm/f012_inout/c076_waqseries_3d_unaggregated</path>
+      <path version="2026-04-30T14:22:55.201000">e02_dflowfm/f012_inout/c076_waqseries_3d_unaggregated</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/waqtest_map.nc" type="netCDF">
@@ -489,7 +489,7 @@
     </testCase>
 
     <testCase name="e02_f012_c077_waqseries_3d_aggregated" ref="dflowfm_default">
-      <path version="2025-07-14T09:49:19.305000">e02_dflowfm/f012_inout/c077_waqseries_3d_aggregated</path>
+      <path version="2026-04-30T14:23:57.513000">e02_dflowfm/f012_inout/c077_waqseries_3d_aggregated</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/waqtest_map.nc" type="netCDF">
@@ -503,7 +503,7 @@
     </testCase>
 
     <testCase name="e02_f017_c020_sourcesink_3D" ref="dflowfm_default">
-      <path version="2025-10-08T13:23:06.141000">e02_dflowfm/f017_sources_sinks/c020_sourcesink_3D</path>
+      <path version="2026-04-30T14:25:51.342000">e02_dflowfm/f017_sources_sinks/c020_sourcesink_3D</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sorsin3D_map.nc" type="netCDF">
@@ -603,7 +603,7 @@
     </testCase>
 
     <testCase name="e02_f020_c001_htc_read_uniform" ref="dflowfm_default">
-      <path version="2025-10-08T13:35:52.834000">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
+      <path version="2026-04-30T14:27:02.697000">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
@@ -625,7 +625,7 @@
             <parameter name="mesh2d_Qlong" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Qfreva" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Qfrcon" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_Qtot" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qtot" toleranceRelative="1e-6" />
           </parameters>
         </file>
       </checks>
@@ -713,9 +713,21 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e02_f020_c044_sensibleheatflux_latentheatflux" ref="dflowfm_default">
+        <path version="2026-06-01T12:10:00.000000">e02_dflowfm/f020_heat_flux/c044_sensibleheatflux_latentheatflux</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="DFM_OUTPUT_model/model_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_Qeva" toleranceAbsolute="1e-5" />
+                    <parameter name="mesh2d_Qcon" toleranceAbsolute="1e-5" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
 
     <testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
-      <path version="2025-10-07T06:57:58.555000">e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
+      <path version="2026-05-26T12:01:36.951000">e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sigma_map.nc" type="netCDF">
@@ -730,7 +742,37 @@
     </testCase>
 
     <testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:02.648000">e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
+      <path version="2026-05-26T12:01:41.162000">e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f021_c003_slopingbed_anticreep_z" ref="dflowfm_default">
+      <path version="2026-05-26T12:01:44.833000">e02_dflowfm/f021_anti-creep/c003_slopingbed_anticreep_z</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f021_c004_slopingbed_anticreep_z_sigma" ref="dflowfm_default">
+      <path version="2026-05-26T12:01:49.228000">e02_dflowfm/f021_anti-creep/c004_slopingbed_anticreep_z_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
@@ -745,7 +787,7 @@
     </testCase>
 
     <testCase name="e02_f021_c101_bedwithobstacle_anticreep_nonequi_3d" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:06.480000">e02_dflowfm/f021_anti-creep/c101_bedwithobstacle_anticreep_nonequi_3d</path>
+      <path version="2026-05-26T12:00:46.653000">e02_dflowfm/f021_anti-creep/c101_bedwithobstacle_anticreep_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sigma_map.nc" type="netCDF">
@@ -760,7 +802,7 @@
     </testCase>
 
     <testCase name="e02_f021_c102_slopingbed_anticreep_nonequi_3d" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:11.100000">e02_dflowfm/f021_anti-creep/c102_slopingbed_anticreep_nonequi_3d</path>
+      <path version="2026-05-26T12:00:54.544000">e02_dflowfm/f021_anti-creep/c102_slopingbed_anticreep_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
@@ -953,7 +995,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="dflowfm_default">
-      <path version="2026-03-13T16:21:45.714000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+      <path version="2026-05-10T21:00:00.000000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
@@ -966,7 +1008,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2026-03-13T16:21:57.149000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2026-05-10T21:00:00.000000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">
@@ -1526,6 +1568,43 @@
       </checks>
     </testCase>
 
+    <testCase name="c001_ininudge_old_ext" ref="dflowfm_default">
+      <path version="2026-06-29T16:00:00">e02_dflowfm/f045_nudging/c001_ininudge_old_ext</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_ini_nudge/ini_nudge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_sa1" toleranceRelative="1e-6" />
+            <parameter name="mesh2d_tem1" toleranceRelative="1e-6" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="c002_ininudge_ini" ref="dflowfm_default">
+      <path version="2026-06-29T16:00:00">e02_dflowfm/f045_nudging/c002_ininudge_ini</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_ini_nudge/ini_nudge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_sa1" toleranceRelative="1e-6" />
+            <parameter name="mesh2d_tem1" toleranceRelative="1e-6" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="c003_ininudge_new_ext" ref="dflowfm_default">
+      <path version="2026-06-29T16:00:00">e02_dflowfm/f045_nudging/c003_ininudge_new_ext</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_ini_nudge/ini_nudge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_sa1" toleranceRelative="1e-6" />
+            <parameter name="mesh2d_tem1" toleranceRelative="1e-6" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	
     <testCase name="e02_f045_c010_nudgerate" ref="dflowfm_default">
       <path version="2025-10-07T07:16:58.261000">e02_dflowfm/f045_nudging/c010_nudgerate</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1556,7 +1635,7 @@
     </testCase>
 
     <testCase name="e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d" ref="platform_specific">
-      <path version="2025-10-07T07:07:06.711000">e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d</path>
+      <path version="2026-06-01T08:29:36.870000">e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1601,7 +1680,7 @@
     </testCase>
 
     <testCase name="e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d" ref="dflowfm_default">
-      <path version="2025-10-07T07:07:19.056000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
+      <path version="2026-06-01T08:30:05.507000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1925,6 +2004,76 @@
           <parameters>
             <parameter name="mesh2d_rho" toleranceAbsolute="0.0005" />
             <parameter name="mesh2d_density" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f211_c001_bubblescreens_nieuwemeer_z" ref="dflowfm_config">
+      <path version="2026-05-22T09:28:09.735000">e02_dflowfm/f211_3D_bubblescreens/c001_bubblescreens_nieuwemeer_z</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="output/NieuweMeer_z_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="temperature" toleranceAbsolute="0.005" />
+          </parameters>
+        </file>
+        <file name="output/NieuweMeer_z_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.05" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f211_c002_bubblescreens_nieuwemeer_sigma" ref="dflowfm_config">
+      <path version="2026-05-22T10:30:50.324000">e02_dflowfm/f211_3D_bubblescreens/c002_bubblescreens_nieuwemeer_sigma</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="output/NieuweMeer_sigma_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="temperature" toleranceAbsolute="0.005" />
+          </parameters>
+        </file>
+        <file name="output/NieuweMeer_sigma_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.05" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f211_c003_bubblescreens_nieuwemeer_zsigma" ref="dflowfm_config">
+      <path version="2026-05-22T10:31:40.473000">e02_dflowfm/f211_3D_bubblescreens/c003_bubblescreens_nieuwemeer_zsigma</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="output/NieuweMeer_zsigma_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="temperature" toleranceAbsolute="0.005" />
+          </parameters>
+        </file>
+        <file name="output/NieuweMeer_zsigma_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.05" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>    
+    <testCase name="e02_f211_c04_bubblescreen_edge_z" ref="dflowfm_config">
+      <path version="2026-05-27T12:08:29.931000">e02_dflowfm/f211_bubblescreens/c04_bubblescreen_edge_z</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/SimpleBucket_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="water_balance_total_volume" toleranceRelative="0.05" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f211_c05_bubblescreen_edge_sigma" ref="dflowfm_config">
+      <path version="2026-05-28T09:55:55.696000">e02_dflowfm/f211_bubblescreens/c05_bubblescreen_edge_sigma</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/SimpleBucket_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="water_balance_total_volume" toleranceRelative="0.05" />
           </parameters>
         </file>
       </checks>

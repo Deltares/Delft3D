@@ -4,6 +4,20 @@ Back to main [development page](development.md).
 The preferred build procedure for Linux uses containers; this is the procedure described here.
 Containers are lightweight, isolated environments that package an application and all its dependencies so it can run consistently across different systems.
 
+Third-party dependencies are managed by [Conan 2](https://docs.conan.io/2/) and the build is driven
+by two helper scripts in the repository root:
+
+- [run_conan.py](../run_conan.py): one-time Conan configuration and dependency install.
+- [build.py](../build.py): runs Conan, CMake configure, and (optionally) build and install with `make`.
+
+Pre-built binary packages for the third-party dependencies are hosted on the Deltares Nexus
+([internal-artifacts.deltares.nl](https://internal-artifacts.deltares.nl/)).
+Deltares developers download them directly, while external developers build them locally from the recipes in [conan/recipes](../conan/recipes).
+
+> **Note:** Not all third-party libraries have been migrated to Conan yet.
+> Some still come from the `third-party-libs` Docker container. The build scripts
+> handle both sources transparently.
+
 ## Prerequisites
 - Install git using
   ```
@@ -15,7 +29,6 @@ Containers are lightweight, isolated environments that package an application an
   ```
   git clone https://github.com/Deltares/Delft3D.git
   ```
-  This step is eventually needed for compiling Delft3D, but it also downloads the Dockerfiles for the next step.
 - Install Docker.
   The exact steps depend on your operating system.
   It will typically be something like:
@@ -32,42 +45,150 @@ Containers are lightweight, isolated environments that package an application an
   # 4. Enable & start service
   sudo systemctl enable --now docker
   ```
-- See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the rest of the prerequisites: a container for the base build environment and one with the build environment including all third party dependencies.
-  For Windows, we include all third party dependencies in the source distribution in (semi) compiled form, but on Linux it's common practice that you build such libraries yourself.
+- See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the build-tools container and third-party-libs container (compiler environment and remaining non-Conan dependencies).
+  The `buildtools` image contains the Intel oneAPI compilers, CMake, Python and Conan.
+  The `third-party-libs` image extends `buildtools` with libraries not yet managed by Conan.
 
 ## Build steps
-- To build the Delft3D source code, we use the `third-party-libs` container created in the last step of the prerequisites:
-  ```
-  # Optionally repeat: export TAG=oneapi-2024
-  docker build . -f doc/delft3d.Dockerfile \
-      -t localhost/delft3d:$TAG \
-      --build-arg INTEL_ONEAPI_VERSION=2024 \
-      --build-arg INTEL_FORTRAN_COMPILER=ifx \
-      --build-arg BUILD_TYPE=Release \
-      --build-arg THIRDPARTYLIBS_IMAGE_URL=localhost/third-party-libs \
-      --build-arg BASE_TAG=$TAG
-  ```
-- Alternatively, you can open the build container interactively while making the current folder (root of the repository) available as `/delft3d`:
-  ```
-  # Optionally repeat: export TAG=oneapi-2024
-  docker run -it -v .:/delft3d localhost/third-party-libs:$TAG
-  ```
-  and subsequently inside the container go to that folder, and run the build script.
-  Unfortunately, you have to make sure that some paths have been properly set such that the build process can find all dependencies.
-  In the build container only the last two have not yet been set.
-  ```
-  #export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-  #export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  #export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
-  export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
-  export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
-  
-  cd /delft3d
-  ./build.sh --build all
-  ```
+
+Our toolchain is quite elaborate and we're relying on many third-party tools and libraries.
+The most reliable way to build Delft3D is to use container images that already have all the
+tools required to build our software. We provide two options for building Delft3D on Linux:
+1. Connecting to the [Delft3D devcontainer](/.devcontainer/delft3d/README.md) in VSCode (recommended).
+2. Running the [Delft3D build container](/ci/dockerfiles/linux) interactively.
+
+All commands below are intended to run inside one of these containers.
+The Conan setup is identical for both.
+
+### One-time Conan setup
+
+Before building for the first time, you need to install the Conan profile (compiler/toolchain
+description), configure some conan settings, and configure the remotes from where Conan downloads packages.
+The helper script [run_conan.py](../run_conan.py) takes care of this.
+
+If you use the [devcontainer](../.devcontainer/delft3d/README.md), the Conan cache is persisted
+in a Docker volume across container rebuilds, so you only need to do this setup once.
+
+#### Deltares developers (with Nexus access)
+
+Deltares hosts pre-built binary packages on the
+[Nexus repository](https://internal-artifacts.deltares.nl/#browse/browse:delft3d-conan-dev).
+This repository is currently not public, so you need credentials.
+
+**1. Install the Conan configuration.**
+From the repository root inside the container:
+```bash
+cd /workspaces/delft3d
+
+python run_conan.py initialize deltares
+```
+This installs the compiler profile, global settings, and registers the Deltares Nexus remotes
+(`delft3d-conan-dev` and `deltares-conan-center-proxy`). It also creates the Conan home directory
+(`~/.conan2`) if it did not yet exist.
+
+**2. Configure Nexus credentials.**
+Visit the [user token page](https://internal-artifacts.deltares.nl/#user/usertoken) on Nexus
+(sign in with SSO using your Deltares credentials).
+Click the user button at the top right, then **User Token** and **Access user token**.
+Copy the user token name and user token pass code. These tokens expire after a year
+or can be reset manually.
+
+Create a file called `credentials.json` in your Conan home directory (`~/.conan2`) with the
+following content (replace `<NEXUS_USER_NAME>` and `<NEXUS_PASS_CODE>`):
+```json
+{
+    "credentials": [
+        {
+            "remote": "delft3d-conan-dev",
+            "user": "<NEXUS_USER_NAME>",
+            "password": "<NEXUS_PASS_CODE>"
+        },
+        {
+            "remote": "deltares-conan-center-proxy",
+            "user": "<NEXUS_USER_NAME>",
+            "password": "<NEXUS_PASS_CODE>"
+        }
+    ]
+}
+```
+
+#### External / open-source developers (without Nexus access)
+
+From the repository root inside the container:
+```bash
+cd /workspaces/delft3d
+
+python run_conan.py initialize external
+```
+This installs the same compiler profile and settings.
+You will build all third-party dependencies locally from the recipes in [conan/recipes](../conan/recipes).
+Once built, the packages are cached in `~/.conan2` and reused on
+subsequent builds. You only have to rebuild them when the recipes change.
+
+When invoking the build script you will need to pass the additional `--build-dependencies` flag (see below).
+
+### Build Delft3D using the devcontainer (recommended)
+
+The easiest way to build on Linux is to open this repository in the
+[devcontainer](../.devcontainer/delft3d/README.md). The devcontainer is based on the
+`third-party-libs` image and persists your Conan cache in a Docker volume.
+Once the container is running:
+
+```bash
+cd /workspaces/delft3d
+
+# Build (downloads pre-built Conan binaries from Nexus, configures CMake, compiles sources)
+python build.py --config fm-suite --build --build-type Release
+```
+
+External developers (after `run_conan.py initialize external`) build all dependencies from source
+the first time:
+```bash
+python build.py --config fm-suite --build --build-type Release --build-dependencies
+```
+Subsequent invocations reuse the cached packages, so `--build-dependencies` is only needed again
+after a recipe change. Still, passing `--build-dependencies` does nothing unless there are
+missing third-party packages.
+
+See `python build.py --help` for all options (e.g. `--config d3d4-suite` or `--config all`).
+
+### Build Delft3D in an interactive container
+
+When not using the devcontainer, run the build inside the third-party-libs container directly:
+
+```bash
+sudo docker run -it -v .:/delft3d containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release
+```
+
+Inside the container, follow the same steps as above:
+```bash
+cd /delft3d
+
+# One-time, if not done before in this Conan cache:
+python run_conan.py initialize deltares    # or 'external'
+
+# Build
+python build.py --build --build-type Release
+# External developers add --build-dependencies on the first build (or after a recipe change).
+```
+
+### Using `docker build` (non-interactive)
+
+You can also use the Dockerfile for a non-interactive build.
+This always builds all third-party dependencies from the local recipes in [conan/recipes](../conan/recipes)
+(i.e. the external-developer flow) and no Nexus credentials are required:
+```bash
+export TAG=oneapi-2024
+sudo docker build . -f doc/delft3d.Dockerfile \
+    -t localhost/delft3d:$TAG \
+    --build-arg INTEL_ONEAPI_VERSION=2024 \
+    --build-arg INTEL_FORTRAN_COMPILER=ifx \
+    --build-arg BUILD_TYPE=Release \
+    --build-arg BASE_TAG=$TAG
+```
 
 ### Build arguments
-The dockerfile has seven build argument:
+The dockerfile has the following build arguments:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 - `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `BUILD_TYPE` (default value: `Release`)
@@ -93,6 +214,60 @@ Note that the `BASE_TAG` is added automatically by the Dockerfile (see the `BASE
 
 The `BASE_TAG` ensures that the `delft3d` image is based on the `third-party-libs` image with that tag.
 Note that the default tag used here deviates from the one set in the prerequisites, so you will typically have to overrule it.
+
+## Power-user workflow (raw Conan + CMake)
+
+`run_conan.py` and `build.py` are thin wrappers around `conan` and `cmake` that cover the common
+use cases (and the more complex orchestration required by TeamCity). If you want full control,
+for example to iterate on CMake without re-running Conan, or to use a non-default profile,
+you can drive `conan` and `cmake` directly inside the build container.
+
+Make sure the Delft3D Conan configuration (profiles, settings, remotes) is installed in your
+Conan home. You can do this with the raw `conan` command:
+```bash
+conan config install conan/config
+```
+This is what `python run_conan.py initialize deltares` does under the hood. The `external`
+variant additionally removes the Nexus remotes and registers [conan/recipes](../conan/recipes)
+as a `local-recipes-index` remote. See [run_conan.py](../run_conan.py) for details.
+
+The Conan profile is `delft3d_alma8_intel_2024` and the lockfile [conan.lock](../conan.lock) pins
+recipe revisions for reproducibility. On Linux we use a single-config generator (`Unix Makefiles`),
+so the build type is selected at both `conan install` and `cmake` time. The third-party packages
+themselves are always built/downloaded as `Release`, while the consumer (CMakeDeps generator) build type is selected via
+`&:build_type=...`.
+
+```bash
+# 1. Install dependencies (generates CMakeDeps files).
+#    The first call may build packages (or download them from Nexus).
+conan install . --profile:all=delft3d_alma8_intel_2024 \
+      --settings:all build_type=Release \
+      --settings:all &:build_type=Release \
+      --output-folder=build_fm-suite_release/conan \
+      --lockfile=conan.lock
+
+# 2. CMake configure
+cmake -S ./src/cmake -B build_fm-suite_release -G "Unix Makefiles" \
+      -D CONFIGURATION_TYPE:STRING="fm-suite" \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=./install_fm-suite_release
+
+# 3. Build & install
+cmake --build build_fm-suite_release --parallel
+cmake --install build_fm-suite_release
+```
+
+To build missing dependencies from source (e.g. after changing a recipe), add `--build=missing`:
+```bash
+conan install . --profile:all=delft3d_alma8_intel_2024 \
+      --settings:all build_type=Release \
+      --settings:all &:build_type=Release \
+      --output-folder=build_fm-suite_release/conan \
+      --lockfile=conan.lock \
+      --build=missing
+```
+Use `--build=*` (and `--remote=local-recipes`) instead to rebuild every package from the local
+recipes only. This is what external developers do via `build.py --build-dependencies`.
 
 ## Run
 Now, you should be able to run your first simulations.

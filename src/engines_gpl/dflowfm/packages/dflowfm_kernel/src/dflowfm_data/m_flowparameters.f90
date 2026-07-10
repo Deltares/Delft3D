@@ -122,17 +122,24 @@ module m_flowparameters
    integer, parameter :: TEMPERATURE_MODEL_EXCESS = 3 !< Excess heat flux model
    integer, parameter :: TEMPERATURE_MODEL_COMPOSITE = 5 !< Composite heat flux model
 
+   integer :: air_water_interaction_model !< Air water interaction model, use one of AIR_WATER_INTERACTION_MODEL_... parameters
+   integer, parameter :: AIR_WATER_INTERACTION_MODEL_NONE = 0 !< No air water interaction model
+   integer, parameter :: AIR_WATER_INTERACTION_MODEL_MOST = 1 !< Bulk formulae for heat and momentum fluxes based on Monin-Obukhov Similarity Theory
+   
+   integer :: atmospheric_stability_function !< Atmospheric stability function, use one of ATMOSPHERIC_STABILITY_FUNCTION_... parameters
+   integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_NONE = 0 !< No atmospheric stability function
+   integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_ECMWF = 1 !< ECMWF atmospheric stability function
+
+   integer :: free_convection !< Switch for free convection, use one of FREE_CONVECTION_... parameters
+   integer, parameter :: FREE_CONVECTION_OFF = 0 !< Free convection off
+   integer, parameter :: FREE_CONVECTION_ON = 1 !< Free convection on
+   
+   real(kind=dp) :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
+
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
 
    integer :: itempforcingtyp !< Forcing parameter types 1,2 relative humidity, 3,4 dew point temperature, see code
-
-   logical :: btempforcingtypA !< Forcing parameter air temperature is given as a separate field or not
-   logical :: btempforcingtypC !< Forcing parameter cloudiness given as a separate field or not
-   logical :: btempforcingtypD !< Forcing parameter dew point temperature given as a separate field or not
-   logical :: btempforcingtypH !< Forcing parameter relative humidity given as a separate field or not
-   logical :: btempforcingtypS !< Forcing parameter solar radiation given as a separate field or not
-   logical :: btempforcingtypL !< Forcing parameter long wave radiation given as a separate field or not
 
    integer :: jarhoxu !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term
 
@@ -444,9 +451,7 @@ module m_flowparameters
 
    integer :: jbasqbnddownwindhs !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
-   integer :: maxitverticalforestersal !< 100, max iterations vertical forester
-
-   integer :: maxitverticalforestertem !< 100, max iterations vertical forester
+   integer :: max_iterations_vertical_forester !< Maximum number of iterations for vertical forester, used for all constituents
 
    real(kind=dp) :: salmax !< filter if sal > maxsal
 
@@ -469,8 +474,11 @@ module m_flowparameters
    type :: HisWriteSettings
       integer :: bal = 1 !< Write mass balance/volume totals to his file, 0: no, 1: yes
       integer :: sourcesink = 1 !< Write discharge/volume at sources/sinks, 0: no, 1: yes
+      integer :: bubblescreens = 1 !< Write bubble screen parameters to his file, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
       integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
+      integer :: windstress = 1 !< Write wind stress to his file, 0: no, 1: yes
+      integer :: bulk_exchange_coeff = 1 !< Write bulk exchange coefficients to his file, 0: no, 1: yes
       integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
       integer :: infilt = 1 !< Write infiltration rate to this file, 0: no, 1: yes
       integer :: tem = 1 !< Write temperature to his file, 0: no, 1: yes
@@ -592,6 +600,8 @@ module m_flowparameters
    integer :: jamombal !< records some gradients of primitives 0:no, 1:yes
    integer :: jarstbnd !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
+
+   logical :: write_surface_data_to_map_file
 
    ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
@@ -747,6 +757,11 @@ contains
       jasal = 0 ! Include salinity (autoset by flow_initexternalforcings())
 
       temperature_model = TEMPERATURE_MODEL_NONE ! Temperature model
+      
+      air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
+      atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
+      free_convection = FREE_CONVECTION_OFF ! Free convection model
+      salinity_reduction_factor_saturation_humidity = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
 
       janudge = 0 ! temperature and salinity nudging
       jainiwithnudge = 0 !< initialize salinity and temperature with nudge variables
@@ -948,8 +963,8 @@ contains
 
       jbasqbnddownwindhs = 0 !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
-      maxitverticalforestersal = 0 !< 100, max iterations vertical forester
-      maxitverticalforestertem = 0 !< 100, max iterations vertical forester
+      ! Vertical Forester filter is turned off by default (value 0)
+      max_iterations_vertical_forester = 0
 
       salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()
@@ -964,13 +979,15 @@ contains
 
       write_numlimdt_file = .false.
 
+      write_surface_data_to_map_file = .false.
+
       jarstignorebl = 0
 
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       jatekcd = 1 ! wind cd coeffs on tek
       jarstbnd = 1
       jaeverydt = 0
-      japartdomain = 1
+      japartdomain = 0
       jashp_crs = 0
       jashp_obs = 0
       jashp_weir = 0

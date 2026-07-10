@@ -43,7 +43,8 @@ contains
    subroutine duneaval(error)
       use precision, only: dp
       use m_fm_erosed, only: hswitch, wetslope, dryslope, e_dzdn, e_dzdt, avaltime, morfac, lsedtot, fixfac, frac, dzmaxdune, rhosol
-      use m_sediment, only: avalflux
+      use m_fm_erosed, only: bermslopetransport, bermslope
+      use m_sediment, only: avalflux, bermslopeindex
       use m_flowgeom, only: lnx, wu_mor, ln, acl, bl, dx, lnxi, ba
       use m_flow, only: hs
 
@@ -68,6 +69,11 @@ contains
          ac2 = 1.0_dp - ac1
          if (hs(k1) > hswitch .or. hs(k2) > hswitch) then
             slpmax = wetslope
+            if (bermslopetransport) then
+               if (bermslopeindex(L)) then
+                  slpmax = bermslope
+               end if
+            end if
          else
             slpmax = dryslope
          end if
@@ -103,7 +109,7 @@ contains
                   end if
                end if
                !
-               avalflux(L, lsd) = avalflux(L, lsd) - ba(k1) * ba(k2) / (ba(k1) + ba(k2)) * avflux * rhosol(lsd) / wu_mor(L)
+               avalflux(L, lsd) = avalflux(L, lsd) - ba(k1) * ba(k2) / (ba(k1) + ba(k2)) * avflux * rhosol(lsd) / wu_mor(L) !m2 m/s kg /m3 /m = kg/s/m
             end do
          end if
       end do

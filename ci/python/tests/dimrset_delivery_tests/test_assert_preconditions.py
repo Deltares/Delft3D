@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 from ci_tools.dimrset_delivery.assert_preconditions import PreconditionsChecker
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.lib.jira import Jira
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
@@ -27,6 +28,7 @@ class TestAssertPreconditionsFunction:
         self.mock_services.teamcity = Mock(spec=TeamCity)
         self.mock_services.git = Mock(spec=GitClient)
         self.mock_services.ssh = Mock(spec=SshClient)
+        self.mock_services.jira = Mock(spec=Jira)
 
     def test_assert_preconditions_success(self) -> None:
         """Test successful preconditions check."""
@@ -34,6 +36,7 @@ class TestAssertPreconditionsFunction:
         self.mock_services.teamcity.test_connection.return_value = True
         self.mock_services.ssh.test_connection.return_value = True
         self.mock_services.git.test_connection.return_value = True
+        self.mock_services.jira.test_connection.return_value = True
 
         # Act
         checker = PreconditionsChecker(self.mock_context, self.mock_services)
@@ -44,11 +47,15 @@ class TestAssertPreconditionsFunction:
         self.mock_services.teamcity.test_connection.assert_called_once()
         self.mock_services.ssh.test_connection.assert_called_once()
         self.mock_services.git.test_connection.assert_called_once()
+        self.mock_services.jira.test_connection.assert_called_once()
 
     def test_assert_preconditions_teamcity_failure(self) -> None:
         """Test preconditions check fails when TeamCity connection fails."""
         # Arrange
         self.mock_services.teamcity.test_connection.return_value = False
+        self.mock_services.jira.test_connection.return_value = True
+        self.mock_services.ssh.test_connection.return_value = True
+        self.mock_services.git.test_connection.return_value = True
         checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act
@@ -137,6 +144,7 @@ class TestAssertPreconditionsFunction:
         self.mock_services.teamcity.test_connection.assert_called_once()
         self.mock_services.ssh.test_connection.assert_called_once()
         self.mock_services.git.test_connection.assert_called_once()
+        self.mock_services.jira.test_connection.assert_called_once()
 
     def test_assert_preconditions_missing_teamcity(self) -> None:
         """Test preconditions assertion fails when TeamCity client is missing."""
