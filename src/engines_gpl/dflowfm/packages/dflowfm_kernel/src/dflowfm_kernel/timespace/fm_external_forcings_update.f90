@@ -340,7 +340,7 @@ contains
       use physicalconsts, only: celsius_to_kelvin
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity, &
-                                  height_wind_velocity, height_air_temperature, height_humidity
+                                  sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity
 
       logical, intent(in) :: initialization !< initialization phase
       
@@ -382,9 +382,9 @@ contains
       end if
 
       atm_stability_options%fqsat = salinity_reduction_factor_saturation_humidity
-      atm_stability_options%height_wind_velocity = height_wind_velocity
-      atm_stability_options%height_air_temperature = height_air_temperature
-      atm_stability_options%height_humidity = height_humidity
+      atm_stability_options%sensor_height_wind_velocity = sensor_height_wind_velocity
+      atm_stability_options%sensor_height_air_temperature = sensor_height_air_temperature
+      atm_stability_options%sensor_height_humidity = sensor_height_humidity
 
       call compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
                                      air_pressure, charnock, surface_temperature_kelvin, atm_stability_options)
