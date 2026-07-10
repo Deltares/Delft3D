@@ -59,7 +59,7 @@ corespernodedefault=1
 corespernode=$corespernodedefault
 NSLOTS=${SLURM_NTASKS:-1}
 debuglevel=-1
-runscript_extraopts=
+runscript_extraopts=()
 wavefile=
 withrtc=0
 withcsumo=0
@@ -68,6 +68,7 @@ csumoscript=
 mcrdir=
 # MATLAB keys
 csumodeployed=true
+csumodeployed_specified=
 csumodir=
 matlabversion=2014a
 
@@ -104,18 +105,20 @@ case $key in
     shift
     ;;
     -w|--wavefile)
-    echo " Wavefile     "
     wavefile="$1"
-    echo $wavefile
     shift
     ;;
     --D3D_HOME)
     D3D_HOME="$1"
     shift
     ;;
-    -csumo|--csumo)
+    -csumodeployed|--csumodeployed)
+    csumodeployed_specified="$1"
+    shift
+    ;;
+    -csumo|--csumo|-csumoscript|--csumoscript)
     withcsumo=1
-    csumodeployed=false
+    csumodeployed=true
     csumoscript="$1"
     shift
     ;;
@@ -123,13 +126,9 @@ case $key in
     mcrdir="$1"
     shift
     ;;
-    -csumodeployed|--csumodeployed)
-    csumodeployed="$1"
-    shift
-    ;;
     -csumodir|--csumodir)
     withcsumo=1
-    csumodeployed=true
+    csumodeployed=false
     csumodir="$1"
     shift
     ;;
@@ -139,71 +138,21 @@ case $key in
     ;;
     --)
     echo "-- sign detected, remained options are going to be passed to Delft3D-FLOW"
-    runscript_extraopts="$runscript_extraopts $*"
+    runscript_extraopts+=("$@")
     break       # exit loop, stop shifting, all remaining arguments without dashes handled below
     ;;
     -*)
-    echo "option ${key} seems dedicated for Delft3D-FLOW, therefore passing it and the following ones to Delft3D-FLOW"
-    runscript_extraopts="$key $*"
-    break       # exit loop, $key+all remaining options to Delft3D-FLOW executable
+    runscript_extraopts+=("$key")
     ;;
 esac
 done
 
-# optionally prepare C-SUMO
-if [[ -n $csumoscript ]]; then
-
-    echo "Preparing COSUMOsettings.xml"
-
-    # remove any old COSUMOsettings.xml file
-    rm -f COSUMOsettings.xml
-
-    # export paths
-    export rundir="$(pwd)"
-    export reldir=${PWD##*/}
-
-    export ff2nffolder="$rundir/FF2NFdir/"
-
-    # copy COSUMO_template_settings.xml to COSUMOsettings.xml
-    echo "    copying COSUMO_template_settings.xml to COSUMOsettings.xml"
-    cp COSUMO_template_settings.xml COSUMOsettings.xml
-
-    # replace keywords COSUMOsettings.xml
-    export find1=%FF2NFDIR%
-    export replace1="$ff2nffolder"
-
-    echo "    replacing %FF2NFDIR% in COSUMOsettings.xml with $ff2nffolder"
-    sed -i "s,$find1,$replace1," COSUMOsettings.xml
-fi
-
-# Check configfile    
-if [[ ! -f $configfile ]]; then
-    echo "ERROR: configfile $configfile does not exist"
-    print_usage_info
+# the specified csumodeployed flag overrules the auto-detected value
+if [[ -n $csumodeployed_specified ]]; then
+   csumodeployed=$csumodeployed_specified
 fi
 
 workdir=$PWD
-
-if [[ -z $D3D_HOME ]]; then
-    scriptdirname=$(readlink \-f "\$0")
-    scriptdir=${scriptdirname%/*}
-    export D3D_HOME=$scriptdir/..
-else
-    # D3D_HOME is passed through via argument --D3D_HOME
-    # Commonly its value is "/some/path/bin/.."
-    # To obtain scriptdir: remove "/.." at the end of the string
-    scriptdir=${D3D_HOME%"/.."}
-fi
-if [[ ! -d $D3D_HOME ]]; then
-    echo "ERROR: directory $D3D_HOME does not exist"
-    print_usage_info
-fi
-if [[ $withrtc -ne 0 && $NSLOTS -ne 1 ]] ; then
-    echo "ERROR: Combination of RTC online and Delft3D-FLOW in parallel is not implemented yet"
-    print_usage_info
-fi
-
-export D3D_HOME
 
 echo "    Configfile           : $configfile"
 echo "    D3D_HOME             : $D3D_HOME"
@@ -221,7 +170,34 @@ fi
 if [[ $withcsumo -ne 0 ]] ; then
     echo "    Online with C-SUMO   : YES"
 fi
+echo "    Delft3D-FLOW options : ${runscript_extraopts[@]}"
 
+# Check configfile    
+if [[ ! -f $configfile ]]; then
+    echo "ERROR: configfile $configfile does not exist"
+    print_usage_info
+fi
+
+if [[ -z $D3D_HOME ]]; then
+    scriptdirname=$(readlink \-f "\$0")
+    scriptdir=${scriptdirname%/*}
+    D3D_HOME=$scriptdir/..
+else
+    # D3D_HOME is passed through via argument --D3D_HOME
+    # Commonly its value is "/some/path/bin/.."
+    # To obtain scriptdir: remove "/.." at the end of the string
+    scriptdir=${D3D_HOME%"/.."}
+fi
+if [[ ! -d $D3D_HOME ]]; then
+    echo "ERROR: directory $D3D_HOME does not exist"
+    print_usage_info
+fi
+if [[ $withrtc -ne 0 && $NSLOTS -ne 1 ]] ; then
+    echo "ERROR: Combination of RTC online and Delft3D-FLOW in parallel is not implemented yet"
+    print_usage_info
+fi
+
+export D3D_HOME
 
 # Set the directories containing the binaries
 bindir="$D3D_HOME/bin"
@@ -247,6 +223,32 @@ if [[ $debuglevel -eq 0 ]]; then
     echo ========================================================
 fi
 
+# optionally prepare C-SUMO
+if [[ $withcsumo -ne 0 ]]; then
+    echo "--------------------------------------------------------------------------------"
+    echo "Preparing COSUMOsettings.xml"
+
+    # remove any old COSUMOsettings.xml file
+    rm -f COSUMOsettings.xml
+
+    # export paths
+    export rundir="$(pwd)"
+    export reldir=${PWD##*/}
+
+    export ff2nffolder="$rundir/FF2NFdir/"
+
+    # copy COSUMO_template_settings.xml to COSUMOsettings.xml
+    echo "    copying COSUMO_template_settings.xml to COSUMOsettings.xml"
+    cp COSUMO_template_settings.xml COSUMOsettings.xml
+
+    # replace keywords COSUMOsettings.xml
+    export find1=%FF2NFDIR%
+    export replace1="$ff2nffolder"
+
+    echo "    replacing %FF2NFDIR% in COSUMOsettings.xml with $ff2nffolder"
+    sed -i "s,$find1,$replace1," COSUMOsettings.xml
+fi
+
 # optionally start C-SUMO
 if [[ $withcsumo -ne 0 ]]; then
     echo "--------------------------------------------------------------------------------"
@@ -256,17 +258,40 @@ if [[ $withcsumo -ne 0 ]]; then
     mkdir -p -- "$ff2nffolder"
 
     if $csumodeployed ; then
-        echo "    Starting C-SUMO in deployed mode using this command:"
-        echo "        $csumoscript $mcrdir $ff2nffolder 0 &"
-        $csumoscript "$mcrdir" "$ff2nffolder" 0 &
+        if [[ ! -f $csumoscript ]]; then
+           echo "ERROR: C-SUMO script $csumoscript does not exist"
+           print_usage_info
+        fi
+        if [[ ! -d $mcrdir ]]; then
+           echo "ERROR: MCR directory $mcrdir does not exist"
+           print_usage_info
+        fi
+        
+        cmd=("$csumoscript" "$mcrdir" "$ff2nffolder" 0 )
+        printf "Executing in background:"
+        printf ' %q' "${cmd[@]}"
+        printf '\n'
+        "${cmd[@]}" &
+        
         csumo_pid=$!
         echo "    The PID of the C-SUMO process is $csumo_pid"
     else
+        if [[ ! -d csumodir ]]; then
+           echo "ERROR: C-SUMO directory $csumodir does not exist"
+           print_usage_info
+        fi
+        
         echo "    Starting up a MATLAB instance to run C-SUMO"
         echo "        cd /opt/apps/matlab/$matlabversion/bin/"
         cd /opt/apps/matlab/$matlabversion/bin/
-        echo "        matlab -nodisplay -nosplash -nodesktop -r cd('$csumodir');COSUMO('$ff2nffolder',0); &"
-        ./matlab -nodisplay -nosplash -nodesktop -r "cd('$csumodir');COSUMO('$ff2nffolder',0);" &
+        matlabcmd="try,cd('$csumodir');COSUMO('$ff2nffolder',0);catch,lasterr,end"
+        
+        cmd=(./matlab -nodisplay -nosplash -nodesktop -r "$matlabcmd")
+        printf "Executing in background:"
+        printf ' %q' "${cmd[@]}"
+        printf '\n'
+        "${cmd[@]}" &
+        
         cd "$rundir"
         csumo_pid=$!
         echo "    The PID of the C-SUMO process is $csumo_pid"
@@ -284,9 +309,12 @@ if [[ -n $wavefile ]]; then
         echo "ERROR: Wave input file $wavefile does not exist"
         print_usage_info
     fi
-    echo "executing in the background:"
-    echo "$bindir/wave $wavefile 1 &"
-         "$bindir/wave" "$wavefile" 1 &
+    
+    cmd=("$bindir/wave" "$wavefile" 1)
+    printf "Executing in background:"
+    printf ' %q' "${cmd[@]}"
+    printf '\n'
+    "${cmd[@]}" &
 fi
     
 if [[ $withrtc -ne 0 ]] ; then # running with RTC online
@@ -295,18 +323,23 @@ if [[ $withrtc -ne 0 ]] ; then # running with RTC online
     export DIO_SHM_ESM=$("$bindir/esm_create")
     
     # Start Delft3D-FLOW in the background
-    echo "executing:"
-    echo "$bindir/d_hydro $configfile &"
-         "$bindir/d_hydro" "$configfile" &
-
+    cmd=("$bindir/d_hydro" "$configfile" "${runscript_extraopts[@]}")
+    printf "Executing in background:"
+    printf ' %q' "${cmd[@]}"
+    printf '\n'
+    "${cmd[@]}" &
+    
     # Be sure Delft3D-FLOW is started before RTC is started
     sleep 5
     # echo press enter to continue
     # read dummy
-
+    
     # Start RTC
-    "$bindir/rtc" $sharedir/rtc/RTC.FNM $workdir/RTC.RTN
-
+    cmd=("$bindir/rtc" "$sharedir/rtc/RTC.FNM" "$workdir/RTC.RTN")
+    printf "Executing:"
+    printf ' %q' "${cmd[@]}"
+    printf '\n'
+    "${cmd[@]}"
     # Remove allocated shared memory
     "$bindir/esm_delete" $DIO_SHM_ESM 
 
@@ -314,14 +347,19 @@ if [[ $withrtc -ne 0 ]] ; then # running with RTC online
 else # Without RTC online
 
     if [[ $NSLOTS -eq 1 ]]; then
-        echo "executing:"
-        echo "$bindir/d_hydro $configfile"
-             "$bindir/d_hydro" "$configfile"
+        cmd=("$bindir/d_hydro" "$configfile" "${runscript_extraopts[@]}")
+        printf "Executing:"
+        printf ' %q' "${cmd[@]}"
+        printf '\n'
+        "${cmd[@]}"
     else
         module load intelmpi/2021.11.0 &>/dev/null
         echo ----------------------------------------------------------------------
-        echo "srun $bindir/d_hydro $configfile"
-              srun "$bindir/d_hydro" "$configfile"
+        cmd=(srun "$bindir/d_hydro" "$configfile" "${runscript_extraopts[@]}")
+        printf "Executing:"
+        printf ' %q' "${cmd[@]}"
+        printf '\n'
+        "${cmd[@]}"
     fi
 fi
 

@@ -154,7 +154,6 @@ echo
 runscript_opts=()
 runscript_opts+=(-m "${configfile}")
 runscript_opts+=(-c $TASKS_PER_NODE)
-runscript_opts+=(--NODES $NODES)
 runscript_opts+=(--D3D_HOME "${D3D_HOME}")
 runscript_opts+=("${runscript_extraopts[@]}")
 echo "    run script options        : ${runscript_opts[@]}"
