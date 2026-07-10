@@ -214,7 +214,9 @@ module m_output_config
 
    integer, public :: IDX_HIS_VIU
    integer, public :: IDX_HIS_VICWWS
+   integer, public :: IDX_HIS_VICWWS_TOTAL
    integer, public :: IDX_HIS_DIFWWS
+   integer, public :: IDX_HIS_DIFWWS_TOTAL
    integer, public :: IDX_HIS_VICWWU
    integer, public :: IDX_HIS_TKIN
    integer, public :: IDX_HIS_EPS

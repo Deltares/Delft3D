@@ -1401,6 +1401,10 @@ contains
                              'Wrihis_turbulence', 'vicwws', 'turbulent vertical eddy viscosity at pressure point', '', &
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_VICWWS_TOTAL, &
+                    'Wrihis_turbulence', 'vicwws_total', 'total vertical eddy viscosity at pressure point', '', &
+                    'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU, &
                              'Wrihis_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity at nearest velocity point', '', &
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
@@ -1429,6 +1433,10 @@ contains
                              'Wrihis_turbulence', 'difwws', 'turbulent vertical eddy diffusivity of salinity at pressure point', &
                              '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_DIFWWS_TOTAL, &
+                    'Wrihis_turbulence', 'difwws_total', 'total vertical eddy diffusivity of salinity at pressure point', &
+                    '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy
       call add_output_config(config_set_his, IDX_HIS_SALINITY, &
@@ -2656,8 +2664,12 @@ contains
                if (iturbulencemodel >= 2) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS:IPNT_VICWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS_TOTAL:IPNT_VICWWS_TOTAL + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS_TOTAL), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_DIFWWS:IPNT_DIFWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DIFWWS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_DIFWWS_TOTAL:IPNT_DIFWWS_TOTAL + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DIFWWS_TOTAL), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
                end if
