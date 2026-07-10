@@ -3,6 +3,9 @@ sources:
     setup:
       url: "https://cygwin.com/setup/setup-2.939.x86_64.exe"
       sha256: "73d9bf0be6b7adb8af8c2e709556159a45fa1892678f5105a619a1cdd056e51a"
+    license:
+      url: "https://cygwin.com/COPYING.LIB"
+      sha256: "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
     mirrors:
       - "https://ftp.snt.utwente.nl/pub/software/cygwin/"
       - "https://mirrors.kernel.org/sourceware/cygwin/"

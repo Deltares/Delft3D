@@ -2,7 +2,7 @@ import os
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
-from conan.tools.files import download, rmdir, rm, save
+from conan.tools.files import download, rmdir, rm
 
 required_conan_version = ">=2"
 
@@ -94,13 +94,11 @@ class CygwinConan(ConanFile):
             if os.path.exists(link_exe):
                 os.replace(link_exe, os.path.join(self._cygwin_root, "bin", "link-cygwin.exe"))
 
-        save(
+        download(
             self,
-            os.path.join(self.package_folder, "licenses", "LICENSE"),
-            "Cygwin is a collection of Open Source packages, each covered by its "
-            "own license (mostly GPL-3.0-or-later). The per-package license and "
-            "copyright files are installed under cygwin64/usr/share/doc. See "
-            "https://cygwin.com/licensing.html for details.\n",
+            url=self.conan_data["sources"][self.version]["license"]["url"],
+            filename=os.path.join(self.package_folder, "licenses", "COPYING.LIB"),
+            sha256=self.conan_data["sources"][self.version]["license"]["sha256"],
         )
 
         # Reduce package size / avoid long-path issues from the offline docs.
