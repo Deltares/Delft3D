@@ -477,6 +477,8 @@ module m_flowparameters
       integer :: bubblescreens = 1 !< Write bubble screen parameters to his file, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
       integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
+      integer :: windstress = 1 !< Write wind stress to his file, 0: no, 1: yes
+      integer :: bulk_exchange_coeff = 1 !< Write bulk exchange coefficients to his file, 0: no, 1: yes
       integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
       integer :: infilt = 1 !< Write infiltration rate to this file, 0: no, 1: yes
       integer :: tem = 1 !< Write temperature to his file, 0: no, 1: yes
@@ -598,6 +600,8 @@ module m_flowparameters
    integer :: jamombal !< records some gradients of primitives 0:no, 1:yes
    integer :: jarstbnd !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
+
+   logical :: write_surface_data_to_map_file
 
    ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
@@ -974,6 +978,8 @@ contains
       jalogtransportsolverlimiting = 0
 
       write_numlimdt_file = .false.
+
+      write_surface_data_to_map_file = .false.
 
       jarstignorebl = 0
 

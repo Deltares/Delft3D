@@ -226,6 +226,8 @@ function query_trigger() {
     exit 1
     ;;
   esac
+
+  printf "%s\t%s\n" "${kill_em_all}" "${build_id}"
 }
 
 function cancel_all_builds() {

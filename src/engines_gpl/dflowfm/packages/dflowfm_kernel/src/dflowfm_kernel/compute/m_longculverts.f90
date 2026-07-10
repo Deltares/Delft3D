@@ -821,7 +821,7 @@ contains
          do ilongc = 1, nlongculverts
             do i = 1, longculverts(ilongc)%numlinks
                Lf = abs(longculverts(ilongc)%flowlinks(i))
-               !if (kcu(lf) == 1) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
+               !if (kcu(lf) == LINK_1D) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
 
@@ -1230,8 +1230,8 @@ contains
 
       call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodex, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodey, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
 
       call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)
@@ -1375,6 +1375,7 @@ contains
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
 
       implicit none
 
@@ -1498,7 +1499,7 @@ contains
                      othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                      if (j <= ie) then
-                        if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
+                        if ((kcu(linkabs) == LINK_1D .or. kcu(linkabs) == LINK_1D2D_STREETINLET) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
                            longculvert%flowlinks(j) = -1 * linknum
                            exit
                         end if

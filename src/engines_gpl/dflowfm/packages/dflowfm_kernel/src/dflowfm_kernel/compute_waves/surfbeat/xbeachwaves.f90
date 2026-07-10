@@ -5472,10 +5472,10 @@ contains
          cn2 = lncn(2, L)
          !
          ! Find internal node attached to bnd node (implicitly assumes *no* triangular borders, if so takes last one)
-         !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
-         !  (KN(3,L) == 2) 2D
+         !! network_data::NB values: 1=INTERN, 2=BORDER, 3=CORNER, 0/-1=NOT ACTIVE OR 1D
+         !
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= LINK_2D) then
                cycle ! not 2d link
             end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
@@ -5486,7 +5486,7 @@ contains
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
@@ -5507,7 +5507,7 @@ contains
          !
          ! Find internal node
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
@@ -5518,7 +5518,7 @@ contains
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
@@ -5538,7 +5538,7 @@ contains
             goto 10 ! do next node
          end if
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
@@ -5550,7 +5550,7 @@ contains
          !
 10       if (wmask(2, cn2) > 0 .or. wmask(4, cn2) > 0) cycle
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)

@@ -10,14 +10,10 @@ ADD vs_Community.exe C:/
 
 RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
     --installPath "C:\\Program Files\\Microsoft Visual Studio\\17\\Community" \
-    --add Microsoft.VisualStudio.Workload.NativeDesktop;includeRecommended \
+    --add Microsoft.VisualStudio.Workload.NativeDesktop \
+    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.Component.VC.ATLMFC \
-    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
-    --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
-    --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
-    --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
-    --remove Microsoft.VisualStudio.Component.Windows81SDK \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0)
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
@@ -42,17 +38,22 @@ RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
 RUN Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi
 
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
-ENV VS2022INSTALLDIR="C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\"
+ENV VS2022INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\17\\Community\\"
 
-# Download and install git
-ADD Git-2.47.0-64-bit.exe C:\\Git-2.47.0-64-bit.exe
-RUN Start-Process -FilePath "C:\\Git-2.47.0-64-bit.exe" -ArgumentList "/SILENT" -Wait
-RUN Remove-Item C:\\Git-2.47.0-64-bit.exe
-RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\Git\\usr\\bin')
+# Add the Git that ships with Visual Studio to the PATH. The location is resolved
+# with vswhere (whose own path is stable across VS versions/editions) so the exact
+# VS install folder never needs to be hard-coded.
+RUN $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'; \
+    if (-not (Test-Path $vswhere)) { throw "vswhere.exe not found at $vswhere" }; \
+    $gitCmd = & $vswhere -latest -products * -find '**\cmd\git.exe' | Select-Object -First 1; \
+    if (-not $gitCmd) { throw 'Could not locate git.exe in the Visual Studio installation.' }; \
+    $gitDir = Split-Path -Parent $gitCmd; \
+    Write-Host ('Adding Git to PATH: ' + $gitDir); \
+    setx /M PATH ($Env:PATH + ';' + $gitDir)
 
 # Install uv
 ENV UV_INSTALL_DIR="C:\Program Files\uv\install"
-RUN irm https://astral.sh/uv/0.11.11/install.ps1 | iex
+RUN irm https://astral.sh/uv/0.11.26/install.ps1 | iex
 
 ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
     UV_TOOL_DIR="C:\Program Files\uv\tools" \
@@ -62,10 +63,10 @@ ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
 # Install python and conan
 RUN setx /M PATH \"C:\Program Files\uv\bin;C:\Program Files\uv\install;$env:PATH\"
 RUN uv python install 3.12 --default
-RUN uv tool install 'conan ~= 2.28.1'
+RUN uv tool install 'conan ~= 2.30.0'
 
 # Copy the setup script into the container
 COPY set-env-vs2022.cmd C:\\set-env-vs2022.cmd
 
 # Set the default command to run the setup script
-CMD ["cmd", "/S", "/C", "C:\\set-env-vs2022.cmd"]
+CMD ["cmd", "/S", "/K", "C:\\set-env-vs2022.cmd"]
