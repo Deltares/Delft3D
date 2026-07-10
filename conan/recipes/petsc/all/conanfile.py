@@ -1,7 +1,7 @@
 import os
 
 from conan import ConanFile
-from conan.errors import ConanInvalidConfiguration
+from conan.errors import ConanException, ConanInvalidConfiguration
 from conan.tools.files import copy, get, rmdir
 from conan.tools.intel import IntelCC
 from conan.tools.microsoft import unix_path
@@ -169,11 +169,58 @@ class PetscConan(ConanFile):
         )
 
         src_dir = unix_path(self, self.source_folder)
-        self.run(
-            f'{self._home_export()} && cd "{src_dir}" && {self._oneapi_env()} '
-            f"&& ./configure {args} && {self._windows_make('all')}",
-            cwd=self.source_folder,
+        env_prefix = (
+            f'{self._home_export()} && cd "{src_dir}" && {self._oneapi_env()}'
         )
+        # Under Hyper-V-isolated Windows containers a freshly-linked test
+        # executable is occasionally not launchable for a brief moment (a
+        # write-then-execute race in the container filesystem virtualization),
+        # which makes PETSc's configure abort at its first checkRun with "Cannot
+        # run executables created with C". This is intermittent and unrelated to
+        # the recipe, so retry configure a few times before giving up. Configure
+        # fails fast, so retrying is cheap.
+        self._run_configure_with_retries(f"{env_prefix} && ./configure {args}")
+        self.run(f"{env_prefix} && {self._windows_make('all')}", cwd=self.source_folder)
+
+    def _run_configure_with_retries(self, command, attempts=3, delay=10):
+        import time
+
+        for attempt in range(1, attempts + 1):
+            try:
+                self.run(command, cwd=self.source_folder)
+                return
+            except ConanException:
+                if attempt == attempts:
+                    # Final failure: surface the real error from configure.log
+                    # (the console only shows PETSc's generic summary).
+                    self._dump_configure_log()
+                    raise
+                self.output.warning(
+                    f"petsc: configure attempt {attempt}/{attempts} failed "
+                    "(intermittent 'cannot run executable' under the Windows "
+                    f"container); retrying in {delay}s"
+                )
+                time.sleep(delay)
+
+    def _dump_configure_log(self, tail_lines=200):
+        candidates = [
+            os.path.join(self.source_folder, "configure.log"),
+            os.path.join(self.build_folder, "configure.log"),
+        ]
+        log_path = next((p for p in candidates if os.path.isfile(p)), None)
+        if log_path is None:
+            self.output.warning(
+                f"petsc: no configure.log found in {candidates}"
+            )
+            return
+        with open(log_path, encoding="utf-8", errors="replace") as handle:
+            lines = handle.readlines()
+        self.output.warning(
+            f"petsc: ---- tail of configure.log ({log_path}) ----"
+        )
+        for line in lines[-tail_lines:]:
+            self.output.warning(line.rstrip())
+        self.output.warning("petsc: ---- end of configure.log ----")
 
     def _home_export(self):
         # Cygwin's first bash invocation copies skeleton dotfiles into $HOME and
