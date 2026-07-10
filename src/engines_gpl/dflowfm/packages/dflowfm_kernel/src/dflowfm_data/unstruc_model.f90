@@ -1717,7 +1717,7 @@ contains
             allocate(extfile_new_list(1))
             extfile_new_list(1) = md_inifieldfile
          else
-            ! If no new external forcing files or initial field file is specified, allocate an empty list to avoid issues later on
+            ! If no new external forcing files or initial field file is specified, allocate an empty list so functions can still 'loop' over this list.
             allocate(extfile_new_list(0))
          end if
       end if
