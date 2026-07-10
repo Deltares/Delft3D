@@ -490,6 +490,508 @@
   </checks>
 </testCase>
 
+<!-- OFFLINE AGGREGATION VIA AGRHYD -->
+
+<testCase name="e02_f029_c251_hyd_file_westerschelde_3d_s_hag-agrhyd" ref="dflowfm_default">
+  <path version="2026-04-13T14:10:07.705000">e02_dflowfm/f029_hyd_file/c251_westerschelde_3d_s_hag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <!-- Since the numbers are single-precision and in the order of 3.0e6, a sensible
+           tolerance is in the order 1.0 (= epsilon * 3.0 * volume)
+      -->
+      <parameters>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
+<testCase name="e02_f029_c252_hyd_file_westerschelde_3d_s_vag-agrhyd" ref="dflowfm_platform_specific_refs">
+  <path version="2026-06-17T07:47:54.480000">e02_dflowfm/f029_hyd_file/c252_westerschelde_3d_s_vag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="8e-04" toleranceRelative="8e-4"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
+<testCase name="e02_f029_c253_hyd_file_westerschelde_3d_s_hvag-agrhyd" ref="dflowfm_platform_specific_refs">
+  <path version="2026-06-17T08:38:03.741000">e02_dflowfm/f029_hyd_file/c253_westerschelde_3d_s_hvag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
+<testCase name="e02_f029_c254_hyd_file_westerschelde_2d_hag-agrhyd" ref="dflowfm_default">
+  <path version="2024-04-19T11:06:00">e02_dflowfm/f029_hyd_file/c254_westerschelde_2d_hag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_2d_continuity" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-04"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
+<testCase name="e02_f029_c255_hyd_file_westerschelde_3d_z_hag-agrhyd" ref="dflowfm_default">
+  <path version="2026-06-01T08:40:23.311000">e02_dflowfm/f029_hyd_file/c255_westerschelde_3d_z_hag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
+<testCase name="e02_f029_c256_hyd_file_westerschelde_3d_z_vag-agrhyd" ref="dflowfm_default">
+  <path version="2026-03-17T10:16:43.205000">e02_dflowfm/f029_hyd_file/c256_westerschelde_3d_z_vag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
+<testCase name="e02_f029_c257_hyd_file_westerschelde_3d_z_hvag-agrhyd" ref="dflowfm_default">
+  <path version="2026-06-01T08:40:30.466000">e02_dflowfm/f029_hyd_file/c257_westerschelde_3d_z_hvag-agrhyd</path>
+  <programs>
+    <program ref="dimr" seq="1">
+    </program>
+    <program ref="agrhyd" seq="2">
+    </program>
+    <program ref="checkhydbal" seq="3">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="4">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="maptonetcdf" seq="5">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-err.map</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg_waqgeom.nc</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="poi2asc" seq="6">
+      <arguments>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.poi</argument>
+        <argument>DFM_DELWAQ_westernscheldt/westernscheldt_agg.table</argument>
+        <argument>1</argument>
+      </arguments>
+    </program>
+    <program ref="dimr_waq" seq="7">
+    </program>
+  </programs>
+  <maxRunTime>15000.0000000</maxRunTime>
+  <checks>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-checkhydbal-sum_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+      </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.bnd" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.atr" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.hyd" type="ASCII">
+        <skipline>file-created-by</skipline>
+        <skipline>file-creation-date</skipline>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg.table" type="ASCII" />
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvavg.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="DFM_DELWAQ_westernscheldt/westernscheldt_agg-relerrvmax.txt" type="ASCII">
+        <parameters>
+            <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
+        </parameters>
+    </file>
+    <file name="deltashell_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+
 <!-- ONLINE AGGREGATION, THREE DOMAINS -->
 
 <testCase name="e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom" ref="dflowfm_platform_specific_refs">

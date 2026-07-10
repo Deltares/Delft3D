@@ -107,6 +107,15 @@
         <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
             <path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
         </program>
+        <program name="agrhyd" addSearchPaths="false" logOutputToFile="true">
+            <location ref="local" type="check">
+               <from>teamcity_artifacts/lnx64</from>
+            </location>
+            <path>bin/run_agrhyd.sh</path>
+            <arguments>
+                <argument>agrhyd.ini</argument>
+            </arguments>
+        </program>
         <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
             <location ref="local" type="check">
                <from>teamcity_artifacts/lnx64</from>

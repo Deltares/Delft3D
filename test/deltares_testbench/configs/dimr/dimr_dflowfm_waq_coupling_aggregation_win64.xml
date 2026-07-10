@@ -74,6 +74,12 @@
     <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
       <path>thirdparty/checkhydbal/win64/checkhydbal.exe</path>
     </program>
+    <program name="agrhyd" addSearchPaths="false" logOutputToFile="true">
+      <path>data/engines/teamcity_artifacts/x64/bin/run_agrhyd.bat</path>
+      <arguments>
+        <argument>agrhyd.ini</argument>
+      </arguments>
+    </program>
     <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
       <path>data/engines/teamcity_artifacts/x64/bin/run_maptonetcdf.bat</path>
     </program>
