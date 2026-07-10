@@ -129,12 +129,11 @@ object WindowsTest : BuildType({
                     rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
                     rem to avoid os error 32 file-lock failures on the mount during install.
                     rem Wheels come from the mounted uv cache volume.
-                    uv venv C:\venv
-                    if errorlevel 1 exit /b 1
+                    uv venv C:\venv || (echo [ERROR] uv venv failed! & exit /b 1)
                     call C:\venv\Scripts\activate.bat
-                    uv pip sync pip/win-requirements.txt
-                    if errorlevel 1 exit /b 1
+                    uv pip sync -v pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
 
+                    echo "Running TestBench.py..."
                     python TestBench.py %%argsList%%
             """.trimIndent()
 
