@@ -4,8 +4,8 @@ usePreCICE=1
 startFM=1
 startPreCSUMO=1
 
-bindir=../../../../install_fm-suite/bin
-libdir=$bindir/../lib
+bindir=$(readlink -f ../../../install_fm-suite/bin)
+libdir=$(readlink -f $bindir/../lib)
 export PATH=$bindir:$PATH
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 
