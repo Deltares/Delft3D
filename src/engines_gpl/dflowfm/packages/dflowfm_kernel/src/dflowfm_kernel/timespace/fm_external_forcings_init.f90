@@ -41,11 +41,12 @@ contains
    module subroutine init_new(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use fm_deprecated_keywords, only: deprecated_ext_keywords
+      use fm_external_forcings_data, only: set_lateral_count
       use m_alloc, only: realloc
       use m_ec_parameters, only: provFile_uniform
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_flow, only: kmx
-      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg
+      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
       use m_source_sink, only: source_sinks
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
@@ -72,7 +73,8 @@ contains
       integer :: num_items_in_file
       character(len=INI_VALUE_LEN) :: fnam
       integer :: ib, ibqh
-      integer, allocatable :: itpenzr(:), itpenur(:)
+      integer, dimension(:), allocatable :: itpenzr !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for z. {size=num_items_in_file}
+      integer, dimension(:), allocatable :: itpenur !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for u. {size=num_items_in_file}
 
       integer :: num_laterals !< Total number of laterals in all external forcing files
       integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
@@ -201,7 +203,9 @@ contains
 
       end do
 
-      call finalize_lateral_forcings()
+      call compute_lateral_bed_areas()
+
+      call set_lateral_count(numlatsg) ! Save number of laterals to module variable
 
       ! Fifth loop, destroy all trees of boundary blocks to free memory.
       do i_ext = 1, size(extfile_new_list)
@@ -279,13 +283,13 @@ contains
 
    end subroutine check_version_number_and_open_external_forcing_file
 
-   !> Builds temporary reverse lookup tables that map boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
+   !> Builds temporary reverse lookup tables that map boundary block number in external forcings file to boundary condition number in openbndsect (separate for u and z).
    subroutine build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
       use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu
 
       ! Arguments
-      integer, dimension(:), allocatable, intent(out) :: itpenzr
-      integer, dimension(:), allocatable, intent(out) :: itpenur
+      integer, dimension(:), allocatable, intent(out) :: itpenzr !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for z. {size=num_items_in_file}
+      integer, dimension(:), allocatable, intent(out) :: itpenur !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for u. {size=num_items_in_file}
       integer, intent(in) :: num_items_in_file !< Number of items in the external forcing file
 
       ! Local variables
@@ -313,12 +317,12 @@ contains
 
    end subroutine build_itpenzr_and_itpenur
 
-   !> Finalizes the lateral forcing arrays by summing up the total lateral discharge for each lateral and saving the number of laterals to a module variable.
-   subroutine finalize_lateral_forcings()
+   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array. 
+   !! The lateral bed area is computed as the sum of the bed areas of all nodes that belong to the lateral, excluding ghost nodes.
+   subroutine compute_lateral_bed_areas()
       use m_flowgeom, only: ba
       use m_laterals, only: balat, n1latsg, n2latsg, kclat, numlatsg, nnlat
       use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
-      use fm_external_forcings_data, only: set_lateral_count_in_external_forcings_file
 
       ! Local variables
       integer :: n !< Lateral index
@@ -348,9 +352,7 @@ contains
 
       end if
 
-      call set_lateral_count_in_external_forcings_file(numlatsg) ! save number of laterals to module variable
-
-   end subroutine finalize_lateral_forcings
+   end subroutine compute_lateral_bed_areas
 
    !> reads boundary blocks from new external forcings file and makes required initialisations
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
