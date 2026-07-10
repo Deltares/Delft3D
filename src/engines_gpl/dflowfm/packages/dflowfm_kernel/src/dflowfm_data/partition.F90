@@ -605,7 +605,7 @@ contains
       use messagehandling, only: mess, level_warn
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_polygon, only: npl
-      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use network_data, only: lc, numl, kn, LINK_CLOSED, LINK_2D, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
       use m_alloc, only: realloc
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
@@ -658,7 +658,7 @@ contains
          if (Lc(L) == 0) then
             kn(1, L) = 0
             kn(2, L) = 0
-            kn(3, L) = 0
+            kn(3, L) = LINK_CLOSED
          end if
       end do
 
