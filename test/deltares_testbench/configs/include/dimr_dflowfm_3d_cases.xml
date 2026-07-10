@@ -279,7 +279,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c031_lock_exchange_300m_sigma_3d" ref="dflowfm_default">
-     <path version="2026-07-06T14:49:27.629000">e02_dflowfm/f019_transport/c031_lock_exchange_300m_sigma_3d</path>
+     <path version="2025-07-24T17:00:00">e02_dflowfm/f019_transport/c031_lock_exchange_300m_sigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -293,7 +293,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c032_lock_exchange_300m_zmodel_3d" ref="dflowfm_default">
-     <path version="2026-07-06T14:49:29.223000">e02_dflowfm/f019_transport/c032_lock_exchange_300m_zmodel_3d</path>
+     <path version="2025-07-24T17:00:00">e02_dflowfm/f019_transport/c032_lock_exchange_300m_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">

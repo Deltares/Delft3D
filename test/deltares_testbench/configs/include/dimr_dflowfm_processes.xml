@@ -1024,7 +1024,7 @@
 </testCase>
 
 <testCase name="e02_f030_c043_frisianinlet_BLOOM_timestep" ref="dflowfm_default">
-  <path version="2026-07-07T15:36:17.354000">e02_dflowfm/f030_water_quality_processes/c043_frisianinlet_BLOOM_timestep</path>
+  <path version="2026-05-01T08:36:45.640000">e02_dflowfm/f030_water_quality_processes/c043_frisianinlet_BLOOM_timestep</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_map.nc" type="netCDF">
       <parameters>
