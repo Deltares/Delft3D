@@ -55,7 +55,12 @@ object WindowsConanPackages : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "-e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
+            dockerRunParameters = """
+                --memory %teamcity.agent.hardware.memorySizeMb%m
+                --cpus %teamcity.agent.hardware.cpuCount%
+                --env CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username%
+                --env CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%
+                """.trimIndent()
             dockerPull = true
         }
     }
