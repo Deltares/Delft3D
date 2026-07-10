@@ -1484,7 +1484,7 @@ contains
 
       case ('initialsediment')
 
-         if (jased > 0) then
+         if (jased > 0 .and. .not. stm_included) then
             call realloc(sedh, ndx, keepExisting=.false., fill=dmiss)
             read (qid_specific(1:1), '(i1)', iostat=iostat) isednum
             if (iostat /= 0) then
@@ -1958,7 +1958,7 @@ contains
       use messagehandling, only: mess, LEVEL_WARN
       use m_flow, only: sa1
       use m_flowparameters, only: jasal
-      use m_transport, only: const_names, ISED1
+      use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
       use m_fm_wq_processes, only: wqbotnames, wqbot
@@ -2011,11 +2011,11 @@ contains
             success = .false.
             return
          end if
-         first_index = iconst - ISED1 + 1
-         target_array_3d => sed
+         first_index = iconst
+         target_array_3d => constituents
 
       case ('initialsediment')
-         if (jased <= 0) then
+         if (jased <= 0 .or. stm_included) then
             success = .false.
             return
          end if
