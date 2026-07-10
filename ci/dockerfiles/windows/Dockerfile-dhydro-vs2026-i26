@@ -6,7 +6,6 @@ RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnab
 
 SHELL ["cmd", "/S", "/C"]
 
-# Visual Studio 2026 (18.x) bootstrapper
 ADD vs_Community.exe C:/
 
 RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
@@ -15,7 +14,6 @@ RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart 
     --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.Component.VC.ATLMFC \
-    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0)
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
@@ -33,35 +31,6 @@ RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-4.4.0-rc2-windows-x8
 RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
 RUN Remove-Item C:\\cmake-4.4.0-rc2-windows-x86_64.msi
 
-# Install Cygwin for building third party dependencies through conan
-ADD setup-x86_64.exe C:\\cygwin-setup-x86_64.exe
-# Install and clean up the package cache in a single layer. The cache uses very
-# long, URL-encoded directory names (e.g. https%3a%2f%2fmirrors.kernel.org%2f...)
-# which break the Windows container layer import (hcsshim::ImportLayer) if they
-# are ever committed to a layer, so they must never persist beyond this RUN.
-RUN Start-Process -FilePath 'C:\cygwin-setup-x86_64.exe' -Wait -NoNewWindow -ArgumentList \
-    '--quiet-mode', \
-    '--no-shortcuts', \
-    '--no-startmenu', \
-    '--no-desktop', \
-    '--no-admin', \
-    '--upgrade-also', \
-    '--root', 'C:\cygwin64', \
-    '--local-package-dir', 'C:\cygwin-packages', \
-    '--site', 'https://mirrors.kernel.org/sourceware/cygwin/', \
-    '--site', 'https://cygwin.mirror.constant.com/', \
-    '--only-site', \
-    '--packages', 'python3,make,git,cmake'; \
-    Remove-Item -Force C:\cygwin-setup-x86_64.exe; \
-    Remove-Item -Recurse -Force C:\cygwin-packages
-
-# Cygwin's link.exe conflicts with the Intel ifort/ifx compiler. Rename it so the
-# Intel/MSVC linker is picked up instead (per PETSc Windows install instructions).
-RUN if (Test-Path 'C:\cygwin64\bin\link.exe') { Move-Item 'C:\cygwin64\bin\link.exe' 'C:\cygwin64\bin\link-cygwin.exe' }
-
-# Add Cygwin to the PATH (appended so it does not shadow the uv-managed Python).
-RUN setx /M PATH ($Env:PATH + ';C:\cygwin64\bin')
-
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
 ENV VS2026INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\"
 
@@ -69,9 +38,7 @@ ENV VS2026INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\18\\Community\
 # with vswhere (whose own path is stable across VS versions/editions) so the exact
 # VS install folder never needs to be hard-coded.
 RUN $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'; \
-    if (-not (Test-Path $vswhere)) { throw \"vswhere.exe not found at $vswhere\" }; \
     $gitCmd = & $vswhere -latest -products * -find '**\cmd\git.exe' | Select-Object -First 1; \
-    if (-not $gitCmd) { throw 'Could not locate git.exe in the Visual Studio installation.' }; \
     $gitDir = Split-Path -Parent $gitCmd; \
     Write-Host ('Adding Git to PATH: ' + $gitDir); \
     setx /M PATH ($Env:PATH + ';' + $gitDir)
