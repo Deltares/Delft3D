@@ -72,6 +72,7 @@ contains
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
+      use m_physcoef, only: dynroughveg
       use m_update_dynveg, only: update_dynveg
 
       implicit none

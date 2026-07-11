@@ -736,8 +736,6 @@ contains
 
       implicit none
 
-      integer, parameter :: MANNING = 1
-
       integer :: link
       integer :: ierr
       integer :: k

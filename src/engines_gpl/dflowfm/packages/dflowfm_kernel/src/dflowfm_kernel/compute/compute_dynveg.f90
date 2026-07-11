@@ -39,20 +39,23 @@ contains
 
    subroutine update_dynveg()
       use precision, only: dp
-      use m_physcoef
-      use m_sediment
-      use m_flow
+      use m_physcoef, only: dynroughveg, dstem, droot, frcumin
+      use m_sediment, only: cumes
+      use m_flow, only: dynveg, frcu, frcu0
 
       if (dynroughveg > 0) then
+         if (.not. allocated(cumes)) then
+            ! when sedimentation is not allocated, it's zero and frcu stays equal to frcu0
+            return
+         end if
          where ((dynveg) .and. (cumes > 0.0_dp)) ! linear function due to deposition ( cumes > 0 )
             frcu = frcumin + max((dstem - cumes) / dstem, 0.0_dp) * (frcu0 - frcumin)
-         elsewhere((dynveg) .and. (cumes < (-1.0_dp * droot))) ! erosion larger than root then always minimum ( cumes < -droot )
+         elsewhere((dynveg) .and. (cumes < -droot)) ! erosion larger than root then always minimum ( cumes < -droot )
             frcu = frcumin
             dynveg = .false.
          elsewhere(dynveg) ! linear function due to deposition ( -droot < cumes < 0 )
             frcu = frcumin + min(max((droot + cumes) / droot, 0.0_dp), 1.0_dp) * (frcu0 - frcumin)
-         elsewhere
-            ! do nothing
+         elsewhere ! use the initial friction
             frcu = frcu0
          end where
       end if

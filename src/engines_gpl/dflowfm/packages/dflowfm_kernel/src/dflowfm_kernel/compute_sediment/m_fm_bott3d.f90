@@ -89,9 +89,8 @@ contains
       use Timers
       use m_reconstruct_sed_transports
       use m_waveconst
-      use m_physcoef, only: ag, rhomean
+      use m_physcoef, only: ag, rhomean, dynroughveg
       use m_bedform, only: bfmpar
-      use m_physcoef, only: dynroughveg
       implicit none
 
    !!
