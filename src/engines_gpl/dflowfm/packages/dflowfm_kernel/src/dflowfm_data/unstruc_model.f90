@@ -1538,8 +1538,9 @@ contains
       call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
       !
       ! safety
-      if (fwavpendep < 0.0_dp) then
+      if (fwavpendep <= 0.0_dp) then
          fwavpendep = 0.0_dp
+         jawavebreakerturbulence=WAVE_BREAKER_TURB_OFF
          write (msgbuf, *) 'unstruc_model::readMDUFile: 3Dwaveturbpendepth<0.0, reset to 0.0. Wave breaking switched off as a source for TKE.'
          call warn_flush()
       end if

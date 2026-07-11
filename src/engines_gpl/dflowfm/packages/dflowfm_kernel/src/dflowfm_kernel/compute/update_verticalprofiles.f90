@@ -91,6 +91,8 @@ contains
       if (iadvec == 0) then
          javau = 0
       end if
+      
+      womegu = 0.0_dp
 
       if (iturbulencemodel == 1) then ! 1=constant
 
@@ -451,10 +453,11 @@ contains
                   ! check if first layer is thicker than fwavpendep*wave height
                   ! Then use JvK solution
                   if (hu(LL) - hu(Lt - 1) >= fwavpendep * hrmsLL) then
-                     dk(kxL - 1) = dk(kxL - 1) + pkwmag * fwavpendep * hrmsLL / (hu(LL) - hu(Lt - 1)) ! m2/s3
+                     pkwav(kxL - 1) = 0.5_dp * pkwmag * fwavpendep * hrmsLL / (hu(LL) - hu(Lt - 1))
+                     dk(kxL - 1) = dk(kxL - 1) + pkwav(kxL - 1) ! m2/s3
                   else
                      ! distribute over layers
-                     do L = Lt - 1, Lb
+                     do L = Lt - 1, Lb, -1
                         if (hu(L + 1) < wdep) then
                            exit
                         end if

@@ -84,12 +84,12 @@ contains
       ac1 = acL(LL)
       ac2 = 1.0_dp - ac1
 
-      do L = Lb, 0 ! Lt
-         k = L - Lb + 1
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         dzv(k) = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1)) ! volume weighted dzu , ok for pillar
-      end do
+      !do L = Lb, 0 ! Lt
+      !   k = L - Lb + 1
+      !   k1 = ln(1, L)
+      !   k2 = ln(2, L)
+      !   dzv(k) = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1)) ! volume weighted dzu , ok for pillar
+      !end do
 
       jav3 = 0
       if (javau == 3) then
@@ -249,7 +249,7 @@ contains
          end if
 
          if (jawave > NO_WAVES .and. jawaveStokes == STOKES_DRIFT_2NDORDER_VISC_ADVE .and. .not. flow_without_waves) then ! ustokes correction in vertical viscosity
-            ustv = vstress * (ustokes(L) - ustokes(L - 1))
+            ustv = vstress * (ustokes(L+1) - ustokes(L))
             d(k + 1) = d(k + 1) + ustv / dzu(k + 1)
             d(k) = d(k) - ustv / dzu(k)
          end if
@@ -258,7 +258,7 @@ contains
 
       agp = ag
       if (jahelmert > 0 .and. jsferic > 0) then ! possibly operationalise later for now avoid the checks
-         st2 = sin(dg2rd * yu(L))**2
+         st2 = sin(dg2rd * yu(LL))**2
          agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
       end if
       gdxi = agp * dxi(LL)
