@@ -50,7 +50,6 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
       use m_physcoef, only: sag
-      use precision_basics, only: comparereal
 
       implicit none
 

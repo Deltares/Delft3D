@@ -62,7 +62,7 @@ contains
       real(kind=dp) :: p1, p2, h, z, uusto, fac
 
       real(kind=dp), parameter :: alfaw = 20.0_dp
-      real(kind=dp), parameter :: halfsqpi = 1.0_dp/(2.0_dp * acos(-1.0_dp))
+      real(kind=dp), parameter :: halfsqpi = 1.0_dp/(2.0_dp * sqrt(acos(-1.0_dp)))
       Dfu = 0.0_dp
       Dfuc = 0.0_dp
       deltau = 0.0_dp
