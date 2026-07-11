@@ -1181,8 +1181,8 @@ contains
             call prop_get(md_ptr, 'physics', 'dRoot', droot)
             call prop_get(md_ptr, 'physics', 'dStem', dstem)
             if (droot <= 0.0_dp .or. dstem <= 0.0_dp) then
-	       call mess(LEVEL_WARN, 'Dynamic vegetation roughness requires dRoot>0 and dStem>0. Switched off.')
-	       dynroughveg = 0
+               call mess(LEVEL_WARN, 'Dynamic vegetation roughness requires dRoot>0 and dStem>0. Switched off.')
+               dynroughveg = 0
             else
                call prop_get(md_ptr, 'physics', 'nManMin', frcumin)
                call prop_get(md_ptr, 'physics', 'dynVegPol', md_dynvegpol, success)
