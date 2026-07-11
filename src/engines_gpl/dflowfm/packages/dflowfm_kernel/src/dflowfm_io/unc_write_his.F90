@@ -208,7 +208,7 @@ contains
 
       ! Only add auto-tranformed lat/lon coordinates if model is Cartesian and user has requested extra latlon output.
 #ifdef HAVE_PROJ
-      add_latlon = jsferic == 0 .and. iand(unc_writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON
+      add_latlon = jsferic == 0 .and. iand(unc_writeopts, UG_WRITE_LATLON) > 0
 #else
       add_latlon = .false.
 #endif

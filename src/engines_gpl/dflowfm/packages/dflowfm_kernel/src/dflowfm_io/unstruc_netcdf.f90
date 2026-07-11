@@ -13925,7 +13925,7 @@ contains
                flowgeom%mesh2d%interface_zs => interface_zs
             end if
 
-            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d)
+            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d, writeopts=unc_writeopts)
             call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom%edge_type)
 
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
