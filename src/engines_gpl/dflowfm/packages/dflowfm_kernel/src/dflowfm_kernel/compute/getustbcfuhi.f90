@@ -245,25 +245,23 @@ contains
             if (stm_included) wblt(LL) = deltau
             !
             ! Streaming below strlyrfac*deltau with linear distribution, see van Rijn 2011 p9.177
-            if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
+            if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then
+               ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
+               ! linear from 1 at bed to 0 at slfacdeltau
                slfacdeltau = strlyrfac * deltau
                Dfu0 = Dfuc ! (m/s2)
                do L = Lb, Ltop(LL)
-                  if (hu(L) <= slfacdeltau) then
-                     htop = min(hu(L), slfacdeltau) ! max height within streaming layer
-                     alin = 1_dp - htop / slfacdeltau ! linear from 1 at bed to 0 at slfacdeltau (= strlyrfac * deltau)
-                     Dfu1 = Dfuc * alin
-                     adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1)
-                     Dfu0 = Dfu1
+                  Dfu1 = max(0.0_fp, 1.0_dp - hu(L) / slfacdeltau) * Dfuc
+                  if (L == Lb) then
+                     dz = hu(L)
+                  else
+                     dz = hu(L) - hu(L - 1)
                   end if
-                  if (hu(L) > slfacdeltau) then
-                     if (L == Lb) then
-                        adve(L) = adve(L) - Dfuc * slfacdeltau / (2.0_dp * hu(L)) ! everything in bottom layer
-                     else
-                        alin = (min(hu(L), slfacdeltau) - hu(L - 1)) / (2.0_dp * (hu(L) - hu(L - 1)))
-                        Dfu1 = Dfuc * alin
-                        adve(L) = adve(L) - Dfu1
-                     end if
+                  adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1) / dz
+                  if (Dfu1 > 0.0_dp) then
+                     ! streaming layer extends into next layer
+                     Dfu0 = Dfu1
+                  else
                      exit
                   end if
                end do
