@@ -57,7 +57,7 @@ contains
       integer :: L, LL, Lb, Lt
       real(kind=dp) :: wavfx, wavfy, wavfbx, wavfby
       real(kind=dp) :: wavfu_loc, wavfbu_loc, twavL
-      real(kind=dp) :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag, wavfang, wavfbang
+      real(kind=dp) :: wavfv_loc, wavfbv_loc, wavfmag, force_scale, dztop
       real(kind=dp) :: fmax, ac1, ac2, hminlwi, rhoL, hminlw, gammaloc
 
       integer :: k1, k2
@@ -91,87 +91,114 @@ contains
             if (hu(L) <= epshu) then
                cycle
             end if
-            if (L > lnx1D) then
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               ac1 = acl(L)
-               ac2 = 1.0_dp - ac1
 
-               wavfx = ac1 * sxwav(k1) + ac2 * sxwav(k2)
-               wavfy = ac1 * sywav(k1) + ac2 * sywav(k2)
-
-               wavfbx = ac1 * sbxwav(k1) + ac2 * sbxwav(k2)
-               wavfby = ac1 * sbywav(k1) + ac2 * sbywav(k2)
-
-               twavL = ac1 * twav(k1) + ac2 * twav(k2)
-
-               ! limit forces
-               fmax = facmax * hu(L)**1.5 / max(0.1_dp, twavL)
-
-               ! projection in face-normal direction
-               wavfu_loc = wavfx * csu(L) + wavfy * snu(L)
-               wavfv_loc = -wavfx * snu(L) + wavfy * csu(L)
-               wavfbu_loc = wavfbx * csu(L) + wavfby * snu(L)
-               wavfbv_loc = -wavfbx * snu(L) + wavfby * csu(L)
-
-               ! Should be done on the vector norm, nt separate comps
-               wavfmag = min(hypot(wavfu_loc, wavfv_loc), fmax)
-               wavfbmag = min(hypot(wavfbu_loc, wavfbv_loc), fmax)
-               wavfang = atan2(wavfv_loc, wavfu_loc)
-               wavfbang = atan2(wavfbv_loc, wavfbu_loc) ! necessary?
-               wavfu_loc = wavfmag * cos(wavfang)
-               wavfv_loc = wavfmag * sin(wavfang)
-               wavfbu_loc = wavfbmag * cos(wavfbang)
-               wavfbv_loc = wavfbmag * sin(wavfbang)
-
-               wavfu(L) = wavfu_loc + wavfbu_loc
-               wavfv(L) = wavfv_loc + wavfbv_loc
+            ! Wave forcing is not applied to 1D links.
+            if (L <= lnx1D) then
+               cycle
             end if
-            !
-            wavfu(L) = wavfu(L) * min(huvli(L), hminlwi) / rhomean ! Dimensions [m/s^2]
-            wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean
-            !
+
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            ac1 = acl(L)
+            ac2 = 1.0_dp - ac1
+
+            ! Interpolate surface force to the link.
+            wavfx = ac1 * sxwav(k1) + ac2 * sxwav(k2)
+            wavfy = ac1 * sywav(k1) + ac2 * sywav(k2)
+
+            ! Add the depth-distributed body force.
+            wavfx = wavfx + ac1 * sbxwav(k1) + ac2 * sbxwav(k2)
+            wavfy = wavfy + ac1 * sbywav(k1) + ac2 * sbywav(k2)
+
+            twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)
+            fmax = facmax * hu(L)**1.5_dp / twavL
+
+            ! Project the combined force into link-normal and tangential directions.
+            wavfu_loc = wavfx * csu(L) + wavfy * snu(L)
+            wavfv_loc = -wavfx * snu(L) + wavfy * csu(L)
+
+            ! Limit the magnitude of the combined force vector.
+            wavfmag = hypot(wavfu_loc, wavfv_loc)
+            if (wavfmag > fmax) then
+               wavfu_loc = wavfu_loc * fmax / wavfmag
+               wavfv_loc = wavfv_loc * fmax / wavfmag
+            end if
+
+            ! Convert force [N/m2] to acceleration [m/s2].
+            wavfu(L) = wavfu_loc * min(huvli(L), hminlwi) / rhomean
+            wavfv(L) = wavfv_loc * min(huvli(L), hminlwi) / rhomean
          end do
-      else ! kmx>0
+      else ! kmx > 0
          do LL = 1, lnx
             if (hu(LL) <= epshu) then
                cycle
             end if
+
+            ! Keep the same policy as the 2D branch.
+            if (LL <= lnx1D) then
+               cycle
+            end if
+
             call getLbotLtop(LL, Lb, Lt)
             if (Lt < Lb) then
                cycle
             end if
+
             k1 = ln(1, LL)
             k2 = ln(2, LL)
-            ac1 = acL(LL)
+            ac1 = acl(LL)
             ac2 = 1.0_dp - ac1
-            !
+
             twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)
-            fmax = facmax * hu(LL)**1.5 / twavL
+            fmax = facmax * hu(LL)**1.5_dp / twavL
             rhoL = rhomean
-            !
-            ! Surface force, assign to top layer
-            !
+
+            ! Surface force at the link.
             wavfx = ac1 * sxwav(k1) + ac2 * sxwav(k2)
             wavfy = ac1 * sywav(k1) + ac2 * sywav(k2)
+
             wavfu_loc = csu(LL) * wavfx + snu(LL) * wavfy
             wavfv_loc = -snu(LL) * wavfx + csu(LL) * wavfy
-            wavfu(Lt) = sign(min(abs(wavfu_loc), fmax), wavfu_loc) / rhoL / max(hu(LL) - hu(Lt - 1), hminlw) ! top layer, as in D3D
-            wavfv(Lt) = sign(min(abs(wavfv_loc), fmax), wavfv_loc) / rhoL / max(hu(LL) - hu(Lt - 1), hminlw) ! this limitation only works in sigma layers
-            !
-            ! Body forces, uniform over depth
-            !
-            wavfx = ac1 * sbxwav(k1) + ac2 * sbxwav(k2)
-            wavfy = ac1 * sbywav(k1) + ac2 * sbywav(k2)
-            wavfu_loc = csu(LL) * wavfx + snu(LL) * wavfy
-            wavfv_loc = -snu(LL) * wavfx + csu(LL) * wavfy
+
+            ! Depth-distributed body force at the link.
+            wavfbx = ac1 * sbxwav(k1) + ac2 * sbxwav(k2)
+            wavfby = ac1 * sbywav(k1) + ac2 * sbywav(k2)
+
+            wavfbu_loc = csu(LL) * wavfbx + snu(LL) * wavfby
+            wavfbv_loc = -snu(LL) * wavfbx + csu(LL) * wavfby
+
+            ! Limit the magnitude of the combined surface-plus-body force.
+            wavfmag = hypot( &
+                      wavfu_loc + wavfbu_loc, &
+                      wavfv_loc + wavfbv_loc)
+
+            force_scale = 1.0_dp
+            if (wavfmag > fmax) then
+               force_scale = fmax / wavfmag
+            end if
+
+            ! Apply the same scale to both contributions so their relative
+            ! magnitude and direction are preserved.
+            wavfu_loc = force_scale * wavfu_loc
+            wavfv_loc = force_scale * wavfv_loc
+            wavfbu_loc = force_scale * wavfbu_loc
+            wavfbv_loc = force_scale * wavfbv_loc
+
+            ! Surface force: apply to the top layer.
+            dztop = hu(LL) - hu(Lt - 1)
+
+            wavfu(Lt) = wavfu_loc / (rhoL * max(dztop, hminlw))
+            wavfv(Lt) = wavfv_loc / (rhoL * max(dztop, hminlw))
+
+            ! Body force: distribute uniformly over the water column.
             do L = Lb, Lt
-               wavfu(L) = wavfu(L) + sign(min(abs(wavfu_loc), fmax), wavfu_loc) / rhoL / max(hu(LL), hminlw)
-               wavfv(L) = wavfv(L) + sign(min(abs(wavfv_loc), fmax), wavfv_loc) / rhoL / max(hu(LL), hminlw)
+               wavfu(L) = wavfu(L) + wavfbu_loc &
+                          / (rhoL * max(hu(LL), hminlw))
+               wavfv(L) = wavfv(L) + wavfbv_loc &
+                          / (rhoL * max(hu(LL), hminlw))
             end do
          end do
-      end if
-      !
+      end if !
       wavfu = fforc * wavfu
       wavfv = fforc * wavfv
 1234  continue

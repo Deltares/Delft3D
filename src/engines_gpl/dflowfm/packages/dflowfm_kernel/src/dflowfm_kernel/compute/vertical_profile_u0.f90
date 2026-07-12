@@ -113,6 +113,9 @@ contains
          ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 
          ! vstress  = ( max(vicwwu(L), vicoww) + viskin ) / dzLw                 ! 23-12-14 : D3D like
+         
+         adv = 0.0_dp
+         adv1 = 0.0_dp
 
          if (jav3 == 1) then ! vertical advection upwind implicit
             if (womegu(k) > 0.0_dp) then
@@ -264,7 +267,7 @@ contains
       gdxi = agp * dxi(LL)
 
       if (jarhoxu >= 2) then
-         gdxi = gdxi * rhomean / rhou(L)
+         gdxi = gdxi * rhomean / rhou(L) ! top layer rho!
       end if
 
       k1 = ln(1, LL)

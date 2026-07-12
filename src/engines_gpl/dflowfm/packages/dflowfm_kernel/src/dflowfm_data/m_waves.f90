@@ -65,6 +65,8 @@ module m_waves
    real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
    real(kind=dp) :: fbreak !< tune breaking in tke model
    real(kind=dp) :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+   real(kind=dp) :: fforc !< factor for adjusting wave forces in momentum equation, default 1
+   real(kind=dp) :: strlyrfac !< factor for adjusting wave forces in momentum equation, default 1
 
    character(len=4) :: rouwav !< Friction model for wave induced shear stress
 
@@ -82,6 +84,7 @@ module m_waves
    real(kind=dp), allocatable :: cfwavhi(:)
    real(kind=dp), allocatable :: cfhi_vanrijn(:)
    real(kind=dp), allocatable :: wblt(:)
+   integer :: jawavevellogprof
 
    real(kind=dp) :: facmax !< maximum wave force
    real(kind=dp) :: JONSWAPgamma0 = 3.3 !< Peak enhancement factor JONSWAP
@@ -118,6 +121,9 @@ contains
       fwfac = 1.0_dp
       fbreak = 1.0_dp
       fwavpendep = 1.5_dp ! best setting based on sensitivity
+      jawavevellogprof = 1
+      fforc = 1.0_dp
+      strlyrfac = 3.0_dp
 
       call reset_waves()
    end subroutine default_waves
