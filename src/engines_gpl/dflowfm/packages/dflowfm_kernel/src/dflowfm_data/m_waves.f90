@@ -63,10 +63,10 @@ module m_waves
 
    real(kind=dp) :: ftauw !< Swartfactor, tune bed shear stress
    real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
-   real(kind=dp) :: fbreak !< tune breaking in tke model
-   real(kind=dp) :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+   real(kind=dp) :: fbreak !< factor for adjusting wave breaking contribution in tke model
    real(kind=dp) :: fforc !< factor for adjusting wave forces in momentum equation, default 1
-   real(kind=dp) :: strlyrfac !< factor for adjusting wave forces in momentum equation, default 1
+   real(kind=dp) :: fwavpendep !< layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 1.5
+   real(kind=dp) :: strlyrfac !< streaming layer thickness is strlyrfac*wave boundary layer thickness. Default 3.0 
 
    character(len=4) :: rouwav !< Friction model for wave induced shear stress
 
@@ -84,7 +84,6 @@ module m_waves
    real(kind=dp), allocatable :: cfwavhi(:)
    real(kind=dp), allocatable :: cfhi_vanrijn(:)
    real(kind=dp), allocatable :: wblt(:)
-   integer :: jawavevellogprof
 
    real(kind=dp) :: facmax !< maximum wave force
    real(kind=dp) :: JONSWAPgamma0 = 3.3 !< Peak enhancement factor JONSWAP
@@ -98,11 +97,11 @@ module m_waves
 
    ! parameters, may be overwritten by user in mdu-file
    real(kind=dp) :: gammax !< Maximum wave height/water depth ratio
-   real(kind=dp) :: alfdeltau = 20.0_dp !< coeff for thickness of wave bed boundary layer
    real(kind=dp) :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
    integer :: jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
    integer :: jauorb !< multiply with factor sqrt(pi)/2 (=0), or not (=1). Default 0, delft3d style
    integer :: jauorbfromswan !< 1: get uorb from SWAN, compare with Delft3D
+   integer :: jawavevellogprof !< 1: set depth-averaged velocity from u1 of base layers
    logical :: extfor_wave_initialized !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
 
 contains
