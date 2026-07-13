@@ -66,7 +66,7 @@ contains
          if (jauorb == 0) then ! for consistency with old d3d convention
             uorbi = uorbi * sqrt(pi) / 2.0_dp
          end if
-         ust = 0.5_dp * omeg * arms * arms / depth
+         ust = 0.5_dp * omeg * arms**2 / (depth * tanhsafe(rk * depth))
          rlabd = twopi / rk
       end if
 

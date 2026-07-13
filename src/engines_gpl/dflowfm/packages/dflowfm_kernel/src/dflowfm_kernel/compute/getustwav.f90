@@ -76,10 +76,6 @@ contains
       costu = 1.0_dp
       fw = 0.0_dp
 
-      if (z00 <= 0.0_dp) then ! guard for hydraulically smooth flow
-         return
-      end if
-
       ac1 = acl(LL)
       ac2 = 1.0_dp - ac1
 
@@ -113,7 +109,8 @@ contains
       sintu = -csw * snu(LL) + snw * csu(LL)
 
       if (jawaveStokes == STOKES_DRIFT_DEPTHUNIFORM) then
-         uusto = 0.5_dp * omeg * asg * asg / hu(LL)
+         !uusto = 0.5_dp * omeg * asg * asg / hu(LL)
+         uusto = 0.5_dp * ag * asg**2 * rk / (omeg * hu(LL)) ! with tanh(kh)
          ustokes(Lb:Lt) = costu * uusto
          vstokes(Lb:Lt) = sintu * uusto
          ustokes(LL) = costu * uusto ! for convenience
@@ -144,6 +141,11 @@ contains
             fac = sqrt(pi) / 2.0_dp
          end if
          uorbu = omeg * asg * shs * fac ! Orbital velocity, sqrt factor to match delft3d
+         !
+         if (z00 <= 0.0_dp) then ! guard for hydraulically smooth flow
+            return
+         end if
+         !
          call Swart(Tsig, uorbu, z00, fw, ustw2)
          ustw2 = ftauw * ustw2 ! ustar wave squared times calibrationcoeff ftauw
 
@@ -155,11 +157,11 @@ contains
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
          deltau = min(0.5_dp * hu(LL), alfaw * deltau)
-         streamdepth = min(hu(LL), strlyrfac * deltau)  ! divided by 3 deltau see van Rijn, streaming layer about 3-5 times wbl
-         Dfu = fwfac * halfsqpi * fw * uorbu**3    ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
+         streamdepth = min(hu(LL), strlyrfac * deltau) ! divided by 3 deltau see van Rijn, streaming layer about 3-5 times wbl
+         Dfu = fwfac * halfsqpi * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
 
          if (streamdepth > 0.0_dp) then
-            Dfuc = 2.0_dp * Dfu * rk / omeg * costu / streamdepth   ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
+            Dfuc = 2.0_dp * Dfu * rk / omeg * costu / streamdepth ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
          else
             Dfuc = 0.0_dp
          end if

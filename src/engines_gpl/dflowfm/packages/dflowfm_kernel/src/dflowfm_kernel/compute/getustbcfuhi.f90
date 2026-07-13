@@ -274,7 +274,7 @@ contains
             ! Streaming acceleration decreases linearly from Dfuc at the bed
             ! to zero at slfacdeltau.
             if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then
-               slfacdeltau = strlyrfac * deltau
+               slfacdeltau = min(hu(LL), strlyrfac * deltau)
                if (slfacdeltau > 0.0_dp) then
                do L = Lb, Ltop(LL)
                      zbot = hu(L - 1)
