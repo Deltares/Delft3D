@@ -44,9 +44,7 @@ ENV VS2022INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\17\\Community\
 # with vswhere (whose own path is stable across VS versions/editions) so the exact
 # VS install folder never needs to be hard-coded.
 RUN $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'; \
-    if (-not (Test-Path $vswhere)) { throw "vswhere.exe not found at $vswhere" }; \
     $gitCmd = & $vswhere -latest -products * -find '**\cmd\git.exe' | Select-Object -First 1; \
-    if (-not $gitCmd) { throw 'Could not locate git.exe in the Visual Studio installation.' }; \
     $gitDir = Split-Path -Parent $gitCmd; \
     Write-Host ('Adding Git to PATH: ' + $gitDir); \
     setx /M PATH ($Env:PATH + ';' + $gitDir)
