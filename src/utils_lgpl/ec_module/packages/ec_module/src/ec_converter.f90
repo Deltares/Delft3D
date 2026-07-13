@@ -3496,11 +3496,11 @@ contains
                               wt = (1.0_dp - wb)
 
                               if (has_harmonics) then
+
                                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Harmonics not (yet) implemented for layers.")
                                  return
+
                               else
-                                 ! interpolating between times and between vertical layers
-                                 interpolated_source_value = a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
 
                                  call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(k)], status)
 
@@ -3508,7 +3508,11 @@ contains
                                     return
                                  end if
 
+                                 ! interpolating between times and between vertical layers
+                                 interpolated_source_value = a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
+
                                  call apply_operand(connection%converterPtr%operandType, targetValues(k), interpolated_source_value)
+                                 
                               end if
                            end if
                         end do
