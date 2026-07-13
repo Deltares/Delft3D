@@ -6783,10 +6783,6 @@ contains
                   call definencvar(imapfile, id_relative_humidity(iid), nf90_double, idims, 'rhum', 'Relative humidity', ' ', 'FlowElem_xcc FlowElem_ycc')
                   call definencvar(imapfile, id_cloudiness(iid), nf90_double, idims, 'clou', 'cloudiness', ' ', 'FlowElem_xcc FlowElem_ycc')
 
-                  if (secchi_depth_is_time_varying) then
-                     call definencvar(imapfile, id_secchi_depth(iid), nf90_double, idims, 'Secc', 'Secchi depth', 'm', 'FlowElem_xcc FlowElem_ycc')
-                  end if
-
                   if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                      call definencvar(imapfile, id_qsun(iid), nf90_double, idims, 'Qsun', 'solar influx', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
                      call definencvar(imapfile, id_Qeva(iid), nf90_double, idims, 'Qeva', 'evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
