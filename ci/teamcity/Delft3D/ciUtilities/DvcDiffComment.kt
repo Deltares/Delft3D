@@ -12,6 +12,7 @@ object DvcDiffComment : BuildType({
 
     templates(
         TemplateMergeRequest,
+        TemplateBuildConcurrency
     )
 
     params {
