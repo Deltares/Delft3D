@@ -271,8 +271,8 @@ contains
 
       width_correction_factor = 1.0_dp
       ! In case no flow is possible due to coefficients set to 0 or allowed flow direction, all flow areas may be 0. This is to avoid division by 0.
-      if (  (comparereal(genstr%au_max(l0), 0.0_dp) /= 0) .and. &
-            (comparereal(sum(au), 0.0_dp) /= 0 ) ) then  ! Only width flow areas /= 0
+      if (  (comparereal(genstr%au_max(l0), 0.0_dp) == 1 ) .and. &
+            (comparereal(sum(au), 0.0_dp) == 1 ) ) then  ! Only width flow areas /= 0
          width_correction_factor = (sum(au)) / genstr%au_max(l0)
       end if
       if (gatefraction > GATE_FRACTION_EPS) then
