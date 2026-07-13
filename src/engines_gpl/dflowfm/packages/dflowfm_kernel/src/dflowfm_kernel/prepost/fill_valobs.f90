@@ -49,15 +49,18 @@ contains
                         vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
-                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
-                        infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
-                        use_density
-      use m_flowtimes, only: handle_extra 
+                        infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
+                        use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat
+      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
       use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
-                                     ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, &
+                                     ipnt_wx, ipnt_wy, ipnt_windstressx, ipnt_windstressy, ipnt_wstar, ipnt_obukhov_length, &
+                                     ipnt_transfer_coeff_momentum, ipnt_transfer_coeff_sensible_heat, ipnt_transfer_coeff_latent_heat, &
+                                     ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, &
                                      ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, &
                                      ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, &
                                      ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, &
@@ -68,7 +71,7 @@ contains
                                      ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, &
                                      ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, &
                                      ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
-                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, &
+                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_vicwws_total, ipnt_difwws, ipnt_difwws_total, ipnt_bruv, ipnt_richs, ival_seddif1, &
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs,xobs,yobs,namobs 
@@ -86,6 +89,8 @@ contains
       use m_get_link1, only: getlink1
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
       use m_xbeach_data, only: R
+      use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total
+      use m_physcoef, only: vicoww
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
@@ -168,6 +173,18 @@ contains
       ! get velocities here (and not at velocity writing)
       if (his_write_settings%taucurrent > 0 .or. his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
          call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, his_write_settings%velocity)
+      end if
+
+      if (model_is_3D() .and. his_write_settings%tur > 0 .and. iturbulencemodel >= 2) then
+         vicwwu_total = 0.0_dp
+         vicwws_total = 0.0_dp
+         do LL = 1, lnx
+            call getLbotLtop(LL, Lb, Lt)
+            do L = Lb - 1, Lt
+               vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+            end do
+         end do
+         call links_to_centers(vicwws_total, vicwwu_total)
       end if
 
       if (his_write_settings%taucurrent > 0) then
@@ -414,6 +431,10 @@ contains
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
                valobs(i, IPNT_wy) = 0.0_dp
+               if (his_write_settings%windstress > 0) then
+                  valobs(i, IPNT_windstressx) = 0.0_dp
+                  valobs(i, IPNT_windstressy) = 0.0_dp
+               end if
                do LL = 1, nd(k)%lnx
                   LLL = abs(nd(k)%ln(LL))
                   k1 = ln(1, LLL)
@@ -424,7 +445,26 @@ contains
                   end if
                   valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
+                  if (his_write_settings%windstress > 0) then
+                     valobs(i, IPNT_windstressx) = valobs(i, IPNT_windstressx) + wdsu_x(LLL) * wcL(k3, LLL)
+                     valobs(i, IPNT_windstressy) = valobs(i, IPNT_windstressy) + wdsu_y(LLL) * wcL(k3, LLL)
+                  end if
                end do
+
+               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+                  valobs(i, IPNT_wstar) = dmiss
+                  valobs(i, IPNT_obukhov_length) = dmiss
+                  valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss
+                  valobs(i, IPNT_TRANSFER_COEFF_SENSIBLE_HEAT) = dmiss
+                  valobs(i, IPNT_TRANSFER_COEFF_LATENT_HEAT) = dmiss
+                  if (allocated(w_star)) then
+                     valobs(i, IPNT_wstar) = w_star(k)
+                     valobs(i, IPNT_obukhov_length) = obukhov_length(k)
+                     valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = transfer_coeff_momentum(k)
+                     valobs(i, IPNT_TRANSFER_COEFF_SENSIBLE_HEAT) = transfer_coeff_sensible_heat(k)
+                     valobs(i, IPNT_TRANSFER_COEFF_LATENT_HEAT) = transfer_coeff_latent_heat(k)
+                  end if
+               end if
             end if
             if (air_pressure_available .and. allocated(air_pressure)) then
                valobs(i, IPNT_PATM) = air_pressure(k)
@@ -658,7 +698,9 @@ contains
 !                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
                   if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+                     valobs(i, IPNT_VICWWS_TOTAL + klay - 1) = vicwws_total(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
+                     valobs(i, IPNT_DIFWWS_TOTAL + klay - 1) = difwws_total(kk)
                   end if
                   if (use_density() .and. his_write_settings%rho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
@@ -723,29 +765,37 @@ contains
             end if
 
 !        Heatflux
-            if (temperature_model /= TEMPERATURE_MODEL_NONE .and. his_write_settings%heatflux > 0) then
-               call getlink1(k, LL)
-               if (jawind > 0) then
-                  valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
-               end if
-
-               if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
-                  valobs(i, IPNT_TAIR) = air_temperature(k)
-                  valobs(i, IPNT_QTOT) = Qtotmap(k)
-               end if
-
-               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-                  if (allocated(relative_humidity) .and. allocated(cloudiness)) then
-                     valobs(i, IPNT_RHUM) = relative_humidity(k)
-                     valobs(i, IPNT_CLOU) = cloudiness(k)
-                  end if
-
+            if (his_write_settings%heatflux > 0) then
+               if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
                   valobs(i, IPNT_QLON) = Qlongmap(k)
-                  valobs(i, IPNT_QFRE) = Qfrevamap(k)
-                  valobs(i, IPNT_QFRC) = Qfrconmap(k)
+                  valobs(i, IPNT_QTOT) = Qtotmap(k)                   
+               else if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+                  call getlink1(k, LL)
+                  if (jawind > 0) then
+                     valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
+                  end if
+               
+                  if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
+                     valobs(i, IPNT_TAIR) = air_temperature(k)
+                     valobs(i, IPNT_QTOT) = Qtotmap(k)
+                  end if
+               
+                  if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                     if (allocated(relative_humidity) .and. allocated(cloudiness)) then
+                        valobs(i, IPNT_RHUM) = relative_humidity(k)
+                        valobs(i, IPNT_CLOU) = cloudiness(k)
+                     end if
+               
+                     valobs(i, IPNT_QSUN) = Qsunmap(k)
+                     valobs(i, IPNT_QEVA) = Qevamap(k)
+                     valobs(i, IPNT_QCON) = Qconmap(k)
+                     valobs(i, IPNT_QLON) = Qlongmap(k)
+                     valobs(i, IPNT_QFRE) = Qfrevamap(k)
+                     valobs(i, IPNT_QFRC) = Qfrconmap(k)
+                  end if
                end if
             end if
          else
