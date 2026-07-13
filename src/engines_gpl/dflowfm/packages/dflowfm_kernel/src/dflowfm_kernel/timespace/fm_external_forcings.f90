@@ -1883,6 +1883,7 @@ contains
       use m_setzminmax, only: setzminmax
       use m_bnd, only: alloc_bnd, dealloc_bndarr
       use messagehandling, only: msgbuf, LEVEL_WARN, mess
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer, intent(out) :: iresult
 
@@ -1997,7 +1998,7 @@ contains
                teta(L) = 1.0_dp
             end do
 
-            if (iadvec /= 0 .and. kcu(L) == -1) then
+            if (iadvec /= 0 .and. kcu(L) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2017,7 +2018,7 @@ contains
          do k = 1, nbndz
             kbi = kbndz(2, k)
             Lf = kbndz(3, k)
-            if (iadvec /= 0 .and. kcu(Lf) == -1) then
+            if (iadvec /= 0 .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2659,10 +2660,11 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
-      use m_physcoef, only: constant_dicoww, dicoww
+      use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use unstruc_inifields, only: finalize_1dfield_global_values
+      use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -3000,7 +3002,7 @@ contains
             do L = 1, lnx1D ! for all links, set link width
                k1 = ln(1, L)
                k2 = ln(2, L)
-               if (kcu(L) == 1) then
+               if (kcu(L) == LINK_1D) then
                   ! Calculate maximal total area by using a water depth of 1000 m. FOR BARE we need the maximal possible catchment area.
                   ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                   ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.
@@ -3102,11 +3104,6 @@ contains
       ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
-
-      ! Set dicoww to scalar value if not read from inifields file
-      if (.not. allocated(dicoww)) then
-         call realloc(dicoww, constant_dicoww)
-      end if
 
    end subroutine finalize
 
