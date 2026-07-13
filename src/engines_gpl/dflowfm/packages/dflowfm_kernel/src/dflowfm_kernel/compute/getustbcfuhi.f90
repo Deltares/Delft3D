@@ -69,10 +69,12 @@ contains
       real(kind=dp) :: u2dh
       real(kind=dp) :: z0urouL, rhoL, uorbu
       real(kind=dp) :: umodeps
+      real(kind=dp) :: z0log, depth, eta, logfac
+      real(kind=dp) :: zbot, dzu
 
       integer :: nit, nitm = 100
       real(kind=dp) :: r, rv = 123.8_dp, e = 8.84_dp, eps = 1.0e-2_dp
-      real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
+      real(kind=dp) :: s, sd, er, ers, dzb, uu, vv
       real(kind=dp) :: cphi, sphi
       real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
       real(kind=dp) :: slfacdeltau
@@ -166,7 +168,20 @@ contains
                else
                   ! here we assume that z0/dzb is small and c9of1==1, ie we use jaustarint==1 approach, cf 3D validation doc Mohamed
                   if (jawavevellogprof == 0) then
-                     u2dh = umod * (log((1_dp + hu(LL)) / z0urou(LL)) - 1_dp) / (log(dzb / z0urou(LL)) - 1_dp)
+                     depth = hu(LL)
+                     z0log = max(z00, epsz0)
+
+                     if (ustbLL > 0.0_dp .and. depth > 0.0_dp) then
+                        eta = c9of1 * z0log / depth
+
+                        logfac = (1.0_dp + eta) * &
+                                 log(depth / z0log + c9of1) - &
+                                 eta * log(c9of1) - 1.0_dp
+
+                        u2dh = max(0.0_dp, ustbLL * logfac / vonkar)
+                     else
+                        u2dh = 0.0_dp
+                     end if
                   else
                      ! use available depth-averaged u1, v
                      u2dh = sqrt((u1(LL) - ustokes(LL))**2 + &
@@ -220,7 +235,16 @@ contains
                !
                ! set wave enhanced z0 for turbulence and morphology
                if (sqcf > 0.0_dp) then
-                  z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
+                  select case (jaustarint)
+                  case (0)
+                     z0urou(LL) = 0.5_dp * hu(Lb) / &
+                                  (exp(vonkar / sqcf) - c9of1)
+                  case (3)
+                     z0urou(LL) = 0.5_dp * hu(Lb) / &
+                                  (exp(vonkar / sqcf) - 1.0_dp)
+                  case default
+                     z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
+                  end select
                   z0urou(LL) = min(z0urou(LL), 10.0_dp)
                else
                   z0urou(LL) = epsz0
@@ -235,6 +259,8 @@ contains
                   z0urou(LL) = z00 ! just use current only z0
                   taubpuLL = ustbLL * ustbLL / umod ! use flow ustar
                   taubxuLL = rhoL * taubpuLL * umod
+                  taubu(LL) = taubpuLL * rhoL * (u1Lb + ustokes(Lb))
+                  taubxu(LL) = taubxuLL
                else
                   taubu(LL) = 0_dp
                   taubxu(LL) = 0_dp
@@ -245,28 +271,33 @@ contains
             if (stm_included) wblt(LL) = deltau
             !
             ! Streaming below strlyrfac*deltau with linear distribution, see van Rijn 2011 p9.177
-            if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
+            ! Streaming acceleration decreases linearly from Dfuc at the bed
+            ! to zero at slfacdeltau.
+            if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then
                slfacdeltau = strlyrfac * deltau
-               Dfu0 = Dfuc ! (m/s2)
-               do L = Lb, Ltop(LL)
-                  if (hu(L) <= slfacdeltau) then
-                     htop = min(hu(L), slfacdeltau) ! max height within streaming layer
-                     alin = 1_dp - htop / slfacdeltau ! linear from 1 at bed to 0 at slfacdeltau (= strlyrfac * deltau)
-                     Dfu1 = Dfuc * alin
-                     adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1)
-                     Dfu0 = Dfu1
-                  end if
-                  if (hu(L) > slfacdeltau) then
-                     if (L == Lb) then
-                        adve(L) = adve(L) - Dfuc * slfacdeltau / (2.0_dp * hu(L)) ! everything in bottom layer
-                     else
-                        alin = (min(hu(L), slfacdeltau) - hu(L - 1)) / (2.0_dp * (hu(L) - hu(L - 1)))
-                        Dfu1 = Dfuc * alin
-                        adve(L) = adve(L) - Dfu1
-                     end if
-                     exit
-                  end if
-               end do
+               if (slfacdeltau > 0.0_dp) then
+                  do L = Lb, Ltop(LL)
+                     zbot = hu(L - 1)
+                     dzu = hu(L) - zbot
+                     if (dzu <= 0.0_dp) cycle
+                     if (zbot >= slfacdeltau) exit
+                     !
+                     ! Upper boundary of the active part of this layer.
+                     htop = min(hu(L), slfacdeltau)
+                     !
+                     ! Streaming acceleration at the lower and upper boundaries
+                     ! of the active part.
+                     Dfu0 = Dfuc * (1.0_dp - zbot / slfacdeltau)
+                     Dfu1 = Dfuc * (1.0_dp - htop / slfacdeltau)
+                     !
+                     ! Average over the active interval, then account for the
+                     ! fraction of the complete computational layer that is active.
+                     adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1) * (htop - zbot) / dzu
+                     !
+                     if (hu(L) >= slfacdeltau) exit
+                  end do
+               end if
+
             end if
          end if ! end jawave
 
