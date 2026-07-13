@@ -3064,6 +3064,8 @@ contains
       logical :: has_x_wind, has_y_wind
       logical :: has_wave_direction
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
+      logical :: status !< Status of undefined values check
+      real(dp) :: interpolated_source_value !< Interpolated source value
       real(dp), dimension(:), pointer :: targetValues
       real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
@@ -3260,9 +3262,8 @@ contains
 
                if (n_layers == 0) then
                   do j = 1, n_points
-                     if (connection%converterPtr%operandType == EC_OPERAND_REPLACE) then
-                        targetValues(j) = 0.0_dp
-                     end if
+                     interpolated_source_value = 0.0_dp
+
                      do i_weight_index = 1, size(indexWeight%indices, 1)
                         mp = indexWeight%indices(i_weight_index, j)
                         if (mp > 0 .and. mp <= n_cols) then
@@ -3272,9 +3273,17 @@ contains
                               return
                            end if
                            weight_factor = indexWeight%weightfactors(i_weight_index, j)
-                           targetValues(j) = targetValues(j) + (a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)) * weight_factor
+                           interpolated_source_value = interpolated_source_value + (a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)) * weight_factor
                         end if
                      end do
+
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(j)], status)
+
+                     if (.not. status) then
+                        return
+                     end if
+
+                     call apply_operand(connection%converterPtr%operandType, targetValues(j), interpolated_source_value)
                   end do
                else
                   call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Multiple layers sources not yet supported for meteo from stations.")
@@ -3378,9 +3387,6 @@ contains
                      np = indexWeight%indices(1, j)
                      mp = indexWeight%indices(2, j)
                      if (mp > 0 .and. np > 0) then
-                        if (connection%converterPtr%operandType == EC_OPERAND_REPLACE) then
-                           targetValues(kbot:ktop) = 0.0_dp
-                        end if
                         ! The save horizontal weigths are used. The vertical weights are recalculated because z changes.
                         ! transformation coefficients for the z-array, target side:
                         select case (targetElementSet%vptyp)
@@ -3494,7 +3500,15 @@ contains
                                  return
                               else
                                  ! interpolating between times and between vertical layers
-                                 targetValues(k) = targetValues(k) + a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
+                                 interpolated_source_value = a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
+
+                                 call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(k)], status)
+
+                                 if (.not. status) then
+                                    return
+                                 end if
+
+                                 call apply_operand(connection%converterPtr%operandType, targetValues(k), interpolated_source_value)
                               end if
                            end if
                         end do
@@ -3589,13 +3603,17 @@ contains
                               end if
                            end do
                         end do kloop2D
+
                         if (jamissing > 0) then ! if insufficient data for bi-linear interpolation
+
                            missing(j) = .true. ! Mark missings in the target grid in a temporary logical array
-                           if (allocated(x_extrapolate)) x_extrapolate(j) = ec_undef_hp ! no-data -> unelectable for kdtree later
-                        else
-                           if (connection%converterPtr%operandType == EC_OPERAND_REPLACE) then
-                              targetValues(j) = 0.0_dp
+
+                           if (allocated(x_extrapolate)) then
+                              x_extrapolate(j) = ec_undef_hp ! no-data -> unelectable for kdtree later
                            end if
+
+                        else
+
                            if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
                               ! Now interpolate the waveheight-weighted directional field in space
                               coswd = cosd(sourcevals(:, :, 1, 1)) * waveheight
@@ -3611,23 +3629,39 @@ contains
                               targetvalsin = targetvalsin + sinwd(2, 2) * indexWeight%weightFactors(3, j)
                               targetvalsin = targetvalsin + sinwd(1, 2) * indexWeight%weightFactors(4, j)
                               targetValues(j) = atan2d(targetvalsin, targetvalcos)
+
                               if (.not. ieee_is_nan(targetValues(j)) .and. targetValues(j) < 0.0_dp) then
                                  targetValues(j) = targetValues(j) + 360.0_dp
                               end if
+
                            else
-                              targetValues(j) = targetValues(j) + a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j)
-                              targetValues(j) = targetValues(j) + a1 * sourcevals(1, 1, 1, 2) * indexWeight%weightFactors(1, j)
-                              targetValues(j) = targetValues(j) + a0 * sourcevals(2, 1, 1, 1) * indexWeight%weightFactors(2, j)
-                              targetValues(j) = targetValues(j) + a1 * sourcevals(2, 1, 1, 2) * indexWeight%weightFactors(2, j)
-                              targetValues(j) = targetValues(j) + a0 * sourcevals(2, 2, 1, 1) * indexWeight%weightFactors(3, j)
-                              targetValues(j) = targetValues(j) + a1 * sourcevals(2, 2, 1, 2) * indexWeight%weightFactors(3, j)
-                              targetValues(j) = targetValues(j) + a0 * sourcevals(1, 2, 1, 1) * indexWeight%weightFactors(4, j)
-                              targetValues(j) = targetValues(j) + a1 * sourcevals(1, 2, 1, 2) * indexWeight%weightFactors(4, j) !  1                 2
-                              if (allocated(x_extrapolate)) x_extrapolate(j) = targetElementSet%x(j) ! x_extrapolate is a copy of the x with missing points marked by ec_undef_hp
+
+                              call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(j)], status)
+
+                              if (.not. status) then
+                                 return
+                              end if
+
+                              interpolated_source_value = a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j) + &
+                                                          a1 * sourcevals(1, 1, 1, 2) * indexWeight%weightFactors(1, j) + &
+                                                          a0 * sourcevals(2, 1, 1, 1) * indexWeight%weightFactors(2, j) + &
+                                                          a1 * sourcevals(2, 1, 1, 2) * indexWeight%weightFactors(2, j) + &
+                                                          a0 * sourcevals(2, 2, 1, 1) * indexWeight%weightFactors(3, j) + &
+                                                          a1 * sourcevals(2, 2, 1, 2) * indexWeight%weightFactors(3, j) + &
+                                                          a0 * sourcevals(1, 2, 1, 1) * indexWeight%weightFactors(4, j) + &
+                                                          a1 * sourcevals(1, 2, 1, 2) * indexWeight%weightFactors(4, j)
+
+                              call apply_operand(connection%converterPtr%operandType, targetValues(j), interpolated_source_value)
+
+                              if (allocated(x_extrapolate)) then
+                                 x_extrapolate(j) = targetElementSet%x(j) ! x_extrapolate is a copy of the x with missing points marked by ec_undef_hp
+                              end if
+                           
                            end if
                         end if
                      end if ! 2D or 3D sources
                   end do ! points j
+
                   if (connection%converterPtr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then ! if extrapolation permitted ...
                      do j = 1, n_points ! Loop over the grid for missing in the target grid
                         if (missing(j)) then ! Can only be an interior point with ORIGINALLY valid mp and np
@@ -3675,11 +3709,8 @@ contains
                end if
 
                ! ===== operation =====
-
-               ! TODO: UNST-7626: support all operands via apply_operand() approach
                select case (connection%converterPtr%operandType)
-
-               case (EC_OPERAND_REPLACE)
+               case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
@@ -3693,7 +3724,18 @@ contains
                   end if
 
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     targetField%arr1dPtr(j) = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
+
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+
+                     if (.not. status) then
+                        return
+                     end if
+
+                     call apply_operand( &
+                        connection%converterPtr%operandType, &
+                        targetField%arr1dPtr(j), &
+                        connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j) &
+                     )
                   end do
 
                   targetField%timesteps = timesteps
@@ -3716,7 +3758,7 @@ contains
                ! ===== operation =====
                select case (connection%converterPtr%operandType)
 
-               case (EC_OPERAND_REPLACE)
+               case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
@@ -3732,7 +3774,15 @@ contains
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
                      sourceValueT0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
                      sourceValueT1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(j)
-                     targetField%arr1dPtr(j) = sourceValueT0 * a0 + sourceValueT1 * a1
+                     interpolated_source_value = sourceValueT0 * a0 + sourceValueT1 * a1
+
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+
+                     if (.not. status) then
+                        return
+                     end if
+
+                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), interpolated_source_value)
                   end do
 
                   targetField%timesteps = timesteps
