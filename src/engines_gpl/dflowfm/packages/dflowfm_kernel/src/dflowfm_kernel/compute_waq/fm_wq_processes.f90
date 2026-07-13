@@ -882,7 +882,7 @@ contains
             if (ivpnw(i) > 0) then
                nfallwaq = nfallwaq + 1
                ifall2const(nfallwaq) = i
-               iconst2fallwaq(i) = nfallwaq
+               iconst2fallwaq(isys2const(i)) = nfallwaq
                ifall2vpnw(nfallwaq) = ivpnw(i)
             end if
          end do
