@@ -574,7 +574,7 @@ contains
             write (msgbuf, '(a,i0,a)') 'set_external_forcings:: Offline wave coupling with waveforcing=', waveforcing, '. &
                & Error reading data from nc file.'
             call warn_flush() ! ECMessage stack is not very informative
-            message = dump_ec_message_stack(LEVEL_ERROR, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
 
          if (jawave == WAVE_NC_OFFLINE) then
