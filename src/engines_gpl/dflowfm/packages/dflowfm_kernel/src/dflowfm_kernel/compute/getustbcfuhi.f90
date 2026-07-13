@@ -72,7 +72,7 @@ contains
 
       integer :: nit, nitm = 100
       real(kind=dp) :: r, rv = 123.8_dp, e = 8.84_dp, eps = 1.0e-2_dp
-      real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
+      real(kind=dp) :: s, sd, er, ers, dzb, uu, vv
       real(kind=dp) :: dz
       real(kind=dp) :: cphi, sphi
       real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
