@@ -16,7 +16,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
     allowExternalStatus = true
     artifactRules = """

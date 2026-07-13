@@ -9,7 +9,8 @@ object SigCi : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
     
     vcs {
