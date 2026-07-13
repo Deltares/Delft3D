@@ -240,6 +240,7 @@ contains
       use string_module, only: strcmpi
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
+      use fm_external_forcings_data, only: kbndu      
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to boundary block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -255,7 +256,7 @@ contains
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
-      integer :: operand
+      integer :: operand, ibndu, facdis
       logical :: is_successful
       integer :: method, num_items_in_block, j
 

@@ -3154,4 +3154,78 @@ contains
 
    end subroutine allocatewindarrays
 
+   subroutine det_sign_discharge(pliFile,facdis)
+     use m_filez,            only: oldfil, doclose
+     use m_polygon
+     use m_reapol,           only: reapol
+     use m_missing
+     use m_GlobalParameters, only: INDTP_All
+     use m_find_flownode,    only: find_nearest_flownodes
+     use m_flowgeom,         only: xz, yz
+     implicit none
+  
+      character(len=*), intent(in) :: pliFile
+      integer         , intent(out):: facdis
+      
+      integer                        :: mpli, i_first, i_last, jakdtree ! i_bndpnt
+      real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, vx,vy, wx, wy,cross ! dist, distmin,    
+
+      character(len=4), dimension(1) :: tmpname
+      integer         , dimension(1) :: kbnd_centre
+      real(kind=dp)   , dimension(1) :: x_tmp, y_tmp   
+      
+      ! Read the boundary pli
+      call oldfil(mpli, pliFile)
+      call reapol(mpli, 0)
+      call doclose(mpli)
+      
+      ! determine centre point of boundary pli 
+      i_first = floor(npl/2.0_dp)
+      i_last  = i_first
+      if (mod(npl,2) == 0)  i_last = i_first + 1
+      xpli_centre = (xpl(i_first) + xpl(i_last))/2.0_dp
+      ypli_centre = (ypl(i_first) + ypl(i_last))/2.0_dp
+      
+      ! Determine closest boundary point (probably more ellegant to use find_nearest_flownode, for now keep it simple)
+      tmpname(1)      = 'dummy'
+      x_tmp(1)        = xpli_centre
+      y_tmp(1)        = ypli_centre
+      kbnd_centre(1)  = 0
+      jakdtree        = 0
+      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname(1),kbnd_centre(1), jakdtree, 1, INDTP_ALL)
+      ! looks like point found is mirrored point, ik mirrorod point is left, sign = 1, if mirrored point is right, sign = -1
+      xbnd_centre = xz(kbnd_centre(1))
+      ybnd_centre = yz(kbnd_centre(1))
+      
+      ! distmin = sqrt((xbnd(1) - xpli_centre)**2 + (ybnd(1) - ypli_centre)**2)
+      ! xbnd_centre = xbnd(1)
+      ! ybnd_centre = ybnd(1)
+      ! do i_bndpnt = 2, size(xbnd)
+      !   dist = sqrt((xbnd(i_bndpnt) - xpli_centre)**2 + (ybnd(i_bndpnt) - ypli_centre)**2)
+      !   if (dist < distmin) then
+      !       distmin = dist 
+      !       xbnd_centre = xbnd(i_bndpnt)
+      !       ybnd_centre = ybnd(i_bndpnt)
+      !   end if
+      !end do
+      
+      ! Determine cross product of pli and centre point bnd
+      ! orientation vector pli
+      vx = xpl(i_first + 1) - xpl(i_first)
+      vy = ypl(i_first + 1) - ypl(i_first)
+      ! orientation vector from centre bnd point to firts pli point
+      wx = xbnd_centre - xpl(i_first)
+      wy = ybnd_centre - ypl(i_first)
+      ! cross product
+      cross = (vx*wy) - (vy*wx)
+      
+      ! cross > 0 ==> Model right of pli or obove pli
+      if (cross < 0.0_dp) then
+         facdis = -1
+      else if (cross > 0.0_dp) then 
+         facdis = 1
+      end if
+
+   end subroutine det_sign_discharge
+
 end module fm_external_forcings
