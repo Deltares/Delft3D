@@ -88,6 +88,7 @@ module m_Universal_Weir
    !> Compute the coefficients FU, RU and AU for this universal weir.
    subroutine ComputeUniversalWeir(uniweir, fum, rum, aum, dadsm, bob0, s1m1, s1m2, &
                                    qm, u1m, dxm, dt, changeStructureDimensions)
+      use precision_basics, only: equal
       implicit none
       !
       ! Global variables
@@ -161,7 +162,7 @@ module m_Universal_Weir
          uniweir%crestlevel_actual = uniweir%crestlevel
       endif
 
-      if (smax < uniweir%crestlevel_actual) then
+      if (smax < uniweir%crestlevel_actual .or. equal(smax, uniweir%crestlevel_actual)) then
          fum  = 0.0d0
          rum  = 0.0d0
          u1m  = 0.0d0
