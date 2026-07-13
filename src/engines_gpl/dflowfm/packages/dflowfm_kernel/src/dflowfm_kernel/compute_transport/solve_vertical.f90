@@ -59,7 +59,7 @@ contains
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
-      use m_fm_wq_processes, only: iconst2fallwaq, wfallwaq
+      use m_fm_wq_processes, only: iconstituent_to_fall_velocity_waq, fall_velocity_waq
 
       implicit none
 
@@ -199,8 +199,8 @@ contains
                   if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                         qw_loc = qw(k) - mtd%ws(k, j - ISED1 + 1) * a1(kk)
-                     else if (iconst2fallwaq(j) > 0) then
-                        qw_loc = qw(k) - wfallwaq(k, iconst2fallwaq(j)) * a1(kk)
+                     else if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                        qw_loc = qw(k) - fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * a1(kk)
                      else
                         qw_loc = qw(k) - wsf(j) * a1(kk)
                      end if
@@ -216,11 +216,11 @@ contains
                   c(n, j) = c(n, j) + fluxfac * dvol1i
                end if
 
-               if ((jased > 0 .or. iconst2fallwaq(j) > 0) .and. jaimplicitfallvelocity == 1) then
+               if ((jased > 0 .or. iconstituent_to_fall_velocity_waq(j) > 0) .and. jaimplicitfallvelocity == 1) then
                   if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                      fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
-                  else if (iconst2fallwaq(j) > 0) then
-                     fluxfac = wfallwaq(k, iconst2fallwaq(j)) * a1(kk) * dt_loc
+                  else if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                     fluxfac = fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * a1(kk) * dt_loc
                   else
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if

@@ -435,7 +435,7 @@ contains
       integer :: nowarn !< count of warnings
       integer :: ierr, ierr2 !< error count
 
-      integer(4) :: i, j, ip, icon, ipar, ifun, isfun, ivar
+      integer(4) :: i, j, ip, isys, icon, ipar, ifun, isfun, ivar
       integer :: ipoifmlayer, ipoifmktop, ipoifmkbot
       integer(4) :: refdayNr ! reference day number, varying from 1 till 365
       logical :: no_reflection_wq
@@ -865,25 +865,23 @@ contains
       !    Prepare fall velocity array
       !    count number of substances with fall velocities
       nfallwaq = 0
-      if (jawaqsedimentationtransportcoupling == 1) then
+      if (perform_waq_sediment_transport_coupling == 1) then
          do i = 1, num_substances_transported
             if (ivpnw(i) > 0) then
                nfallwaq = nfallwaq + 1
             end if
          end do
       end if
-      call realloc(iconst2fallwaq, numconst, keepExisting=.true., fill=0)
+      call realloc(iconstituent_to_fall_velocity_waq, numconst, keepExisting=.true., fill=0)
       if (nfallwaq > 0) then
-         call realloc(wfallwaq, [Ndkx, nfallwaq], keepExisting=.false., fill=0.0_hp)
-         call realloc(ifall2const, nfallwaq, keepExisting=.true., fill=0)
-         call realloc(ifall2vpnw, nfallwaq, keepExisting=.true., fill=0)
+         call realloc(fall_velocity_waq, [Ndkx, nfallwaq], keepExisting=.false., fill=0.0_hp)
+         call realloc(ifall_velocity_waq_to_vpnw, nfallwaq, keepExisting=.true., fill=0)
          nfallwaq = 0
-         do i = 1, num_substances_transported
-            if (ivpnw(i) > 0) then
+         do isys = 1, num_substances_transported
+            if (ivpnw(isys) > 0) then
                nfallwaq = nfallwaq + 1
-               ifall2const(nfallwaq) = i
-               iconst2fallwaq(isys2const(i)) = nfallwaq
-               ifall2vpnw(nfallwaq) = ivpnw(i)
+               iconstituent_to_fall_velocity_waq(isys2const(isys)) = nfallwaq
+               ifall_velocity_waq_to_vpnw(nfallwaq) = ivpnw(isys)
             end if
          end do
       end if
@@ -1384,11 +1382,11 @@ contains
       end if
 
       if (processselection == WQ_RUNADSSEDMOR) then
-         runprocess = alwaysprocess .or. adssedresprocess
+         run_process = is_always_process .or. is_ads_sed_res_process
       else if (processselection == WQ_RUNOTHER) then
-         runprocess = .not. adssedresprocess
+         run_process = .not. is_ads_sed_res_process
       else !run all processes
-         runprocess = .true.
+         run_process = .true.
       end if
 
       if (timon) then
@@ -1420,7 +1418,7 @@ contains
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
                                dsto, num_velocity_arrays_new, ivpnw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
                                process_space_real(ipoidefa), prondt, prvvar, prvtyp, vararr, varidx, arrpoi, arrknd, arrdm1, &
-                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), jawaqsedimentationtransportcoupling)
+                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), perform_waq_sediment_transport_coupling)
 
       ! copy data from WAQ to D-FlowFM
       if (timon) then
@@ -1807,7 +1805,7 @@ contains
       integer :: i, j, ip
       integer :: kk, k, kb, kt, ktmax
       logical :: copyoutput
-      integer :: iex, ifall, ipnw
+      integer :: iex, ifall
 
       integer(4), save :: ithand1 = 0
       integer(4), save :: ithand2 = 0
@@ -1837,10 +1835,7 @@ contains
          do iex = 1, num_exchanges_z_dir
             k = iex2k(iex)
             do ifall = 1, nfallwaq
-               ipnw = ifall2vpnw(ifall)
-               if (ipnw > 0) then
-                  wfallwaq(k, ifall) = velowaq(ipnw, iex)
-               end if
+               fall_velocity_waq(k, ifall) = velowaq(ifall_velocity_waq_to_vpnw(ifall), iex)
             end do
          end do
       end if

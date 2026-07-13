@@ -64,7 +64,7 @@ contains
       use m_flowparameters, only: jadiagnostictransport
       use m_transport, only: numconst, constituents, isalt, itemp, ised1
       use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNADSSEDMOR
-      use m_fm_wq_processes, only: jawaqsedimentationtransportcoupling
+      use m_fm_wq_processes, only: perform_waq_sediment_transport_coupling
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -181,7 +181,7 @@ contains
       end if
 
       ! Calculate WAQ processes at hydrodynamic time step (if ti_waqproc < 0.0)
-      if (ti_waqproc < 0.0_dp .or. jawaqsedimentationtransportcoupling == 1) then
+      if (ti_waqproc < 0.0_dp .or. perform_waq_sediment_transport_coupling == 1) then
          if (jatimer == 1) then
             call starttimer(IFMWAQ)
          end if

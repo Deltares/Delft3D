@@ -79,7 +79,7 @@ contains
       call realloc(dsedy, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)
 
       call realloc(thetavert, NUMCONST, keepExisting=KeepExisting, fill=0.0_dp)
-      call realloc(iconst2fallwaq, NUMCONST, keepExisting=KeepExisting, fill=0)
+      call realloc(iconstituent_to_fall_velocity_waq, NUMCONST, keepExisting=KeepExisting, fill=0)
       call realloc(wstracers, NUMCONST, keepExisting=.true., fill=0.0_dp)
 
       call realloc(const_names, NUMCONST, keepExisting=KeepExisting, fill='')

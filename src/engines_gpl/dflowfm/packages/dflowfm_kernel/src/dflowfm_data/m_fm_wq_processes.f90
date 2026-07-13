@@ -107,12 +107,11 @@ module m_fm_wq_processes
    integer, allocatable, dimension(:) :: isys2trac !< WAQ active system to D-FlowFM tracer
    integer, allocatable, dimension(:) :: isys2wqbot !< WAQ inactive system to D-FlowFM water quality bottom variable
 
-   integer :: jawaqsedimentationtransportcoupling = 0 !< Apply WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
-   real(hp), dimension(:, :), allocatable :: wfallwaq ! fall velocities from water quality processes (m/s)
+   integer :: perform_waq_sediment_transport_coupling = 0 !< Apply WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
+   real(hp), dimension(:, :), allocatable :: fall_velocity_waq ! fall velocities from water quality processes (m/s)
    integer :: nfallwaq ! number of substances with fall velocities
-   integer, allocatable, dimension(:) :: ifall2const ! substance-with-fall-velocity to constituent number
-   integer, allocatable, dimension(:) :: iconst2fallwaq ! constituent to waq fall velocity number
-   integer, allocatable, dimension(:) :: ifall2vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
+   integer, allocatable, dimension(:) :: iconstituent_to_fall_velocity_waq ! constituent to waq fall velocity number
+   integer, allocatable, dimension(:) :: ifall_velocity_waq_to_vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
 
    integer :: numwqbots = 0 !< number of water quality bottom variables
    character(len=NAMWAQLEN), dimension(:), allocatable :: wqbotnames !< water quality bottom variable names

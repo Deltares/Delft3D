@@ -779,9 +779,9 @@ contains
         call realloc(progrd, nbpr, keepExisting = .false., Fill = 0)
         call realloc(prondt, nbpr, keepExisting = .false., Fill = 0)
         call realloc(pronam, nbpr, keepExisting = .false., Fill = ' ')
-        call realloc(alwaysprocess, nbpr, keepExisting = .false., Fill = .false.)
-        call realloc(adssedresprocess, nbpr, keepExisting = .false., Fill = .false.)
-        call realloc(runprocess, nbpr, keepExisting = .false., Fill = .true.)
+        call realloc(is_always_process, nbpr, keepExisting = .false., Fill = .false.)
+        call realloc(is_ads_sed_res_process, nbpr, keepExisting = .false., Fill = .false.)
+        call realloc(run_process, nbpr, keepExisting = .false., Fill = .true.)
         call intoou (procesdef, num_processes_activated, num_fluxes, prvnio, pronam, &
                 iflux, process_space_int, ipssa, process_space_int_len, ioffx, &
                 num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, &
@@ -952,8 +952,8 @@ contains
         end do
         do iproc = 1, num_processes_activated
             call pronrs(pronam(iproc), promnr(iproc))
-            alwaysprocess(iproc) = index_in_array(pronam(iproc), alwaysprocesses) > 0
-            adssedresprocess(iproc) = index_in_array(pronam(iproc), adssedresprocesses) > 0
+            is_always_process(iproc) = index_in_array(pronam(iproc), always_processes) > 0
+            is_ads_sed_res_process(iproc) = index_in_array(pronam(iproc), ads_sed_res_processes) > 0
         end do
 
         if (timon) call timstop(ithndl)

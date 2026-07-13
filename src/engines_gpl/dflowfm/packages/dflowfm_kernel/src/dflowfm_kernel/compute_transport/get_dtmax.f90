@@ -52,7 +52,7 @@ contains
       use timers, only: timon, timstrt, timstop
       use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: mtd, stm_included
-      use m_fm_wq_processes, only: nfallwaq, wfallwaq
+      use m_fm_wq_processes, only: nfallwaq, fall_velocity_waq
 
       implicit none
 
@@ -64,9 +64,9 @@ contains
       integer :: k1, k2
       integer :: j
       integer :: ierror
-      logical :: usemtdws, usewfallwaq
+      logical :: use_mtdws, use_fall_velocity_waq
 
-      real(kind=dp) :: sqtot, bak
+      real(kind=dp) :: sqtot, bak, max_fall_velocity
 
       real(kind=dp), parameter :: dtmax_default = 1.0e4_dp
 
@@ -78,8 +78,8 @@ contains
 
       dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
-      usemtdws = stm_included .and. ISED1 > 0
-      usewfallwaq = nfallwaq > 0
+      use_mtdws = stm_included .and. ISED1 > 0
+      use_fall_velocity_waq = nfallwaq > 0
 
       if (jalimitdtdiff == 1) then
 !        determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"
@@ -151,16 +151,18 @@ contains
             if (s1(kk) - bl(kk) > epshu) then
                call getkbotktop(kk, kb, kt)
                if (jalimitdtdiff == 0) then
-                  if ((usemtdws .or. usewfallwaq) .and. jaimplicitfallvelocity == 0) then
+                  if ((use_mtdws .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        if (usemtdws .and. usewfallwaq) then
-                           sqtot = sqi(k) + maxval([mtd%ws(k, :), wfallwaq(k, :)]) * bak
-                        else if (usemtdws) then
-                           sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
-                        else if (usewfallwaq) then
-                           sqtot = sqi(k) + maxval(wfallwaq(k, :)) * bak
+                        if (use_mtdws) then
+                           max_fall_velocity = maxval(mtd%ws(k, :))
+                        else
+                           max_fall_velocity = 0.0_dp
                         end if
+                        if (use_fall_velocity_waq) then
+                           max_fall_velocity = maxval([max_fall_velocity, fall_velocity_waq(k, :)])
+                        end if
+                        sqtot = sqi(k) + max_fall_velocity * bak
                         if (squ(k) > EPS10 .or. sqtot > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
                         end if
@@ -173,16 +175,18 @@ contains
                      end do
                   end if
                else
-                  if ((usemtdws .or. usewfallwaq) .and. jaimplicitfallvelocity == 0) then
+                  if ((use_mtdws .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        if (usemtdws .and. usewfallwaq) then
-                           sqtot = sqi(k) + sumdifflim(k) + maxval([mtd%ws(k, :), wfallwaq(k, :)]) * bak
-                        else if (usemtdws) then
-                           sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
-                        else if (usewfallwaq) then
-                           sqtot = sqi(k) + sumdifflim(k) + maxval(wfallwaq(k, :)) * bak
+                        if (use_mtdws) then
+                           max_fall_velocity = maxval(mtd%ws(k, :))
+                        else
+                           max_fall_velocity = 0.0_dp
                         end if
+                        if (use_fall_velocity_waq) then
+                           max_fall_velocity = maxval([max_fall_velocity, fall_velocity_waq(k, :)])
+                        end if
+                        sqtot = sqi(k) + max_fall_velocity * bak
                         if (sqtot > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
                         end if

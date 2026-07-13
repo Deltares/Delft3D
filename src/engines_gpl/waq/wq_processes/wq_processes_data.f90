@@ -147,15 +147,15 @@ module processes_pointers
     integer(kind = int_wp), allocatable :: ivpnw(:)        !< New velocity pointers
     real(kind = real_wp), allocatable :: defaul(:)       !< Values for default constants
 
-    character(10) :: alwaysprocesses(5) = ["DDEPTH", "TOTDEP", "WKCOMP", "SEDCOM", "CALTAU"] !< Processes that are always called.
-    character(10) :: adssedresprocesses(24) = ["PARTMP", "ADSPO4", "RFPART", "FLOCSD", "CALSED", &
+    character(10) :: always_processes(5) = ["DDEPTH", "TOTDEP", "WKCOMP", "SEDCOM", "CALTAU"] !< Processes that are always called.
+    character(10) :: ads_sed_res_processes(24) = ["PARTMP", "ADSPO4", "RFPART", "FLOCSD", "CALSED", &
                                                "SEDAAP", "SEDAGG", "SEDCAR", "SEDHM ", "SEDIM ", &
                                                "SEDNU2", "SEDOMV", "SEDSOD", "SEDTYR", "RESBUF", &
                                                "RESDM ", "BURIAL", "DIGGIN", "S12TIM", "S12TRA", &
                                                "RESANT", "SOMSED", "ADVTRA", "TRASE2"] !< Processes for adsorption, sedimentation, and resuspension
-    logical, allocatable :: alwaysprocess(:) !< Is an always process or not
-    logical, allocatable :: adssedresprocess(:) !< Is adsorption, sedimentation, or resuspension process or not
-    logical, allocatable :: runprocess(:) !< Whether to run this process or not
+    logical, allocatable :: is_always_process(:) !< Is an always process or not
+    logical, allocatable :: is_ads_sed_res_process(:) !< Is adsorption, sedimentation, or resuspension process or not
+    logical, allocatable :: run_process(:) !< Whether to run this process or not
 
     integer(kind = int_wp), allocatable :: process_space_int(:)        !< Start index in process_space_real array
     integer(kind = int_wp), allocatable :: increm(:)       !< Increment in process_space_real array

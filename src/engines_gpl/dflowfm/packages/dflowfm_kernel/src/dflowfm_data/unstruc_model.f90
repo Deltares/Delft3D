@@ -2272,13 +2272,7 @@ contains
       if (JaSubstancedensitycoupling == 1) then
          call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
       end if
-      call prop_get(md_ptr, 'processes', 'SedimentationTransportCoupling', jawaqsedimentationtransportcoupling)
-      if (jawaqsedimentationtransportcoupling == 0) then
-         call mess(LEVEL_INFO, 'SedimentationTransportCoupling = 0, Sedimentation is applied during the processes calculation for water quality substances.')
-      else
-         call mess(LEVEL_INFO, 'SedimentationTransportCoupling = 1, Sedimentation is applied during the transport calculation for water quality substances.')
-      end if
-
+      call prop_get(md_ptr, 'processes', 'SedimentationTransportCoupling', perform_waq_sediment_transport_coupling)
       call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
       ti_waqproc = md_dt_waqproc
       if (md_dt_waqproc > 0.0_dp) then
@@ -3852,7 +3846,7 @@ contains
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
-      call prop_set(prop_ptr, 'processes', 'SedimentationTransportCoupling', jawaqsedimentationtransportcoupling, 'Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances.')
+      call prop_set(prop_ptr, 'processes', 'SedimentationTransportCoupling', perform_waq_sediment_transport_coupling, 'Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances.')
 
       call datum(rundat)
       write (mout, '(a,a)') '# Generated on ', trim(rundat)

@@ -55,7 +55,7 @@ contains
       use m_timer
       use m_flow
       use m_flowgeom
-      use m_fm_wq_processes, only: jawaqsedimentationtransportcoupling
+      use m_fm_wq_processes, only: perform_waq_sediment_transport_coupling
       use m_trachy
       use dfm_error
       use precision_basics, only: comparereal
@@ -87,7 +87,7 @@ contains
             if (jatimer == 1) then
                call starttimer(IFMWAQ)
             end if
-            if (jawaqsedimentationtransportcoupling == 0) then
+            if (perform_waq_sediment_transport_coupling == 0) then
                call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNALL)
             else
                call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNOTHER)

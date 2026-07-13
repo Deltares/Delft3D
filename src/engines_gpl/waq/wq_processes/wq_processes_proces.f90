@@ -42,7 +42,7 @@ contains
             defaul, prondt, prvvar, prvtyp, vararr, &
             varidx, arrpoi, arrknd, arrdm1, arrdm2, &
             num_vars, process_space_real, num_monitoring_cells, pronam, prvpnt, &
-            num_defaults, surfac, jawaqsedimentationtransportcoupling)
+            num_defaults, surfac, perform_waq_sediment_transport_coupling)
 
         !     Deltares Software Centre
 
@@ -54,7 +54,7 @@ contains
         use m_wq_processes_integrate_velocities
         use m_wq_processes_integrate_fluxes
         use m_wq_processes_derivatives
-        use processes_pointers, only : dll_opb, runprocess
+        use processes_pointers, only : dll_opb, run_process
         use process_registration
         use timers
 
@@ -126,7 +126,7 @@ contains
         character(10) :: pronam(num_processes_activated)               !< Name of called module
         integer(kind = int_wp), intent(in) :: prvpnt(num_processes_activated)                !< entry in process io pointers (cummulative of prvnio)
         real(kind = real_wp), intent(in) :: surfac(num_cells)                !< horizontal surface
-        integer(kind = int_wp), intent(in) :: jawaqsedimentationtransportcoupling !< Apply Delwaq sedimentation with transport 0 = no (default), 1 = yes
+        integer(kind = int_wp), intent(in) :: perform_waq_sediment_transport_coupling !< Apply Delwaq sedimentation with transport 0 = no (default), 1 = yes
         integer(kind = int_wp) :: lunrep                       !< Logical unit number of report-file
 
         !     Local declarations
@@ -178,7 +178,7 @@ contains
         !     BLOOM fractional step (derivs assumed zero at entry)
 
         if (bloom_status_ind > 0) then         !     Check presence of BLOOM module for this run
-            if (runprocess(bloom_status_ind)) then
+            if (run_process(bloom_status_ind)) then
                 ivar = prvvar(bloom_ind)
                 iarr = vararr(ivar)
                 iv_idx = varidx(ivar)
@@ -266,8 +266,8 @@ contains
         flux = 0.0
 
         do iproc = 1, num_processes_activated
-            !        NOT bloom and runprocess is true
-            if (iproc /= bloom_status_ind .and. runprocess(iproc)) then
+            !        NOT bloom and run_process is true
+            if (iproc /= bloom_status_ind .and. run_process(iproc)) then
                 !           Check fractional step
                 if (mod(istep - 1, prondt(iproc)) == 0) then
 
@@ -311,7 +311,7 @@ contains
                     deriv (iseg, :) = deriv(iseg, :) * atfac
                 enddo
 
-                if (num_velocity_arrays_new  > 0 .and. jawaqsedimentationtransportcoupling == 0) then
+                if (num_velocity_arrays_new  > 0 .and. perform_waq_sediment_transport_coupling == 0) then
                     !                 Add effect of additional flow velocities
                     call wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, num_exchanges, num_velocity_arrays_new, &
                             velx, area, volume, iexpnt, iknmrk, &
