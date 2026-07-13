@@ -151,9 +151,6 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
-
-    # Petsc
-    pkg_check_modules(PETSC REQUIRED PETSc)
 endif(UNIX)
 
 if (UNIX)
