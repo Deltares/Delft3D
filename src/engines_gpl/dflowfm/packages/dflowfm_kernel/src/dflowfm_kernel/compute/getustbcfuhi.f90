@@ -73,6 +73,7 @@ contains
       integer :: nit, nitm = 100
       real(kind=dp) :: r, rv = 123.8_dp, e = 8.84_dp, eps = 1.0e-2_dp
       real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
+      real(kind=dp) :: dz
       real(kind=dp) :: cphi, sphi
       real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
       real(kind=dp) :: slfacdeltau
@@ -251,7 +252,7 @@ contains
                slfacdeltau = strlyrfac * deltau
                Dfu0 = Dfuc ! (m/s2)
                do L = Lb, Ltop(LL)
-                  Dfu1 = max(0.0_fp, 1.0_dp - hu(L) / slfacdeltau) * Dfuc
+                  Dfu1 = max(0.0_dp, 1.0_dp - hu(L) / slfacdeltau) * Dfuc
                   if (L == Lb) then
                      dz = hu(L)
                   else
