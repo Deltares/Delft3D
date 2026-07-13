@@ -1568,7 +1568,8 @@ contains
       integer :: i !< Loop index
       integer :: num_items_in_file
       integer :: num_columns
-      integer :: num_bubblescreens !< Number of bubblescreen blocks in the external forcings file
+      integer :: num_bubblescreens_in_file !< Number of bubblescreen blocks in the external forcings file
+      integer :: total_num_bubblescreens !< Total number of bubblescreen blocks in the external forcings file and already existing in the model
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
@@ -1582,7 +1583,7 @@ contains
       integer, dimension(:), allocatable :: bubblescreen_cells
 
       ! Initialization
-      num_bubblescreens = 0
+      num_bubblescreens_in_file = 0
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
@@ -1595,15 +1596,17 @@ contains
          group_name = trim(tree_get_name(block_ptr))
 
          if (str_tolower(group_name) == 'bubblescreen') then
-            num_bubblescreens = num_bubblescreens + 1
+            num_bubblescreens_in_file = num_bubblescreens_in_file + 1
          end if
       end do
 
       ! Reallocate the bubblescreens array to hold all bubblescreen blocks found in the external forcings file
       if (allocated(bubblescreens)) then
-         num_bubblescreens = num_bubblescreens + size(bubblescreens)
+         total_num_bubblescreens = num_bubblescreens_in_file + size(bubblescreens)
+      else
+         total_num_bubblescreens = num_bubblescreens_in_file
       end if
-      call reallocate_bubblescreens_array(num_bubblescreens)
+      call reallocate_bubblescreens_array(total_num_bubblescreens)
 
       ! Loop over all [blocks] in the external forcings file tree and initialize the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1652,6 +1655,7 @@ contains
    end subroutine initialize_bubblescreens_in_extfile
 
    !> Reallocates the bubblescreens and bubblescreen_air_discharge arrays to a new size, preserving existing data.
+   !! This routine cannot be called add_bubblescreen_sourcesinks(), since reallocating the bubblescreen arrays would break the EC connection.
    subroutine reallocate_bubblescreens_array(new_size)
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge, t_Bubblescreen
 
