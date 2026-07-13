@@ -1802,12 +1802,26 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
-        <path version="2026-04-20T12:05:47.677000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <path version="2026-07-07T10:06:35.334000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>           
             <file name="output/spatial_dicoww_his.nc" type="netcdf">
                 <parameters>
+                    <parameter name="difwws_total" toleranceRelative="0.01" />
                     <parameter name="difwws" toleranceRelative="0.01" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c014_spatially_varying_vicoww" ref="dflowfm_default">
+        <path version="2026-07-07T10:03:26.706000">e02_dflowfm/f006_external_forcing/c014_spatially_varying_vicoww</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/spatial_vicoww_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="vicwwu" toleranceAbsolute="0.0001" />
+                    <parameter name="vicwws_total" toleranceAbsolute="0.0001" />
+                    <parameter name="vicwws" toleranceAbsolute="0.0001" />
                 </parameters>
             </file>
         </checks>
@@ -2276,6 +2290,155 @@
             <file name="output/winter97_saltwater-2_his.nc" type="netcdf">
                 <parameters>
                     <parameter name="temperature" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c400_nesting_salinity_uxuyadvection" ref="dflowfm_nesting">
+        <path version="2026-06-16T11:06:22.097000">e02_dflowfm/f006_external_forcing/c400_nesting_salinity_uxuyadvection</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="small/output/TestFine_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceRelative="1e-7" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c401_katwijk_fixed" ref="dflowfm_nesting">
+        <path version="2026-07-07T12:43:23.893000">e02_dflowfm/f006_external_forcing/c401_katwijk_fixed</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c011_katwijkSmall_fixed_nchis_fixed/results/small_fixed_nchis_fixed_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceRelative="1e-7" />
+                    <parameter name="temperature" toleranceAbsolute="0.005" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>            
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c402_katwijk_kmx0" ref="dflowfm_nesting">
+        <path version="2026-07-07T12:46:10.213000">e02_dflowfm/f006_external_forcing/c402_katwijk_kmx0</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c012_katwijkSmall_fixed_nchis_kmx0/results/small_fixed_nchis_kmx0_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c403_katwijk_sigma" ref="dflowfm_nesting">
+        <path version="2026-07-07T12:49:13.408000">e02_dflowfm/f006_external_forcing/c403_katwijk_sigma</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c013_katwijkSmall_fixed_nchis_sigma/results/small_fixed_nchis_sigma_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c404_katwijk_kmx1" ref="dflowfm_nesting">
+        <path version="2026-07-07T12:51:46.054000">e02_dflowfm/f006_external_forcing/c404_katwijk_kmx1</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c014_katwijkSmall_fixed_nchis_kmx1/results/small_fixed_nchis_kmx1_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c405_katwijk_allinone" ref="dflowfm_nesting">
+        <path version="2026-07-07T12:54:05.298000">e02_dflowfm/f006_external_forcing/c405_katwijk_allinone</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c050_katwijkSmall_fixed_nchis_allinone/results/small_fixed_nchis_allinone_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c406_katwijk_dryPoints" ref="dflowfm_nesting">
+        <path version="2026-07-07T12:56:36.632000">e02_dflowfm/f006_external_forcing/c406_katwijk_dryPoints</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c051_katwijkSmall_fixed_nchis_drypoints/results/small_fixed_nchis_dryPoints_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c407_katwijk_dryTemp01" ref="dflowfm_nesting">
+        <path version="2026-07-07T13:06:44.096000">e02_dflowfm/f006_external_forcing/c407_katwijk_dryTemp01</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c052_katwijkSmall_fixed_nchis_dryTemp01/results/small_fixed_nchis_dryTemp01_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c408_katwijk_dryTemp02" ref="dflowfm_nesting">
+        <path version="2026-07-07T13:08:56.318000">e02_dflowfm/f006_external_forcing/c408_katwijk_dryTemp02</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c053_katwijkSmall_fixed_nchis_dryTemp02/results/small_fixed_nchis_dryTemp02_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c409_katwijk_dryTemp03" ref="dflowfm_nesting">
+        <path version="2026-07-08T09:18:09.538000">e02_dflowfm/f006_external_forcing/c409_katwijk_dryTemp03</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c054_katwijkSmall_fixed_nchis_dryTemp03/results/small_fixed_nchis_dryTemp03_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.005" />
+                    <parameter name="x_velocity" toleranceAbsolute="0.005" />
+                    <parameter name="y_velocity" toleranceAbsolute="0.005" />
                 </parameters>
             </file>
         </checks>
@@ -4701,7 +4864,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f017_c010_sourcesink_2D" ref="dflowfm_default">
-      <path version="2025-10-15T15:17:42.035000">e02_dflowfm/f017_sources_sinks/c010_sourcesink_2D</path>
+      <path version="2026-07-03T12:08:46.804000">e02_dflowfm/f017_sources_sinks/c010_sourcesink_2D</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sourcesink_2D_his.nc" type="netCDF">
@@ -4709,6 +4872,7 @@
             <parameter name="source_sink_current_discharge" toleranceAbsolute="0.0001" />
             <parameter name="source_sink_geom_node_count" toleranceAbsolute="0.0001" />
             <parameter name="source_sink_geom_node_coordx" toleranceAbsolute="0.0001" />
+            <parameter name="source_sink_prescribed_salinity_increment" toleranceAbsolute="0.1" />
           </parameters>
         </file>
         <file name="dflowfmoutput/sourcesink_2D_map.nc" type="netCDF">
@@ -6443,6 +6607,17 @@
         </file>
         <file name="tst_bed.xyz" ignore="true" />
       </checks>
+    </testCase>
+    <testCase name="e02_f033_c011_write_surface_quantities_to_map_file" ref="dflowfm_default">
+        <path version="2026-07-03T11:18:19.518000">e02_dflowfm/f033_statistical_output/c011_write_surface_quantities_to_map_file</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/SimpleBucket_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
     </testCase>
     <testCase name="e02_f033_c01_statistics_boundary_discharge"  ref="dflowfm_default">
       <path version="2025-10-15T15:18:39.492000">e02_dflowfm/f033_statistical_output/c01_statistics_boundary_discharge</path>
