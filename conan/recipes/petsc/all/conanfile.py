@@ -230,6 +230,8 @@ class PetscConan(ConanFile):
         self.cpp_info.libs = ["libpetsc"] if self.settings.os == "Windows" else ["petsc"]
         self.cpp_info.includedirs = ["include"]
         self.cpp_info.libdirs = ["lib"]
+        if self.settings.os == "Windows":
+            self.cpp_info.bindirs = ["lib"]
 
         if self.settings.os in ["Linux", "FreeBSD"]:
             self.cpp_info.system_libs = ["m", "dl"]
