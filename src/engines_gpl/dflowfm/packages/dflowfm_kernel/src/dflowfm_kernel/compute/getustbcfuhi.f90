@@ -179,7 +179,7 @@ contains
                                  eta * log(c9of1) - 1.0_dp
 
                         u2dh = max(0.0_dp, ustbLL * logfac / vonkar)
-                     else
+                  else
                         u2dh = 0.0_dp
                      end if
                   else
@@ -243,7 +243,7 @@ contains
                      z0urou(LL) = 0.5_dp * hu(Lb) / &
                                   (exp(vonkar / sqcf) - 1.0_dp)
                   case default
-                     z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
+                  z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
                   end select
                   z0urou(LL) = min(z0urou(LL), 10.0_dp)
                else
@@ -276,7 +276,7 @@ contains
             if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then
                slfacdeltau = strlyrfac * deltau
                if (slfacdeltau > 0.0_dp) then
-                  do L = Lb, Ltop(LL)
+               do L = Lb, Ltop(LL)
                      zbot = hu(L - 1)
                      dzu = hu(L) - zbot
                      if (dzu <= 0.0_dp) cycle
@@ -295,7 +295,7 @@ contains
                      adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1) * (htop - zbot) / dzu
                      !
                      if (hu(L) >= slfacdeltau) exit
-                  end do
+               end do
                end if
 
             end if
