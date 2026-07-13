@@ -3,18 +3,12 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
-import Delft3D.template.*
-
 object Sign : BuildType({
 
     name = "Sign"
     description = "Sign all unsigned binaries (except tclkitsh852.exe)."
     buildNumberPattern = "%build.vcs.number%"
     artifactRules = "to_sign => oss_artifacts_x64_%build.vcs.number%.zip!x64"
-
-    templates(
-        TemplateBuildConcurrency
-    )
 
     vcs {
         root(DslContext.settingsRoot)
