@@ -1,8 +1,9 @@
 import os
+import textwrap
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
-from conan.tools.files import download, rmdir, rm
+from conan.tools.files import download, rmdir, rm, save
 
 required_conan_version = ">=2"
 
@@ -61,6 +62,56 @@ class CygwinConan(ConanFile):
             sha256=self.conan_data["sources"][self.version]["setup"]["sha256"],
         )
 
+    def _dereference_symlinks(self):
+        # Cygwin's default "symlinks" are Windows files that start with the
+        # magic header "!<symlink>" and carry the FILE_ATTRIBUTE_SYSTEM flag,
+        # which are followed by cygwin1.dll. Conan copies/(un)packs the files
+        # without preserving Windows-specific attributes, so replace every
+        # symlink (file or directory) with a real copy of its final target.
+        bash_exe = os.path.join(self._cygwin_root, "bin", "bash.exe")
+        if not os.path.exists(bash_exe):
+            return
+
+        script = textwrap.dedent(
+            """\
+            #!/bin/bash
+            set -o errexit
+
+            find / -xdev -type l -print0 |
+            while IFS= read -r -d '' link; do
+                # Leave any symlink that resolves into /proc, such as /dev/stdin, untouched.
+                first_hop=$(readlink -- "$link") || continue
+                case "$first_hop" in
+                    /proc/*)
+                        continue
+                        ;;
+                esac
+
+                target=$(readlink --canonicalize -- "$link") || continue
+
+                # Temporarily grant owner write access to the parent directory and restore afterwards,
+                # because owners do not have write access on some owned directories
+                parent=$(dirname -- "$link")
+                parent_mode=$(stat --format='%a' -- "$parent") || continue
+                chmod u+w -- "$parent"
+
+                if [ -d "$target" ]; then
+                    rm --force -- "$link"
+                    cp --recursive --preserve=mode,ownership,timestamps -- "$target" "$link"
+                elif [ -f "$target" ]; then
+                    rm --force -- "$link"
+                    cp --preserve=mode,ownership,timestamps -- "$target" "$link"
+                fi
+
+                chmod "$parent_mode" -- "$parent"
+            done
+            """
+        )
+        script_path = os.path.join(self.build_folder, "dereference_symlinks.sh")
+        save(self, script_path, script)
+        # --login sources /etc/profile so PATH picks up Cygwin's own coreutils
+        self.run(f'"{bash_exe}" --login "{script_path}"')
+
     def package(self):
         setup_exe = os.path.join(self.build_folder, "cygwin-setup-x86_64.exe")
         # setup.exe uses very long, URL-encoded directory names for its download
@@ -88,6 +139,8 @@ class CygwinConan(ConanFile):
         self.run(f'"{setup_exe}" {" ".join(args)}')
 
         rmdir(self, package_cache)
+
+        self._dereference_symlinks()
 
         if self.options.rename_link:
             link_exe = os.path.join(self._cygwin_root, "bin", "link.exe")
