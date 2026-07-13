@@ -4340,7 +4340,7 @@ contains
          end if
 
          ! Heat fluxes
-         if (map_write_settings%heatflux > 0) then ! here less verbose
+         if (map_write_settings%heatflux > 0) then ! Here less verbose
             if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
