@@ -1,6 +1,5 @@
 #include <dflowfm_io/MduValidator.h>
 #include <dflowfm_io/MduSchema.h>
-#include <dflowfm_io/MduSchemaIndex.h>
 #include <dflowfm_io/IssueReport.h>
 
 #include <ini/IniData.h>
@@ -20,7 +19,7 @@ namespace dflowfm_io
 
     void MduValidator::ValidateRequired(const ini::IniData& iniData, IssueReport& report)
     {
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
         {
             if (!iniData.HasSection(sectionSchema.name))
             {
@@ -64,7 +63,7 @@ namespace dflowfm_io
     {
         for (const auto& section : iniData)
         {
-            const auto* sectionSchema = MDU_SCHEMA_INDEX.FindSection(section.GetName());
+            const auto* sectionSchema = MDU_SCHEMA.FindSection(section.GetName());
             if (!sectionSchema)
             {
                 report.AddWarning(section.GetLineNumber(), "Section [{}] is not a supported section.",
@@ -74,7 +73,7 @@ namespace dflowfm_io
 
             for (const auto& property : section)
             {
-                const auto* propertySchema = MDU_SCHEMA_INDEX.FindProperty(section.GetName(), property.GetKey());
+                const auto* propertySchema = MDU_SCHEMA.FindProperty(section.GetName(), property.GetKey());
                 if (!propertySchema)
                     report.AddWarning(property.GetLineNumber(), "Property [{}].{} is not a supported property.",
                                       section.GetName(), property.GetKey());

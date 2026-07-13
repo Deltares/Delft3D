@@ -19,7 +19,7 @@ namespace dflowfm_io::test
 
     inline std::pair<const SectionSchema*, const PropertySchema*> FirstRequiredProperty()
     {
-        for (const auto& s : MDU_SCHEMA.sections)
+        for (const auto& s : MDU_SCHEMA.Sections())
             for (const auto& p : s.properties)
                 if (p.required) return {&s, &p};
         throw std::runtime_error("No required property found in MDU_SCHEMA");
@@ -28,7 +28,7 @@ namespace dflowfm_io::test
     inline std::pair<const SectionSchema*, const PropertySchema*> FirstOptionalPropertyWithDefault(
         ValueType type = ValueType::Int)
     {
-        for (const auto& s : MDU_SCHEMA.sections)
+        for (const auto& s : MDU_SCHEMA.Sections())
             for (const auto& p : s.properties)
                 if (!p.required && p.value_type == type && !p.default_value.empty()) return {&s, &p};
         throw std::runtime_error(
@@ -37,7 +37,7 @@ namespace dflowfm_io::test
 
     inline std::pair<const SectionSchema*, const PropertySchema*> FirstPropertyOfType(ValueType type)
     {
-        for (const auto& s : MDU_SCHEMA.sections)
+        for (const auto& s : MDU_SCHEMA.Sections())
             for (const auto& p : s.properties)
                 if (p.value_type == type) return {&s, &p};
         throw std::runtime_error("No property of the specified type found in MDU_SCHEMA");
@@ -60,7 +60,7 @@ namespace dflowfm_io::test
     inline ini::IniData MakeCompliantIniData()
     {
         ini::IniData iniData;
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
         {
             ini::IniSection section(sectionSchema.name);
             for (const auto& propSchema : sectionSchema.properties)

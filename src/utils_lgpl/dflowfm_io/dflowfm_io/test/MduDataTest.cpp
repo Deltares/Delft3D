@@ -44,7 +44,7 @@ namespace dflowfm_io::test
     {
         const MduData data = MduData::CreateFromSchema();
 
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
             for (const auto& propertySchema : sectionSchema.properties)
                 if (!propertySchema.default_value.empty())
                 {
@@ -57,7 +57,7 @@ namespace dflowfm_io::test
     {
         const MduData data = MduData::CreateFromSchema();
 
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
             for (const auto& propertySchema : sectionSchema.properties)
                 if (propertySchema.default_value.empty())
                 {

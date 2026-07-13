@@ -1,6 +1,5 @@
 #include <dflowfm_io/MduDocument.h>
 #include <dflowfm_io/MduDataConverter.h>
-#include <dflowfm_io/MduSchemaIndex.h>
 
 #include <ini/IniFile.h>
 #include <ini/IniParserOptions.h>
@@ -81,14 +80,14 @@ namespace dflowfm_io
 
     void MduDocument::EnsureKnownKey(const std::string& key) const
     {
-        if (!MDU_SCHEMA_INDEX.FindProperty(key))
+        if (!MDU_SCHEMA.FindProperty(key))
             throw std::invalid_argument(
                 std::format("Unknown MDU property: '{}'.", key));
     }
 
     void MduDocument::EnsureEnumInRange(const std::string& key, EnumValue value) const
     {
-        const auto* ps = MDU_SCHEMA_INDEX.FindProperty(key);
+        const auto* ps = MDU_SCHEMA.FindProperty(key);
         if (!ps) return;
         if (ps->enum_values.find(value.value) == ps->enum_values.end())
             throw std::out_of_range(

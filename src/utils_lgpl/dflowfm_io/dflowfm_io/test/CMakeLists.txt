@@ -18,7 +18,6 @@ add_executable(dflowfm_io_tests
     MduDataConverterTest.cpp
     MduDataTest.cpp
     MduDocumentTest.cpp
-    MduSchemaIndexTest.cpp
     MduSchemaTest.cpp
     MduValidatorTest.cpp
     MduValueConverterTest.cpp

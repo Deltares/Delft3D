@@ -11,7 +11,7 @@ namespace dflowfm_io
     {
         MduData mduData;
 
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
         {
             for (const auto& propertySchema : sectionSchema.properties)
             {

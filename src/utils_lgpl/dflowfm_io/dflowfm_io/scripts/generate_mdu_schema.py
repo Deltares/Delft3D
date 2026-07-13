@@ -27,16 +27,15 @@ CPP_TEMPLATE = """\
 
 namespace dflowfm_io
 {{
-
-    const MduSchema& GetMduSchema()
+    /// @brief Builds an @ref MduSchema from the MDU specification.
+    inline MduSchema BuildMduSchema()
     {{
-        static const MduSchema instance {{
-            .description = "{description}",
-            .sections = {{
+        return MduSchema {{
+            "{description}",
+            {{
 {body}
             }}
         }};
-        return instance;
     }}
 
 }} // namespace dflowfm_io
@@ -138,7 +137,7 @@ def render_section(section, indent):
 def generate_schema_file(spec):
     """Generate the full C++ source from the parsed JSON specification."""
     sections = spec.get("ini_sections", [])
-    section_blocks = [render_section(s, 12) for s in sections]
+    section_blocks = [render_section(s, 16) for s in sections]
 
     description = spec.get("description", "")
     body = ",\n".join(section_blocks)

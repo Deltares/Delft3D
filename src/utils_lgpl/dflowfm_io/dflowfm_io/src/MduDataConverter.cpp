@@ -39,7 +39,7 @@ namespace dflowfm_io
 
         MduData mduData = MduData::CreateFromSchema();
 
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
         {
             for (const auto& propertySchema : sectionSchema.properties)
             {
@@ -67,7 +67,7 @@ namespace dflowfm_io
     {
         ini::IniData iniData;
 
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
         {
             auto& iniSection = iniData.AddSection(sectionSchema.name);
 

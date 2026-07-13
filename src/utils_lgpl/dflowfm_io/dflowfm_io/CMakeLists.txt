@@ -3,13 +3,13 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 set(MDU_SCHEMA_JSON    ${CMAKE_CURRENT_SOURCE_DIR}/../json/mdu.json)
 set(MDU_SCHEMA_SCRIPT  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_mdu_schema.py)
-set(MDU_SCHEMA_GENERATED ${CMAKE_CURRENT_BINARY_DIR}/generated/MduSchema.cpp)
+set(MDU_SCHEMA_GENERATED ${CMAKE_CURRENT_BINARY_DIR}/generated/dflowfm_io/MduSchemaGenerated.h)
 
 add_custom_command(
     OUTPUT  ${MDU_SCHEMA_GENERATED}
     COMMAND ${Python3_EXECUTABLE} ${MDU_SCHEMA_SCRIPT} ${MDU_SCHEMA_JSON} ${MDU_SCHEMA_GENERATED}
     DEPENDS ${MDU_SCHEMA_SCRIPT} ${MDU_SCHEMA_JSON}
-    COMMENT "Generating MduSchema.cpp from mdu.json"
+    COMMENT "Generating MduSchemaGenerated.h from mdu.json"
     VERBATIM
 )
 
@@ -21,7 +21,7 @@ add_library(dflowfm_io STATIC
     include/dflowfm_io/MduDataConverter.h
     include/dflowfm_io/MduDocument.h
     include/dflowfm_io/MduSchema.h
-    include/dflowfm_io/MduSchemaIndex.h
+    ${MDU_SCHEMA_GENERATED}
     include/dflowfm_io/MduValidator.h
     include/dflowfm_io/MduValueConverter.h
     include/dflowfm_io/StringUtils.h
@@ -30,8 +30,7 @@ add_library(dflowfm_io STATIC
     src/MduData.cpp
     src/MduDataConverter.cpp
     src/MduDocument.cpp
-    ${MDU_SCHEMA_GENERATED}
-    src/MduSchemaIndex.cpp
+    src/MduSchema.cpp
     src/MduValidator.cpp
     src/MduValueConverter.cpp
 )
@@ -43,6 +42,8 @@ target_link_libraries(dflowfm_io
 target_include_directories(dflowfm_io
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
 add_subdirectory(test)

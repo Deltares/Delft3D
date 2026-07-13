@@ -16,24 +16,28 @@ namespace dflowfm_io::test
     {
         PropertySchema MakeSchema(ValueType type, const std::string& key = "TestProperty")
         {
-            PropertySchema schema;
-            schema.key = key;
-            schema.value_type = type;
-            return schema;
+            return PropertySchema {
+                .key = key, 
+                .value_type = type
+            };
         }
 
         PropertySchema MakeEnumSchema(std::map<int, std::string> enumValues)
         {
-            PropertySchema schema = MakeSchema(ValueType::Enum);
-            schema.enum_values = std::move(enumValues);
-            return schema;
+            return PropertySchema {
+                .key = "TestProperty",
+                .value_type = ValueType::Enum,
+                .enum_values = std::move(enumValues)
+            };
         }
 
         PropertySchema MakeIntEnumSchema(std::map<int, std::string> enumValues)
         {
-            PropertySchema schema = MakeSchema(ValueType::IntEnum);
-            schema.enum_values = std::move(enumValues);
-            return schema;
+            return PropertySchema {
+                .key = "TestProperty",
+                .value_type = ValueType::IntEnum,
+                .enum_values = std::move(enumValues)
+            };
         }
     } // namespace
 
@@ -352,18 +356,14 @@ namespace dflowfm_io::test
 
     TEST(MduValueConverterTest, FromString_InvalidValueType_ThrowsLogicError)
     {
-        PropertySchema schema;
-        schema.key = "TestProperty";
-        schema.value_type = static_cast<ValueType>(9999);
+        auto schema = MakeSchema(static_cast<ValueType>(9999));
 
         EXPECT_THROW(MduValueConverter::FromString(schema, "value"), std::logic_error);
     }
 
     TEST(MduValueConverterTest, ToString_InvalidValueType_ThrowsLogicError)
     {
-        PropertySchema schema;
-        schema.key = "TestProperty";
-        schema.value_type = static_cast<ValueType>(9999);
+        auto schema = MakeSchema(static_cast<ValueType>(9999));
 
         EXPECT_THROW(MduValueConverter::ToString(schema, Value{std::string("value")}), std::logic_error);
     }

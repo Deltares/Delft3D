@@ -420,10 +420,10 @@ namespace dflowfm_io::test
         std::size_t previousIndex = 0;
         for (const auto& section : iniData)
         {
-            const auto schemaIt = std::find_if(MDU_SCHEMA.sections.begin(), MDU_SCHEMA.sections.end(),
+            const auto schemaIt = std::find_if(MDU_SCHEMA.Sections().begin(), MDU_SCHEMA.Sections().end(),
                                                [&](const auto& s) { return s.name == section.GetName(); });
-            ASSERT_NE(schemaIt, MDU_SCHEMA.sections.end());
-            const std::size_t schemaIndex = std::distance(MDU_SCHEMA.sections.begin(), schemaIt);
+            ASSERT_NE(schemaIt, MDU_SCHEMA.Sections().end());
+            const std::size_t schemaIndex = std::distance(MDU_SCHEMA.Sections().begin(), schemaIt);
             EXPECT_GE(schemaIndex, previousIndex) << "Section out of schema order: " << section.GetName();
             previousIndex = schemaIndex;
 
@@ -493,7 +493,7 @@ namespace dflowfm_io::test
 
         const ini::IniData roundTripped = MduDataConverter::Convert(mduData);
 
-        for (const auto& sectionSchema : MDU_SCHEMA.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
         {
             if (!CompliantIniData().HasSection(sectionSchema.name)) continue;
 
