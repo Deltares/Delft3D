@@ -1040,9 +1040,6 @@ contains
       call add_output_config(config_set_his, IDX_HIS_GATE_LOWER_EDGE_LEVEL, &
                              'Wrihis_structure_gate', 'gate_lower_edge_level', 'gate lower edge level', &
                              '', 'm', UNC_LOC_GATE)
-      call add_output_config(config_set_his, IDX_HIS_GATE_HEIGHT, &
-                             'Wrihis_structure_gate', 'gate_height', 'gate door height', &
-                             '', 'm', UNC_LOC_GATE)
       call add_output_config(config_set_his, IDX_HIS_GATE_S1UP, &
                              'Wrihis_structure_gate', 'gate_s1up', 'gate water level up', &
                              'sea_surface_height', 'm', UNC_LOC_GATE)
