@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
   
 # Purpose:
 # This script runs (coupled) Delft3D-FLOW simulations on Linux Alma8 slurm system.

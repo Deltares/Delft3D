@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 #
 # Use this script to start SWAN in Delft3D
@@ -12,7 +12,7 @@
 #   - To overrule this: see comments in this script
 #
 
-if [ -f "swan_sh.log" ]; then
+if [[ -f swan_sh.log ]]; then
   rm -rf swan_sh.log
 fi
 echo screen output of swan.sh is written to this file >swan_sh.log
@@ -63,7 +63,7 @@ else
   # Two ways to force the number of parallel processes:
   # 1. Define environment parameter OMP_NUM_THREADS_SWAN with the correct number of processes
   # 2. Below: replace "unset OMP_NUM_THREADS" by "export OMP_NUM_THREADS=4" (with a self choosen value, 4 is choosen as an example)
-  if [[ -z "$OMP_NUM_THREADS_SWAN" ]]; then
+  if [[ -z $OMP_NUM_THREADS_SWAN ]]; then
       unset OMP_NUM_THREADS
   else
       export OMP_NUM_THREADS=$OMP_NUM_THREADS_SWAN
@@ -102,7 +102,7 @@ if [[ -x ${SWANEXEC} ]]; then
   #
   # Check whether inputfile INPUT exists
   #
-  if [[ -f "INPUT" ]]; then
+  if [[ -f INPUT ]]; then
     #
     #echo press enter to continue
     #read dummy
@@ -144,7 +144,7 @@ if [[ -x ${SWANEXEC} ]]; then
     
   else
     echo " " >>swan_sh.log
-	  echo "*** Error: SWAN input file INPUT does not exist" >>swan_sh.log
+    echo "*** Error: SWAN input file INPUT does not exist" >>swan_sh.log
     echo " " >>swan_sh.log
     # read dummy
   fi
