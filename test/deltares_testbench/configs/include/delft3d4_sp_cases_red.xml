@@ -1,11 +1,6 @@
 				<!--
 				testCases
 				
-				Optional attributes:
-					maxRunTime: OverruleRefMaxRunTime="true" default: false
-									if false: maxRunTime in this config.xml file is     overruled by the maxRunTime of the reference run
-									if true : maxRunTime in this config.xml file is NOT overruled by the maxRunTime of the reference run
-				
 				Special replacements:
 				[output(progname)]		: Will be replaced by the output of (the last run of) program "progname"
 										  Used by esm_create (Linux)
@@ -7460,7 +7455,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime OverruleRefMaxRunTime="true">4000.0</maxRunTime>
+			<maxRunTime>4000.0</maxRunTime>
 			<checks>
 				<file name="trih-in2.dat" type="NEFIS">
 					<parameters name="his-series">

@@ -590,9 +590,6 @@ class XmlConfigParser:
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
-            for el in element["maxRunTime"]:
-                if "OverruleRefMaxRunTime" in el and str(el["OverruleRefMaxRunTime"][0]).lower() == "true":
-                    test_case.overrule_ref_max_run_time = True
         for el in XmlConfigParser.__loop(element, "programs"):
             for program in XmlConfigParser.__loop(el, "program"):
                 program_instance = self.__fill_program(program, settings)

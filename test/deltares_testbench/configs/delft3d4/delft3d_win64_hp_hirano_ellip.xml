@@ -273,11 +273,6 @@
 				<!--
 				testCases
 				
-				Optional attributes:
-					maxRunTime: OverruleRefMaxRunTime="true" default: false
-									if false: maxRunTime in this config.xml file is     overruled by the maxRunTime of the reference run
-									if true : maxRunTime in this config.xml file is NOT overruled by the maxRunTime of the reference run
-				
 				Special replacements:
 				[output(progname)]		: Will be replaced by the output of (the last run of) program "progname"
 										  Used by esm_create (Linux)
