@@ -131,9 +131,8 @@ object WindowsTest : BuildType({
                     rem Wheels come from the mounted uv cache volume.
                     uv venv C:\venv || (echo [ERROR] uv venv failed! & exit /b 1)
                     call C:\venv\Scripts\activate.bat
+                    set PYTHONVERBOSE=1
                     uv pip sync -v pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
-
-                    echo "Running TestBench.py..."
                     python TestBench.py %%argsList%%
             """.trimIndent()
 
