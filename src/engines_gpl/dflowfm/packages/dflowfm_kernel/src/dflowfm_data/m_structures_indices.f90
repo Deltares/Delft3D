@@ -74,7 +74,7 @@ module m_structures_indices
 
    integer, parameter :: NUMEXTVALS_GENSTRU = 20 ! Number of extra variables for general structure, including last one as a counter
    integer, parameter :: NUMEXTVALS_WEIRGEN = 6 ! Number of extra variables for weir, including last one as a counter
-   integer, parameter :: NUMEXTVALS_ORIFGEN = 9 ! Number of extra variables for orifice, including last one as a counter
+   integer, parameter :: NUMEXTVALS_ORIFGEN = 10 ! Number of extra variables for orifice, including last one as a counter
    integer, parameter :: NUMVALS_GENSTRU = NUMVALS_COMMON + NUMEXTVALS_GENSTRU !< Total number of variables for general structure (new exe file)
    integer, parameter :: NUMVALS_WEIRGEN = NUMVALS_COMMON + NUMEXTVALS_WEIRGEN !< Total number of variables for weir
    integer, parameter :: NUMVALS_ORIFGEN = NUMVALS_COMMON + NUMEXTVALS_ORIFGEN !< Total number of variables for orifice
