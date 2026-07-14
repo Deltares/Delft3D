@@ -136,7 +136,7 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
-      real(kind=dp) :: moravg, dmorft, dmorfs, mortime
+      real(kind=dp) :: moravg, dmorft, mortime
 
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
@@ -276,6 +276,11 @@ contains
             if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr == 2) then
                call check_netcdf_error(nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
             end if
+            if (stmpar%morpar%moroutput%morfac) then
+               call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morfac, nf90_double, [id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-'))
+            end if
+         
+            call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morft, nf90_double, [id_timedim], 'morft', '', 'Current morphological time', 's'))
          end if
 
          ! Time
@@ -285,11 +290,6 @@ contains
          call definencvar(ihisfile, id_time, nf90_double, [id_timedim], 'time', unit=trim(Tudunitstr), extra_attributes=attributes(1:2))
          call definencvar(ihisfile, id_timebds, nf90_double, [id_twodim, id_timedim], 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr), extra_attributes=attributes(1:1))
 
-         if (stmpar%morpar%moroutput%morfac) then
-            ierr = unc_def_var_nonspatial(ihisfile, id_morfac, nf90_double, [id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-')
-         end if
-         
-         ierr = unc_def_var_nonspatial(ihisfile, id_morft, nf90_double, [id_timedim], 'morft', '', 'Current morphological time', 's')
          ! Size of latest timestep
          ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, [id_timedim], 'timestep', '', 'latest computational timestep size in each output interval', 's')
          !
@@ -774,20 +774,21 @@ contains
       end if
       
       !morfac and morft
-      dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
-      dmorfs = dmorft * 86400.0_dp ! seconds
-      mortime = stmpar%morpar%morft * 86400.0_dp ! seconds*morfac since tstart_user
-      if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
-         moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
-      else
-         moravg = 0.0_dp
-      end if
-      !
-      if (stmpar%morpar%moroutput%morfac) then
-         ierr = nf90_put_var(ihisfile, id_morfac, moravg, [it_his])
-      end if
+      if (his_write_settings%sed > 0 .and. jased > 0 .and. stm_included) then
+         dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
+         mortime = stmpar%morpar%morft * 86400.0_dp ! seconds*morfac since tstart_user
+         if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
+            moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
+         else
+            moravg = 0.0_dp
+         end if
       
-      call check_netcdf_error(nf90_put_var(ihisfile, id_morft, mortime, [it_his]))
+         if (stmpar%morpar%moroutput%morfac) then
+            call check_netcdf_error(nf90_put_var(ihisfile, id_morfac, moravg, [it_his]))
+         end if
+      
+         call check_netcdf_error(nf90_put_var(ihisfile, id_morft, mortime, [it_his]))
+      end if
 
 !   Observation points (fixed+moving)
 
