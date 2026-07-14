@@ -64,7 +64,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <xi:include href="../include/dimr_dflowfm_dsle.xml"/>

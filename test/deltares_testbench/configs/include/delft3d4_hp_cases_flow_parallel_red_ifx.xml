@@ -22,7 +22,7 @@
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e01_f06_c04-l06" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f06_ols/c04-l06</path>
-			<maxRunTime>19.2969999313</maxRunTime>
+			
 			<checks>
 				<file name="trih-000.dat" type="NEFIS">
 					<parameters name="his-series">

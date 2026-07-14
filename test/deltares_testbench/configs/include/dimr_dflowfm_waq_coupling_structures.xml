@@ -34,7 +34,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">

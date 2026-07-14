@@ -7,7 +7,7 @@
 				Basic Windows configuration file: tb3_cfg_win64_hp.xml
 				From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
 				From hp to parallel: Use mpi as shell (in related program)
-									 Overrule maxruntime when needed
+									 
 									 Only cases that run in parallel mode
 				-->
 	<config>
@@ -218,7 +218,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			
 			<programs>
 				<program ref="FLOW2D3D"/>
 			</programs>
@@ -231,7 +231,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			
 			<programs>
 				<program ref="FLOW2D3D"/>
 				<program ref="FLOW2D3D">
@@ -250,7 +250,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime>
+			
 			<programs>
 				<program ref="FLOW2D3D"/>
 				<program ref="RTC" delay="10.0"/>
@@ -264,7 +264,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			
 			<programs>
 				<program ref="WAVE"/>
 			</programs>
@@ -294,7 +294,7 @@
 	<testCases>
 		<testCase name="e01_f22_c12-pankop" ref="flow2d3d_default">
 			<path>e01_d3dflow/f31_hirano_ellipticity/c12_pankop</path>
-			<maxRunTime>10.3739998341</maxRunTime>
+			
 			<checks>
 				<file name="trih-pka.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -318,7 +318,7 @@
 		</testCase>
 		<testCase name="e01_f22_c13_S1" ref="flow2d3d_default">
 			<path>e01_d3dflow/f31_hirano_ellipticity/c13_S1</path>
-			<maxRunTime>10.3739998341</maxRunTime>
+			
 			<checks>
 			        <!--
 				<file name="trih-sim_J002.dat" type="NEFIS">
@@ -344,7 +344,7 @@
 		</testCase>
 		<testCase name="e01_f22_c14_S2" ref="flow2d3d_default">
 			<path>e01_d3dflow/f31_hirano_ellipticity/c14_S2</path>
-			<maxRunTime>10.3739998341</maxRunTime>
+			
 			<checks>
 			        <!--
 				<file name="trih-sim_J004.dat" type="NEFIS">

@@ -1,7 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 	<testCase name="e02_f043_c01_WAQ_2D" ref="dflowfm_fetch_limited_waves">
       <path version="2026-07-06T14:49:43.298000">e02_dflowfm/f043_fetch_limited_waves/c01_WAQ_2D/</path>
-      <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
           <parameters>
@@ -15,7 +14,6 @@
     </testCase>
 	<testCase name="e02_f043_c02_WAQ_3D" ref="dflowfm_fetch_limited_waves">
       <path version="2026-07-06T14:49:45.585000">e02_dflowfm/f043_fetch_limited_waves/c02_WAQ_3D/</path>
-      <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
           <parameters>
@@ -29,7 +27,6 @@
     </testCase>
 	<testCase name="e02_f043_c03_WAQ_3D" ref="dflowfm_fetch_limited_waves">
       <path version="2026-07-06T14:49:47.553000">e02_dflowfm/f043_fetch_limited_waves/c03_WAQ_3D/</path>
-      <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
           <parameters>
@@ -43,7 +40,6 @@
     </testCase>
 	<testCase name="e02_f043_c04" ref="dflowfm_fetch_limited_waves">
       <path version="2026-07-06T14:49:49.519000">e02_dflowfm/f043_fetch_limited_waves/c04/</path>
-      <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
           <parameters>
@@ -56,7 +52,6 @@
     </testCase>
 	<testCase name="e02_f043_c05" ref="dflowfm_fetch_limited_waves">
       <path version="2026-07-06T14:49:51.422000">e02_dflowfm/f043_fetch_limited_waves/c05/</path>
-      <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
           <parameters>

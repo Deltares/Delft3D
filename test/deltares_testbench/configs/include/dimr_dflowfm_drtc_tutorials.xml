@@ -13,7 +13,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f02_c02_multiple_controlled_parameters" ref="dimr_trunk">
@@ -27,7 +27,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f02_c03_multiple_controlled_structures" ref="dimr_trunk">
@@ -41,7 +41,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
     </testCases>

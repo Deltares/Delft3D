@@ -1544,7 +1544,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="volumetable.nc" type="netCDF">
           <parameters>

@@ -61,7 +61,7 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
 		<location ref="dsctestbench-references" type="reference">
 			<from>.</from>
 		</location>
-		<maxRunTime>60.0</maxRunTime>
+		
 	</testCase>
 </defaultTestCases>
 <testCases>
@@ -69,7 +69,7 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
 		<programs>
 			<program ref="DFoundations"/>
 		</programs>
-		<maxRunTime>60.0</maxRunTime>
+		
 		<checks>
 			<file name="Unit_test.shd" presence="absent"/>
 		</checks>

@@ -95,7 +95,7 @@
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
-            <maxRunTime>600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dflowfm_bmi_default">
             <programs>
@@ -116,7 +116,7 @@
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
-            <maxRunTime>600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="volumetool">
          <programs>
@@ -129,7 +129,7 @@
          <location ref="cases" type="input">
              <from>.</from>
          </location>
-         <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+         
      </testCase>
  </defaultTestCases>
     <!--

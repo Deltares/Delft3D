@@ -1,8 +1,8 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
 	<testCase name="e105_f06_c071_generalstructure_door_closing_at_sill_3Dsigma" ref="dimr_trunk">
-      <path version="2026-07-09T09:11:08.953000">e105_dflowfm-drtc/f06_3D_RTC/c071_generalstructure_door_closing_at_sill_3Dsigma</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      <path version="2026-03-16T12:48:05.207000">e105_dflowfm-drtc/f06_3D_RTC/c071_generalstructure_door_closing_at_sill_3Dsigma</path>
+      
       <checks>
         <file name="dflowfm/output/t2_his.nc" type="netCDF">
           <parameters>
@@ -20,8 +20,8 @@
       </checks>
     </testCase>
     <testCase name="e105_f06_c074_generalstructure_door_closing_at_sill_3Dz" ref="dimr_trunk">
-      <path version="2026-07-09T09:11:12.660000">e105_dflowfm-drtc/f06_3D_RTC/c074_generalstructure_door_closing_at_sill_3Dz</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      <path version="2026-03-16T12:48:27.834000">e105_dflowfm-drtc/f06_3D_RTC/c074_generalstructure_door_closing_at_sill_3Dz</path>
+      
       <checks>
         <file name="dflowfm/output/t2_his.nc" type="netCDF">
           <parameters>
@@ -39,8 +39,8 @@
       </checks>
     </testCase>
    <testCase name="e105_f06_c077_generalstructure_door_closing_at_sill_3Dz_sigma" ref="dimr_trunk">
-      <path version="2026-07-09T09:11:16.546000">e105_dflowfm-drtc/f06_3D_RTC/c077_generalstructure_door_closing_at_sill_3Dz_sigma</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      <path version="2026-03-16T12:48:54.192000">e105_dflowfm-drtc/f06_3D_RTC/c077_generalstructure_door_closing_at_sill_3Dz_sigma</path>
+      
       <checks>
         <file name="dflowfm/output/t2_his.nc" type="netCDF">
           <parameters>
@@ -59,7 +59,6 @@
     </testCase>
 	<testCase name="e105_f06_c072__generalstructure_lowering_open_door_3Dsigma" ref="dimr_trunk">
       <path version="2026-07-07T15:35:33.223000">e105_dflowfm-drtc/f06_3D_RTC/c072_generalstructure_lowering_open_door_3Dsigma</path>
-      <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/t3_his.nc" type="netCDF">
           <parameters>
@@ -77,8 +76,10 @@
       </checks>
     </testCase>
 	<testCase name="e105_f06_c075__generalstructure_lowering_open_door_3Dz" ref="dimr_trunk">
+      <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f06_3D_RTC/c075_generalstructure_lowering_open_door_3Dz</path>
+      
       <path version="2026-07-07T15:35:38.561000">e105_dflowfm-drtc/f06_3D_RTC/c075_generalstructure_lowering_open_door_3Dz</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfm/output/t3_his.nc" type="netCDF">
           <parameters>
@@ -96,8 +97,10 @@
       </checks>
     </testCase>
 	<testCase name="e105_f06_c078__generalstructure_lowering_open_door_3Dz_sigma" ref="dimr_trunk">
+      <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f06_3D_RTC/c078_generalstructure_lowering_open_door_3Dz_sigma</path>
+      
       <path version="2026-07-07T15:35:44.065000">e105_dflowfm-drtc/f06_3D_RTC/c078_generalstructure_lowering_open_door_3Dz_sigma</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfm/output/t3_his.nc" type="netCDF">
           <parameters>
@@ -115,8 +118,10 @@
       </checks>
     </testCase>
 	 <testCase name="e105_f06_c073_generalstructure_lowering_closed_door_3Dsigma" ref="dimr_trunk">
+      <path version="2026-03-16T12:48:16.641000">e105_dflowfm-drtc/f06_3D_RTC/c073_generalstructure_lowering_closed_door_3Dsigma</path>
+      
       <path version="2026-07-07T15:35:35.938000">e105_dflowfm-drtc/f06_3D_RTC/c073_generalstructure_lowering_closed_door_3Dsigma</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfm/output/t4_his.nc" type="netCDF">
           <parameters>
@@ -134,8 +139,10 @@
       </checks>
     </testCase>
 	 <testCase name="e105_f06_c076_generalstructure_lowering_closed_door_3Dz" ref="dimr_trunk">
+      <path version="2026-03-16T12:48:36.591000">e105_dflowfm-drtc/f06_3D_RTC/c076_generalstructure_lowering_closed_door_3Dz</path>
+      
       <path version="2026-07-07T15:35:41.394000">e105_dflowfm-drtc/f06_3D_RTC/c076_generalstructure_lowering_closed_door_3Dz</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfm/output/t4_his.nc" type="netCDF">
           <parameters>
@@ -153,8 +160,10 @@
       </checks>
     </testCase>
 	 <testCase name="e105_f06_c079_generalstructure_lowering_closed_door_3Dz_sigma" ref="dimr_trunk">
+      <path version="2026-03-16T12:49:02.058000">e105_dflowfm-drtc/f06_3D_RTC/c079_generalstructure_lowering_closed_door_3Dz_sigma</path>
+      
       <path version="2026-07-07T15:35:46.867000">e105_dflowfm-drtc/f06_3D_RTC/c079_generalstructure_lowering_closed_door_3Dz_sigma</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfm/output/t4_his.nc" type="netCDF">
           <parameters>

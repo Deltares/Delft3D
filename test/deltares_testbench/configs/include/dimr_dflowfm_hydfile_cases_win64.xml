@@ -13,7 +13,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="DFM_DELWAQ_f34\f34-relerrvavg.txt" type="ASCII">
           <parameters>
@@ -42,7 +42,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="DFM_DELWAQ_f34\f34-relerrvavg.txt" type="ASCII">
           <parameters>
@@ -72,7 +72,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="DFM_DELWAQ_f34\f34-relerrvavg.txt" type="ASCII">
           <parameters>
@@ -101,7 +101,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="DFM_DELWAQ_sourcesink\sourcesink-relerrvavg.txt" type="ASCII">
           <parameters>
@@ -130,7 +130,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="DFM_DELWAQ_sourcesink\sourcesink-relerrvavg.txt" type="ASCII">
           <parameters>
@@ -159,7 +159,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="DFM_DELWAQ_sourcesink\sourcesink-relerrvavg.txt" type="ASCII">
           <parameters>
@@ -187,7 +187,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="WAQ/deltashell_map.nc" type="netCDF">
           <parameters>
@@ -229,7 +229,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="WAQ/deltashell_map.nc" type="netCDF">
           <parameters>

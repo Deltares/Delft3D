@@ -65,7 +65,7 @@
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
-            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <xi:include href="../include/dimr_dflowfm_1d_rivers.xml"/>

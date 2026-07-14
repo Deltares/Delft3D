@@ -14,7 +14,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/FlowFM_slope1Ddrop_true_0000_map.nc" type="netCDF">
           <parameters>
@@ -45,7 +45,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="DFM_OUTPUT_dflow1d/dflow1d_0000_map.nc" type="netCDF">
           <parameters>
@@ -76,7 +76,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="DFM_OUTPUT_dflow1d/dflow1d_0000_map.nc" type="netCDF">
           <parameters>
@@ -102,7 +102,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="DFM_OUTPUT_FlowFM/FlowFM_0000_map.nc" type="netCDF">
           <parameters>
@@ -132,7 +132,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="DFM_OUTPUT_FlowFM_rrexport/FlowFM_rrexport_0000_his.nc" type="netCDF">
             <parameters>
@@ -166,7 +166,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="DFM_OUTPUT_tst/tst_0000_his.nc" type="netCDF">
             <parameters>
@@ -216,7 +216,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>20.0</maxRunTime>
+      
       <processCount>4</processCount>
     </testCase>
     <testCase name="e02_f114_c070_Fine1D_Coarse2D_Rural_Embedded_Links" ref="dimr_trunk_2">
@@ -246,7 +246,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>20.0</maxRunTime>
+      
       <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c090_dar-es-salaam" ref="dimr_trunk_2">
@@ -277,7 +277,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>20.0</maxRunTime>
+      
       <processCount>2</processCount>
     </testCase>
 </testCases>

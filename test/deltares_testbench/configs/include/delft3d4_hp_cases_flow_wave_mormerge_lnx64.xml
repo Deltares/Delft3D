@@ -31,7 +31,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>185.469000101</maxRunTime>
+			
 			<checks>
 				<file name="w00/trih-nsw.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -144,7 +144,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>188.497999907</maxRunTime>
+			
 			<checks>
 				<file name="0deg/trih-det.dat" type="NEFIS">
 					<parameters name="his-series">

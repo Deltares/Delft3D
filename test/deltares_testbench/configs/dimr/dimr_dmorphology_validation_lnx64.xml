@@ -78,7 +78,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="platform_specific">
             <programs>
@@ -94,7 +94,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--

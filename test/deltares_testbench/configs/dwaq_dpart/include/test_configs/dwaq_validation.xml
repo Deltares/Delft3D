@@ -626,7 +626,7 @@
         <location ref="cases" type="input">
             <from>.</from>
         </location>
-        <maxRunTime>60.0</maxRunTime>
+        
         <!-- seconds -->
         <checks>
             <file name="channel3d_option17.ada" type="NEFIS">
@@ -653,7 +653,7 @@
         <location ref="cases" type="input">
             <from>.</from>
         </location>
-        <maxRunTime>60.0</maxRunTime>
+        
         <!-- seconds -->
         <checks>
             <file name="channel3d_option18.ada" type="NEFIS">

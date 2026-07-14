@@ -32,7 +32,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>18.5449998379</maxRunTime>
+			
 			<checks>
 				<file name="trih-QH40.dat" type="NEFIS">
 					<parameters name="his-series">

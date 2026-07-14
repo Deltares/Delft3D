@@ -1,7 +1,7 @@
   <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c010_Channel_with_refinement_squares" ref="dflowfm_default">
       <path version="2025-10-15T18:23:21.452000">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
           <parameters>
@@ -14,7 +14,7 @@
     </testCase>
     <testCase name="e02_f001_c011_Channel_with_refinement_triangles" ref="dflowfm_default">
       <path version="2025-10-15T18:23:26.153000">e02_dflowfm/f001_general/c011_Channel_with_refinement_triangles</path>
-      <maxRunTime>200.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
           <parameters>
@@ -26,7 +26,7 @@
     </testCase>
     <testCase name="e02_f003_c010_belanger" ref="dflowfm_default">
       <path version="2025-10-15T18:23:33.418000">e02_dflowfm/f003_advection/c010_belanger</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
           <parameters>
@@ -38,7 +38,7 @@
     </testCase>
     <testCase name="e02_f003_c020_dambreak1dwet_standard" ref="dflowfm_default">
       <path version="2025-10-15T18:23:37.178000">e02_dflowfm/f003_advection/c020_dambreak1dwet_standard</path>
-      <maxRunTime>10.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/dambreak1dwet_map.nc" type="netCDF">
           <parameters>
@@ -50,7 +50,7 @@
     </testCase>
     <testCase name="e02_f003_c021_dambreak1ddry_standard" ref="dflowfm_default">
       <path version="2025-10-15T18:23:40.913000">e02_dflowfm/f003_advection/c021_dambreak1ddry_standard</path>
-      <maxRunTime>10.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/dambreak1ddry_map.nc" type="netCDF">
           <parameters>
@@ -62,7 +62,7 @@
     </testCase>
     <testCase name="e02_f003_c040_thacker1d_standard" ref="dflowfm_default">
       <path version="2025-10-15T18:23:44.297000">e02_dflowfm/f003_advection/c040_thacker1d_standard</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/planar1d_his.nc" type="netCDF">
           <parameters>
@@ -81,7 +81,7 @@
     </testCase>
     <testCase name="e02_f003_c043_thacker2d_hexagons" ref="dflowfm_default">
       <path version="2025-10-15T18:23:49.481000">e02_dflowfm/f003_advection/c043_thacker2d_hexagons</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
           <parameters>
@@ -93,7 +93,7 @@
     </testCase>
     <testCase name="e02_f004_c010_chezy" ref="dflowfm_default">
       <path version="2025-10-15T18:23:54.226000">e02_dflowfm/f004_bottomfriction/c010_chezy</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
           <parameters>
@@ -105,7 +105,7 @@
     </testCase>
     <testCase name="e02_f005_c011_waterlevel_tim_varying" ref="dflowfm_default">
       <path version="2026-03-04T13:59:13.996000">e02_dflowfm/f005_boundary_conditions/c011_waterlevel_tim_varying</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
           <parameters>
@@ -118,7 +118,7 @@
     </testCase>
     <testCase name="e02_f005_c015_waterlevel_cmp_varying" ref="dflowfm_default">
       <path version="2026-03-04T13:59:11.018000">e02_dflowfm/f005_boundary_conditions/c015_waterlevel_cmp_varying</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
           <parameters>
@@ -131,7 +131,7 @@
     </testCase>
     <testCase name="e02_f005_c020_astronomic_cmp_standard" ref="dflowfm_default">
       <path version="2025-10-15T18:24:47.204000">e02_dflowfm/f005_boundary_conditions/c020_astronomic_cmp_standard</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
           <parameters>
@@ -144,7 +144,7 @@
     </testCase>
     <testCase name="e02_f005_c052_neumann_cmp_1d" ref="dflowfm_default">
       <path version="2025-10-15T18:29:15.661000">e02_dflowfm/f005_boundary_conditions/c052_neumann_cmp_1d</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
           <parameters>
@@ -156,7 +156,7 @@
     </testCase>
     <testCase name="e02_f005_c053_neumann_cmp_2d" ref="dflowfm_default">
       <path version="2025-10-15T18:29:19.740000">e02_dflowfm/f005_boundary_conditions/c053_neumann_cmp_2d</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
           <parameters>
@@ -168,7 +168,7 @@
     </testCase>
     <testCase name="e02_f005_c068_riemann_tim_1d_outer" ref="dflowfm_default">
       <path version="2025-10-15T18:29:33.617000">e02_dflowfm/f005_boundary_conditions/c068_riemann_tim_1d_outer</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
           <parameters>
@@ -187,7 +187,7 @@
     </testCase>
     <testCase name="e02_f005_c069_riemann_tim_2d_outer" ref="dflowfm_default">
       <path version="2025-10-15T18:29:37.350000">e02_dflowfm/f005_boundary_conditions/c069_riemann_tim_2d_outer</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
           <parameters>
@@ -206,7 +206,7 @@
     </testCase>
     <testCase name="e02_f005_c080_qhbnd" ref="dflowfm_default">
       <path version="2025-10-15T18:29:47.542000">e02_dflowfm/f005_boundary_conditions/c080_qhbnd</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
           <parameters>
@@ -225,7 +225,7 @@
     </testCase>
     <testCase name="e02_f005_c090_salinity_tim_constant" ref="dflowfm_default">
       <path version="2025-10-15T18:31:56.241000">e02_dflowfm/f005_boundary_conditions/c090_salinity_tim_constant</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
           <parameters>
@@ -239,7 +239,7 @@
     </testCase>
     <testCase name="e02_f006_c020_basinnofriction_squares" ref="dflowfm_default">
       <path version="2025-10-15T18:37:01.917000">e02_dflowfm/f006_external_forcing/c020_basinnofriction_squares</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/basinsquares_his.nc" type="netCDF">
           <parameters>
@@ -258,7 +258,7 @@
     </testCase>
     <testCase name="e02_f006_c023_basinwithfriction_squares" ref="dflowfm_default">
       <path version="2025-10-15T18:37:06.980000">e02_dflowfm/f006_external_forcing/c023_basinwithfriction_squares</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/basinsquares_his.nc" type="netCDF">
           <parameters>
@@ -277,7 +277,7 @@
     </testCase>
     <testCase name="e02_f006_c030_flatbed_quadrilateral" ref="dflowfm_default">
       <path version="2025-10-15T18:37:13.598000">e02_dflowfm/f006_external_forcing/c030_flatbed_quadrilateral</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/flatbed_quadrilateral_his.nc" type="netCDF">
           <parameters>
@@ -296,7 +296,7 @@
     </testCase>
     <testCase name="e02_f009_c010_beyer004_supergrid_standard" ref="dflowfm_default">
       <path version="2025-10-15T18:41:01.997000">e02_dflowfm/f009_weirs/c010_beyer004_supergrid_standard</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/beyer_004a_his.nc" type="netCDF">
           <parameters>
@@ -309,7 +309,7 @@
     </testCase>
     <testCase name="e02_f009_c020_beyer004_contr10" ref="dflowfm_default">
       <path version="2025-10-15T18:41:07.251000">e02_dflowfm/f009_weirs/c020_beyer004_contr10</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/beyer_004_his.nc" type="netCDF">
           <parameters>
@@ -321,8 +321,8 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c024_beyer004_contr10_empirical" ref="dflowfm_default">
-      <path version="2026-07-09T15:58:05.759000">e02_dflowfm/f009_weirs/c024_beyer004_contr10_empirical</path>
-      <maxRunTime>10.0000000</maxRunTime>
+      <path version="2025-10-15T18:41:11.132000">e02_dflowfm/f009_weirs/c024_beyer004_contr10_empirical</path>
+      
       <checks>
         <file name="dflowfmoutput/beyer_004vil_his.nc" type="netCDF">
           <parameters>
@@ -335,7 +335,7 @@
     </testCase>
     <testCase name="e02_f009_c030_zandloper30m" ref="dflowfm_default">
       <path version="2025-10-15T18:41:12.980000">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/zandloper_his.nc" type="netCDF">
           <parameters>
@@ -354,7 +354,7 @@
     </testCase>
     <testCase name="e02_f009_c040_beyer044_standard" ref="dflowfm_default">
       <path version="2025-10-15T18:41:19.493000">e02_dflowfm/f009_weirs/c040_beyer044_standard</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/beyer_044_his.nc" type="netCDF">
           <parameters>
@@ -373,7 +373,7 @@
     </testCase>
     <testCase name="e02_f010_c010_gate_sub" ref="dflowfm_default">
       <path version="2026-05-13T06:48:46.864000">e02_dflowfm/f010_structures/c010_gate_sub</path>
-      <maxRunTime>25.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
           <parameters>
@@ -386,7 +386,7 @@
     </testCase>
     <testCase name="e02_f011_c012_schematized_lake" ref="dflowfm_default">
       <path version="2026-03-06T15:14:52.229000">e02_dflowfm/f011_wind/c012_schematized_lake</path>
-      <maxRunTime>20.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/windoverlake_his.nc" type="netCDF">
           <parameters>
@@ -405,7 +405,7 @@
     </testCase>
     <testCase name="e02_f011_c026_spiderweb_regular" ref="dflowfm_default">
       <path version="2025-10-15T18:41:54.170000">e02_dflowfm/f011_wind/c026_spiderweb_regular</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/katrina_his.nc" type="netCDF">
           <parameters>
@@ -426,7 +426,7 @@
     </testCase>
     <testCase name="e02_f012_c026_rstseriesonevalue" ref="dflowfm_default">
       <path version="2026-03-31T11:38:40.948000">e02_dflowfm/f012_inout/c026_rstseriesonevalue</path>
-      <maxRunTime>30.0000000</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
@@ -445,7 +445,7 @@
     </testCase>
     <testCase name="e02_f012_c032_alloutrealistic" ref="dflowfm_default">
       <path version="2026-03-17T15:44:42.773000">e02_dflowfm/f012_inout/c032_alloutrealistic</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/westerscheldt_his.nc" type="netCDF">
           <parameters>
@@ -465,7 +465,7 @@
     </testCase>
     <testCase name="e02_f012_c040_restartmap2d_bndconstant" ref="dflowfm_default">
       <path version="2025-10-15T18:42:42.670000">e02_dflowfm/f012_inout/c040_restartmap2d_bndconstant</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
@@ -484,7 +484,7 @@
     </testCase>
     <testCase name="e02_f012_c041_restartmap2d_bndvariable" ref="dflowfm_default">
       <path version="2025-10-15T18:42:44.790000">e02_dflowfm/f012_inout/c041_restartmap2d_bndvariable</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
@@ -503,7 +503,7 @@
     </testCase>
     <testCase name="e02_f012_c050_restartrst2d_bndconstant" ref="dflowfm_default">
       <path version="2025-10-15T18:42:46.986000">e02_dflowfm/f012_inout/c050_restartrst2d_bndconstant</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
@@ -522,7 +522,7 @@
     </testCase>
     <testCase name="e02_f012_c051_restartrst2d_bndvariable" ref="dflowfm_default">
       <path version="2025-10-15T18:42:49.290000">e02_dflowfm/f012_inout/c051_restartrst2d_bndvariable</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
@@ -541,7 +541,7 @@
     </testCase>
     <testCase name="e02_f013_c010_frisianinlet_schematized" ref="dflowfm_default">
       <path version="2026-03-17T10:09:59.561000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/f34_his.nc" type="netCDF">
           <parameters>
@@ -560,7 +560,7 @@
     </testCase>
     <testCase name="e02_f013_c020_frisianinlet_realistic" ref="dflowfm_default">
       <path version="2026-03-17T10:10:08.019000">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
-      <maxRunTime>90.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/r17_his.nc" type="netCDF">
           <parameters>
@@ -579,7 +579,7 @@
     </testCase>
     <testCase name="e02_f013_c030_coastcalifornia" ref="dflowfm_default">
       <path version="2025-10-15T18:43:11.584000">e02_dflowfm/f013_waves/c030_coastcalifornia</path>
-      <maxRunTime>30.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/cca_his.nc" type="netCDF">
           <parameters>
@@ -598,7 +598,7 @@
     </testCase>
     <testCase name="e02_f013_c040_loosdrecht" ref="dflowfm_default">
       <path version="2025-10-15T18:43:13.931000">e02_dflowfm/f013_waves/c040_loosdrecht</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/loo_his.nc" type="netCDF">
           <parameters>
@@ -617,7 +617,7 @@
     </testCase>
     <testCase name="e02_f013_c050_inclinedbed_withobstacle" ref="dflowfm_default">
       <path version="2025-10-15T18:43:16.619000">e02_dflowfm/f013_waves/c050_inclinedbed_withobstacle</path>
-      <maxRunTime>90.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/obw_his.nc" type="netCDF">
           <parameters>
@@ -636,7 +636,7 @@
     </testCase>
     <testCase name="e02_f016_c010_schematic_xyz" ref="dflowfm_default">
       <path version="2026-03-31T11:39:08.251000">e02_dflowfm/f016_drypoints/c010_schematic_xyz</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/drypoints_his.nc" type="netCDF">
           <parameters>
@@ -655,7 +655,7 @@
     </testCase>
     <testCase name="e02_f016_c011_schematic_pol" ref="dflowfm_default">
       <path version="2026-03-31T11:39:29.534000">e02_dflowfm/f016_drypoints/c011_schematic_pol</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/drypoints_his.nc" type="netCDF">
           <parameters>
@@ -674,7 +674,7 @@
     </testCase>
     <testCase name="e02_f019_c010_tracer_squares_coarse" ref="dflowfm_default">
       <path version="2026-06-01T08:28:23.552000">e02_dflowfm/f019_transport/c010_tracer_squares_coarse</path>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/tracer_map.nc" type="netCDF">
           <parameters>

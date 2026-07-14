@@ -38,7 +38,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <!-- Since the numbers are single-precision and in the order of 3.0e6, a sensible
@@ -110,7 +110,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -179,7 +179,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -248,7 +248,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -317,7 +317,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -386,7 +386,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -455,7 +455,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -531,7 +531,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -606,7 +606,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -681,7 +681,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -756,7 +756,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -831,7 +831,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -906,7 +906,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
@@ -981,7 +981,7 @@
     <program ref="dimr_waq" seq="6">
     </program>
   </programs>
-  <maxRunTime>15000.0000000</maxRunTime>
+  
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>

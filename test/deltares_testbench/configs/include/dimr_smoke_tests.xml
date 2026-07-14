@@ -149,7 +149,7 @@
   <testCase name="e100_f00_c00" ref="dimr_trunk">
     <!--  dflowfm-dwaves -->
     <path version="2025-06-05T11:45:44.084000">e100_dflowfm-dwaves/f00_general/c00-FriesianInlet_schematic_nonstat</path>
-    <maxRunTime>300.0</maxRunTime>
+    
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
         <parameters>

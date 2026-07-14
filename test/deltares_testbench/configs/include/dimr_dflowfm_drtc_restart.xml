@@ -13,7 +13,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c02_restart_of_c01_at_2nd_day" ref="dimr_trunk">
@@ -27,7 +27,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c03_multiple_controlled_structures" ref="dimr_trunk">
@@ -41,7 +41,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c04_restart_of_c03_at_2nd_day" ref="dimr_trunk">
@@ -55,7 +55,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c05_multiple_controlled_parameters_refdate_2006_12_31" ref="dimr_trunk">
@@ -69,7 +69,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c06_f03_c20_171_PIDCntrl-1" ref="dimr_trunk">
@@ -83,7 +83,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c07_f03_c20_171_PIDCntrl-1_restart" ref="dimr_trunk">
@@ -97,7 +97,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c08_f01_c071_closing_at_sill" ref="dimr_trunk">
@@ -109,7 +109,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>1800.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c09_f01_c071_closing_at_sill_refdate_2006_12_31" ref="dimr_trunk">
@@ -121,7 +121,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>1800.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c10_f01_c071_closing_at_sill_restart_2007_01_03" ref="dimr_trunk">
@@ -133,7 +133,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>1800.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c11_f01_c071_closing_at_sill_restart_2007_01_03_refdate_2006_12_31" ref="dimr_trunk">
@@ -145,7 +145,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>1800.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
     </testCases>

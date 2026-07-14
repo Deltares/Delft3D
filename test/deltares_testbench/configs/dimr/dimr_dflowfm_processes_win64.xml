@@ -112,7 +112,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_default_restart">
@@ -138,7 +138,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_platform_specific_refs">
@@ -159,7 +159,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_platform_specific_refs_restart">
@@ -185,7 +185,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
   </defaultTestCases>

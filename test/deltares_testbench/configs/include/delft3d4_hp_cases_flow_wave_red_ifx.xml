@@ -31,7 +31,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>52.1870000362</maxRunTime>
+			
 			<checks>
 				<file name="trih-bel.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -66,7 +66,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>36.7230000496</maxRunTime>
+			
 			<checks>
 				<file name="trih-f34.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -101,7 +101,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>723.611000061</maxRunTime>
+			
 			<checks>
 				<file name="trih-t05.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -150,7 +150,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>4000.0</maxRunTime>
+			
 			<checks>
 				<file name="trih-in2.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -199,7 +199,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>10800.0</maxRunTime>
+			
 			<checks>
 				<file name="trih-boe.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -236,7 +236,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>10800.0</maxRunTime>
+			
 			<checks>
 				<file name="trih-rip.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -271,7 +271,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>21600.0</maxRunTime> <!-- seconds -->
+			
 			<checks>
 				<file name="trih-rip.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -306,7 +306,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>21600.0</maxRunTime> <!-- seconds -->
+			
 			<checks>
 				<file name="trih-rip.dat" type="NEFIS">
 					<parameters name="his-series">

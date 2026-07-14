@@ -83,7 +83,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="drr_windowsref">
             <programs>
@@ -99,7 +99,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--

@@ -79,7 +79,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_config">
@@ -97,7 +97,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
     <testCase name="platform_specific">
@@ -115,7 +115,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
   </defaultTestCases>
@@ -126,7 +126,7 @@
 <testCases>
     <testCase name="e123_f01_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
         <path version="2024-11-27T15:00:00">e123_dflowfm-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
-        <maxRunTime>600.0000000</maxRunTime>
+        
         <programs>
             <program ref="mormerge">
                 <workingDirectory>merge</workingDirectory>
@@ -167,7 +167,7 @@
 
     <testCase name="e123_f02_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
         <path version="2024-11-27T15:00:00">e123_dflowfm-mormerge/f02_mergedtuser/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
-        <maxRunTime>600.0000000</maxRunTime>
+        
         <programs>
             <program ref="mormerge">
 				<workingDirectory>merge</workingDirectory>

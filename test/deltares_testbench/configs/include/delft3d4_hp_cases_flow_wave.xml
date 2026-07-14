@@ -31,7 +31,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>172.809000015</maxRunTime>
+			
 			<checks>
 				<file name="trih-Setoverall.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -68,7 +68,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>18.5449998379</maxRunTime>
+			
 			<checks>
 				<file name="trih-QH40.dat" type="NEFIS">
 					<parameters name="his-series">

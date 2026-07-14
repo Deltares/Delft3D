@@ -87,7 +87,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--

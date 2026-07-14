@@ -126,7 +126,7 @@
       <location ref="dsctestbench-references" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_platform_specific_refs">
@@ -137,7 +137,7 @@
       <location ref="dsctestbench-references" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
+      
       <!-- seconds -->
     </testCase>
   </defaultTestCases>

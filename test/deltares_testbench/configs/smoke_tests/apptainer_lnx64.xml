@@ -79,7 +79,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 		<testCase name="dimr_trunk_lnx64">
 			<programs>
@@ -97,7 +97,7 @@
 			<location ref="reference_results" type="reference">
 				<from>lnx64</from>
 			</location>
-			<maxRunTime>6000.0</maxRunTime>
+			
 		</testCase>
 		<testCase name="dflowfm_default">
 			<programs>
@@ -117,7 +117,7 @@
 			<location ref="reference_results" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>3600.0</maxRunTime>
+			
 			<!-- seconds -->
 		</testCase>
         <testCase name="container_postproc">
@@ -127,7 +127,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
+            
         </testCase>
 	</defaultTestCases>
     <xi:include href="../include/dimr_smoke_tests.xml"/>

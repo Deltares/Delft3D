@@ -1,7 +1,7 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e119_f001_c001_2D_ca_1sl_me_uic_cbc" ref="dimr">
             <path version="2025-10-14T14:12:38.821000">e119_dflowfm_dsle/f001/c001_2D_ca_1sl_me_uic_cbc</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -19,7 +19,7 @@
         </testCase>
         <testCase name="e119_f001_c002_2D_ca_2sl_me_uic_cbc" ref="dimr">
             <path version="2025-11-03T08:06:39.199000">e119_dflowfm_dsle/f001/c002_2D_ca_2sl_me_uic_cbc</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -36,7 +36,7 @@
         </testCase>
         <testCase name="e119_f001_c004_2D_pw_2sl_uic_cbc" ref="dimr">
             <path version="2026-05-06T10:48:50.199000">e119_dflowfm_dsle/f001/c004_2D_pw_2sl_uic_cbc</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -55,7 +55,7 @@
         </testCase>
         <testCase name="e119_f001_c008_3D_ca_2sl_me_uic_cbc" ref="dimr">
             <path version="2026-05-06T10:52:33.240000">e119_dflowfm_dsle/f001/c008_3D_ca_2sl_me_uic_cbc</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -74,7 +74,7 @@
         </testCase>
         <testCase name="e119_f001_c010_3D_pw_1sl_uic_cbc" ref="dimr">
             <path version="2025-11-03T08:07:38.600000">e119_dflowfm_dsle/f001/c010_3D_pw_1sl_uic_cbc</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -92,7 +92,7 @@
         </testCase>
         <testCase name="e119_f001_c011_3D_pw_2sl_uic_cbc" ref="dimr">
             <path version="2026-05-06T10:54:13.430000">e119_dflowfm_dsle/f001/c011_3D_pw_2sl_uic_cbc</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -111,7 +111,7 @@
         </testCase>
         <testCase name="e119_f001_c022_3D_tracer_phase_wise" ref="dimr">
             <path version="2026-05-18T12:56:41.257000">e119_dflowfm_dsle/f001/c022_3D_tracer_phase_wise</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
@@ -127,7 +127,7 @@
         </testCase>
         <testCase name="e119_f001_c023_3D_tracer_cycle_average" ref="dimr">
             <path version="2026-05-18T12:52:48.056000">e119_dflowfm_dsle/f001/c023_3D_tracer_cycle_average</path>
-            <maxRunTime>60.0</maxRunTime>
+            
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>

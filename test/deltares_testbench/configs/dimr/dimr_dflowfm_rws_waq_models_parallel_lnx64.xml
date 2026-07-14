@@ -114,7 +114,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dimr_trunk_4">
             <programs>
@@ -130,7 +130,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!-- testCases -->

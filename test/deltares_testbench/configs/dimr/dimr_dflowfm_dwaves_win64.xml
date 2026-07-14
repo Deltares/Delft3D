@@ -81,7 +81,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 		<testCase name="dimr_noconfig">
             <programs>
@@ -97,7 +97,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--

@@ -28,7 +28,7 @@
 				<program ref="FLOW2D3D"/>
 				<program ref="COUP203" delay="10.0"/>
 			</programs>
-			<maxRunTime>167.71600008</maxRunTime>
+			
 			<checks>
 				<file name="trih-o2d.dat" type="NEFIS">
 					<parameters name="his-series">

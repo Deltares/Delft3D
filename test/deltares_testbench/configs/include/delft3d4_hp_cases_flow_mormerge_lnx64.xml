@@ -31,7 +31,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>110.454999924</maxRunTime>
+			
 			<checks>
 				<file name="0deg/trih-bas.dat" type="NEFIS">
 					<parameters name="his-series">

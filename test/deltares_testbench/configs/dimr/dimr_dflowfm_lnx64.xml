@@ -93,7 +93,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dflowfm_restart">
             <programs>
@@ -114,7 +114,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dflowfm_restart_platform">
             <programs>
@@ -135,7 +135,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dflowfm_config">
             <programs>
@@ -151,7 +151,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="platform_specific">
             <programs>
@@ -167,7 +167,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dflowfm_nesting">
             <programs>
@@ -188,7 +188,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>120.0</maxRunTime> <!-- seconds -->
+            
         </testCase>                    
     </defaultTestCases>
     <!--

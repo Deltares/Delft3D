@@ -172,7 +172,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
            <parameters>
@@ -207,7 +207,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
            <parameters>

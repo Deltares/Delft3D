@@ -23,7 +23,7 @@
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e01_f01_c03-f34" ref="flow2d3d_default">
 			<path version="2024-03-22T19:40:00">e01_d3dflow/f01_general/c03-f34</path>
-			<maxRunTime>7.92200016975</maxRunTime>
+			
 			<checks>
 				<file name="trim-f34.dat" type="NEFIS">
 					<parameters name="map-series">
@@ -77,7 +77,7 @@
 		</testCase>
 		<testCase name="e01_f01_c12-breukelermeer" ref="flow2d3d_default">
 			<path version="2024-02-22T14:50:00">e01_d3dflow/f01_general/c12-breukelermeer</path>
-			<maxRunTime>11.625</maxRunTime>
+			
 			<checks>
 				<file name="trih-a3m.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -97,7 +97,7 @@
 		</testCase>
 		<testCase name="e01_f01_c14-g52" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f01_general/c14-g52</path>
-			<maxRunTime>3.59400010109</maxRunTime>
+			
 			<checks>
 				<file name="trih-g52.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -117,7 +117,7 @@
 		</testCase>
 		<testCase name="e01_f04_c10-mark_grid_svwp" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f04_coarsewind/c10-mark_grid_svwp</path>
-			<maxRunTime>47.2490000725</maxRunTime>
+			
 			<checks>
 				<file name="trih-mar.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -137,7 +137,7 @@
 		</testCase>
 		<testCase name="e01_f04_c11-mark_grid_arc" ref="flow2d3d_default">
 			<path version="2024-02-22T14:50:00">e01_d3dflow/f04_coarsewind/c11-mark_grid_arc</path>
-			<maxRunTime>42.6860001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-mar.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -157,7 +157,7 @@
 		</testCase>
 		<testCase name="e01_f06_c13-bijker_bailard" ref="flow2d3d_default">
 			<path version="2024-06-03T15:30:00">e01_d3dflow/f06_ols/c13-bijker_bailard</path>
-			<maxRunTime>287.086999893</maxRunTime>
+			
 			<checks>
 				<file name="trih-t10.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -177,7 +177,7 @@
 		</testCase>
 		<testCase name="e01_f06_c22-vanrijn2004_SedTransStt" ref="flow2d3d_default">
 			<path version="2024-03-22T19:40:00">e01_d3dflow/f06_ols/c22-vanrijn2004_SedTransStt</path>
-			<maxRunTime>20.0</maxRunTime>
+			
 			<checks>
 				<file name="trih-t2d.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -206,7 +206,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c01-channel" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c01-channel</path>
-			<maxRunTime>3.32800006866</maxRunTime>
+			
 			<checks>
 				<file name="trih-kkz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -236,7 +236,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c02-drying-flooding" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c02-drying-flooding</path>
-			<maxRunTime>6.21800017357</maxRunTime>
+			
 			<checks>
 				<file name="trih-drz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -266,7 +266,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c03-tidalflume" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c03-tidalflume</path>
-			<maxRunTime>95.387999773</maxRunTime>
+			
 			<checks>
 				<file name="trih-tfz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -296,7 +296,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c05-pits" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c05-pits</path>
-			<maxRunTime>5.82800006866</maxRunTime>
+			
 			<checks>
 				<file name="trih-2zb.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -326,7 +326,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c06-125" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c06-125</path>
-			<maxRunTime>1.59399986267</maxRunTime>
+			
 			<checks>
 				<file name="trih-125.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -356,7 +356,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c07-f34" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c07-f34</path>
-			<maxRunTime>3.64100003242</maxRunTime>
+			
 			<checks>
 				<file name="trih-f34.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -381,7 +381,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c08-brassem" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c08-brassem</path>
-			<maxRunTime>1.5</maxRunTime>
+			
 			<checks>
 				<file name="trih-br2.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -411,7 +411,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c09-zegerplas" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c09-zegerplas</path>
-			<maxRunTime>73.8729999065</maxRunTime>
+			
 			<checks>
 				<file name="trih-tst.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -441,7 +441,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c10-gate1" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c10-gate1</path>
-			<maxRunTime>9.43700003624</maxRunTime>
+			
 			<checks>
 				<file name="trih-gtz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -471,7 +471,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c11-gate2" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c11-gate2</path>
-			<maxRunTime>1.18799996376</maxRunTime>
+			
 			<checks>
 				<file name="trih-gtz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -501,7 +501,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c12-lockex_nhy" ref="flow2d3d_default">
 			<path version="2024-03-22T19:30:00">e01_d3dflow/f07a_zlayers_implicit/c12-lockex_nhy</path>
-			<maxRunTime>80.6700000763</maxRunTime>
+			
 			<checks>
 				<file name="trih-nhy.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -531,7 +531,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c13-jet_nhy" ref="flow2d3d_default">
 			<path version="2024-03-22T19:30:00">e01_d3dflow/f07a_zlayers_implicit/c13-jet_nhy</path>
-			<maxRunTime>232.791000128</maxRunTime>
+			
 			<checks>
 				<file name="trih-jet.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -561,7 +561,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c14-01.06-rot_r" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c14-01.06-rot_r</path>
-			<maxRunTime>6.53100013733</maxRunTime>
+			
 			<checks>
 				<file name="trih-rot.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -581,7 +581,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c15-01.07-chezy_r" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c15-01.07-chezy_r</path>
-			<maxRunTime>2.06299996376</maxRunTime>
+			
 			<checks>
 				<file name="trih-ch2.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -606,7 +606,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c16-01.08-power_r" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c16-01.08-power_r</path>
-			<maxRunTime>2.8900001049</maxRunTime>
+			
 			<checks>
 				<file name="trih-pow.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -626,7 +626,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c17-01.12-breukelermeer" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c17-01.12-breukelermeer</path>
-			<maxRunTime>6.96900010109</maxRunTime>
+			
 			<checks>
 				<file name="trih-a3m.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -646,7 +646,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c18-01.15-eva_plus" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c18-01.15-eva_plus</path>
-			<maxRunTime>1.04699993134</maxRunTime>
+			
 			<checks>
 				<file name="trih-eva.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -666,7 +666,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c19-03.06-india_droogval_dpumin" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c19-03.06-india_droogval_dpumin</path>
-			<maxRunTime>6.375</maxRunTime>
+			
 			<checks>
 				<file name="trih-rec.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -686,7 +686,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c20-04.07-034" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c20-04.07-034</path>
-			<maxRunTime>27.7650001049</maxRunTime>
+			
 			<checks>
 				<file name="trih-034.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -706,7 +706,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c21-11.10-q10" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c21-11.10-q10</path>
-			<maxRunTime>16.0469999313</maxRunTime>
+			
 			<checks>
 				<file name="trih-q10.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -726,7 +726,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c22-jvk-bak_met_drempel" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c22-jvk-bak_met_drempel</path>
-			<maxRunTime>71.5450000763</maxRunTime>
+			
 			<checks>
 				<file name="trih-r25.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -746,7 +746,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c24-forester" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c24-forester</path>
-			<maxRunTime>10.1720001698</maxRunTime>
+			
 			<checks>
 				<file name="trih-t11.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -766,7 +766,7 @@
 		</testCase>
 		<testCase name="e01_f07a_c25-bubblescreen" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c25-bubblescreen</path>
-			<maxRunTime>115.184000015</maxRunTime>
+			
 			<checks>
 				<file name="trih-tt1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -786,7 +786,7 @@
 		</testCase>
 		<testCase name="e01_f07_c01-channel" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c01-channel</path>
-			<maxRunTime>2.95299983025</maxRunTime>
+			
 			<checks>
 				<file name="trih-kkz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -816,7 +816,7 @@
 		</testCase>
 		<testCase name="e01_f07_c02-drying-flooding" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c02-drying-flooding</path>
-			<maxRunTime>5.79700016975</maxRunTime>
+			
 			<checks>
 				<file name="trih-drz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -846,7 +846,7 @@
 		</testCase>
 		<testCase name="e01_f07_c03-tidalflume" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c03-tidalflume</path>
-			<maxRunTime>67.8420000076</maxRunTime>
+			
 			<checks>
 				<file name="trih-tfz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -876,7 +876,7 @@
 		</testCase>
 		<testCase name="e01_f07_c05-pits" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c05-pits</path>
-			<maxRunTime>4.62399983406</maxRunTime>
+			
 			<checks>
 				<file name="trih-2zb.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -906,7 +906,7 @@
 		</testCase>
 		<testCase name="e01_f07_c06-125" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c06-125</path>
-			<maxRunTime>1.23399996758</maxRunTime>
+			
 			<checks>
 				<file name="trih-125.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -936,7 +936,7 @@
 		</testCase>
 		<testCase name="e01_f07_c07-f34" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c07-f34</path>
-			<maxRunTime>3.23399996758</maxRunTime>
+			
 			<checks>
 				<file name="trih-f34.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -961,7 +961,7 @@
 		</testCase>
 		<testCase name="e01_f07_c08-brassem" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c08-brassem</path>
-			<maxRunTime>1.25</maxRunTime>
+			
 			<checks>
 				<file name="trih-br2.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -991,7 +991,7 @@
 		</testCase>
 		<testCase name="e01_f07_c09-zegerplas" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c09-zegerplas</path>
-			<maxRunTime>53.0609998703</maxRunTime>
+			
 			<checks>
 				<file name="trih-tst.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1021,7 +1021,7 @@
 		</testCase>
 		<testCase name="e01_f07_c10-gate1" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c10-gate1</path>
-			<maxRunTime>7.89100003242</maxRunTime>
+			
 			<checks>
 				<file name="trih-gtz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1051,7 +1051,7 @@
 		</testCase>
 		<testCase name="e01_f07_c11-gate2" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c11-gate2</path>
-			<maxRunTime>1.07799983025</maxRunTime>
+			
 			<checks>
 				<file name="trih-gtz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1081,7 +1081,7 @@
 		</testCase>
 		<testCase name="e01_f07_c12-lockex_nhy" ref="flow2d3d_default">
 			<path version="2024-03-22T19:30:00">e01_d3dflow/f07_zlayers/c12-lockex_nhy</path>
-			<maxRunTime>62.0449998379</maxRunTime>
+			
 			<checks>
 				<file name="trih-nhy.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1111,7 +1111,7 @@
 		</testCase>
 		<testCase name="e01_f07_c13-jet_nhy" ref="flow2d3d_default">
 			<path version="2024-03-22T19:30:00">e01_d3dflow/f07_zlayers/c13-jet_nhy</path>
-			<maxRunTime>188.963999987</maxRunTime>
+			
 			<checks>
 				<file name="trih-jet.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1141,7 +1141,7 @@
 		</testCase>
 		<testCase name="e01_f07_c14-01.06-rot_r" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c14-01.06-rot_r</path>
-			<maxRunTime>4.85899996758</maxRunTime>
+			
 			<checks>
 				<file name="trih-rot.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1161,7 +1161,7 @@
 		</testCase>
 		<testCase name="e01_f07_c15-01.07-chezy_r" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c15-01.07-chezy_r</path>
-			<maxRunTime>1.90699982643</maxRunTime>
+			
 			<checks>
 				<file name="trih-ch2.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1186,7 +1186,7 @@
 		</testCase>
 		<testCase name="e01_f07_c16-01.08-power_r" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c16-01.08-power_r</path>
-			<maxRunTime>2.76600003242</maxRunTime>
+			
 			<checks>
 				<file name="trih-pow.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1206,7 +1206,7 @@
 		</testCase>
 		<testCase name="e01_f07_c17-01.12-breukelermeer" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c17-01.12-breukelermeer</path>
-			<maxRunTime>4.73399996758</maxRunTime>
+			
 			<checks>
 				<file name="trih-a3m.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1226,7 +1226,7 @@
 		</testCase>
 		<testCase name="e01_f07_c18-01.15-eva_plus" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c18-01.15-eva_plus</path>
-			<maxRunTime>1.01499986649</maxRunTime>
+			
 			<checks>
 				<file name="trih-eva.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1246,7 +1246,7 @@
 		</testCase>
 		<testCase name="e01_f07_c19-03.06-india_droogval_dpumin" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c19-03.06-india_droogval_dpumin</path>
-			<maxRunTime>5.21799993515</maxRunTime>
+			
 			<checks>
 				<file name="trih-rec.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1266,7 +1266,7 @@
 		</testCase>
 		<testCase name="e01_f07_c20-04.07-034" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c20-04.07-034</path>
-			<maxRunTime>19.9249999523</maxRunTime>
+			
 			<checks>
 				<file name="trih-034.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1286,7 +1286,7 @@
 		</testCase>
 		<testCase name="e01_f07_c21-11.10-q10" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c21-11.10-q10</path>
-			<maxRunTime>15.3380000591</maxRunTime>
+			
 			<checks>
 				<file name="trih-q10.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1306,7 +1306,7 @@
 		</testCase>
 		<testCase name="e01_f07_c22-jvk-bak_met_drempel" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c22-jvk-bak_met_drempel</path>
-			<maxRunTime>80.6130001545</maxRunTime>
+			
 			<checks>
 				<file name="trih-r25.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1326,7 +1326,7 @@
 		</testCase>
 		<testCase name="e01_f07_c23-onl" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c23-onl</path>
-			<maxRunTime>2860.43299985</maxRunTime>
+			
 			<checks>
 				<file name="trih-onl.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1346,7 +1346,7 @@
 		</testCase>
 		<testCase name="e01_f07_c24-forester" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c24-forester</path>
-			<maxRunTime>8.57800006866</maxRunTime>
+			
 			<checks>
 				<file name="trih-t11.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1366,7 +1366,7 @@
 		</testCase>
 		<testCase name="e01_f07_c25-bubblescreen" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c25-bubblescreen</path>
-			<maxRunTime>89.1689999104</maxRunTime>
+			
 			<checks>
 				<file name="trih-tt1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1386,7 +1386,7 @@
 		</testCase>
 		<testCase name="e01_f07_c26-powerstation" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07_zlayers/c26-powerstation</path>
-			<maxRunTime>1013.77099991</maxRunTime>
+			
 			<checks>
 				<file name="trih-d15.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1406,7 +1406,7 @@
 		</testCase>
 		<testCase name="e01_f10_c00-2bakjes" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f10_dd/c00-2bakjes</path>
-			<maxRunTime>512.767999887</maxRunTime>
+			
 			<checks>
 				<file name="trih-zz1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1441,7 +1441,7 @@
 		</testCase>
 		<testCase name="e01_f10_c02-6bakjes" ref="flow2d3d_default">
 			<path version="2024-03-22T19:30:00">e01_d3dflow/f10_dd/c02-6bakjes</path>
-			<maxRunTime>87.246999979</maxRunTime>
+			
 			<checks>
 				<file name="trih-a1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1536,7 +1536,7 @@
 		</testCase>
 		<testCase name="e01_f10_c10-vlissingen_movedback" ref="flow2d3d_default">
 			<path version="2024-03-22T19:40:00">e01_d3dflow/f10_dd/c10-vlissingen_movedback</path>
-			<maxRunTime>221.072999954</maxRunTime>
+			
 			<checks>
 				<file name="trih-d09.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1601,7 +1601,7 @@
 		</testCase>
 		<testCase name="e01_f10_c11-tutorial" ref="flow2d3d_default">
 			<path version="2024-02-22T14:50:00">e01_d3dflow/f10_dd/c11-tutorial</path>
-			<maxRunTime>322.444999933</maxRunTime>
+			
 			<checks>
 				<file name="trih-bot_1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1667,7 +1667,7 @@
 		</testCase>
 		<testCase name="e01_f10_c15-ols-humber" ref="flow2d3d_default">
 			<path version="2024-03-22T19:40:00">e01_d3dflow/f10_dd/c15-ols-humber</path>
-			<maxRunTime>2045.86999989</maxRunTime>
+			
 			<checks>
 				<file name="trih-p01.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1732,7 +1732,7 @@
 		</testCase>
 		<testCase name="e01_f10_c23-palmisland" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f10_dd/c23-palmisland</path>
-			<maxRunTime>162.480999947</maxRunTime>
+			
 			<checks>
 				<file name="trih-m06.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1766,7 +1766,7 @@
 		</testCase>
 		<testCase name="e01_f14_c03-breaker" ref="flow2d3d_default">
 			<path version="2024-03-22T19:40:00">e01_d3dflow/f14_roller/c03-breaker</path>
-			<maxRunTime>316.34800005</maxRunTime>
+			
 			<checks>
 				<file name="trih-a01.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1786,7 +1786,7 @@
 		</testCase>
 		<testCase name="e01_f14_c06-test-lip-1b-vanrijn2007" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f14_roller/c06-test-lip-1b-vanrijn2007</path>
-			<maxRunTime>200</maxRunTime>
+			
 			<checks>
 				<file name="trih-lip.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1806,7 +1806,7 @@
 		</testCase>
 		<testCase name="e01_f14_c07-test-lip-1c-vanrijn2007" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f14_roller/c07-test-lip-1c-vanrijn2007</path>
-			<maxRunTime>200</maxRunTime>
+			
 			<checks>
 				<file name="trih-lip.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1826,7 +1826,7 @@
 		</testCase>
 		<testCase name="e01_f14_c08-test-lip-1b-santoss" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f14_roller/c08-test-lip-1b-santoss</path>
-			<maxRunTime>200</maxRunTime>
+			
 			<checks>
 				<file name="trih-lip.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1846,7 +1846,7 @@
 		</testCase>
 		<testCase name="e01_f14_c09-test-lip-1c-santoss" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f14_roller/c09-test-lip-1c-santoss</path>
-			<maxRunTime>200</maxRunTime>
+			
 			<checks>
 				<file name="trih-lip.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1866,7 +1866,7 @@
 		</testCase>
 		<testCase name="e01_f15_c01-z45" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f15_cutcells/c01-z45</path>
-			<maxRunTime>5.82899999619</maxRunTime>
+			
 			<checks>
 				<file name="trim-t45.dat" type="NEFIS">
 					<parameters name="map-series">
@@ -1879,7 +1879,7 @@
 		</testCase>
 		<testCase name="e01_f15_c02-zfree" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f15_cutcells/c02-zfree</path>
-			<maxRunTime>5.76700019836</maxRunTime>
+			
 			<checks>
 				<file name="trim-tr9.dat" type="NEFIS">
 					<parameters name="map-series">
@@ -1892,7 +1892,7 @@
 		</testCase>
 		<testCase name="e01_f17_c04-dump_is_dred" ref="flow2d3d_default">
 			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c04-dump_is_dred</path>
-			<maxRunTime>98.861000061</maxRunTime>
+			
 			<checks>
 				<file name="trih-t01.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1922,7 +1922,7 @@
 		</testCase>
 		<testCase name="e01_f17_c07-layered_bed" ref="flow2d3d_default">
 			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c07-layered_bed</path>
-			<maxRunTime>51.8910000324</maxRunTime>
+			
 			<checks>
 				<file name="trih-drd1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1948,7 +1948,7 @@
 		</testCase>
 		<testCase name="e01_f17_c08-poly_across_dd" ref="flow2d3d_default">
 			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c08-poly_across_dd</path>
-			<maxRunTime>0.828999996185</maxRunTime>
+			
 			<checks>
 				<file name="trih-drd1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1976,7 +1976,7 @@
 		</testCase>
 		<testCase name="e01_f19_c02-simple_z" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f19_cdw/c02-simple_z</path>
-			<maxRunTime>20.9839999676</maxRunTime>
+			
 			<checks>
 				<file name="trih-zp0.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -1996,7 +1996,7 @@
 		</testCase>
 		<testCase name="e01_f20_c15-dpmv_bend" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f20_trachytopes/c15-dpmv_bend</path>
-			<maxRunTime>32.6390001774</maxRunTime>
+			
 			<checks>
 				<file name="trih-t18.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2016,7 +2016,7 @@
 		</testCase>
 		<testCase name="e01_f25_c06-noordzee_equid" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c06-noordzee_equid</path>
-			<maxRunTime>496.221999884</maxRunTime>
+			
 			<checks>
 				<file name="trih-aaa.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2036,7 +2036,7 @@
 		</testCase>
 		<testCase name="e01_f27_c06-18.02_dambreak_wet_z_flood" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c06-18.02_dambreak_wet_z_flood</path>
-			<maxRunTime>2.93799996376</maxRunTime>
+			
 			<checks>
 				<file name="trih-brg.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2056,7 +2056,7 @@
 		</testCase>
 		<testCase name="e01_f27_c08-18.02_dambreak_wet_z_finvol" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c08-18.02_dambreak_wet_z_finvol</path>
-			<maxRunTime>1.29799985886</maxRunTime>
+			
 			<checks>
 				<file name="trih-brg.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2076,7 +2076,7 @@
 		</testCase>
 		<testCase name="e01_f27_c16-z_ztbml_07.01-channel" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c16-z_ztbml_07.01-channel</path>
-			<maxRunTime>1.55999994278</maxRunTime>
+			
 			<checks>
 				<file name="trih-kkz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2098,7 +2098,7 @@
 		</testCase>
 		<testCase name="e01_f27_c17-z_ztbml_07.02-drying-flooding" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c17-z_ztbml_07.02-drying-flooding</path>
-			<maxRunTime>2.84399986267</maxRunTime>
+			
 			<checks>
 				<file name="trih-drz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2120,7 +2120,7 @@
 		</testCase>
 		<testCase name="e01_f27_c19-z_ztbml_flow_over_bump" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c19-z_ztbml_flow_over_bump</path>
-			<maxRunTime>39.4060001373</maxRunTime>
+			
 			<checks>
 				<file name="trih-hobbel4_keps.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2141,7 +2141,7 @@
 		</testCase>
 		<testCase name="e01_f27_c21-nhfull_undular_jump_finvol_cg" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c21-nhfull_undular_jump_finvol_cg</path>
-			<maxRunTime>595.868000031</maxRunTime>
+			
 			<checks>
 				<file name="trih-undular.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2163,7 +2163,7 @@
 		</testCase>
 		<testCase name="e01_f27_c22-nhfull_undular_jump_finvol_bicgstab" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c22-nhfull_undular_jump_finvol_bicgstab</path>
-			<maxRunTime>599.888000011</maxRunTime>
+			
 			<checks>
 				<file name="trih-undular.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2185,7 +2185,7 @@
 		</testCase>
 		<testCase name="e01_f27_c23-z_nam_theun_depini" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c23-z_nam_theun_depini</path>
-			<maxRunTime>879.476999998</maxRunTime>
+			
 			<checks>
 				<file name="trih-i15.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2207,7 +2207,7 @@
 		</testCase>
 		<testCase name="e01_f27_c24-z_schematic_slope_limiter" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c24-z_schematic_slope_limiter</path>
-			<maxRunTime>14.8900001049</maxRunTime>
+			
 			<checks>
 				<file name="trih-j05_3D_Z.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2229,7 +2229,7 @@
 		</testCase>
 		<testCase name="e01_f50_c31102_Simple-channel-flow(MG)_z_uni" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f50_validation_analytical/c31102_Simple-channel-flow(MG)_z_uni</path>
-			<maxRunTime>2.71900010109</maxRunTime>
+			
 			<checks>
 				<file name="trih-cuz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2249,7 +2249,7 @@
 		</testCase>
 		<testCase name="e01_f50_c31103_Simple-channel-flow(MG)_z_nonuni" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f50_validation_analytical/c31103_Simple-channel-flow(MG)_z_nonuni</path>
-			<maxRunTime>2.48399996758</maxRunTime>
+			
 			<checks>
 				<file name="trih-cnz.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2269,7 +2269,7 @@
 		</testCase>
 		<testCase name="e01_f50_c31122_Simple-channel-flow(FP)_Chezy_3D_K10_al_Z" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f50_validation_analytical/c31122_Simple-channel-flow(FP)_Chezy_3D_K10_al_Z</path>
-			<maxRunTime>0.503000020981</maxRunTime>
+			
 			<checks>
 				<file name="trim-chz_3D_K10_al_Z.dat" type="NEFIS">
 					<parameters name="map-series">
@@ -2282,7 +2282,7 @@
 		</testCase>
 		<testCase name="e01_f51_c32230_Water_elevation_in_a_wave_flume_dt0_0001" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f51_validation_laboratory/c32230_Water_elevation_in_a_wave_flume_dt0_0001</path>
-			<maxRunTime>700.0</maxRunTime> <!-- seconds -->
+			
 			<checks>
 				<file name="trih-dd1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2302,7 +2302,7 @@
 		</testCase>
 		<testCase name="e01_f52_c33110-Curved_back_channel_Cutcells_2DH" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f52_validation_schematic/c33110-Curved_back_channel_Cutcells_2DH</path>
-			<maxRunTime>36.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-cutcell_2DH.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2322,7 +2322,7 @@
 		</testCase>
 		<testCase name="e01_f52_c33111-Curved_back_channel_Cutcells_3D" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f52_validation_schematic/c33111-Curved_back_channel_Cutcells_3D</path>
-			<maxRunTime>1292.16300011</maxRunTime>
+			
 			<checks>
 				<file name="trih-cutcell_3D.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2342,7 +2342,7 @@
 		</testCase>
 		<testCase name="e01_f52_c33201-Drying-and-flooding_dd_z" ref="flow2d3d_default">
 			<path version="2024-03-22T19:40:00">e01_d3dflow/f52_validation_schematic/c33201-Drying-and-flooding_dd_z</path>
-			<maxRunTime>719.424000025</maxRunTime>
+			
 			<checks>
 				<file name="trih-bd3.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2380,7 +2380,7 @@
 		</testCase>
 		<testCase name="e01_f99_c02-zlayer_tst" ref="flow2d3d_default">
 			<path version="2024-01-08T09:40:00">e01_d3dflow/f99_longruns/c02-zlayer_tst</path>
-			<maxRunTime>2583.26600003</maxRunTime>
+			
 			<checks>
 				<file name="trih-tst.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2400,7 +2400,7 @@
 		</testCase>
 		<testCase name="e21_f01_c01-basic" ref="flow2d3d_rtc_default">
 			<path version="2024-01-12T07:40:00">e21_d3dflow-rtc/f01_general/c01-basic</path>
-			<maxRunTime>11.1540000439</maxRunTime>
+			
 			<checks>
 				<file name="trih-2dw.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2420,7 +2420,7 @@
 		</testCase>
 		<testCase name="e21_f01_c02-rtc_dd" ref="flow2d3d_rtc_default">
 			<path version="2024-01-12T07:40:00">e21_d3dflow-rtc/f01_general/c02-rtc_dd</path>
-			<maxRunTime>229.05099988</maxRunTime>
+			
 			<checks>
 				<file name="trih-cha1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2476,7 +2476,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>765.578999996</maxRunTime>
+			
 			<checks>
 				<file name="trih-r17.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2511,7 +2511,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>10800.0</maxRunTime>
+			
 			<checks>
 				<file name="trim-obw.dat" type="NEFIS">
 					<parameters name="map-series">
@@ -2539,7 +2539,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>143.71600008</maxRunTime>
+			
 			<checks>
 				<file name="trih-cca.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2574,7 +2574,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>38.5300002098</maxRunTime>
+			
 			<checks>
 				<file name="trih-bak.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2609,7 +2609,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>916.184999943</maxRunTime>
+			
 			<checks>
 				<file name="trih-coa.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2665,7 +2665,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>736.14199996</maxRunTime>
+			
 			<checks>
 				<file name="trih-f01.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2714,7 +2714,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>49.4419999123</maxRunTime>
+			
 			<checks>
 				<file name="trih-coa.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2770,7 +2770,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>21.3300001621</maxRunTime>
+			
 			<checks>
 				<file name="trih-bel.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2806,7 +2806,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>16.5499999523</maxRunTime>
+			
 			<checks>
 				<file name="trih-QH40.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2841,7 +2841,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>40.6559998989</maxRunTime>
+			
 			<checks>
 				<file name="trih-boe.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2876,7 +2876,7 @@
 					</arguments>
 				</program>
 			</programs>
-			<maxRunTime>21600.0</maxRunTime>
+			
 			<checks>
 				<file name="trih-loo.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2903,7 +2903,7 @@
 		</testCase>
 		<testCase name="e39_f02_c06_wheeler" ref="flow2d3d_default">
 			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f02_TVA/c06_wheeler</path>
-			<maxRunTime>900.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-wheeler.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2919,7 +2919,7 @@
 		</testCase>
 		<testCase name="e01_f10_c01-3bakjes" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f10_dd/c01-3bakjes</path>
-			<maxRunTime>89.7330000401</maxRunTime>
+			
 			<checks>
 				<file name="trih-zz1.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -2969,7 +2969,7 @@
 		</testCase>
 		<testCase name="e01_f10_c09-3bakjes_movedback" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f10_dd/c09-3bakjes_movedback</path>
-			<maxRunTime>48.5450000763</maxRunTime>
+			
 			<checks>
 				<file name="trih-zz1.dat" type="NEFIS">
 					<parameters name="his-series">

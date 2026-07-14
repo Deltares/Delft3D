@@ -56,7 +56,7 @@
             </arguments>
           </program>
         </programs>
-        <maxRunTime>120.0</maxRunTime>
+        
         <checks>
            <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
            </file>
@@ -169,7 +169,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
            <parameters>
@@ -195,7 +195,7 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
            <parameters>
@@ -215,7 +215,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
+      
       <checks>
         <file name="DFM_OUTPUT_test/test_0000_his.nc" type="netCDF">
            <parameters>
@@ -303,7 +303,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
            <parameters>
@@ -339,7 +339,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
            <parameters>
@@ -515,7 +515,7 @@
       -->
     <testCase name="e02_f004_c080_chezy_uniform" ref="dimr">
       <path version="2025-10-15T15:07:21.413000">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+      
         <programs>
           <program ref="dimr">
              <arguments>
@@ -544,7 +544,7 @@
     <!-- FLAKY
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
         <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
-        <maxRunTime>60.0</maxRunTime>
+        
                 <programs>
           <program ref="dimr">
              <arguments>

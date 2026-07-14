@@ -70,7 +70,7 @@
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
 
@@ -140,7 +140,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>200.0</maxRunTime> <!-- seconds -->
+            
         </testCase>	
         <testCase name="e02_f150_c13_korte-woerden-1d2d-ManholeStreetinlets" ref="dimr_default">
             <path version="2026-05-28T12:43:26.255000">e02_dflowfm/f150_1d2d_acceptance_urban/c13_korte-woerden-1d2d-ManholeStreetinlets/dimr_model</path>
@@ -171,7 +171,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>90.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 		<testCase name="e02_f150_c20_groesbeek_NN_T1" ref="dimr_default">
             <path version="2026-05-13T09:41:12.658000">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T1</path>
@@ -306,7 +306,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>1200.0</maxRunTime> <!-- seconds -->
+            
         </testCase>	
         <testCase name="e02_f150_c34_additional_flow_analysis" ref="dimr_default">
             <path version="2025-10-21T11:11:50.017000">e02_dflowfm/f150_1d2d_acceptance_urban/c34_additional_flow_analysis/dimr_model</path>

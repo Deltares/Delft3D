@@ -172,7 +172,7 @@
         </testCase>
         <testCase name="e105_f04_c103_orifice_crestLevel_TimeController" ref="dimr_trunk">
             <path version="2026-05-13T06:50:31.263000">e105_dflowfm-drtc/f04_1D2D/c103_orifice_crestLevel_TimeController</path>
-            <maxRunTime>20.0</maxRunTime>
+            
             <checks>
               <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>

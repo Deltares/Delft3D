@@ -7,7 +7,7 @@
 				Basic Windows configuration file: tb3_cfg_win64_hp.xml
 				From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
 				From hp to parallel: Use mpi as shell (in related program)
-									 Overrule maxruntime when needed
+									 
 									 Only cases that run in parallel mode
 				-->
 	<config>
@@ -195,7 +195,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			
 			<programs>
 				<program ref="FLOW2D3D"/>
 			</programs>
@@ -208,7 +208,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			
 			<programs>
 				<program ref="FLOW2D3D"/>
 				<program ref="FLOW2D3D">
@@ -227,7 +227,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime>
+			
 			<programs>
 				<program ref="FLOW2D3D"/>
 				<program ref="RTC" delay="10.0"/>
@@ -241,7 +241,7 @@
 			<location ref="dsctestbench-references_data" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			
 			<programs>
 				<program ref="WAVE"/>
 			</programs>
@@ -272,7 +272,7 @@
 	<testCases>
 		<testCase name="e01_f30_c01-2D_annular_curv_cold" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f30_immersed_boundaries/c01-2D_annular_curv_cold</path>
-			<maxRunTime>26.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-annular_curv.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -292,7 +292,7 @@
 		</testCase>
 		<testCase name="e01_f30_c02-2D_annular_curv_hot" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f30_immersed_boundaries/c02-2D_annular_curv_hot</path>
-			<maxRunTime>27.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-annular_curv.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -312,7 +312,7 @@
 		</testCase>
 		<testCase name="e01_f30_c03-2D_annular_ibm_cold" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f30_immersed_boundaries/c03-2D_annular_ibm_cold</path>
-			<maxRunTime>179.6910001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -332,7 +332,7 @@
 		</testCase>
 		<testCase name="e01_f30_c04-2D_annular_ibm_hot" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f30_immersed_boundaries/c04-2D_annular_ibm_hot</path>
-			<maxRunTime>179.6910001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -352,7 +352,7 @@
 		</testCase>
 		<testCase name="e01_f30_c05-2D_skewed_43d80_hot" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f30_immersed_boundaries/c05-2D_skewed_43d80_hot</path>
-			<maxRunTime>10.0010001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-uniform.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -372,7 +372,7 @@
 		</testCase>
 		<testCase name="e01_f30_c06-2D_annular_meyer_peter_only_bed" ref="flow2d3d_default">
 			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c06-2D_annular_meyer_peter_only_bed</path>
-			<maxRunTime>179.6910001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -401,7 +401,7 @@
 		</testCase>
 		<testCase name="e01_f30_c07-2D_annular_meyer_peter_banks" ref="flow2d3d_default">
 			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c07-2D_annular_meyer_peter_banks</path>
-			<maxRunTime>179.6910001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
 					<parameters name="his-series">

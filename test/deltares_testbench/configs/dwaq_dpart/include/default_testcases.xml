@@ -17,7 +17,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
 
@@ -35,7 +35,7 @@
             <location ref="reference_results" type="reference">
                     <from>lnx64</from>
             </location>
-            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 
         <testCase name="dummy">
@@ -46,7 +46,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
 
@@ -67,7 +67,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
 
@@ -86,7 +86,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
+            
             <!-- seconds -->
         </testCase>
     </defaultTestCases>

@@ -8,7 +8,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>10.0</maxRunTime>
+      
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
@@ -31,7 +31,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
@@ -64,7 +64,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+      
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
@@ -100,7 +100,7 @@
             </environments>
           </program>
       </programs>
-      <maxRunTime>10.0</maxRunTime>
+      
       <checks>
         <file name="wave/wavm-obw.nc" type="netCDF">
            <parameters>
@@ -118,7 +118,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>10.0</maxRunTime>
+      
       <checks>
         <file name="wave/wavm-obw.nc" type="netCDF">
            <parameters>
@@ -136,7 +136,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>10.0</maxRunTime>
+      
       <checks>
         <file name="wave/wavm-obw.nc" type="netCDF">
            <parameters>

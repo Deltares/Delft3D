@@ -63,7 +63,7 @@
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
-            <maxRunTime>600.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--

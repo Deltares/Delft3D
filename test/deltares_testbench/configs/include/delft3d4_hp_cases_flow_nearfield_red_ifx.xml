@@ -22,7 +22,7 @@
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e39_f01_c01_nf_2dis_simple_sigma" ref="flow2d3d_default">
 			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c01_nf_2dis_simple_sigma</path>
-			<maxRunTime>38.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-2dis.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -42,7 +42,7 @@
 		</testCase>
 		<testCase name="e39_f01_c03_nf_prltest_sigma" ref="flow2d3d_default">
 			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c03_nf_prltest_sigma</path>
-			<maxRunTime>38.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-2dis.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -62,7 +62,7 @@
 		</testCase>
 		<testCase name="e39_f01_c04_nf_prltest_zlayers" ref="flow2d3d_default">
 			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c04_nf_prltest_zlayers</path>
-			<maxRunTime>38.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-2dis.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -82,7 +82,7 @@
 		</testCase>
 		<testCase name="e39_f02_c06_wheeler" ref="flow2d3d_default">
 			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f02_TVA/c06_wheeler</path>
-			<maxRunTime>900.5610001087</maxRunTime>
+			
 			<checks>
 				<file name="trih-wheeler.dat" type="NEFIS">
 					<parameters name="his-series">

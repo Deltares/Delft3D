@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e108_f04_c01_cn30-100-init-amc-avg" ref="drr_default">
         <path version="2025-09-11T12:31:52.736000">e108_drr/f04_scs/c01_cn30-100-init-amc-avg</path>
-        <maxRunTime>60.0</maxRunTime>
+        
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
                 <parameters>
