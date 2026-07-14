@@ -41,5 +41,5 @@ if [ "$usePreCICE" = "1" ] ; then
         echo "Please start FlowFM"
     fi
 else
-    $bindir/dimr dimr_config.xml
+    echo "Error: Parallel DIMR is not supported."
 fi

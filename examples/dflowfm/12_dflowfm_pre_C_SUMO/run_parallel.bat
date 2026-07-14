@@ -46,7 +46,7 @@ if %usePreCICE% EQU 1 (
         echo Please start D-Flow FM
     )
 ) else (
-    call %bindir%\run_dimr.bat
+    echo Error: Parallel DIMR is not supported.
 )
 endlocal
 
