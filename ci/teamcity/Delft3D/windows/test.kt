@@ -140,8 +140,7 @@ object WindowsTest : BuildType({
                     rem Wheels come from the mounted uv cache volume.
                     uv venv C:\venv || (echo [ERROR] uv venv failed! & exit /b 1)
                     call C:\venv\Scripts\activate.bat
-                    set PYTHONVERBOSE=2
-                    uv pip sync -v pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
+                    uv pip sync pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
                     python TestBench.py %%argsList%%
             """.trimIndent()
 
@@ -153,7 +152,6 @@ object WindowsTest : BuildType({
                 --cpus %teamcity.agent.hardware.cpuCount%
                 --env UV_LINK_MODE=copy
                 --volume test-environment-uv-cache:C:\uv\cache
-                --volume test-environment-pycache:C:\pycache
             """.trimIndent()
         }
         script {
