@@ -23,7 +23,7 @@ internal sealed class MduProperty
     public string? Unit { get; set; }
 
     [JsonPropertyName("status")]
-    public string? Status { get; set; }
+    public MduStatus? Status { get; set; }
 
     [JsonPropertyName("validation")]
     public MduValidation? Validation { get; set; }

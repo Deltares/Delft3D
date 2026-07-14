@@ -59,4 +59,10 @@ public sealed class MduPropertySchema
     /// Allowed enum values. Empty for non-enum properties.
     /// </summary>
     public IReadOnlyList<MduEnumValue> EnumValues { get; init; } = [];
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return Key;
+    }
 }

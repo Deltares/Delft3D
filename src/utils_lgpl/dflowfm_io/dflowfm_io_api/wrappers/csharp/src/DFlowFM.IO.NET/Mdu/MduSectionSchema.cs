@@ -19,4 +19,10 @@ public sealed class MduSectionSchema
     /// The properties contained in the section, in declaration order.
     /// </summary>
     public required IReadOnlyList<MduPropertySchema> Properties { get; init; }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return Name;
+    }
 }

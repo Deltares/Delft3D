@@ -177,9 +177,9 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
         };
     }
 
-    private static string ToMduPropertyStatus(string? status)
+    private static string ToMduPropertyStatus(MduStatus? status)
     {
-        return status switch
+        return status?.Value switch
         {
             "research" => "Research",
             "deprecated" => "Deprecated",
