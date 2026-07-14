@@ -46,7 +46,7 @@ module m_structures
 
    real(kind=dp), dimension(:, :), allocatable, target :: valgenstru !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
-   !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH,
+   !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_GATEH, IVAL_OPENH,
    !<                                   IVAL_UPPL, IVAL_DIS_OPEN, IVAL_DIS_OVER, IVAL_DIS_UNDER,
    !<                                   IVAL_AREA_OPEN, IVAL_AREA_OVER, IVAL_AREA_UNDER, IVAL_VEL_OPEN, IVAL_VEL_OVER,
    !<                                   IVAL_VEL_UNDER, IVAL_COUNT.
@@ -750,6 +750,7 @@ contains
          pstru => network%sts%struct(istru)
          valgenstru(9, n) = get_crest_level(pstru)
          valgenstru(10, n) = get_width(pstru)
+         valgenstru(15, n) = get_gate_height(pstru)
          valgenstru(14, n) = get_gle(pstru)
          valgenstru(13, n) = network%sts%struct(istru)%generalst%gateopeningwidth_actual
          ! fu, ru, au have been computed in each computational time step, so skip computing them again
@@ -1472,6 +1473,7 @@ contains
       !< (IVAL_FORCEDIF) force difference per unit width
       !< (IVAL_OPENW) gate opening width
       !< (IVAL_EDGEL) gate lower edge level
+      !< (IVAL_GATEH) gate door height
       !< (IVAL_OPENH) gate opening height
       !< (IVAL_UPPL) gate upper edge level
       !< (IVAL_DIS_OPEN) discharge through gate opening
@@ -1518,8 +1520,9 @@ contains
             genstr => network%sts%struct(istru)%generalst
             valstruct(IVAL_OPENW) = genstr%gateopeningwidth_actual ! gate opening width
             valstruct(IVAL_EDGEL) = get_gle(pstru) ! gate lower edge level
+            valstruct(IVAL_GATEH) = get_gate_height(pstru) ! gate door height
             valstruct(IVAL_OPENH) = get_opening_height(pstru) ! gate opening height
-            valstruct(IVAL_UPPL) = valstruct(IVAL_EDGEL) + genstr%gatedoorheight ! gate upper edge level
+            valstruct(IVAL_UPPL) = valstruct(IVAL_EDGEL) + valstruct(IVAL_GATEH) ! gate upper edge level
          end if
       end if
 

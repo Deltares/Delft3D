@@ -48,8 +48,8 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
                       item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
-                      item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
-                      item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
+                      item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateHeight, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
+                      item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
                       AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
    use m_source_sink, only: source_sinks, source_sink_all_discharges
@@ -879,12 +879,14 @@ contains
       if (network%sts%numGates > 0) then
          call get_timespace_value_by_item(item_gate_crestLevel, time_in_seconds)
          call get_timespace_value_by_item(item_gate_gateLowerEdgeLevel, time_in_seconds)
+         call get_timespace_value_by_item(item_gate_gateHeight, time_in_seconds)
          call get_timespace_value_by_item(item_gate_gateOpeningWidth, time_in_seconds)
       end if
 
       if (network%sts%numGeneralStructures > 0) then
          call get_timespace_value_by_item(item_general_structure_crestLevel, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_gateLowerEdgeLevel, time_in_seconds)
+         call get_timespace_value_by_item(item_general_structure_gateHeight, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_crestWidth, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_gateOpeningWidth, time_in_seconds)
       end if

@@ -40,7 +40,7 @@ contains
    subroutine structure_parameters
       use m_flowgeom, only: ln, wu
       use m_flow, only: dp, npumpsg, ngatesg, ncdamsg, ncgensg, ngategen, nweirgen, ngenstru, aerr, dmiss, pumpswithlevels, l1pumpsg, l2pumpsg, kpump, l1gatesg, l2gatesg, kgate, q1, s1, l1cdamsg, l2cdamsg, kcdam, l1cgensg, l2cgensg, kcgen, hu, epshu, hs, epshs, gate2cgen, zcgen, weir2cgen, genstru2cgen
-      use m_structures, only: numvals_pump, numvals_gate, numvals_cdam, numvals_cgen, numvals_gategen, numvals_weirgen, numvals_genstru, numvals_dambreak, network, numvals_uniweir, numvals_orifgen, numvals_culvert, numvals_bridge, numvals_cmpstru, numvals_longculvert, valpump, numvals_common_pump, fill_valstruct_perlink, valgate, valcdam, valcgen, valgategen, ival_width, ival_widthwet, ival_dis, ival_widthup, ival_s1up, ival_widthdn, ival_s1dn, ival_widthupdn, ival_head, ival_gate_widthwet, ival_gate_flowh, ival_gate_count, ival_gate_openw, ival_gate_edgel, ival_gate_sillh, valweirgen, fill_valstruct_per_structure, valorifgen, valbridge, valculvert, ival_cl_crestl, ival_cl_state, ival_cl_edgel, ival_cl_openh, valuniweir, ival_uw_crestl, valdambreak, valgenstru, ival_openw, ival_edgel, ival_crestl, valcmpstru, vallongculvert, average_valstruct, ival_crestw, ival_pp_cap, ival_pp_disdir, ival_pp_stag, ival_pp_s1suc, ival_pp_s1del, ival_pp_head, ival_pp_red
+      use m_structures, only: numvals_pump, numvals_gate, numvals_cdam, numvals_cgen, numvals_gategen, numvals_weirgen, numvals_genstru, numvals_dambreak, network, numvals_uniweir, numvals_orifgen, numvals_culvert, numvals_bridge, numvals_cmpstru, numvals_longculvert, valpump, numvals_common_pump, fill_valstruct_perlink, valgate, valcdam, valcgen, valgategen, ival_width, ival_widthwet, ival_dis, ival_widthup, ival_s1up, ival_widthdn, ival_s1dn, ival_widthupdn, ival_head, ival_gate_widthwet, ival_gate_flowh, ival_gate_count, ival_gate_openw, ival_gate_edgel, ival_gate_gateh, ival_gate_sillh, valweirgen, fill_valstruct_per_structure, valorifgen, valbridge, valculvert, ival_cl_crestl, ival_cl_state, ival_cl_edgel, ival_cl_openh, valuniweir, ival_uw_crestl, valdambreak, valgenstru, ival_openw, ival_edgel, ival_gateh, ival_crestl, valcmpstru, vallongculvert, average_valstruct, ival_crestw, ival_pp_cap, ival_pp_disdir, ival_pp_stag, ival_pp_s1suc, ival_pp_s1del, ival_pp_head, ival_pp_red
       use m_flowtimes, only: ti_his, time1
       use m_1d_structures, only: get_crest_level, get_culvert_state, get_gle, get_opening_height, getpumpcapacity, getpumpstage, getpumpreductionfactor
       use m_GlobalParameters, only: st_pump, st_weir, st_unset, st_orifice, st_bridge, st_culvert, st_uni_weir, st_general_st, st_compound, st_longculvert
@@ -288,6 +288,7 @@ contains
                   valgategen(IVAL_GATE_COUNT, n) = 1 ! rank contains the gate.
                   valgategen(IVAL_GATE_OPENW, n) = pstru%generalst%gateOpeningWidth
                   valgategen(IVAL_GATE_EDGEL, n) = pstru%generalst%gateLowerEdgeLevel_actual
+                  valgategen(IVAL_GATE_GATEH, n) = pstru%generalst%gateDoorHeight
                   valgategen(IVAL_GATE_SILLH, n) = pstru%generalst%zs_actual
                   if (jampi == 0) then
                      if (valgategen(IVAL_WIDTHUP, n) > 0) then
@@ -365,7 +366,8 @@ contains
                   valgategen(IVAL_GATE_COUNT, n) = 1 ! rank contains the gate.
                   valgategen(IVAL_GATE_OPENW, n) = zcgen(3 * i) ! id_gategen_openw.
                   valgategen(IVAL_GATE_EDGEL, n) = zcgen(3 * i - 1) ! id_gategen_edgel.
-                  valgategen(IVAL_GATE_SILLH, n) = zcgen(3 * i - 2) ! id_gategen_sillh.
+                  valgategen(IVAL_GATE_GATEH, n) = zcgen(3 * i - 2) ! id_gategen_gateh.
+                  valgategen(IVAL_GATE_SILLH, n) = zcgen(3 * i - 3) ! id_gategen_sillh.
                end if
                if (jampi == 0) then
                   if (valgategen(IVAL_WIDTHUP, n) > 0) then
@@ -611,7 +613,8 @@ contains
                   valgenstru(NUMVALS_GENSTRU, n) = 1 ! rank contains the general structure.
                   valgenstru(IVAL_OPENW, n) = zcgen(3 * i) ! id_genstru_openw.
                   valgenstru(IVAL_EDGEL, n) = zcgen(3 * i - 1) ! id_genstru_edgel.
-                  valgenstru(IVAL_CRESTL, n) = zcgen(3 * i - 2) ! id_genstru_cresth.
+                  valgenstru(IVAL_GATEH, n) = zcgen(3 * i - 2) ! id_genstru_gateh.
+                  valgenstru(IVAL_CRESTL, n) = zcgen(3 * i - 3) ! id_genstru_cresth.
                end if
             end do
          end if
@@ -837,6 +840,7 @@ contains
                   if (valgenstru(NUMVALS_GENSTRU, n) > 1) then ! The structure lies on more than one partition
                      valgenstru(IVAL_OPENW, n) = valgenstru(IVAL_OPENW, n) / valgenstru(NUMVALS_GENSTRU, n) ! id_genstru_openw.
                      valgenstru(IVAL_EDGEL, n) = valgenstru(IVAL_EDGEL, n) / valgenstru(NUMVALS_GENSTRU, n) ! id_genstru_edgel.
+                     valgenstru(IVAL_GATEH, n) = valgenstru(IVAL_GATEH, n) / valgenstru(NUMVALS_GENSTRU, n) ! id_genstru_gateh.
                      valgenstru(IVAL_CRESTL, n) = valgenstru(IVAL_CRESTL, n) / valgenstru(NUMVALS_GENSTRU, n) ! id_genstru_cresth.
                   end if
                end if
@@ -886,10 +890,12 @@ contains
                if (valgategen(IVAL_WIDTH, n) == 0.0_dp) then
                   valgategen(IVAL_GATE_OPENW, n) = dmiss
                   valgategen(IVAL_GATE_EDGEL, n) = dmiss
+                  valgategen(IVAL_GATE_GATEH, n) = dmiss
                   valgategen(IVAL_GATE_SILLH, n) = dmiss
                else
                   valgategen(IVAL_GATE_OPENW, n) = valgategen(IVAL_GATE_OPENW, n) / valgategen(IVAL_GATE_COUNT, n) !id_gategen_openw
                   valgategen(IVAL_GATE_EDGEL, n) = valgategen(IVAL_GATE_EDGEL, n) / valgategen(IVAL_GATE_COUNT, n) !id_gategen_edgel
+                  valgategen(IVAL_GATE_GATEH, n) = valgategen(IVAL_GATE_GATEH, n) / valgategen(IVAL_GATE_COUNT, n) !id_gategen_gateh
                   valgategen(IVAL_GATE_SILLH, n) = valgategen(IVAL_GATE_SILLH, n) / valgategen(IVAL_GATE_COUNT, n) !id_gategen_sillh
                end if
                if (valgategen(IVAL_WIDTHWET, n) == 0.0_dp) then

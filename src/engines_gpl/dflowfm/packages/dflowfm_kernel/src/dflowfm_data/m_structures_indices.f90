@@ -57,21 +57,22 @@ module m_structures_indices
    ! Followings are extra variables for general structure and orifice:
    integer, parameter :: IVAL_OPENW = NUMVALS_COMMON + 6 !< Index of gate opening width
    integer, parameter :: IVAL_EDGEL = NUMVALS_COMMON + 7 !< Index of gate lower edge level
-   integer, parameter :: IVAL_OPENH = NUMVALS_COMMON + 8 !< Index of gate opening height
+   integer, parameter :: IVAL_GATEH = NUMVALS_COMMON + 8 !< Index of gate height
+   integer, parameter :: IVAL_OPENH = NUMVALS_COMMON + 9 !< Index of gate opening height
    ! Followings are extra variables only for general structure:
-   integer, parameter :: IVAL_UPPL = NUMVALS_COMMON + 9 !< Index of gate upper edge level
-   integer, parameter :: IVAL_DIS_OPEN = NUMVALS_COMMON + 10 !< Index of discharge through gate opening
-   integer, parameter :: IVAL_DIS_OVER = NUMVALS_COMMON + 11 !< Index of discharge over gate
-   integer, parameter :: IVAL_DIS_UNDER = NUMVALS_COMMON + 12 !< Index of discharge under gate
-   integer, parameter :: IVAL_AREA_OPEN = NUMVALS_COMMON + 13 !< Index of flow area through gate opening
-   integer, parameter :: IVAL_AREA_OVER = NUMVALS_COMMON + 14 !< Index of flow area over gate
-   integer, parameter :: IVAL_AREA_UNDER = NUMVALS_COMMON + 15 !< Index of flow area under gate
-   integer, parameter :: IVAL_VEL_OPEN = NUMVALS_COMMON + 16 !< Index of velocity through gate opening
-   integer, parameter :: IVAL_VEL_OVER = NUMVALS_COMMON + 17 !< Index of velocity over gate
-   integer, parameter :: IVAL_VEL_UNDER = NUMVALS_COMMON + 18 !< Index of velocity under gate
-   integer, parameter :: IVAL_COUNT = NUMVALS_COMMON + 19 !< Index of counters of partitions for parallel
+   integer, parameter :: IVAL_UPPL = NUMVALS_COMMON + 10 !< Index of gate upper edge level
+   integer, parameter :: IVAL_DIS_OPEN = NUMVALS_COMMON + 11 !< Index of discharge through gate opening
+   integer, parameter :: IVAL_DIS_OVER = NUMVALS_COMMON + 12 !< Index of discharge over gate
+   integer, parameter :: IVAL_DIS_UNDER = NUMVALS_COMMON + 13 !< Index of discharge under gate
+   integer, parameter :: IVAL_AREA_OPEN = NUMVALS_COMMON + 14 !< Index of flow area through gate opening
+   integer, parameter :: IVAL_AREA_OVER = NUMVALS_COMMON + 15 !< Index of flow area over gate
+   integer, parameter :: IVAL_AREA_UNDER = NUMVALS_COMMON + 16 !< Index of flow area under gate
+   integer, parameter :: IVAL_VEL_OPEN = NUMVALS_COMMON + 17 !< Index of velocity through gate opening
+   integer, parameter :: IVAL_VEL_OVER = NUMVALS_COMMON + 18 !< Index of velocity over gate
+   integer, parameter :: IVAL_VEL_UNDER = NUMVALS_COMMON + 19 !< Index of velocity under gate
+   integer, parameter :: IVAL_COUNT = NUMVALS_COMMON + 20 !< Index of counters of partitions for parallel
 
-   integer, parameter :: NUMEXTVALS_GENSTRU = 19 ! Number of extra variables for general structure, including last one as a counter
+   integer, parameter :: NUMEXTVALS_GENSTRU = 20 ! Number of extra variables for general structure, including last one as a counter
    integer, parameter :: NUMEXTVALS_WEIRGEN = 6 ! Number of extra variables for weir, including last one as a counter
    integer, parameter :: NUMEXTVALS_ORIFGEN = 9 ! Number of extra variables for orifice, including last one as a counter
    integer, parameter :: NUMVALS_GENSTRU = NUMVALS_COMMON + NUMEXTVALS_GENSTRU !< Total number of variables for general structure (new exe file)
@@ -113,9 +114,10 @@ module m_structures_indices
    integer, parameter :: IVAL_GATE_COUNT = NUMVALS_COMMON_GATE + 2 !< Counter
    integer, parameter :: IVAL_GATE_OPENW = NUMVALS_COMMON_GATE + 3 !< Gate opening width
    integer, parameter :: IVAL_GATE_EDGEL = NUMVALS_COMMON_GATE + 4 !< Gate lower edge level
-   integer, parameter :: IVAL_GATE_SILLH = NUMVALS_COMMON_GATE + 5 !< Gate crest level (via general structure)
-   integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6 !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
-   integer, parameter :: NUMEXTVALS_GATE = 6 !< Number of extra variables for gate
+   integer, parameter :: IVAL_GATE_GATEH = NUMVALS_COMMON_GATE + 5 !< Gate door height
+   integer, parameter :: IVAL_GATE_SILLH = NUMVALS_COMMON_GATE + 6 !< Gate crest level (via general structure)
+   integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 7 !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
+   integer, parameter :: NUMEXTVALS_GATE = 7 !< Number of extra variables for gate
    integer, parameter :: NUMVALS_GATEGEN = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
 
    ! Compound structure

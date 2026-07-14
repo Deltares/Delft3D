@@ -77,6 +77,7 @@ module m_output_config
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_DISCHARGE
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL
+   integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_HEIGHT
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_S1UP
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_S1DN
@@ -115,12 +116,14 @@ module m_output_config
    integer, public :: IDX_HIS_PUMP_S1_SUCTION_SIDE
    integer, public :: IDX_HIS_GATE_DISCHARGE
    integer, public :: IDX_HIS_GATE_LOWER_EDGE_LEVEL
+   integer, public :: IDX_HIS_GATE_HEIGHT
    integer, public :: IDX_HIS_GATE_S1UP
    integer, public :: IDX_HIS_GATE_S1DN
    integer, public :: IDX_HIS_GATEGEN_DISCHARGE
    integer, public :: IDX_HIS_GATEGEN_CREST_LEVEL
    integer, public :: IDX_HIS_GATEGEN_CREST_WIDTH
    integer, public :: IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL
+   integer, public :: IDX_HIS_GATEGEN_GATE_HEIGHT
    integer, public :: IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT
    integer, public :: IDX_HIS_GATEGEN_GATE_OPENING_WIDTH
    integer, public :: IDX_HIS_GATEGEN_S1UP

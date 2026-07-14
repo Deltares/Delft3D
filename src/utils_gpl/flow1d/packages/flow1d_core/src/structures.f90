@@ -67,6 +67,7 @@ module m_1d_structures
    public get_gate_door_height_c_loc
    public get_width
    public get_gle
+   public get_gate_height
    public get_opening_height
    public get_valve_opening
    public get_culvert_state
@@ -660,6 +661,20 @@ end subroutine deallocstructure
          get_gle = huge(1d0)
       end select
    end function get_gle
+
+   function get_gate_height(struc) result(res)
+
+      type (t_structure), intent(inout) :: struc
+      double precision :: res
+      
+      select case(struc%type)
+      case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
+         res = struc%generalst%gateDoorHeight
+      case default
+         res = huge(1d0)
+      end select
+
+   end function get_gate_height
    
    double precision function get_opening_height(struc)
       
