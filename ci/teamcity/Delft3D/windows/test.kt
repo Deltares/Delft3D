@@ -117,8 +117,10 @@ object WindowsTest : BuildType({
                     rem in a clean container, and the build directory is removed every time, so the
                     rem compiled bytecodes are never reused. In addition, we've run into strange
                     rem -1073741819 (0xC0000005) exit codes during bytecode compilations. We decided
-                    rem to turn off the byte code writing because of this.
+                    rem to turn off the byte code writing because of this. Also set PYTHONFAULTHANDLER
+                    rem in case we still get a crash. That should produce a stacktrace on the crashes.
                     set PYTHONDONTWRITEBYTECODE=1
+                    set PYTHONFAULTHANDLER=1
 
                     set argsList=--username %s3_dsctestbench_accesskey% ^
                     --password %s3_dsctestbench_secret% ^
