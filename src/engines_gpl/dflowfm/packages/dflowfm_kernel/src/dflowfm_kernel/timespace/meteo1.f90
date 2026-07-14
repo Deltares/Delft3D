@@ -3826,6 +3826,7 @@ module m_meteo
          integer, intent(in) :: vectormax !< Vector max (length of data values at each element location).
          integer, dimension(:), intent(in) :: mask !< Array of masking values for the target ElementSet.
          character(len=*), intent(in) :: filename !< File name of meteo data file.
+         ! UNST-8900: Add 'ConstantValue' filetype. 
          integer, intent(in) :: filetype !< FM's filetype enumeration.
          integer, intent(in) :: method !< FM's method enumeration.
          integer, intent(in) :: operand !< FM's operand enumeration.
