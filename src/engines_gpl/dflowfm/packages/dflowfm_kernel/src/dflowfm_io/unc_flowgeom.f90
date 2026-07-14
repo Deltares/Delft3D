@@ -181,6 +181,7 @@ contains
    subroutine build_flowgeom_2d(flowgeom, cell_mask)
       use m_flowgeom, only: ndx2d, nd, xz, yz
       use network_data, only: xk, yk, zk, kc, numk, numl, numl1d
+      use m_flowgeom, only: lne2ln
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
       use m_save_ugrid_state, only: mesh2dname
@@ -194,7 +195,6 @@ contains
       integer :: numl2d, numNodes, numFace, numEdge
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
       logical :: use_mask
-
       integer, allocatable :: tmp_edge_nodes(:, :), tmp_edge_type(:)
       integer, pointer :: tmp_edge_faces(:, :)
       real(kind=dp), allocatable :: tmp_xue(:), tmp_yue(:)
@@ -266,6 +266,19 @@ contains
                flowgeom%edge_map_2D(n) = l
             end if
          end do
+      end if
+      ! Build output-edge -> global flow link map for data writes (0 = closed edge, no flow link).
+      ! Only for masked output; the unmasked writer path uses contiguous slices instead (zero-copy).
+      if (use_mask) then
+         call realloc(flowgeom%edge_flowlink_map_2D, numEdge, keepExisting=.false., fill=0)
+         if (allocated(lne2ln)) then
+            do i = 1, numEdge
+               nn = lne2ln(numl1d + flowgeom%edge_map_2D(i)) ! nn holds flow link number (<= 0 for closed edges)
+               if (nn > 0) then
+                  flowgeom%edge_flowlink_map_2D(i) = nn
+               end if
+            end do
+         end if
       end if
 
       ! =========================================================
