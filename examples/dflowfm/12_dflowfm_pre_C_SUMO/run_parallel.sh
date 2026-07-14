@@ -4,10 +4,12 @@ usePreCICE=1
 startFM=1
 startPreCSUMO=1
 NPROC=2
+installDir="install_fm-suite"
 
-bindir=$(readlink -f ../../../install_fm-suite/bin)
+bindir=$(readlink -f ../../../${installDir}/bin)
+libdir=$(readlink -f ../../../${installDir}/lib)
 export PATH=$bindir:$PATH
-export LD_LIBRARY_PATH=$bindir:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 
 rm -rf fm/DFM_OUTPUT_FlowFM
 rm -rf fm/precice-exports

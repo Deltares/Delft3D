@@ -5,8 +5,9 @@ set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
 set NPROC=2
+set installDir="install_fm-suite"
 
-set bindir=..\..\..\install_fm-suite\bin
+set bindir=..\..\..\%installDir%\bin
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
 del /f /q fm\2dis_*_net.nc
