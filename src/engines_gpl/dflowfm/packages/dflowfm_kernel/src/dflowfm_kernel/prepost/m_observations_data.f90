@@ -73,6 +73,13 @@ module m_observations_data
    integer :: IVAL_CMX
    integer :: IVAL_WX
    integer :: IVAL_WY
+   integer :: IVAL_WINDSTRESSX
+   integer :: IVAL_WINDSTRESSY
+   integer :: IVAL_WSTAR
+   integer :: IVAL_OBUKHOV_LENGTH
+   integer :: IVAL_TRANSFER_COEFF_MOMENTUM
+   integer :: IVAL_TRANSFER_COEFF_SENSIBLE_HEAT
+   integer :: IVAL_TRANSFER_COEFF_LATENT_HEAT
    integer :: IVAL_PATM
    integer :: IVAL_RAIN
    integer :: IVAL_INFILTCAP
@@ -115,7 +122,9 @@ module m_observations_data
    integer :: IVAL_TEPS
    integer :: IVAL_VIU
    integer :: IVAL_VICWWS
+   integer :: IVAL_VICWWS_TOTAL
    integer :: IVAL_DIFWWS
+   integer :: IVAL_DIFWWS_TOTAL
    integer :: IVAL_VICWWU
    integer :: IVAL_WS1
    integer :: IVAL_WSN
@@ -196,6 +205,13 @@ module m_observations_data
    integer :: IPNT_CMX
    integer :: IPNT_WX
    integer :: IPNT_WY
+   integer :: IPNT_WINDSTRESSX
+   integer :: IPNT_WINDSTRESSY
+   integer :: IPNT_WSTAR
+   integer :: IPNT_OBUKHOV_LENGTH
+   integer :: IPNT_TRANSFER_COEFF_MOMENTUM
+   integer :: IPNT_TRANSFER_COEFF_SENSIBLE_HEAT
+   integer :: IPNT_TRANSFER_COEFF_LATENT_HEAT
    integer :: IPNT_RAIN
    integer :: IPNT_INFILTCAP
    integer :: IPNT_INFILTACT
@@ -234,7 +250,9 @@ module m_observations_data
    integer :: IPNT_TEPS
    integer :: IPNT_VIU
    integer :: IPNT_VICWWS
+   integer :: IPNT_VICWWS_TOTAL
    integer :: IPNT_DIFWWS
+   integer :: IPNT_DIFWWS_TOTAL
    integer :: IPNT_VICWWU
    integer :: IPNT_WS1
    integer :: IPNT_WSN

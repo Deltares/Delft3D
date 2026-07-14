@@ -147,8 +147,16 @@ contains
          return
       end if
       
+      ! Update nudging temperature (and salinity)
+      if (item_nudge_temperature /= ec_undef_int .and. janudge > 0) then
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_temperature, irefdate, tzone, tunit, time_in_seconds)
+      end if
+      if (initialization) then
+         call initialize_salinity_and_temperature_with_nudge_variables()
+      end if
+
       if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
-         call compute_air_water_interaction_most_fluxes()
+         call compute_air_water_interaction_most_fluxes(initialization)
       end if
 
       if (update_wind_stress_each_time_step == 0) then ! Update wind in set_external_forcing (each user timestep)
@@ -293,29 +301,54 @@ contains
          call update_bubblescreen_discharge_wrapper()
       end if
 
-      ! Update nudging temperature (and salinity)
-      if (item_nudge_temperature /= ec_undef_int .and. janudge > 0) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_temperature, irefdate, tzone, tunit, time_in_seconds)
-      end if
-
       iresult = DFM_NOERR
 
    end subroutine set_external_forcings
 
-   module subroutine compute_air_water_interaction_most_fluxes()
+   !> initialize salinity and temperature with nudge variables
+   subroutine initialize_salinity_and_temperature_with_nudge_variables()
+      use m_flowparameters, only: janudge, jainiwithnudge
+      use m_set_nudgerate, only: set_nudgerate
+      use m_set_saltem_nudge, only: set_saltem_nudge
+      use m_nudge, only: nudge_temperature, nudge_salinity, nudge_rate, nudge_time
+
+      implicit none
+
+      if (janudge == 1) then ! and here last actions on sal/tem nudging, before we set rho
+         call set_nudgerate()
+         if (jainiwithnudge > 0) then
+            call set_saltem_nudge()
+            if (jainiwithnudge == 2) then
+               janudge = 0
+               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
+            end if
+         end if
+      end if
+
+   end subroutine initialize_salinity_and_temperature_with_nudge_variables
+
+   !> compute fluxes based on Monin-Obukhov Stability Theory
+   module subroutine compute_air_water_interaction_most_fluxes(initialization)
       use precision, only: dp
-      use m_flowgeom, only: ndx
+      use m_flowgeom, only: ndx, lnx, csu, snu
       use m_get_surface_temperature, only: get_surface_temperature
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
       use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
+      use m_relative_wind, only: compute_wind_relative_to_surface_on_link
+      use m_wind, only: relativewind
+      use m_flow, only: ltop, u1, v
       use physicalconsts, only: celsius_to_kelvin
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity
 
+      logical, intent(in) :: initialization !< initialization phase
+      
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature
       real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
+      real(kind=dp), dimension(lnx) :: windx_link, windy_link
       type(t_options) :: atm_stability_options
+
 
       if (.not. allocated(windx)) then
          allocate(windx(ndx))
@@ -326,12 +359,13 @@ contains
          allocate(air_temperature_kelvin(ndx))
          allocate(dew_point_temperature_kelvin(ndx))
       end if
-      
 
-      call link_to_node_vector(wx, wy, windx, windy, ndx)
+      call compute_wind_relative_to_surface_on_link(wx(1:lnx), wy(1:lnx), relativewind, u1(ltop(1:lnx)), v(ltop(1:lnx)), &
+                               csu(1:lnx), snu(1:lnx), windx_link, windy_link)
+      call link_to_node_vector(windx_link, windy_link, windx, windy, ndx)
       call link_to_node_scalar(wcharnock, charnock, ndx)
 
-      call get_surface_temperature(surface_temperature)
+      call get_surface_temperature(surface_temperature, initialization)
       surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
       air_temperature_kelvin = celsius_to_kelvin(air_temperature)
       dew_point_temperature_kelvin = celsius_to_kelvin(dew_point_temperature)
