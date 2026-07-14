@@ -16,28 +16,24 @@ namespace dflowfm_io::test
     {
         PropertySchema MakeSchema(ValueType type, const std::string& key = "TestProperty")
         {
-            return PropertySchema {
-                .key = key, 
-                .value_type = type
-            };
+            PropertySchema schema;
+            schema.key = key;
+            schema.value_type = type;
+            return schema;
         }
 
         PropertySchema MakeEnumSchema(std::map<int, std::string> enumValues)
         {
-            return PropertySchema {
-                .key = "TestProperty",
-                .value_type = ValueType::Enum,
-                .enum_values = std::move(enumValues)
-            };
+            PropertySchema schema = MakeSchema(ValueType::Enum);
+            schema.enum_values = std::move(enumValues);
+            return schema;
         }
 
         PropertySchema MakeIntEnumSchema(std::map<int, std::string> enumValues)
         {
-            return PropertySchema {
-                .key = "TestProperty",
-                .value_type = ValueType::IntEnum,
-                .enum_values = std::move(enumValues)
-            };
+            PropertySchema schema = MakeSchema(ValueType::IntEnum);
+            schema.enum_values = std::move(enumValues);
+            return schema;
         }
     } // namespace
 

@@ -53,22 +53,22 @@ namespace dflowfm_io
     /// @brief Schema definition for a single property within an MDU section.
     struct PropertySchema
     {
-        const std::string key; ///< Case-insensitive property key as it appears in the MDU file.
-        const bool required; ///< Whether the property must be present in the MDU file.
-        const bool nullable; ///< Whether the property may hold an explicit null (empty) value.
-        const ValueType value_type; ///< Expected type of the property value.
-        const std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
-        const std::map<int, std::string> enum_values; ///< Mapping from integer to name for Enum and IntEnum types.
-        const std::string description; ///< Human-readable description of the property.
+        std::string key; ///< Case-insensitive property key as it appears in the MDU file.
+        bool required; ///< Whether the property must be present in the MDU file.
+        bool nullable; ///< Whether the property may hold an explicit null (empty) value.
+        ValueType value_type; ///< Expected type of the property value.
+        std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
+        std::map<int, std::string> enum_values; ///< Mapping from integer to name for Enum and IntEnum types.
+        std::string description; ///< Human-readable description of the property.
     };
 
     /// @brief Schema definition for a single section within an MDU file.
     struct SectionSchema
     {
-        const std::string name; ///< Case-insensitive section name as it appears in the MDU file.
-        const bool required; ///< Whether this section must be present in the MDU file.
-        const std::string description; ///< Human-readable description of the section.
-        const std::vector<PropertySchema> properties; ///< Ordered list of property schemas within this section.
+        std::string name; ///< Case-insensitive section name as it appears in the MDU file.
+        bool required; ///< Whether this section must be present in the MDU file.
+        std::string description; ///< Human-readable description of the section.
+        std::vector<PropertySchema> properties; ///< Ordered list of property schemas within this section.
     };
 
     /// @brief Top-level schema definition for an MDU file.
