@@ -20,7 +20,8 @@ object WindowsTest : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Test"
@@ -55,7 +56,7 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
-        param("container.tag", "%build.vcs.number%")
+        param("container.tag", "test-environment")
         param("product", "unknown")
         checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
@@ -109,7 +110,7 @@ object WindowsTest : BuildType({
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-                scriptContent = """   
+                scriptContent = """
                     @echo off
 
                     set argsList=--username %s3_dsctestbench_accesskey% ^
@@ -125,15 +126,27 @@ object WindowsTest : BuildType({
                         set argsList=%%argsList%% --copy-failed-cases
                     )
 
-                    python TestBench.py %%argsList%%
+                    rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
+                    rem to avoid os error 32 file-lock failures on the mount during install.
+                    rem Wheels come from the mounted uv cache volume.
+                    uv venv C:\venv
+                    if errorlevel 1 exit /b 1
+                    call C:\venv\Scripts\activate.bat
+                    uv pip sync pip/win-requirements.txt
+                    if errorlevel 1 exit /b 1
 
+                    python TestBench.py %%argsList%%
             """.trimIndent()
-        
 
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
-            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+            dockerRunParameters = """
+                --memory %teamcity.agent.hardware.memorySizeMb%m
+                --cpus %teamcity.agent.hardware.cpuCount%
+                --env UV_LINK_MODE=copy
+                --volume test-environment-uv-cache:C:\uv\cache
+            """.trimIndent()
         }
         script {
             name = "Copy cases"
@@ -158,12 +171,6 @@ object WindowsTest : BuildType({
             artifacts {
                 cleanDestination = true
                 artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
-            }
-        }
-        dependency(WindowsTestEnvironment) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
             }
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
