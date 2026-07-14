@@ -79,9 +79,6 @@ class PetscConan(ConanFile):
         # be pointed to from the profile with:
         #   tools.microsoft.bash:subsystem=cygwin
         #   tools.microsoft.bash:path=<...>/cygwin64/bin/bash.exe
-        # Cygwin's own link.exe is renamed in the container so it does not shadow
-        # the MSVC/Intel linker
-        # (see https://petsc.org/main/install/windows/#native-microsoft-intel-windows-compilers).
         subsystem = self.conf.get("tools.microsoft.bash:subsystem")
         bash_path = self.conf.get("tools.microsoft.bash:path")
         if subsystem != "cygwin" or not bash_path:
@@ -179,9 +176,14 @@ class PetscConan(ConanFile):
         # DOS 8.3 short paths avoid the spaces in "Program Files (x86)" that would
         # otherwise break PETSc configure. The environment is inherited from the
         # Intel oneAPI command prompt that `conan create` must be launched from.
+        # Put MSVC's bin directory before /usr/bin so ifx invokes link.exe rather
+        # than Cygwin's unrelated `link` utility.
         return (
             ': "${ONEAPI_ROOT:?is not set - launch conan from an Intel oneAPI '
             'command prompt}" && '
+            'CL="$(command -v cl)" && '
+            ': "${CL:?cl is not set - launch conan from an Intel oneAPI command prompt}" && '
+            'PATH="$(dirname "$CL"):$PATH" && '
             'MPI="$(cygpath -u "$(cygpath -ms "$ONEAPI_ROOT\\mpi\\latest")")" && '
             'MKL="$(cygpath -u "$(cygpath -ms "$ONEAPI_ROOT\\mkl\\latest")")"'
         )

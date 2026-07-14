@@ -48,6 +48,10 @@ Deltares developers download them directly and external developers build them lo
   ```
   conan --version
   ```
+- External developers and developers of Conan packages on Windows need [Cygwin](https://www.cygwin.com/)
+  to build the PETSc Conan package from source. Install the 64-bit version in `C:\cygwin64` and
+  select the `make` and `python3` packages in the Cygwin installer. Developers with access to the Deltares
+  network are not required to install Cygwin if they only consume Conan packages.
 
 **Note**
 - We are currently using Visual Studio 2022 and Intel oneAPI 2024.2 for the official release.
@@ -113,10 +117,14 @@ From the repository root:
 ```
 python run_conan.py initialize external
 ```
-This installs the same compiler profile and settings.
-You will build all third-party dependencies locally from the recipes in [conan/recipes](../conan/recipes).
-Once built, the packages are cached in `~/.conan2` and reused on
-subsequent builds. You only have to rebuild them when the recipes change.
+This installs the same compiler profile and settings. Please check the conan profile in your local Conan
+cache under `%USERPROFILE%\.conan2\profiles\delft3d_windows_msvc_194`. If you installed Cygwin in a
+different location than `C:\cygwin64`, then change your Conan profile to point to Cygwin's `bash.exe`
+using the `tools.microsoft.bash:path` option.
+
+Next, you can build all third-party dependencies locally from the recipes in
+[conan/recipes](../conan/recipes). Once built, the packages are cached in `%USERPROFILE%\.conan2` and
+reused on subsequent builds. You only have to rebuild them when the recipes change.
 
 When invoking the build script you will need to pass the additional `--build-dependencies` flag (see below).
 
