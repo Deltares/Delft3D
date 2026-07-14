@@ -240,7 +240,7 @@ contains
 
    !> Initialize a new FileReader, by constructing the complete tree of source Items.
       !! On the opposite end of the EC-module is a kernel, which constructs the complete tree of target Items.
-   recursive function ecProviderInitializeFileReader(instancePtr, fileReaderId, fileType, fileName, refdat, tzone, tsunit, quantityName, forcingFile, dtnodal, varname, varname2) result(success)
+   recursive function ecProviderInitializeFileReader(instancePtr, fileReaderId, fileType, fileName, refdat, tzone, tsunit, quantityName, forcingFile, dtnodal, varname, varname2, data_value) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: fileReaderId !< unique FileReader id
@@ -254,6 +254,7 @@ contains
       real(dp), optional, intent(in) :: dtnodal !< Nodal factors update interval
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name 2 within filename
+      real(dp), optional, intent(in) :: data_value !< Data value file reader
       !
       type(tEcFileReader), pointer :: fileReaderPtr !< FileReader corresponding to fileReaderId
       character(len=:), allocatable :: l_quantityName !< local string with quantityName
@@ -272,7 +273,11 @@ contains
          fileReaderPtr%fileName = fileName
          fileReaderPtr%fileHandle = ec_undef_int ! The filereader itself has now an invalid filehandle
 
-         if (.not. ecSupportOpenExistingFile(fileReaderPtr%fileHandle, fileReaderPtr%fileName)) return
+         if (fileType /= provFile_datavalue) then
+            if (.not. ecSupportOpenExistingFile(fileReaderPtr%fileHandle, fileReaderPtr%fileName)) then
+               return
+            end if
+         end if
          select case (fileReaderPtr%ofType) ! Inventory of the opened netcdf-file
          case (provFile_netcdf)
             if (.not. ecProviderNetcdfReadvars(fileReaderPtr)) then
@@ -303,6 +308,9 @@ contains
          else if (present(quantityName) .and. present(varname)) then
             l_quantityName = trim(quantityName)
             if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, varname)) return
+         else if (present(quantityName) .and. present(data_value)) then
+            l_quantityName = trim(quantityName)
+            if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, data_value=data_value)) return
          else if (present(quantityName)) then
             l_quantityName = trim(quantityName)
             if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName)) return
@@ -319,7 +327,8 @@ contains
    ! =======================================================================
 
    !> Create source Items and their contained types, based on file type and file header.
-   function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2) result(success)
+   !  UNST-8900: Maybe (most likely) add optional for dataValue.
+   function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2, data_value) result(success)
       use string_module, only: str_tolower
 
       logical :: success !< function status
@@ -330,6 +339,7 @@ contains
       character(len=*), intent(in), optional :: bctfilename !< file name of bct-file with data
       character(len=*), intent(in), optional :: varname !< variable name within filename
       character(len=*), intent(in), optional :: varname2 !< variable name 2 within filename
+      real(dp), intent(in), optional :: data_value !< data_value (not file based).
       !
       success = .false.
       select case (fileReaderPtr%ofType)
@@ -418,6 +428,16 @@ contains
          end if
       case (provFile_t3D)
          success = ecProviderCreatet3DItems(instancePtr, fileReaderPtr)
+      case (provFile_datavalue)
+         if (.not. present(quantityname)) then
+            call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: datavalue type requires a quantity name.")
+            return
+         end if
+         if (.not. present(data_value)) then
+            call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: datavalue type requires a data_value.")
+            return
+         end if
+         success = ecProviderCreateDataValueItems(instancePtr, fileReaderPtr, quantityname, data_value)
       case default
          call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unknown file type.")
       end select
@@ -954,6 +974,64 @@ contains
       item%quantityPtr%vectorMax = n_quantities
       success = .true.
    end function ecProviderCreateUniformItems
+
+   ! =======================================================================
+
+   !> Create a source Item holding a single time- and space-independent constant.
+   !! Used for the 'datavalue' forcingFileType (see UNST-8900), where a Spatial
+   !! ext-block specifies a scalar 'dataValue' that is combined (typically via
+   !! operand=multiply) with a target quantity. The value is stored in both
+   !! sourceT0 and sourceT1 fields so that time interpolation always yields it.
+   function ecProviderCreateDataValueItems(instancePtr, fileReaderPtr, quantityName, data_value) result(success)
+      use m_ec_message
+      implicit none
+      logical :: success !< function status
+      type(tEcInstance), pointer :: instancePtr !< intent(in)
+      type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
+      character(len=*), intent(in) :: quantityName !< name of the quantity to be combined at the target side
+      real(dp), intent(in) :: data_value !< the constant value
+      !
+      integer :: quantityId
+      integer :: elementSetId
+      integer :: field0Id
+      integer :: field1Id
+      integer :: itemId
+      type(tEcItem), pointer :: item
+      !
+      success = .false.
+      item => null()
+      !
+      quantityId = ecInstanceCreateQuantity(instancePtr)
+      if (.not. ecQuantitySet(instancePtr, quantityId, name=quantityName, factor=data_value)) return
+      !
+      elementSetId = ecInstanceCreateElementSet(instancePtr)
+      if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_scalar)) return
+      !
+      field0Id = ecInstanceCreateField(instancePtr)
+      if (.not. ecFieldCreate1dArray(instancePtr, field0Id, 1)) return
+      field1Id = ecInstanceCreateField(instancePtr)
+      if (.not. ecFieldCreate1dArray(instancePtr, field1Id, 1)) return
+      !
+      itemId = ecInstanceCreateItem(instancePtr)
+      if (.not. ecItemSetRole(instancePtr, itemId, itemType_source)) return
+      if (.not. ecItemSetType(instancePtr, itemId, accessType_fileReader)) return
+      if (.not. ecItemSetQuantity(instancePtr, itemId, quantityId)) return
+      if (.not. ecItemSetElementSet(instancePtr, itemId, elementSetId)) return
+      if (.not. ecItemSetSourceT0Field(instancePtr, itemId, field0Id)) return
+      if (.not. ecItemSetSourceT1Field(instancePtr, itemId, field1Id)) return
+      item => ecSupportFindItem(instancePtr, itemId)
+      !
+      ! Store the constant value in both time slots so the temporal interpolator
+      ! (whichever is chosen) returns data_value for any t.
+      item%sourceT0FieldPtr%arr1dPtr(1) = data_value
+      item%sourceT1FieldPtr%arr1dPtr(1) = data_value
+      item%sourceT0FieldPtr%timesteps = 0.0_dp
+      item%sourceT1FieldPtr%timesteps = huge(0.0_dp)
+      item%quantityPtr%vectorMax = 1
+      !
+      if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, item%id)) return
+      success = .true.
+   end function ecProviderCreateDataValueItems
 
    ! =======================================================================
 
@@ -3448,6 +3526,9 @@ contains
          else
             success = .true.
          end if
+      case (provFile_datavalue)
+         ! Do something... Or maybe nothing.
+         success = .true.
       case default
          call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unknown file type.")
       end select

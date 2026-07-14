@@ -767,6 +767,8 @@ module m_ec_module
          convtype = convType_netcdf
       case (provFile_qhtable)
          convtype = convType_qhtable
+      case (provFile_datavalue)
+         convtype = convType_datavalue
       case default
          convtype = convType_undefined
       end select

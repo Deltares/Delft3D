@@ -418,7 +418,7 @@ contains
       ! First check for required input:
       call prop_get(block_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
@@ -437,7 +437,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -446,7 +446,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -457,13 +457,13 @@ contains
          operand = convert_operand_string_to_integer(property_value)
 
          if (len_trim(property_value) == 1) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': operand value '''//trim(property_value)//''' is deprecated. ' &
                //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
 
          if (operand == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
          end if
@@ -978,6 +978,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
+      use precision_basics, only: comparereal
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -1013,7 +1014,9 @@ contains
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-      if (.not. res) return
+      if (.not. res) then
+         return
+      end if
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -1086,7 +1089,8 @@ contains
                   transformcoef = -999.0_dp
                   call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
                   ! ugly extra reading for value, tracerfallvelocity and tracerdecaytime. Can be moved to t_spatial_field_input once transformcoef is eliminated
-                  call prop_get(block_ptr, '', 'value', transformcoef(1))
+                  ! UNST-8900: Move to 'read_spatial_field_block' and also 'validate_spatial_field_input'. Also, the key should be 'dataValue' and not 'value'.
+                  ! call prop_get(block_ptr, '', 'value', transformcoef(1))  
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
                   call prop_get(block_ptr, '', 'targetLayer', target_layer)
@@ -1133,6 +1137,9 @@ contains
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else if (target_location_type == UNC_LOC_S3D) then
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+               else if (comparereal(input%data_value, 0.0_dp) /= 0) then
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, tgt_item1=ec_item, tgt_data1=target_data)

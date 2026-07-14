@@ -65,6 +65,7 @@ module m_spatial_field
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
+      real(dp) :: data_value = 0.0_dp !< Time and space independent value, used for multiplying quantities with a constant factor.
       real(dp) :: max_search_radius = -1.0_dp !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
       logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
@@ -96,6 +97,7 @@ contains
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ', res%operand_string)
       call prop_get(block_ptr, '', 'locationType', res%location_type)
+      call prop_get(block_ptr, '', 'dataValue', res%data_value)
       call read_averaging_input(block_ptr, res%averaging_input)
 
       !Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
@@ -186,6 +188,7 @@ contains
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
                            convert_file_type_string_to_integer
+      use timespace_parameters, only: DATAVALUE, FILE_TYPE_UNKNOWN
       use m_wind, only: jaQext
       use string_module, only: strcmpi
       use unstruc_files, only: resolvePath
@@ -223,13 +226,32 @@ contains
          return
       end if
 
-      if (len_trim(input%forcing_file) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' is missing.'
+      input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+      if (input%filetype == FILE_TYPE_UNKNOWN) then
+         write (msgbuf, '(7a)') 'Field ''forcingFile'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
+            trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' has unknown value.'
          call err_flush()
          return
       end if
 
-      call resolvePath(input%forcing_file, base_dir)
+      if (input%filetype /= DATAVALUE) then
+         if (len_trim(input%forcing_file) == 0) then
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
+            call err_flush()
+            return
+         end if
+
+         if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
+            write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
+               ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
+               trim(input%forcing_file_type), '''.'
+            call err_flush()
+            return
+         end if
+
+         call resolvePath(input%forcing_file, base_dir)
+      end if
+
       if (len_trim(input%target_mask_file) > 0) then
          call resolvePath(input%target_mask_file, base_dir)
          inquire (file=trim(input%target_mask_file), exist=target_mask_file_exists)
@@ -239,14 +261,6 @@ contains
             call err_flush()
             return
          end if
-      end if
-
-      if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
-         write (msgbuf, '(9a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
-            ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
-            trim(input%forcing_file_type), '''.'
-         call err_flush()
-         return
       end if
 
       ! Parse operand. Legacy single-character values are supported but will trigger a warning.
@@ -284,12 +298,9 @@ contains
          call err_flush()
          return
       end if
-
-      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method)
-
       call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
-
-      input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+      
+      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method)
 
       select case (trim(input%quantity))
       case ('qext')
