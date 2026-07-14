@@ -422,6 +422,7 @@ module m_output_config
    integer, public :: IDX_MAP_TAIR
    integer, public :: IDX_MAP_RHUM
    integer, public :: IDX_MAP_CLOU
+   integer, public :: IDX_MAP_SECC
    integer, public :: IDX_MAP_QSUN
    integer, public :: IDX_MAP_QEVA
    integer, public :: IDX_MAP_QCON

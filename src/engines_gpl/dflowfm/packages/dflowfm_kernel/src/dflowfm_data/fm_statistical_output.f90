@@ -2116,6 +2116,9 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CLOU, &
                              'Wrimap_heat_fluxes', 'Clou', 'cloud_area_fraction', &
                              'Cloudiness', '1', UNC_LOC_S)
+      call add_output_config(config_set_map, IDX_MAP_SECC, &
+                             'Wrimap_heat_fluxes', 'Secc', 'secchi_depth', &
+                             'Secchi depth', 'm', UNC_LOC_S)
       call add_output_config(config_set_map, IDX_MAP_QSUN, &
                              'Wrimap_heat_fluxes', 'Qsun', 'surface_net_downward_shortwave_flux', &
                              'Solar influx', 'W m-2', UNC_LOC_S)
