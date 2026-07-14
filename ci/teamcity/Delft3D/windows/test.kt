@@ -106,12 +106,19 @@ object WindowsTest : BuildType({
         }
         // script is necessary to dynamically set the copy-failed-cases depending on the paramter
         script {
-
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
                 scriptContent = """
                     @echo off
+
+                    rem The environment and venv are completely clean, so python will write a lot
+                    rem of '.pyc' bytecode files in '__pycache__' directories. Since each build runs
+                    rem in a clean container, and the build directory is removed every time, so the
+                    rem compiled bytecodes are never reused. In addition, we've run into strange
+                    rem -1073741819 (0xC0000005) exit codes during bytecode compilations. We decided
+                    rem to turn off the byte code writing because of this.
+                    set PYTHONDONTWRITEBYTECODE=1
 
                     set argsList=--username %s3_dsctestbench_accesskey% ^
                     --password %s3_dsctestbench_secret% ^
@@ -132,9 +139,7 @@ object WindowsTest : BuildType({
                     uv venv C:\venv || (echo [ERROR] uv venv failed! & exit /b 1)
                     call C:\venv\Scripts\activate.bat
                     set PYTHONVERBOSE=2
-                    set PYTHONDEVMODE=1
-                    set PYTHONTRACEMALLOC=1
-                    uv pip sync -v --compile-bytecode pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
+                    uv pip sync -v pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
                     python TestBench.py %%argsList%%
             """.trimIndent()
 
@@ -146,6 +151,7 @@ object WindowsTest : BuildType({
                 --cpus %teamcity.agent.hardware.cpuCount%
                 --env UV_LINK_MODE=copy
                 --volume test-environment-uv-cache:C:\uv\cache
+                --volume test-environment-pycache:C:\pycache
             """.trimIndent()
         }
         script {
