@@ -134,7 +134,7 @@ object WindowsTest : BuildType({
                     set PYTHONVERBOSE=2
                     set PYTHONDEVMODE=1
                     set PYTHONTRACEMALLOC=1
-                    uv pip sync -v pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
+                    uv pip sync -v --compile-bytecode pip/win-requirements.txt || (echo [ERROR] uv pip sync failed! & exit /b 1)
                     python TestBench.py %%argsList%%
             """.trimIndent()
 
