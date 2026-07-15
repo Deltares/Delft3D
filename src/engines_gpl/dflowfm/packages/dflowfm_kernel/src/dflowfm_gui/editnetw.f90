@@ -321,12 +321,12 @@ contains
             if (KP == 0) then
                call ISLINK(LL, XP, YP, ZP)
                if (LL /= 0) then
-                  if (kn(3, LL) == 2) then
+                  if (kn(3, LL) == LINK_2D) then
                      call TEKLINK(LL, 221)
-                     kn(3, LL) = 1
-                  else if (kn(3, LL) == 1) then
+                     kn(3, LL) = LINK_1D
+                  else if (kn(3, LL) == LINK_1D) then
                      call TEKLINK(LL, 3)
-                     kn(3, LL) = 2
+                     kn(3, LL) = LINK_2D
                   end if
                end if
             end if
@@ -432,37 +432,37 @@ contains
       else if (KEY == 33 .or. KEY == 49) then ! 1, 1D link
          call ISLINK(LL, XP, YP, ZP)
          if (LL /= 0) then
-            kn(3, LL) = 1
+            kn(3, LL) = LINK_1D
             call TEKLINK(LL, 1)
          end if !123
       else if (KEY == 34 .or. KEY == 50) then ! 2, 2D link
          call ISLINK(LL, XP, YP, ZP)
          if (LL /= 0) then
-            kn(3, LL) = 2
+            kn(3, LL) = LINK_2D
             call TEKLINK(LL, 1)
          end if
       else if (KEY == 35 .or. KEY == 51) then ! 3, 1d2d internal
          call ISLINK(LL, XP, YP, ZP)
          if (LL /= 0) then
-            kn(3, LL) = 3
+            kn(3, LL) = LINK_1D2D_INTERNAL
             call TEKLINK(LL, 1)
          end if
       else if (KEY == 36 .or. KEY == 52) then ! 4, 1d2d lateral
          call ISLINK(LL, XP, YP, ZP)
          if (LL /= 0) then
-            kn(3, LL) = 4
+            kn(3, LL) = LINK_1D2D_LONGITUDINAL
             call TEKLINK(LL, 1)
          end if
       else if (KEY == 37 .or. KEY == 53) then ! 5, 1d2d pipe
          call ISLINK(LL, XP, YP, ZP)
          if (LL /= 0) then
-            kn(3, LL) = 5
+            kn(3, LL) = LINK_1D2D_STREETINLET
             call TEKLINK(LL, 1)
          end if
       else if (KEY == 38 .or. KEY == 54) then ! 6, 1d branch
          call ISLINK(LL, XP, YP, ZP)
          if (LL /= 0) then
-            kn(3, LL) = 6
+            kn(3, LL) = LINK_1D_MAINBRANCH
             call TEKLINK(LL, 1)
          end if
       else if (KEY == 71 .or. KEY == 71 + 32) then ! G-key  netw2curv

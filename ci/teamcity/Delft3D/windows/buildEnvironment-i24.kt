@@ -16,7 +16,8 @@ object WindowsBuildEnvironmentI24 : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Delft3D build environment intel 2024 container"

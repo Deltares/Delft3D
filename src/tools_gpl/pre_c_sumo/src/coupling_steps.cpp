@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <thread>
 #include <chrono>
+#include <numbers> // for std::numbers::pi
+#include <cmath>   // for atan2,sin,cos
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -190,9 +192,6 @@ namespace pre_c_sumo
         for (const auto& diffuser : csumo_settings.diffusers())
         {
             std::println("Converting NF data to sources/sinks for diffuser {} ...", diffuser.nf2ff_file.value());
-            convertNFSinksToFF();
-            convertNFIntakesToFF();
-            convertNFSourcesToFF();
         }
     }
 
@@ -201,6 +200,7 @@ namespace pre_c_sumo
         std::println("Sending dummy sources/sinks data to far-field...");
         // TESTDATA: set sources_sinks data
         sources_sinks.clearData();
+        // data:
         sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.000, 350.365, -5.0, -5.0,
                               0.20E+02); // sink 2, source 1
         sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.500, 350.365, -5.0, -5.0,
@@ -227,30 +227,131 @@ namespace pre_c_sumo
                               sources_sinks.discharges);
     }
 
-    void convertNFSinksToFF() { std::println("Processing sinks..."); }
-
-    void convertNFIntakesToFF() { std::println("Processing intakes..."); }
-
-    void convertNFSourcesToFF()
+    // TODO: Consider if we should make this a member function of ConnectedSinkSources.
+    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
+        const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
-        if (isDiffuserModelled())
+        ConnectedSinkSources connectedsinksources{};
+
+        for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
-            processSourceLocations();
+            const auto& diffuser = nf2ff_readers[diffuser_index];
+            const auto& diffuser_setting = csumoSettings.diffusers()[diffuser_index];
+            std::vector<SourceOrSinkData> sources;
+
+            if (!isDiffuserModelled(diffuser))
+            {
+                sources = createDiffuserModel(diffuser);
+            }
+            else
+            {
+                sources = diffuser.sources();
+            }
+
+            // Send (created) diffuser
+            double source_weight_norm = 0.0;
+            for (const auto& source : diffuser.sources())
+            {
+                source_weight_norm += source.has_weight ? source.weight : 1.0;
+            }
+            if (source_weight_norm <= 0)
+            {
+                source_weight_norm = 1.0;
+            }
+
+            const auto sinks = diffuser.sinks();
+            for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
+            {
+                double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
+                const auto& sink = sinks[sink_index];
+                double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
+                double sink_z_bottom = -sink.z_coordinate - sink.half_plume_height;
+
+                for (const auto& source : diffuser.sources())
+                {
+                    double discharge = delta_s * source.entrainment * (source.has_weight ? source.weight : 1.0);
+                    double source_z_top = -source.z_coordinate;
+                    double source_z_bottom = -source.z_coordinate;
+                    connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
+                                                   source.x_coordinate, source.y_coordinate, source_z_bottom,
+                                                   source_z_top, discharge, 0.0, 0.0);
+                }
+            }
+
+            // Intake
+            if (diffuser_setting.intake.has_value())
+            {
+                const auto& intake = diffuser_setting.intake.value();
+                const double intake_flow_rate = diffuser.intakeFlowRate();
+                for (const auto& source : diffuser.sources())
+                {
+                    double discharge =
+                        intake_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double source_z_top = -source.z_coordinate;
+                    double source_z_bottom = -source.z_coordinate;
+                    connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
+                                                   source_z_bottom, source_z_top, discharge, 0.0, 0.0);
+                }
+                // Add the intake itself as a sink.
+                connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                               diffuser.intakeFlowRate(), 0.0, 0.0);
+            }
         }
-        else
-        {
-            createDiffuserModel();
-        }
+        std::println("connectedsinksources size = {}", connectedsinksources.size());
+        return connectedsinksources;
     }
 
-    bool isDiffuserModelled()
+    bool isDiffuserModelled(const NF2FFReader& diffuser)
     {
-        // Placeholder logic to determine if the diffuser is modelled
-        return true; // Assume it's modelled for demonstration
+        // (Placeholder) logic to determine if the diffuser is modelled
+        return diffuser.sources().size() > 1 || diffuser.sinks().size() == 0;
     }
 
+    // Do we still need this?
     void processSourceLocations() { std::println("Processing source locations..."); }
 
-    void createDiffuserModel() { std::println("Creating diffuser model..."); }
+    // Determine the flow nodes over which to distribute the diluted discharge:
+    // Both sink and source point needed for direction connection line.
+    // Define the line through the source point, perpendicular to the line connecting the
+    // last sink point with the source point. Define the line piece on this line, using
+    // the specified source-width. Walk with 1000 steps over this line piece
+    std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFReader& diffuser)
+    {
+        std::println("Creating diffuser model...");
+        std::vector<SourceOrSinkData> new_sources;
+        constexpr int num_steps = 1000;
+
+        const auto& sources = diffuser.sources();
+        const auto& sinks = diffuser.sinks();
+
+        assert(sources.size() == 1);
+        assert(sinks.size() > 0);
+
+        double ang_end = atan2(sources[0].y_coordinate - sinks[sinks.size() - 1].y_coordinate,
+                               sources[0].x_coordinate - sinks[sinks.size() - 1].x_coordinate);
+        double x_range = sources[0].half_plume_width * cos(std::numbers::pi / 2 - ang_end);
+        double y_range = sources[0].half_plume_width * sin(std::numbers::pi / 2 - ang_end);
+        double x_start = sources[0].x_coordinate - x_range;
+        double y_start = sources[0].y_coordinate - y_range;
+        double dx = 2.0 * x_range / (num_steps - 1);
+        double dy = 2.0 * y_range / (num_steps - 1);
+
+        for (int i = 0; i < num_steps; i++)
+        {
+            new_sources.emplace_back(SourceOrSinkData{.x_coordinate = x_start + i * dx,
+                                                      .y_coordinate = y_start + i * dy,
+                                                      .z_coordinate = sources[0].z_coordinate,
+                                                      .entrainment = sources[0].entrainment,
+                                                      .half_plume_height = sources[0].half_plume_height,
+                                                      .half_plume_width = 0,
+                                                      .u_magnitude = sources[0].u_magnitude,
+                                                      .u_direction = sources[0].u_direction,
+                                                      .weight = 1.0 / num_steps,
+                                                      .has_u = sources[0].has_u,
+                                                      .has_weight = true});
+        }
+
+        return new_sources;
+    }
 
 } // namespace pre_c_sumo

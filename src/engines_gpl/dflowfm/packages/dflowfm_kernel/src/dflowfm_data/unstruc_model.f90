@@ -526,6 +526,8 @@ contains
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
+      use m_array_or_scalar, only: realloc
+
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -1171,8 +1173,8 @@ contains
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
-      call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
-      call prop_get(md_ptr, 'physics', 'Dicoww', constant_dicoww)
+      call prop_get(md_ptr, 'physics', 'Vicoww', vicoww%scalar)
+      call prop_get(md_ptr, 'physics', 'Dicoww', dicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
@@ -1424,6 +1426,9 @@ contains
       call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
       call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity)
+      call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
+      call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
+      call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -1760,6 +1765,7 @@ contains
       call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
+      call prop_get(md_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file)
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
@@ -1848,6 +1854,8 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', his_write_settings%long_culvert, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', his_write_settings%tur, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', his_write_settings%wind, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_windstress', his_write_settings%windstress, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bulk_exchange_coefficients', his_write_settings%bulk_exchange_coeff, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', his_write_settings%rain, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', his_write_settings%infilt, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', his_write_settings%airdensity, success)
@@ -3181,8 +3189,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
-         call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', 'Dicoww', constant_dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww%scalar, 'Uniform vertical eddy viscosity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
@@ -3304,6 +3312,14 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
+      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air water interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
+      call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
+      call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
+      call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity, 'Salinity reduction factor for saturation humidity in bulk formulae.')      
+      call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
+      call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
+      call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
+      
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
          call prop_set(prop_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')
@@ -3617,7 +3633,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'OutputDir', trim(md_OutputDir), 'Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.')
       call prop_set(prop_ptr, 'output', 'FlowGeomFile', trim(md_flowgeomfile), 'Flow geometry NetCDF *_flowgeom.nc')
-
+      
       call prop_set(prop_ptr, 'output', 'ObsFile', trim(md_obsfile), 'Points file *.xyn with observation stations with rows x, y, station name')
       call prop_set(prop_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, '0 - do not delete, 1 - delete')
       call prop_set(prop_ptr, 'output', 'CrsFile', trim(md_crsfile), 'Polyline file *_crs.pli defining observation cross sections')
@@ -3627,6 +3643,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
+      call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss

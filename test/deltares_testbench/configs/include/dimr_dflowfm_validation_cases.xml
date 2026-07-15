@@ -372,7 +372,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c010_gate_sub" ref="dflowfm_default">
-      <path version="2025-10-15T18:41:27.247000">e02_dflowfm/f010_structures/c010_gate_sub</path>
+      <path version="2026-05-13T06:48:46.864000">e02_dflowfm/f010_structures/c010_gate_sub</path>
       <maxRunTime>25.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
