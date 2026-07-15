@@ -1,6 +1,9 @@
 {
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "args": {
+            "THIRD_PARTY_LIBS_TAG": "oneapi-2024-ifx-release"
+        }
     },
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [
