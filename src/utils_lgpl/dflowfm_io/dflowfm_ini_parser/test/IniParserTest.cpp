@@ -57,6 +57,18 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserValidSectionFormatTest,
                              ::testing::Values("[section]", " [section] ", "\t[section]\t"));
 
+    TEST(IniParserTest, Parse_SectionWithNullChar_IniDataHasSection)
+    {
+        IniParser parser = CreateParser();
+
+        using namespace std::string_literals;
+        const std::string ini = "[section\0]"s;
+
+        const IniData iniData = parser.Parse(ini);
+
+        EXPECT_TRUE(iniData.HasSection("section"));
+    }
+
     class IniParserSpecialCharactersSectionNameTest : public ::testing::TestWithParam<std::string>
     {
     };
@@ -76,18 +88,6 @@ namespace ini::test
                                                "section~subsection", "section*subsection", "section \" xyz",
                                                "#section#", "s][e[c]t][i[]on[", "https://example.com/page",
                                                "{C3BA7795-F319-4CC0-B091-783DDEBCCDF1}"));
-
-    TEST(IniParserTest, Parse_SectionWithNullChar_IniDataHasSection)
-    {
-        IniParser parser = CreateParser();
-
-        using namespace std::string_literals;
-        const std::string ini = "[section\0]"s;
-
-        const IniData iniData = parser.Parse(ini);
-
-        EXPECT_TRUE(iniData.HasSection("section"));
-    }
 
     class IniParserInvalidSectionFormatTest : public ::testing::TestWithParam<std::string>
     {
@@ -861,6 +861,20 @@ namespace ini::test
         const IniData iniData = parser.Parse(stream);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property1");
+
+        EXPECT_EQ(property.GetValue(), "value¹²³");
+    }
+
+    TEST(IniParserTest, Parse_Utf8BomEncodedTextWithUnicodeCharacters_ReadsFromStream)
+    {
+        IniParser parser = CreateParser();
+
+        const std::string ini = "\xEF\xBB\xBF[section]\nproperty=value¹²³";
+        std::istringstream stream(ini);
+
+        const IniData iniData = parser.Parse(stream);
+        const IniSection section = iniData.GetSection("section");
+        const IniProperty property = section.GetProperty("property");
 
         EXPECT_EQ(property.GetValue(), "value¹²³");
     }

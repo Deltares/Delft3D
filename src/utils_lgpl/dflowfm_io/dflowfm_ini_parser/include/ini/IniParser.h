@@ -75,6 +75,7 @@ namespace ini
         void SetInvalidChars();
 
         void CleanCurrentLine();
+        void StripByteOrderMark();
         void ParseCurrentLine();
 
         bool IsEmptyLine() const;

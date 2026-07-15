@@ -58,9 +58,23 @@ namespace ini
 
     void IniParser::CleanCurrentLine()
     {
+        if (lineNumber == 1)
+        {
+            StripByteOrderMark();
+        }
+
         currentLine.erase(std::remove(currentLine.begin(), currentLine.end(), '\0'), currentLine.end());
         std::replace(currentLine.begin(), currentLine.end(), '\t', ' ');
         currentLine = trim(currentLine);
+    }
+
+    void IniParser::StripByteOrderMark()
+    {
+        constexpr std::string_view utf8BOM = "\xEF\xBB\xBF";
+        if (currentLine.starts_with(utf8BOM))
+        {
+            currentLine.erase(0, utf8BOM.size());
+        }
     }
 
     void IniParser::ParseCurrentLine()
