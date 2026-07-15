@@ -1163,7 +1163,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c23_AllowedFlowDir" ref="dimr_default">
-		<path version="2026-05-12T09:07:28.012000">e02_dflowfm/f106_hydraulic-structures/c23_AllowedFlowDir</path>
+		<path version="2026-07-09T11:23:05.166000">e02_dflowfm/f106_hydraulic-structures/c23_AllowedFlowDir</path>
 		<checks>
 			<file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
 				<parameters>

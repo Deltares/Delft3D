@@ -15,7 +15,8 @@ object LinuxCollect : BuildType({
         TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     name = "Collect"
