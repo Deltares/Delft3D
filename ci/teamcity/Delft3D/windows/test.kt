@@ -112,6 +112,9 @@ object WindowsTest : BuildType({
             scriptContent = """
                 @echo off
 
+                echo %%cd%%
+                dir ..\..\.dvc
+
                 rem Python writes a lot of '.pyc' bytecode files in '__pycache__' directories. This build 
                 rem step runs in a clean container with a clean build directory bind-mounted in every time,
                 rem so the bytecode files are never reused. We've run into -1073741819 (0xC0000005) exit codes
@@ -201,5 +204,9 @@ object WindowsTest : BuildType({
             failureMessage = "There was an ERROR in the TestBench.py output."
             reverse = false
         }
+    }
+
+    requirements {
+        equals("env.DVC", "1")
     }
 })

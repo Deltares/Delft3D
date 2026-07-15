@@ -96,6 +96,9 @@ object LinuxTest : BuildType({
         workingDir = "test/deltares_testbench/"
         scriptContent = """
             #!/bin/bash
+
+            echo "pwd: ${'$'}(pwd)"
+            ls -lah ../../.dvc
             
             ARGS="--username "%s3_dsctestbench_accesskey%" \
                 --password "%s3_dsctestbench_secret%" \
@@ -175,4 +178,7 @@ object LinuxTest : BuildType({
         }
     }
 
+    requirements {
+        equals("env.DVC", "1")
+    }
 })
