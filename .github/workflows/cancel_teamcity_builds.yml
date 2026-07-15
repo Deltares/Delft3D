@@ -63,8 +63,8 @@ jobs:
 
           echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
 
-      - name: Find PR for current branch
-        id: find-branches
+      - name: Find relevant branches
+        id: find-relevant-branches
         run: |
           set -eou pipefail
 
@@ -88,7 +88,8 @@ jobs:
 
           pr_count=$(jq 'length - 1' <<< "${branches}")
 
-          echo "Found ${pr_count} open non-draft PR(s): $(jq -r 'join(", ")' <<< "${branches}")"
+          echo "Found ${pr_count} open non-draft PR(s)."
+          echo "Will consider the branches: $(jq -r 'join(", ")' <<< "${branches}")"
 
           echo "branches=${branches}" >> "${GITHUB_OUTPUT}"
 
@@ -112,7 +113,7 @@ jobs:
           teamcity_project_id="Delft3D"
           commit_hash="${{ steps.configure.outputs.commit_hash }}"
 
-          echo '${{ steps.find-branches.outputs.branches }}' |
+          echo '${{ steps.find-relevant-branches.outputs.branches }}' |
           jq -r '.[]' |
           while read -r branch; do
             echo "Processing ${branch}"
