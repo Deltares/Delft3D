@@ -114,6 +114,7 @@ object WindowsTest : BuildType({
 
                 echo %%cd%%
                 dir ..\..\.dvc
+                dir ..\..\.dvc\cache
 
                 rem Python writes a lot of '.pyc' bytecode files in '__pycache__' directories. This build 
                 rem step runs in a clean container with a clean build directory bind-mounted in every time,
@@ -156,6 +157,7 @@ object WindowsTest : BuildType({
                 --cpus %teamcity.agent.hardware.cpuCount%
                 --env UV_LINK_MODE=copy
                 --volume test-environment-uv-cache:C:\uv\cache
+                --volume C:\dvc-cache\delft3d:%teamcity.build.checkoutDir%\.dvc\cache
             """.trimIndent()
         }
         script {

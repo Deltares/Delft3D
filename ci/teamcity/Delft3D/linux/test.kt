@@ -99,6 +99,8 @@ object LinuxTest : BuildType({
 
             echo "pwd: ${'$'}(pwd)"
             ls -lah ../../.dvc
+            echo "dvc cache dir: ${'$'}(dvc cache dir)"
+            du ${'$'}(dvc cache dir)
             
             ARGS="--username "%s3_dsctestbench_accesskey%" \
                 --password "%s3_dsctestbench_secret%" \
@@ -124,6 +126,7 @@ object LinuxTest : BuildType({
             --rm
             --pull always
             --shm-size 8G
+            --volume /dvc-cache/delft3d:%teamcity.build.checkoutDir%/.dvc/cache
         """.trimIndent()
         }
         
