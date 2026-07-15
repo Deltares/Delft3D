@@ -4,7 +4,7 @@ setlocal
 set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
-set installDir="install_fm-suite"
+set installDir=install_fm-suite
 
 set bindir=..\..\..\%installDir%\bin
 

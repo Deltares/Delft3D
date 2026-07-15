@@ -5,7 +5,7 @@ set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
 set NPROC=2
-set installDir="install_fm-suite"
+set installDir=install_fm-suite
 
 set bindir=..\..\..\%installDir%\bin
 
@@ -40,7 +40,7 @@ if %usePreCICE% EQU 1 (
         cd fm
         set PATH=..\%bindir%
         call ..\%bindir%\dflowfm-cli.exe --partition:ndomains=%NPROC%:icgsolver=6 FlowFM.mdu
-        call mpiexec -n %NPROC% ..\%bindir%\dflowfm-cli.exe FlowFM.mdu --precice
+        call ..\%bindir%\mpiexec -n %NPROC% ..\%bindir%\dflowfm-cli.exe FlowFM.mdu --precice
         cd ..
     ) else (
         echo Please start D-Flow FM
