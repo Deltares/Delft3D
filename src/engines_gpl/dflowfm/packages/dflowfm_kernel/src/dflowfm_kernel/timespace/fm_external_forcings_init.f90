@@ -148,15 +148,15 @@ contains
 
       res = res .and. add_bubblescreen_source_sinks()
 
+      call build_itpenzr_and_itpenur(itpenzr, itpenur)
+      ib = 0
+
       ! Third loop, read all external forcing files and initialize the boundary, lateral, spatial, and source-sink forcings.
       do i_ext = 1, size(extfile_new_list)
          bnd_ptr => bnd_ptrs(i_ext)%node_ptr
 
          num_items_in_file = tree_num_nodes(bnd_ptr)
 
-         call build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
-
-         ib = 0
          ibqh = 0
          initial_threshold_abort = threshold_abort
          threshold_abort = LEVEL_FATAL
@@ -285,33 +285,32 @@ contains
    end subroutine check_version_number_and_open_external_forcing_file
 
    !> Builds temporary reverse lookup tables that map boundary block number in external forcings file to boundary condition number in openbndsect (separate for u and z).
-   subroutine build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu
+   subroutine build_itpenzr_and_itpenur(itpenzr, itpenur)
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, nopenbndsect
 
       ! Arguments
-      integer, dimension(:), allocatable, intent(out) :: itpenzr !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for z. {size=num_items_in_file}
-      integer, dimension(:), allocatable, intent(out) :: itpenur !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for u. {size=num_items_in_file}
-      integer, intent(in) :: num_items_in_file !< Number of items in the external forcing file
+      integer, dimension(:), allocatable, intent(out) :: itpenzr !< Reverse lookup table that maps global boundary block number in external forcings file to an open z-boundary link index {size=nbndz}.
+      integer, dimension(:), allocatable, intent(out) :: itpenur !< Reverse lookup table that maps global boundary block number in external forcings file to an open u-boundary link index {size=nbndu}.
 
       ! Local variables
       integer :: ibt
       integer :: ib
 
-      allocate (itpenzr(num_items_in_file))
-      allocate (itpenur(num_items_in_file))
+      allocate (itpenzr(nopenbndsect))
+      allocate (itpenur(nopenbndsect))
       itpenzr(:) = 0
       itpenur(:) = 0
 
       do ibt = 1, nbndz
          ib = itpenz(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
+         if (ib > 0 .and. ib <= nopenbndsect) then
             itpenzr(ib) = ibt
          end if
       end do
 
       do ibt = 1, nbndu
          ib = itpenu(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
+         if (ib > 0 .and. ib <= nopenbndsect) then
             itpenur(ib) = ibt
          end if
       end do
