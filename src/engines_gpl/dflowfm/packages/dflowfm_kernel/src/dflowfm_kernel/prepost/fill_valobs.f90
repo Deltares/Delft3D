@@ -52,11 +52,12 @@ contains
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
-                        use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat
+                        use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
+                        u1, v, ltop
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
-      use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
+      use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba, snu, csu
       use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
                                      ipnt_wx, ipnt_wy, ipnt_windstressx, ipnt_windstressy, ipnt_wstar, ipnt_obukhov_length, &
                                      ipnt_transfer_coeff_momentum, ipnt_transfer_coeff_sensible_heat, ipnt_transfer_coeff_latent_heat, &
@@ -73,7 +74,7 @@ contains
                                      ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
                                      ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_vicwws_total, ipnt_difwws, ipnt_difwws_total, ipnt_bruv, ipnt_richs, ival_seddif1, &
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
-                                     ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
+                                     ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_rwin, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs,xobs,yobs,namobs 
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
@@ -93,10 +94,11 @@ contains
       use m_physcoef, only: vicoww
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
-      use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
+      use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness, relativewind
       use fm_location_types
       use m_flowparameters, only: his_write_settings
       use messagehandling, only: LEVEL_WARN, msgbuf, mess      
+      use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       
       implicit none
 
@@ -106,7 +108,7 @@ contains
       integer :: i_tmp, kb_tmp, kt_tmp
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens
-      real(kind=dp) :: ux, uy, um
+      real(kind=dp) :: ux, uy, um, wxL, wyL
       real(kind=dp), allocatable :: wa(:, :)
       real(kind=dp), allocatable :: frac(:, :)
       real(kind=dp), allocatable :: poros(:)
@@ -772,6 +774,17 @@ contains
                   valobs(i, IPNT_QCON) = Qconmap(k)
                   valobs(i, IPNT_QLON) = Qlongmap(k)
                   valobs(i, IPNT_QTOT) = Qtotmap(k)                   
+                  call getlink1(k, LL)
+                  wxL = wx(LL)
+                  wyL = wy(LL)
+                  call compute_wind_relative_to_surface_on_link(wxL, wyL, relativewind, u1(ltop(LL)), v(ltop(LL)), csu(LL), snu(LL), wxL, wyL)
+                  valobs(i, IPNT_RWIN) = sqrt(wxL * wxL + wyL * wyL)
+                  if (allocated(air_temperature)) then
+                     valobs(i, IPNT_TAIR) = air_temperature(k)
+                  end if
+                  if (allocated(relative_humidity)) then
+                     valobs(i, IPNT_RHUM) = relative_humidity(k)
+                  end if
                else if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   call getlink1(k, LL)
                   if (jawind > 0) then

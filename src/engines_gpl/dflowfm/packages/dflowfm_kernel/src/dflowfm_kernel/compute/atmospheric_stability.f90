@@ -86,6 +86,7 @@ module m_atmospheric_stability
       real(kind=dp) :: c_d = 0.0_dp                    !< Bulk transfer coefficient of momentum flux [-]
       real(kind=dp) :: c_h = 0.0_dp                    !< Bulk transfer coefficient of sensible heat flux [-]
       real(kind=dp) :: c_e = 0.0_dp                    !< Bulk transfer coefficient of latent heat flux [-]
+      real(kind=dp) :: relative_humidity = 0.0_dp      !< Relative humidity [%]
    end type t_scales
 
    !> Fluxes data type.
@@ -116,14 +117,15 @@ contains
 
       real(kind=dp) :: salt_saturation_humidity_reduction_factor
       real(kind=dp) :: wind_velocity_magnitude
-      real(kind=dp) :: vapor_pressure, saturated_vapor_pressure
+      real(kind=dp) :: vapor_pressure, saturated_vapor_pressure ! vapor and saturated vapor pressure at temperature sensor's height
+      real(kind=dp) :: saturated_surface_vapor_pressure ! saturated vapor pressure just above water surface
       real(kind=dp) :: delta_wind_speed
       real(kind=dp) :: delta_temperature
       real(kind=dp) :: delta_specific_humidity
-      real(kind=dp) :: surface_humidity
-      real(kind=dp) :: air_humidity
-      real(kind=dp) :: humidity_at_wind_height
-      real(kind=dp) :: temperature_at_wind_height
+      real(kind=dp) :: surface_humidity ! specific humidity just above water surface
+      real(kind=dp) :: air_humidity ! specific humidity at temperature sensor's height
+      real(kind=dp) :: humidity_at_wind_height ! specific humidity at wind sensor's height
+      real(kind=dp) :: temperature_at_wind_height ! air temperature at wind sensor's height
       real(kind=dp) :: temperature_pfactor, humidity_pfactor
       real(kind=dp) :: psi_momentum, psi_heat, psi_humidity
       real(kind=dp) :: obukhov_length, richardson_number
@@ -146,10 +148,11 @@ contains
 
          wind_velocity_magnitude = sqrt(wind_velocity_x**2 + wind_velocity_y**2)
          vapor_pressure = compute_saturation_pressure(dew_point_temperature)
+         saturated_vapor_pressure = compute_saturation_pressure(air_temperature)
          air_humidity = compute_specific_humidity(vapor_pressure, air_pressure)
          salt_saturation_humidity_reduction_factor = options%fqsat
-         saturated_vapor_pressure = compute_saturation_pressure(surface_temperature)
-         surface_humidity = compute_specific_humidity(saturated_vapor_pressure, air_pressure)
+         saturated_surface_vapor_pressure = compute_saturation_pressure(surface_temperature)
+         surface_humidity = compute_specific_humidity(saturated_surface_vapor_pressure, air_pressure)
          surface_humidity = salt_saturation_humidity_reduction_factor * surface_humidity
          
          ! Convert temperature and specific humidity to equivalent values at wind sensor height using logarithmic profiles.
@@ -272,6 +275,8 @@ contains
       result%c_d = (u_star / denom_d)**2
       result%c_h = abs((u_star / denom_d)*(t_star / denom_h))
       result%c_e = abs((u_star / denom_d)*(q_star / denom_e))
+      
+      result%relative_humidity = vapor_pressure / saturated_vapor_pressure * 100.0_dp
    end function compute_scaling_parameters
 
    !> Compute arrays of scaling parameters and bulk surface fluxes.
@@ -608,12 +613,13 @@ contains
    end subroutine get_richardson_number
 
    !> Return a batch of atmospheric-stability diagnostics from module-stored scaling parameters.
-   subroutine get_bulk_exchange_diagnostics(w_star, obukhov_length, c_d, c_h, c_e)
+   subroutine get_bulk_exchange_diagnostics(w_star, obukhov_length, c_d, c_h, c_e, relative_humidity)
       real(kind=dp), allocatable, dimension(:), intent(out) :: w_star !< Convective velocity scale w* [m/s].
       real(kind=dp), allocatable, dimension(:), intent(out) :: obukhov_length !< Obukhov length [m].
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_d !< Bulk momentum transfer coefficient [-].
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_h !< Bulk sensible-heat transfer coefficient [-].
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_e !< Bulk latent-heat transfer coefficient [-].
+      real(kind=dp), allocatable, dimension(:), intent(out) :: relative_humidity !< Relative humidity [%].
       integer :: index
       integer :: number_of_elements
 
@@ -627,6 +633,7 @@ contains
       allocate(c_d(number_of_elements))
       allocate(c_h(number_of_elements))
       allocate(c_e(number_of_elements))
+      allocate(relative_humidity(number_of_elements))
 
       do index = 1, number_of_elements
          w_star(index) = scaling_parameters(index)%w_star
@@ -634,6 +641,7 @@ contains
          c_d(index) = scaling_parameters(index)%c_d
          c_h(index) = scaling_parameters(index)%c_h
          c_e(index) = scaling_parameters(index)%c_e
+         relative_humidity(index) = scaling_parameters(index)%relative_humidity
       end do
    end subroutine get_bulk_exchange_diagnostics
 
@@ -665,12 +673,12 @@ contains
    end function compute_saturation_pressure
 
    !> Compute specific humidity based on vapor pressure and total air pressure (ECMWF_e2qv).
-   pure function compute_specific_humidity(vapor_pressure, air_pressure) result(specific_humidity)
+   pure function compute_specific_humidity(vapor_pressure, air_pressure) result(air_humidity)
       real(kind=dp), intent(in) :: vapor_pressure   !< Vapor pressure [Pa].
       real(kind=dp), intent(in) :: air_pressure     !< Air pressure [Pa].
-      real(kind=dp) :: specific_humidity            !< Specific humidity [kg/kg].
+      real(kind=dp) :: air_humidity            !< Specific humidity [kg/kg].
 
-      specific_humidity = vapor_pressure / (air_pressure + CONST_EST*(air_pressure - vapor_pressure))
+      air_humidity = vapor_pressure / (air_pressure + CONST_EST*(air_pressure - vapor_pressure))
    end function compute_specific_humidity
 
    !> Compute moist air density from temperature, pressure and vapor pressure.
@@ -679,11 +687,11 @@ contains
       real(kind=dp), intent(in) :: air_pressure    !< Air pressure [Pa].
       real(kind=dp), intent(in) :: vapor_pressure  !< Vapor pressure [Pa].
       real(kind=dp) :: air_density                 !< Air density [kg/m^3].
-      real(kind=dp) :: specific_humidity
+      real(kind=dp) :: air_humidity
       real(kind=dp) :: virtual_temperature
 
-      specific_humidity = compute_specific_humidity(vapor_pressure, air_pressure)
-      virtual_temperature = air_temperature * (1.0_dp + CONST_EST * specific_humidity)
+      air_humidity = compute_specific_humidity(vapor_pressure, air_pressure)
+      virtual_temperature = air_temperature * (1.0_dp + CONST_EST * air_humidity)
       air_density = air_pressure / (CONST_Rd * virtual_temperature)
    end function compute_air_density
 

@@ -1551,15 +1551,15 @@ contains
               'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'Wrihis_bulk_exchange_coefficients', 'c_d', 'Bulk transfer coefficient of momentum flux', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'c_h', 'Bulk transfer coefficient of sensible heat flux', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'c_e', 'Bulk transfer coefficient of latent heat flux', '', &
+                    'Wrihis_bulk_exchange_coefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
@@ -1586,6 +1586,10 @@ contains
                              'Wrihis_heat_fluxes', 'wind', 'windspeed', '', &
                              'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat fluxes to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_RWIN, &
+                             'Wrihis_heat_fluxes', 'relativewind', 'relative wind speed', '', &
+                             'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TAIR, &
                              'Wrihis_heat_fluxes', 'Tair', 'air temperature', '', &
                              'degC', UNC_LOC_STATION, nc_attributes=atts(1:1), &
@@ -1599,7 +1603,7 @@ contains
                              ' ', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QSUN, &
-                             'Wrihis_heat_fluxes', 'Qsun', 'solar influx', '', &
+                             'Wrihis_heat_fluxes', 'Qsun', 'net shortwave (solar) radiation', '', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QEVA, &
@@ -1611,7 +1615,7 @@ contains
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QLONG, &
-                             'Wrihis_heat_fluxes', 'Qlong', 'long wave back radiation', '', &
+                             'Wrihis_heat_fluxes', 'Qlong', 'net longwave radiation', '', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QFREVA, &
@@ -2843,6 +2847,10 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QLONG), valobs(:, IPNT_QLON))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RWIN), valobs(:, IPNT_RWIN))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
+               
             elseif (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))

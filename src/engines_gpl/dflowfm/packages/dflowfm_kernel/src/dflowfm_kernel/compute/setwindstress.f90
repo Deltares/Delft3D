@@ -48,7 +48,8 @@ contains
       use m_flow, only: map_write_settings, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
                         viskinair, ag, vonkarw, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v, &
                         w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat
-      use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
+      use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, &
+                        wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density, relative_humidity
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_atmospheric_stability, only: get_wind_stress, get_bulk_exchange_diagnostics
@@ -65,7 +66,8 @@ contains
       if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call get_wind_stress(wind_stress_x_node, wind_stress_y_node)
          call get_bulk_exchange_diagnostics(w_star, obukhov_length, transfer_coeff_momentum, &
-                                            transfer_coeff_sensible_heat, transfer_coeff_latent_heat)
+                                            transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
+                                            relative_humidity)
 
          call node_to_link_vector(wind_stress_x_node, wind_stress_y_node, wdsu_x, wdsu_y, lnx)
          do L = 1, lnx
