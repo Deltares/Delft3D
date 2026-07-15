@@ -63,6 +63,31 @@ RUN setx /M PATH \"C:\Program Files\uv\bin;C:\Program Files\uv\install;$env:PATH
 RUN uv python install 3.12 --default
 RUN uv tool install 'conan ~= 2.30.0'
 
+ADD setup-x86_64.exe C:\\cygwin-setup-x86_64.exe
+# Install and clean up the package cache in a single layer. The cache uses very
+# long, URL-encoded directory names (e.g. https%3a%2f%2fmirrors.kernel.org%2f...)
+# which break the Windows container layer import (hcsshim::ImportLayer) if they
+# are ever committed to a layer, so they must never persist beyond this RUN.
+RUN Start-Process -FilePath 'C:\cygwin-setup-x86_64.exe' -Wait -NoNewWindow -ArgumentList \
+    '--quiet-mode', \
+    '--no-shortcuts', \
+    '--no-startmenu', \
+    '--no-desktop', \
+    '--no-admin', \
+    '--upgrade-also', \
+    '--root', 'C:\cygwin64', \
+    '--local-package-dir', 'C:\cygwin-packages', \
+    '--site', 'https://ftp.snt.utwente.nl/pub/software/cygwin/', \
+    '--site', 'https://mirrors.kernel.org/sourceware/cygwin/', \
+    '--site', 'https://cygwin.mirror.constant.com/', \
+    '--only-site', \
+    '--packages', 'python3,make,git,cmake'; \
+    Remove-Item -Force C:\cygwin-setup-x86_64.exe; \
+    Remove-Item -Recurse -Force C:\cygwin-packages
+
+# Add Cygwin to the PATH (appended so it does not shadow the explicitly installed tools).
+RUN setx /M PATH ($Env:PATH + ';C:\cygwin64\bin')
+
 # Copy the setup script into the container
 COPY set-env-vs2022.cmd C:\\set-env-vs2022.cmd
 

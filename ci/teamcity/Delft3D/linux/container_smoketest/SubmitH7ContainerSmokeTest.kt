@@ -12,7 +12,8 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
     templates(
         TemplateLinuxAgentNoFips,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Submit"
