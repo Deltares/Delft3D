@@ -1526,6 +1526,7 @@
   </checks>
 </testCase>
 
+<!-- UNST-9538: Move to daily run. Took ~10 minutes on Windows.
 <testCase name="e02_f030_c202_parallel_dredge_dump" ref="dflowfm_default">
   <path version="2026-03-17T10:21:37.053000">e02_dflowfm/f030_water_quality_processes/c202_parallel_dredge_dump</path>
   <programs>
@@ -1570,7 +1571,7 @@
       </parameters>
     </file>
   </checks>
-</testCase>
+</testCase> -->
 <testCase name="e02_f030_c300_opendllso" ref="dflowfm_default">
   <path version="2026-05-01T11:11:41.081000">e02_dflowfm/f030_water_quality_processes/c300_opendllso</path>
   <programs>

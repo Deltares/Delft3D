@@ -1101,6 +1101,7 @@
         </file>
       </checks>
     </testCase>
+    <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
     <testCase name="e02_f208_c016_gate_free_3Dzsigma1" ref="platform_specific">
       <path version="2025-10-09T12:55:24.339000">e02_dflowfm/f208_3D_hydraulic_structures/c016_gate_free_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1113,7 +1114,8 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
+    </testCase> -->
+    <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
     <testCase name="e02_f208_c017_gate_free_3Dzsigma2" ref="platform_specific">
       <path version="2025-10-13T09:55:24">e02_dflowfm/f208_3D_hydraulic_structures/c017_gate_free_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1126,7 +1128,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
+    </testCase> -->
 
     <testCase name="e02_f208_c018_sill_sub_3Dsigma" ref="dflowfm_default">
       <path version="2025-10-13T10:10:24">e02_dflowfm/f208_3D_hydraulic_structures/c018_sill_sub_3Dsigma</path>
@@ -1206,6 +1208,7 @@
         </file>
       </checks>
     </testCase>
+    <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
     <testCase name="e02_f208_c024_sill_free_3Dzsigma1" ref="dflowfm_default">
       <path version="2025-10-07T17:43:24.518000">e02_dflowfm/f208_3D_hydraulic_structures/c024_sill_free_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1218,7 +1221,8 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
+    </testCase> -->
+    <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
     <testCase name="e02_f208_c025_sill_free_3Dzsigma2" ref="dflowfm_default">
       <path version="2025-10-07T17:46:49.280000">e02_dflowfm/f208_3D_hydraulic_structures/c025_sill_free_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1231,7 +1235,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
+    </testCase> -->
 
     <testCase name="e02_f208_c026_generalstructure_door_closing_at_waterlevel_3Dsigma" ref="dflowfm_default">
       <path version="2025-10-07T07:04:57.672000">e02_dflowfm/f208_3D_hydraulic_structures/c026_generalstructure_door_closing_at_waterlevel_3Dsigma</path>
