@@ -28,7 +28,9 @@ jobs:
       - name: Configure
         id: configure
         run: |
-          set -eou pipefail
+          set -o errexit
+          set -o nounset
+          set -o pipefail
 
           # do not allow running this workflow on the default and release branches
           default_branch="${{ github.event.repository.default_branch }}"
@@ -66,7 +68,9 @@ jobs:
       - name: Find relevant branches
         id: find-relevant-branches
         run: |
-          set -eou pipefail
+          set -o errexit
+          set -o nounset
+          set -o pipefail
 
           pr_list=$(
             curl \
@@ -107,7 +111,9 @@ jobs:
       - name: Cancel TeamCity builds
         if: steps.retrieve-ksm-credentials.outcome == 'success'
         run: |
-          set -eou pipefail
+          set -o errexit
+          set -o nounset
+          set -o pipefail
 
           teamcity_base_url="https://dpcbuild.deltares.nl"
           teamcity_project_id="Delft3D"
