@@ -1,0 +1,6 @@
+outs:
+- md5: 5dbe7a1eeb742b4136769461f6c90cad.dir
+  size: 534837
+  nfiles: 14
+  hash: md5
+  path: doc
