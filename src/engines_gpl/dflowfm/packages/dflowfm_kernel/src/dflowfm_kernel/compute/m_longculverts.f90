@@ -294,7 +294,7 @@ contains
             end if
 
             call tree_create_node(block_ptr, 'frictionType', node_ptr)
-            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type),node_value), 'STRING')
+            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type), node_value), 'STRING')
 
             call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
             if (.not. success) then
@@ -1675,6 +1675,7 @@ contains
       use m_save_ugrid_state
       use m_node, only: dealloc
       use m_branch, only: dealloc
+      use m_unstruc_model_data, only: md_partugrid
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
@@ -1724,6 +1725,8 @@ contains
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+         else
+            md_partugrid = 1 ! set ugrid partitioning flag explicitly to true, so that the 2D-2D long culvert contact will be written to the partitioned ugrid file
          end if
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
