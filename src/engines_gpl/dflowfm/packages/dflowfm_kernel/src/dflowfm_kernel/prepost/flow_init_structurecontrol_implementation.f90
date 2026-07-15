@@ -592,7 +592,7 @@ contains
          if (allocated(kcgen)) then
             deallocate (kcgen)
          end if
-         kx = 3 ! 1: crest/sill, 2: gateloweredge, 3: width (?)
+         kx = 4 ! 1: crest/sill, 2: gateloweredge, 3: gateheight 4: width (?)
          allocate (zcgen(ncgensg * kx), kcgen(4, ncgen), stat=ierr)
          call aerr('zcgen(ncgensg*kx), kcgen(4,ncgen)', ierr, ncgen * (2 * kx + 3))
          kcgen = 0.0_dp

@@ -364,10 +364,10 @@ contains
                end do
                if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                   valgategen(IVAL_GATE_COUNT, n) = 1 ! rank contains the gate.
-                  valgategen(IVAL_GATE_OPENW, n) = zcgen(3 * i) ! id_gategen_openw.
-                  valgategen(IVAL_GATE_EDGEL, n) = zcgen(3 * i - 1) ! id_gategen_edgel.
-                  valgategen(IVAL_GATE_GATEH, n) = zcgen(3 * i - 2) ! id_gategen_gateh.
-                  valgategen(IVAL_GATE_SILLH, n) = zcgen(3 * i - 3) ! id_gategen_sillh.
+                  valgategen(IVAL_GATE_OPENW, n) = zcgen(4 * i) ! id_gategen_openw.
+                  valgategen(IVAL_GATE_EDGEL, n) = zcgen(4 * i - 1) ! id_gategen_edgel.
+                  valgategen(IVAL_GATE_GATEH, n) = zcgen(4 * i - 2) ! id_gategen_gateh.
+                  valgategen(IVAL_GATE_SILLH, n) = zcgen(4 * i - 3) ! id_gategen_sillh.
                end if
                if (jampi == 0) then
                   if (valgategen(IVAL_WIDTHUP, n) > 0) then
@@ -611,10 +611,10 @@ contains
                ! Fill in values for each structure if it exists on the current subdomain
                if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                   valgenstru(NUMVALS_GENSTRU, n) = 1 ! rank contains the general structure.
-                  valgenstru(IVAL_OPENW, n) = zcgen(3 * i) ! id_genstru_openw.
-                  valgenstru(IVAL_EDGEL, n) = zcgen(3 * i - 1) ! id_genstru_edgel.
-                  valgenstru(IVAL_GATEH, n) = zcgen(3 * i - 2) ! id_genstru_gateh.
-                  valgenstru(IVAL_CRESTL, n) = zcgen(3 * i - 3) ! id_genstru_cresth.
+                  valgenstru(IVAL_OPENW, n) = zcgen(4 * i) ! id_genstru_openw.
+                  valgenstru(IVAL_EDGEL, n) = zcgen(4 * i - 1) ! id_genstru_edgel.
+                  valgenstru(IVAL_GATEH, n) = zcgen(4 * i - 2) ! id_genstru_gateh.
+                  valgenstru(IVAL_CRESTL, n) = zcgen(4 * i - 3) ! id_genstru_cresth.
                end if
             end do
          end if
