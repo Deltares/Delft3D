@@ -222,11 +222,11 @@ function query_trigger() {
     kill_em_all=1
     ;;
   *)
-	msg="$(printf "%b Unknown state '%s'." "${UNICODE_UNKNOWN}" "${build_state}")"
-	msg+=" If a build chain was triggered on this branch, the build state is likely not available yet in TeamCity."
-	msg+=" Trying again later may result in successful cancellation."
-	msg+=" If not, then there is no build chain to cancel."
-	printf "::warning::%s\n" "$msg" >&2
+    msg="$(printf "%b Unknown state '%s'." "${UNICODE_UNKNOWN}" "${build_state}")"
+    msg+=" If a build chain was triggered on this branch, the build state is likely not available yet in TeamCity."
+    msg+=" Trying again later may result in successful cancellation."
+    msg+=" If not, then there is no build chain to cancel."
+    printf "::warning::%s\n" "$msg" >&2
     kill_em_all=0
     ;;
   esac
