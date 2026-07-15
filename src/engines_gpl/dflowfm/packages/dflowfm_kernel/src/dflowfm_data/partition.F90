@@ -605,7 +605,7 @@ contains
       use messagehandling, only: mess, level_warn
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_polygon, only: npl
-      use network_data, only: lc, numl, kn, LINK_CLOSED, LINK_2D, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use network_data, only: lc, numl, kn, LINK_CLOSED, LINK_2D, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, lperminv, netcell, numl1d
       use m_alloc, only: realloc
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
@@ -742,13 +742,13 @@ contains
          end if
       end if
 
-      longculverts0 = longculverts
+      longculverts0 = longculverts !> save original longculverts for later use (technically only needs longculverts(i)%netlinks
       do i = 1, nlongculverts
          if (allocated(longculverts(i)%netlinks)) then
             do j = 1, size(longculverts(i)%netlinks)
-               L = longculverts(i)%netlinks(j)
-               if (L > 0 .and. L <= numL) then
-                  longculverts(i)%netlinks(j) = Lperm(L)
+               L = longculverts0(i)%netlinks(j)
+               if (L > 0 .and. L < size(lperminv)) then
+                  longculverts(i)%netlinks(j) = Lperminv(L) !> global to local link number
                end if
             end do
          end if
