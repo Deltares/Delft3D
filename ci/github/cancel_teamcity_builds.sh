@@ -227,8 +227,6 @@ function query_trigger() {
 	msg+=" Trying again later may result in successful cancellation."
 	msg+=" If not, then there is no build chain to cancel."
 	printf "::warning::%s\n" "$msg" >&2
-
-
     kill_em_all=0
     ;;
   esac
@@ -240,7 +238,7 @@ function cancel_all_builds() {
 
   local trigger_id="$1"
 
-  printf "\nLooking up additional builds configurations..." >&2
+  printf "\nLooking up additional builds configurations...\n" >&2
 
   local locator
   printf -v locator \
