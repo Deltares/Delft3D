@@ -610,6 +610,7 @@ contains
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
       use m_save_ugrid_state, only: contactnetlinks, contactids_2D2D, hashlist_contactids
+      use m_longculverts_data, only: longculverts, longculverts0, nlongculverts
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -620,7 +621,7 @@ contains
 
       integer :: ic1, ic2, L
       logical :: domain_needs_cell_1, domain_needs_cell_2
-      integer :: i, icontact, i_valid_contact
+      integer :: i, j, icontact, i_valid_contact
       integer, dimension(:, :), allocatable :: lne_org
       integer :: i_old
       character(len=128) :: message
@@ -740,6 +741,18 @@ contains
             goto 1234
          end if
       end if
+
+      longculverts0 = longculverts
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%netlinks)) then
+            do j = 1, size(longculverts(i)%netlinks)
+               L = longculverts(i)%netlinks(j)
+               if (L > 0 .and. L <= numL) then
+                  longculverts(i)%netlinks(j) = Lperm(L)
+               end if
+            end do
+         end if
+      end do
       ierror = DFM_NOERR
 1234  continue
 
@@ -936,6 +949,16 @@ contains
          nullify (nodeoffsets_g, nodebranchidx_g, edgebranchidx_g, edgeoffsets_g)
       end if
    end subroutine restore_1dugrid_state
+
+   !> restore any structure arrays that were partitioned in partition_make_domain
+   subroutine restorestructures()
+      use m_longculverts_data
+
+      implicit none
+
+      longculverts = longculverts0
+
+   end subroutine restorestructures
 
 !> find original cell numbers for the current subset of cells.
 !! Typically used for reconstructing the global cell numbers for all cells in the current partition.

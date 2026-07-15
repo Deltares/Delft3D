@@ -69,11 +69,11 @@ module m_longculverts_data
    end type
 
    type(t_longculvert), dimension(:), allocatable, public :: longculverts !< Array containing long culvert data (size >= nlongculverts)
+   type(t_longculvert), dimension(:), allocatable, public :: longculverts0 !< backup of longculverts for partitioning
 
    integer, public :: nlongculverts !< Number of longculverts
    logical, public :: newculverts
    logical, public :: only_longculvert_1D = .false. !< Whether all 1D and 1D2D netlinks belong to long culverts
-   logical, public :: permute_longculvertlinks = .false. !< Whether long culvert netlinks are permuted in the network_data Lperm array
 
 contains
 
@@ -91,18 +91,10 @@ contains
    elemental subroutine is_2D2D_longculvertlink(L, i)
       integer, intent(in) :: L !< Flowlink number
       integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
-      integer :: Lorg
-
-      Lorg = L
-      if (allocated(Lperm) .and. permute_longculvertlinks) then
-         if (L > 0 .and. L <= size(Lperm) .and. Lperm(L) > 0) then
-            Lorg = Lperm(L)
-         end if
-      end if
 
       do i = 1, nlongculverts
          if (longculverts(i)%is_2D2D()) then
-            if ((longculverts(i)%netlinks(1) == Lorg)) then
+            if ((longculverts(i)%netlinks(1) == L)) then
                return
             end if
          end if

@@ -128,15 +128,15 @@ contains
             goto 1234
          end if
          
-         permute_longculvertlinks = .true. !> ugly workaround, lperm should only be used when partitioning but not in a sequential run.
 !        write partitioning net files, including cell info. and idomain
          call unc_write_net(filename, janetcell=1, janetbnd=1, jaidomain=jacells, &
                             jaiglobal_s=jacells, iconventions=iconv, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
 
-         permute_longculvertlinks = .false.
 !        restore network
+         call restorestructures()
          call restore()
          call restorecells() ! restore netcell, lne, lnn and idomain,xz, yz, xzw, yzw, ba
+
       end do
       call restore_1dugrid_state()
 
