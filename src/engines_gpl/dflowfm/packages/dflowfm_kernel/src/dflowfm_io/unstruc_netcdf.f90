@@ -10268,7 +10268,7 @@ contains
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
          call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
-         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.true., fill='')
+         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.false., fill='')
          do i = 1, n2d2dcontacts
             L = temp_indices(i)
             n1 = abs(lne(1, L))
@@ -10455,7 +10455,7 @@ contains
                call mess(LEVEL_ERROR, 'Could not put header in net geometry file.')
                return
             end if
-         else
+         else if (num_1d_nodes > 0) then
             ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, num_1d_nodes, n1dedges, 0, 0, &
                                         edge_nodes, face_nodes, null(), null(), null(), xn, yn, xe, ye, xzw(1:1), yzw(1:1), &
                                         crs, -999, dmiss, start_index)
