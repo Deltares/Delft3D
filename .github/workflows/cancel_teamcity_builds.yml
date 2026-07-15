@@ -64,7 +64,7 @@ jobs:
           echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
 
       - name: Find PR for current branch
-        id: find-pr
+        id: find-branches
         run: |
           set -eou pipefail
 
@@ -112,7 +112,7 @@ jobs:
           teamcity_project_id="Delft3D"
           commit_hash="${{ steps.configure.outputs.commit_hash }}"
 
-          echo '${{ steps.find-prs.outputs.branches }}' |
+          echo '${{ steps.find-branches.outputs.branches }}' |
           jq -r '.[]' |
           while read -r branch; do
             echo "Processing ${branch}"
