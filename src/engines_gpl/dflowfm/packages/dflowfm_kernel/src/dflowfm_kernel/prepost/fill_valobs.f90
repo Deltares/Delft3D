@@ -89,7 +89,7 @@ contains
       use m_get_link1, only: getlink1
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
       use m_xbeach_data, only: R
-      use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total
+      use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total, SIGRHO
       use m_physcoef, only: vicoww
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
@@ -704,7 +704,7 @@ contains
                   end if
                   if (use_density() .and. his_write_settings%rho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
-                        valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
+                        valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient * SIGRHO
                      end if
                   end if
                   if (idensform > 0 .and. jaRichardsononoutput > 0) then
