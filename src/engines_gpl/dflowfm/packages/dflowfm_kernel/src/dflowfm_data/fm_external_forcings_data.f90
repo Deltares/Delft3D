@@ -279,7 +279,7 @@ module fm_external_forcings_data
    integer :: ncgen !< nr of controllable generalstr points
    real(kind=dp), allocatable :: xcgen(:) !< generalstr nodes xcor = xz(k1)
    real(kind=dp), allocatable :: ycgen(:) !< generalstr nodes ycor
-   real(kind=dp), allocatable, target :: zcgen(:) !< generalstr nodes zvalue (kx=3)
+   real(kind=dp), allocatable, target :: zcgen(:) !< generalstr nodes zvalue (kx=4)
    real(kind=dp), allocatable :: xy2cgen(:, :) !< cgen links second point xcor = xz(k2)
 
    real(kind=dp), allocatable :: Fusav(:, :) !< only needed if gatedoorheight > 0 , dim = ncgen

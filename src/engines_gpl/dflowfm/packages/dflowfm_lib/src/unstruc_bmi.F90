@@ -2084,7 +2084,7 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("lat_contr_coeff")
@@ -2123,24 +2123,28 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("gateheight")
-            x = c_loc(generalstruc(item_index)%gatedoorheight)
+            if (is_in_network) then
+               x = get_gate_door_height_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 4 + 3))
+            end if
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+               x = c_loc(zcgen((item_index - 1) * 4 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+               x = c_loc(zcgen((item_index - 1) * 4 + 4))
             end if
             return
          case ("gateopeninghorizontaldirection")
@@ -2160,29 +2164,28 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("gateheight")
             if (is_in_network) then
                x = get_gate_door_height_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(generalstruc(item_index)%gatedoorheight)
+               x = c_loc(zcgen((item_index - 1) * 4 + 3))
             end if
-
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+               x = c_loc(zcgen((item_index - 1) * 4 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+               x = c_loc(zcgen((item_index - 1) * 4 + 4))
             end if
             return
          case ("gateopeninghorizontaldirection")
@@ -2631,7 +2634,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
             end if
             return
          case ("lat_contr_coeff")
@@ -2664,20 +2667,40 @@ contains
          end if
          select case (field_name)
          case ("sill_level", "CrestLevel")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
+            end if
             return
          case ("door_height", "GateHeight")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            generalstruc(item_index)%gatedoorheight = x_0d_double_ptr ! Not time-controlled, set directly in generalstruc.
+            if (is_in_network) then
+               fieldptr = get_gate_door_height_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 3) = x_0d_double_ptr
+            end if
             return
          case ("lower_edge_level", "GateLowerEdgeLevel")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 2) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
+            end if
             return
          case ("opening_width", "GateOpeningWidth")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 3) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 4) = x_0d_double_ptr
+            end if
             return
          case ("horizontal_opening_direction", "GateOpeningHorizontalDirection")
             ! TODO: RTC: AvD: set this once it's used
@@ -2699,7 +2722,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
             end if
             return
          case ("GateHeight", "gateHeight")
@@ -2708,9 +2731,8 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               generalstruc(item_index)%gatedoorheight = x_0d_double_ptr ! Not time-controlled, set directly in generalstruc.
+               zcgen((item_index - 1) * 4 + 3) = x_0d_double_ptr
             end if
-
             return
          case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
             if (is_in_network) then
@@ -2718,7 +2740,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 2) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
             end if
             return
          case ("GateOpeningWidth", "gateOpeningWidth")
@@ -2727,7 +2749,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 3) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 4) = x_0d_double_ptr
             end if
             return
          case ("GateOpeningHorizontalDirection", "gateOpeningHorizontalDirection")

@@ -365,8 +365,8 @@ contains
                if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                   valgategen(IVAL_GATE_COUNT, n) = 1 ! rank contains the gate.
                   valgategen(IVAL_GATE_OPENW, n) = zcgen(4 * i) ! id_gategen_openw.
-                  valgategen(IVAL_GATE_EDGEL, n) = zcgen(4 * i - 1) ! id_gategen_edgel.
-                  valgategen(IVAL_GATE_GATEH, n) = zcgen(4 * i - 2) ! id_gategen_gateh.
+                  valgategen(IVAL_GATE_GATEH, n) = zcgen(4 * i - 1) ! id_gategen_gateh.
+                  valgategen(IVAL_GATE_EDGEL, n) = zcgen(4 * i - 2) ! id_gategen_edgel.
                   valgategen(IVAL_GATE_SILLH, n) = zcgen(4 * i - 3) ! id_gategen_sillh.
                end if
                if (jampi == 0) then
@@ -386,7 +386,7 @@ contains
                   if (valgategen(IVAL_GATE_WIDTHWET, n) == 0.0_dp) then
                      valgategen(IVAL_GATE_FLOWH, n) = dmiss
                   else
-                     valgategen(IVAL_GATE_FLOWH, n) = max(min(zcgen(3 * i - 1) - zcgen(3 * i - 2), valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - zcgen(3 * i - 2)), 0.0_dp) ! flow through height is always positive
+                     valgategen(IVAL_GATE_FLOWH, n) = max(min(zcgen(4 * i - 2) - zcgen(4 * i - 3), valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - zcgen(4 * i - 3)), 0.0_dp) ! flow through height is always positive
                   end if
                end if
             end do
@@ -612,8 +612,8 @@ contains
                if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                   valgenstru(NUMVALS_GENSTRU, n) = 1 ! rank contains the general structure.
                   valgenstru(IVAL_OPENW, n) = zcgen(4 * i) ! id_genstru_openw.
-                  valgenstru(IVAL_EDGEL, n) = zcgen(4 * i - 1) ! id_genstru_edgel.
-                  valgenstru(IVAL_GATEH, n) = zcgen(4 * i - 2) ! id_genstru_gateh.
+                  valgenstru(IVAL_GATEH, n) = zcgen(4 * i - 1) ! id_genstru_gateh.
+                  valgenstru(IVAL_EDGEL, n) = zcgen(4 * i - 2) ! id_genstru_edgel.
                   valgenstru(IVAL_CRESTL, n) = zcgen(4 * i - 3) ! id_genstru_cresth.
                end if
             end do
@@ -866,8 +866,8 @@ contains
                i = weir2cgen(n)
                if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                   valweirgen(NUMVALS_WEIRGEN, n) = 1 ! rank contains the weir.
-                  valweirgen(IVAL_CRESTW, n) = zcgen(3 * i) ! id_weirgen_crestw.
-                  valweirgen(IVAL_CRESTL, n) = zcgen(3 * i - 2) ! id_weirgen_cresth.
+                  valweirgen(IVAL_CRESTW, n) = zcgen(4 * i) ! id_weirgen_crestw.
+                  valweirgen(IVAL_CRESTL, n) = zcgen(4 * i - 3) ! id_weirgen_cresth.
                end if
             end do
          end if
@@ -909,7 +909,7 @@ contains
                   else
                      i = gate2cgen(n)
                   end if
-                  valgategen(IVAL_GATE_FLOWH, n) = max(min(zcgen(3 * i - 1) - zcgen(3 * i - 2), valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - zcgen(3 * i - 2)), 0.0_dp) ! flow through height is always positive
+                  valgategen(IVAL_GATE_FLOWH, n) = max(min(zcgen(4 * i - 2) - zcgen(4 * i - 3), valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - zcgen(4 * i - 3)), 0.0_dp) ! flow through height is always positive
                end if
             end do
          end if

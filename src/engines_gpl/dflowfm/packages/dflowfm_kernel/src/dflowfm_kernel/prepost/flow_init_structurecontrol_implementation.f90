@@ -767,7 +767,7 @@ contains
                      qid = 'generalstructure' ! TODO: werkt dit als je de losse quantities (crest/gateloweredge/width) dezelfde id geeft, maar wel netjes correct veschillende offset?
                      fnam = trim(rec)
                      call resolvePath(fnam, md_structurefile_dir)
-                     ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
+                     ! Time-interpolated value will be placed in zcgen((n-1)*4+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
@@ -781,7 +781,7 @@ contains
                call prop_get(str_ptr, '', 'CrestWidth', rec, success)
                if (success) then
                   read (rec, *, iostat=ierr) tmpval
-                  zcgen((n - 1) * kx + 3) = tmpval ! Constant value for always, set it now already.
+                  zcgen((n - 1) * kx + 4) = tmpval ! Constant value for always, set it now already.
                end if
 
                tmpval = dmiss
@@ -828,7 +828,7 @@ contains
                      qid = 'generalstructure'
                      fnam = trim(rec)
                      call resolvePath(fnam, md_structurefile_dir)
-                     ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
+                     ! Time-interpolated value will be placed in zcgen((n-1)*4+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
@@ -855,6 +855,7 @@ contains
                end if
                gates(ngategen + 1)%door_height = tmpval
                hulp(idx_gateheight, n) = tmpval ! gatedoorheight.
+               zcgen((n - 1) * kx + 3) = tmpval ! GateHeight
                rec = ' '
                key = 'GateLowerEdgeLevel'
                call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
@@ -877,7 +878,7 @@ contains
                      qid = 'generalstructure'
                      fnam = trim(rec)
                      call resolvePath(fnam, md_structurefile_dir)
-                     ! Time-interpolated value will be placed in zcgen((n-1)*3+2) when calling ec_gettimespacevalue.
+                     ! Time-interpolated value will be placed in zcgen((n-1)*4+3) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
@@ -894,29 +895,29 @@ contains
                if (.not. successloc) then
                   write (msgbuf, '(a)') 'Optional field '//trim(key)//' not available for gate '//trim(strid)//'. Use default value.'
                   call msg_flush()
-                  zcgen((n - 1) * kx + 3) = dmiss ! GateOpeningWidth is optional
+                  zcgen((n - 1) * kx + 4) = dmiss ! GateOpeningWidth is optional
                   success = .true.
                else
                   if (is_double) then
                      ! Constant value for always, set it now already.
-                     zcgen((n - 1) * kx + 3) = tmpval
+                     zcgen((n - 1) * kx + 4) = tmpval
                      hulp(idx_gateopeningwidth, n) = tmpval
                   else
                      if (trim(rec) == 'REALTIME') then
                         success = .true.
-                        ! zcgen(3, 3+kx, ..) should be filled via DLL's API
+                        ! zcgen(4, 4+kx, ..) should be filled via DLL's API
                         write (msgbuf, '(a,a,a)') 'Control for gate ''', trim(strid), ''', GateOpeningWidth set to REALTIME.'
                         call dbg_flush()
                      else
                         qid = 'generalstructure' ! todo: check met Hermans gatewidth, if any
                         fnam = trim(rec)
                         call resolvePath(fnam, md_structurefile_dir)
-                        ! Time-interpolated value will be placed in zcgen((n-1)*3+3) when calling ec_gettimespacevalue.
+                        ! Time-interpolated value will be placed in zcgen((n-1)*4+4) when calling ec_gettimespacevalue.
                         if (index(trim(fnam)//'|', '.tim|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 4) ! Hook up 1 component at a time, even when target element set has kx=4
                         end if
                         if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 4) ! Hook up 1 component at a time, even when target element set has kx=4
                         end if
                      end if
                   end if
@@ -983,15 +984,17 @@ contains
                            ifld = 1
                         case ('GateLowerEdgeLevel')
                            ifld = 2
-                        case ('GateOpeningWidth')
+                        case ('GateHeight')
                            ifld = 3
+                        case ('GateOpeningWidth')
+                           ifld = 4
                         case default
                            success = .false.
                            call mess(LEVEL_ERROR, 'Programming error: general structure via structures.ini file does not yet support timeseries for '//trim(generalkeywrd(k)))
                            ifld = 0
                         end select
                         if (ifld > 0) then
-                           ! Time-interpolated value will be placed in zcgen((n-1)*3+...) when calling ec_gettimespacevalue.
+                           ! Time-interpolated value will be placed in zcgen((n-1)*4+...) when calling ec_gettimespacevalue.
                            qid = 'generalstructure'
                            fnam = trim(rec)
                            call resolvePath(fnam, md_structurefile_dir)
@@ -1009,10 +1012,11 @@ contains
                   end if
                end do
 
-               ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*3+1) is quickly need for updating bobs.)
-               zcgen((n - 1) * 3 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
-               zcgen((n - 1) * 3 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
-               zcgen((n - 1) * 3 + 3) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
+               ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*4+1) is quickly need for updating bobs.)
+               zcgen((n - 1) * 4 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
+               zcgen((n - 1) * 4 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
+               zcgen((n - 1) * 4 + 3) = hulp(idx_gateheight, n) ! GateHeight
+               zcgen((n - 1) * 4 + 4) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
 
                ngenstru = ngenstru + 1
                genstru2cgen(ngenstru) = n ! Mapping from 1:ngenstru to underlying generalstructure --> (1:ncgensg)

@@ -1474,7 +1474,7 @@ contains
       use m_structures, only: jaoldstr
       use m_meteo
       use m_transport, only: numconst
-      use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateopeningwidth
+      use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateheight, idx_gateopeningwidth
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
@@ -1732,7 +1732,7 @@ contains
          if (allocated(kcgen)) then
             deallocate (kcgen)
          end if
-         kx = 3
+         kx = 4
          allocate (xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg * kx), xy2cgen(2, ncgensg), kcgen(4, ncgen), kdgen(ncgensg), stat=ierr)
          call aerr('xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg*kx), xy2cgen(2,ncgensg), kcgen(4,ncgen), kdgen(ncgensg)', ierr, ncgen * 10)
          kcgen = 0.0_dp
@@ -1831,10 +1831,11 @@ contains
          cgen_type(1:ncgensg) = ICGENTP_GENSTRU ! We only have true fully parameterized general structures from old ext file
 
          do n = 1, ncgensg
-            ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*3+1) is quickly need for updating bobs.)
-            zcgen((n - 1) * 3 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
-            zcgen((n - 1) * 3 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
-            zcgen((n - 1) * 3 + 3) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
+            ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*4+1) is quickly need for updating bobs.)
+            zcgen((n - 1) * 4 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
+            zcgen((n - 1) * 4 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
+            zcgen((n - 1) * 4 + 3) = hulp(idx_gateheight, n) ! GateHeight
+            zcgen((n - 1) * 4 + 4) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
 
             call togeneral(n, hulp(:, n), L2cgensg(n) - L1cgensg(n) + 1, widths(L1cgensg(n):L2cgensg(n))) ! orgcode
          end do
