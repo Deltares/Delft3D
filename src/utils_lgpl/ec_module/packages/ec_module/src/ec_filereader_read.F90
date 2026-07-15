@@ -679,6 +679,8 @@ contains
    !> Read the next record from a NetCDF file.
    function ecNetcdfReadNextBlock(fileReaderPtr, item, t0t1, timesndx) result(success)
       use netcdf
+      use, intrinsic :: ieee_arithmetic
+
       !
       logical :: success !< function status
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(in)
@@ -864,6 +866,7 @@ contains
                                  deallocate (temp_block)
                               end if
                            end if
+                           where (data_block == item%quantityPtr%fillvalue) data_block = ieee_value(0.0_dp, ieee_quiet_nan)
                         end if
                      end if
                      if (ierror /= 0) then
