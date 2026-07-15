@@ -57,7 +57,6 @@ contains
       use m_qnerror
       use m_wripol
       use m_filez, only: newfil
-      use m_longculverts_data, only: permute_longculvertlinks
 
       character(len=*), intent(in) :: netfilename !< filename of whole network
       integer, intent(in) :: icgsolver !< intended solver
