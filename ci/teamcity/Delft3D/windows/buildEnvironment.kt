@@ -16,7 +16,8 @@ object WindowsBuildEnvironment : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Delft3D Windows build environment containers"

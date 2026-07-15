@@ -51,6 +51,7 @@ contains
       use m_missing
       use gridoperations
       use m_set_nod_adm
+      use network_data, only: LINK_1D
 
       integer :: MX = 1000000
       integer :: k, kk, k1, k2, n, LL, NL, ierr, nh
@@ -120,7 +121,7 @@ contains
                   LL = LL + 1
                   KN(1, LL) = KK - 1
                   KN(2, LL) = KK
-                  KN(3, LL) = 1 ! NOTE: 1D endpoints now don't have KN(3,L)=4 automatically.
+                  KN(3, LL) = LINK_1D ! NOTE: 1D endpoints now don't have KN(3,L)=LINK_1D2D_LONGITUDINAL automatically.
                end do
                NUMK = KK
                NUML = LL
