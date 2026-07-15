@@ -50,6 +50,7 @@ contains
       use m_source_sink, only: source_sinks
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
+      use properties, only: MAX_PROP_LENGTH
       use string_module, only: str_tolower
       use system_utils, only: split_filename
       use tree_data_types, only: tree_data_ptr
@@ -63,7 +64,7 @@ contains
       integer :: initial_threshold_abort
       logical :: res
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data_ptr), dimension(:), allocatable :: bnd_ptrs !< array of pointers to extForceBnd-file's [boundary] blocks
+      type(tree_data_ptr), dimension(:), allocatable :: bnd_ptrs !< array of pointers to extForceBnd-file's [boundary] blocks, one tree for each *.ext file.
       type(tree_data), pointer :: block_ptr
       integer :: istat
       character(len=:), allocatable :: group_name
@@ -80,8 +81,8 @@ contains
       integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
       integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
 
-      character(len=256), dimension(:), allocatable :: file_names !< List of file names
-      character(len=256), dimension(:), allocatable :: base_dirs !< List of base directories
+      character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: file_names !< List of file names
+      character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: base_dirs !< List of base directories
       integer, dimension(:), allocatable :: major !< Major version numbers of the external forcing files
 
       ! Initialization
@@ -117,7 +118,7 @@ contains
 
       end do
 
-      ! Third loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
+      ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
       i_bubblescreen = 0
       do i_ext = 1, size(extfile_new_list)
          bnd_ptr => bnd_ptrs(i_ext)%node_ptr
@@ -147,7 +148,7 @@ contains
 
       res = res .and. add_bubblescreen_source_sinks()
 
-      ! Fourth loop, read all external forcing files and initialize the boundary, lateral, spatial, and source-sink forcings.
+      ! Third loop, read all external forcing files and initialize the boundary, lateral, spatial, and source-sink forcings.
       do i_ext = 1, size(extfile_new_list)
          bnd_ptr => bnd_ptrs(i_ext)%node_ptr
 
@@ -201,13 +202,13 @@ contains
             deallocate (itpenur)
          end if
 
-      end do
+      end do ! i_ext
 
       call compute_lateral_bed_areas()
 
       call set_lateral_count(numlatsg) ! Save number of laterals to module variable
 
-      ! Fifth loop, destroy all trees of boundary blocks to free memory.
+      ! Fourth loop, destroy all trees of boundary blocks to free memory.
       do i_ext = 1, size(extfile_new_list)
          call tree_destroy(bnd_ptrs(i_ext)%node_ptr)
       end do
@@ -220,7 +221,7 @@ contains
 
    end subroutine init_new
 
-   !> Checks the version number of the external forcing file and opens it, returning a pointer to the tree of boundary blocks.
+   !> Checks the version number of the external forcing file and opens it, returning a pointer to the tree of external forcings file boundary blocks.
    subroutine check_version_number_and_open_external_forcing_file(external_force_file_name, bnd_ptr, major, iresult)
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create

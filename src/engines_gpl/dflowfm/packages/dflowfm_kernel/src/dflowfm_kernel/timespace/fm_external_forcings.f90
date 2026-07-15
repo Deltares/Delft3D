@@ -543,7 +543,7 @@ contains
             if (jawel) then
                ext_force_bnd_used = .true.
             else
-               call qnerror('Boundary external forcing file '''//trim(extfile_new_list(i_ext))//''' not found.', '  ', ' ')
+               call qnerror('External forcing file '''//trim(extfile_new_list(i_ext))//''' not found.', '  ', ' ')
                write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(extfile_new_list(i_ext)), ''' not found.'
                call err_flush()
             end if
