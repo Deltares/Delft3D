@@ -33,6 +33,13 @@ int main(int argc, char* argv[])
 
     cout << "\nSuccessfully loaded: " << path << "\n\n";
 
+    const IssueReport& report = document.GetReport();
+    if (!report.empty())
+    {
+        cout << "Validation report:" << "\n\n";
+        cout << report.Format() << "\n";
+    }
+
     struct PrintValue
     {
         void operator()(const std::filesystem::path& v) const { cout << v << " (path)"; }
@@ -76,6 +83,8 @@ int main(int argc, char* argv[])
             cout << "] (double list)";
         }
     };
+
+    cout << "\nMDU data: " << "\n\n";
 
     const MduData& data = document.GetData();
     for (const auto& [key, value] : data.data_entries)
