@@ -1,5 +1,6 @@
 package Delft3D.windows
 
+import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
@@ -26,13 +27,9 @@ object WindowsBuildEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        // Per-variant settings, selected by the matrix "variant" dimension.
-        param("container.tag.i24", "vs2022-intel2024-ltsc2025")
-        param("toolchain.share.i24", "\\\\directory.intra\\project\\d-hydro\\dsc-tools\\toolchain2024")
-        param("dockerfile.i24", "ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24")
-        param("container.tag.i26", "vs2026-intel2026-ltsc2025")
-        param("toolchain.share.i26", "\\\\directory.intra\\project\\d-hydro\\dsc-tools\\toolchain2026")
-        param("dockerfile.i26", "ci/dockerfiles/windows/Dockerfile-dhydro-vs2026-i26")
+        param("dockerfile", "")
+        param("toolchain.share", "")
+        param("container.tag", "")
     }
 
     vcs {
@@ -42,13 +39,21 @@ object WindowsBuildEnvironment : BuildType({
 
     steps {
         powerShell {
+            name = "Initialize build parameters"
+            platform = PowerShellStep.Platform.x64
+            scriptMode = script {
+                val script = File(DslContext.baseDir, "windows/scripts/buildEnvironmentSetParams.ps1")
+                content = Util.readScript(script)
+            }
+        }
+        powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
             workingDir = "ci/dockerfiles/windows"
             scriptMode = script {
                 content = """
                     # Define the source directory
-                    ${'$'}sourceDir = "%toolchain.share.%variant%%"
+                    ${'$'}sourceDir = "%toolchain.share%"
 
                     # Get the current working directory
                     ${'$'}destinationDir = Get-Location
@@ -65,12 +70,12 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "%dockerfile.%variant%%"
+                    path = "%dockerfile%"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag.%variant%%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%variant%-%build.vcs.number%
                 """.trimIndent()
                 commandArgs = "--no-cache"
@@ -89,7 +94,7 @@ object WindowsBuildEnvironment : BuildType({
             enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag.%variant%%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                 """.trimIndent()
             }
             conditions {
@@ -100,7 +105,10 @@ object WindowsBuildEnvironment : BuildType({
 
     features {
         matrix {
-            param("variant", listOf(value("i24"), value("i26")))
+            param("variant", listOf(
+                value("i24", label = "Intel OneAPI 2024 / VS2022"),
+                value("i26", label = "Intel OneAPI 2026 / VS2026"),
+            ))
         }
     }
 
@@ -111,6 +119,7 @@ object WindowsBuildEnvironment : BuildType({
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2026-i26
                 +:ci/dockerfiles/windows/set-env.cmd
                 +:ci/teamcity/Delft3D/windows/buildEnvironment.kt
+                +:ci/teamcity/Delft3D/windows/scripts/buildEnvironmentSetParams.ps1
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
