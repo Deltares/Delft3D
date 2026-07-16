@@ -43,7 +43,7 @@ object WindowsConanPackages : BuildType({
         script {
             name = "Build and upload all packages"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                call C:/set-env.cmd
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%

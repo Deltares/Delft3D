@@ -10,6 +10,7 @@ import Delft3D.step.*
 
 object WindowsBuildEnvironment : BuildType({
 
+    id("WindowsBuildEnvironmentI24")
     description = "Build-environment container images used to build the Delft3D software on Windows."
 
     templates(
@@ -108,6 +109,7 @@ object WindowsBuildEnvironment : BuildType({
             triggerRules = """
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2026-i26
+                +:ci/dockerfiles/windows/set-env.cmd
                 +:ci/teamcity/Delft3D/windows/buildEnvironment.kt
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()

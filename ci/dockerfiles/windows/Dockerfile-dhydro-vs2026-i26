@@ -83,7 +83,7 @@ RUN Start-Process -FilePath 'C:\cygwin-setup-x86_64.exe' -Wait -NoNewWindow -Arg
 RUN setx /M PATH ($Env:PATH + ';C:\cygwin64\bin')
 
 # Copy the setup script into the container
-COPY set-env-vs2026.cmd C:\\set-env-vs2026.cmd
+COPY set-env.cmd C:\\set-env.cmd
 
 # Set the default command to run the setup script
-CMD ["cmd", "/S", "/K", "C:\\set-env-vs2026.cmd"]
+CMD ["cmd", "/S", "/K", "C:\\set-env.cmd"]
