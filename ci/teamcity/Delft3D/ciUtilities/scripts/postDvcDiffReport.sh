@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -euox pipefail
 
 USAGE_STRING="Usage: postDvcDiffReport.sh <target_branch> [<PULL_REQUEST_NUMBER> <GITHUB_BARER_TOKEN>]"
 if [ "$#" -lt 1 ]; then 
@@ -19,7 +19,8 @@ PULL_REQUEST_NUMBER="$2"
 GITHUB_BARER_TOKEN="$3"
 
 SOURCE_BRANCH="$(git rev-parse HEAD)"
-MERGE_BASE_COMMIT_HASH=$(git merge-base "$TARGET_BRANCH" HEAD)
+git fetch origin "$TARGET_BRANCH"
+MERGE_BASE_COMMIT_HASH=$(git merge-base origin/"$TARGET_BRANCH" HEAD)
 
 POST_URL="https://api.github.com/repos/deltares/delft3d/issues/$PULL_REQUEST_NUMBER/comments"
 
