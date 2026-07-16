@@ -3781,6 +3781,7 @@ contains
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
+      use m_unstruc_netcdf_data, only: flowgeom
 
       implicit none
 
@@ -3846,7 +3847,7 @@ contains
 
       nc_precision = netcdf_data_type(md_nc_map_precision)
 
-      if (ndxi <= 0) then
+      if (flowgeom%ndx_out <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
          return
       end if
