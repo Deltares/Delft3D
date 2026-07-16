@@ -7273,6 +7273,19 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f151_c13_dar-es-salaam-1d2d_output_polygon" ref="dflowfm_default">
+        <path version="2026-07-16T13:27:51.228000">e02_dflowfm/f151_1d2d_acceptance_rural/c13_dar-es-salaam-1d2d_output_polygon</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="DFM_OUTPUT_fm_model_new/fm_model_new_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+                    <parameter name="Mesh2d_flowelem_bl" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f422_c01_trench_VanRijn1993" ref="dflowfm_restart">
       <path version="2025-10-15T15:29:30.513000">e02_dflowfm/f422_morphology_2D_restart/c01_trench_VanRijn1993</path>
       <maxRunTime>15000.0000000</maxRunTime>
