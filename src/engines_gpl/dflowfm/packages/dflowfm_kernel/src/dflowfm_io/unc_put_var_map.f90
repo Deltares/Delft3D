@@ -13,13 +13,13 @@ implicit none(type,external)
 
 contains
 
-!> copy of unc_put_var_map_byte with buffered time
-!! TODO: only implemented for UNC_LOC_S
+!> copy of unc_put_var_map_byte with buffered time. Uses global data, not possibly reduced output data from t_fm_flowgeom.
+!! TODO: only implemented for UNC_LOC_S. 
    function unc_put_var_map_byte_timebuffer(ncid, id_tsp, id_var, iloc, values, t1, tl, jabndnd) result(ierr)
       
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s
-      use m_unstruc_netcdf_data, only: flowgeom
+      use m_flowgeom, only: ndx2d, ndx1db, ndxi
 
       implicit none
       integer, intent(in) :: ncid
@@ -35,18 +35,19 @@ contains
 
       integer :: tstart
       integer :: jabndnd_
-      integer :: n1d_write
-      integer :: ndx2d 
+      integer :: n1d_write, last_1d
       
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
       else
          jabndnd_ = 0
       end if
-      ierr = DFM_NOERR
-
-      ndx2d     = flowgeom%mesh2d%numFace
-      n1d_write = flowgeom%mesh1D%numNode
+      if (jabndnd_ == 1) then
+         last_1d = ndx1db
+      else
+         last_1d = ndxi
+      end if
+      n1d_write = last_1d - ndx2d
 
       select case (iloc)
 
@@ -54,7 +55,7 @@ contains
          tstart = id_tsp%idx_curtime - tl + t1
          ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
          if (id_var(1) > 0 .and. n1d_write > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write, t1:tl), start=[1, tstart])
+            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:last_1d, t1:tl), start=[1, tstart])
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then
