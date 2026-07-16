@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -193,7 +193,7 @@
 !     Allocate ( D3BSTA (N3LOC), STAT=Allocation_Error )
 !     Allocate ( MS3BST(N3LOC,NParaHis), STAT=Allocation_Error )
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocMeasureArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocMeasureArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -244,7 +244,7 @@
 !                IXMSSB(NSMES), MEASNV(NSMES), IXMSCP(NSMES), IXMSNCP(NSCV,NSMES), &
 !                IXMSSP(NSMES), STAT=Allocation_Error )
       If (.not. success)  then
-         Call ErrMsg (929, 1, ' AllocMeasureArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocMeasureArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif

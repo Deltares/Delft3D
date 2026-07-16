@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,7 +28,8 @@
 !-------------------------------------------------------------------------------
 
 submodule(fm_external_forcings) fm_external_forcings_init_old
-   use fm_external_forcings_data
+   use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
+   use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
    implicit none
 
@@ -36,55 +37,65 @@ contains
 
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
-
+      use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
+      use m_setinitialverticalprofile, only: setinitialverticalprofile
+      use precision, only: dp
+      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
+      use m_add_tracer, only: add_tracer
+      use m_setzcs, only: setzcs
+      use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
-      use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
-      use m_structures, only: jaoldstr, network
+      use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
-      use m_transport, only: ised1, numconst, const_names, constituents, itrac2const
+      use m_transport, only: ised1, const_names, constituents, itrac2const
       use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
-      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbot
+      use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
-      use unstruc_files, only: basename, resolvepath
+      use m_laterals, only: numlatsg, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
+      use unstruc_files, only: resolvepath, basename
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
+      use m_observations, only: nummovobs, addobservation
+      use unstruc_inifields, only: initialfield2Dto3D
+      use m_find_name, only: find_name
+      use m_fm_wq_processes_sub, only: get_waqinputname
+      use network_data, only: LINK_1D, LINK_ALL
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
-      integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
+      integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
-      double precision :: maxSearchRadius
+      integer :: spatial_location_type
+      real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
-      character(len=256) :: varname, varname2
+      character(len=256) :: varname
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
-      integer, external :: findname
-      double precision, allocatable :: viuh(:), tt(:)
+      real(kind=dp), allocatable :: viuh(:), tt(:)
       integer, dimension(:), pointer :: pkbot, pktop
-      double precision :: factor
-      double precision, external :: ran0
+      real(kind=dp) :: factor
+      real(kind=dp), external :: ran0
       character(len=256) :: rec
       integer, allocatable :: mask(:)
-      double precision, allocatable :: xdum(:), ydum(:)
+      real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
       ! Finish with all remaining old-style ExtForceFile quantities.
@@ -94,7 +105,9 @@ contains
 
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
-      xdum = 1d0; ydum = 1d0; kdum = 1
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
 
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
@@ -144,7 +157,7 @@ contains
                   if (.not. allocated(cftrtfac)) then
                      allocate (cftrtfac(lnx), stat=ierr)
                      call aerr('cftrtfac(lnx)', ierr, lnx)
-                     cftrtfac = 1d0
+                     cftrtfac = 1.0_dp
                   end if
 
                   success = timespaceinitialfield(xu, yu, cftrtfac, lnx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
@@ -160,15 +173,19 @@ contains
 
             else if (qid == 'internaltidesfrictioncoefficient') then
                if (jaFrcInternalTides2D /= 1) then ! not added yet
-                  if (allocated(frcInternalTides2D)) deallocate (frcInternalTides2D)
+                  if (allocated(frcInternalTides2D)) then
+                     deallocate (frcInternalTides2D)
+                  end if
                   allocate (frcInternalTides2D(Ndx), stat=ierr)
                   call aerr('frcInternalTides2D(Ndx)', ierr, Ndx)
                   frcInternalTides2D = DMISS
 
-                  if (allocated(DissInternalTidesPerArea)) deallocate (DissInternalTidesPerArea)
+                  if (allocated(DissInternalTidesPerArea)) then
+                     deallocate (DissInternalTidesPerArea)
+                  end if
                   allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
                   call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
-                  DissInternalTidesPerArea = 0d0
+                  DissInternalTidesPerArea = 0.0_dp
 
                   jaFrcInternalTides2D = 1
                end if
@@ -177,7 +194,9 @@ contains
             else if (qid == 'horizontaleddyviscositycoefficient') then
 
                if (javiusp == 0) then
-                  if (allocated(viusp)) deallocate (viusp)
+                  if (allocated(viusp)) then
+                     deallocate (viusp)
+                  end if
                   allocate (viusp(lnx), stat=ierr)
                   call aerr('viusp(lnx)', ierr, lnx)
                   viusp = dmiss
@@ -189,7 +208,9 @@ contains
             else if (qid == 'horizontaleddydiffusivitycoefficient') then
 
                if (jadiusp == 0) then
-                  if (allocated(diusp)) deallocate (diusp)
+                  if (allocated(diusp)) then
+                     deallocate (diusp)
+                  end if
                   allocate (diusp(lnx), stat=ierr)
                   call aerr('diusp(lnx)', ierr, lnx)
                   diusp = dmiss
@@ -201,20 +222,24 @@ contains
             else if (qid == 'windstresscoefficient') then
 
                if (jaCdwusp == 0) then
-                  if (allocated(Cdwusp)) deallocate (Cdwusp)
+                  if (allocated(Cdwusp)) then
+                     deallocate (Cdwusp)
+                  end if
                   allocate (Cdwusp(lnx), stat=ierr)
                   call aerr('Cdwusp(lnx)', ierr, lnx)
                   Cdwusp = dmiss
                   jaCdwusp = 1
                end if
 
-               iCdtyp = 1 ! only 1 coeff
+               wind_drag_type = CD_TYPE_CONST
                success = timespaceinitialfield(xu, yu, Cdwusp, lnx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'windspeedfactor') then
 
                if (ja_wind_speed_factor == 0) then
-                  if (allocated(wind_speed_factor)) deallocate (wind_speed_factor)
+                  if (allocated(wind_speed_factor)) then
+                     deallocate (wind_speed_factor)
+                  end if
                   allocate (wind_speed_factor(lnx), stat=ierr)
                   call aerr('wind_speed_factor(lnx)', ierr, lnx)
                   wind_speed_factor(:) = dmiss
@@ -226,7 +251,9 @@ contains
             else if (qid == 'solarradiationfactor') then
 
                if (ja_solar_radiation_factor == 0) then
-                  if (allocated(solar_radiation_factor)) deallocate (solar_radiation_factor)
+                  if (allocated(solar_radiation_factor)) then
+                     deallocate (solar_radiation_factor)
+                  end if
                   allocate (solar_radiation_factor(ndx), stat=ierr)
                   call aerr('solar_radiation_factor(ndx)', ierr, lnx)
                   solar_radiation_factor(:) = dmiss
@@ -237,15 +264,13 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) deallocate (Secchisp)
-                  allocate (Secchisp(ndx), stat=ierr)
-                  call aerr('Secchisp(ndx)', ierr, lnx)
-                  Secchisp = dmiss
-                  jaSecchisp = 1
+               if (.not. secchi_depth_is_spatially_varying) then
+                  call realloc(spatial_secchi_depth, ndx, fill=dmiss)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
+                  secchi_depth_is_spatially_varying = .true.
                end if
 
-               success = timespaceinitialfield(xz, yz, Secchisp, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
+               success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'advectiontype') then
 
@@ -261,17 +286,16 @@ contains
                   cycle
                end if
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx))
 
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-                  call prepare_lateral_mask(mask, ilattype)
-               case ('2d')
-                  ilattype = ILATTP_2D
-                  call prepare_lateral_mask(mask, ilattype)
+               case ('1d', '2d')
+                  spatial_location_type = parse_spatial_location_type(trim(qid(18:)))
+                  call construct_mask(mask, UNC_LOC_S, spatial_location_type)
                case default
                   mask(:) = 1
                end select
@@ -323,10 +347,10 @@ contains
                if (.not. allocated(h_unsat)) then
                   allocate (h_unsat(ndx), stat=ierr)
                   call aerr('h_unsat(ndx)', ierr, ndx)
-                  h_unsat = -999d0
+                  h_unsat = -999.0_dp
                end if
                success = timespaceinitialfield(xz, yz, h_unsat, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-               where (h_unsat == -999d0) h_unsat = 0d0
+               where (h_unsat == -999.0_dp) h_unsat = 0.0_dp
                if (qid == 'interceptionlayerthickness') then
                   jaintercept2D = 1
                end if
@@ -334,7 +358,7 @@ contains
             else if (qid == 'infiltrationcapacity') then
                if (infiltrationmodel == DFM_HYD_INFILT_CONST) then ! NOTE: old ext file: mm/day (iniFieldFile assumes mm/hr)
                   success = timespaceinitialfield(xz, yz, infiltcap, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-                  infiltcap = infiltcap * 1d-3 / (24d0 * 3600d0) ! mm/day => m/s
+                  infiltcap = infiltcap * 1.0e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m/s
                else
                   write (msgbuf, '(a,i0,a)') 'flow_initexternalforcings: quantity '//trim(qid)//' requires ''InfiltrationModel = ', DFM_HYD_INFILT_CONST, ''' in MDU. Skipping file '''//trim(filename)//'''.'
                   call warn_flush()
@@ -355,14 +379,30 @@ contains
                      allocate (sedh(ndx))
                   end if
                   isednum = 1
-                  if (qid(16:16) == '2') isednum = 2
-                  if (qid(16:16) == '3') isednum = 3
-                  if (qid(16:16) == '4') isednum = 4
-                  if (qid(16:16) == '5') isednum = 5
-                  if (qid(16:16) == '6') isednum = 6
-                  if (qid(16:16) == '7') isednum = 7
-                  if (qid(16:16) == '8') isednum = 8
-                  if (qid(16:16) == '9') isednum = 9
+                  if (qid(16:16) == '2') then
+                     isednum = 2
+                  end if
+                  if (qid(16:16) == '3') then
+                     isednum = 3
+                  end if
+                  if (qid(16:16) == '4') then
+                     isednum = 4
+                  end if
+                  if (qid(16:16) == '5') then
+                     isednum = 5
+                  end if
+                  if (qid(16:16) == '6') then
+                     isednum = 6
+                  end if
+                  if (qid(16:16) == '7') then
+                     isednum = 7
+                  end if
+                  if (qid(16:16) == '8') then
+                     isednum = 8
+                  end if
+                  if (qid(16:16) == '9') then
+                     isednum = 9
+                  end if
 
                   sedh(1:ndx) = sed(isednum, 1:ndx)
                   success = timespaceinitialfield(xz, yz, sedh, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
@@ -385,7 +425,7 @@ contains
                   sah = dmiss
                   success = timespaceinitialfield(xz, yz, sah, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success) then
-                     call initialfield2Dto3D(sah, sa1, transformcoef(13), transformcoef(14))
+                     call initialfield2Dto3D(sah, sa1, transformcoef(13), transformcoef(14), operand)
                   end if
                end if
                success = .true. ! We allow to disable salinity without removing the quantity.
@@ -400,7 +440,8 @@ contains
                   end if
                   success = timespaceinitialfield(xz, yz, satop, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success) then
-                     inisal2D = 2; uniformsalinityabovez = transformcoef(3)
+                     inisal2D = 2
+                     uniformsalinityabovez = transformcoef(3)
                   end if
                else
                   success = .true. ! We allow to disable salinity without removing the quantity.
@@ -416,26 +457,29 @@ contains
                   end if
                   success = timespaceinitialfield(xz, yz, sabot, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success .and. transformcoef(3) /= dmiss) then
-                     inisal2D = 3; uniformsalinitybelowz = transformcoef(4)
+                     inisal2D = 3
+                     uniformsalinitybelowz = transformcoef(4)
                   end if
                else
                   success = .true. ! We allow to disable salinity without removing the quantity.
                end if
 
-            else if (jatem > 0 .and. qid == 'initialtemperature') then
+            else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialtemperature') then
 
                success = timespaceinitialfield(xz, yz, tem1, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                if (success) then
                   initem2D = 1
                end if
 
-            else if (jatem > 0 .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
+            else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(tem1, ndkx, filename); success = .true.
+               call setinitialverticalprofile(tem1, ndkx, filename)
+               success = .true.
 
             else if (jasal > 0 .and. qid == 'initialverticalsalinityprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(sa1, ndkx, filename); success = .true.
+               call setinitialverticalprofile(sa1, ndkx, filename)
+               success = .true.
 
             else if (janudge > 0 .and. qid == 'nudgetime') then
 
@@ -449,10 +493,12 @@ contains
                call get_sedfracname(qid, sfnam, qidnam)
                iconst = 0
                if (ISED1 > 0 .and. trim(sfnam) /= '') then
-                  iconst = findname(NUMCONST, const_names, sfnam)
+                  iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
-                  if (allocated(viuh)) deallocate (viuh)
+                  if (allocated(viuh)) then
+                     deallocate (viuh)
+                  end if
                   allocate (viuh(Ndkx))
 
                   !          copy existing values (if they existed) in temp array
@@ -470,10 +516,10 @@ contains
                   if (success) then
                      do kk = 1, Ndx
                         if (viuh(kk) /= dmiss) then
-                           sed(iconst - ISED1 + 1, kk) = viuh(kk)
+                           constituents(iconst, kk) = viuh(kk)
                            call getkbotktop(kk, kb, kt)
                            do k = kb, kb + kmxn(kk) - 1
-                              sed(iconst - ISED1 + 1, k) = sed(iconst - ISED1 + 1, kk) ! fill array with vertically uniform values
+                              constituents(iconst, k) = constituents(iconst, kk) ! fill array with vertically uniform values
                            end do
                         end if
                      end do
@@ -488,13 +534,14 @@ contains
                call get_sedfracname(qid, sfnam, qidnam)
                iconst = 0
                if (ISED1 > 0 .and. trim(sfnam) /= '') then
-                  iconst = findname(NUMCONST, const_names, sfnam)
+                  iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofile(tt, ndkx, filename); success = .true.
-                  sed(iconst - ISED1 + 1, :) = tt
+                  call setinitialverticalprofile(tt, ndkx, filename)
+                  success = .true.
+                  constituents(iconst, :) = tt
                   deallocate (tt)
                end if
 
@@ -502,27 +549,30 @@ contains
                call get_sedfracname(qid, sfnam, qidnam)
                iconst = 0
                if (ISED1 > 0 .and. trim(sfnam) /= '') then
-                  iconst = findname(NUMCONST, const_names, sfnam)
+                  iconst = find_name(const_names, sfnam)
                end if
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofilesigma(tt, ndkx, filename); success = .true.
-                  sed(iconst - ISED1 + 1, :) = tt
+                  call setinitialverticalprofilesigma(tt, ndkx, filename)
+                  success = .true.
+                  constituents(iconst, :) = tt
                   deallocate (tt)
                end if
 
             else if (qid(1:13) == 'initialtracer') then
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
-               itrac = findname(numtracers, trnames, tracnam)
+               itrac = find_name(trnames, tracnam)
 
                if (itrac == 0) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: tracer '//trim(tracnam)//' not found')
                end if
                iconst = itrac2const(itrac)
 
-               if (allocated(viuh)) deallocate (viuh)
+               if (allocated(viuh)) then
+                  deallocate (viuh)
+               end if
                allocate (viuh(Ndkx))
 
                ! copy existing tracer values (if they existed) in temp array
@@ -538,7 +588,9 @@ contains
                   kx = 1
                   pkbot => kbot
                   pktop => ktop
-                  if (allocated(mask)) deallocate (mask)
+                  if (allocated(mask)) then
+                     deallocate (mask)
+                  end if
                   allocate (mask(ndx), source=1)
                   ec_item = ec_undef_int
                   call setzcs()
@@ -548,7 +600,7 @@ contains
                   if (.not. success) then
                      call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                   end if
-                  factor = merge(transformcoef(2), 1.0_hp, transformcoef(2) /= -999d0)
+                  factor = merge(transformcoef(2), 1.0_dp, transformcoef(2) /= -999.0_dp)
                   do k = 1, Ndkx
                      if (viuh(k) /= dmiss) then
                         constituents(iconst, k) = viuh(k) * factor
@@ -572,7 +624,7 @@ contains
                deallocate (viuh)
 
             else if (qid(1:13) == 'initialwaqbot') then
-               iwqbot = findname(numwqbots, wqbotnames, wqinput)
+               iwqbot = find_name(wqbotnames, wqinput)
 
                if (iwqbot == 0) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: water quality bottom variable '//trim(wqinput)//' not found')
@@ -587,7 +639,9 @@ contains
                   end if
                end if
 
-               if (allocated(viuh)) deallocate (viuh)
+               if (allocated(viuh)) then
+                  deallocate (viuh)
+               end if
                allocate (viuh(Ndxi))
 
                ! copy existing tracer values (if they existed) in temp array
@@ -664,17 +718,19 @@ contains
                end if
                success = timespaceinitialfield(xz, yz, stemheight, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
-               if (stemheightstd > 0d0) then
+               if (stemheightstd > 0.0_dp) then
                   do k = 1, ndx
                      if (stemheightstd /= dmiss) then
-                        stemheight(k) = stemheight(k) * (1d0 + stemheightstd * (ran0(idum) - 0.5d0))
+                        stemheight(k) = stemheight(k) * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
                      end if
                   end do
                end if
             else if (qid == 'groundlayerthickness') then
 
                success = timespaceinitialfield(xu, yu, grounlay, Lnx1D, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
-               if (success) jagrounlay = 1
+               if (success) then
+                  jagrounlay = 1
+               end if
 
             else if (.not. stm_included .and. qid == 'erodablelayerthicknessgrainsize1' .and. mxgr >= 1) then
 
@@ -711,7 +767,9 @@ contains
 
                call allocatewindarrays()
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(lnx), source=1)
 
                jawindstressgiven = merge(1, 0, qid(1:6) == 'stress') ! if (index(qid,'str') > 0) jawindstressgiven = 1
@@ -727,7 +785,9 @@ contains
                end if
 
             else if (qid == 'friction_coefficient_time_dependent') then
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(lnx), source=1)
 
                if (len_trim(sourcemask) > 0) then
@@ -750,29 +810,32 @@ contains
 
                call allocatewindarrays()
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                jawindstressgiven = merge(1, 0, qid == 'airpressure_stressx_stressy')
                jaspacevarcharn = merge(1, 0, qid == 'airpressure_windx_windy_charnock')
 
-               if (.not. allocated(patm)) then
-                  allocate (patm(ndx), stat=ierr)
-                  call aerr('patm(ndx)', ierr, ndx)
-                  patm = 100000d0
+               if (.not. allocated(air_pressure)) then
+                  allocate (air_pressure(ndx), stat=ierr)
+                  call aerr('air_pressure(ndx)', ierr, ndx)
+                  air_pressure = 100000.0_dp
                end if
 
                if (.not. allocated(ec_pwxwy_x)) then
                   allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr)
                   call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
-                  ec_pwxwy_x = 0d0; ec_pwxwy_y = 0d0
+                  ec_pwxwy_x = 0.0_dp
+                  ec_pwxwy_y = 0.0_dp
                end if
 
                if (jaspacevarcharn == 1) then
                   if (.not. allocated(ec_pwxwy_c)) then
                      allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr)
                      call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
-                     ec_pwxwy_c = 0d0
+                     ec_pwxwy_c = 0.0_dp
                   end if
                end if
 
@@ -784,14 +847,14 @@ contains
 
                if (success) then
                   jawind = 1
-                  japatm = 1
+                  air_pressure_available = .true.
                end if
 
             else if (qid == 'charnock') then
                if (.not. allocated(ec_charnock)) then
                   allocate (ec_charnock(ndx), stat=ierr)
                   call aerr('ec_charnock(ndx)', ierr, ndx)
-                  ec_charnock(:) = 0d0
+                  ec_charnock(:) = 0.0_dp
                end if
                if (.not. allocated(wcharnock)) then
                   allocate (wcharnock(lnx), stat=ierr)
@@ -805,8 +868,11 @@ contains
             else if (qid == 'humidity_airtemperature_cloudiness') then
 
                ! Meteo1
-               kx = 3; itempforcingtyp = 1
-               if (allocated(mask)) deallocate (mask)
+               kx = 3
+               itempforcingtyp = 1
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax=3
@@ -814,41 +880,43 @@ contains
             else if (qid == 'dewpoint_airtemperature_cloudiness') then
 
                ! Meteo1
-               kx = 3; itempforcingtyp = 3
-               if (allocated(mask)) deallocate (mask)
+               kx = 3
+               itempforcingtyp = 3
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
-               if (success) then
-                  dewpoint_available = .true.
-                  tair_available = .true.
-               end if
 
             else if (qid == 'humidity_airtemperature_cloudiness_solarradiation') then
 
                ! Meteo1
-               kx = 4; itempforcingtyp = 2
-               if (allocated(mask)) deallocate (mask)
+               kx = 4
+               itempforcingtyp = 2
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
-                  tair_available = .true.
-                  solrad_available = .true.
+                  solar_radiation_available = .true.
                end if
 
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
 
                ! Meteo1
-               kx = 4; itempforcingtyp = 4
-               if (allocated(mask)) deallocate (mask)
+               kx = 4
+               itempforcingtyp = 4
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
-                  dewpoint_available = .true.
-                  tair_available = .true.
-                  solrad_available = .true.
+                  solar_radiation_available = .true.
                end if
 
             else if (qid == 'nudge_salinity_temperature') then
@@ -856,7 +924,9 @@ contains
                pkbot => kbot
                pktop => ktop
 
-               if (allocated(mask)) deallocate (mask)
+               if (allocated(mask)) then
+                  deallocate (mask)
+               end if
                allocate (mask(ndx), source=1)
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, z=zcs, pkbot=pkbot, pktop=pktop, varname=varname)
 
@@ -876,14 +946,29 @@ contains
 
             else if (qid == 'airpressure' .or. qid == 'atmosphericpressure') then
 
-               if (.not. allocated(patm)) then
-                  allocate (patm(ndx), stat=ierr)
-                  call aerr('patm(ndx)', ierr, ndx)
-                  patm = 0d0
-               end if
+               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('air_pressure(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  japatm = 1
+                  air_pressure_available = .true.
+               end if
+
+            else if (qid == 'pseudoAirPressure') then
+
+               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('pseudo_air_pressure(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  pseudo_air_pressure_available = .true.
+               end if
+
+            else if (qid == 'waterLevelCorrection') then
+
+               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('water_level_correction(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  water_level_correction_available = .true.
                end if
 
             else if (qid == 'air_temperature') then
@@ -892,63 +977,49 @@ contains
 
             else if (qid == 'airtemperature') then
 
-               if (.not. allocated(tair)) then
-                  allocate (tair(ndx), stat=ierr)
-                  call aerr('tair(ndx)', ierr, ndx)
-                  tair = 0d0
+               if (.not. allocated(air_temperature)) then
+                  allocate (air_temperature(ndx), stat=ierr)
+                  call aerr('air_temperature(ndx)', ierr, ndx)
+                  air_temperature = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  jatair = 1
-                  btempforcingtypA = .true.
-                  tair_available = .true.
-               end if
 
             else if (qid == 'airdensity') then
 
-               if (.not. allocated(airdensity)) then
-                  allocate (airdensity(ndx), stat=ierr)
-                  call aerr('airdensity(ndx)', ierr, ndx)
-                  airdensity = 0d0
+               if (.not. allocated(air_density)) then
+                  allocate (air_density(ndx), stat=ierr)
+                  call aerr('air_density(ndx)', ierr, ndx)
+                  air_density = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+                  call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
                   ja_airdensity = 1
                end if
 
             else if (qid == 'humidity') then
 
-               if (.not. allocated(rhum)) then
-                  allocate (rhum(ndx), stat=ierr)
-                  call aerr('rhum(ndx)', ierr, ndx)
-                  rhum = 0d0
+               if (.not. allocated(relative_humidity)) then
+                  allocate (relative_humidity(ndx), stat=ierr)
+                  call aerr('relative_humidity(ndx)', ierr, ndx)
+                  relative_humidity = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  jarhum = 1; btempforcingtypH = .true.
+
+            else if (qid == 'dewpoint') then
+
+               if (.not. allocated(dew_point_temperature)) then
+                  allocate (dew_point_temperature(ndx), stat=ierr)
+                  call aerr('dew_point_temperature(ndx)', ierr, ndx)
+                  dew_point_temperature = 0.0_dp
                end if
-
-            else if (qid == 'dewpoint') then ! Relative humidity array used to store dewpoints
-
-               if (.not. allocated(rhum)) then
-                  allocate (rhum(ndx), stat=ierr)
-                  call aerr('rhum(ndx)', ierr, ndx)
-                  rhum = 0d0
-               end if
-
-               itempforcingtyp = 5
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  jarhum = 1
-                  dewpoint_available = .true.
-               end if
 
             else if (qid == 'sea_ice_area_fraction' .or. qid == 'sea_ice_thickness') then
 
                ! if ice properties not yet read before, initialize ...
                if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
-                  call fm_ice_activate_by_ext_forces(ndx)
+                  call fm_ice_activate_by_ext_forces(ndx, md_ptr)
                end if
                ! add the EC link
                if (len_trim(sourcemask) > 0) then
@@ -958,45 +1029,56 @@ contains
                end if
                ! update the administration
                if (success) then
-                  if (qid == 'sea_ice_area_fraction') ja_ice_area_fraction_read = 1
-                  if (qid == 'sea_ice_thickness') ja_ice_thickness_read = 1
+                  if (qid == 'sea_ice_area_fraction') then
+                     ja_ice_area_fraction_read = 1
+                  end if
+                  if (qid == 'sea_ice_thickness') then
+                     ja_ice_thickness_read = 1
+                  end if
                end if
 
             else if (qid == 'cloudiness') then
 
-               if (.not. allocated(clou)) then
-                  allocate (clou(ndx), stat=ierr)
-                  call aerr('clou(ndx)', ierr, ndx)
-                  clou = 0d0
+               if (.not. allocated(cloudiness)) then
+                  allocate (cloudiness(ndx), stat=ierr)
+                  call aerr('cloudiness(ndx)', ierr, ndx)
+                  cloudiness = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  jaclou = 1; btempforcingtypC = .true.
-               end if
 
             else if (qid == 'solarradiation') then
 
-               if (.not. allocated(qrad)) then
-                  allocate (qrad(ndx), stat=ierr)
-                  call aerr('qrad(ndx)', ierr, ndx)
-                  qrad = 0d0
+               if (.not. allocated(solar_radiation)) then
+                  allocate (solar_radiation(ndx), stat=ierr)
+                  call aerr('solar_radiation(ndx)', ierr, ndx)
+                  solar_radiation = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
-                  solrad_available = .true.
+                  solar_radiation_available = .true.
+               end if
+
+            else if (qid == 'netsolarradiation') then
+
+               if (.not. allocated(solar_radiation)) then
+                  allocate (solar_radiation(ndx), stat=ierr)
+                  call aerr('solar_radiation(ndx)', ierr, ndx)
+                  solar_radiation = 0.0_dp
+               end if
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  net_solar_radiation_available = .true.
                end if
 
             else if (qid == 'longwaveradiation') then
-               if (.not. allocated(longwave)) then
-                  allocate (longwave(ndx), stat=ierr)
-                  call aerr('longwave(ndx)', ierr, ndx)
-                  longwave = 0d0
+               if (.not. allocated(long_wave_radiation)) then
+                  allocate (long_wave_radiation(ndx), stat=ierr)
+                  call aerr('long_wave_radiation(ndx)', ierr, ndx)
+                  long_wave_radiation = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypL = .true.
-                  longwave_available = .true.
+                  long_wave_radiation_available = .true.
                end if
 
             else if (qid(1:8) == 'rainfall') then
@@ -1004,7 +1086,7 @@ contains
                if (.not. allocated(rain)) then
                   allocate (rain(ndx), stat=ierr)
                   call aerr('rain(ndx)', ierr, ndx)
-                  rain = 0d0
+                  rain = 0.0_dp
                end if
 
                ! TODO: AvD: consider adding mask to all quantities.
@@ -1015,22 +1097,12 @@ contains
                   jaqin = 1
                end if
 
-            else if (num_lat_ini_blocks == 0 .and. qid(1:16) == 'lateraldischarge') then
+            else if (.not. have_laterals_in_external_forcings_file() .and. qid(1:16) == 'lateraldischarge') then
 
                call ini_alloc_laterals()
 
-               select case (trim(qid(17:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               call prepare_lateral_mask(kclat, ilattype)
+               spatial_location_type = parse_spatial_location_type(trim(qid(17:)))
+               call construct_mask(kclat, UNC_LOC_S, spatial_location_type)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
@@ -1050,11 +1122,14 @@ contains
 
                call selectelset_internal_links(lnx, keg(ngate + 1:numl), numg, LOCTP_POLYLINE_FILE, filename)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numg, ' nr of gate links'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numg, ' nr of gate links'
+               call msg_flush()
 
                ngatesg = ngatesg + 1
-               call realloc(L1gatesg, ngatesg); L1gatesg(ngatesg) = ngate + 1
-               call realloc(L2gatesg, ngatesg); L2gatesg(ngatesg) = ngate + numg
+               call realloc(L1gatesg, ngatesg)
+               L1gatesg(ngatesg) = ngate + 1
+               call realloc(L2gatesg, ngatesg)
+               L2gatesg(ngatesg) = ngate + numg
 
                ngate = ngate + numg
 
@@ -1062,11 +1137,14 @@ contains
 
                call selectelset_internal_links(lnx, ked(ncdam + 1:numl), numd, LOCTP_POLYLINE_FILE, filename)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numd, ' nr of dam level cells'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numd, ' nr of dam level cells'
+               call msg_flush()
 
                ncdamsg = ncdamsg + 1
-               call realloc(L1cdamsg, ncdamsg); L1cdamsg(ncdamsg) = ncdam + 1
-               call realloc(L2cdamsg, ncdamsg); L2cdamsg(ncdamsg) = ncdam + numd
+               call realloc(L1cdamsg, ncdamsg)
+               L1cdamsg(ncdamsg) = ncdam + 1
+               call realloc(L2cdamsg, ncdamsg)
+               L2cdamsg(ncdamsg) = ncdam + numd
 
                ncdam = ncdam + numd
 
@@ -1074,27 +1152,33 @@ contains
 
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, filename, sortLinks=1)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'
+               call msg_flush()
 
                ncgensg = ncgensg + 1
-               call realloc(L1cgensg, ncgensg); L1cgensg(ncgensg) = ncgen + 1
-               call realloc(L2cgensg, ncgensg); L2cgensg(ncgensg) = ncgen + numgen
+               call realloc(L1cgensg, ncgensg)
+               L1cgensg(ncgensg) = ncgen + 1
+               call realloc(L2cgensg, ncgensg)
+               L2cgensg(ncgensg) = ncgen + numgen
 
                ncgen = ncgen + numgen
 
             else if (jaoldstr > 0 .and. (qid == 'pump1D' .or. qid == 'pump')) then
 
                if (qid == 'pump1D') then
-                  call selectelset_internal_links(lnx1D, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, filename, linktype=IFLTP_1D, sortLinks=1)
+                  call selectelset_internal_links(lnx1D, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, filename, linktype=LINK_1D, sortLinks=1)
                else
-                  call selectelset_internal_links(lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, filename, linktype=IFLTP_ALL, sortLinks=1)
+                  call selectelset_internal_links(lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, filename, linktype=LINK_ALL, sortLinks=1)
                end if
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), npum, ' nr of pump links'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), npum, ' nr of pump links'
+               call msg_flush()
 
                npumpsg = npumpsg + 1
-               call realloc(L1pumpsg, npumpsg); L1pumpsg(npumpsg) = npump + 1
-               call realloc(L2pumpsg, npumpsg); L2pumpsg(npumpsg) = npump + npum
+               call realloc(L1pumpsg, npumpsg)
+               L1pumpsg(npumpsg) = npump + 1
+               call realloc(L2pumpsg, npumpsg)
+               L2pumpsg(npumpsg) = npump + npum
 
                npump = npump + npum
 
@@ -1102,31 +1186,37 @@ contains
 
                call selectelset_internal_links(lnx, keklep(nklep + 1:numl), numklep, LOCTP_POLYLINE_FILE, filename)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numklep, ' nr of checkvalves '; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numklep, ' nr of checkvalves '
+               call msg_flush()
 
                nklep = nklep + numklep
-               call realloc(Lklep, nklep); Lklep = keklep(1:nklep)
+               call realloc(Lklep, nklep)
+               Lklep = keklep(1:nklep)
 
             else if (jaoldstr > 0 .and. qid == 'valve1D') then
 
-               call selectelset_internal_links(lnx1D, kevalv(nvalv + 1:numl), numvalv, LOCTP_POLYLINE_FILE, filename, linktype=IFLTP_1D)
+               call selectelset_internal_links(lnx1D, kevalv(nvalv + 1:numl), numvalv, LOCTP_POLYLINE_FILE, filename, linktype=LINK_1D)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numvalv, ' nr of valves '; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numvalv, ' nr of valves '
+               call msg_flush()
 
                nvalv = nvalv + numvalv
-               call realloc(Lvalv, nvalv); Lvalv = kevalv(1:nvalv); call realloc(valv, nvalv)
+               call realloc(Lvalv, nvalv)
+               Lvalv = kevalv(1:nvalv)
+               call realloc(valv, nvalv)
 
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
-               ! 1. Prepare source-sink location (will increment numsrc, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
-               call addsorsin(filename, transformcoef(4), ierr)
+               ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
+               call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
                   success = .true.
+                  source_sinks%num_oldfile = source_sinks%num_oldfile + 1
                end if
 
-               ! 2. Time series hookup is done below, once counting of all numsrc is done.
+               ! 2. Time series hookup is done below, once counting of all source_sinks%num_total is done.
 
             else if (qid == 'shiptxy') then
                kx = 2
@@ -1139,7 +1229,7 @@ contains
 
                rec = ' '
                call basename(filename, rec) ! rec now contains the station name.
-               call addMovingObservation(dmiss, dmiss, rec)
+               call addObservation(dmiss, dmiss, rec, isMoving=.true.)
 
                ! Converter will put 'x' in array(2*nummovobs-1) and 'y' in array(2*nummovobs).
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand, targetIndex=nummovobs)
@@ -1149,7 +1239,7 @@ contains
                   if (.not. allocated(mbaname)) then
                      allocate (mbaname(0))
                   end if
-                  imba = findname(nomba, mbaname, mbainputname)
+                  imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
                      nomba = nomba + 1
@@ -1180,11 +1270,9 @@ contains
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
                end if
-
-            else if (qid(1:12) == 'waqparameter' .or. qid(1:17) == 'waqmonitoringarea' .or. qid(1:16) == 'waqsegmentnumber') then
+            else if (qid(1:12) == 'waqparameter' .or. qid(1:16) == 'waqsegmentnumber') then
                ! Already taken care of in fm_wq_processes
                success = .true.
-
             else if (qid(1:11) == 'waqfunction') then
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand)
 
@@ -1193,63 +1281,69 @@ contains
 
             else if (qid(1:25) == 'bedrock_surface_elevation') then
                kx = 1
-               if (allocated(subsupl)) deallocate (subsupl, subsupl_t0, subsupl_tp, subsout, sdu_blp)
+               if (allocated(subsupl)) then
+                  deallocate (subsupl, subsupl_t0, subsupl_tp, subsout, sdu_blp)
+               end if
 
                select case (ibedlevtyp)
                case (1)
                   allocate (subsupl(ndx), stat=ierr)
                   call aerr('subsupl(ndx)', ierr, ndx)
-                  subsupl = 0d0
+                  subsupl = 0.0_dp
                   allocate (subsupl_t0(ndx), stat=ierr)
                   call aerr('subsupl_t0(ndx)', ierr, ndx)
-                  subsupl_t0 = 0d0
+                  subsupl_t0 = 0.0_dp
                   allocate (subsupl_tp(ndx), stat=ierr)
                   call aerr('subsupl_tp(ndx)', ierr, ndx)
-                  subsupl_tp = 0d0
+                  subsupl_tp = 0.0_dp
                   allocate (subsout(ndx), stat=ierr)
                   call aerr('subsout(ndx)', ierr, ndx)
-                  subsout = 0d0
+                  subsout = 0.0_dp
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand)
 
                case (2)
-                  if (allocated(mask)) deallocate (mask)
+                  if (allocated(mask)) then
+                     deallocate (mask)
+                  end if
                   allocate (mask(lnx), source=1, stat=ierr)
                   call aerr('mask(lnx)', ierr, lnx)
                   allocate (subsupl(lnx), stat=ierr)
                   call aerr('subsupl(lnx)', ierr, lnx)
-                  subsupl = 0d0
+                  subsupl = 0.0_dp
                   allocate (subsupl_t0(lnx), stat=ierr)
                   call aerr('subsupl_t0(lnx)', ierr, lnx)
-                  subsupl_t0 = 0d0
+                  subsupl_t0 = 0.0_dp
                   allocate (subsupl_tp(lnx), stat=ierr)
                   call aerr('subsupl_tp(lnx)', ierr, lnx)
-                  subsupl_tp = 0d0
+                  subsupl_tp = 0.0_dp
                   allocate (subsout(lnx), stat=ierr)
                   call aerr('subsout(lnx)', ierr, lnx)
-                  subsout = 0d0
+                  subsout = 0.0_dp
                   success = ec_addtimespacerelation(qid, xu, yu, mask, kx, filename, filetype, method, operand, varname=varname)
 
                case (3, 4, 5, 6)
-                  if (allocated(mask)) deallocate (mask)
+                  if (allocated(mask)) then
+                     deallocate (mask)
+                  end if
                   allocate (mask(numk), source=1, stat=ierr)
                   call aerr('mask(numk)', ierr, numk)
                   allocate (subsupl(numk), stat=ierr)
                   call aerr('subsupl(numk)', ierr, numk)
-                  subsupl = 0d0
+                  subsupl = 0.0_dp
                   allocate (subsupl_t0(numk), stat=ierr)
                   call aerr('subsupl_t0(numk)', ierr, numk)
-                  subsupl_t0 = 0d0
+                  subsupl_t0 = 0.0_dp
                   allocate (subsupl_tp(numk), stat=ierr)
                   call aerr('subsupl_tp(numk)', ierr, numk)
-                  subsupl_tp = 0d0
+                  subsupl_tp = 0.0_dp
                   allocate (subsout(numk), stat=ierr)
                   call aerr('subsout(numk)', ierr, numk)
-                  subsout = 0d0
+                  subsout = 0.0_dp
                   success = ec_addtimespacerelation(qid, xk(1:numk), yk(1:numk), mask, kx, filename, filetype, method, operand, varname=varname)
                end select
                allocate (sdu_blp(ndx), stat=ierr)
                call aerr('sdu_blp(ndx)', ierr, ndx)
-               sdu_blp = 0d0
+               sdu_blp = 0.0_dp
 
                if (success) then
                   jasubsupl = 1
@@ -1262,69 +1356,85 @@ contains
                call qnerror(' ', 'Quantity WINDX_WINDY_AIRPRESSURE must be renamed to airpressure_windx_windy in the ext-file.', ' ')
                success = .false.
             else if (trim(qid) == "wavesignificantheight") then
-               if (jawave == 6 .or. jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+                  write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "waveperiod") then
-               if (jawave == 6 .or. jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+                  write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "wavedirection") then
-               if (jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "wavebreakerdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == 7 .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "whitecappingdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == 7 .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "xwaveforce") then
-               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "ywaveforce") then
-               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
-               if (jawave == 7 .and. waveforcing == 2) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else
@@ -1356,20 +1466,25 @@ contains
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
    module subroutine init_misc(iresult)
-      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
+      use precision, only: dp
+      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
+      use m_source_sink, only: source_sinks
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
-      use m_structures, only: jaoldstr, network
+      use m_structures, only: jaoldstr
       use m_meteo
       use m_transport, only: numconst
       use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateopeningwidth
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
-      use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank, reduce_sum
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
-         initialize_lateraldata, apply_transport
+      use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
+      use m_laterals, only: numlatsg, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
+      use m_togeneral, only: togeneral
+      use unstruc_messages, only: callback_msg, loglevel_StdOut
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1379,20 +1494,22 @@ contains
       character(len=256) :: filename, filename0
       character(len=64) :: varname
       logical :: exist
-      double precision, allocatable :: hulp(:, :)
-      double precision, allocatable :: widths(:)
-      double precision, allocatable :: xdum(:), ydum(:)
+      real(kind=dp), allocatable :: hulp(:, :)
+      real(kind=dp), allocatable :: widths(:)
+      real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
-      xdum = 1d0; ydum = 1d0; kdum = 1
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
 
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
-      if (numsrc < 0) then
-         jahissourcesink = 0
+      if (source_sinks%num_total < 0) then
+         his_write_settings%sourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
 
@@ -1402,16 +1519,28 @@ contains
       end if
 
       if (jaoldstr > 0) then
-         if (allocated(kgate)) deallocate (kgate)
-         if (allocated(xgate)) deallocate (xgate)
-         if (allocated(ygate)) deallocate (ygate)
-         if (allocated(zgate)) deallocate (zgate)
+         if (allocated(kgate)) then
+            deallocate (kgate)
+         end if
+         if (allocated(xgate)) then
+            deallocate (xgate)
+         end if
+         if (allocated(ygate)) then
+            deallocate (ygate)
+         end if
+         if (allocated(zgate)) then
+            deallocate (zgate)
+         end if
 
          allocate (xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2, ngatesg), kgate(3, ngate), kdg(ngatesg), stat=ierr)
          call aerr('xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2,ngatesg), kgate(3,ngate), kdg(ngatesg)', ierr, ngate * 10)
-         kgate = 0d0; zgate = 1d10; kdg = 1
+         kgate = 0.0_dp
+         zgate = 1.0e10_dp
+         kdg = 1
 
-         if (allocated(gate_ids)) deallocate (gate_ids)
+         if (allocated(gate_ids)) then
+            deallocate (gate_ids)
+         end if
          allocate (gate_ids(ngatesg))
 
          do n = 1, ngatesg
@@ -1453,7 +1582,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
                   call warn_flush()
@@ -1464,15 +1593,27 @@ contains
       end if
 
       if (jaoldstr > 0 .and. ncdamsg > 0) then
-         if (allocated(xcdam)) deallocate (xcdam)
-         if (allocated(ycdam)) deallocate (ycdam)
-         if (allocated(zcdam)) deallocate (zcdam)
-         if (allocated(kcdam)) deallocate (kcdam)
+         if (allocated(xcdam)) then
+            deallocate (xcdam)
+         end if
+         if (allocated(ycdam)) then
+            deallocate (ycdam)
+         end if
+         if (allocated(zcdam)) then
+            deallocate (zcdam)
+         end if
+         if (allocated(kcdam)) then
+            deallocate (kcdam)
+         end if
          allocate (xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2, ncdamsg), kcdam(3, ncdam), kdd(ncdamsg), stat=ierr)
          call aerr('xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2,ncdamsg), kcdam(3,ncdam), kdd(ncdamsg)', ierr, ncdam * 10)
-         kcdam = 0d0; zcdam = 1d10; kdd = 1
+         kcdam = 0.0_dp
+         zcdam = 1.0e10_dp
+         kdd = 1
 
-         if (allocated(cdam_ids)) deallocate (cdam_ids)
+         if (allocated(cdam_ids)) then
+            deallocate (cdam_ids)
+         end if
          allocate (cdam_ids(ncdamsg))
 
          do n = 1, ncdamsg
@@ -1489,12 +1630,14 @@ contains
                xy2cdam(1, n) = xz(kbi)
                xy2cdam(2, n) = yz(kbi)
 
-               iadv(Lf) = 21
+               iadv(Lf) = IADV_SUBGRID_WEIR
                call setfixedweirscheme3onlink(Lf)
             end do
          end do
 
-         ja = 1; rewind (mext); kx = 1
+         ja = 1
+         rewind (mext)
+         kx = 1
          ncdamsg = 0
          do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1508,7 +1651,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
                   call warn_flush()
@@ -1519,7 +1662,10 @@ contains
       end if
 
       if (nvalv > 0) then
-         ja = 1; rewind (mext); kx = 1; nvalv = 0
+         ja = 1
+         rewind (mext)
+         kx = 1
+         nvalv = 0
 
          do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1533,15 +1679,15 @@ contains
          end do
       end if
 
-      ! Allow laterals from old ext, even when new structures file is present (but only when *no* [Lateral]s were in new extforce file).
-      if (num_lat_ini_blocks == 0 .and. numlatsg > 0) then
-         call realloc(balat, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qplat, [max(1, kmx), numlatsg], keepExisting=.false., fill=0d0)
+      ! Allow laterals from old ext, even when new extfile is present (but only when *no* [Lateral]s were in new extforce file).
+      if (.not. have_laterals_in_external_forcings_file() .and. numlatsg > 0) then
+         call realloc(balat, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, [max(1, kmx), numlatsg], keepExisting=.false., fill=0.0_dp)
          call realloc(apply_transport, numlatsg, fill=0)
          call realloc(lat_ids, numlatsg, keepExisting=.false., fill='')
 
          do n = 1, numlatsg
-            balat(n) = 0d0
+            balat(n) = 0.0_dp
             do k1 = n1latsg(n), n2latsg(n)
                k = nnlat(k1)
                if (k > 0) then
@@ -1555,7 +1701,10 @@ contains
          if (jampi == 1) then
             call reduce_sum(numlatsg, balat)
          end if
-         ja = 1; rewind (mext); kx = 1; numlatsg = 0
+         ja = 1
+         rewind (mext)
+         kx = 1
+         numlatsg = 0
 
          do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1571,23 +1720,42 @@ contains
                end if
             end if
          end do
-         if (allocated(kclat)) deallocate (kclat)
+         if (allocated(kclat)) then
+            deallocate (kclat)
+         end if
       end if
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
-         if (allocated(xcgen)) deallocate (xcgen, ycgen, zcgen)
-         if (allocated(kcgen)) deallocate (kcgen)
+         if (allocated(xcgen)) then
+            deallocate (xcgen, ycgen, zcgen)
+         end if
+         if (allocated(kcgen)) then
+            deallocate (kcgen)
+         end if
          kx = 3
          allocate (xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg * kx), xy2cgen(2, ncgensg), kcgen(4, ncgen), kdgen(ncgensg), stat=ierr)
          call aerr('xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg*kx), xy2cgen(2,ncgensg), kcgen(4,ncgen), kdgen(ncgensg)', ierr, ncgen * 10)
-         kcgen = 0d0; zcgen = 1d10; kdgen = 1
+         kcgen = 0.0_dp
+         zcgen = 1.0e10_dp
+         kdgen = 1
 
-         if (allocated(fusav)) deallocate (fusav)
-         if (allocated(rusav)) deallocate (rusav)
-         if (allocated(ausav)) deallocate (ausav)
-         allocate (Fusav(3, ncgen), Rusav(3, ncgen), Ausav(3, ncgen), stat=ierr); Fusav = 0d0; Rusav = 0d0; ausav = 0d0
+         if (allocated(fusav)) then
+            deallocate (fusav)
+         end if
+         if (allocated(rusav)) then
+            deallocate (rusav)
+         end if
+         if (allocated(ausav)) then
+            deallocate (ausav)
+         end if
+         allocate (Fusav(3, ncgen), Rusav(3, ncgen), Ausav(3, ncgen), stat=ierr)
+         Fusav = 0.0_dp
+         Rusav = 0.0_dp
+         ausav = 0.0_dp
 
-         if (allocated(cgen_ids)) deallocate (cgen_ids)
+         if (allocated(cgen_ids)) then
+            deallocate (cgen_ids)
+         end if
          allocate (cgen_ids(ncgensg))
 
          ! Temp array width wu(L) values for all links under a single general structure
@@ -1615,12 +1783,13 @@ contains
                xy2cgen(1, n) = xz(kbi)
                xy2cgen(2, n) = yz(kbi)
 
-               iadv(Lf) = 22 ! iadv = general
+               iadv(Lf) = IADV_GENERAL_STRUCTURE ! iadv = general
                call setfixedweirscheme3onlink(Lf)
             end do
          end do
 
-         allocate (hulp(26, ncgensg)); hulp = dmiss
+         allocate (hulp(26, ncgensg))
+         hulp = dmiss
 
          ja = 1
          rewind (mext)
@@ -1641,7 +1810,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = kx = 3
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
                   call warn_flush()
@@ -1651,9 +1820,13 @@ contains
             end if
          end do
 
-         if (allocated(generalstruc)) deallocate (generalstruc)
+         if (allocated(generalstruc)) then
+            deallocate (generalstruc)
+         end if
          allocate (generalstruc(ncgensg))
-         if (allocated(cgen_type)) deallocate (cgen_type)
+         if (allocated(cgen_type)) then
+            deallocate (cgen_type)
+         end if
          allocate (cgen_type(ncgensg))
          cgen_type(1:ncgensg) = ICGENTP_GENSTRU ! We only have true fully parameterized general structures from old ext file
 
@@ -1670,18 +1843,33 @@ contains
       end if
 
       if (jaoldstr > 0 .and. npump > 0) then
-         if (allocated(xpump)) deallocate (xpump)
-         if (allocated(ypump)) deallocate (ypump)
-         if (allocated(qpump)) deallocate (qpump)
-         if (allocated(kpump)) deallocate (kpump)
-         if (allocated(pumponoff)) deallocate (pumponoff)
+         if (allocated(xpump)) then
+            deallocate (xpump)
+         end if
+         if (allocated(ypump)) then
+            deallocate (ypump)
+         end if
+         if (allocated(qpump)) then
+            deallocate (qpump)
+         end if
+         if (allocated(kpump)) then
+            deallocate (kpump)
+         end if
+         if (allocated(pumponoff)) then
+            deallocate (pumponoff)
+         end if
          allocate (xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2, npumpsg), kpump(3, npump), kdp(npumpsg), stat=ierr)
          call aerr('xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg)', ierr, npump * 10)
-         kpump = 0; qpump = 0d0; kdp = 1
+         kpump = 0
+         qpump = 0.0_dp
+         kdp = 1
 
-         if (allocated(pump_ids)) deallocate (pump_ids)
+         if (allocated(pump_ids)) then
+            deallocate (pump_ids)
+         end if
          allocate (pump_ids(npumpsg)) ! TODO: names are not stored here yet (they are in init_structure_control, but not for old ext file)
-         allocate (pumponoff(5, npumpsg)); pumponoff = dmiss
+         allocate (pumponoff(5, npumpsg))
+         pumponoff = dmiss
 
          do n = 1, npumpsg
             pumponoff(5, n) = 0
@@ -1706,7 +1894,9 @@ contains
             end do
          end do
 
-         ja = 1; rewind (mext); kx = 1
+         ja = 1
+         rewind (mext)
+         kx = 1
          npumpsg = 0
          do while (ja == 1) ! for pumps again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1715,26 +1905,37 @@ contains
                qid = 'pump'
                npumpsg = npumpsg + 1
                success = ec_addtimespacerelation(qid, xpump, ypump, kdp, kx, filename, filetype, method, operand, xy2pump, targetIndex=npumpsg)
-               if (transformcoef(4) /= dmiss) pumponoff(1, npumpsg) = transformcoef(4)
-               if (transformcoef(5) /= dmiss) pumponoff(2, npumpsg) = transformcoef(5)
-               if (transformcoef(6) /= dmiss) pumponoff(3, npumpsg) = transformcoef(6)
-               if (transformcoef(7) /= dmiss) pumponoff(4, npumpsg) = transformcoef(7)
+               if (transformcoef(4) /= dmiss) then
+                  pumponoff(1, npumpsg) = transformcoef(4)
+               end if
+               if (transformcoef(5) /= dmiss) then
+                  pumponoff(2, npumpsg) = transformcoef(5)
+               end if
+               if (transformcoef(6) /= dmiss) then
+                  pumponoff(3, npumpsg) = transformcoef(6)
+               end if
+               if (transformcoef(7) /= dmiss) then
+                  pumponoff(4, npumpsg) = transformcoef(7)
+               end if
             end if
          end do
       end if
 
-      if (numsrc > 0) then
+      if (source_sinks%num_oldfile > 0) then
+         if (source_sinks%num_oldfile /= source_sinks%num_total) then
+            call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
+         end if
          ja = 1
          rewind (mext)
          kx = numconst + 1
          ! TODO: UNST-537/UNST-190: we now support timeseries, the constant values should come from new format ext file, not from transformcoef
-         numsrc = 0
+         source_sinks%num_total = 0
          success = .true.
          do while (ja == 1) ! for sorsin again read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
                call resolvePath(filename, md_extfile_dir)
-               numsrc = numsrc + 1
+               source_sinks%num_total = source_sinks%num_total + 1
                ! 2. Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename, '.', back=.true.) - 1
                filename0 = filename(1:L)//'.tim'
@@ -1742,11 +1943,11 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'qsrc, sasrc and tmsrc' values in array qstss on positions: (3*numsrc-2), (3*numsrc-1), and (3*numsrc), respectively.
-                  call clearECMessage()
-                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then
+                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*source_sinks%num_total-2), (3*source_sinks%num_total-1), and (3*source_sinks%num_total), respectively.
+                  call clear_ec_message()
+                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=source_sinks%num_total)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
-                              //'''. for source/sinks failed:'//dumpECMessageStack(LEVEL_WARN, callback_msg)
+                              //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()
                      success = .false.
                   end if

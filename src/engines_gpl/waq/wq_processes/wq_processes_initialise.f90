@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -30,7 +30,7 @@ contains
 
 
     subroutine wq_processes_initialise (lunlsp, pdffil, shared_dll_so, blmfil, blmoutfil, sttfil, statprocesdef, outputs, &
-            nomult, imultp, constants, refday, noinfo, nowarn, ierr)
+            nomult, imultp, constants, refday, no_reflection_wq, noinfo, nowarn, ierr)
 
         !       Deltares Software Centre
 
@@ -66,7 +66,7 @@ contains
         use m_blmeff
         use m_algrep
         use m_actrep
-        use m_date_time_utils_external, only : write_date_time
+        use m_date_time_utils_external, only : fill_in_date_time
         use m_logger_helper, only : stop_with_error, write_log_message
         use m_rd_stt
         use m_getidentification
@@ -105,6 +105,7 @@ contains
         integer(kind = int_wp), intent(in) :: nomult           !< number of multiple substances
         integer(kind = int_wp), intent(in) :: imultp(2, nomult) !< multiple substance administration
         type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
+        logical , intent(in) :: no_reflection_wq    !< switch to suppress automaticly switching on of Reflection process when BLOOM is used
         integer(kind = int_wp), intent(inout) :: noinfo           !< count of informative message
         integer(kind = int_wp), intent(inout) :: nowarn           !< count of warnings
         integer(kind = int_wp), intent(inout) :: ierr             !< error count
@@ -115,7 +116,6 @@ contains
         real(kind = real_wp) :: verspe = 1.0    ! version bloom.spe file
         integer(kind = int_wp), parameter :: novarm = 15000   ! max number of variables overall
         integer(kind = int_wp), parameter :: nbprm = 1750    ! max number of processes
-        integer(kind = int_wp), parameter :: nopred = 6       ! number of pre-defined variables
         integer(kind = int_wp) :: open_shared_library
 
         integer(kind = int_wp) :: noqtt            ! total number of exhanges
@@ -185,7 +185,7 @@ contains
         character(len=80)   swinam
         character(len=80)   blmnam
         character(len=80)   line
-        character(len=80)   identification_text
+        character(len=200)  identification_text
         character(len=20)   rundat
         character(:), allocatable :: config
         logical :: parsing_error, laswi, swi_nopro
@@ -256,6 +256,7 @@ contains
         allitems%maxsize = 0
         procesdef%current_size = 0
         procesdef%maxsize = 0
+        nullify(procesdef%procesprops)
         old_items%current_size = 0
         old_items%maxsize = 0
 
@@ -263,8 +264,8 @@ contains
 
         ! Header for lsp
         call getidentification(identification_text)
-        write(lunlsp, '(XA/)') identification_text
-        call write_date_time(rundat)
+        write(lunlsp, '(XA/)') trim(identification_text)
+        call fill_in_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
         ! Active/inactive substance list
@@ -334,6 +335,14 @@ contains
             ! fill the old_items conversion table
 
             call fill_old_items(old_items)
+            if (no_reflection_wq) then
+               write(lunlsp, '(a)') ' Running with RadSurf provided by FM. The Reflection process will not be switched on automatically when using BLOOM.'
+               do iitem = 1, old_items%current_size
+                  if (old_items%old_items(iitem)%new_name == 'Reflection') then
+                     old_items%old_items(iitem)%old_name = ' '
+                  end if
+               end do
+            end if
         endif
 
         ! open openpb dll
@@ -739,9 +748,6 @@ contains
 
         call setdvp (num_dispersion_arrays, idpnt, num_dispersion_arrays_new, idpnw, num_substances_transported, num_dispersion_arrays_extra, dsto)
         call setdvp (num_velocity_arrays, ivpnt, num_velocity_arrays_new, ivpnw, num_substances_transported, num_velocity_arrays_extra, vsto)
-
-        ! set grid for processes
-        procesdef%procesprops%grid = 1
 
         ! write proces work file
         num_processes_activated = 0

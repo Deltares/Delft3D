@@ -1,0 +1,38 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e100_f10_c01_fm3_wave1_omp" ref="dimr">
+      <path version="2025-07-08T09:43:57.842000">e100_dflowfm-dwaves/f10_parallel/c01_fm3_wave1_omp</path>
+      <programs>
+          <program ref="dimr">
+             <arguments>
+                 <argument>-c 3 -m dimr_config.xml</argument>
+             </arguments>
+            <environments>
+                <environment name="OMP_NUM_THREADS_SWAN" type="raw">4</environment>
+            </environments>
+          </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+           </parameters>
+        </file>
+        <file name="fm/dflowfmoutput/loo_0001_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+           </parameters>
+        </file>
+        <file name="fm/dflowfmoutput/loo_0002_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+           </parameters>
+        </file>
+        <file name="wave/wavm-loo.nc" type="netCDF">
+           <parameters>
+               <parameter name="hsign" toleranceAbsolute="0.01" />
+           </parameters>
+        </file>
+      </checks>
+    </testCase>
+</testCases>

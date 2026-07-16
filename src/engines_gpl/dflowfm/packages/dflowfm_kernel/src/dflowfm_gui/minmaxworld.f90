@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,26 +30,37 @@
 !
 !
 
-      subroutine MINMAXWORLD(XMI, YMI, XMA, YMA)
-         ! ASPECT RATIO VAN HET DEFAULTGEBIED GOED ZETTEN
-         use M_WEARELT
-         use m_sferic
-         double precision :: XMI, YMI, XMA, YMA, ASPECT, XC, YC, DY, dx
-         XMIN = XMI
-         YMIN = YMI
-         XMAX = XMA
-         YMAX = YMA
-         DX = XMAX - XMIN
-         DY = YMAX - YMIN
-         XC = XMIN + DX / 2
-         YC = YMIN + DY / 2
-         DX = 1.2 * DX
-         DY = 1.2 * DY
-         call INQASP(ASPECT)
-         if (DY < ASPECT * DX) then
-            DY = ASPECT * DX
-         end if
+module m_minmaxworld
+   use m_setwynew
 
-         call SETWYNEW(XC, YC, DY)
-         return
-      end
+   implicit none
+
+contains
+
+   subroutine MINMAXWORLD(XMI, YMI, XMA, YMA)
+      use precision, only: dp
+      ! ASPECT RATIO VAN HET DEFAULTGEBIED GOED ZETTEN
+      use m_inqasp, only: inqasp
+      use m_wearelt, only: xmin, ymin, xmax, ymax
+
+      real(kind=dp) :: XMI, YMI, XMA, YMA, ASPECT, XC, YC, DY, dx
+      XMIN = XMI
+      YMIN = YMI
+      XMAX = XMA
+      YMAX = YMA
+      DX = XMAX - XMIN
+      DY = YMAX - YMIN
+      XC = XMIN + DX / 2
+      YC = YMIN + DY / 2
+      DX = 1.2 * DX
+      DY = 1.2 * DY
+      call INQASP(ASPECT)
+      if (DY < ASPECT * DX) then
+         DY = ASPECT * DX
+      end if
+
+      call SETWYNEW(XC, YC, DY)
+      return
+   end
+
+end module m_minmaxworld

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,33 @@
 !
 !
 
-   subroutine regrid1D(jaregrid) ! based on 1D net itself, 1 = regrid, otherwise 1dgrid to pol
+module m_regrid1d
 
+   implicit none
+
+   private
+
+   public :: regrid1d
+
+contains
+
+   subroutine regrid1D(jaregrid) ! based on 1D net itself, 1 = regrid, otherwise 1dgrid to pol
+      use m_maptopolyline, only: maptopolyline
+      use precision, only: dp
+      use m_accumulatedistance, only: accumulatedistance
       use m_flowgeom
       use m_flow
       use m_netw
       use m_polygon
       use m_missing
       use gridoperations
+      use m_set_nod_adm
+      use m_set_branch_lc
+      use network_data, only: LINK_1D
 
-      implicit none
       integer :: jaregrid
-      double precision :: dxa, xlb
-      double precision, allocatable :: xh(:), yh(:), zh(:)
+      real(kind=dp) :: dxa, xlb
+      real(kind=dp), allocatable :: xh(:), yh(:), zh(:)
       integer :: L, LL, k, n, nh, ibr, LA, k1, k2, ium
 
       if (jaregrid == 1) then
@@ -54,15 +68,20 @@
 
       call SETBRANCH_LC(ium)
 
-      numk = 0; numl = 0; n = 0
+      numk = 0
+      numl = 0
+      n = 0
       do ibr = 1, mxnetbr ! SET UP BRANCH DISTANCE COORDINATE
-         XLB = 0d0
+         XLB = 0.0_dp
          do LL = 1, netbr(ibr)%NX
-            L = netbr(ibr)%ln(LL); LA = abs(L)
+            L = netbr(ibr)%ln(LL)
+            LA = abs(L)
             if (L > 0) then
-               k1 = kn0(1, La); k2 = kn0(2, LA)
+               k1 = kn0(1, La)
+               k2 = kn0(2, LA)
             else
-               k2 = kn0(1, La); k1 = kn0(2, LA)
+               k2 = kn0(1, La)
+               k1 = kn0(2, LA)
             end if
             if (LL == 1) then
                if (jaregrid == 1) then
@@ -70,13 +89,17 @@
                else
                   n = n + 1
                end if
-               xpl(n) = xk0(k1); ypl(n) = yk0(k1); zpl(n) = zk0(k1)
+               xpl(n) = xk0(k1)
+               ypl(n) = yk0(k1)
+               zpl(n) = zk0(k1)
             end if
             n = n + 1
             if (n > maxpol) then
                call INCREASEPOL(int(1.5 * n), 1)
             end if
-            xpl(n) = xk0(k2); ypl(n) = yk0(k2); zpl(n) = zk0(k2)
+            xpl(n) = xk0(k2)
+            ypl(n) = yk0(k2)
+            zpl(n) = zk0(k2)
          end do
 
          if (jaregrid == 1) then
@@ -86,14 +109,15 @@
             dxa = zpl(n) / nh
             nh = nh + 1
             allocate (xh(nh), yh(nh), zh(nh))
-            zh(1) = 0d0
+            zh(1) = 0.0_dp
             do k = 2, nh
                zh(k) = zh(k - 1) + dxa
             end do
             call mapToPolyline(XPL, YPL, ZPL, N, XH, YH, ZH, NH) ! HAAL HUIDIGE PUNTEN OP
 
             numk = numk + 1
-            xk(numk) = xh(1); yk(numk) = yh(1)
+            xk(numk) = xh(1)
+            yk(numk) = yh(1)
             do k = 2, nh
                numk = numk + 1
                numL = numL + 1
@@ -102,8 +126,11 @@
                   call increasenetw(2 * numk, 2 * numl)
                end if
 
-               xk(numk) = xh(k); yk(numk) = yh(k)
-               kn(2, numl) = numk; kn(1, numl) = numk - 1; kn(3, numl) = 1 ! NOTE: regridded 1D now does not have kn(3,L)=4 at end points.
+               xk(numk) = xh(k)
+               yk(numk) = yh(k)
+               kn(2, numl) = numk
+               kn(1, numl) = numk - 1
+               kn(3, numl) = LINK_1D ! NOTE: regridded 1D now does not have kn(3,L)=LINK_1D2D_LONGITUDINAL at end points.
             end do
 
             deallocate (xh, yh, zh)
@@ -111,7 +138,9 @@
          else
 
             n = n + 1
-            xpl(n) = dmiss; ypl(n) = dmiss; zpl(n) = dmiss
+            xpl(n) = dmiss
+            ypl(n) = dmiss
+            zpl(n) = dmiss
 
          end if
 
@@ -126,3 +155,5 @@
       end if
 
    end subroutine regrid1D
+
+end module m_regrid1d

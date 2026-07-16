@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,26 @@
 !
 !
 module m_anchor
+   use m_towor
+   use m_setxor
+
    implicit none
 contains
    subroutine ANCHOR(X, Y)
-      use unstruc_colors
+      use precision, only: dp
+      use unstruc_colors, only: klank
+      use m_locatora, only: xa, ya
+      use m_dproject, only: dproject
+      use m_inflowcell, only: inflowcell
+      use m_disdis, only: disdis
+      use m_set_col, only: setcol
       use m_flow, only: nplot
       use m_GlobalParameters, only: INDTP_ALL
-      use m_locatora
-      use m_dproject
-      use m_inflowcell
 
       integer :: ma
       integer :: na
       integer :: k
-      double precision :: x, y, xx, yy
+      real(kind=dp) :: x, y, xx, yy
       real :: xr, yr
       !    VEEG OUDE CROSS UIT EN ZET NIEUWE
 
@@ -54,7 +60,9 @@ contains
       else
          call SETXOR(1)
          call SETCOL(KLANK)
-         call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+         call dPROJECT(xa, ya, xx, yy, 1)
+         xr = xx
+         yr = yy
          call IGrMARKER(xr, yr, 2)
          call SETXOR(0)
          XA = X
@@ -62,11 +70,15 @@ contains
       end if
 
       call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
-      if (k > 0) nplot = k
+      if (k > 0) then
+         nplot = k
+      end if
 
       call SETXOR(1)
       call SETCOL(KLANK)
-      call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+      call dPROJECT(xa, ya, xx, yy, 1)
+      xr = xx
+      yr = yy
       call IGrMARKER(xr, yr, 2)
       call SETXOR(0)
 

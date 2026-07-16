@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2024-2024.
+!!  Copyright (C)  Stichting Deltares, 2024-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,7 +23,7 @@
 
 module test_read_statistical_output
    use ftnunit
-   use stdlib_kinds, only: dp
+   use precision, only: dp
    use m_read_statistical_output
    use m_statistical_output_types, only: SO_UNKNOWN, SO_NONE, SO_CURRENT, SO_MAX, SO_MIN
    implicit none

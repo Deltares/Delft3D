@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,10 +26,22 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+module m_setuc1d
+
+   implicit none
+
+   private
+
+   public :: setuc1d
+
+contains
+
    subroutine setuc1d()
       use m_netw
       use m_flow
       use m_flowgeom
+      use m_get_prof_1D
+      use precision, only: dp
       implicit none
 
       integer, parameter :: JACSTOT = 0 !< 0 for computing the total area
@@ -38,33 +50,35 @@
 
       integer :: L, LL, La, n, nx, ja1D
 
-      double precision :: q_net_in !< [m3/s] sum of inflowing Q minus sum of outflowing Q over links of node n
-      double precision :: q_in !< [m3/s] sum of inflowing Q over links of node n
-      double precision :: q_out !< [m3/s] sum of outflowing Q over links of node n
-      double precision :: qu_in !< [m4/s2] sum of Q*u over inflowing links of node n
-      double precision :: qu_out !< [m4/s2] sum of Q*u over outflowing links of node n (u = Q/A)
-      double precision :: qu2_in !< [m5/s3] sum of Q*u**2 over inflowing links of node n
-      double precision :: qu2_out !< [m5/s3] sum of Q*u**2 over outflowing links of node n (u = Q/A)
-      double precision :: uc !< [m/s] representative velocity magnitude at node n
+      real(kind=dp) :: q_net_in !< [m3/s] sum of inflowing Q minus sum of outflowing Q over links of node n
+      real(kind=dp) :: q_in !< [m3/s] sum of inflowing Q over links of node n
+      real(kind=dp) :: q_out !< [m3/s] sum of outflowing Q over links of node n
+      real(kind=dp) :: qu_in !< [m4/s2] sum of Q*u over inflowing links of node n
+      real(kind=dp) :: qu_out !< [m4/s2] sum of Q*u over outflowing links of node n (u = Q/A)
+      real(kind=dp) :: qu2_in !< [m5/s3] sum of Q*u**2 over inflowing links of node n
+      real(kind=dp) :: qu2_out !< [m5/s3] sum of Q*u**2 over outflowing links of node n (u = Q/A)
+      real(kind=dp) :: uc !< [m/s] representative velocity magnitude at node n
 
       integer :: L1 !< index of first link
       integer :: k !< node index: 1 for link start node, and 2 for link end node
-      double precision :: h !< [m] local water depth
-      double precision :: half_link_length !< [m] half link length
-      double precision :: u !< [m/s] velocity
-      double precision :: q !< [m3/s] discharge
-      double precision :: perim !< [m] dummy variable for wetted perimeter
-      double precision :: flow_cs_area !< [m2] cross-sectional flow area
-      double precision :: total_cs_area !< [m2] cross-sectional total (flow + storage) area
-      double precision :: link_surface_area !< [m2] surface area of half link
-      double precision :: surface_area !< [m2] total surface area of node -- equal to a1(n)
-      double precision :: flow_width !< [m] surface width of flow area
-      double precision :: total_width !< [m] surface width of total (flow + storage) area
-      double precision :: dzw_dt !< [m/s] water level change rate
+      real(kind=dp) :: h !< [m] local water depth
+      real(kind=dp) :: half_link_length !< [m] half link length
+      real(kind=dp) :: u !< [m/s] velocity
+      real(kind=dp) :: q !< [m3/s] discharge
+      real(kind=dp) :: perim !< [m] dummy variable for wetted perimeter
+      real(kind=dp) :: flow_cs_area !< [m2] cross-sectional flow area
+      real(kind=dp) :: total_cs_area !< [m2] cross-sectional total (flow + storage) area
+      real(kind=dp) :: link_surface_area !< [m2] surface area of half link
+      real(kind=dp) :: surface_area !< [m2] total surface area of node -- equal to a1(n)
+      real(kind=dp) :: flow_width !< [m] surface width of flow area
+      real(kind=dp) :: total_width !< [m] surface width of total (flow + storage) area
+      real(kind=dp) :: dzw_dt !< [m/s] water level change rate
 
-      if (kmx /= 0 .or. lnx1D == 0) return
+      if (kmx /= 0 .or. lnx1D == 0) then
+         return
+      end if
 
-      uc1D = 0d0
+      uc1D = 0.0_dp
       do n = ndx2D + 1, ndxi
          nx = nd(n)%lnx
 
@@ -72,20 +86,26 @@
          do LL = 1, nx
             L = nd(n)%ln(LL)
             La = abs(L)
-            if (abs(kcu(La)) /= 1) ja1D = 0
+            if (abs(kcu(La)) /= 1) then
+               ja1D = 0
+            end if
          end do
-         if (ja1D == 0) cycle
-         if (jaJunction1D == 0 .and. nx > 2) cycle
+         if (ja1D == 0) then
+            cycle
+         end if
+         if (jaJunction1D == 0 .and. nx > 2) then
+            cycle
+         end if
 
-         qu_in = 0d0
-         qu_out = 0d0
-         q_in = 0d0
-         q_out = 0d0
+         qu_in = 0.0_dp
+         qu_out = 0.0_dp
+         q_in = 0.0_dp
+         q_out = 0.0_dp
          do LL = 1, nx ! loop over all links of the upstream node
             L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
             La = abs(L)
 
-            if (L * u1(La) >= 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
+            if (L * u1(La) >= 0.0_dp) then ! inflowing: positive flow to this node, or negative flow from this node
                qu_in = qu_in + qa(La) * u1(La)
                q_in = q_in + abs(qa(La))
             else ! outflowing: positive flow from this node, or negative flow to this node
@@ -94,10 +114,10 @@
             end if
          end do
 
-         if (q_in > 0d0 .and. q_out > 0d0) then
-            uc = 0.5d0 * (qu_in / q_in + qu_out / q_out)
+         if (q_in > 0.0_dp .and. q_out > 0.0_dp) then
+            uc = 0.5_dp * (qu_in / q_in + qu_out / q_out)
          else ! all inflow, all outflow, or stagnant
-            uc = 0d0
+            uc = 0.0_dp
          end if
 
          L1 = abs(nd(n)%ln(1))
@@ -105,7 +125,7 @@
       end do
 
       do LL = lnxi + 1, lnx ! loop over open boundary links
-         if (kcu(LL) == -1) then ! 1D boundary link
+         if (kcu(LL) == LINK_1D_BOUNDARY) then ! 1D boundary link
             n = Ln(1, LL)
 
             ! a 1D boundary node has just one link (the boundary link)
@@ -115,7 +135,7 @@
       end do
 
       if (jaPure1D == 1 .or. jaPure1D == 2) then
-         u1Du = 0d0
+         u1Du = 0.0_dp
          do L = 1, lnx
             if (qa(L) > 0 .and. abs(uc1D(ln(1, L))) > 0) then ! set upwind ucxu, ucyu  on links
                u1Du(L) = uc1D(ln(1, L))
@@ -126,12 +146,12 @@
 
       elseif (jaPure1D >= 3) then
 
-         q1D = 0d0
-         au1D = 0d0
-         sar1D = 0d0
-         volu1D = 0d0
-         alpha_mom_1D = 0d0
-         alpha_ene_1D = 0d0
+         q1D = 0.0_dp
+         au1D = 0.0_dp
+         sar1D = 0.0_dp
+         volu1D = 0.0_dp
+         alpha_mom_1D = 0.0_dp
+         alpha_ene_1D = 0.0_dp
          do n = ndx2D + 1, ndxi
             nx = nd(n)%lnx
 
@@ -139,14 +159,20 @@
             do LL = 1, nx
                L = nd(n)%ln(LL)
                La = abs(L)
-               if (abs(kcu(La)) /= 1) ja1D = 0
+               if (abs(kcu(La)) /= 1) then
+                  ja1D = 0
+               end if
             end do
-            if (ja1D == 0) cycle
-            if (jaJunction1D == 0 .and. nx > 2) cycle
+            if (ja1D == 0) then
+               cycle
+            end if
+            if (jaJunction1D == 0 .and. nx > 2) then
+               cycle
+            end if
 
             ! compute total net discharge into the node
-            q_net_in = 0d0
-            surface_area = 0d0
+            q_net_in = 0.0_dp
+            surface_area = 0.0_dp
             do LL = 1, nx ! loop over all links connected to the node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
                La = abs(L)
@@ -158,7 +184,7 @@
                   k = 1
                end if
 
-               h = max(0d0, s1(n) - bob(k, La)) ! cross sectional area
+               h = max(0.0_dp, s1(n) - bob(k, La)) ! cross sectional area
                call getprof_1D(La, h, total_cs_area, total_width, JACSTOT, CALCCONV, perim)
                call getprof_1D(La, h, flow_cs_area, flow_width, JACSFLW, CALCCONV, perim)
                link_surface_area = total_width * half_link_length
@@ -169,13 +195,13 @@
                surface_area = surface_area + link_surface_area
                volu1D(La) = volu1D(La) + flow_cs_area * half_link_length
 
-               q_net_in = q_net_in + dble(sign(1, L)) * qa(La)
+               q_net_in = q_net_in + real(sign(1, L), kind=dp) * qa(La)
             end do
 
-            qu_in = 0d0
-            qu_out = 0d0
-            qu2_in = 0d0
-            qu2_out = 0d0
+            qu_in = 0.0_dp
+            qu_out = 0.0_dp
+            qu2_in = 0.0_dp
+            qu2_out = 0.0_dp
             dzw_dt = q_net_in / surface_area
             do LL = 1, nx ! loop over all links connected to the node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
@@ -193,7 +219,7 @@
                   q1D(1, La) = q
                end if
 
-               if ((L * q) >= 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
+               if ((L * q) >= 0.0_dp) then ! inflowing: positive flow to this node, or negative flow from this node
                   u = u1(La)
                   if ((q * u) > 0) then ! flow direction at link equal to flow direction at node
                      qu_in = qu_in + abs(q * u)
@@ -201,16 +227,18 @@
                   else ! flow direction at link opposite to flow direction at node, so use 0 velocity inflow
                      ! no contribution if u = 0
                   end if
-               elseif (flow_cs_area > 0d0) then ! outflowing: negative flow to this node, or positive flow from this node
+               elseif (flow_cs_area > 0.0_dp) then ! outflowing: negative flow to this node, or positive flow from this node
                   u = q / flow_cs_area
                   qu_out = qu_out + abs(q * u)
                   qu2_out = qu2_out + abs(q * u**2)
                end if
             end do
 
-            alpha_mom_1D(n) = qu_in / max(1e-20, qu_out)
-            alpha_ene_1D(n) = qu2_in / max(1e-20, qu2_out)
+            alpha_mom_1D(n) = qu_in / max(1e-20_dp, qu_out)
+            alpha_ene_1D(n) = qu2_in / max(1e-20_dp, qu2_out)
          end do
       end if
 
    end subroutine setuc1d
+
+end module m_setuc1d

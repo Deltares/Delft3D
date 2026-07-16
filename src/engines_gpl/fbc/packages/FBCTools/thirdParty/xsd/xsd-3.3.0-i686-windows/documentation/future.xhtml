@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+  <title>XSD Planned Features List</title>
+
+  <meta name="copyright" content="&copy; 2005-2010 Code Synthesis Tools CC"/>
+  <meta name="keywords" content="xsd,xml,schema,c++,mapping,data,binding,code,generator,future,features,plan"/>
+  <meta name="description" content="List of features planned for XSD."/>
+
+  <link rel="stylesheet" type="text/css" href="default.css" />
+</head>
+
+<body>
+<div id="container">
+  <div id="content">
+
+    <p>Below is the list of features that we plan to implement in the
+    future. They are divided into two sections: ones that will
+    likely appear in the forthcoming releases and those that we
+    have no definite time-line for. Send an email to
+    <a href="mailto:xsd-users@codesynthesis.com">xsd-users@codesynthesis.com</a>
+    if you are interested in a particular feature or would like to suggest
+    one.</p>
+
+    <h1>Forthcoming Releases</h1>
+
+    <h2>C++/Serializer</h2>
+
+    <ul class="multiline">
+      <li>New mapping that will support event-driven XML serialization.</li>
+    </ul>
+
+    <h2>C++/Hybrid</h2>
+
+    <ul class="multiline">
+      <li>New mapping that will support hybrid, event-driven/in-memory
+          XML processing.</li>
+    </ul>
+
+    <h1>No Definite Time-line</h1>
+
+    <h2>IDL</h2>
+
+    <ul class="multiline">
+      <li>New mapping that will produce CORBA IDL from XML Schema.</li>
+    </ul>
+
+    <h2>IDL/C++</h2>
+
+    <ul class="multiline">
+      <li>New co-mapping that will produce C++ parsing/serialization
+          code for the C++ types produced from CORBA IDL.</li>
+    </ul>
+
+    <h2>C++/Tree</h2>
+
+     <ul class="multiline">
+      <li>Mapping for <code>xsd:unique</code>, <code>xsd:key</code>,
+          and <code>xsd:keyref</code>.</li>
+
+      <li>Option to select between <code>std::vector</code> and
+          <code>std::list</code> as an underlying sequence type.</li>
+
+      <li>Special attribute in XML Schema definition that would
+          instruct code generators to use a different container type
+          such as associative containers (<code>std::set</code> and
+          <code>std::multiset</code>). This will allow you to
+          construct a light-weight, object-oriented database with XML Schema
+          as a specification language and XML as an underlying
+          representation.
+      </li>
+
+      <li>Make dependency generator.</li>
+
+      <li>Generate typedef instead of inheritance for some cases of
+          inheritance from fundamental types.</li>
+
+      <li>Option to suppress the generation of enum mapping.</li>
+
+      <li>Map arbitrary-length integers to a suitable user-defined types.</li>
+
+      <li>Option to map <code>xsd:long</code> to C++ <code>long</code> instead
+          of <code>long long</code> for 64-bit architectures (can be achieved
+          now with --custom-type).</li>
+    </ul>
+
+  </div>
+  <div id="footer">
+    &copy;2005-2010 <a href="http://codesynthesis.com">CODE SYNTHESIS TOOLS CC</a>
+
+    <div id="terms">
+      Permission is granted to copy, distribute and/or modify this
+      document under the terms of the
+      <a href="http://codesynthesis.com/licenses/fdl-1.2.txt">GNU Free
+      Documentation License, version 1.2</a>; with no Invariant Sections,
+      no Front-Cover Texts and no Back-Cover Texts.
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,7 +1,7 @@
 module meteo
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -31,11 +31,11 @@ module meteo
 !
 ! Read time series in five possible formats:
 ! uniform                     : Delft3D-FLOW format: time, uniform windspeed, direction and pressure
-! meteo_on_computational_grid : Space varying wind and pressure on the computational grid: time and fields of patm, windu, windv
+! meteo_on_computational_grid : Space varying wind and pressure on the computational grid: time and fields of air_pressure, windu, windv
 !                               on the computational (m,n) grid
 ! field_on_computational_grid : same as meteo_on_computational_grid but more general
 ! meteo_on_equidistant_grid   : time and fields on on equidistant grid
-! meteo_on_spiderweb_grid     : time and fields of patm, windspeed, wind_from_direction op spiderweb grid
+! meteo_on_spiderweb_grid     : time and fields of air_pressure, windspeed, wind_from_direction op spiderweb grid
 ! meteo_on_curvilinear_grid   : time and fields on own curvilinear grid
 !
 ! Main calls from Delft3D-FLOW:
@@ -66,6 +66,7 @@ module meteo
 !!--declarations----------------------------------------------------------------
    use precision
    use meteo_data
+   use m_ec_utm_inverse
 
 
    real(fp), private :: pi
@@ -303,7 +304,22 @@ function addmeteoitem(runid, inputfile, gridsferic, num_columns, num_rows) resul
     !
     ! Only for space varying meteo input on a separate grid
     !
-    if (meteoitem%filetype /= uniuvp .and. meteoitem%filetype /= meteo_on_computational_grid) then
+    if (meteoitem%filetype == meteo_on_spiderweb_grid) then
+       if (meteogridsferic .neqv. gridsferic) then
+          if (meteogridsferic .and. .not. gridsferic) then
+             if (trim(meteoitem%spw_utm_zone_target) == 'undefined') then
+                success = .false.
+                meteomessage = 'Meteo input: spw_utm_zone_target must be specified when applying a spiderweb grid ' // &
+                             & 'in degrees on a Cartesian hydrodynamic grid'
+                return
+             endif
+          else
+             success = .false.
+             meteomessage = 'Meteo grid and hydrodynamic grid must be of the same type: Cartesian or spherical'
+             return
+          endif
+       endif
+    elseif (meteoitem%filetype /= uniuvp .and. meteoitem%filetype /= meteo_on_computational_grid) then
        if (meteogridsferic .neqv. gridsferic) then
           success = .false.
           meteomessage = 'Meteo grid and hydrodynamic grid must be of the same type: Cartesian or spherical'
@@ -531,7 +547,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
                return
             endif
             meteoitem%field(it1)%x_spw_eye  = x_spw_eye
-            meteoitem%field(it1)%y_spw_eye  = y_spw_eye            
+            meteoitem%field(it1)%y_spw_eye  = y_spw_eye
             meteoitem%field(it1)%all_nodata = all_nodata
             !
       end select
@@ -828,6 +844,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
    real(fp)                              :: wdir
    real(fp)                              :: wdir0
    real(fp)                              :: wdir1
+   real(dp)                              :: lon
+   real(dp)                              :: lat
    real(fp), dimension(3)                :: z         ! spiderweb wind_speed (1), wind_from_direction (2) and air_pressure (3)
    real(fp), dimension(4)                :: f
    real(fp), dimension(4)                :: u
@@ -1215,12 +1233,24 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            do k = 1, kx
                               spw%spwarr(k, n, m) = 0.0_fp
                            enddo
-                           x  = meteo%flowgrid%xz(n,m)
-                           y  = meteo%flowgrid%yz(n,m)
-                           xx = x
-                           yy = y
-                           dx = x - x01
-                           dy = y - y01
+                           x_hp  = real(meteo%flowgrid%xz(n,m),hp)
+                           y_hp  = real(meteo%flowgrid%yz(n,m),hp)
+                           if (meteoitem%spw_utm_zone_target /= 'undefined') then
+                              call utm2deg(x_hp, y_hp, meteoitem%spw_utm_zone_target, lon, lat)
+                              xx = real(lon,fp)
+                              yy = real(lat,fp)
+                              x  = real(lon,fp)
+                              y  = real(lat,fp)
+                              dx = real(lon,fp) - x01
+                              dy = real(lat,fp) - y01
+                           else
+                              x  = real(x_hp, fp)
+                              y  = real(y_hp, fp)
+                              xx = x
+                              yy = y
+                              dx = x - x01
+                              dy = y - y01
+                           end if
                            !
                            ! Distance to centre
                            !
@@ -1312,7 +1342,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            !
                            spw%spwarr(2, n, m) = z(1) * sin(z(2))
                            !
-                           ! patm
+                           ! air_pressure
                            !
                            spw%spwarr(3, n, m) = z(3)
                         endif

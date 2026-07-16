@@ -54,35 +54,31 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
 !
 !     40.30: Marcel Zijlema
 !     40.41: Marcel Zijlema
-!COH!     41.61: Homayoon Komijani
 !
 !  1. Updates
 !
 !     40.30, Jan. 03: New subroutine
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
-!COH!     41.61, Aug. 14: coupling with COHERENS
 !
 !  2. Purpose
 !
@@ -149,7 +145,6 @@
 #ifdef SWANEXE
       CALL MPI_INIT ( IERR )
 #else
-!COH      IERR = MPI_SUCCESS                                                  41.61
       IERR = MPI_SUCCESS
 #endif
       IF ( IERR.NE.MPI_SUCCESS ) THEN
@@ -173,7 +168,6 @@
 #ifdef SWANEXE
       CALL MPI_COMM_RANK ( MPI_COMM_WORLD, INODE, IERR )
 #else
-!COH      CALL MPI_COMM_RANK ( COMM, INODE, IERR )
       CALL MPI_COMM_RANK ( COMM, INODE, IERR )
 #endif
 #endif
@@ -196,7 +190,6 @@
 #ifdef SWANEXE
       CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NPROC, IERR )
 #else
-!COH      CALL MPI_COMM_SIZE ( COMM, NPROC, IERR )
       CALL MPI_COMM_SIZE ( COMM, NPROC, IERR )
 #endif
       IF ( IERR.NE.MPI_SUCCESS ) THEN
@@ -227,6 +220,7 @@
 #ifdef USE_MPI
 !     --- define MPI constants for communication within SWAN
 
+      SWCHAR = MPI_CHARACTER
       SWINT  = MPI_INTEGER
       SWREAL = MPI_REAL
       SWMAX  = MPI_MAX
@@ -247,7 +241,6 @@
 #endif
       USE OCPCOMM4                                                        40.41
 #ifndef SWANEXE
-!COH      USE M_PARALL, ONLY: COMM                                            41.61
       USE M_PARALL, ONLY: COMM
 #endif
 !
@@ -265,35 +258,31 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
 !
 !     40.30: Marcel Zijlema
 !     40.41: Marcel Zijlema
-!COH!     41.61: Homayoon Komijani
 !
 !  1. Updates
 !
 !     40.30, Jan. 03: New subroutine
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
-!COH!     41.61, Aug. 14: coupling with COHERENS
 !
 !  2. Purpose
 !
@@ -350,7 +339,6 @@
 #ifdef SWANEXE
          CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR )
 #else
-!COH         CALL MPI_BARRIER ( COMM, IERR )
          CALL MPI_BARRIER ( COMM, IERR )
 #endif
 
@@ -361,7 +349,6 @@
 #ifdef SWANEXE
             CALL MPI_ABORT ( MPI_COMM_WORLD, LEVERR, IERR )
 #else
-!COH            CALL MPI_ABORT ( COMM, LEVERR, IERR )
             CALL MPI_ABORT ( COMM, LEVERR, IERR )
 #endif
 
@@ -406,22 +393,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -500,7 +485,6 @@
 #ifdef SWANEXE
       CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_BARRIER ( COMM, IERR )
       CALL MPI_BARRIER ( COMM, IERR )
 #endif
       IF ( IERR.NE.MPI_SUCCESS ) THEN
@@ -544,22 +528,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -646,8 +628,6 @@
       CALL MPI_SEND ( IPTR, ILEN, ITYPE, IDEST-1,
      &                ITAG, MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_SEND ( IPTR, ILEN, ITYPE, IDEST-1,
-!COH     &                ITAG, COMM, IERR )
       CALL MPI_SEND ( IPTR, ILEN, ITYPE, IDEST-1,
      &                ITAG, COMM, IERR )
 #endif
@@ -692,22 +672,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -800,8 +778,6 @@
       CALL MPI_RECV ( IPTR, ILEN, ITYPE, ISOURCE-1, ITAG,
      &                MPI_COMM_WORLD, ISTAT, IERR )
 #else
-!COH      CALL MPI_RECV ( IPTR, ILEN, ITYPE, ISOURCE-1, ITAG,
-!COH     &                COMM, ISTAT, IERR )
       CALL MPI_RECV ( IPTR, ILEN, ITYPE, ISOURCE-1, ITAG,
      &                COMM, ISTAT, IERR )
 #endif
@@ -846,22 +822,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -947,8 +921,6 @@
       CALL MPI_BCAST ( IPTR, ILEN, ITYPE, MASTER-1,
      &                 MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_BCAST ( IPTR, ILEN, ITYPE, MASTER-1,
-!COH     &                 COMM, IERR )
       CALL MPI_BCAST ( IPTR, ILEN, ITYPE, MASTER-1,
      &                 COMM, IERR )
 #endif
@@ -991,22 +963,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1114,8 +1084,6 @@
       CALL MPI_GATHER( IILEN, 1, SWINT, ICOUNT, 1, SWINT,
      &                 MASTER-1, MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_GATHER( IILEN, 1, SWINT, ICOUNT, 1, SWINT,
-!COH     &                 MASTER-1, COMM, IERR )
       CALL MPI_GATHER( IILEN, 1, SWINT, ICOUNT, 1, SWINT,
      &                 MASTER-1, COMM, IERR )
 #endif
@@ -1158,8 +1126,6 @@
       CALL MPI_GATHERV( IIPTR, IILEN, ITYPE, IOPTR, ICOUNT, IDSPLC,
      &                  ITYPE, MASTER-1, MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_GATHERV( IIPTR, IILEN, ITYPE, IOPTR, ICOUNT, IDSPLC,
-!COH     &                  ITYPE, MASTER-1, COMM, IERR )
       CALL MPI_GATHERV( IIPTR, IILEN, ITYPE, IOPTR, ICOUNT, IDSPLC,
      &                  ITYPE, MASTER-1, COMM, IERR )
 #endif
@@ -1200,22 +1166,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1319,22 +1283,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1421,8 +1383,6 @@
       CALL MPI_ALLREDUCE ( IARR, ITEMP, ILEN, SWINT,
      &                     ITYPRD, MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_ALLREDUCE ( IARR, ITEMP, ILEN, SWINT,
-!COH     &                     ITYPRD, COMM, IERR )
       CALL MPI_ALLREDUCE ( IARR, ITEMP, ILEN, SWINT,
      &                     ITYPRD, COMM, IERR )
 #endif
@@ -1468,22 +1428,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1570,8 +1528,6 @@
       CALL MPI_ALLREDUCE ( ARR, TEMP, ILEN, SWREAL,
      &                     ITYPRD, MPI_COMM_WORLD, IERR )
 #else
-!COH      CALL MPI_ALLREDUCE ( ARR, TEMP, ILEN, SWREAL,
-!COH     &                     ITYPRD, COMM, IERR )
       CALL MPI_ALLREDUCE ( ARR, TEMP, ILEN, SWREAL,
      &                     ITYPRD, COMM, IERR )
 #endif
@@ -1613,22 +1569,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1816,22 +1770,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !JAC!
 !JAC!  0. Authors
@@ -2054,22 +2006,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !JAC!
 !JAC!  0. Authors
@@ -2323,22 +2273,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2494,22 +2442,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2683,7 +2629,7 @@
          CALL TXPBLA(CHARS,IF,IL)
          MSGSTR = 'Empty subdomain is detected - '//
      &            ' node number is '//CHARS(IF:IL)
-         CALL MSGERR ( 2, MSGSTR )
+         CALL MSGERR ( 1, MSGSTR )
 
          MXF = 1
          MYF = 1
@@ -2840,22 +2786,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3007,22 +2951,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !JAC!
 !JAC!  0. Authors
@@ -3239,22 +3181,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3429,22 +3369,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3595,22 +3533,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3762,22 +3698,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -4025,15 +3959,13 @@
 !****************************************************************
 !
       USE TIMECOMM                                                        40.41
-!PUN      USE OCPCOMM2
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
       USE SWCOMM2                                                         40.51
       USE SWCOMM3                                                         40.41
       USE OUTP_DATA
       USE M_PARALL                                                        40.31
-!PUN      USE SwanGriddata, ONLY: nvertsg                                     41.36
-!PUN      USE SIZES                                                           41.36
+      USE SwanGriddata, ONLY: nvertsg                                     41.36
 !
       IMPLICIT NONE
 !
@@ -4049,22 +3981,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -4106,14 +4036,14 @@
 !     CORQ  :     current item in list of request outputs
 !     CROSS :     auxiliary logical array
 !     CUOPS :     current item in list of point sets
-!PUN!     EXIST :     logical whether a file exist or not
+!     EXIST :     logical whether a file exist or not
 !     DIF   :     difference between end and actual times
 !     DTTIWR:     to write time string
 !     IC    :     loop variable
 !     IENT  :     number of entries
-!PUN!     ILPOS :     actual length of filename
+!     ILPOS :     actual length of filename
 !     IP    :     loop variable
-!PUN!     IPROC :     loop counter
+!     IPROC :     loop counter
 !     IRQ   :     request number
 !     IT    :     time step counter
 !     IT0   :     integer indicating first step of simulation
@@ -4144,12 +4074,12 @@
 !
       INTEGER   IC, IENT, IP, IRQ, IT, IT0, IT1, IUNIT, MIP, MXK, MYK
       INTEGER   ITMP1, ITMP2, ITMP3, ITMP4, ITMP5, ITMP6
-!PUN      INTEGER   ILPOS, IPROC
+      INTEGER   ILPOS, IPROC
       REAL*8    DIF, TNEXT
       REAL      RTMP1, RTMP2, RTMP3, RTMP4
       REAL, ALLOCATABLE :: XC(:), YC(:), XP(:), YP(:)                     40.51
       LOGICAL   OPENED
-!PUN      LOGICAL   EXIST
+      LOGICAL   EXIST
       LOGICAL, ALLOCATABLE :: CROSS(:,:)                                  40.86
       CHARACTER PSTYPE*1, RTYPE*4, SNAMPF*8, DTTIWR*18
       TYPE(ORQDAT), POINTER :: CORQ
@@ -4201,8 +4131,6 @@
       IF (LTRACE) CALL STRACE (IENT,'SWCOLOUT')
 
       IF ( NREOQ.EQ.0 ) RETURN
-!PUN
-!PUN      NPROC = MNPROC                                                      41.36
 
 !     --- do for all COMPUTE commands
 
@@ -4254,13 +4182,14 @@
                END IF
 
                RTYPE  = CORQ%RQTYPE
+               IF (RTYPE.EQ.'BLKV') GOTO 50  ! note: no collection VTK files
                SNAMPF = CORQ%PSNAME
-!PUN
-!PUN               IF (SNAMPF.EQ.'COMPGRID') THEN
-!PUN                  LCOMPGRD=.TRUE.
-!PUN               ELSE
-!PUN                  LCOMPGRD=.FALSE.
-!PUN               ENDIF
+
+               IF (SNAMPF.EQ.'COMPGRID') THEN
+                  LCOMPGRD=.TRUE.
+               ELSE
+                  LCOMPGRD=.FALSE.
+               ENDIF
 
                CUOPS => FOPS
                DO
@@ -4281,7 +4210,7 @@
                   MIP = CUOPS%MIP
                ELSE IF ( PSTYPE.EQ.'U' ) THEN
                   MIP = CUOPS%MIP
-!PUN                  IF ( LCOMPGRD ) MIP = nvertsg
+                  IF ( LCOMPGRD ) MIP = nvertsg
                   MXK = MIP
                   MYK = 1
                END IF
@@ -4332,47 +4261,49 @@
                XCLMAX = RTMP2
                YCLMIN = RTMP3
                YCLMAX = RTMP4
-!PUN
-!PUN!              --- find global vertex index for output locations
-!PUN!                  stored in array XC
-!PUN
-!PUN               IF ( .NOT.LCOMPGRD ) THEN
-!PUN                  XC = -1.
-!PUN                  YC =  0.
-!PUN                  FILENM = TRIM(LOCALDIR)//DIRCH2//'output.set'
-!PUN                  ILPOS  = LEN(TRIM(LOCALDIR))
-!PUN                  DO IPROC = 1, NPROC
-!PUN                     WRITE(FILENM(ILPOS-3:ILPOS),'(I4.4)') IPROC-1
-!PUN                     IUNIT = HIOPEN+NREOQ*(NPROC+1)+IPROC
-!PUN                     INQUIRE ( FILE=FILENM, EXIST=EXIST, OPENED=OPENED )
-!PUN                     IF ( .NOT.OPENED ) THEN
-!PUN                        IF (EXIST) THEN
-!PUN                           OPEN ( UNIT=IUNIT, FILE=FILENM,
-!PUN     &                            FORM='UNFORMATTED' )
-!PUN                        ELSE
-!PUN                           CALL MSGERR( 4,
-!PUN     &                                'file output.set does not exist' )
-!PUN                           RETURN
-!PUN                        ENDIF
-!PUN                     ENDIF
-!PUN                     READ(IUNIT) ITMP1, ITMP2
-!PUN                     IF (ITMP1.EQ.IRQ) THEN
-!PUN                        DO IP = 1, ITMP2
-!PUN                           READ (IUNIT) ITMP3, ITMP4
-!PUN                           XC(ITMP3) = REAL(ITMP4) - 1.
-!PUN                        ENDDO
-!PUN                     ELSE
-!PUN                        CALL MSGERR( 4,
-!PUN     &        'inconsistency found in SWCOLOUT: wrong request number ' )
-!PUN                        RETURN
-!PUN                     ENDIF
-!PUN                  ENDDO
-!PUN               ELSE
-!PUN                  DO IP = 1, MIP
-!PUN                     XC(IP) = REAL(IP) - 1.
-!PUN                     YC(IP) = 0.
-!PUN                  ENDDO
-!PUN               ENDIF
+
+!              --- find global vertex index for output locations
+!                  in unstructured mesh and stored in array XC
+
+               IF ( OPTG.EQ.5 .AND. .NOT.LCOMPGRD ) THEN
+                  XC = -1.
+                  YC =  0.
+                  FILENM = 'output.set'
+                  ILPOS = INDEX ( FILENM, ' ' )-1
+                  DO IPROC = 1, NPROC
+!                    append node number to FILENM
+                     WRITE(FILENM(ILPOS+1:ILPOS+4),33) IPROC
+  33                 FORMAT('-',I3.3)
+                     IUNIT = HIOPEN+NREOQ*(NPROC+1)+IPROC
+                     INQUIRE ( FILE=FILENM, EXIST=EXIST, OPENED=OPENED )
+                     IF ( .NOT.OPENED ) THEN
+                        IF (EXIST) THEN
+                           OPEN ( UNIT=IUNIT, FILE=FILENM,
+     &                            FORM='UNFORMATTED' )
+                        ELSE
+                           CALL MSGERR( 4,
+     &                        'file '//trim(FILENM)//' does not exist' )
+                           RETURN
+                        ENDIF
+                     ENDIF
+                     READ(IUNIT) ITMP1, ITMP2
+                     IF (ITMP1.EQ.IRQ) THEN
+                        DO IP = 1, ITMP2
+                           READ (IUNIT) ITMP3, ITMP4
+                           XC(ITMP3) = REAL(ITMP4) - 1.
+                        ENDDO
+                     ELSE
+                        CALL MSGERR( 4,
+     &        'inconsistency found in SWCOLOUT: wrong request number ' )
+                        RETURN
+                     ENDIF
+                  ENDDO
+               ELSE IF ( OPTG.EQ.5 ) THEN
+                  DO IP = 1, MIP
+                     XC(IP) = REAL(IP) - 1.
+                     YC(IP) = 0.
+                  ENDDO
+               ENDIF
 
 !              --- correct problem coordinates with offset values
 
@@ -4443,10 +4374,9 @@
         INQUIRE ( UNIT=IUNIT, OPENED=OPENED )
         IF (OPENED) CLOSE(IUNIT)
       END DO
-      DO IUNIT = HIOPEN+NREOQ+1, HIOPEN+NREOQ*(NPROC+1)
-!PUN      DO IUNIT = HIOPEN+NREOQ+1, HIOPEN+NREOQ*(NPROC+1)+NPROC
-        INQUIRE ( UNIT=IUNIT, OPENED=OPENED )
-        IF (OPENED) CLOSE ( UNIT=IUNIT, STATUS='delete' )
+      DO IUNIT = HIOPEN+NREOQ+1, HIOPEN+NREOQ*(NPROC+1)+NPROC
+        INQUIRE ( UNIT=IUNIT, EXIST=EXIST, OPENED=OPENED )
+        IF (EXIST.AND.OPENED) CLOSE ( UNIT=IUNIT, STATUS='delete' )
       END DO
 
       RETURN
@@ -4458,14 +4388,13 @@
 !
 !****************************************************************
 !
-!PUN      USE OCPCOMM2, ONLY: LENFNM, DIRCH2                                  41.36
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
+      USE SWCOMM2, ONLY: OPTG                                             41.36
       USE SWCOMM3                                                         40.41
       USE SWCOMM4                                                         40.41
       USE OUTP_DATA
       USE M_PARALL                                                        40.31
-!PUN      USE SIZES, ONLY: GLOBALDIR, LOCALDIR                                41.36
 !
       IMPLICIT NONE
 !
@@ -4481,22 +4410,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -4540,6 +4467,7 @@
 !
 !  6. Local variables
 !
+!     EQREAL:     logical comparing two reals
 !     EXIST :     logical whether a file exist or not
 !     FSTR  :     an auxiliary string
 !     I     :     integer
@@ -4563,11 +4491,14 @@
 !     NVAR  :     number of output variables
 !     OPENED:     logical whether a file is open or not
 !     OUTLIN:     output line
+!     RVAL1 :     a value
+!     RVAL2 :     another value
 !
       INTEGER       I, IENT, IF, IL, ILPOS, IP, IPROC, IUNIT,
      &              IUT, IVTYPE, IXK, IYK, JVAR, LFIELD, NLINES,
      &              NREF, NUMDEC, NVAR
-      LOGICAL       EXIST, OPENED
+      REAL          RVAL1, RVAL2
+      LOGICAL       EXIST, OPENED, EQREAL
       CHARACTER(len=80)  MSGSTR
       CHARACTER(len=18)  FSTR
       CHARACTER(len=512) OUTLIN
@@ -4623,9 +4554,6 @@
          FILENM = OUTP_FILES(OQI(2))
          ILPOS  = INDEX(FILENM, '-0')
          IF (ILPOS.NE.0) FILENM = FILENM(1:ILPOS-1)
-!PUN         ILPOS  = LEN(TRIM(LOCALDIR))+2
-!PUN         FILENM = FILENM(ILPOS:LENFNM)
-!PUN         FILENM = TRIM(GLOBALDIR)//DIRCH2//TRIM(FILENM)
          INQUIRE ( FILE=FILENM, OPENED=OPENED, NUMBER=IUT )
 
 !        --- if it is not open or already open thru another request
@@ -4671,13 +4599,10 @@
 
             FILENM = OUTP_FILES(OQI(2))
             ILPOS  = INDEX ( FILENM, ' ' )-1
-!PUN            ILPOS  = LEN(TRIM(LOCALDIR))
             DO IPROC = 1, NPROC
                I = IPROC
-!PUN               I = I - 1
                WRITE(FILENM(ILPOS-3:ILPOS),100) I
  100           FORMAT('-',I3.3)
-!PUN 100           FORMAT(I4.4)
                IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC
                INQUIRE ( FILE=FILENM, EXIST=EXIST, OPENED=OPENED )
                IF ( .NOT.OPENED ) THEN
@@ -4685,8 +4610,6 @@
                      OPEN ( UNIT=IUNIT, FILE=FILENM )
                   ELSE
                      MSGSTR= 'file '//FILENM(1:ILPOS)//' does not exist'
-!PUN                     MSGSTR= 'file '//TRIM(FILENM(ILPOS:LENFNM))//
-!PUN     &                       ' does not exist'
                      CALL MSGERR( 4, MSGSTR )
                      RETURN
                   END IF
@@ -4715,8 +4638,19 @@
             END DO
          END IF
          IPLOOP : DO IP = 1, MIP                                          40.51
-            IXK = NINT(XC(IP)+100.)-99                                    41.07 40.51
-            IYK = NINT(YC(IP)+100.)-99                                    41.07 40.51
+            IXK = INT(XC(IP))                                             41.07 40.51
+            IYK = INT(YC(IP))                                             41.07 40.51
+            IF (OPTG.NE.5) THEN
+               RVAL1 = FLOAT(IXK)
+               RVAL2 = FLOAT(IYK)
+               IF ( .NOT.EQREAL(XC(IP),RVAL1) .OR.
+     &                   EQREAL(XC(IP),0.   ) ) IXK = IXK + 1
+               IF ( .NOT.EQREAL(YC(IP),RVAL2) .OR.
+     &                   EQREAL(YC(IP),0.   ) ) IYK = IYK + 1
+            ELSE
+               IXK = IXK + 1
+               IYK = IYK + 1
+            ENDIF
             IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.            41.07 40.51
      &           IYK.GT.MYCGL ) THEN                                      41.07 40.51
                CALL WREXCV                                                40.51
@@ -4801,16 +4735,15 @@
 !
 !****************************************************************
 !
-!PUN      USE OCPCOMM2, ONLY: LENFNM, DIRCH2                                  41.36
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
+      USE SWCOMM2, ONLY: OPTG, XOFFS, YOFFS                               43.01 41.36
       USE SWCOMM3                                                         40.41
       USE SWCOMM4                                                         40.41
       USE OUTP_DATA
       USE M_PARALL                                                        40.31
       USE swn_outnc, ONLY: swn_outnc_colspc                               41.40
-!PUN      USE SIZES, ONLY: GLOBALDIR, LOCALDIR                                41.36
-!PUN      USE SwanGriddata, ONLY: xcugrdgl, ycugrdgl
+      USE SwanGriddata, ONLY: xcugrdgl, ycugrdgl
 !
       IMPLICIT NONE
 !
@@ -4826,22 +4759,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -4885,6 +4816,7 @@
 !  6. Local variables
 !
 !     EMPTY :     logical whether a line is empty or not
+!     EQREAL:     logical comparing two reals
 !     EXIST :     logical whether a file exist or not
 !     I     :     integer
 !     IBLKN :     integer giving node number per subdomain
@@ -4906,14 +4838,17 @@
 !     OPENED:     logical whether a file is open or not
 !     OTYPE :     integer indicating dimension of spectrum
 !     OUTLIN:     output line
+!     RVAL1 :     a value
+!     RVAL2 :     another value
 !
       INTEGER       I, IBLKN, IENT, IF, IL, ILPOS, IP, IPROC, IS,
      &              IUNIT, IUT, IXK, IYK, NLINES, NREF, OTYPE
-      LOGICAL       EMPTY, EXIST, OPENED
+      REAL          RVAL1, RVAL2
+      LOGICAL       EMPTY, EXIST, OPENED, EQREAL
       LOGICAL, SAVE :: NCF = .FALSE.                                      41.40
-      CHARACTER(len=80)  MSGSTR
-      CHARACTER(LEN=LENSPO) OUTLIN
-!PUN      CHARACTER (LEN=8) :: CRFORM = '(2F14.4)'
+      CHARACTER*80  MSGSTR
+      CHARACTER (LEN=LENSPO) OUTLIN
+      CHARACTER (LEN=8) :: CRFORM = '(2F14.4)'
 !
 !  8. Subroutines used
 !
@@ -4978,9 +4913,6 @@
          FILENM = OUTP_FILES(OQI(2))
          ILPOS  = INDEX(FILENM, '-0')
          IF (ILPOS.NE.0) FILENM = FILENM(1:ILPOS-1)
-!PUN         ILPOS  = LEN(TRIM(LOCALDIR))+2
-!PUN         FILENM = FILENM(ILPOS:LENFNM)
-!PUN         FILENM = TRIM(GLOBALDIR)//DIRCH2//TRIM(FILENM)
          INQUIRE ( FILE=FILENM, OPENED=OPENED, NUMBER=IUT )
 
 !        --- if it is not open or already open thru another request
@@ -5000,7 +4932,7 @@
 !           --- count lines of first part of heading
 
             NLINES = NLINES + 5
-!PUN            IF ( LCOMPGRD    ) NLINES = NLINES - 1
+            IF ( LCOMPGRD    ) NLINES = NLINES - 1
             IF ( NSTATM.EQ.1 ) NLINES = NLINES + 2
 
 !           --- open individual process output files and
@@ -5008,13 +4940,10 @@
 
             FILENM = OUTP_FILES(OQI(2))
             ILPOS  = INDEX ( FILENM, ' ' )-1
-!PUN            ILPOS  = LEN(TRIM(LOCALDIR))
             DO IPROC = 1, NPROC
                I = IPROC
-!PUN               I = I - 1
                WRITE(FILENM(ILPOS-3:ILPOS),100) I
  100           FORMAT('-',I3.3)
-!PUN 100           FORMAT(I4.4)
                IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC
                INQUIRE ( FILE=FILENM, EXIST=EXIST, OPENED=OPENED )
                IF ( .NOT.OPENED ) THEN
@@ -5022,8 +4951,6 @@
                      OPEN ( UNIT=IUNIT, FILE=FILENM )
                   ELSE
                      MSGSTR= 'file '//FILENM(1:ILPOS)//' does not exist'
-!PUN                     MSGSTR= 'file '//TRIM(FILENM(ILPOS:LENFNM))//
-!PUN     &                       ' does not exist'
                      CALL MSGERR( 4, MSGSTR )
                      RETURN
                   END IF
@@ -5035,43 +4962,54 @@
                END DO
             END DO
 
-!PUN!           --- write number of locations in case of whole grid
-!PUN            IF ( LCOMPGRD ) THEN
-!PUN               WRITE (NREF,'(I6,T41,A)') MIP, 'number of locations'
-!PUN            ENDIF
-!PUN
+!           --- write number of locations in case of whole unstructured grid
+            IF ( OPTG.EQ.5 .AND. LCOMPGRD ) THEN
+               WRITE (NREF,'(I6,T41,A)') MIP, 'number of locations'
+            ENDIF
+
 !           --- write coordinates of output points to generic
 !               output file
 
-!PUN            IF ( .NOT.LCOMPGRD ) THEN
-            DO IP = 1, MIP                                                40.51
-               IF ( XC(IP).LT.-0.01 .OR. YC(IP).LT.-0.01 .OR.             40.51
-     &              XC(IP).GT.REAL(MXCGL-1)+0.01 .OR.                     40.51
-     &              YC(IP).GT.REAL(MYCGL-1)+0.01 ) THEN                   40.51
-                  IBLKN = NPROC+1                                         40.51
-               ELSE                                                       40.51
-                  IXK   = NINT(XC(IP)+100.)-99                            41.07 40.51
-                  IYK   = NINT(YC(IP)+100.)-99                            41.07 40.51
-                  IBLKN = NINT(BLKND(IXK,IYK))                            40.51
-               END IF                                                     40.51
-               EMPTY = .TRUE.
-               DO IPROC = 1, NPROC
-                  IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC
-                  READ (IUNIT,'(A)') OUTLIN
-                  CALL TXPBLA(OUTLIN,IF,IL)
-                  IF (EMPTY.AND.IBLKN.EQ.IPROC) THEN                      40.51
-                     WRITE (NREF, '(A)') OUTLIN(1:IL)
-                     EMPTY = .FALSE.
-                  END IF
+            IF ( OPTG.NE.5 .OR. .NOT.LCOMPGRD ) THEN
+               DO IP = 1, MIP                                             40.51
+                  IF ( XC(IP).LT.-0.01 .OR. YC(IP).LT.-0.01 .OR.          40.51
+     &                 XC(IP).GT.REAL(MXCGL-1)+0.01 .OR.                  40.51
+     &                 YC(IP).GT.REAL(MYCGL-1)+0.01 ) THEN                40.51
+                     IBLKN = NPROC+1                                      40.51
+                  ELSE                                                    40.51
+                     IXK = INT(XC(IP))                                    41.07 40.51
+                     IYK = INT(YC(IP))                                    41.07 40.51
+                     IF (OPTG.NE.5) THEN
+                        RVAL1 = FLOAT(IXK)
+                        RVAL2 = FLOAT(IYK)
+                        IF ( .NOT.EQREAL(XC(IP),RVAL1) .OR.
+     &                            EQREAL(XC(IP),0.   ) ) IXK = IXK + 1
+                        IF ( .NOT.EQREAL(YC(IP),RVAL2) .OR.
+     &                            EQREAL(YC(IP),0.   ) ) IYK = IYK + 1
+                     ELSE
+                        IXK = IXK + 1
+                        IYK = IYK + 1
+                     ENDIF
+                     IBLKN = NINT(BLKND(IXK,IYK))                         40.51
+                  END IF                                                  40.51
+                  EMPTY = .TRUE.
+                  DO IPROC = 1, NPROC
+                     IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC
+                     READ (IUNIT,'(A)') OUTLIN
+                     CALL TXPBLA(OUTLIN,IF,IL)
+                     IF (EMPTY.AND.IBLKN.EQ.IPROC) THEN                   40.51
+                        WRITE (NREF, '(A)') OUTLIN(1:IL)
+                        EMPTY = .FALSE.
+                     END IF
+                  END DO
+                  IF (EMPTY) WRITE (NREF, '(A)') OUTLIN(1:IL)
                END DO
-               IF (EMPTY) WRITE (NREF, '(A)') OUTLIN(1:IL)
-            END DO
-!PUN            ELSE
-!PUN            DO IP = 1, MIP
-!PUN               WRITE (NREF, FMT=CRFORM) DBLE(xcugrdgl(IP)),
-!PUN     &                                  DBLE(ycugrdgl(IP))
-!PUN            ENDDO
-!PUN            ENDIF
+            ELSE
+               DO IP = 1, MIP
+                  WRITE (NREF, FMT=CRFORM) DBLE(xcugrdgl(IP)+XOFFS),      43.01
+     &                                     DBLE(ycugrdgl(IP)+YOFFS)       43.01
+               ENDDO
+            ENDIF
 
 !           --- count lines of rest of heading and write heading
 !               to generic output file
@@ -5122,8 +5060,19 @@
       END IF
 
       IPLOOP : DO IP = 1, MIP                                             40.51
-         IXK = NINT(XC(IP)+100.)-99                                       41.07 40.51
-         IYK = NINT(YC(IP)+100.)-99                                       41.07 40.51
+         IXK = INT(XC(IP))                                                41.07 40.51
+         IYK = INT(YC(IP))                                                41.07 40.51
+         IF (OPTG.NE.5) THEN
+            RVAL1 = FLOAT(IXK)
+            RVAL2 = FLOAT(IYK)
+            IF ( .NOT.EQREAL(XC(IP),RVAL1) .OR.
+     &                EQREAL(XC(IP),0.   ) ) IXK = IXK + 1
+            IF ( .NOT.EQREAL(YC(IP),RVAL2) .OR.
+     &                EQREAL(YC(IP),0.   ) ) IYK = IYK + 1
+         ELSE
+            IXK = IXK + 1
+            IYK = IYK + 1
+         ENDIF
          IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.               41.07 40.51
      &        IYK.GT.MYCGL ) THEN                                         41.07 40.51
             WRITE (NREF, '(A)') 'NODATA'                                  40.51
@@ -5176,15 +5125,14 @@
 !
 !****************************************************************
 !
-!PUN      USE OCPCOMM2, ONLY: LENFNM, DIRCH2                                  41.36
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
+      USE SWCOMM2, ONLY: OPTG                                             41.36
       USE SWCOMM3, ONLY: NSTATM                                           41.62
       USE SWCOMM4, ONLY: KSPHER                                           41.62
       USE OUTP_DATA
       USE M_PARALL
-!PUN      USE SIZES, ONLY: GLOBALDIR, LOCALDIR                                41.36
-!PUN!NCF      USE SwanGridData, ONLY: XCUGRDGL, YCUGRDGL                          41.40
+      USE SwanGridData, ONLY: XCUGRDGL, YCUGRDGL                          41.40
       USE swn_outnc                                                       41.40
 !
       IMPLICIT NONE
@@ -5201,22 +5149,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -5269,6 +5215,7 @@
 !
 !     CTIM  :     string representing date of computation
 !     DFAC  :     multiplication factor of block output
+!     EQREAL:     logical comparing two reals
 !     EXIST :     logical whether a file exist or not
 !     FMAX  :     auxiliary real
 !     FTIP  :     auxiliary real
@@ -5298,13 +5245,17 @@
 !     NREF  :     unit reference number
 !     NVAR  :     number of output variables
 !     OPENED:     logical whether a file is open or not
+!     RVAL1 :     a value
+!     RVAL2 :     another value
 !     VOQ   :     collected output variables
 !
       INTEGER      I, IBLKN, IDLA, IENT, IF, IFAC, IL, ILPOS, IP, IPD,
      &             IPROC, IUNIT, IUT, IXK, IYK, IVTYPE, J, JVAR, NREF,
      &             NVAR
+      INTEGER, PARAMETER :: IDLEN=1
       REAL         DFAC, FMAX, FTIP, FTIP1, FTIP2
-      LOGICAL      EXIST, OPENED
+      REAL         RVAL1, RVAL2
+      LOGICAL      EXIST, OPENED, EQREAL
       INTEGER, SAVE :: IREC(MAX_OUTP_REQ)=0                               40.51 40.41
       LOGICAL, SAVE :: MATLAB=.FALSE.                                     40.41
       LOGICAL, SAVE :: NCF   =.FALSE.                                     41.40
@@ -5313,6 +5264,7 @@
       CHARACTER (LEN=20) :: CTIM                                          40.41
       CHARACTER (LEN=30) :: NAMVAR                                        40.41
       CHARACTER (LEN=80) :: HTXT(3)                                       41.62
+      CHARACTER (LEN=80), ALLOCATABLE :: ID(:)
       REAL, ALLOCATABLE :: VOQ(:,:)
       INTEGER VOQR(NMOVAR)                                                41.62
 !
@@ -5376,9 +5328,6 @@
          FILENM = OUTP_FILES(OQI(2))
          ILPOS  = INDEX(FILENM, '-0')
          IF (ILPOS.NE.0) FILENM = FILENM(1:ILPOS-1)
-!PUN         ILPOS  = LEN(TRIM(LOCALDIR))+2
-!PUN         FILENM = FILENM(ILPOS:LENFNM)
-!PUN         FILENM = TRIM(GLOBALDIR)//DIRCH2//TRIM(FILENM)
          INQUIRE ( FILE=FILENM, OPENED=OPENED, NUMBER=IUT )
          MATLAB = INDEX( FILENM, '.MAT' ).NE.0 .OR.                       40.41
      &            INDEX (FILENM, '.mat' ).NE.0                            40.41
@@ -5393,21 +5342,31 @@
 
 !           --- open generic output file or reset reference number
 
+            ALLOCATE(CHARACTER(LEN=80)::ID(IDLEN))
+            ID(1)=' '
             IF (NCF .AND. .NOT.OPENED) THEN                               41.40
-               IF(PSNAME == 'COMPGRID') THEN
-                  CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
-     &                                      OVLNAM, OQI, OQR, IVTYP,IRQ,
-     &                                      XGRDGL, YGRDGL)
-               ELSE
-                  CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
-     &                                      OVLNAM, OQI, OQR, IVTYP,IRQ)
-               ENDIF
-!PUN!NCF               CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
-!PUN!NCF     &                                      OVLNAM, OQI, OQR, IVTYP, IRQ,
-!PUN!NCF     &                                      XCUGRDGL, YCUGRDGL)
                 IUT    = HIOPEN + IRQ
-                OPENED = .TRUE.
+                OQI(1) = IUT
+                IF (OPTG.NE.5) THEN
+                   IF(PSNAME == 'COMPGRID') THEN
+                      CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
+     &                                          OVLNAM, OQI, OQR, IVTYP,
+     &                                          IRQ, IDLEN, ID,
+     &                                          XGRDGL, YGRDGL)
+                   ELSE
+                      CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
+     &                                          OVLNAM, OQI, OQR, IVTYP,
+     &                                          IRQ, IDLEN, ID)
+                   ENDIF
+                ELSE
+                   CALL swn_outnc_openblockfile(FILENM, MYK, MXK,
+     &                                          OVLNAM, OQI, OQR, IVTYP,
+     &                                          IRQ, IDLEN, ID,
+     &                                          XCUGRDGL, YCUGRDGL)
+               ENDIF
+               OPENED = .TRUE.
             END IF
+            DEALLOCATE(ID)
 
             IF ( .NOT.OPENED ) THEN
                NREF = HIOPEN + IRQ
@@ -5421,8 +5380,7 @@
                CLOSE(NREF)
                OPEN(UNIT=NREF, FILE=FILENM, FORM='UNFORMATTED',
      &              STATUS='REPLACE',
-!MatL4     &              ACCESS='DIRECT', RECL=1)
-     &              ACCESS='DIRECT', RECL=4)                              41.08
+     &              ACCESS='DIRECT', RECL=1)                              41.08
                IREC(IRQ) = 1                                              40.51
             END IF
 
@@ -5451,13 +5409,10 @@
 
             FILENM = OUTP_FILES(OQI(2))
             ILPOS  = INDEX ( FILENM, ' ' )-1
-!PUN            ILPOS  = LEN(TRIM(LOCALDIR))
             DO IPROC = 1, NPROC
                I = IPROC
-!PUN               I = I - 1
                WRITE(FILENM(ILPOS-3:ILPOS),100) I
  100           FORMAT('-',I3.3)
-!PUN 100           FORMAT(I4.4)
                IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC
                INQUIRE ( FILE=FILENM, EXIST=EXIST, OPENED=OPENED )
                IF ( .NOT.OPENED ) THEN
@@ -5465,8 +5420,6 @@
                      OPEN ( UNIT=IUNIT, FILE=FILENM, FORM='UNFORMATTED')
                   ELSE
                      MSGSTR= 'file '//FILENM(1:ILPOS)//' does not exist'
-!PUN                     MSGSTR= 'file '//TRIM(FILENM(ILPOS:LENFNM))//
-!PUN     &                       ' does not exist'
                      CALL MSGERR( 4, MSGSTR )
                      RETURN
                   END IF
@@ -5504,8 +5457,19 @@
          ENDIF
 
          DO IP = 1, MXK*MYK                                               40.51
-            IXK = NINT(XC(IP)+100.)-99                                    41.07 40.51
-            IYK = NINT(YC(IP)+100.)-99                                    41.07 40.51
+            IXK = INT(XC(IP))                                             41.07 40.51
+            IYK = INT(YC(IP))                                             41.07 40.51
+            IF (OPTG.NE.5) THEN
+               RVAL1 = FLOAT(IXK)
+               RVAL2 = FLOAT(IYK)
+               IF ( .NOT.EQREAL(XC(IP),RVAL1) .OR.
+     &                   EQREAL(XC(IP),0.   ) ) IXK = IXK + 1
+               IF ( .NOT.EQREAL(YC(IP),RVAL2) .OR.
+     &                   EQREAL(YC(IP),0.   ) ) IYK = IYK + 1
+            ELSE
+               IXK = IXK + 1
+               IYK = IYK + 1
+            ENDIF
             IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.
      &           IYK.GT.MYCGL ) THEN
                IBLKN = 0
@@ -5533,8 +5497,19 @@
          IF ( OVSVTY(IVTYPE).GE.3 ) THEN
 
             DO IP = 1, MXK*MYK                                            40.51
-               IXK = NINT(XC(IP)+100.)-99                                 41.07 40.51
-               IYK = NINT(YC(IP)+100.)-99                                 41.07 40.51
+               IXK = INT(XC(IP))                                          41.07 40.51
+               IYK = INT(YC(IP))                                          41.07 40.51
+               IF (OPTG.NE.5) THEN
+                  RVAL1 = FLOAT(IXK)
+                  RVAL2 = FLOAT(IYK)
+                  IF ( .NOT.EQREAL(XC(IP),RVAL1) .OR.
+     &                      EQREAL(XC(IP),0.   ) ) IXK = IXK + 1
+                  IF ( .NOT.EQREAL(YC(IP),RVAL2) .OR.
+     &                      EQREAL(YC(IP),0.   ) ) IYK = IYK + 1
+               ELSE
+                  IXK = IXK + 1
+                  IYK = IYK + 1
+               ENDIF
                IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.
      &              IYK.GT.MYCGL ) THEN
                   IBLKN = 0
@@ -5690,22 +5665,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !JAC!
 !JAC!  0. Authors

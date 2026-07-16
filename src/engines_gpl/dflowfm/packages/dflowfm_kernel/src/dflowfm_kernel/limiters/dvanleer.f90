@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,12 +33,13 @@ module m_dvanleer
    implicit none
 contains
 
-   double precision function dvanleer(d1, d2) ! twee maal vergroot vanwege acl
-      double precision d1, d2
-      if (d1 * d2 > 0d0) then
-         dvanleer = 2d0 * d2 / (d1 + d2)
+   real(kind=dp) function dvanleer(d1, d2) ! twee maal vergroot vanwege acl
+      use precision, only: dp
+      real(kind=dp) d1, d2
+      if (d1 * d2 > 0.0_dp) then
+         dvanleer = 2.0_dp * d2 / (d1 + d2)
       else
-         dvanleer = 0d0
+         dvanleer = 0.0_dp
       end if
       return
    end function dvanleer

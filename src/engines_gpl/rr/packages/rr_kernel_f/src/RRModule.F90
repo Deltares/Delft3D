@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -566,6 +566,11 @@
     Write(*,'(A,8I4)') ' Values', (time_fields(i),i=1,8)
   Endif
 
+  If (CleanRRFiles) then
+     call SetMessage(LEVEL_INFO, 'End of CleanRRFiles')
+     stop
+  endif
+
 ! ARS 10903 : RR output selection
   RRNamefile = ''
   RRNamefile = Conffil_get_Namfil(1)
@@ -779,6 +784,8 @@
         IDateAct   = EventStartDateTime(1,1)*10000 + EventStartDateTime(1,2)* 100 + EventStartDateTime(1,3)
         ITimeAct   = EventStartDateTime(1,4)*10000 + EventStartDateTime(1,5)* 100 + EventStartDateTime(1,6)
         JulianStartDate = Julian (IDateAct, ITimeAct)
+        StartDateAsInteger = IDateAct
+        JulStart = Modified_Julian_fromJulian(JulianStartDate)
         IDateAct   = OutputEventStartDateTime(1,1)*10000 + OutputEventStartDateTime(1,2)* 100 + &
                                                                            OutputEventStartDateTime(1,3)
         ITimeAct   = OutputEventStartDateTime(1,4)*10000 + OutputEventStartDateTime(1,5)* 100 + &
@@ -931,6 +938,8 @@
      IDateAct   = EventStartDateTime(1,1)*10000 + EventStartDateTime(1,2)* 100 + EventStartDateTime(1,3)
      ITimeAct   = EventStartDateTime(1,4)*10000 + EventStartDateTime(1,5)* 100 + EventStartDateTime(1,6)
      JulianStartDate = Julian (IDateAct, ITimeAct)
+     StartDateAsInteger = IDateAct
+     JulStart = Modified_Julian_fromJulian(JulianStartDate)
      ModJulianTime = Modified_Julian_fromJulian(JulianStartDate)
 !
 !*********************************************************************
@@ -1104,7 +1113,7 @@
       IDEBUG = 0
 
       IF (NEVENT .LE. 0) THEN
-         Write(*,*) ' No simulation computations'
+         call SetMessage(LEVEL_INFO, ' No simulation computations since no Events defined; NEVENT <= 0')
       ELSE
 
 ! Modflow wordt on-line gebruikt als het door unpaved en/of RR open water gebruikt wordt
@@ -3110,8 +3119,8 @@
          OpenDAFileName = ConfFil_get_NamFil(123)
          if (OpenDAFileName .ne. '' .and. UseOpenDAFile) then
              Call OpenFl (OpenDAFileUnit, OpenDAFileName, 1,2)
-             Call WriteOpenDAPaved (OpenDAFileUnit)
-             Call WriteOpenDAUnpaved (OpenDAFileUnit)
+             Call WriteOpenDAPaved      (OpenDAFileUnit)
+             Call WriteOpenDAUnpaved    (OpenDAFileUnit)
              Call WriteOpenDAGreenhouse (OpenDAFileUnit)
              Call WriteOpenDAOpenWater  (OpenDAFileUnit)
              Call WriteOpenDASacramento (OpenDAFileUnit)
@@ -3122,7 +3131,7 @@
 !            Call WriteOpenDALGSI       (OpenDAFileUnit)
              Call WriteOpenDAWalrus     (OpenDAFileUnit)
              Call CloseGP(OpenDAFileUnit)
-             write(*,*) ' OpenDafile generated'
+             call SetMessage(LEVEL_INFO, ' OpenDAFiles generated')
          endif
        Endif
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,11 +29,18 @@
 
 !
 !
+module m_dbdistance_hk
+   implicit none
+contains
+   subroutine dbdistancehk(xa, ya, xb, yb, dist) ! easy way to get a distance in one line of code, without need for specifying 3 modules :
+      use precision, only: dp
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
 
-subroutine dbdistancehk(xa, ya, xb, yb, dist) ! easy way to get a distance in one line of code, without need for specifying 3 modules :
-   use m_sferic, only: jsferic, jasfer3D
-   use geometry_module, only: dbdistance
-   use M_MISSING
-   double precision :: xa, ya, xb, yb, dist
-   dist = DBDISTANCE(xa, ya, xb, yb, jsferic, jasfer3D, dmiss)
-end subroutine dbdistancehk
+      real(kind=dp) :: xa, ya, xb, yb, dist
+
+      dist = DBDISTANCE(xa, ya, xb, yb, jsferic, jasfer3D, dmiss)
+
+   end subroutine dbdistancehk
+end module m_dbdistance_hk

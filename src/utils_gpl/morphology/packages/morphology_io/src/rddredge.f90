@@ -1,7 +1,7 @@
 module m_rddredge
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -55,6 +55,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     use morphology_data_module, only: sedpar_type, morpar_type
     use dredge_data_module
     use grid_dimens_module, only: griddimtype
+    use string_module, only: strcmpi
     !
     implicit none
     !
@@ -173,7 +174,6 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     real(sp)                                :: versionnr
     real(sp)                                :: versionnrinput
     logical                                 :: ex
-    logical, external                       :: stringsequalinsens
     logical                                 :: success
     logical                                 :: unique
     logical                                 :: def_dredgewhendry
@@ -923,6 +923,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 write(lundia,'(a,i0,a)')     '  Depth definition            : ',pdredge%depthdef,' (relative to '//trim(stringval)//')'
                 !
                 call prop_get(link_ptr, '*', 'Clearance'    , pdredge%clearance)
+                write(lundia,'(a,es12.3e3,a)') '  Clearance                   : ', pdredge%clearance,' m'
                 call prop_get(link_ptr, '*', 'DredgeWhenDry', pdredge%dredgewhendry)
                 call prop_get(link_ptr, '*', 'DumpLimited'  , pdredge%dumplimited)
                 if (pdredge%maxvolrate < 0.0_fp) then
@@ -1058,7 +1059,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          call prop_get(node_ptr, '*', 'Sediment' , sedname)
                          sfound = .false.
                          do j2 = 1, lsedtot
-                            if ( stringsequalinsens(namsed(j2), sedname) ) then
+                            if ( strcmpi(namsed(j2), sedname) ) then
                                cntsedidx = j2
                                sfound    = .true.
                             endif
@@ -1161,7 +1162,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          call prop_get(node_ptr, '*', 'Sediment', sedname)
                          sfound = .false.
                          do j2 = 1, lsedtot
-                            if ( stringsequalinsens(namsed(j2), sedname) ) then
+                            if ( strcmpi(namsed(j2), sedname) ) then
                                cntsedidx = j2
                                sfound    = .true.
                             endif
@@ -1342,7 +1343,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    write(lundia,'(a,i0,a)') '  Dump distribution           : ', pdredge%dumpdistr,' ('//trim(stringval)//')'
                    !
                    do j = ilink, cntlink
-                      write(lundia,'(2a)') '    Dump at                   : ', trim(dump_areas(link_def(j,2)))
+                      write(lundia,'(2a)') '  Dump at                     : ', trim(dump_areas(link_def(j,2)))
                    enddo
                    !
                    ! To be checked futher down: unique relation and capacity limitation
@@ -1616,7 +1617,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     if (noutletlinks > 0) then
        !
        istat = 0
-       if (istat == 0) call realloc(dredgepar%link_percentage, (/nalink+noutletlinks,lsedtot/), fill = 100.0_fp, stat = istat)
+       if (istat == 0) call realloc(dredgepar%link_percentage, (/nalink+noutletlinks,lsedtot/), fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%link_distance, nalink+noutletlinks, fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%link_sum, (/nalink+noutletlinks,lsedtot/), fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%voldump, (/nadump+1,lsedtot/), fill = 0.0_fp, stat = istat)
@@ -1663,6 +1664,18 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           if (pdredge%outletlink>0) then
              link_def(pdredge%outletlink,1) = i
              link_def(pdredge%outletlink,2) = nadump
+             !
+             ! determine the percentage that is dumped outside the model
+             !
+             do lsed = 1, lsedtot
+                sumperc = 0.0_fp
+                do j = 1, nalink
+                   if (link_def(j,1) /= i) cycle
+                   sumperc = sumperc + link_percentage(j,lsed)
+                enddo
+                !
+                link_percentage(pdredge%outletlink,lsed) = 100.0_fp - sumperc
+             enddo
           endif
        enddo
        !

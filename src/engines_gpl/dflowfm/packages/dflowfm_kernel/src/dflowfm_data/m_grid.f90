@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,12 +31,13 @@
 !
 
 module m_grid
+   use precision, only: dp
    implicit none
    integer :: MET = 1 ! drawing method
    integer :: mc = 0, nc = 0 ! actuele dimensies
    integer :: MMAX = 0, NMAX = 0, MNMAX = 0 ! array   dimensies
    integer :: mch = 0, nch = 0 ! actuele dimensies van hulprooster
-   double precision, allocatable :: xc(:, :), yc(:, :), zc(:, :)
-   double precision, allocatable :: xch(:, :), ych(:, :), zch(:, :) ! save/restore
+   real(kind=dp), allocatable :: xc(:, :), yc(:, :), zc(:, :)
+   real(kind=dp), allocatable :: xch(:, :), ych(:, :), zch(:, :) ! save/restore
    integer, allocatable :: ijc(:, :), ijyes(:, :)
 end module m_grid

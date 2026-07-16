@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,89 +31,11 @@
 !
 
 module interp
+
+   use precision, only: dp
    implicit none
+
 contains
-   subroutine linear_interp_2d(X, nx, Y, ny, Z, xx, yy, zz, method, exception)
-      use precision_basics, only: dp
-
-      implicit none
-      ! input/output
-      integer, intent(in) :: nx, ny
-      real(dp), dimension(nx), intent(in) :: X
-      real(dp), dimension(ny), intent(in) :: Y
-      real(dp), dimension(nx, ny), intent(in) :: Z
-      real(dp), intent(in) :: xx, yy
-      real(dp), intent(out) :: zz
-      character(len=*), intent(in) :: method
-      real(dp), intent(in) :: exception
-      ! internal
-      integer, dimension(4) :: ind
-      real(dp), dimension(2) :: yint
-      real(dp) :: modx, mody, disx, disy
-      logical :: interpX, interpY
-
-      ! does the interpolation point fall within the data?
-      if (xx >= minval(X) .and. xx <= maxval(X)) then
-         interpX = .true.
-      else
-         interpX = .false.
-      end if
-      if (yy >= minval(Y) .and. yy <= maxval(Y)) then
-         interpY = .true.
-      else
-         interpY = .false.
-      end if
-
-      if (interpX .and. interpY) then
-         ! find rank position xx in X direction
-         ind(1) = minloc(X, 1, X >= xx)
-         ind(2) = maxloc(X, 1, X <= xx)
-         ! find rank position yy in Y direction
-         ind(3) = minloc(Y, 1, Y >= yy)
-         ind(4) = maxloc(Y, 1, Y <= yy)
-         ! distance between X points and Y points
-         disx = X(ind(1)) - X(ind(2))
-         disy = Y(ind(3)) - Y(ind(4))
-         ! relative position of (xx,yy) on disx,disy
-         if (disx > 0.d0) then
-            modx = (xx - X(ind(2))) / disx
-         else
-            modx = 0.d0 ! xx corresponds exactly to X point
-         end if
-         if (disy > 0.d0) then
-            mody = (yy - Y(ind(4))) / disy
-         else
-            mody = 0.d0 ! yy corresponds exactly to Y point
-         end if
-         ! interpolate the correct Y value, based on two nearest X intersects
-         ! if disy==0 then only single interpolation needed. This could also be done for X,
-         ! but since this is used by waveparams and the interp angles (Y) are more often equal
-         ! this is probably faster.
-         if (disy > 0.d0) then
-            yint(1) = (1.d0 - modx) * Z(ind(2), ind(3)) + modx * Z(ind(1), ind(3))
-            yint(2) = (1.d0 - modx) * Z(ind(2), ind(4)) + modx * Z(ind(1), ind(4))
-            zz = (1.d0 - mody) * yint(2) + mody * yint(1)
-         else
-            zz = (1.d0 - modx) * Z(ind(2), ind(3)) + modx * Z(ind(1), ind(3))
-         end if
-      else
-         select case (method)
-         case ('interp')
-            zz = exception
-         case ('extendclosest')
-            ! find closest X point
-            ind(1) = minloc(abs(X - xx), 1)
-            ! find closest Y point
-            ind(3) = minloc(abs(Y - yy), 1)
-            ! external value given that of closest point
-            zz = Z(ind(1), ind(3))
-         case default
-            zz = exception
-         end select
-      end if
-
-   end subroutine linear_interp_2d
-
 !
 ! NAME
 !    linear_interp
@@ -148,12 +70,14 @@ contains
       real(dp) :: a, b, dyy
       integer :: j
 
-      yy = 0.0d0
+      yy = 0.0_dp
       if (present(indint)) then
          indint = 0
       end if
 
-      if (N <= 0) return
+      if (N <= 0) then
+         return
+      end if
       !
       ! *** N GREATER THAN 0
       !
@@ -172,7 +96,7 @@ contains
          a = x(j + 1)
          b = x(j)
          if (a == b) then
-            dyy = 0.0d0
+            dyy = 0.0_dp
          else
             dyy = (y(j + 1) - y(j)) / (a - b)
          end if
@@ -294,11 +218,13 @@ contains
       !
   !! executable statements -------------------------------------------------------
       !
-      if (iprint == 1) write (*, *) 'in grmap n1 n2', n1, n2
+      if (iprint == 1) then
+         write (*, *) 'in grmap n1 n2', n1, n2
+      end if
       do i2 = 1, n2
          i = iref(1, i2)
          if (i > 0) then
-            f2(i2) = 0.d0
+            f2(i2) = 0.0_dp
             !        i1 = max(i, 1)
             !        ifac = 1 - i/i1
             !        f2(i2) = f2(i2)*ifac
@@ -306,67 +232,20 @@ contains
             ! Function values at grid 2 are expressed as weighted average
             ! of function values in Np surrounding points of grid 1
             !
-            if (iprint == 1 .and. i2 <= n2) &
-          & write (*, '(1X,A,I6,4(1X,E11.4))') ' i2 w ', i2, (w(ip, i2), ip=1,  &
-          & np)
+            if (iprint == 1 .and. i2 <= n2) then
+               write (*, '(1X,A,I6,4(1X,E11.4))') ' i2 w ', i2, (w(ip, i2), ip=1, np)
+            end if
             do ip = 1, np
                i = iref(ip, i2)
                i1 = max(i, 1)
-               if (iprint == 1 .and. i2 <= n2) write (*, *) ' i1,f1(i1) ', i1, f1(i1)
+               if (iprint == 1 .and. i2 <= n2) then
+                  write (*, *) ' i1,f1(i1) ', i1, f1(i1)
+               end if
                f2(i2) = f2(i2) + w(ip, i2) * f1(i1)
             end do
          end if
       end do
    end subroutine grmap
-
-   subroutine grmap2(f1, cellsz1i, n1, f2, cellsz2, n2, iref, &
-                   & w, np)
-  !!--description-----------------------------------------------------------------
-      !
-      ! compute interpolated values for all points on grid 1 given reference table
-      ! for grid 2; this works the other way round from GRMAP. Assumption is that
-      ! grid 2 is much finer than grid 1. For each point in grid 2 we know the
-      ! surrounding points in grid 1 and the related weights. Instead of using this to
-      ! interpolate from 1 to 2 we now integrate from 2 to 1 using the same weights.
-      !
-      !
-  !!--pseudo code and references--------------------------------------------------
-      ! NONE
-  !!--declarations----------------------------------------------------------------
-      use precision_basics, only: dp
-
-      implicit none
-      !
-      ! Global variables
-      !
-      integer, intent(in) :: n1
-      integer, intent(in) :: n2
-      integer, intent(in) :: np
-      integer, dimension(np, n2), intent(in) :: iref
-      real(dp), dimension(n1) :: f1
-      real(dp), dimension(n1), intent(in) :: cellsz1i !array with 1/cell size
-      real(dp), intent(in) :: cellsz2
-      real(dp), dimension(n2), intent(in) :: f2
-      real(dp), dimension(np, n2), intent(in) :: w
-      !
-      ! Local variables
-      !
-      integer :: i1
-      integer :: i2
-      integer :: ip
-      !
-  !! executable statements -------------------------------------------------------
-      !
-      do ip = 1, np
-         do i2 = 1, n2
-            i1 = iref(ip, i2)
-            if (i1 > 0) then
-               !f2(i2) = f2(i2) + w(ip, i2)*f1(i1)
-               f1(i1) = f1(i1) + w(ip, i2) * f2(i2) * cellsz2 * cellsz1i(i1)
-            end if
-         end do
-      end do
-   end subroutine grmap2
 
    subroutine ipon(xq, yq, n, xp, yp, inout)
       !--description----------------------------------------------------------------
@@ -633,43 +512,43 @@ contains
          ier = 1
          goto 99999
       end if
-      if (abs(x3t - 1.0d0) < 1.0e-7) then
+      if (abs(x3t - 1.0_dp) < 1.0e-7) then
          xi = xt
-         if (abs(y3t - 1.0d0) < 1.0e-7) then
+         if (abs(y3t - 1.0_dp) < 1.0e-7) then
             eta = yt
-         elseif (abs(1.0d0 + (y3t - 1.0d0) * xt) < 1.0e-6) then
+         elseif (abs(1.0_dp + (y3t - 1.0_dp) * xt) < 1.0e-6) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            eta = yt / (1.0d0 + (y3t - 1.0d0) * xt)
+            eta = yt / (1.0_dp + (y3t - 1.0_dp) * xt)
          end if
-      elseif (abs(y3t - 1.0d0) < 1.0e-6) then
+      elseif (abs(y3t - 1.0_dp) < 1.0e-6) then
          eta = yt
-         if (abs(1.0d0 + (x3t - 1.0d0) * yt) < 1.0e-6) then
+         if (abs(1.0_dp + (x3t - 1.0_dp) * yt) < 1.0e-6) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            xi = xt / (1.0d0 + (x3t - 1.0d0) * yt)
+            xi = xt / (1.0_dp + (x3t - 1.0_dp) * yt)
          end if
       else
-         a = y3t - 1.0d0
-         b = 1.0d0 + (x3t - 1.0d0) * yt - (y3t - 1.0d0) * xt
+         a = y3t - 1.0_dp
+         b = 1.0_dp + (x3t - 1.0_dp) * yt - (y3t - 1.0_dp) * xt
          c = -xt
-         discr = b * b - 4.0d0 * a * c
+         discr = b * b - 4.0_dp * a * c
          if (discr < 1.0e-6) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          end if
-         xi = (-b + sqrt(discr)) / (2.0d0 * a)
-         eta = ((y3t - 1.0d0) * (xi - xt) + (x3t - 1.0d0) * yt) / (x3t - 1.0d0)
+         xi = (-b + sqrt(discr)) / (2.0_dp * a)
+         eta = ((y3t - 1.0_dp) * (xi - xt) + (x3t - 1.0_dp) * yt) / (x3t - 1.0_dp)
       end if
-      w(1) = (1.0d0 - xi) * (1.0d0 - eta)
-      w(2) = xi * (1.0d0 - eta)
+      w(1) = (1.0_dp - xi) * (1.0_dp - eta)
+      w(2) = xi * (1.0_dp - eta)
       w(3) = xi * eta
-      w(4) = eta * (1.0d0 - xi)
+      w(4) = eta * (1.0_dp - xi)
       return
 99999 continue
    end subroutine bilin5
@@ -691,8 +570,8 @@ contains
          integ = 0
       else
 
-         x1 = max(x1_in, x(1) + 1d-60)
-         x2 = min(x2_in, x(n) - 1d-60)
+         x1 = max(x1_in, x(1) + 1.0e-60_dp)
+         x2 = min(x2_in, x(n) - 1.0e-60_dp)
          dx = (x(n) - x(1)) / (n - 1)
          i1 = floor((x1 - x(1)) / dx) + 1
          i2 = floor((x2 - x(1)) / dx) + 1
@@ -746,7 +625,7 @@ contains
             call linear_interp(x, y, n, xp(ip), yp(ip), indt)
          end do
       end if
-      integ = 0.d0
+      integ = 0.0_dp
       do ip = 1, np - 1
          integ = integ + .5 * (xp(ip + 1) - xp(ip)) * (yp(ip + 1) + yp(ip))
       end do
@@ -818,7 +697,7 @@ contains
          yc(1:n) = y
          do i = n + 1, icycle
             xc(i) = xc(i - 1) + dx
-            yc(i) = 0.d0
+            yc(i) = 0.0_dp
          end do
          xc(icycle + 1) = xc(icycle) + dx
          yc(icycle + 1) = yc(1)
@@ -852,7 +731,7 @@ contains
             yright = yc(iright)
          end if
          facright = mod(xp(ip), dx) / dx
-         facleft = 1.d0 - facright
+         facleft = 1.0_dp - facright
          yp(ip) = facleft * yleft + facright * yright
 
       end do

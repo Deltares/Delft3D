@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,8 +31,12 @@
 !
 
 module m_oned_functions
+   use m_vol12d, only: vol12d
    use m_missing, only: dmiss
+   use precision, only: dp
+
    implicit none
+
    private
 
    public set_1d_roughnesses
@@ -66,16 +70,15 @@ contains
 
    !> IFRCUTP and FRCu are filled, using 1D roughness values from Network structure
    subroutine set_1d_roughnesses()
-      use m_flowgeom
+      use m_flowgeom, only: kcu, lnx1d
+      use unstruc_channel_flow, only: network
       use m_flow, only: frcu, ifrcutp, frcu_mor
-      use unstruc_channel_flow
-
-      implicit none
+      use network_data, only: LINK_1D
 
       ! FRCU and FRCU_MOR should only be used after SETAU - VOL12D.
       ! Therefore initialise these arrays with a negative value.
       if (network%loaded) then
-         where (kcu(1:lnx1d) == 1)
+         where (kcu(1:lnx1d) == LINK_1D)
             frcu(1:lnx1d) = dmiss
             ifrcutp(1:lnx1d) = 0
             frcu_mor(1:lnx1d) = dmiss
@@ -88,15 +91,13 @@ contains
    !! into the 1D network structure for branches, storage nodes,
    !! cross sections and structures, etc.
    subroutine set_1d_indices_in_network()
-      use timers
-      use m_sediment
-      use m_flowgeom
-      use m_flow
-      use m_cross_helper
-      use m_flowparameters
-      use unstruc_channel_flow
+      use timers, only: timstrt, timstop
+      use m_sediment, only: jased, stm_included
+      use m_flowgeom, only: wu1duni
+      use m_flow, only: nonlin1d, nonlin, flow_solver, flow_solver_sre
+      use unstruc_channel_flow, only: default_width, network, cscalculationoption, cs_type_plus
+      use m_longculverts_data, only: only_longculvert_1d
 
-      implicit none
       integer handle_tot
       integer handle
 
@@ -105,8 +106,9 @@ contains
       default_width = wu1DUNI
 
       if (network%loaded) then
-         ! nonlinear computation is required for 1d flow
-         if (nonlin1D == 0) then
+         ! nonlinear computation is required for 1d flow, but since long culverts use only rectangular profiles, we do not override nonlin1D if there's only long culverts in the model.
+         ! Note that nonlin1D = 0 still introduces an error the moment the long culvert transitions from partially filled to fully submerged, but this is small enough to be not force nonlin1D to 1 in that case.
+         if (nonlin1D == 0 .and. .not. only_longculvert_1D) then
             nonLin1D = 1
          elseif (nonlin1D >= 2) then
             CSCalculationOption = CS_TYPE_PLUS
@@ -151,14 +153,10 @@ contains
    !! (This replaces the netlink/netnode numbers that were originally
    !! filled in during the network reading stage.)
    subroutine set_linknumbers_in_branches()
-      use unstruc_channel_flow
-      use m_flowgeom
-      use m_sediment
-      use messageHandling
+      use unstruc_channel_flow, only: network, realloc, msgbuf, err_flush, flow1d_eps10
+      use m_flowgeom, only: ln, ndx2d, nd
       use precision_basics, only: comparereal
-      use m_GlobalParameters, only: flow1d_eps10
-
-      implicit none
+      use m_branch, only: t_branch
 
       integer :: L
       integer :: ibr
@@ -218,7 +216,7 @@ contains
             end if
          end do
          k1 = grd(1)
-         if (pbr%FromNode%gridNumber == -1 .and. comparereal(pbr%gridPointsChainages(1), 0d0, flow1d_eps10) == 0) then
+         if (pbr%FromNode%gridNumber == -1 .and. comparereal(pbr%gridPointsChainages(1), 0.0_dp, flow1d_eps10) == 0) then
             pbr%FromNode%gridNumber = k1 ! Only when exactly at the branch start (need not be so in parallel models).
          end if
          k2 = grd(pbr%gridPointsCount)
@@ -230,6 +228,7 @@ contains
 
    !> Set the node numbers from flowgeom for the storage nodes
    subroutine set_node_numbers_for_storage_nodes()
+      use precision, only: dp
 
       use unstruc_channel_flow
       use m_flowgeom
@@ -240,12 +239,10 @@ contains
       use m_inquire_flowgeom
       use m_find_flownode, only: find_nearest_flownodes
 
-      implicit none
-
       integer :: i
       type(t_storage), pointer :: pstor
       integer, allocatable :: ixy2stor(:), k_tmp(:)
-      double precision, allocatable :: x_tmp(:), y_tmp(:)
+      real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
       character(len=IdLen), allocatable :: name_tmp(:)
       integer :: nxy, countxy, jakdtree, ierr
 
@@ -286,11 +283,21 @@ contains
             end if
          end do
 
-         if (allocated(k_tmp)) deallocate (k_tmp)
-         if (allocated(x_tmp)) deallocate (x_tmp)
-         if (allocated(y_tmp)) deallocate (y_tmp)
-         if (allocated(ixy2stor)) deallocate (ixy2stor)
-         if (allocated(name_tmp)) deallocate (name_tmp)
+         if (allocated(k_tmp)) then
+            deallocate (k_tmp)
+         end if
+         if (allocated(x_tmp)) then
+            deallocate (x_tmp)
+         end if
+         if (allocated(y_tmp)) then
+            deallocate (y_tmp)
+         end if
+         if (allocated(ixy2stor)) then
+            deallocate (ixy2stor)
+         end if
+         if (allocated(name_tmp)) then
+            deallocate (name_tmp)
+         end if
       end if
 
    end subroutine set_node_numbers_for_storage_nodes
@@ -300,8 +307,6 @@ contains
       use m_flowgeom
       use fm_external_forcings_data
       use m_inquire_flowgeom
-
-      implicit none
 
       integer :: nstru
 
@@ -319,6 +324,7 @@ contains
    !!       incoming or outgoing branch (link).) \n
    !!       A connection node is located at the beginning or end of the branch.
    subroutine set_cross_sections_to_gridpoints()
+      use precision, only: dp
 
       use unstruc_channel_flow
       use m_flowgeom
@@ -326,26 +332,26 @@ contains
       use messageHandling
       use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
 
-      implicit none
-
       integer :: L
       integer :: ibr
       integer :: nbr, pointscount
       integer :: i, j, jpos, linkcount
       integer :: k1, igrid
       integer :: c1, c2
-      double precision :: d1, d2, dh
+      real(kind=dp) :: d1, d2, dh
       type(t_branch), pointer :: pbr
       integer, dimension(:), pointer :: lin
       integer, dimension(:), pointer :: grd
-      double precision, dimension(:), pointer :: chainage
+      real(kind=dp), dimension(:), pointer :: chainage
       type(t_chainage2cross), dimension(:, :), pointer :: line2cross
 
       ! cross sections (in case of sediment transport every gridpoint requires a unique
       ! cross section)
       line2cross => network%adm%line2cross
       if ((jased > 0 .and. stm_included) .or. (flow_solver == FLOW_SOLVER_SRE)) then
-         if (allocated(gridpoint2cross)) deallocate (gridpoint2cross)
+         if (allocated(gridpoint2cross)) then
+            deallocate (gridpoint2cross)
+         end if
          allocate (gridpoint2cross(ndxi))
          do i = 1, ndxi
             gridpoint2cross(i)%num_cross_sections = 0
@@ -360,7 +366,9 @@ contains
             end if
 
             linkcount = nd(k1)%lnx
-            if (allocated(gridpoint2cross(k1)%cross)) deallocate (gridpoint2cross(k1)%cross)
+            if (allocated(gridpoint2cross(k1)%cross)) then
+               deallocate (gridpoint2cross(k1)%cross)
+            end if
             allocate (gridpoint2cross(k1)%cross(linkcount))
             gridpoint2cross(k1)%num_cross_sections = linkcount
             gridpoint2cross(k1)%cross = -999
@@ -382,10 +390,10 @@ contains
                   ! this entry (gridpoint2cross(k1)) is already allocated
                   if (i == 1) then
                      L = lin(1)
-                     dh = (chainage(i + 1) - chainage(i)) / 2d0
+                     dh = (chainage(i + 1) - chainage(i)) / 2.0_dp
                   else
                      L = lin(i - 1)
-                     dh = (chainage(i) - chainage(i - 1)) / 2d0
+                     dh = (chainage(i) - chainage(i - 1)) / 2.0_dp
                   end if
                   do j = 1, nd(k1)%lnx
                      if (L == abs(nd(k1)%ln(j))) then
@@ -395,11 +403,13 @@ contains
                else
                   ! Internal gridpoint on branch, only 1 cross section attached
                   L = lin(i - 1)
-                  if (allocated(gridpoint2cross(k1)%cross)) deallocate (gridpoint2cross(k1)%cross)
+                  if (allocated(gridpoint2cross(k1)%cross)) then
+                     deallocate (gridpoint2cross(k1)%cross)
+                  end if
                   allocate (gridpoint2cross(k1)%cross(1))
                   gridpoint2cross(k1)%num_cross_sections = 1
                   jpos = 1
-                  dh = min(chainage(i) - chainage(i - 1), chainage(i + 1) - chainage(i)) / 2d0
+                  dh = min(chainage(i) - chainage(i - 1), chainage(i + 1) - chainage(i)) / 2.0_dp
 
                end if
                if (i == 1) then
@@ -434,8 +444,6 @@ contains
       use unstruc_channel_flow
       use morphology_data_module, only: t_nodefraction, t_noderelation
       use string_module
-
-      implicit none
 
       integer :: ibr, iFrac, iNodeRel
       type(t_branch), pointer :: pbr
@@ -484,18 +492,18 @@ contains
    end subroutine save_1d_nrd_vars_in_stm
 
    subroutine setbobs_1d()
-
-      use m_network
-      use m_flowgeom
-      use m_flowtimes
-      use messagehandling
-      use unstruc_messages
-      use unstruc_channel_flow
-      use m_1d_structures
-      use m_cross_helper
-      use network_data
-
-      implicit none
+      use precision, only: dp
+      use m_network, only: msgbuf
+      use network_data, only: zkuni
+      use m_flowgeom, only: ndxi, bl, bob, bob0, ndx2D, lnx1d, lnx1Db, kcu, ln, lnxi
+      use m_flowtimes, only: time_user, tstart_user
+      use messagehandling, only: warn_flush, setmessage, LEVEL_WARN
+      use unstruc_channel_flow, only: network, t_network
+      use m_cross_helper, only: getbobs
+      use m_1d_structures, only: get_crest_level, t_structure
+      use m_storage, only: t_storage
+      use m_flowparameters, only: EPS3
+      use network_data, only: LINK_1D
 
       integer :: i
       integer :: L, L0
@@ -503,12 +511,12 @@ contains
       integer :: n2
       integer :: nstor
       integer :: nstruc
-      double precision :: crest_level
+      real(kind=dp) :: crest_level
       type(t_structure), pointer :: pstruc
       type(t_storage), pointer :: pstor
 
       do i = ndx2D + 1, ndxi
-         bl(i) = huge(1d0)
+         bl(i) = huge(1.0_dp)
       end do
 
       nstor = network%storS%count
@@ -521,7 +529,7 @@ contains
       end do
 
       do L = 1, lnx1D
-         if (kcu(L) == 1) then
+         if (kcu(L) == LINK_1D) then
             bob(:, L) = getbobs(network, L)
             bob0(:, L) = bob(:, L)
             n1 = ln(1, L)
@@ -539,7 +547,7 @@ contains
          pstruc => network%sts%struct(i)
          do L0 = 1, pstruc%numlinks
             L = abs(pstruc%linknumbers(L0))
-            bob(:, L) = huge(1d0)
+            bob(:, L) = huge(1.0_dp)
          end do
       end do
 
@@ -549,7 +557,7 @@ contains
          crest_level = get_crest_level(pstruc)
          do L0 = 1, pstruc%numlinks
             L = abs(pstruc%linknumbers(L0))
-            if (crest_level < huge(1d0)) then
+            if (crest_level < huge(1.0_dp)) then
                bob(1, L) = min(bob(1, L), crest_level)
                bob(2, L) = min(bob(2, L), crest_level)
             else
@@ -566,20 +574,19 @@ contains
          do i = 1, nstor
             pstor => network%storS%stor(i)
             n1 = pstor%grid_point
-            if (n1 <= 0) cycle
-            if (bl(n1) < pstor%storage_area%x(1)) then
-               call setmessage(LEVEL_WARN, 'At node '//trim(network%nds%node(i)%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
-               write (msgbuf, '(''The bedlevel (due to invert levels of incoming channels/pipes) = '', g14.2, '' and the bottom level of the storage area is '', g14.2)') &
-                  bl(n1), pstor%storage_area%x(1)
-               call setmessage(-LEVEL_WARN, msgbuf)
-
+            if (n1 <= 0) then
+               cycle
             end if
-
+            if (bl(n1) + EPS3 < pstor%storage_area%x(1)) then
+               call setmessage(LEVEL_WARN, 'At node '//trim(pstor%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
+               write (msgbuf, '(a,f0.2,a,f0.2,a)') 'The bedlevel (due to invert levels of incoming channels/pipes) = ', bl(n1), ' and the bottom level of the storage area is ', pstor%storage_area%x(1), '.'
+               call setmessage(-LEVEL_WARN, msgbuf)
+            end if
          end do
       end if
 
       do i = ndx2D + 1, ndxi
-         if (bl(i) > 0.5d0 * huge(1d0)) then
+         if (bl(i) > 0.5_dp * huge(1.0_dp)) then
             write (msgbuf, '(a,i0,a)') 'Bedlevel is missing on calculation flow node ', i, '. No nearby cross sections nor storage nodes.'
             call warn_flush()
             bl(i) = zkuni
@@ -588,11 +595,11 @@ contains
 
       ! look for missing bobs
       do L = 1, lnx1d
-         if (bob(1, L) > 0.5d0 * huge(1d0)) then
+         if (bob(1, L) > 0.5_dp * huge(1.0_dp)) then
             bob(1, L) = bl(ln(1, L))
             bob0(1, L) = bob(1, L)
          end if
-         if (bob(2, L) > 0.5d0 * huge(1d0)) then
+         if (bob(2, L) > 0.5_dp * huge(1.0_dp)) then
             bob(2, L) = bl(ln(2, L))
             bob0(2, L) = bob(2, L)
          end if
@@ -615,6 +622,7 @@ contains
    !! the pump. Values are stored in struct%fu(:), etc. and *also* set
    !! in m_flow::fu(:), etc.
    subroutine computePump_all_links(struct)
+      use precision, only: dp
       use m_1d_structures
       use m_pump
       use m_flowtimes
@@ -624,11 +632,11 @@ contains
 
       type(t_structure), intent(inout) :: struct !< The parent structure of the pump (which also contains the flow link information).
 
-      double precision :: s1k1
-      double precision :: s1k2
-      double precision :: qp
-      double precision :: ap
-      double precision :: vp1, vp2, vp
+      real(kind=dp) :: s1k1
+      real(kind=dp) :: s1k2
+      real(kind=dp) :: qp
+      real(kind=dp) :: ap
+      real(kind=dp) :: vp1, vp2, vp
       integer :: L
       integer :: L0
       integer :: k1
@@ -641,13 +649,13 @@ contains
       end if
 
       ! First compute average waterlevels on suction side and delivery side of the pump
-      s1k1 = 0d0
-      s1k2 = 0d0
-      ap = 0d0
-      vp1 = 0d0
-      vp2 = 0d0
-      vp = 0d0
-      qp = 0d0
+      s1k1 = 0.0_dp
+      s1k2 = 0.0_dp
+      ap = 0.0_dp
+      vp1 = 0.0_dp
+      vp2 = 0.0_dp
+      vp = 0.0_dp
+      qp = 0.0_dp
       do L0 = 1, struct%numlinks
          L = struct%linknumbers(L0)
          ! Note: Link L may have negative sign if flow link is opposite pump's orientation
@@ -663,10 +671,10 @@ contains
             k2 = ln(1, L)
          end if
 
-         if (hs(k1) > 1d-2) then
+         if (hs(k1) > 1.0e-2_dp) then
             ! NOTE: pump area-weighting across links is uniform for all links (au=1).
-            au(L) = 1d0
-            hu(L) = 1d0 ! UNST-5835: restored original hu(L) = 1d0, originally set in furu(). Currently furu() resets it to 0d0 already while treating "old" structures.
+            au(L) = 1.0_dp
+            hu(L) = 1.0_dp ! UNST-5835: restored original hu(L) = 1d0, originally set in furu(). Currently furu() resets it to 0d0 already while treating "old" structures.
             ap = ap + au(L)
             vp1 = vp1 + vol1(k1)
             vp2 = vp2 + vol1(k2)
@@ -676,14 +684,14 @@ contains
       end do
 
       ! With these average waterlevels, evaluate the pump discharge.
-      if (ap > 0d0) then
+      if (ap > 0.0_dp) then
          s1k1 = s1k1 / ap
          s1k2 = s1k2 / ap
          call PrepareComputePump(struct%pump, s1k1, s1k2)
          qp = struct%pump%discharge ! Already in our local structure spatial orientation.
 
          ! Choose available volume on suction side.
-         if (qp > 0d0) then
+         if (qp > 0.0_dp) then
             vp = vp1
          else
             vp = vp2
@@ -694,16 +702,16 @@ contains
       end if
 
       ! Finally, redistribute the requested pump discharge across all flow links.
-      if (qp == 0d0 .or. ap == 0 .or. vp == 0d0) then
+      if (qp == 0.0_dp .or. ap == 0 .or. vp == 0.0_dp) then
          ! Pump is off
-         struct%fu = 0d0
-         struct%ru = 0d0
-         struct%au = 0d0
+         struct%fu = 0.0_dp
+         struct%ru = 0.0_dp
+         struct%au = 0.0_dp
       else
 
          ! Limit the pump discharge in case the volume in the cells at the suction side is limited.
-         if (abs(qp) > 0.9d0 * vp / dts) then
-            qp = sign(0.9d0 * vp / dts, qp)
+         if (abs(qp) > 0.9_dp * vp / dts) then
+            qp = sign(0.9_dp * vp / dts, qp)
             call setmessage(LEVEL_WARN, 'Discharge through pump ' &
                 & //trim(struct%id)//' is limited below capacity '//&
                 & 'by water volume on suction side.')
@@ -711,7 +719,7 @@ contains
 
          do L0 = 1, struct%numlinks
             L = struct%linknumbers(L0)
-            dir = int(sign(1d0, L * qp)) ! Includes both pumping direction and flow link w.r.t. structure spatial orientation.
+            dir = int(sign(1.0_dp, L * qp)) ! Includes both pumping direction and flow link w.r.t. structure spatial orientation.
             L = abs(L)
             if (dir > 0) then
                k1 = ln(1, L)
@@ -719,14 +727,14 @@ contains
                k1 = ln(2, L)
             end if
 
-            if (hs(k1) > 1d-2) then
-               struct%fu(L0) = 0d0
+            if (hs(k1) > 1.0e-2_dp) then
+               struct%fu(L0) = 0.0_dp
                struct%ru(L0) = qp / ap
                struct%au(L0) = ap
             else
-               struct%fu(L0) = 0d0
-               struct%ru(L0) = 0d0
-               struct%au(L0) = 0d0
+               struct%fu(L0) = 0.0_dp
+               struct%ru(L0) = 0.0_dp
+               struct%au(L0) = 0.0_dp
             end if
          end do
       end if
@@ -752,6 +760,7 @@ contains
       use m_qnerror
       use m_wripol
       use m_wrisam
+      use m_filez, only: doclose, newfil
 
       character(len=*), intent(in) :: basename !< Basename for the profdef/loc output files.
 
@@ -792,11 +801,13 @@ contains
             ! Then write xyz definition pliz
             write (nampli(numxyztype), '(a,i0)') 'PROFNR=', nprof
             nyz = pcs%levelsCount
-            xpl(npl + 1:npl + nyz) = 0d0
+            xpl(npl + 1:npl + nyz) = 0.0_dp
             ypl(npl + 1:npl + nyz) = pcs%y(1:nyz)
             zpl(npl + 1:npl + nyz) = pcs%z(1:nyz)
             npl = npl + nyz + 1
-            xpl(npl) = dmiss; ypl(npl) = dmiss; zpl(npl) = dmiss ! Separator between pli/csdef
+            xpl(npl) = dmiss
+            ypl(npl) = dmiss
+            zpl(npl) = dmiss ! Separator between pli/csdef
          case default
             call QNERROR('Error in convert_cross_to_prof(), profile type not supported:', CSTypeName(pcs%crossType), '')
          end select
@@ -837,17 +848,18 @@ contains
    !! * the highest nearby cross section level ("embankment") for other nodes,
    !! * dmiss, i.e. not applicable, if no cross section is defined at the node.
    subroutine set_ground_level_for_1d_nodes(network)
+      use precision, only: dp
       use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d, nd, kcu
       use m_Storage
       use m_CrossSections
       use m_network
-      implicit none
+
       type(t_network), intent(inout), target :: network
       type(t_storage), pointer :: pSto
       type(t_administration_1d), pointer :: adm
       integer :: i, istor, cc1, cc2, length, L, Lindex
-      double precision :: f
-      double precision, parameter :: help = -huge(1d0)
+      real(kind=dp) :: f
+      real(kind=dp), parameter :: help = -huge(1.0_dp)
 
       groundlevel(:) = help
       groundStorage(:) = 0
@@ -885,7 +897,9 @@ contains
       ! set for storage nodes (either from a table, or a prescribed street level (storageType is reservoir or closed))
       do istor = 1, network%storS%Count
          pSto => network%storS%stor(istor)
-         if (pSto%grid_point < 1) cycle
+         if (pSto%grid_point < 1) then
+            cycle
+         end if
          i = pSto%grid_point - ndx2d
          if (.not. pSto%use_table) then ! Manhole
             if (pSto%use_street_storage) then
@@ -916,12 +930,13 @@ contains
 
    !> Set maximal volume for 1d nodes, later used for computation of volOnGround(:).
    subroutine set_max_volume_for_1d_nodes()
+      use precision, only: dp
       use m_flowgeom, only: groundLevel, volMaxUnderground, ndx, ndxi, ndx2d
       use m_flow, only: s1, vol1, a1, vol1_f, a1m, s1m, nonlin
       use m_alloc
       use unstruc_channel_flow, only: network
-      implicit none
-      double precision, allocatable :: s1_tmp(:), vol1_tmp(:), a1_tmp(:), vol1_ftmp(:), a1m_tmp(:), s1m_tmp(:)
+
+      real(kind=dp), allocatable :: s1_tmp(:), vol1_tmp(:), a1_tmp(:), vol1_ftmp(:), a1m_tmp(:), s1m_tmp(:)
       integer :: ndx1d
       logical, allocatable :: hysteresis_tmp(:, :)
 
@@ -962,12 +977,12 @@ contains
       s1(ndx2d + 1:ndxi) = groundLevel(1:ndx1d)
       if (nonlin >= 2) then
          s1m(ndx2d + 1:ndxi) = groundLevel(1:ndx1d)
-         a1m = 0d0
+         a1m = 0.0_dp
       end if
 
-      vol1 = 0d0
-      vol1_f = 0d0
-      a1 = 0d0
+      vol1 = 0.0_dp
+      vol1_f = 0.0_dp
+      a1 = 0.0_dp
 
       ! 3. compute the maximal volume
       call vol12d(0)
@@ -999,7 +1014,7 @@ contains
       use m_flow, only: freeboard, s1
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
       use m_network
-      implicit none
+
       type(t_network), intent(inout), target :: network
       integer :: i, ii
 
@@ -1010,7 +1025,7 @@ contains
             if (groundStorage(ii) == 1) then ! also storage above ground: allow negative freeboard.
                freeboard(ii) = groundLevel(ii) - s1(i)
             else
-               freeboard(ii) = max(0d0, groundLevel(ii) - s1(i))
+               freeboard(ii) = max(0.0_dp, groundLevel(ii) - s1(i))
             end if
          end if
       end do
@@ -1019,12 +1034,13 @@ contains
 
    !> Compute the cumulative time when water is above ground level.
    subroutine updateTimeWetOnGround(dts)
+      use precision, only: dp
       use m_flowparameters, only: epswetout
       use m_flowtimes, only: time_wetground
       use m_flow, only: s1
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
-      implicit none
-      double precision, intent(in) :: dts !< computational time step
+
+      real(kind=dp), intent(in) :: dts !< computational time step
       integer :: i, ii
 
       do i = ndx2d + 1, ndxi
@@ -1045,7 +1061,7 @@ contains
       use m_flowparameters, only: epswetout
       use m_network
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
-      implicit none
+
       type(t_network), intent(inout), target :: network !< 1D network from flow1d.
 
       integer :: i, ii
@@ -1054,7 +1070,7 @@ contains
       do i = ndx2d + 1, ndxi
          ii = i - ndx2d
          if (groundLevel(ii) /= dmiss .and. groundStorage(ii) == 1 .and. s1(i) - groundLevel(ii) >= epswetout) then ! if groundLevel is applicable
-            hsOnGround(ii) = max(0d0, s1(i) - groundLevel(ii))
+            hsOnGround(ii) = max(0.0_dp, s1(i) - groundLevel(ii))
          end if
       end do
 
@@ -1068,7 +1084,7 @@ contains
       use m_flowparameters, only: epswetout
       use m_flowgeom, only: volMaxUnderground, ndxi, ndx2d, groundLevel, groundStorage
       use m_network
-      implicit none
+
       type(t_network), intent(inout), target :: network
       integer :: i, ii
 
@@ -1076,7 +1092,7 @@ contains
       do i = ndx2d + 1, ndxi
          ii = i - ndx2d
          if (groundLevel(ii) /= dmiss .and. groundStorage(ii) == 1 .and. s1(i) - groundLevel(ii) >= epswetout) then ! if groundLevel is applicable
-            volOnGround(ii) = max(0d0, vol1(i) - volMaxUnderground(ii))
+            volOnGround(ii) = max(0.0_dp, vol1(i) - volMaxUnderground(ii))
          end if
       end do
 
@@ -1085,24 +1101,26 @@ contains
    !> Update total net inflow through all connected 1d2d links for each 1d node with given computational time step.
    !! Value in vTot1d2d is cumulative in time since TStart.
    subroutine updateTotalInflow1d2d(dts)
+      use precision, only: dp
       use m_flow, only: vTot1d2d, qCur1d2d, q1
       use m_flowgeom, only: ndx2d, lnx1d, kcu, ln
-      implicit none
-      double precision, intent(in) :: dts ! current computational time step
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+
+      real(kind=dp), intent(in) :: dts ! current computational time step
 
       integer :: Lf, n
-      double precision :: flowdir
+      real(kind=dp) :: flowdir
 
-      qCur1d2d = 0d0
+      qCur1d2d = 0.0_dp
       ! Don't reset vTot1d2d
       do Lf = 1, lnx1d
-         if (kcu(Lf) == 3 .or. kcu(Lf) == 4 .or. kcu(Lf) == 5 .or. kcu(Lf) == 7) then
+         if (kcu(Lf) == LINK_1D2D_INTERNAL .or. kcu(Lf) == LINK_1D2D_LONGITUDINAL .or. kcu(Lf) == LINK_1D2D_STREETINLET .or. kcu(Lf) == LINK_1D2D_ROOF) then
             n = ln(1, Lf)
             if (n < ndx2d) then
                n = ln(2, Lf)
-               flowdir = 1d0 ! Flow link orientation *towards* 1D n
+               flowdir = 1.0_dp ! Flow link orientation *towards* 1D n
             else
-               flowdir = -1d0 ! Flow link orientation *away from* 1D n
+               flowdir = -1.0_dp ! Flow link orientation *away from* 1D n
             end if
             ! n is now a 1d node
             qCur1d2d(n) = qCur1d2d(n) + flowdir * q1(Lf)
@@ -1114,15 +1132,16 @@ contains
 
    !> Update total net inflow of all laterals for each 1d node with given computational time step.
    subroutine updateTotalInflowLat(dts)
+      use precision, only: dp
       use m_flow, only: vTotLat, qCurLat
       use m_flowgeom, only: ndx2d
       use m_laterals, only: qqlat, numlatsg, n1latsg, n2latsg, nnlat
-      implicit none
-      double precision, intent(in) :: dts ! current computational time step
+
+      real(kind=dp), intent(in) :: dts ! current computational time step
       integer :: n
       integer :: i_lat, i_node
 
-      qCurLat = 0d0
+      qCurLat = 0.0_dp
       ! Don't reset vTotLat
       if (allocated(qqlat)) then
          do i_lat = 1, numlatsg
@@ -1147,7 +1166,7 @@ contains
    subroutine updateS1Gradient()
       use m_flow, only: s1Gradient, s1, hu, epshu
       use m_flowgeom, only: lnx1d, ln, dx
-      implicit none
+
       integer :: k1, k2, L
 
       s1Gradient = dmiss
@@ -1187,16 +1206,17 @@ contains
 
    ! Perform a time interpolation of the roughness parameters and store them in the currentValues array
    subroutine interpolateRoughnessParameters(rgs, times_update_roughness, tim)
+      use precision, only: dp
       use m_Roughness
 
       type(t_RoughnessSet), intent(inout) :: rgs !< Roughness set
-      double precision, dimension(2), intent(in) :: times_update_roughness !< Times at which the time dependent values are set
-      double precision, intent(in) :: tim !< Current time
+      real(kind=dp), dimension(2), intent(in) :: times_update_roughness !< Times at which the time dependent values are set
+      real(kind=dp), intent(in) :: tim !< Current time
 
-      double precision, pointer, dimension(:) :: currentValues
-      double precision, pointer, dimension(:, :) :: timeDepValues
+      real(kind=dp), pointer, dimension(:) :: currentValues
+      real(kind=dp), pointer, dimension(:, :) :: timeDepValues
       integer irgh, i, timeseries_count
-      double precision f
+      real(kind=dp) f
 
       f = (tim - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1))
       do irgh = 1, rgs%Count
@@ -1205,7 +1225,7 @@ contains
             currentValues => rgs%rough(irgh)%currentValues
             timeDepValues => rgs%rough(irgh)%timeDepValues
             do i = 1, timeseries_count
-               currentValues(i) = (1d0 - f) * timeDepValues(i, 1) + f * timeDepValues(i, 2)
+               currentValues(i) = (1.0_dp - f) * timeDepValues(i, 1) + f * timeDepValues(i, 2)
             end do
          end if
       end do
@@ -1213,11 +1233,12 @@ contains
 
    !> Shift the time dependent values, called prior to the update of the roughness parameters for a new time level
    subroutine shiftTimeDependentRoughnessValues(rgs)
+      use precision, only: dp
       use m_Roughness
 
       type(t_RoughnessSet), intent(inout) :: rgs !< Roughness set
 
-      double precision, pointer, dimension(:, :) :: timeDepValues
+      real(kind=dp), pointer, dimension(:, :) :: timeDepValues
       integer :: irgh
 
       do irgh = 1, rgs%Count

@@ -24,8 +24,7 @@ set(oss_dependencies waq_definition
                      waq_hyd_data
                      waq_utils_f)
 
-oss_include_libraries(${executable_name} oss_dependencies)
-target_link_libraries(${executable_name} ${oss_dependencies})
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})

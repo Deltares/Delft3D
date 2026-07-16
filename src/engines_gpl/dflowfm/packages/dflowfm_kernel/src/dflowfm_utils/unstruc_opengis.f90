@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -86,7 +86,7 @@ contains
          return
       end if
 
-      call READYY('SAVE KML', 0d0)
+      call READYY('SAVE KML', 0.0_dp)
 
       allocate (xloc(numl + 1), yloc(numl + 1), zloc(numl + 1), lc(numl))
       lc = 0
@@ -95,9 +95,9 @@ contains
       call kml_write_netstyles(kmlunit)
 
       if (kml_jadepth == 1) then
-         half = .5d0
+         half = 0.5_dp
       else
-         half = 1d0
+         half = 1.0_dp
       end if
 
       if (kml_janet == 1) then
@@ -139,7 +139,7 @@ contains
                !if (zk(kcur) /= dmiss) then
                !    zloc(1) = transform_altitude(zk(kcur))
                !else
-               zloc(1) = 0d0
+               zloc(1) = 0.0_dp
                !end if
 
                kcur = kn(2, i)
@@ -148,13 +148,15 @@ contains
                !if (zk(kcur) /= dmiss) then
                !    zloc(2) = transform_altitude(zk(kcur))
                !else
-               zloc(2) = 0d0
+               zloc(2) = 0.0_dp
                !end if
                iloc = 2
                lc(i) = 1
                ! We started a new path, now trace connected links as long as possible.
                do
-                  if (mod(i + iloc - 2, LMOD) == 1) call READYY('SAVE KML', half * dble(i + iloc - 2) / dble(NUML))
+                  if (mod(i + iloc - 2, LMOD) == 1) then
+                     call READYY('SAVE KML', half * real(i + iloc - 2, kind=dp) / real(NUML, kind=dp))
+                  end if
                   lcur = 0
                   ! Find an outgoing link of current net node that wasn't yet written and has correct link type.
                   do L = 1, nmk(kcur)
@@ -176,7 +178,7 @@ contains
                   !if (zk(knext) /= dmiss) then
                   !    zloc(iloc) = transform_altitude(zk(knext))
                   !else
-                  zloc(iloc) = 0d0
+                  zloc(iloc) = 0.0_dp
                   !end if
                   lc(lcur) = 1
                   kcur = knext
@@ -189,20 +191,20 @@ contains
          end do
          call READYY('SAVE KML', half)
       else
-         half = 0d0 ! Nothing done yet, start progress bar of next (depths) step at 0.
+         half = 0.0_dp ! Nothing done yet, start progress bar of next (depths) step at 0.
       end if ! kml_janet == 1
 
       if (kml_jadepth == 1) then
 
-         zmin = +huge(1d0)
-         zmax = -huge(1d0)
+         zmin = +huge(1.0_dp)
+         zmax = -huge(1.0_dp)
          do kcur = 1, numk
             if (zk(kcur) /= dmiss) then
                zmin = min(zmin, zk(kcur))
                zmax = max(zmax, zk(kcur))
             end if
          end do
-         if (kml_zmin == 0d0 .and. kml_zmax == 0d0) then
+         if (kml_zmin == 0.0_dp .and. kml_zmax == 0.0_dp) then
             kml_zmin = zmin
             kml_zmax = zmax
          end if
@@ -213,9 +215,11 @@ contains
          write (kmlunit, '(a)') '    <name>FM depth grid</name>'
          LMOD = max(1, NUML / 100)
          do n = 1, nump
-            if (mod(n, LMOD) == 1) call READYY('SAVE KML', half + (1d0 - half) * dble(n) / dble(nump))
+            if (mod(n, LMOD) == 1) then
+               call READYY('SAVE KML', half + (1.0_dp - half) * real(n, kind=dp) / real(nump, kind=dp))
+            end if
 
-            zp = 0d0
+            zp = 0.0_dp
             do i = 1, netcell(n)%n
                kcur = netcell(n)%nod(i)
                if (zk(kcur) == dmiss) then
@@ -268,7 +272,7 @@ contains
       close (kmlunit)
 
       deallocate (xloc, yloc, zloc, lc)
-      call READYY('SAVE KML', -1d0)
+      call READYY('SAVE KML', -1.0_dp)
 
    end subroutine kml_write_net
 
@@ -552,6 +556,7 @@ contains
 !> Write D-Flow FM info+version as an OpenFOAM header into an ASCII file.
    subroutine foam_write_dflowfminfo(mout)
       use dflowfm_version_module
+      use m_datum
       integer, intent(in) :: mout !< File unit nr for output.
 
       character(len=20) :: rundat
@@ -606,7 +611,7 @@ contains
       keymaxlen = transfer(lenmaxdata, 123)
 
       ! Print the tree by traversing it depth-first, pass mout and lenmax by transfer into data variable.
-      call tree_traverse(dicttree, print_foam_dict, transfer((/mout, keymaxlen/), node_value), dummylog)
+      call tree_traverse(dicttree, print_foam_dict, transfer([mout, keymaxlen], node_value), dummylog)
 
       write (mout, '(a)') '}'
 
@@ -631,14 +636,17 @@ contains
       integer :: level
 
       ! stop is not used in this subroutine and associate is introduced to avoid the warning
-      associate( stop => stop ); end associate 
-          
+      associate (stop => stop)
+      end associate
+
       inputdata = transfer(data, inputdata)
       mout = inputdata(1) !< File pointer
       maxkeylength = inputdata(2)
 
       level = tree_traverse_level()
-      if (level == 0) return
+      if (level == 0) then
+         return
+      end if
 
       call tree_get_data_ptr(tree, data_ptr, type_string)
       if (associated(data_ptr)) then
@@ -663,6 +671,8 @@ contains
       use m_flowgeom
       use unstruc_files
       use properties
+      use m_filez, only: doclose, newfil
+
       character(len=*), intent(in) :: filename !< TODO: Output file names
 
       integer :: mfil
@@ -705,20 +715,6 @@ contains
 
       end subroutine write_points_
 
-      subroutine write_faces_(mout)
-         use network_data
-         integer, intent(in) :: mout !< File unit nr for output.
-
-         integer :: k
-         write (strtmp, '(i10)') numk
-         write (mout, '(a)') adjustl(strtmp)
-         write (mout, '(a)') '('
-         do k = 1, numk
-            write (mout, '(a,3(f25.16),a)') '(', xk(k), yk(k), zk(k), ')'
-         end do
-         write (mout, '(a)') ')'
-
-      end subroutine write_faces_
    end subroutine foam_write_polymesh
 
 end module io_openfoam

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,38 +29,39 @@
 
 !
 !
+module m_disln
+   implicit none
+contains
+   subroutine DISLN(LL) ! print link values
+      use m_flowgeom, only: ln, xz, yz
+      use m_devices, only: iws
+      use m_ktext
+      use m_gtext
+      use m_zlin
 
- subroutine DISLN(LL) ! print link values
-    use m_flowgeom
-    use m_devices
-    use network_data, only: kn
-    use unstruc_display
-    use m_ktext
-    implicit none
+      integer :: LL
+      character TEX * 23
 
-    integer :: LL
-    character TEX * 23
-    double precision :: ZLIN
+      if (LL <= 0) then
+         TEX = 'NO FLOW LINK FOUND    '
+         call KTEXT(TEX, IWS - 22, 4, 15)
+      else
+         TEX = 'FLOW LINK NR:         '
+         write (TEX(14:), '(I10)') LL
+         call KTEXT(TEX, IWS - 22, 4, 15)
+         TEX = 'VAL=                  '
+         write (TEX(6:), '(E18.11)') ZLIN(LL)
+         call KTEXT(TEX, IWS - 22, 5, 15)
+         TEX = 'Nd1:         '
+         write (TEX(6:), '(I10)') LN(1, LL)
+         call KTEXT(TEX, IWS - 22, 6, 15)
+         call gtext(tex, xz(ln(1, LL)), yz(ln(1, LL)), 221)
+         TEX = 'Nd2:         '
+         write (TEX(6:), '(I10)') LN(2, LL)
+         call KTEXT(TEX, IWS - 22, 7, 15)
+         call gtext(tex, xz(ln(2, LL)), yz(ln(2, LL)), 221)
+      end if
 
-    if (LL <= 0) then
-       TEX = 'NO FLOW LINK FOUND    '
-       call KTEXT(TEX, IWS - 22, 4, 15)
-    else
-       TEX = 'FLOW LINK NR:         '
-       write (TEX(14:), '(I10)') LL
-       call KTEXT(TEX, IWS - 22, 4, 15)
-       TEX = 'VAL=                  '
-       write (TEX(6:), '(E18.11)') ZLIN(LL)
-       call KTEXT(TEX, IWS - 22, 5, 15)
-       TEX = 'Nd1:         '
-       write (TEX(6:), '(I10)') LN(1, LL)
-       call KTEXT(TEX, IWS - 22, 6, 15)
-       call gtext(tex, xz(ln(1, LL)), yz(ln(1, LL)), 221)
-       TEX = 'Nd2:         '
-       write (TEX(6:), '(I10)') LN(2, LL)
-       call KTEXT(TEX, IWS - 22, 7, 15)
-       call gtext(tex, xz(ln(2, LL)), yz(ln(2, LL)), 221)
-    end if
-
-    return
- end subroutine DISLN
+      return
+   end subroutine DISLN
+end module m_disln

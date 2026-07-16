@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: stringutils.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/stringutils.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/stringutils.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro
 //  String Utility Routines - DEFINITIONS
@@ -34,24 +36,14 @@
 //  2 jun 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
-namespace String {
-    void
-    Chomp (
-        char * string
-        );
+namespace String
+{
+    void Chomp(char* string);
 
-    void
-    CollapseAllWhitespace (
-        char * string
-        );
+    void CollapseAllWhitespace(char* string);
 
-    void
-    Tidy (
-        char * string
-        );
+    void Tidy(char* string);
 
-    };
-
+}; // namespace String

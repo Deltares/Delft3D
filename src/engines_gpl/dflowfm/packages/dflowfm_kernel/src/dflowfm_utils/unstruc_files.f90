@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,7 @@
 module unstruc_files
 !! Centralizes unstruc file management (formerly in REST.F90)
 
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, msgbuf, msg_flush
    use dflowfm_version_module
    use time_module, only: seconds_to_datetimestring
 
@@ -56,10 +56,6 @@ module unstruc_files
    character(len=86) :: Filnammenu ! name of selected file in nfiles
 
 contains
-
-   subroutine init_unstruc_files()
-
-   end subroutine init_unstruc_files
 
 !> Registers in the filenames list that a file is opened.
 !! Use this instead of directly writing in the list (automatic realloc).
@@ -123,8 +119,12 @@ contains
          end if
       end do
 
-      if (allocated(filenames)) deallocate (filenames)
-      if (allocated(lunfils)) deallocate (lunfils)
+      if (allocated(filenames)) then
+         deallocate (filenames)
+      end if
+      if (allocated(lunfils)) then
+         deallocate (lunfils)
+      end if
 
       maxnum = 0
    end subroutine close_all_files
@@ -136,16 +136,18 @@ contains
 !!
 !! When an output directory is configured, the filename is also prefixed with that, unless switched off by prefixWithDirectory=.false..
    function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
-      use unstruc_model
+      use precision, only: dp
       use m_flowtimes
       use time_module, only: seconds_to_datetimestring
       use system_utils, only: makedir, FILESEP
+      use m_unstruc_model_data, only: md_ident, md_obsfile, md_mapfile, md_classmap_file, md_waqfilebase, md_netfile, &
+                               md_ldbfile, md_hisfile, md_pipefile, md_comfile, md_avgwavquantfile, md_avgsedquantfile, md_avgsedtrailsfile, getoutputdir
       implicit none
 
       character(len=*), intent(in) :: filecat !< File category for which the filename is requested, e.g. 'obs', 'map', 'hyd'.
       logical, optional, intent(in) :: prefixWithDirectory !< Optional, default true. Prefix file name with the configured output directory. Set this to .false. to get purely the filename.
       logical, optional, intent(in) :: allowWildcard !< Optional, default false. Allow the result to fall back to *.<ext>, in case no model id or other basename could be found.
-      double precision, optional, intent(in) :: timestamp !< Optional, default disabled. Form a datetime string out of the timestamp (in seconds) and include it in the filename.
+      real(kind=dp), optional, intent(in) :: timestamp !< Optional, default disabled. Form a datetime string out of the timestamp (in seconds) and include it in the filename.
 
       character(len=255) :: activeFile
       character(len=255) :: basename
@@ -381,7 +383,8 @@ contains
 !! The filename is determined by the program name and possibly a sequence
 !! number. File-open attempts will not continue indefinitely (program may stop).
    subroutine inidia(basename)
-      use unstruc_model
+      use m_unstruc_model_data
+      use unstruc_messages, only: initMessaging
 
       character(len=*) :: basename
 
@@ -391,7 +394,9 @@ contains
       character(*) FILENAME * 256, BASE * 256
       character(*) RW * 20
 
-      if (mdia /= 0) return
+      if (mdia /= 0) then
+         return
+      end if
 
       L = len_trim(md_ident)
       if (L == 0) then
@@ -452,7 +457,7 @@ contains
 !! is stripped off (instead of .nc only)
    subroutine basename(filename, filebase, filecat)
       use system_utils, only: FILESEP
-      implicit none
+
       character(len=*), intent(in) :: filename
       character(len=*), intent(out) :: filebase
       character(len=*), optional, intent(in) :: filecat
@@ -486,7 +491,7 @@ contains
 !! If path is absolute, then that path is returned unchanged.
    subroutine resolvePath(path, basedir)
       use system_utils, only: is_abs, cat_filename
-      use unstruc_model, only: md_paths_relto_parent
+      use m_unstruc_model_data, only: md_paths_relto_parent
       character(len=*), intent(inout) :: path !< Path to be updated
       character(len=*), intent(in) :: basedir !< Basedir w.r.t. which the input path *might* be resolved, depending on PathsRelativeToParent setting.
 

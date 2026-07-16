@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,28 +29,32 @@
 
 !
 !
+module m_get_samples_boundingbox
 
+   use precision, only: dp
+   implicit none
+contains
 !>    determine sample bounding box
-      subroutine get_samples_boundingbox()
-         use m_samples
-         use m_missing
-         implicit none
+   subroutine get_samples_boundingbox()
+      use m_samples, only: xsammin, xsammax, ysammin, ysammax, ns, xs, ys, zs
+      use m_missing, only: dmiss
 
-         integer :: i
+      integer :: i
 
-         xsammin = huge(1d0)
-         xsammax = -huge(1d0)
-         ysammin = huge(1d0)
-         ysammax = -huge(1d0)
+      xsammin = huge(1.0_dp)
+      xsammax = -huge(1.0_dp)
+      ysammin = huge(1.0_dp)
+      ysammax = -huge(1.0_dp)
 
-         do i = 1, NS
-            if (xs(i) /= DMISS .and. ys(i) /= DMISS .and. zs(i) /= DMISS) then
-               xsammin = min(xsammin, xs(i))
-               xsammax = max(xsammax, xs(i))
-               ysammin = min(ysammin, ys(i))
-               ysammax = max(ysammax, ys(i))
-            end if
-         end do
+      do i = 1, NS
+         if (xs(i) /= DMISS .and. ys(i) /= DMISS .and. zs(i) /= DMISS) then
+            xsammin = min(xsammin, xs(i))
+            xsammax = max(xsammax, xs(i))
+            ysammin = min(ysammin, ys(i))
+            ysammax = max(ysammax, ys(i))
+         end if
+      end do
 
-         return
-      end subroutine get_samples_boundingbox
+      return
+   end subroutine get_samples_boundingbox
+end module m_get_samples_boundingbox

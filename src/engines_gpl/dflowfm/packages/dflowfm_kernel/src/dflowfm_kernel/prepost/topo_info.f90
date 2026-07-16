@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,43 +31,58 @@
 !
 
 !> link-based mesh-topology information
-double precision function topo_info(L)
-   use m_netw
-   use m_landboundary
-   use m_missing
+module m_topo_info
 
    implicit none
 
-   integer :: L !< link number
+   private
 
-   integer :: k1, k2, kL, kR
-   integer :: icellL, icellR
-   integer :: n
-   integer :: jalandbound ! take landboundary into account (1) or not (0)
-   integer, external :: nmk_opt ! optimal nmk for the for nodes involved
+   public :: topo_info
+
+contains
+
+   real(kind=dp) function topo_info(L)
+      use precision, only: dp
+      use m_comp_ntopo
+      use m_netw
+      use m_landboundary
+      use m_missing
+
+      integer :: L !< link number
+
+      integer :: k1, k2, kL, kR
+      integer :: icellL, icellR
+      integer :: n
+      integer :: jalandbound ! take landboundary into account (1) or not (0)
 
 !  default
-   topo_info = DMISS
+      topo_info = DMISS
 
 !  check if administration is in order
-   if (L > ubound(lnn, 1)) goto 1234
+      if (L > ubound(lnn, 1)) then
+         goto 1234
+      end if
 
 !  check if the landboundary can be taken into account (not necessarily the up-to-date)
-   if (ubound(lanseg_map, 1) >= numk) then
-      jalandbound = 1
-   else
-      jalandbound = 0
-   end if
+      if (ubound(lanseg_map, 1) >= numk) then
+         jalandbound = 1
+      else
+         jalandbound = 0
+      end if
 
-   call comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, n)
+      call comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, n)
 
-   topo_info = -dble(n)
+      topo_info = -real(n, kind=dp)
 
-   if (topo_info <= 0d0) topo_info = DMISS
+      if (topo_info <= 0.0_dp) then
+         topo_info = DMISS
+      end if
 
-   return
+      return
 
-1234 continue ! error handling
-   return
+1234  continue ! error handling
+      return
 
-end function topo_info
+   end function topo_info
+
+end module m_topo_info

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_red_soursin
+
+   implicit none
+
+   private
+
+   public :: fm_red_soursin
+
+contains
+
    subroutine fm_red_soursin()
       !
    !!--description-----------------------------------------------------------------
@@ -49,8 +59,6 @@
       use m_flowgeom
       use m_fm_erosed
       use m_get_kbot_ktop
-      !
-      implicit none
       !
       ! Local parameters
       !
@@ -101,7 +109,7 @@
                         !
                         reducmesscount = reducmesscount + 1
                         if (reducmesscount <= reducmessmax) then
-                           write (message, '(a,i0,a,f12.2,a,i0,a,2(f12.0,a),a,i0,a)') &
+                           write (message, '(a,i0,a,f12.2,a,i0,a,2(f12.0,a),i0,a)') &
                               & 'Source and sink term sediment ', l, ' reduced with factor', &
                               & 1 / reducfac, ' node number=(', nm, ') at x=', xz(nm), ', y=', yz(nm), ', after ', int(dnt), ' timesteps.'
                            call write_warning(message, unit=mdia)
@@ -170,3 +178,5 @@
       end if
       !
    end subroutine fm_red_soursin
+
+end module m_fm_red_soursin

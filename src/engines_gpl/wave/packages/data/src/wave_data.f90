@@ -1,7 +1,7 @@
 module wave_data
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -62,7 +62,7 @@ type wave_time_type
    integer  :: calctimtscale_prev ! calctimtscale from "previous" time point
                                   ! Only used when sr%modsim == 3 for output at the start of the simulation
    integer  :: calccount       ! [-]        Counts the number of calculations. Used for naming the sp2 output files
-   real     :: tscale          ! [sec]      Basic time unit: default = 60.0,
+   real(hp)     :: tscale          ! [sec]      Basic time unit: default = 60.0,
                                ! when running online with FLOW tscale = FLOW_time_step
    real(hp) :: timsec          ! [sec]      Current time of simulation since reference date (0:00h)
    real(hp) :: timmin          ! [min]      Current time of simulation since reference date (0:00h)
@@ -100,7 +100,7 @@ subroutine initialize_wavedata(wavedata)
    wavedata%time%calctimtscale        =  0
    wavedata%time%calctimtscale_prev   =  -999
    wavedata%time%calccount            =  0
-   wavedata%time%tscale               = 60.0
+   wavedata%time%tscale               = 60.0_hp
    wavedata%time%timsec               =  0.0_hp
    wavedata%time%timmin               =  0.0_hp
    wavedata%output%count              =  0
@@ -142,7 +142,7 @@ subroutine settimtscale(wavetime, timtscale_in, modsim, nonstat_interval)
    wavetime%timsec    = real(wavetime%timtscale,hp) * wavetime%tscale
    wavetime%timmin    = wavetime%timsec / 60.0_hp
    if (modsim == 3) then
-      wavetime%calctimtscale = wavetime%timtscale + int(nonstat_interval*60.0/wavetime%tscale)
+      wavetime%calctimtscale = wavetime%timtscale + nint(real(nonstat_interval,hp)*60.0_hp/wavetime%tscale)
       wavetime%calctimtscale_prev = wavetime%timtscale
    else
       wavetime%calctimtscale = wavetime%timtscale
@@ -152,7 +152,7 @@ end subroutine settimtscale
 !
 !===============================================================================
 subroutine settscale(wavetime, tscale_in)
-   real :: tscale_in
+   real(hp) :: tscale_in
    type(wave_time_type) :: wavetime
 
    wavetime%tscale    = tscale_in
@@ -172,7 +172,7 @@ subroutine settimsec(wavetime, timsec_in, modsim, nonstat_interval)
    wavetime%timmin    = wavetime%timsec / 60.0_hp
    wavetime%timtscale = nint(wavetime%timsec / wavetime%tscale)
    if (modsim == 3) then
-      wavetime%calctimtscale = wavetime%timtscale + int(nonstat_interval*60.0/wavetime%tscale)
+      wavetime%calctimtscale = wavetime%timtscale + nint(real(nonstat_interval,hp)*60.0_hp/wavetime%tscale)
       wavetime%calctimtscale_prev = wavetime%timtscale
    else
       wavetime%calctimtscale = wavetime%timtscale
@@ -191,7 +191,7 @@ subroutine settimmin(wavetime, timmin_in, modsim, nonstat_interval)
    wavetime%timsec    = wavetime%timmin * 60.0_hp
    wavetime%timtscale = nint(wavetime%timsec / wavetime%tscale)
    if (modsim == 3) then
-      wavetime%calctimtscale = wavetime%timtscale + int(nonstat_interval*60.0/wavetime%tscale)
+      wavetime%calctimtscale = wavetime%timtscale + nint(real(nonstat_interval,hp)*60.0_hp/wavetime%tscale)
       wavetime%calctimtscale_prev = wavetime%timtscale
    else
       wavetime%calctimtscale = wavetime%timtscale

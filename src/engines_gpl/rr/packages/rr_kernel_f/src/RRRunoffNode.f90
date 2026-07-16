@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -113,6 +113,7 @@ module RRRunoff
   use ParallelData, only: NrEvapStations
   use netcdfdata, only : MeteoNetCdfInput
   use Snyder_hydrograph
+  use GreenAmptInfiltration
   use Dio_plt_rw, prop_file_unused => prop_file
 
 
@@ -184,7 +185,7 @@ module RRRunoff
 ! SCS input parameters
   REAL, Pointer, SAVE ::         SCS_Slope(:), SCS_Length(:)
   Integer, Pointer, SAVE ::      SCS_UHChosen(:), SCS_AMC(:)
-  Real   , Pointer, SAVE ::      SCS_CurveNumber(:)
+  Real   , Pointer, SAVE ::      SCS_CurveNumber(:), SCS_HMSLinResR(:), SCS_HMSC1(:), SCS_HMSC2(:)
   Real, Pointer, SAVE ::         SCS_CN1(:), SCS_CN2(:), SCS_CN3(:)
 
   REAL, Pointer, SAVE ::         SCS_MaxRetention(:), SCS_Tlag(:), SCS_Tc(:),  &
@@ -192,7 +193,10 @@ module RRRunoff
                                  SCS_Paccum0(:), SCS_PExcess0(:), &
                                  SCS_Storage(:), SCS_Storage0(:), SCS_Rainfall(:), &
                                  SCS_UnitHydComp(:,:), SCS_AvailableRunoff(:,:)
-  
+
+Real   , Pointer, SAVE ::        SCS_HMSLinResInflow(:), SCS_HMSLinResInflowTot(:), SCS_HMSLinResOutflow0(:), SCS_HMSLinResOutflow(:), SCS_HMSLinResContent(:), SCS_HMSLinResContent0(:)
+
+Integer, Pointer, SAVE :: SCS_Snyder_Set(:)                     ! Snyder SHGSet index
 REAL   , Pointer, SAVE :: SCS_Snyder_Cp(:)                      ! Snyder Peaking Factor
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_rate(:)           ! Decay rate (1/hour) of exponential part of Snyder UH
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_frac(:)           ! fraction of peak flow at which exponential decay starts (0-0.5)
@@ -208,6 +212,16 @@ Integer, Pointer, SAVE :: SCS_Snyder_BF_interpolation_method(:) ! Base Flow inte
   REAL, Pointer, SAVE ::         SCS_SubSurfMax (:), SCS_SubSurfInit(:), SCS_SubSurfAct(:) , SCS_SubSurfAct0(:)
   REAL, Pointer, SAVE ::         SCS_PercSS(:)
   REAL, Pointer, SAVE ::         SCS_GWAct(:), SCS_GWAct0(:), SCS_GWOutflow(:)
+! GreenAmpt infiltration
+  Logical, Pointer, Save ::      SCS_UseGreenAmpt_Infiltration(:)
+! input
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_Ksat(:), SCS_GreenAmpt_Psi(:), SCS_GreenAmpt_theta_dmax(:)      ! Ksat in mm/hour, psi in mm, theta_dmax is dimensionless (between 0 and 1)
+! computation/output                                                                   ``
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_Lu(:), SCS_GreenAmpt_Kr(:), SCS_GreenAmpt_Tr(:)                 ! Lu in mm, Kr in 1/hour, Tr in hour
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_theta_d(:), SCS_GreenAmpt_theta_du(:)  ! theta_d and theta_du dimensionless, PondingDepth in mm
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_CumRain(:), SCS_GreenAmpt_CumInfiltration(:), SCS_GreenAmpt_InfRate(:), SCS_GreenAmpt_T(:) ! CumRain, CumInfiltration in mm, InfRate in mm/hour, T = recovery time remaining before next event (hour)
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_InfCurrentStep(:)  ! infiltration current timestep in mm
+
 
 ! NAM input parameters
 ! Parameters
@@ -545,6 +559,14 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UHChosen, 0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_AMC, 2)    ! default AMC 2 = average
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_MaxRetention, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResR, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSC1, 1E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSC2, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResContent, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResContent0, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResInflowTot, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResOutflow0, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResOutflow, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_TLag, -999.9E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Tc, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_PAccum, 0E0)
@@ -554,13 +576,31 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Storage, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Storage0, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Rainfall, 0E0)
-        
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Cp, 0E0)                      
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_rate, 0E0)           
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_frac, 0E0)           
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_decay_rate, 0E0)           
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_interpolation_method, 0)   
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_STRTQ, 0E0)                
+
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Set, 0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Cp, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_rate, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_frac, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_decay_rate, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_interpolation_method, 0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_STRTQ, 0E0)
+! GreenAmpt
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseGreenAmpt_Infiltration, .false.)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Ksat, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Psi,  0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_Dmax, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Lu, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Kr, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Tr, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_D, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_Du, 0.D0)
+!       Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseGreenAmpt_PondingDepth, 0.D0)    use SCS_Storage instead
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_CumRain, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_CumInfiltration, 0.00001D0)   ! not at zero, ivm divide by zero
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_InfRate, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_InfCurrentStep, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_T, 0.D0)
+! BaseFlow
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseBaseFlow, .false.)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_MaxGWCap,   0E0 )
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_InitGwCap,   0E0 )
@@ -1003,9 +1043,9 @@ contains
     Integer(4)      infile1
     Integer         teller, i, inode, j, IRRRunoff, IRRRunoff2, IRRRunoffSub, IRRRunoffRef, index, inod, nhlp, iout1, iecode, idebug, len_groupname, NrSeconds, NrValues
     Character(CharIdLength)   name, id, NodeId
-    Character(9999) string, TempString, string1
+    Character(len=9999) string, TempString, string1, String0
     Integer         lenString, lenString1
-    Character(1)    KChar
+    Character(len=1)    KChar
     Logical         allow, found, endfil, occurs, occurs2, Err969, Err969all, TabYesNo
     Integer         TableNr, NrColumns
     Integer         LengthTable, ipos, ipos1, ipos2
@@ -1028,6 +1068,11 @@ contains
                                                    NAM_GroundwaterForcingDefinition(:)
     Character(Len=CharIdLength), pointer, save ::  LGSTDef(:), LGSTDef2(:)
     Logical  Success
+
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, iCount
+
     Integer  NrHbvNodes, NrExtNodes, NrScsNodes, NrNAMNodes, NrLGSINodes, NrWageningenNodes, NrWalrusNodes
     ! HBV
     Real     MeltConstDum, SnowFallTempDum, SnowMeltTempDum, TempAltConstDum, &
@@ -1077,7 +1122,18 @@ contains
     Err969 = .false.
     LevelError = .false.
 
-! Read RRRunoffNode.3B file
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(44)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,3)  ! Sacrmnto.3b   ! maybe already existing (updating Sacr. input, append mode)
+        Call ErrMsgStandard (999, 1, ' Cleaning Sacrmnto.3b for RRrunoff input to file', FileName)
+   endif
+! *********************************************************************
+! Read RRRunoffNode.3B file   (=Sacrmnto.3b file!)
+! *********************************************************************
     call SetMessage(LEVEL_INFO, 'Read RRRunoffNode.3b file')
     endfil = .false.
     teller = 0
@@ -1115,6 +1171,9 @@ contains
             call SetMessage(LEVEL_ERROR, 'Data for RRRunoffNode node '//id(1:Len_Trim(id))//' double in datafile RRRunoffNode.3B')
             LevelError = .true.
           else
+           ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
            teller = teller + 1
            AlreadyRead(IRRRunoff) = .true.
            if (String(1:4) .eq. 'EXTR') then
@@ -1150,6 +1209,8 @@ contains
               lenString = len_trim (String)
               if (String(lenString-3:lenstring) .ne. 'walr') then
                   READ(Infile1,'(A1000)',END=21,ERR=150,IOSTAT=IECODE)  String1
+                  ! cleaning RR files
+                  If (CleanRRFiles) write(Iounit,'(A)') String1 (1:len_trim(String1))
                   lenString1 = len_trim (String1)
                   String = String(1:lenString) // " " // String1 (1:lenString1)
                   goto 101
@@ -1342,14 +1403,14 @@ contains
                String = NodeId(1:Len_Trim(NodeId))
                call ErrMsgStandard (977, 0, ' Curve Number should be > 0 and <=100 for External Runoff node ',String(1:Len_Trim(String)) )
             endif
-            
+
             ! optional unit hydrograph selection  uh 0 or uh 1 or uh 2)
             allow = .true.
             found = .false.
             Retval = RetVal + GetVAR2(STRING,' uh ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
             if (found) SCS_UHChosen(IRRRunoffSub) = IDUM(1)
-            if ((found .and. SCS_UHChosen(IRRRunoffSub) < 2) .or. .not. found) then ! 
+            if ((found .and. SCS_UHChosen(IRRRunoffSub) < 2) .or. .not. found) then !
                ! RRRunoffNode SCS parameters, if SCS selected they should be present
                allow = .true.
                found = .false.
@@ -1365,38 +1426,39 @@ contains
                Retval = RetVal + GetVAR2(STRING,' cp ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                SCS_Snyder_Cp(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' uhdr ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_UH_decay_rate(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' uhdf ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_UH_decay_frac(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' bfdr ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_BF_decay_rate(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' bfsq ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_BF_STRTQ(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' bfim ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_BF_interpolation_method(IRRRunoffSub) = IDUM(1)
-               
+
                SHG_set%size = SHG_set%size + 1
+               SCS_Snyder_Set(IRRRunoffSub) = SHG_set%size
             endif
             ! optional TimeLag specification (in hours)
             allow = .true.
@@ -1408,12 +1470,40 @@ contains
                NodeId = Id_Nod(inod)
                call ErrMsgStandard (977, 0, ' Basin Time Lag is required for Snyder UH SCS Runoff node ',trim(NodeId))
             endif
+            ! optional reservoir coefficient for HEC-HMS formulation
+            allow = .true.
+            found = .false.
+            Retval = RetVal + GetVAR2(STRING,' r ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                         CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+            if (found) SCS_HMSLinResR(IRRRunoffSub) = RDUM(1)
             ! optional antecedent moisture conditions: amc 1,2,3
             allow = .true.
             found = .false.
             Retval = RetVal + GetVAR2(STRING,' amc ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
             if (found) SCS_AMC(IRRRunoffSub) = IDUM(1)
+            ! Optional Green-Ampt infiltration Sept2024
+            allow = .true.
+            found = .false.
+            Retval = RetVal + GetVAR2(STRING,' ga ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                         CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+            if (found)  SCS_UseGreenAmpt_Infiltration(IRRRunoffSub) = ( IDUM(1) .eq. 1 )
+            if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+               allow = .false.
+               Retval = RetVal + GetVAR2(STRING,' ksat ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_Ksat(IRRRunoffSub) = max(0.0, RDum(1))
+               Retval = RetVal + GetVAR2(STRING,' psi ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_Psi(IRRRunoffSub) = max(0.0, RDum(1))
+               Retval = RetVal + GetVAR2(STRING,' theta_dmax ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_theta_dmax(IRRRunoffSub) = max (0.0, RDum(1))
+               SCS_GreenAmpt_theta_dmax(IRRRunoffSub) = min (1.0, SCS_GreenAmpt_theta_dmax(IRRRunoffSub))
+               SCS_GreenAmpt_theta_d   (IRRRunoffSub) = SCS_GreenAmpt_theta_dmax(IRRRunoffSub)
+               SCS_GreenAmpt_theta_du  (IRRRunoffSub) = SCS_GreenAmpt_theta_dmax(IRRRunoffSub)
+            endif
+
             ! optional base flow parameters
             allow = .true.
             found = .false.
@@ -1972,6 +2062,14 @@ contains
 !           write(*,*) ' WALRUS_IntSoilType(IRRRunoffSub)', WALRUS_IntSoilType(IRRRunoffSub)
 
            Endif
+! UNST 9025 input check
+           if (NcRRRunoffWalrus .gt. 0) then
+              If (Walrus_HSMINTable(IRRRunoffSub) .eq. '') then
+                 if (Walrus_CD(IRRRunoffSub) .le. Walrus_HSMin(IRRRunoffSub)) then
+                    call ErrMsgStandard (969, 0, ' Walrus HSMin should be less than Walrus Channel Depth cd','' )
+                 endif
+              endif
+           endif
           Endif
          Endif
         Endif
@@ -2012,6 +2110,10 @@ contains
     if (Err969) call ErrMsgStandard (972, 0, ' Some invalid data specified for RR-Runoff nodes', ' See log file and check input data')
     Err969 = .false.
 
+! *******************************************************
+! hierna andere record types voor HBV, LGSI, WALRUS, NAM,
+! *******************************************************
+
 ! HBV Nodes, additional record types
     if (NrHbvNodes .gt. 0) then
          Rewind(infile1)
@@ -2039,6 +2141,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Snow Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk Snow definition
@@ -2123,6 +2229,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Soil Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk Soil definition
@@ -2185,7 +2295,7 @@ contains
          Do while (.not. endfil)
            READ (Infile1,'(A1000)',END=4111,ERR=150,IOSTAT=IECODE) STRING
            IF (STRING(1:4) .EQ. 'FLOW') Then
-           ! Read Soil definition  id
+           ! Read Flow definition  id
            Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' HBV Flow definition data',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            name = CDUM(1)
@@ -2199,6 +2309,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Flow Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            ! Verwerk Flow definition
@@ -2301,7 +2415,7 @@ contains
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            name = CDUM(1)
            teller = teller + 1
-           ! Eerst testen of flow definition wel gebruikt wordt, dan pas verwerken
+           ! Eerst testen of Hini definition wel gebruikt wordt, dan pas verwerken
            IRRRunoff = FindString (NcRRRunoffHBV, HIniDef, Name, NcRRRunoffHBV, CaseSensitive)
            Occurs = (IRRRunoff .gt. 0)
            if (IRRRunoff .gt. 0) then
@@ -2310,6 +2424,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'HINI Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            ! Verwerk HIni definition
@@ -2394,6 +2512,13 @@ contains
          CALL SKPCOM (Infile1, ENDFIL, 'ODS')
          Do while (.not. endfil)
            Success = GetRecord(Infile1, 'NAMS', Endfil, idebug, Iout1)     ! get record van keyword NAMS tot nams, zet in buffer
+           IF (.not. success) GOTO 2112
+           IF (ENDFIL) GOTO 2112
+           Success = GetStringFromBuffer (KeepBufString)
+           IF (.not. Success .and. CleanRRFiles)   then
+               Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule NAMS record D-NAM too small', ' Input skipped')
+               GOTO 2112
+           Endif
            Success = Success .and. GetStringFromBuffer (String)
            IF (.not. success) then
               call SetMessage(LEVEL_ERROR, 'Read NAMS record result: '//String(1:len_trim(String)))
@@ -2415,6 +2540,47 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                 call SetMessage(LEVEL_ERROR, 'D-NAM Soil Parameter Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                 LevelError = .true.
+                Occurs = .false.    ! voorkomt verdere verwerking
+              else
+! clean RR files
+                If (CleanRRFiles) then
+                  iCount = 0
+                  ! use KeepBufString to write to file
+                  ! first till TBLE
+                  ! then till < characters
+                  ! then till second table
+                  ! then till < characters
+                  ! then till the end of the buffer string
+ 1030             continue
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0) then
+                     iCount = iCount +1
+                     write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                     KeepBufString(1:) = KeepBufString(ipos+5:)
+                  else
+                     ! warning/error: no TBLE found
+                       call SetMessage(LEVEL_ERROR, 'NAMS optional table definitions capt TBLE and/or pert TBLE not found')
+                       goto 1032
+                  endif
+ 1031             continue
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                  ipos1 = FndFrst ('tble ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0 .and. ipos1 .gt. ipos) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                     KeepBufString(1:) = KeepBufString(ipos+3:)
+                     goto 1031
+                  elseif (icount .eq. 1) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos1+4)
+                     KeepBufString(1:) = KeepBufString(ipos1+5:)
+                     goto 1030
+                  else
+                     ! write remaining part
+ 1032                continue
+                     write(Iounit,'(A)') KeepBufString (1:lenstring)
+                  endif
+                Endif
               endif
            endif
        ! Verwerk NAM Soil Parameter definition
@@ -2648,6 +2814,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM Level and Depth Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk NAM Level and Depth definition
@@ -2791,6 +2961,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM Surface Runoff Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk NAM Parameter definition
@@ -2921,6 +3095,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM BaseFlow Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk NAM Base Flow definition
@@ -3027,9 +3205,12 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM Parameter gw Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
               endif
            endif
        ! Verwerk NAM Parameter definition
+           ipos = 0
            if (occurs) then
        ! Read parameters
              Retval = RetVal + GetVAR2 (STRING,' po ',3,' RRRunoff_readAscii',' D-NAM Parameter data',IOUT1, &
@@ -3040,6 +3221,13 @@ contains
                                           CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 puDum = RDUM(1)
                 ptDum = ''
+                if (CleanRRFiles) then
+                  lenstring = len_trim(String)
+                  ipos  = FndFrst (' pt ',String(1:lenstring),.false.)
+                  Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' D-NAM Parameter data',IOUT1, &
+                                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
+                  if (ipos .gt. 0) ptDum = CDUM(1)
+                endif
              else
                ! zet time table name gelijk aan het id
                puDum = 0.
@@ -3053,8 +3241,19 @@ contains
                 call ErrMsgStandard (969, 0, ' Pumping option should be 0 or 1 in D-NAM parameter definition ',NAM_GroundwaterForcingDefinition(iRRRunoffSub))
                 Err969 = .true.
              endif
-             if (poDum .ge. 1) then
+
+             if (CleanRRFiles) then
+                lenstring = len_trim(String)
+                ipos  = FndFrst (' pt ',String(1:lenstring),.false.)
+             endif
+
+             if (poDum .ge. 1 .or. ipos .gt. 0) then    ! when cleaning RR files, also handle case that podum=0 but table is defined in input
                  NrPumpTimeTablesNeeded = NrPumpTimeTablesNeeded+1
+             elseif (CleanRRFiles) then
+                 ! cleaning RR files for NAMG record without pump with closing string namg on same line (1 line only)
+                 ipos  = FndFrst (' namg',String(5:lenstring),.false.)
+                 if (ipos .gt. 0) write(Iounit,'(A)') String (1:len_trim(String))
+!                NAMG records with pump require special treat below
              endif
 
        ! Assign definition to individual nodes
@@ -3092,8 +3291,6 @@ contains
           Enddo
           If (Err969) call ErrMsgStandard (972, 0, ' Not enough D-NAM Parameters data found', ' Some NAMG Definitions not present in RRRunoff file')
 
-
-
  ! Reading of pumping time table, if somewhere it is defined
          If (NrPumpTimeTablesNeeded .gt. 0) then
 !           Read NAMG records again for pump time tables
@@ -3106,6 +3303,11 @@ contains
                Success = GetRecord(Infile1, 'NAMG', Endfil, idebug, Iout1)     ! get record van keyword NAMG tot namg, zet in buffer
                IF (.not. success) GOTO 3113
                IF (ENDFIL) GOTO 3113
+               Success = GetStringFromBuffer (KeepBufString)
+               IF (.not. Success .and. CleanRRFiles)   then
+                   Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule NAMG record D-NAM too small', ' Input skipped')
+                   GOTO 3113
+               Endif
                Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
                IF (.not. success) GOTO 3113
                If (TabYesNo .and. TableName .ne. '') Then
@@ -3118,6 +3320,7 @@ contains
                      if (NAMRefToGWPump_TTable(iNAM) .gt. 0) then
                        call SetMessage(LEVEL_ERROR, 'D-NAM Pump Table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Sacrmnto.3b')
                        LevelError = .true.
+                       NrColumns = 0  ! voorkomt verdere verwerking
                      endif
                   endif
 !                 Verwerken NAM pump table definition
@@ -3125,6 +3328,33 @@ contains
 !         Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
                     Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
                     IF (.not. success) GOTO 3113
+                    ! clean RR files
+                    If (CleanRRFiles) then
+                      ! use KeepBufString to write to file
+                      ! first till TBLE
+                      ! then till < characters
+                      ! then till the end of the buffer string
+                      lenstring = len_trim(KeepBufString)
+                      ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                      if (ipos .gt. 0) then
+                         write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                         KeepBufString(1:) = KeepBufString(ipos+5:)
+                      else
+                         ! error: no TBLE found
+                           call SetMessage(LEVEL_ERROR, 'NAMG Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                      endif
+ 1041                 continue
+                      lenstring = len_trim(KeepBufString)
+                      ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                      if (ipos .gt. 0) then
+                         write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                         KeepBufString(1:) = KeepBufString(ipos+3:)
+                         goto 1041
+                      else
+                         ! write remaining part
+                         write(Iounit,'(A)') KeepBufString (1:lenstring)
+                      endif
+                    Endif
 !         Set references
                     Do iNAM = 1, ncRRRunoffNAM
                       if (StringComp (NAMPumpTable(INAM), TableName, CaseSensitive) ) NAMRefToGWPump_TTable(iNam) = TableNr
@@ -3211,6 +3441,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGST Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            if (IRRRunoff2 .gt. 0) then
@@ -3219,6 +3453,10 @@ contains
               if (ReferenceToDefinition2(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGST Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk LGSI Type definition
@@ -3392,6 +3630,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGSI Initial Condition Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            if (IRRRunoff2 .gt. 0) then
@@ -3400,6 +3642,10 @@ contains
               if (ReferenceToDefinition2(iRRRunoff2) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGSI Initial Condition Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk LGSC definition
@@ -3484,6 +3730,25 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGSI Delay Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              elseIf (CleanRRFiles) then
+                 ! cleaning RR files
+                 ! bit more intelligent for long VEQD records
+                 String0 = String
+ 1051            continue
+                 lenstring = len_trim(String)
+                 if (LenString .le. 999) then
+                     write(Iounit,'(A)') String (1:len_trim(String))
+                 else
+                     ipos  = FndFrst (' ',String(979:999),.false.)
+                     if (ipos .gt. 0) then
+                        ipos = 979+ipos-1
+                        write(Iounit,'(A)') String (1:ipos)
+                        String = String(ipos+1:)
+                        goto 1051
+                     endif
+                 endif
+                 String = String0
               endif
            endif
        ! Verwerk LGSD definition
@@ -3585,6 +3850,10 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'WETN Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            else
+               ! cleaning RR files
+               If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
             endif
          endif
         ! Verwerk WETN Type definition
@@ -3714,6 +3983,10 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'BETA Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            else
+               ! cleaning RR files
+               If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
             endif
          endif
         ! Verwerk BETA Type definition
@@ -3819,6 +4092,7 @@ contains
          ! check for VEQD record on one line
  104     continue
          lenString = len_trim (String)
+         String0 = String
          if (String(lenString-3:lenstring) .ne. 'veqd') then
              READ(Infile1,'(A1000)',END=21,ERR=150,IOSTAT=IECODE)  String1
              lenString1 = len_trim (String1)
@@ -3826,7 +4100,7 @@ contains
              goto 104
          endif
          ! Read VEQD definition  id
-         Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' BETA evaporation reduction data',IOUT1, &
+         Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' VEQD interpolation table data',IOUT1, &
                                     CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
          name = CDUM(1)
          teller = teller + 1
@@ -3843,12 +4117,31 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'VEQD Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            elseIf (CleanRRFiles) then
+               ! cleaning RR files
+               ! bit more intelligent for long VEQD records
+               String0 = String
+ 1061          continue
+               lenstring = len_trim(String)
+               if (LenString .le. 999) then
+                   write(Iounit,'(A)') String (1:len_trim(String))
+               else
+                   ipos  = FndFrst (' ',String(979:999),.false.)
+                   if (ipos .gt. 0) then
+                      ipos = 979+ipos-1
+                      write(Iounit,'(A)') String (1:ipos)
+                      String = String(ipos+1:)
+                      goto 1061
+                   endif
+               endif
+               String = String0
             endif
          endif
         ! Verwerk VEQD Type definition
          if (occurs) then
            ! Read type definition parameters
-           Retval = RetVal + GetVAR2 (STRING,' nv ',3,' RRRunoff_readAscii',' BETA evaporation reduction data',IOUT1, &
+           Retval = RetVal + GetVAR2 (STRING,' nv ',3,' RRRunoff_readAscii',' VEQD interpolation table data',IOUT1, &
                        CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            nrValues = IDUM(1)
            if (NrValues .gt. NHLP) then
@@ -3971,6 +4264,25 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'WQH Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            elseIf (CleanRRFiles) then
+               ! cleaning RR files
+               ! bit more intelligent for long WQH records
+               String0 = String
+ 1071          continue
+               lenstring = len_trim(String)
+               if (LenString .le. 999) then
+                   write(Iounit,'(A)') String (1:len_trim(String))
+               else
+                   ipos  = FndFrst (' ',String(979:999),.false.)
+                   if (ipos .gt. 0) then
+                      ipos = 979+ipos-1
+                      write(Iounit,'(A)') String (1:ipos)
+                      String = String(ipos+1:)
+                      goto 1071
+                   endif
+               endif
+               String = String0
             endif
          endif
         ! Verwerk WQH Type definition
@@ -4074,6 +4386,11 @@ contains
           IF (ENDFIL) GOTO 6115
           Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
           IF (.not. success) GOTO 6115
+           Success = GetStringFromBuffer (KeepBufString)
+           IF (.not. Success .and. CleanRRFiles)   then
+               Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule HSTT record WALRUS too small', ' Input skipped')
+               GOTO 6115
+           Endif
           If (TabYesNo .and. TableName .ne. '') Then
 !            Er is een tabel gedefinieerd, met een niet-lege naam
 !            Eerst testen of tabel definition wel gebruikt wordt, dan pas verwerken
@@ -4083,6 +4400,7 @@ contains
              if (IRRRunoffSub .gt. 0) then
                 if (Walrus_HSMINRefTable(iRRRunoffSub) .gt. 0) then
                   call SetMessage(LEVEL_ERROR, 'Walrus HsMin table Definition '//Tablename(1:Len_trim(TableName))// ' double in datafile Sacrmnto.3b')
+                  NrColumns = 0  ! voorkomt verdere verwerking
                 endif
              endif
 !            Verwerken definitie
@@ -4090,6 +4408,33 @@ contains
 ! Get table with name TableName, NrColumns data fields, result in global arrays; tabel nummer is TableNr
                 Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
                 IF (.not. success) GOTO 6115
+! clean RR files
+                If (CleanRRFiles) then
+                  ! use KeepBufString to write to file
+                  ! first till TBLE
+                  ! then till < characters
+                  ! then till the end of the buffer string
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                     KeepBufString(1:) = KeepBufString(ipos+5:)
+                  else
+                     ! error: no TBLE found
+                       call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                  endif
+ 1081             continue
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                     KeepBufString(1:) = KeepBufString(ipos+3:)
+                     goto 1081
+                  else
+                     ! write remaining part
+                     write(Iounit,'(A)') KeepBufString (1:lenstring)
+                  endif
+                Endif
 ! Set references
                 Do iRRRunoffSub = 1, ncRRRunoff
                    if (StringComp (Walrus_HSMINTable(IRRRunoffSub), TableName, CaseSensitive) ) Walrus_HSMinRefTable(iRRRunoffSub) = TableNr
@@ -4127,6 +4472,8 @@ contains
 
      if (LevelError)  Call ErrMsgStandard (981, 0, ' Error: See earlier error messages from subroutine ', ' RRRunoffNode_ReadAscii' )
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
      return
 
@@ -4134,6 +4481,8 @@ contains
      DeAllocate ( AlreadyRead)
      DeAllocate ( ReferenceToDefinition)
      call SetMessage(LEVEL_FATAL, 'Read error in RRRunoffNode ReadASCII')
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
      Return
   End subroutine RRRunoffNode_readASCII
@@ -4166,6 +4515,19 @@ contains
 
   Do iRRRunoff=1,NcRRRunoff
       IRRRunoffSub = RRRunoff_SubIndex(IRRRunoff)
+!     debugging
+!     if (IRRRunoff .eq. 1) then
+!       write(iout1,*) ' j  einode(j,1)  einode(j,2)  einode(j,3), RRRunoff_Subindex(IrrRunoff) iD_Nod(j)'
+!       DO j=1,ncnode
+!          if (einode(j,3) .le. 17 .or. einode(j,3) .gt. 31) then
+!             write(iout1,'(I5,3I8,8X,A)') j, einode(j,1), einode(j,2), einode(j,3), id_nod(j)
+!          else
+!             write(iout1,'(I5,4I8,A)') j, einode(j,1), einode(j,2), einode(j,3), RRRunoff_Subindex(einode(j,2)), id_nod(j)
+!             ! note that RRRunoff_Subindex does not follow the order in the 3B_Nod.tp file, but the order in the Sacrmnto.3b file
+!          endif
+!       Enddo
+!     endif
+!     end debugging
       Do j=1,ncnode
          if (Einode(j,2) .eq. IRRRunoff .and. Einode(j,3) .eq. 22) Inode = j        ! kind 22= LGSI
       Enddo
@@ -4177,13 +4539,14 @@ contains
 !              Read (Icache,'(I4,1X,4E15.5)') k, x, sD, PrecipReduction, EvapReduction
 !           enddo
 !           Write(Icache, *) 'GW Level        GW Volume '
+!  UNST-9123 updated checks, and give clearer error message, which can be verified using the cachefile
            Read(Icache, '(A999)') String
            Read(Icache, '(A999)') String
            Do k=1,LGSI_MaxInterpLength
               read(Icache,*) k1, LGSI_InterpGWLevelGWV(k,IRRRunoffSub,j),LGSI_InterpGWVolume(k,IRRRunoffSub,j)
               If (k1 .ne. k) write(Iout1,*) ' Error1  k1 <>k'
               if (k .gt. 1) then
-                if (LGSI_InterpGWVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpGWVolume(k-1,IRRRunoffSub,j)+0.0001) then
+                if (LGSI_InterpGWVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpGWVolume(k-1,IRRRunoffSub,j)+0.0001D0) then
                     call SetMessage(LEVEL_ERROR, 'Error in GwDepth-GWVolume relation for node with id: '//trim(Id_Nod(Inode)))
                     write(Iout1,'(A110,2I5,F6.2)') ' Error: GwDepth-GWVolume relation - volumes are increasing for lower depths for node/subarea/gwdepth', IRRRunoffSub, j, LGSI_InterpGWLevelGWV(k,IRRRunoffSub,j)
                 endif
@@ -4196,7 +4559,7 @@ contains
               Read(Icache,*) k1, LGSI_InterpGWLevelUnsatV(k,IRRRunoffSub,j),LGSI_InterpUnsatVolume(k,IRRRunoffSub,j)
               If (k1 .ne. k) write(Iout1,*) ' Error2  k1 <>k'
               if (k .gt. 1) then
-                if (LGSI_InterpUnsatVolume(k,IRRRunoffSub,j) .lt. LGSI_InterpUnsatVolume(k-1,IRRRunoffSub,j)-0.0001) then
+                if (LGSI_InterpUnsatVolume(k,IRRRunoffSub,j) .lt. LGSI_InterpUnsatVolume(k-1,IRRRunoffSub,j)-0.0001D0) then
                     call SetMessage(LEVEL_ERROR, 'Error in GwDepth-UnsatVolume relation for node with id: '//trim(Id_Nod(Inode)))
                     write(Iout1,'(A110,2I5,F6.2)') ' Error: GwDepth-UnsatVolume relation - volumes are decreasing for lower depths for node/subarea/gwdepth', IRRRunoffSub, j, LGSI_InterpGWLevelUnsatV(k,IRRRunoffSub,j)
                 endif
@@ -4209,9 +4572,12 @@ contains
               Read(Icache,*) k1, LGSI_InterpGWLevelSurfV(k,IRRRunoffSub,j),LGSI_InterpSurfVolume(k,IRRRunoffSub,j)
               If (k1 .ne. k) write(Iout1,*) ' Error3  k1 <>k'
               if (k .gt. 1) then
-                if (LGSI_InterpSurfVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j)+0.0001) then
+                if (LGSI_InterpSurfVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j)+0.000000000001D0) then
+                    ! UNST-9123 clearer error message, which can be verified using the cachefile
                     call SetMessage(LEVEL_ERROR, 'Error in GwDepth-SurfVolume relation for node with id: '//trim(Id_Nod(Inode)))
                     write(Iout1,'(A110,2I5,F6.2)') ' Error: GwDepth-SurfVolume relation - volumes are increasing for lower depths for node/subarea/gwdepth', IRRRunoffSub, j, LGSI_InterpGWLevelSurfV(k,IRRRunoffSub,j)
+                    write(Iout1,'(A50,3F20.15)') ' Error: GwDepth-SurfVolume relation - volume values: ', LGSI_InterpSurfVolume(k,IRRRunoffSub,j), &
+                                                                                                              LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j), LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j)+0.000000000001D0
                 endif
               endif
            enddo
@@ -4343,6 +4709,8 @@ contains
    LevelError = .false.
    eps  = 1.D-7
 
+   Idebug = Conffil_get_Idebug()
+
    if (NcRRRunoffHBV .gt. 0) then
      HBV_DrySnowContent     =  HBV_InitialDrySnowContent
      HBV_FreeWaterContent   =  HBV_InitialFreeWaterContent
@@ -4364,6 +4732,9 @@ contains
        If (Ievent .eq. 1 .and. FirstCall) then
         if (ReadLGSICacheFile) then
           Call ReadCacheFile(ICache, Iout1)
+!         Close(icache)
+!         call Openfl (icache, 'LGSICachefile', 1, 2)
+!         Call WriteCacheFile(ICache)
         else
           Call LGSI_ConstructDelayTable
           Call LGSI_ConstructInterpolationTables
@@ -4391,10 +4762,11 @@ contains
                    enddo
                    if (idebug .ne. 0) Write(Idebug, *) 'IRRRunoffSub, subarea', IRRRunoffSub, j
                    if (idebug .ne. 0) Write(Idebug, *) 'GW Level        GW Volume '
+!  UNST-9123 updated checks, and give clearer error message, which can be verified using the cachefile
                    Do k=1,LGSI_MaxInterpLength
                       write(Idebug,*) k, LGSI_InterpGWLevelGWV(k,IRRRunoffSub,j),LGSI_InterpGWVolume(k,IRRRunoffSub,j)
                       if (k .gt. 1) then
-                        if (LGSI_InterpGWVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpGWVolume(k-1,IRRRunoffSub,j)+0.0001) then
+                        if (LGSI_InterpGWVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpGWVolume(k-1,IRRRunoffSub,j)+0.0001D0) then
                             call SetMessage(LEVEL_ERROR, 'Error in GwDepth-GWVolume relation for node with id: '//trim(Id_Nod(Inode)))
 !                           LevelError = .true.
                             write(Iout1,'(A110,2I5,F6.2)') ' Error: GwDepth-GWVolume relation - volumes are increasing for lower depths for node/subarea/gwdepth', IRRRunoffSub, j, LGSI_InterpGWLevelGWV(k,IRRRunoffSub,j)
@@ -4406,7 +4778,7 @@ contains
                    Do k=1,LGSI_MaxInterpLength
                       write(Idebug,*) k, LGSI_InterpGWLevelUnsatV(k,IRRRunoffSub,j),LGSI_InterpUnsatVolume(k,IRRRunoffSub,j)
                       if (k .gt. 1) then
-                        if (LGSI_InterpUnsatVolume(k,IRRRunoffSub,j) .lt. LGSI_InterpUnsatVolume(k-1,IRRRunoffSub,j)-0.0001) then
+                        if (LGSI_InterpUnsatVolume(k,IRRRunoffSub,j) .lt. LGSI_InterpUnsatVolume(k-1,IRRRunoffSub,j)-0.0001D0) then
                             call SetMessage(LEVEL_ERROR, 'Error in GwDepth-UnsatVolume relation for node with id: '//trim(Id_Nod(Inode)))
 !                           LevelError = .true.
                             write(Iout1,'(A110,2I5,F6.2)') ' Error: GwDepth-UnsatVolume relation - volumes are decreasing for lower depths for node/subarea/gwdepth', IRRRunoffSub, j, LGSI_InterpGWLevelUnsatV(k,IRRRunoffSub,j)
@@ -4418,10 +4790,13 @@ contains
                    Do k=1,LGSI_MaxInterpLength
                       if (idebug .ne. 0) write(Idebug,*) k, LGSI_InterpGWLevelSurfV(k,IRRRunoffSub,j),LGSI_InterpSurfVolume(k,IRRRunoffSub,j)
                       if (k .gt. 1) then
-                        if (LGSI_InterpSurfVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j)+0.0001) then
+                        if (LGSI_InterpSurfVolume(k,IRRRunoffSub,j) .gt. LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j)+0.000000000001D0) then
                             call SetMessage(LEVEL_ERROR, 'Error in GwDepth-SurfVolume relation for node with id: '//trim(Id_Nod(Inode)))
 !                           LevelError = .true.
+!                           UNST-9123 give clearer error message, which can be verified using the cachefile
                             write(Iout1,'(A110,2I5,F6.2)') ' Error: GwDepth-SurfVolume relation - volumes are increasing for lower depths for node/subarea/gwdepth', IRRRunoffSub, j, LGSI_InterpGWLevelSurfV(k,IRRRunoffSub,j)
+                            write(Iout1,'(A50,3F20.15)') ' Error: GwDepth-SurfVolume relation - volume values: ', LGSI_InterpSurfVolume(k,IRRRunoffSub,j), &
+                                                                                                                     LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j), LGSI_InterpSurfVolume(k-1,IRRRunoffSub,j)+0.000000000001D0
                         endif
                       endif
                    enddo
@@ -5234,15 +5609,25 @@ contains
      Enddo
    endif
 
-do i=1,NCRRRunoff
-   IRRRunoffSub = RRRunoff_SubIndex(i)
-   if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
-      if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
-         call compute_snyder_hydrograph(SHG_set%SHG(iRRRunoffSub),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+   do i=1,NCRRRunoff
+      IRRRunoffSub = RRRunoff_SubIndex(i)
+      if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
+         if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
+            call compute_snyder_hydrograph(SHG_set%SHG(SCS_Snyder_Set(IRRRunoffSub)),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+         endif
       endif
-   endif
-enddo
-   
+   enddo
+
+   do i=1,NCRRRunoff
+      IRRRunoffSub = RRRunoff_SubIndex(i)
+      if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
+         if (SCS_UseGreenAmpt_Infiltration(iRRRunoffSub)) then ! use GreenAmpt Infiltration
+            call SetGreenAmptConstants (SCS_GreenAmpt_Ksat(iRRRunoffSub), SCS_GreenAmpt_Psi(iRRRunoffSub), SCS_GreenAmpt_Theta_Dmax(iRRRunoffSub), &
+                 SCS_GreenAmpt_Lu(iRRRunoffSub), SCS_GreenAmpt_Kr(iRRRunoffSub), SCS_GreenAmpt_Tr(iRRRunoffSub), idebug)
+         endif
+      endif
+   enddo
+
    if (NcRRRunoffSCS .gt. 0) then
      Do i=1,NCRRRunoff
         IRRRunoffSub = RRRunoff_SubIndex(i)
@@ -5279,11 +5664,16 @@ enddo
            Endif
         Endif
      Enddo
-     
+
      SCS_Tc      = SCS_TLag / 0.6
      ! convert Tc to computation timesteps
      ! SCS_Tlag = ceiling ( SCS_Tlag * 3600. / timeSettings%TimestepSize)
      SCS_Tc = ( SCS_Tc * 3600. / timeSettings%TimestepSize)
+     SCS_HMSLinResR = ( SCS_HMSLinResR * 3600. / timeSettings%TimestepSize)  ! R linear reservoir coefficient from hours to nr. timesteps
+     Do IRRRunoffSub=1,NcRRRunoffSCS
+        If (SCS_HMSLinResR(IRRRunoffSub) .gt. 0) SCS_HMSC1(IRRRunoffSub) = ( 1.0E0 / (SCS_HMSLinResR(IRRRunoffSub) + 0.5 ) )
+     Enddo
+     SCS_HMSC2   = 1.0E0 - SCS_HMSC1
      SCS_PAccum  = 0.0
      SCS_PExcess = 0.0
      SCS_Storage = 0.0
@@ -5298,11 +5688,13 @@ enddo
            If (SCS_UHChosen(iRRRunoffSub) .eq. 0) then
                ! HEC-HMS
                MaxTc = max (MaxTc, Ceiling(SCS_Tc(iRRRunoffSub)) + 1 )
+                ! with linear reservoir: take into account further attenuation/extension of SCS_TC with factor 5
+               if (SCS_HMSLinResR(iRRRunoffSub) .gt. 0) MaxTc = max (MaxTc, 5*Ceiling(SCS_Tc(iRRRunoffSub)) + 1 )
            else If (SCS_UHChosen(iRRRunoffSub) .eq. 1) then
-               ! SCS dimensionless; first convert Timelag to nr of computation timesteps!
+               ! SCS dimensionless; first convert Timelag to nr of computation timesteps! The factor 5 is related to time-lage (< Tc) as specified in SCS method
                MaxTc = max (MaxTc, 1 + Ceiling (5* (SCS_Tlag(iRRRunoffSub) * 3600./timeSettings%TimestepSize + 0.5)))
            else if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
-               SCS_Tc(iRRRunoffSub) = (SHG_set%SHG(iRRRunoffSub)%time_array(7) * 3600./timeSettings%TimestepSize)
+               SCS_Tc(iRRRunoffSub) = (SHG_set%SHG(SCS_Snyder_Set(iRRRunoffSub))%time_array(7) * 3600./timeSettings%TimestepSize)
                MaxTc = max (MaxTc,ceiling(SCS_Tc(iRRRunoffSub)) + 1)
            endif
         endif
@@ -5325,6 +5717,7 @@ enddo
 
    if (Ievent .eq. 1 .and. FirstCall .and. NcRRRunoffSCS .gt. 0) then
        Success = Dh_AllocInit (MaxTc, NcRRRunoff, SCS_UnitHydComp, 0E0)
+       Success = Dh_AllocInit (MaxTc, SCS_HMSLinResInflow, 0E0)
        Success = Success .and. Dh_AllocInit (NcRRRunoff, MaxTc, SCS_AvailableRunoff, 0E0)
        If (.not. success) call ErrMsgStandard (981, 0, ' Error allocating arrays in subroutine ', ' RRRunoffNode_Init1' )
        Call ComputeSCSUnitHydrographComponents
@@ -5402,6 +5795,10 @@ enddo
     RowNr = -1
     TabelNr = Walrus_HSminRefTable(iRRRunoffSub)
     HSmin   = Dble ( GetNewValue(TableHandle, TabelNr, 1, RowNr, CurrentDate, CurrentTime, Idebug, iout1, DateTimeOutsideTable, .true.) )
+! UNST 9025 input check
+    if (Walrus_CD(IRRRunoffSub) .le. HSmin) then
+        call ErrMsgStandard (969, 0, ' Walrus HSMin (from table) should be less than Walrus Channel Depth cd','' )
+    endif
 !   no further conversion, input is in mm
     if (idebug .ne. 0) WRITE (IDEBUG,*) ' From table GetNewValue HsMin', HSmin
     if (idebug .ne. 0) WRITE (IDEBUG,*) ' IRRRunoffSub rowNr HSmin', iRRRunoffSub, RowNr, HSmin
@@ -5418,7 +5815,7 @@ enddo
 
   Integer    IRRRunoff, j, NrUHComponents, NTpQp, i, idebug, idum, iRRRunoffsub
   Real       SumTp, SumQp, Tp, TpArray(34), QpArray(34), InputTpValue, OutputQpValue, ScaledSumQp
-  
+
   TpArray = 0
   QpArray = 0
   nTpQp   = 34  ! 30
@@ -5568,6 +5965,7 @@ enddo
      if (RRRunoff_CompOption(IRRRunoff) .eq. 2) then
         if (SCS_UHChosen(IRRRunoffSub) .eq. 0) then
            ! HEC-HMS unit hydrograph, as used in Jakarta Floods 2007
+           ! time-area diagram g
            Do j=1,ceiling(SCS_Tc(IRRRunoffSub))
               if (j .le. 0.5*SCS_TC(IRRRunoffSub))  then
                  SCS_UnitHydComp(j,IRRRunoffSub) = 1.414 * ( (j / SCS_Tc(IRRRunoffSub)) ** 1.5)
@@ -5596,7 +5994,7 @@ enddo
                  write(idebug,*) ' j, InputTp, OutputQp, SCS_UH,', InputTpValue, OutputQpValue, SCS_UnitHydComp(j,IRRRunoffSub)
            Enddo
         else if (SCS_UHChosen(IRRRunoffSub) .eq. 2) then! Snyder hydrograph
-           call interpolate_snyder_hydrograph(SHG_set%SHG(iRRRunoffsub), SCS_UnitHydComp(:,IRRRunoffSub),Ceiling (SCS_Tc(iRRRunoffSub)),SCS_Snyder_UH_decay_frac(iRRRunoffsub),SCS_Snyder_UH_decay_rate(iRRRunoffSub))
+           call interpolate_snyder_hydrograph(SHG_set%SHG(SCS_Snyder_Set(iRRRunoffsub)), SCS_UnitHydComp(:,IRRRunoffSub),Ceiling (SCS_Tc(iRRRunoffSub)),SCS_Snyder_UH_decay_frac(iRRRunoffsub),SCS_Snyder_UH_decay_rate(iRRRunoffSub))
         endif
      Endif
   Enddo
@@ -5626,12 +6024,18 @@ enddo
 
    if (NcRRRunoffSCS .gt. 0) then
       SCS_Storage0           =  SCS_Storage
+      SCS_HMSLinResContent0  =  SCS_HMSLinResContent
       SCS_PAccum0            =  SCS_PAccum
       SCS_PExcess0           =  SCS_PExcess
       ! SCSbaseflow extensions
       SCS_GwAct0            =  SCS_GwAct
-      SCS_SubSurfAct0       =  SCS_SubSurfAct0
-      SCS_SurfAct0          =  SCS_SurfAct0
+      SCS_SubSurfAct0       =  SCS_SubSurfAct
+      SCS_SurfAct0          =  SCS_SurfAct
+      ! HMS lin.res
+      SCS_HMSLinResOutflow0 =  SCS_HMSLinResOutflow
+      SCS_HMSLinResOutflow  =  0.0
+      SCS_HMSLinResInflow   =  0.0
+      SCS_HMSLinResInflowTot=  0.0
    endif
 
    if (NcRRRunoffLGSI .gt. 0) then
@@ -6210,7 +6614,7 @@ enddo
          SnowFall, Rainfall, PotSnowMelt, PotRefreezing, Refreezing, Snowmelt, &
          MaxFreeWater, InSoil, DirectRunoff, NetInSoil, Seepage, InUpperZone, &
          Percolation, BaseFlow, InterFlow, QuickFlow, HBVRunoff
-    Real SCS_Runoff, PAcc, SMax
+    Real SCS_Runoff, PAcc, SMax, SCS_RunoffHMS
 
 ! additional local variables for NAM
     double precision NamAlfa, Lalfa, Infcap, DLMax, GPotMax, GMax, AdInf, OFDt1, OFDt2
@@ -6256,6 +6660,8 @@ enddo
 ! Walrus
   Integer, external :: WalrusGet, WalrusDoStep, WalrusSet
   Integer           :: retValWalrusCall, WalrusFirst
+! GreenAmpt infiltration
+  Double precision     DepthPonding, Fprev
 
       WalrusFirst = 1
       Fract     = TimeSettings%Timestepsize / 86400.     ! fraction of day
@@ -6263,7 +6669,7 @@ enddo
 
       iDebug = ConfFil_get_iDebug()
       iOut1  = ConfFil_get_iOut1 ()
-!     Write(*,*) ' Start CmpRRRunoff', IRRRunoffSub, Itmstp
+!     if (Idebug .ne. 0) Write(Idebug,*) ' Start CmpRRRunoff', IRRRunoffSub, Itmstp
 
 ! initial situation
       IF (iDebug .ne. 0) THEN
@@ -6443,11 +6849,31 @@ enddo
             Endif
           ! Initialisations
 
+            If (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+               Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
+               DepthPonding  = SCS_Storage0(IRRRunoffSub)
+               FPrev = SCS_GreenAmpt_CumInfiltration(IRRRunoffSub)
+               Call GreenAmpt (Precipitation/FractHour*1.D0, DepthPonding, SCS_GreenAmpt_Theta_D(IRRRunoffSub), SCS_GreenAmpt_Theta_DU(IRRRunoffSub), &
+                               SCS_GreenAmpt_CumInfiltration(IRRRunoffSub), SCS_GreenAmpt_T(IRRRunoffSub), &
+                               SCS_GreenAmpt_KSat(IRRRunoffSub), SCS_GreenAmpt_Psi(IRRRunoffSub), SCS_GreenAmpt_Theta_Dmax(IRRRunoffSub), &
+                               SCS_GreenAmpt_LU(IRRRunoffSub), SCS_GreenAmpt_Kr(IRRRunoffSub), SCS_GreenAmpt_Tr(IRRRunoffSub), &
+                               SCS_GreenAmpt_InfRate(IRRRunoffSub), Idebug, TimeSettings%Timestepsize )
+               SCS_GreenAmpt_CumRain(IRRRunoffSub) = SCS_GreenAmpt_CumRain(IRRRUnoffSub) + Precipitation
+               SCS_GreenAmpt_InfCurrentStep (IRRRunoffSub) = max (0.0D0, SCS_GreenAmpt_CumInfiltration(IRRRunoffSub)-FPrev)
+               if (idebug .gt. 0) then
+                  Write(Idebug,*) ' itmstp  RainRate RainStep CumRain InfRate Inf_currentstep CumInf Theta_DU  T'
+                  Write(Idebug,'(I5,10F10.4)') itmstp,Precipitation/FractHour, SCS_GreenAmpt_CumRain(IRRRunoffSub), &
+                                        SCS_GreenAmpt_InfRate(IRRRunoffSub), SCS_GreenAmpt_InfCurrentStep (IRRRunoffSub), &
+                                        SCS_GreenAmpt_CumInfiltration(IRRRunoffSub), SCS_GreenAmpt_Theta_DU(IRRRunoffSub), SCS_GreenAmpt_T(IRRRunoffSub)
+               endif
+            Endif
+
             If (.not. SCS_UseBaseFlow(IRRRunoffSub)) then
                ! original SCS calculations, without baseflow extensions
                Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
                SCS_Rainfall(IRRRunoffSub)= Precipitation
-               SCS_PAccum (IRRRunoffSub) = SCS_PAccum0(IRRRunoffSub) + Precipitation
+               ! subtract Infiltration already from PAccum (and PExcess)
+               SCS_PAccum (IRRRunoffSub) = SCS_PAccum0(IRRRunoffSub) + Precipitation - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
                PAcc = SCS_PAccum(IRRRunoffSub)
                SMax = SCS_MaxRetention(IRRRunoffSub)
                if (PAcc + 0.8 * SMax .gt. 0) then
@@ -6457,7 +6883,8 @@ enddo
                endif
 
              ! available runoff current timestep
-               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+             ! also subtract infiltration current timestep   (discussion point is whether to subtract it from available runoff or already from PExcess .....
+               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub) ! - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)  ! subtracted infiltration current timestep
                SCS_AvailableRunoff(IRRRunoffSub,1) = max (0.0, SCS_AvailableRunoff(IRRRunoffSub,1))
 
                If (SCS_UHChosen(IRRRunoffSub) .eq. 0 .or. SCS_UHChosen(IRRRunoffSub) .eq. 2) then
@@ -6466,6 +6893,35 @@ enddo
                   Do j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1
                      SCS_Runoff = SCS_Runoff + SCS_UnitHydComp(j,IRRRunoffSub) * SCS_AvailableRunoff(IRRRunoffSub,j)
                   Enddo
+                  SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+                  QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+
+                  ! adjustment in case of use HMS UH with linear reservoir (so far only the time-area diagram is taken into account)
+                  if (SCS_UHChosen(IRRRunoffSub) .eq. 0  .and. SCS_HMSLinResR(iRRRunoffSub) .gt. 0) then
+                      if (idebug .ne. 0) then
+                         Write(Idebug,*) ' HMS LinResR', SCS_HMSLinResR(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_AvailableRunoff', (SCS_AvailableRunoff(IRRRunoffSub,j),j=1,MaxTc)
+                         Write(Idebug,*) ' SCS_UnitHydComp', (SCS_UnitHydComp(j,IRRRunoffSub),j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1)
+                         Write(Idebug,*) ' SCSRunoff     ', SCS_Runoff
+                         Write(Idebug,*) ' SCS_HMSC1     ', SCS_HMSC1(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSC2     ', SCS_HMSC2(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResContent0 ', SCS_HMSLinResContent0(IRRRunoffSub)
+                      Endif
+                      Do j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1
+                         SCS_HMSLinResInflow(j) = SCS_UnitHydComp(j,IRRRunoffSub) * SCS_AvailableRunoff(IRRRunoffSub,j)
+                         SCS_HMSLinResInflowTot(IRRRunoffSub) = SCS_HMSLinResInflowTot(IRRRunoffSub) + SCS_HMSLinResInflow(j)
+                         SCS_HMSLinResOutflow(IRRRunoffSub)= SCS_HMSLinResOutflow(IRRRunoffSub) + SCS_HMSC1(IRRRunoffSub) * SCS_HMSLinResInflow(j)
+                      Enddo
+                      SCS_HMSLinResOutflow(IRRRunoffSub)= SCS_HMSLinResOutflow(IRRRunoffSub) + SCS_HMSC2(IRRRunoffSub) * SCS_HMSLinResOutflow0(IRRRunoffSub)
+                      SCS_HMSLinResContent(IRRRunoffSub)= SCS_HMSLinResContent(IRRRunoffSub) + SCS_HMSLinResInflowTot(IRRRunoffSub) - SCS_HMSLinResOutflow(IRRRunoffSub)
+                      if (idebug .ne. 0) then
+                         Write(Idebug,*) ' SCS_HMSLinResInflowTot    ', SCS_HMSLinResInflowTot(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResOutflow      ', SCS_HMSLinResOutflow(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResContentFinal ', SCS_HMSLinResContent(IRRRunoffSub)
+                      Endif
+                      SCS_RunoffHMS = SCS_HMSLinResOutflow(IRRRunoffSub)
+                      QF2 = SCS_RunoffHMS * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+                  endif
                else If (SCS_UHChosen(IRRRunoffSub) .eq. 1) then
                  ! routing using SCS dimensionless unit hydrograph
                   Tp = SCS_Tlag(iRRRunoffSub) + (TimeSettings%TimestepSize /2. / 3600.)
@@ -6482,15 +6938,19 @@ enddo
                      endif
                   Enddo
                   SCS_Runoff = QF2 / Area_RRRunoffNode(IRRRunoff) / mm2m * TimeSettings%TimeStepSize
+                  SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
                endif
 
              ! storage balance and outflow
-               SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
-               QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+! already above
+!              SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+               if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+                  SCS_Storage(IRRRUnoffSub) = SCS_Storage(IRRRUnoffSub) - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
+               endif
                RRRunoffNode_Outflow(iRRRunoff) = QF2
 
             else
-             ! with baseflow extensions
+             ! with baseflow extensions;  do not use since not complete / not tested
                Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
                SCS_Rainfall(IRRRunoffSub)= Precipitation
                SCS_EvapRD(IRRRunoffSub)= Evap(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
@@ -6504,7 +6964,8 @@ enddo
                endif
 
              ! available runoff current timestep
-               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+!              SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub) !- SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)  ! subtracted infiltration current timestep
                SCS_AvailableRunoff(IRRRunoffSub,1) = max (0.0, SCS_AvailableRunoff(IRRRunoffSub,1))
 
             endif
@@ -6521,6 +6982,8 @@ enddo
                Write(Idebug,*) ' Storage init  ', SCS_Storage0(IRRRunoffSub)
                Write(Idebug,*) ' Storage       ', SCS_Storage (IRRRunoffSub)
                Write(Idebug,*) ' QF2           ', QF2
+               Write(Idebug,*) ' UseGreenAmpt  ', SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)
+               Write(Idebug,*) ' InfCurrentStep', SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
             Endif
 
       elseif (RRRunoff_CompOption(IRRRunoff) .eq. 3) then
@@ -7351,88 +7814,88 @@ enddo
 
       elseif (RRRunoff_CompOption(IRRRunoff) .eq. 6) then
 
-!        Write(*,*) ' CHECKING timestep ', itmstp
+         if (Idebug .ne. 0) Write(Idebug,*) ' CHECKING timestep ', itmstp
 !        only CHECKING whether all data to WALRUS was correctly set and kept ok!
          if (itmstp .le. 2) then
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_area, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get Area ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 11 Area ', TempVar, (Area_RRRunoffNode(IRRRunoff))/1000000.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 11 Area ', TempVar, (Area_RRRunoffNode(IRRRunoff))/1000000.D0
 ! default numerical parameters
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_min_deltime, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get min_deltime', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 41 min_deltime', TempVar, 60.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 41 min_deltime', TempVar, 60.D0
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_max_h_change, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get max_hchange ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 42 max_hchange', TempVar, 10.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 42 max_hchange', TempVar, 10.D0
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_min_h, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get minh ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 43 hmin ', TempVar, 1.0D-3
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 43 hmin ', TempVar, 1.0D-3
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_max_Pstep, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get max_Pstep ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 44 max_PStep ', TempVar, 10.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 44 max_PStep ', TempVar, 10.D0
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_max_substeps, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get max_substeps ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 45 max_substeps', TempVar, 288.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 45 max_substeps', TempVar, 288.D0
 ! user defined parameters
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cW, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CW ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 1 CW', TempVar, Walrus_CW(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 1 CW', TempVar, Walrus_CW(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cV, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CV ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 2 CV', TempVar, Walrus_CV(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 2 CV', TempVar, Walrus_CV(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cG, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CG ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 3 CG', TempVar, Walrus_CG(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 3 CG', TempVar, Walrus_CG(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cQ, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CQ ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 4 CQ', TempVar, Walrus_CQ(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 4 CQ', TempVar, Walrus_CQ(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cS, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CS ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 5 CS', TempVar, Walrus_CS(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 5 CS', TempVar, Walrus_CS(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cD, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CD ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 6 CD', TempVar, Walrus_CD(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 6 CD', TempVar, Walrus_CD(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub,wc_par_cexpS, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get XS ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 12 XS', TempVar, Walrus_XS(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 12 XS', TempVar, Walrus_XS(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub,wc_par_aS, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get AS ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 10 As', TempVar, Walrus_AS(IRRRunoffSub)
-!          Write(*,*) ' END CHECKING timestep ', itmstp
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 10 As', TempVar, Walrus_AS(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' END CHECKING timestep ', itmstp
          endif   ! end CHECKING
 
 ! update HSMin if time table
           if (Walrus_HST(IRRRunoffSub)) then
              Call GetHSminFromTable (Walrus_HSmin(IRRRunoffSub), IRRRunoffSub)
-!            Write(*,*) ' WalrusSet HSMin'
+             if (Idebug .ne. 0) Write(Idebug,*) ' WalrusSet HSMin'
              retValWalrusCall = WalrusSet(IRRRunoffSub,wc_hSmin, Walrus_HSMIN(IRRRunoffSub),WalrusFirst)
              if (retValWalrusCall .ne. 0) then
                 call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Set HSMin ', ' RRRunoffNode_Init1' )
@@ -7441,7 +7904,7 @@ enddo
 
 !         Runoff node option 6: Walrus model
           ! Walrus.dostep (dble(TimeSettings%TimestepSize))
-!         Write(*,*) ' Walrus_DOStep;IRRRunoffSub -timestep size', IRRRunoffSub, dble(TimeSettings%TimestepSize)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Walrus_DOStep;IRRRunoffSub -timestep size', IRRRunoffSub, dble(TimeSettings%TimestepSize)
           RetValWalrusCall = WALRUSDOSTEP (IRRRunoffSub, dble(TimeSettings%TimestepSize), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine DoStep', ' RRRunoffNode_Init1')
@@ -7455,130 +7918,130 @@ enddo
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got WalrusStartTime', Cur_time
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got WalrusStartTime', Cur_time
           ! states
           ! Walrus.get (61, Walrus_DVcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_dV, Walrus_DVcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got DV ', Walrus_DVCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got DV ', Walrus_DVCurrent(IRRRunoffSub)
           ! Walrus.get (62, Walrus_DGcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_dG, Walrus_DGcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DG', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got DG ', Walrus_DGCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got DG ', Walrus_DGCurrent(IRRRunoffSub)
           ! Walrus.get (63, Walrus_hQcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_hQ, Walrus_hQcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get hQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got hQ ', Walrus_hQCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got hQ ', Walrus_hQCurrent(IRRRunoffSub)
           ! Walrus.get (64, Walrus_hScurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_hS, Walrus_hScurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get hS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got hS ', Walrus_hSCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got hS ', Walrus_hSCurrent(IRRRunoffSub)
           ! functions
           ! Walrus.get (71, Walrus_WIcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_W, Walrus_WIcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get WI', ' RRRunoffNode_Init1')
               endif
-!         Write(*,*) ' Got WI ', Walrus_WICurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got WI ', Walrus_WICurrent(IRRRunoffSub)
           ! Walrus.get (72, Walrus_BETAcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_beta, Walrus_BETAcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get BETA', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got Beta ', Walrus_BETACurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got Beta ', Walrus_BETACurrent(IRRRunoffSub)
           ! Walrus.get (73, Walrus_DVEQcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_dVeq, Walrus_DVEQcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DVEQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got DVEQ ', Walrus_DVEQCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got DVEQ ', Walrus_DVEQCurrent(IRRRunoffSub)
           ! Walrus.get (80, Walrus_lastdt   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_deltime, Walrus_lastdt   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastdt', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastdt ', Walrus_lastdt(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastdt ', Walrus_lastdt(IRRRunoffSub)
           ! Walrus.get (81, Walrus_lastFXG  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fXG, Walrus_lastFXG  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFXG', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFXG ', Walrus_lastFXG(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFXG ', Walrus_lastFXG(IRRRunoffSub)
           ! Walrus.get (82, Walrus_lastFXS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fXS, Walrus_lastFXS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFXS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFXS ', Walrus_lastFXS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFXS ', Walrus_lastFXS(IRRRunoffSub)
           ! Walrus.get (83, Walrus_lastPQ   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_PQ, Walrus_lastPQ   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastPQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastPQ ', Walrus_lastPQ(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastPQ ', Walrus_lastPQ(IRRRunoffSub)
           ! Walrus.get (84, Walrus_lastPV   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_PV, Walrus_lastPV   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastPV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastPV ', Walrus_lastPV(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastPV ', Walrus_lastPV(IRRRunoffSub)
           ! Walrus.get (85, Walrus_lastPS   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_PS, Walrus_lastPS   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastPS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastPS ', Walrus_lastPS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastPS ', Walrus_lastPS(IRRRunoffSub)
           ! Walrus.get (86, Walrus_lastETV  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETV, Walrus_lastETV  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastETV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastETV ', Walrus_lastETV(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastETV ', Walrus_lastETV(IRRRunoffSub)
           ! Walrus.get (87, Walrus_lastETS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETS, Walrus_lastETS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastETS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastETS ', Walrus_lastETS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastETS ', Walrus_lastETS(IRRRunoffSub)
           ! Walrus.get (88, Walrus_lastETAct(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETact, Walrus_lastETAct(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastETAct', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastETAct ', Walrus_lastETAct(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastETAct ', Walrus_lastETAct(IRRRunoffSub)
           ! Walrus.get (89, Walrus_lastFQS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fQS, Walrus_lastFQS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFQS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFQS ', Walrus_lastFQS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFQS ', Walrus_lastFQS(IRRRunoffSub)
           ! Walrus.get (90, Walrus_lastFGS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fGS, Walrus_lastFGS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFGS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFGS ', Walrus_lastFGS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFGS ', Walrus_lastFGS(IRRRunoffSub)
           ! Walrus.get (91, Walrus_lastQ    (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_Q, Walrus_lastQ    (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastQ ', Walrus_lastQ(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastQ ', Walrus_lastQ(IRRRunoffSub)
           ! Walrus.get (92, Walrus_lastQdis (IRRRunoffSub)
-!          Write(*,*) ' Walrus_Get lastQDis'
+           if (Idebug .ne. 0) Write(Idebug,*) ' Walrus_Get lastQDis'
 !          RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_Qdischarge, Walrus_lastQDis (IRRRunoffSub), WalrusFirst)
 !          if (retValWalrusCall .ne. 0) then
 !              call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastQDis', ' RRRunoffNode_Init1')
 !          endif
-!          Write(*,*) ' Got lastQDis ', Walrus_lastQDis(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' Got lastQDis ', Walrus_lastQDis(IRRRunoffSub)
 !          compute lastQdis in m3/s from lastQ in mm
           Walrus_lastQDis (IRRRunoffSub) = Walrus_lastQ(IRRRUnoffSub) * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
 
@@ -7592,12 +8055,12 @@ enddo
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get P', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got P ', Walrus_P(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got P ', Walrus_P(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETPot, Walrus_ETPot (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get ETPOT', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got ETPot ', Walrus_ETPot(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got ETPot ', Walrus_ETPot(IRRRunoffSub)
 
           if (idebug .ne. 0) then
              Write(Idebug,*) ' Rain (m3/s) ', Rain(imeteo)
@@ -7861,6 +8324,7 @@ enddo
      mean = x
 !    write(*,*) ' GwlSurfVol call ComputePsdGamma '
      Call ComputePsdGamma (LGSI_GammaAg(IRRRunoffSub,i), LGSI_GammaBg(IRRRunoffSub,i), x, Sd)
+     Sd = max (Sd, 0.001D0)    ! UNST-9123
 !    write(*,*) ' GwlSurfVol call IntegrateSurfVol '
      result = IntegrateSurfVol(mean,Sd)
      LGSI_InterpSurfVolume(j,IRRRunoffSub,i) = result
@@ -8535,11 +8999,19 @@ enddo
        Do j=1,LGSI_MaxDelayLengthPlus1
           LGSI_DelayCoefficients(iRRRunoffSub,j ) = 0.0
        Enddo
-       Do j=1,LGSI_MaxDelayLengthPlus1
-          k = 1 + Int ( (j-1) * TimeSettings%TimestepSize / Dble(LGSI_DelayTimestepSize(iRRRunoffSub)) )
-          LGSI_DelayCoefficients(iRRRunoffSub,j ) = LGSI_DefinedDelayCoefficients(iRRRunoffSub,k) * TimeSettings%TimestepSize / Dble( LGSI_DelayTimestepSize(iRRRunoffSub) )
-          if (idebug .ne. 0) write(idebug,*) iRRRunoffSub, j, k, LGSI_DelayCoefficients(iRRRunoffSub,j)
-       Enddo
+       if (TimeSettings%TimestepSize .le. LGSI_DelayTimestepSize(IRRRunoffSub)) then
+          Do j=1,LGSI_MaxDelayLengthPlus1
+             k = 1 + Int ( (j-1) * TimeSettings%TimestepSize / Dble(LGSI_DelayTimestepSize(iRRRunoffSub)) )
+             LGSI_DelayCoefficients(iRRRunoffSub,j ) = LGSI_DefinedDelayCoefficients(iRRRunoffSub,k) * TimeSettings%TimestepSize / Dble( LGSI_DelayTimestepSize(iRRRunoffSub) )
+             if (idebug .ne. 0) write(idebug,*) iRRRunoffSub, j, k, LGSI_DelayCoefficients(iRRRunoffSub,j)
+          Enddo
+       else  ! like in testcase Springendal, computation timestep is larger than delay timestep size: add coefficients
+          Do k=1,LGSI_MaxDelayLengthPlus1
+             j = Int ( 1 + (k-1) * (Dble(LGSI_DelayTimestepSize(iRRRunoffSub))/TimeSettings%TimestepSize) )
+             LGSI_DelayCoefficients(iRRRunoffSub,j ) = LGSI_DelayCoefficients(iRRRunoffSub,j ) + LGSI_DefinedDelayCoefficients(iRRRunoffSub,k)
+             if (idebug .ne. 0) write(idebug,*) iRRRunoffSub, j, k, LGSI_DelayCoefficients(iRRRunoffSub,j)
+          Enddo
+       endif
     endif
   Enddo
 
@@ -8819,7 +9291,8 @@ enddo
           Wagmod_PEF(IRRRunoffSub) = -Wagmod_CAP(IRRRunoffSub)
           Wagmod_SM(IRRRunoffSub) = Wagmod_SM(IRRRunoffSub) + Wagmod_CAP(IRRRunoffSub)
       Else
-          write(*,*) ' Negative Soil Moisture in WagMod'
+!         write(*,*) ' Negative Soil Moisture in WagMod'
+          Call ErrMsgStandard (999, 2, ' Negative Soil Moisture in WagMod', ' Soil Moisture is reset to zero')
           Wagmod_PEF(IRRRunoffSub) = Wagmod_SM(IRRRunoffSub)
           Wagmod_SM(IRRRunoffSub) = 0.0
       Endif

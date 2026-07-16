@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -638,7 +638,7 @@ contains
 
         ! Some logicals
         fluxco = intsrt ==  5 .or. intsrt == 12 .or. intsrt == 14 .or. &
-                intsrt == 24
+                intsrt == 24 .or. intsrt == 26
         steady = intsrt ==  6 .or. intsrt ==  7 .or. intsrt ==  8 .or. &
                 intsrt ==  9 .or. intsrt == 17 .or. intsrt == 18
         iterat = intsrt ==  8 .or. intsrt ==  9
@@ -1128,7 +1128,7 @@ contains
             endif
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "iexseg              ", (num_cells + num_boundary_conditions) * noth
         endif
-        if (intsrt == 24) then
+        if (intsrt == 24 .or. intsrt == 26) then
             call allocate_array(logical_unit, nr_jar_new, declare_memory, ibas, "ibas", num_cells, num_cells, int_arr_size)
             call allocate_array(logical_unit, nr_jar_new, declare_memory, ibaf, "ibaf", num_exchanges, num_exchanges, int_arr_size)
             call allocate_array(logical_unit, nr_jar_new, declare_memory, iords, "iords", num_cells, num_cells, int_arr_size)
@@ -1255,7 +1255,7 @@ contains
 
         ! Some logicals
         fluxco = intsrt ==  5 .or. intsrt == 12 .or. intsrt == 14 .or. &
-                intsrt == 24
+                intsrt == 24 .or. intsrt == 26
         steady = intsrt ==  6 .or. intsrt ==  7 .or. intsrt ==  8 .or. &
                 intsrt ==  9 .or. intsrt == 17 .or. intsrt == 18
         delmat = intsrt ==  6 .or. intsrt ==  7
@@ -1709,7 +1709,7 @@ contains
 
         if (intsrt == 11 .or. intsrt == 12 .or. &
                 intsrt == 13 .or. intsrt == 14 .or. &
-                intsrt == 24) then
+                intsrt == 24 .or. intsrt == 26) then
 
             num_to_file = num_substances_total * (num_cells + num_cells_bottom) * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, arhs, "arhs", num_substances_total, num_cells + num_cells_bottom, &
@@ -2012,7 +2012,7 @@ contains
                 endif ! declare_memory
             endif
         endif
-        if (intsrt == 24) then
+        if (intsrt == 24 .or. intsrt == 26) then
             num_to_file = 3 * num_cells * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, dwork, "dwork", 3, num_cells, num_to_file, real_arr_size)
 

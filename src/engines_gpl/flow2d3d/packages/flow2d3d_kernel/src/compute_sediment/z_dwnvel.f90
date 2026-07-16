@@ -7,7 +7,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
                   & vonkar    ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -212,7 +212,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           !
           nm_v1 = nm
           nm_v2 = ndm
-       elseif (kcu(nm) + kcu(nmd) == 1) then
+       elseif (abs(kcu(nm)) + abs(kcu(nmd)) == 1) then
           !
           ! Open boundary (kcs(nm)==2) in v-direction
           !
@@ -224,7 +224,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           !
           ! Set velocity in V direction.
           !
-          if (kcu(nm) == 1) then
+          if (abs(kcu(nm)) == 1) then
              !
              ! Open boundary at left-hand side
              !
@@ -243,7 +243,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           !
           ! Set velocity in U direction.
           !
-          if (kcv(nm) == 1) then
+          if (abs(kcv(nm)) == 1) then
              !
              ! Open boundary at lower side
              !

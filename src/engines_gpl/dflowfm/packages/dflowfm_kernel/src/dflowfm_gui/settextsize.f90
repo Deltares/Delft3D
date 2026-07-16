@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,22 @@
 !
 !
 
-      subroutine SETTEXTSIZE()
-         use unstruc_opengl
-         use m_textsize
-         implicit none
+module m_settextsize
 
-         if (InOpenGLRendering) then
-            call SetTextHeight(int(FontSize * TSIZE))
-         else
-            call IGRCHARSIZE(real(TSIZE), real(TSIZE))
-         end if
-      end
+   implicit none
+
+contains
+
+   subroutine SETTEXTSIZE()
+      use unstruc_opengl, only: inopenglrendering, settextheight, fontsize
+      use m_textsize, only: tsize
+      implicit none
+
+      if (InOpenGLRendering) then
+         call SetTextHeight(int(FontSize * TSIZE))
+      else
+         call IGRCHARSIZE(real(TSIZE), real(TSIZE))
+      end if
+   end
+
+end module m_settextsize

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -375,7 +375,7 @@ contains
                     else
                         zpart(i) = zwaste(ie) / pblay
                     endif
-                elseif (modtyp == model_oil .and. kpart(i) == 1) then   !   for one layer models (2dh),
+                elseif ((modtyp == model_oil .or. leeway) .and. kpart(i) == 1) then   !   for one layer models (2dh),
                     zpart(i) = zwaste(ie)           !      the release will be in the user-defined location
                 elseif (num_layers == 1) then
                     zpart(i) = zwaste(ie) / 100.0

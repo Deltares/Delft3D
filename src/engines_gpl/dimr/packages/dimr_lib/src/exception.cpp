@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,34 +33,27 @@
 //  20 jan 11
 //------------------------------------------------------------------------------
 
-
 #include "exception.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-
-Exception::Exception(bool fatal, ErrorCode errorCode, const char * format, ...) : errorCode(errorCode)
+Exception::Exception(ErrorCode errorCode, const char* format, ...) : errorCode(errorCode)
 {
-   const int bufsize = 256 * 1024;
-   char * buffer = new char[bufsize]; // really big temporary buffer, just in case
+    const int bufsize = 256 * 1024;
+    char* buffer = new char[bufsize]; // really big temporary buffer, just in case
 
-   va_list arguments;
-   va_start(arguments, format);
-   int len = vsnprintf(buffer, bufsize - 1, format, arguments);
-   va_end(arguments);
-   buffer[bufsize - 1] = '\0';
+    va_list arguments;
+    va_start(arguments, format);
+    int len = vsnprintf(buffer, bufsize - 1, format, arguments);
+    va_end(arguments);
+    buffer[bufsize - 1] = '\0';
 
-   this->fatal = fatal;
-   this->message = new char[len + 1];
-   strcpy(this->message, buffer);
+    this->message = new char[len + 1];
+    strcpy(this->message, buffer);
 
-   delete[] buffer;
+    delete[] buffer;
 }
 
-
-Exception::~Exception(void)
-{
-   delete[] this->message;
-}
+Exception::~Exception() { delete[] this->message; }

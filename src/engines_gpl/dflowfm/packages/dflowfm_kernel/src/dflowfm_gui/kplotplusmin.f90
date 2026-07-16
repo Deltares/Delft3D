@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,26 +29,32 @@
 
 !
 !
+module m_k_plot_plus_min
+   use m_textflow
+   use m_waveconst
 
-     subroutine KPLOTPLUSMIN(IPM)
-        use M_FLOWGEOM
-        use M_FLOW
-        use m_xbeach_data, only: itheta_view
-        implicit none
-        integer :: IP, IPM
+   implicit none
+contains
+   subroutine KPLOTPLUSMIN(IPM)
+      use M_FLOWGEOM, only: ntheta
+      use M_FLOW, only: kmx, kplotfrombedorsurface, kplot, jawave
+      use m_xbeach_data, only: itheta_view
 
-        if (kmx >= 1) then
+      integer :: IP, IPM
 
-           ip = ipm
-           if (kplotfrombedorsurface /= 1) then
-              ip = -1 * ipm
-           end if
+      if (kmx >= 1) then
 
-           KPLOT = KPLOT + ip
-           kplot = max(1, min(kplot, kmx))
+         ip = ipm
+         if (kplotfrombedorsurface /= 1) then
+            ip = -1 * ipm
+         end if
 
-           call TEXTFLOW()
-        else if (jawave == 4) then
-           itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
-        end if
-     end subroutine KPLOTPLUSMIN
+         KPLOT = KPLOT + ip
+         kplot = max(1, min(kplot, kmx))
+
+         call TEXTFLOW()
+      else if (jawave == WAVE_SURFBEAT) then
+         itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
+      end if
+   end subroutine KPLOTPLUSMIN
+end module m_k_plot_plus_min

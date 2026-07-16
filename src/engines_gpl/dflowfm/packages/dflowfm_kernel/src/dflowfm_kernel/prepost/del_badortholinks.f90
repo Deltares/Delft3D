@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,155 +30,176 @@
 !
 !
 
- !> remove netlinks to improve orthogonality
- subroutine del_badortholinks()
-    use network_data
-    use m_flowgeom, only: xz, yz
-    use m_netstore
-    use m_missing
-    use stdlib_sorting, only: sort_index
-    use gridoperations
-    implicit none
+module m_del_badortholinks
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+   use m_mergecells, only: mergecells
 
-    double precision, dimension(2) :: xz_st, yz_st
+   implicit none
 
-    double precision, dimension(:), allocatable :: dortho
+   private
 
-    integer, dimension(:), allocatable :: linkmask
-    integer, dimension(:), allocatable :: iperm
+   public :: del_badortholinks
 
-    double precision :: dorthosum, dorthosumnew
-    double precision :: dmaxorthop
-    double precision :: zz
+contains
 
-    integer :: LL, L, L1
-    integer :: k1, k2
-    integer :: kk, k
-    integer :: i, num, numnew
+   !> remove netlinks to improve orthogonality
+   subroutine del_badortholinks()
+      use precision, only: dp
+      use network_data
+      use m_flowgeom, only: xz, yz
+      use m_netstore
+      use m_missing
+      use stdlib_sorting, only: sort_index
+      use gridoperations
+      use m_makenetnodescoding
+      use m_cosphiunet
 
-    integer :: jatek
+      implicit none
 
-    double precision, external :: cosphiunet
+      real(kind=dp), dimension(2) :: xz_st, yz_st
 
-    integer, parameter :: P = 2
+      real(kind=dp), dimension(:), allocatable :: dortho
 
-    jatek = 1
+      integer, dimension(:), allocatable :: linkmask
+      integer, dimension(:), allocatable :: iperm
 
-    dmaxorthop = cosphiutrsh**P
+      real(kind=dp) :: dorthosum, dorthosumnew
+      real(kind=dp) :: dmaxorthop
+      real(kind=dp) :: zz
 
-    call savenet()
+      integer :: LL, L, L1
+      integer :: k1, k2
+      integer :: kk, k
+      integer :: i, num, numnew
 
-    if (netstat /= NETSTAT_OK) then
-       call findcells(0)
-    end if
+      integer :: jatek
+      integer, parameter :: P = 2
+
+      jatek = 1
+
+      dmaxorthop = cosphiutrsh**P
+
+      call savenet()
+
+      if (netstat /= NETSTAT_OK) then
+         call findcells(0)
+      end if
 
 !   take dry cells into account (after findcells)
-    call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
-    call makenetnodescoding() ! need it for allocation nb
+      call makenetnodescoding() ! need it for allocation nb
 
 !   allocate
-    allocate (linkmask(numL))
-    allocate (dortho(numL))
-    allocate (iperm(numL))
+      allocate (linkmask(numL))
+      allocate (dortho(numL))
+      allocate (iperm(numL))
 
-    linkmask = 0
+      linkmask = 0
 
 !   compute orthogonality
-    do L = 1, numL
-       zz = cosphiunet(L)
-       if (zz /= DMISS) then
-          dortho(L) = abs(zz)
-       end if
-    end do
+      do L = 1, numL
+         zz = cosphiunet(L)
+         if (zz /= DMISS) then
+            dortho(L) = abs(zz)
+         end if
+      end do
 
 !   get permutation array, increasing orthogonality
-    call sort_index(dortho, iperm)
+      call sort_index(dortho, iperm)
 
-    do i = numL, 1, -1 ! decreasing order of orthogonality
-       L = iperm(i)
-       if (lnn(L) == 2) then ! internal links only
-          k1 = lne(1, L)
-          k2 = lne(2, L)
+      do i = numL, 1, -1 ! decreasing order of orthogonality
+         L = iperm(i)
+         if (lnn(L) == 2) then ! internal links only
+            k1 = lne(1, L)
+            k2 = lne(2, L)
 
 !         check dimension of merged cell
-          if (netcell(k1)%N + netcell(k2)%N - 1 > maxnodespercell) then
-             cycle
-          end if
+            if (netcell(k1)%N + netcell(k2)%N - 1 > maxnodespercell) then
+               cycle
+            end if
 
-          dorthosum = 0d0
-          num = 0
+            dorthosum = 0.0_dp
+            num = 0
 !         compute current orthogonality
-          do kk = 1, 2
-             k = lne(kk, L)
-             do LL = 1, netcell(k)%N
-                L1 = netcell(k)%lin(LL)
+            do kk = 1, 2
+               k = lne(kk, L)
+               do LL = 1, netcell(k)%N
+                  L1 = netcell(k)%lin(LL)
 !               check with mask if this link already contributed
-                if (linkmask(L1) /= L) then
-                   zz = cosphiunet(L1)
-                   if (zz /= DMISS) then
-                      dorthosum = dorthosum + abs(zz)**P
-                      num = num + 1
-                   end if
-                   linkmask(L1) = L ! used for link L
-                end if
-             end do
-          end do
+                  if (linkmask(L1) /= L) then
+                     zz = cosphiunet(L1)
+                     if (zz /= DMISS) then
+                        dorthosum = dorthosum + abs(zz)**P
+                        num = num + 1
+                     end if
+                     linkmask(L1) = L ! used for link L
+                  end if
+               end do
+            end do
 
-          if (dorthosum > dmaxorthop) then
+            if (dorthosum > dmaxorthop) then
 !            store neighboring cell administration
-             call local_netstore((/k1, k2/))
-             xz_st = (/xz(k1), xz(k2)/)
-             yz_st = (/yz(k1), yz(k2)/)
+               call local_netstore([k1, k2])
+               xz_st = [xz(k1), xz(k2)]
+               yz_st = [yz(k1), yz(k2)]
 
 !            merge cells
-             call mergecells(k1, k2, jatek)
+               call mergecells(k1, k2, jatek)
 
 !            compute new circumcenters
-             call getcellcircumcenter(k1, xz(k1), yz(k1), zz)
-             call getcellcircumcenter(k2, xz(k2), yz(k2), zz)
+               call getcellcircumcenter(k1, xz(k1), yz(k1), zz)
+               call getcellcircumcenter(k2, xz(k2), yz(k2), zz)
 
 !            compute new orthogonality
-             numnew = 0
-             dorthosumnew = 0d0
-             do kk = 1, 2
-                k = lne(kk, L)
-                do LL = 1, netcell(k)%N
-                   L1 = netcell(k)%lin(LL)
+               numnew = 0
+               dorthosumnew = 0.0_dp
+               do kk = 1, 2
+                  k = lne(kk, L)
+                  do LL = 1, netcell(k)%N
+                     L1 = netcell(k)%lin(LL)
 !                  check with mask if this link already contributed
-                   if (linkmask(L1) /= -L) then
-                      zz = cosphiunet(L1)
-                      if (zz /= DMISS) then
-                         dorthosumnew = dorthosumnew + abs(zz)**P
-                         numnew = numnew + 1
-                      end if
-                      linkmask(L1) = -L ! used for link L
-                   end if
-                end do
-             end do
+                     if (linkmask(L1) /= -L) then
+                        zz = cosphiunet(L1)
+                        if (zz /= DMISS) then
+                           dorthosumnew = dorthosumnew + abs(zz)**P
+                           numnew = numnew + 1
+                        end if
+                        linkmask(L1) = -L ! used for link L
+                     end if
+                  end do
+               end do
 
 !            restore if orthogonality increased
-             if (dorthosumnew >= dorthosum) then
+               if (dorthosumnew >= dorthosum) then
 !               restore
-                call local_netrestore()
-                xz(k1) = xz_st(1)
-                yz(k1) = yz_st(1)
+                  call local_netrestore()
+                  xz(k1) = xz_st(1)
+                  yz(k1) = yz_st(1)
 
-                xz(k2) = xz_st(2)
-                yz(k2) = yz_st(2)
-             end if
-          end if
-       end if
-    end do
+                  xz(k2) = xz_st(2)
+                  yz(k2) = yz_st(2)
+               end if
+            end if
+         end if
+      end do
 
-1234 continue
+1234  continue
 
 !   deallocate
-    call local_netdealloc()
+      call local_netdealloc()
 
-    if (allocated(linkmask)) deallocate (linkmask)
-    if (allocated(dortho)) deallocate (dortho)
-    if (allocated(iperm)) deallocate (iperm)
+      if (allocated(linkmask)) then
+         deallocate (linkmask)
+      end if
+      if (allocated(dortho)) then
+         deallocate (dortho)
+      end if
+      if (allocated(iperm)) then
+         deallocate (iperm)
+      end if
 
-    return
- end subroutine del_badortholinks
+      return
+   end subroutine del_badortholinks
+
+end module m_del_badortholinks

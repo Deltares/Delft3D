@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,93 +30,169 @@
 !
 !
 
-subroutine generatePartitionMDUFile(filename, filename_new)
-   use unstruc_model
-   use unstruc_messages
-   use m_partitioninfo
-   use string_module
-   implicit none
-   character(len=*), intent(in) :: filename, filename_new
-   integer :: k1, k2, k3, k4, k5, k6, k7, n
-   character(len=500) :: string, string_c, string_tmp, string_v
-   integer :: ja_innumerics, ja_icgsolverset, lunold, lunnew
+module m_generatepartitionmdufile
 
-   open (newunit=lunold, file=filename, status="old", action="read", err=999)
-   open (newunit=lunnew, file=filename_new, status="replace", action="write", err=999)
+   implicit none(type, external)
 
-   k1 = 0; k2 = 0; k3 = 0; k4 = 0; k5 = 0; k6 = 0; k7 = 0; ja_innumerics = 0; ja_icgsolverset = 0
-   do while (.true.)
-      read (lunold, "(a)", err=999, end=1212) string
-      n = index(string, '=')
+   private
 
-      !> In case icgsolver was not present in input MDU, find-and-replace impossible, so make sure to add it, because it's required.
-      if (strcmpi(string, '[numerics]', 10)) then
-         ja_innumerics = 1
-      elseif (string(1:1) == '[' .and. ja_innumerics == 1) then ! About to close [numerics]
-         if (ja_icgsolverset == 0) then
-            write (string_v, "(I5)") md_icgsolver
-            string_tmp = "Icgsolver = "//trim(adjustl(string_v))//"          # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS"
-            write (lunnew, "(a)") trim(string_tmp)
+   public :: generate_partition_mdu_file
+
+contains
+
+   !> Generate *.mdu files for partitions from the main *.mdu file.
+   subroutine generate_partition_mdu_file(filename_main, filename_partition)
+      use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, &
+      md_netfile, md_partitionfile, md_1dfiles, mess, level_error
+      use string_module, only: strcmpi, str_lower
+
+      ! Parameters
+      character(len=*), intent(in) :: filename_main !< Filename of the main *.mdu file
+      character(len=*), intent(in) :: filename_partition !< Filename of the partition *.mdu file to be generated
+
+      ! Local variables
+      logical :: in_numerics !< Flag to check if currently in [numerics] block
+      logical :: in_geometry !< Flag to check if currently in [geometry] block
+      logical :: icgsolver_present !< Flag to check if icgsolver keyword is present in input *.mdu file, to decide whether it needs to be added
+      logical, dimension(10) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
+      integer :: equal_pos !< Position of the equal sign in the line, to separate keyword from value
+      integer :: stat !< Status of I/O operations
+      integer :: unit_main !< Unit number for the main *.mdu file
+      integer :: unit_partition !< Unit number for the partition *.mdu file
+
+      character(len=500) :: mdu_line_main !< Line read from the main *.mdu file
+      character(len=500) :: mdu_line_partition !< Line to be written to the partition *.mdu file
+      character(len=500) :: keyword !< Keyword in the line, used for find-and-replace
+      character(len=500) :: string_icgsolver !< String to hold the value of md_icgsolver for writing to the partition *.mdu file
+
+      ! Open main and partition *.mdu files
+      open (newunit=unit_main, file=filename_main, status="old", action="read", iostat=stat)
+      if (stat /= 0) then
+         call mess(LEVEL_ERROR, 'Error occured while opening the main MDU file')
+         return
+      end if
+      open (newunit=unit_partition, file=filename_partition, status="replace", action="write", iostat=stat)
+      if (stat /= 0) then
+         call mess(LEVEL_ERROR, 'Error occured while opening the partition MDU file')
+         return
+      end if
+
+      ! Initialization
+      in_numerics = .false.
+      in_geometry = .false.
+      icgsolver_present = .false.
+      keyword_present = .false.
+      stat = 0
+
+      do while (stat == 0)
+         ! Readout line by line from old *.mdu file, until end of file is reached or an error occured (stat /= 0)
+         read (unit_main, "(a)", iostat=stat) mdu_line_main
+         if (stat /= 0) then
+            exit
          end if
-         ja_innumerics = 0
-      end if
 
-      string_c = string(1:n)
-      call str_lower(string_c)
-      k1 = index(string_c, 'netfile')
-      k2 = index(string_c, 'icgsolver')
-      if (len_trim(md_restartfile) > 0) then
-         k3 = index(string_c, 'restartfile')
-      end if
-      if (len_trim(md_mapfile) > 0) then
-         k4 = index(string_c, 'mapfile')
-      end if
-      if (md_genpolygon == 1) then
-         k5 = index(string_c, 'partitionfile')
-      end if
-      if (len_trim(md_flowgeomfile) > 0) then
-         k6 = index(string_c, 'flowgeomfile')
-      end if
-      if (len_trim(md_classmap_file) > 0) then
-         k7 = index(string_c, 'classmapfile')
-      end if
-
-      if (k1 == 0 .and. k2 == 0 .and. k3 == 0 .and. k4 == 0 .and. k5 == 0 .and. k6 == 0 .and. k7 == 0) then ! Copy the whole row
-         write (lunnew, "(a)") trim(string)
-      else
-         if (k1 /= 0) then ! modify NetFile
-            string_tmp = trim(string_c)//" "//trim(md_netfile)//"        # *_net.nc"
-            write (lunnew, "(a)") trim(string_tmp)
-         else if (k2 /= 0) then ! Modify icgsolver
-            write (string_v, "(I5)") md_icgsolver
-            string_tmp = trim(string_c)//" "//trim(adjustl(string_v))//"          # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS"
-            write (lunnew, "(a)") trim(string_tmp)
-            ja_icgsolverset = 1
-         else if (k3 /= 0) then ! Modify restart file name
-            string_tmp = trim(string_c)//" "//trim(md_restartfile)//"       # Restart file, only from netcdf-file, hence: either *_rst.nc or *_map.nc"
-            write (lunnew, "(a)") trim(string_tmp)
-         else if (k7 /= 0) then ! Modify ClassMapFile. Must be before mapfile as we don't check on whole words
-            string_tmp = trim(string_c)//" "//trim(md_classmap_file)//"       # ClassMapFile name *.nc"
-            write (lunnew, "(a)") trim(string_tmp)
-         else if (k4 /= 0) then ! Modify mapfile
-            string_tmp = trim(string_c)//" "//trim(md_mapfile)//"       # MapFile name *_map.nc"
-            write (lunnew, "(a)") trim(string_tmp)
-         else if (k5 /= 0) then ! Modify Partitionfile
-            string_tmp = trim(string_c)//" "//trim(md_partitionfile)//"          # *_part.pol, polyline(s) x,y"
-            write (lunnew, "(a)") trim(string_tmp)
-         else if (k6 /= 0) then ! Modify FlowGeomFile
-            string_tmp = trim(string_c)//" "//trim(md_flowgeomfile)//"       # FlowGeomFile name *.nc"
-            write (lunnew, "(a)") trim(string_tmp)
+         ! In case icgsolver was not present in input *.mdu file, find-and-replace is not possible, so add icgsolver to partition *.mdu file
+         if (strcmpi(mdu_line_main, '[numerics]', 10)) then
+            in_numerics = .true.
+         elseif (mdu_line_main(1:1) == '[' .and. in_numerics) then ! About to close [numerics] block
+            if (.not. icgsolver_present) then
+               write (string_icgsolver, "(I5)") md_icgsolver
+               mdu_line_partition = "Icgsolver = "//trim(adjustl(string_icgsolver))//"          # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            end if
+            in_numerics = .false.
          end if
-      end if
-   end do
 
-1212 continue
-   close (lunold)
-   close (lunnew)
-   return
-999 call mess(LEVEL_ERROR, 'Error occurs when generating partition MDU files')
-   close (lunold)
-   close (lunnew)
-   return
-end subroutine generatePartitionMDUFile
+         ! In case crossdeffile was not present in input *.mdu file, find-and-replace is not possible, so add crossdeffile to partition *.mdu file
+         if (strcmpi(mdu_line_main, '[geometry]', 10)) then
+            in_geometry = .true.
+         elseif (mdu_line_main(1:1) == '[' .and. in_geometry) then ! About to close [geometry] block
+            if (len_trim(md_1dfiles%cross_section_definitions) > 0) then ! Only add crossdeffile if the variable is not empty
+               mdu_line_partition = "CrossDefFile = "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            end if
+            in_geometry = .false.
+         end if
+
+         ! Get keyword and convert to lower case for find-and-replace
+         equal_pos = index(mdu_line_main, '=')
+         keyword = mdu_line_main(1:equal_pos)
+         call str_lower(keyword)
+
+         ! Check if the keywords that need to be replaced are present
+         keyword_present(1) = index(keyword, 'netfile') /= 0
+         keyword_present(2) = index(keyword, 'icgsolver') /= 0
+         keyword_present(10) = index(keyword, 'convertlongculverts') /= 0
+         if (len_trim(md_restartfile) > 0) then
+            keyword_present(3) = index(keyword, 'restartfile') /= 0
+         end if
+         if (len_trim(md_mapfile) > 0) then
+            keyword_present(4) = index(keyword, 'mapfile') /= 0
+         end if
+         if (md_genpolygon == 1) then
+            keyword_present(5) = index(keyword, 'partitionfile') /= 0
+         end if
+         if (len_trim(md_flowgeomfile) > 0) then
+            keyword_present(6) = index(keyword, 'flowgeomfile') /= 0
+         end if
+         if (len_trim(md_classmap_file) > 0) then
+            keyword_present(7) = index(keyword, 'classmapfile') /= 0
+         end if
+         if (len_trim(md_1dfiles%structures) > 0) then
+            keyword_present(8) = index(keyword, 'structurefile') /= 0
+         end if
+         if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+            keyword_present(9) = index(keyword, 'crossdeffile') /= 0
+         end if
+
+         if (.not. any(keyword_present)) then
+            write(unit_partition, "(a)") trim(mdu_line_main)
+         else 
+            if (keyword_present(1)) then ! Modify NetFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_netfile)//"        # *_net.nc"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(2)) then ! Modify IcgSolver
+               write (string_icgsolver, "(I5)") md_icgsolver
+               mdu_line_partition = trim(keyword)//" "//trim(adjustl(string_icgsolver))//"          # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+               icgsolver_present = .true.
+            else if (keyword_present(3)) then ! Modify RestartFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_restartfile)//"       # Restart file, only from netcdf-file, hence: either *_rst.nc or *_map.nc"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(7)) then ! Modify ClassMapFile, must be before mapfile as we don't check on whole words
+               mdu_line_partition = trim(keyword)//" "//trim(md_classmap_file)//"       # ClassMapFile name *.nc"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(4)) then ! Modify MapFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_mapfile)//"       # MapFile name *_map.nc"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(5)) then ! Modify PartitionFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_partitionfile)//"          # *_part.pol, polyline(s) x,y"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(6)) then ! Modify FlowGeomFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_flowgeomfile)//"       # FlowGeomFile name *.nc"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(8)) then ! Modify StructureFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_1dfiles%structures)//"       # Hydraulic structure file (*.ini)"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(9)) then ! Modify CrossSectionDefinitionsFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(10)) then ! Modify ConvertLongCulverts, set the value 0 as long culverts are already converted during partitioning.
+               mdu_line_partition = "ConvertLongCulverts         = 0                   # Default: 0. Whether or not to convert long culvert input to 1D2D long culverts"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            end if
+         end if
+      end do
+
+      if (stat < 0) then ! End of file reached, close files
+         close (unit_main)
+         close (unit_partition)
+      else if (stat > 0) then ! Error occured, close files and report error
+         call mess(LEVEL_ERROR, 'Error occured while reading the main MDU file')
+         close (unit_main)
+         close (unit_partition)
+      end if
+
+   end subroutine generate_partition_mdu_file
+
+end module m_generatepartitionmdufile

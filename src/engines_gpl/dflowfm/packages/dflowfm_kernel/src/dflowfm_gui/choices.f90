@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -68,7 +68,102 @@
 !----------------------------------------------------------------------
 ! subroutines from net.F90
 !----------------------------------------------------------------------
+module m_choices
+
+   use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
+   use m_zerolan, only: zerolan
+   use m_stopint, only: stopint
+   use m_smooth_samples_from_gui, only: smooth_samples_from_gui
+   use m_scherm, only: scherm
+   use m_copy_sam2dots, only: copy_sam2dots
+   use m_copy_dots2sam, only: copy_dots2sam
+   use m_copytrans, only: copytrans
+   use m_copythindamstopol, only: copythindamstopol
+   use m_copysplinestofinepol, only: copysplinestofinepol
+   use m_copysamtopol, only: copysamtopol
+   use m_copypolygontosamples, only: copypolygontosamples
+   use m_copypolygontoobservations, only: copypolygontoobservations
+   use m_copypoltospline, only: copypoltospline
+   use m_copypoltoldb, only: copypoltoldb
+   use m_copynetwtopol, only: copynetwtopol
+   use m_copyldbtopol, only: copyldbtopol
+   use m_copylandboundaryto1dnetwork, only: copylandboundaryto1dnetwork
+   use m_copyfixedweirstopol, only: copyfixedweirstopol
+   use m_copycurvigridboundstopol, only: copycurvigridboundstopol
+   use m_copycrosssectionstopol, only: copycrosssectionstopol
+   use m_savegrd, only: savegrd
+   use m_mapprojections, only: mapprojections
+   use m_gridtonet, only: gridtonet
+   use m_delgrd, only: delgrd
+   use m_flow_spatietimestep, only: flow_spatietimestep
+   use m_triangulate_quadsandmore, only: triangulate_quadsandmore
+   use m_triangulatesamplestonetwork, only: triangulatesamplestonetwork
+   use m_tieldb, only: tieldb
+   use m_spline2curvi_sub, only: spline2curvi
+   use m_shift1dnetnodestoduikers, only: shift1dnetnodestoduikers
+   use m_samdif, only: samdif
+   use m_removesmalllinks, only: removesmalllinks
+   use m_regrid1d, only: regrid1d
+   use m_refinequads_casulli, only: refinequads_casulli
+   use m_refinequads, only: refinequads
+   use m_refinepolygon, only: refinepolygon
+   use m_refinecellsandfaces2, only: refinecellsandfaces2
+   use m_orthogonalisenet, only: orthogonalisenet
+   use m_merge_polylines, only: merge_polylines
+   use m_mergenodesinpolygon, only: mergenodesinpolygon
+   use m_make_dual_mesh, only: make_dual_mesh
+   use m_maketrigrid, only: maketrigrid
+   use m_makenet_sub, only: makenet
+   use m_makecoarse2finetriangleconnectioncells, only: makecoarse2finetriangleconnectioncells
+   use m_make1d2dconnections, only: make1d2dconnections
+   use m_fliplinks, only: fliplinks
+   use m_externaltrianglestoouterquads, only: externaltrianglestoouterquads
+   use m_detect_ridges, only: detect_ridges
+   use m_del_badortholinks, only: del_badortholinks
+   use m_delnetzkabovezkuni, only: delnetzkabovezkuni
+   use m_delnet, only: delnet
+   use m_deleteselectedsplines, only: deleteselectedsplines
+   use m_deleteselectedobservations, only: deleteselectedobservations
+   use m_cutcell_list, only: cutcell_list
+   use m_curvilineargridinpolygon, only: curvilineargridinpolygon
+   use m_curvilineargridfromsplines, only: curvilineargridfromsplines
+   use m_createsamplesinpolygon, only: createsamplesinpolygon
+   use m_copypolto1dnet, only: copypolto1dnet
+   use m_connectcurvilinearquadsddtype, only: connectcurvilinearquadsddtype
+   use m_zerowaterdepth
+   use m_plusabs_flow
+   use m_plusabsi
+   use m_plusabsd
+   use m_nfiles
+   use m_ndisplay
+   use m_menuv3
+   use m_copywaterlevelstosamples
+   use m_copynetwtonetw
+   use m_copynetnodestosam
+   use m_copynetlinkstosam
+   use m_copygridtosam
+   use m_copyzlintosamples
+   use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
+   use m_partition_to_idomain, only: partition_to_idomain
+
+   use precision, only: dp
+   implicit none
+
+contains
+
    subroutine CHOICES(NUM, NWHAT, KEY)
+      use m_changetimeparameters
+      use m_changephysicalparameters
+      use m_changeorthoparameters
+      use m_changenumericalparameters4
+      use m_changenumericalparameters3
+      use m_changenumericalparameters2
+      use m_changenumericalparameters
+      use m_changenetworkparameters
+      use m_changeinterpolationparameters
+      use m_changegridparameters
+      use m_changegeometryparameters
+      use m_changecolournumbers
       use m_netw
       use m_samples
       use m_grid
@@ -84,6 +179,14 @@
       use m_delpol
       use m_delsam
       use m_copynetboundstopol
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_draw_nu
+      use m_set_bobs
+      use m_interpdivers
+      use m_derefine_mesh, only: derefine_mesh
+      use m_coarsen_mesh, only: coarsen_mesh
+      use m_flow_modelinit, only: flow_modelinit
 
       implicit none
       integer :: ja, n12, ikey, mnx
@@ -91,10 +194,11 @@
       integer :: irerun ! orthogonalisenet: rerun
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
-      integer, external :: flow_modelinit
+      character(len=40) :: OPTION(MAXOP)
 
-      if (netstat /= NETSTAT_OK) call setnodadm(0)
+      if (netstat /= NETSTAT_OK) then
+         call setnodadm(0)
+      end if
 
       if (NUM == 1) then
          !     load en save files
@@ -139,18 +243,15 @@
             call SAVENET()
             call REFINEQUADS()
          else if (NWHAT == 12) then
-            ! CALL quadsTOTRI()
             call SAVENET()
             call REFINEQUADS_casulli()
          else if (NWHAT == 13) then
-!         CALL RELINK()
 !         CALL SAVENET()
-!         CALL REFINECELLSANDFACES() !  REFINECELLSONLY()
             call SAVENET()
             call REFINECELLSANDFACES2() !  REFINECELLSONLY()
          else if (NWHAT == 14) then
             call SAVENET()
-            call derefine_mesh(0d0, 0d0, .false.)
+            call derefine_mesh(0.0_dp, 0.0_dp, .false.)
          else if (NWHAT == 15) then
             call SAVENET()
             call connectcurvilinearquadsddtype()
@@ -171,7 +272,7 @@
             call findcells(100) ! include folded cells
             call find1dcells()
 !         call findcells(0)          ! do not include folded cells
-            call delete_dry_points_and_areas()
+            call delete_dry_points_and_areas(update_blcell=.false.)
             call makenetnodescoding() ! killcell relies on node codes
          else if (NWHAT == 22) then
             call interpdivers(2) ! Network zk flow bathy
@@ -292,8 +393,6 @@
          else if (NWHAT == 21) then !****     **
             call PLUSABSI(XK, YK, ZK, KN, NUMK, NUML, KEY, kn3typ)
          else if (NWHAT == 23) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY ... TO POLYGON                     '
             OPTION(1) = 'Copy land boundary  to polygon          '
             OPTION(2) = 'Copy net bounds     to polygon          '
             OPTION(3) = 'Copy cross sections to polygon          '
@@ -334,8 +433,6 @@
             end if
             KEY = 3
          else if (NWHAT == 24) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY POLYGON TO ...                     '
             OPTION(1) = 'Copy polygon to land boundary           '
             OPTION(2) = 'Copy polygon to observation points      '
             OPTION(3) = 'Copy polygon to samples                 '
@@ -357,8 +454,6 @@
             end if
             KEY = 3
          else if (NWHAT == 25) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY ... TO SAMPLES                     '
             OPTION(1) = 'Copy polygon              to samples    '
             OPTION(2) = 'Copy values on network nodes to samples '
             OPTION(3) = 'Copy values on network links to samples '
@@ -447,7 +542,8 @@
          else if (NWHAT == 4) then
             call CHANGEorthoparameters()
          else if (NWHAT == 5) then
-            call CHANGEGRIDPARAMETERS(); KEY = 3
+            call CHANGEGRIDPARAMETERS()
+            KEY = 3
          else if (NWHAT == 6) then
             call CHANGEINTERPOLATIONPARAMETERS()
          else if (NWHAT == 7) then
@@ -471,10 +567,13 @@
          else if (NWHAT == 14) then
             call CHANGENUMERICALPARAMETERS4()
          else if (NWHAT == 15) then
-            call CHANGEcolournumbers(); KEY = 3
+            call CHANGEcolournumbers()
+            KEY = 3
          end if
          NUM = 0
       end if
 
       return
    end subroutine CHOICES
+
+end module m_choices

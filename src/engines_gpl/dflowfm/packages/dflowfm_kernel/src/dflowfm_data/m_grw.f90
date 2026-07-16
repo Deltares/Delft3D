@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,28 +31,29 @@
 !
 
 module m_grw
+   use precision, only: dp
    use m_hydrology_data
    integer :: jagrw !< include ground water
-   double precision, allocatable :: sgrw0(:) !< ground water level start
-   double precision, allocatable :: sgrw1(:) !< ground water level end of timestep
-   double precision, allocatable :: pgrw(:) !< pressure and plotting of sgrw
-   double precision, allocatable, target :: h_unsat(:) !< initial height unsaturated zone
-   double precision, allocatable :: bgrw(:) !< initial height unsaturated zone
+   real(kind=dp), allocatable :: sgrw0(:) !< ground water level start
+   real(kind=dp), allocatable :: sgrw1(:) !< ground water level end of timestep
+   real(kind=dp), allocatable :: pgrw(:) !< pressure and plotting of sgrw
+   real(kind=dp), allocatable, target :: h_unsat(:) !< initial height unsaturated zone
+   real(kind=dp), allocatable :: bgrw(:) !< initial height unsaturated zone
 
    !  TODO: UNST-3763: Use named parameter constant for jaintercept2D
    integer :: jaintercept2D !< 1 = uniform, 2 = spatially variable
-   double precision :: Hinterceptionlayer !< (DEPRECATED) thickness of interception layer in  (m) only if infiltrationmodel == 1
-   double precision :: Conductivity !< non dimensionless K conductivity   saturated (m/s), Q = K*A*i (m3/s)
-   double precision :: Unsatfac !< reduction factor for conductivity in unsaturated zone
+   real(kind=dp) :: Hinterceptionlayer !< (DEPRECATED) thickness of interception layer in  (m) only if infiltrationmodel == 1
+   real(kind=dp) :: Conductivity !< non dimensionless K conductivity   saturated (m/s), Q = K*A*i (m3/s)
+   real(kind=dp) :: Unsatfac !< reduction factor for conductivity in unsaturated zone
 
-   double precision :: h_aquiferuni !< uniform height of carrying layer
-   double precision :: h_unsatini !< initial level groundwater is bedlevel - h_unsatini
-   double precision :: sgrwini !< initial level groundwater. If specified, h_unsatini wiil not be used
-   double precision :: bgrwuni !< initial level groundwater. If specified, h_unsatini wiil not be used
-   double precision :: h_capillair !< Capillary rising height (m)
-   double precision :: h_transfer !< uniform thickness (numerical) transfer zone grw <-> openw
+   real(kind=dp) :: h_aquiferuni !< uniform height of carrying layer
+   real(kind=dp) :: h_unsatini !< initial level groundwater is bedlevel - h_unsatini
+   real(kind=dp) :: sgrwini !< initial level groundwater. If specified, h_unsatini wiil not be used
+   real(kind=dp) :: bgrwuni !< initial level groundwater. If specified, h_unsatini wiil not be used
+   real(kind=dp) :: h_capillair !< Capillary rising height (m)
+   real(kind=dp) :: h_transfer !< uniform thickness (numerical) transfer zone grw <-> openw
 
-   double precision :: porosgrw !< porosity of soil = Vair / (Vsoil+Vair)  , or,
+   real(kind=dp) :: porosgrw !< porosity of soil = Vair / (Vsoil+Vair)  , or,
    !< porosity of soil = (Rhoparticle - Rhobulk) / Rhoparticle
    !< e.g.
 contains
@@ -63,17 +64,17 @@ contains
       jagrw = 0 !< include ground water
       jaintercept2D = 0 !< 1 = uniform, 2 = spatially variable
       !Hinterceptionlayer          !< thickness of interception layer in  (m) only if infiltrationmodel == 1
-      Conductivity = 0d-4 !< non dimensionless K conductivity   saturated (m/s), Q = K*A*i (m3/s)
-      Unsatfac = 1.0d0 !< reduction factor for conductivity in unsaturated zone
+      Conductivity = 0.0_dp !< non dimensionless K conductivity   saturated (m/s), Q = K*A*i (m3/s)
+      Unsatfac = 1.0_dp !< reduction factor for conductivity in unsaturated zone
 
-      h_aquiferuni = 20d0 !< uniform height of carrying layer
-      h_unsatini = 0.2 !< initial level groundwater is bedlevel - h_unsatini
-      sgrwini = -999d0 !< initial level groundwater. If specified, h_unsatini wiil not be used
-      bgrwuni = -999d0 !< initial level groundwater. If specified, h_unsatini wiil not be used
-      h_capillair = 0.5 !< Capillary rising height (m)
-      h_transfer = 0.1d0 !< uniform thickness (numerical) transfer zone grw <-> openw
+      h_aquiferuni = 20.0_dp !< uniform height of carrying layer
+      h_unsatini = 0.2_dp !< initial level groundwater is bedlevel - h_unsatini
+      sgrwini = -999.0_dp !< initial level groundwater. If specified, h_unsatini wiil not be used
+      bgrwuni = -999.0_dp !< initial level groundwater. If specified, h_unsatini wiil not be used
+      h_capillair = 0.5_dp !< Capillary rising height (m)
+      h_transfer = 0.1_dp !< uniform thickness (numerical) transfer zone grw <-> openw
 
-      porosgrw = 0.25d0 !< porosity of soil = Vair / (Vsoil+Vair)  , or,
+      porosgrw = 0.25_dp !< porosity of soil = Vair / (Vsoil+Vair)  , or,
       !< porosity of soil = (Rhoparticle - Rhobulk) / Rhoparticle
       ! Remaining of variables is handled in reset_grw()
       call reset_grw()

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,7 @@ module m_fourier_analysis
 !     * ucx en ucy on (1:#nods) is altijd de diepte gemiddelde, ook in 2d (dan is het de enige snelheid)
 
    use precision
-   use string_module, only: str_lower
+   use string_module, only: str_lower, strsplit
    use unstruc_netcdf
    use m_flow, only: kmx
    use m_alloc
@@ -118,7 +118,7 @@ module m_fourier_analysis
 
    real(kind=fp), parameter :: defaultd = -999.0_fp ! Default value for doubles
    real(kind=fp), parameter :: dmiss_minmax = 1e30_fp ! Default values for min/max calculations
-   real(kind=fp), parameter :: tol_time = 1d-9 ! tolerance for comparing times
+   real(kind=fp), parameter :: tol_time = 1.0e-9_dp ! tolerance for comparing times
 
    public :: fouini
    public :: alloc_fourier_analysis_arrays
@@ -226,35 +226,77 @@ contains
 
       integer :: istat
       integer, parameter :: imissval = -1
-      double precision, parameter :: rmissval = -999.999_fp
+      real(kind=dp), parameter :: rmissval = -999.999_fp
 
       istat = 0
       !
       ! Arrays for Fourier analysis (fourier.igs)
       !
-      if (istat == 0) call reallocp(gdfourier%fconno, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%fnumcy, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%ftmsto, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%ftmstr, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%foumask, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%idvar, [MAX_ID_VAR, gdfourier%nofouvar], stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%fouref, [nofou, 2], stat=istat, keepExisting=.false.)
+      if (istat == 0) then
+         call reallocp(gdfourier%fconno, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fnumcy, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%ftmsto, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%ftmstr, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%foumask, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%idvar, [MAX_ID_VAR, gdfourier%nofouvar], stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fouref, [nofou, 2], stat=istat, keepExisting=.false.)
+      end if
       !
-      if (istat == 0) call reallocp(gdfourier%fknfac, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%foufas, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) allocate (gdfourier%fousma(nofou), stat=istat)
-      if (istat == 0) allocate (gdfourier%fousmb(nofou), stat=istat)
-      if (istat == 0) call reallocp(gdfourier%fv0pu, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%fthresh, nofou, stat=istat, keepExisting=.false.)
+      if (istat == 0) then
+         call reallocp(gdfourier%fknfac, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%foufas, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         allocate (gdfourier%fousma(nofou), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (gdfourier%fousmb(nofou), stat=istat)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fv0pu, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fthresh, nofou, stat=istat, keepExisting=.false.)
+      end if
       !
-      if (istat == 0) call reallocp(gdfourier%foutyp, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%founam, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%founamc, nofou, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%withTime, nofou, stat=istat, fill=.false.)
-      if (istat == 0) call reallocp(gdfourier%fouvarnam, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%fouvarnamstd, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%fouvarnamlong, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
-      if (istat == 0) call reallocp(gdfourier%fouvarunit, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
+      if (istat == 0) then
+         call reallocp(gdfourier%foutyp, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%founam, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%founamc, nofou, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%withTime, nofou, stat=istat, fill=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fouvarnam, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fouvarnamstd, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fouvarnamlong, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
+      end if
+      if (istat == 0) then
+         call reallocp(gdfourier%fouvarunit, gdfourier%nofouvar, stat=istat, keepExisting=.false.)
+      end if
 
       if (istat /= 0) then
          ! Exception handling for allocation of fourier arrays
@@ -296,7 +338,6 @@ contains
       use precision
       use mathconsts
       use string_module
-      use unstruc_messages
       use m_flowtimes, only: Tudunitstr
       implicit none
       !
@@ -418,10 +459,14 @@ contains
       end if
       !
       linenumber = linenumber + 1
-      if (line(1:1) == '*' .or. line == ' ') goto 20
+      if (line(1:1) == '*' .or. line == ' ') then
+         goto 20
+      end if
       !
       call str_lower(line, 132)
-      if (allocated(columns)) deallocate (columns)
+      if (allocated(columns)) then
+         deallocate (columns)
+      end if
       call strsplit(line, 1, columns, 1)
       ncols = size(columns)
 
@@ -555,7 +600,9 @@ contains
       !
       read (columns(6), *, err=6666) fv0pu(ifou)
       !
-      if (fv0pu(ifou) < 0.0_fp) fv0pu(ifou) = fv0pu(ifou) + 360.0_fp
+      if (fv0pu(ifou) < 0.0_fp) then
+         fv0pu(ifou) = fv0pu(ifou) + 360.0_fp
+      end if
       fv0pu(ifou) = mod(fv0pu(ifou), 360.0_fp)
       !
       icol = 7
@@ -748,7 +795,9 @@ contains
       !
       ifou = ifou + 1
       !
-      if (ifou <= nofou) goto 20
+      if (ifou <= nofou) then
+         goto 20
+      end if
       ! <--
       !
       success = .true.
@@ -884,14 +933,26 @@ contains
          end select
          select case (foutyp(ifou))
          case ('x', 'i', 'r', 'u', 'c', 'C')
-            if (ierr == 0) call realloc(fousma(ifou)%sdata, sizea, stat=ierr, fill=real(fillValue, sp))
-            if (ierr == 0) call realloc(fousmb(ifou)%sdata, sizeb, stat=ierr, fill=real(fillValue, sp))
+            if (ierr == 0) then
+               call realloc(fousma(ifou)%sdata, sizea, stat=ierr, fill=real(fillValue, sp))
+            end if
+            if (ierr == 0) then
+               call realloc(fousmb(ifou)%sdata, sizeb, stat=ierr, fill=real(fillValue, sp))
+            end if
          case ('R', 'U')
-            if (ierr == 0) call realloc(fousma(ifou)%sdata, sizea, stat=ierr, fill=real(fillValue, sp))
-            if (ierr == 0) call realloc(fousmb(ifou)%sdata, sizeb, stat=ierr, fill=real(dmiss, sp))
+            if (ierr == 0) then
+               call realloc(fousma(ifou)%sdata, sizea, stat=ierr, fill=real(fillValue, sp))
+            end if
+            if (ierr == 0) then
+               call realloc(fousmb(ifou)%sdata, sizeb, stat=ierr, fill=real(dmiss, sp))
+            end if
          case default
-            if (ierr == 0) call realloc(fousma(ifou)%rdata, sizea, stat=ierr, fill=fillValue)
-            if (ierr == 0) call realloc(fousmb(ifou)%rdata, sizeb, stat=ierr, fill=fillValue)
+            if (ierr == 0) then
+               call realloc(fousma(ifou)%rdata, sizea, stat=ierr, fill=fillValue)
+            end if
+            if (ierr == 0) then
+               call realloc(fousmb(ifou)%rdata, sizeb, stat=ierr, fill=fillValue)
+            end if
          end select
       end do
       if (ierr /= 0) then
@@ -1136,7 +1197,9 @@ contains
             if (gdfourier%withTime(ifou)) then
                do n = 1, nmaxus
                   ! time of maximum
-                  if (rarray(n) > fousmas(n)) fousmbs(n) = time0
+                  if (rarray(n) > fousmas(n)) then
+                     fousmbs(n) = time0
+                  end if
                end do
             else if (founam == 's1') then
                do n = 1, nmaxus
@@ -1150,12 +1213,14 @@ contains
             ! Calculate MIN value
             !
             do n = 1, nmaxus
-               fousmas(n) = min(fousmas(n), real(rarray(n),sp))
+               fousmas(n) = min(fousmas(n), real(rarray(n), sp))
             end do
             if (gdfourier%withTime(ifou)) then
                do n = 1, nmaxus
                   ! time of minimum
-                  if (rarray(n) < fousmas(n)) fousmbs(n) = time0
+                  if (rarray(n) < fousmas(n)) then
+                     fousmbs(n) = time0
+                  end if
                end do
             else
                if (founam == 's1') then
@@ -1295,7 +1360,6 @@ contains
    subroutine fouini(lunfou, success, time_unit_user, time_unit_kernel)
    !!--declarations----------------------------------------------------------------
       use precision
-      use unstruc_messages
       !
       implicit none
       !
@@ -1358,12 +1422,16 @@ contains
       !
 10    continue
       read (lunfou, '(a)', end=999) line
-      if (line(1:1) == '*' .or. line == ' ') goto 10
+      if (line(1:1) == '*' .or. line == ' ') then
+         goto 10
+      end if
       !
       ! reset line in smaller case characters and define contents
       !
       call str_lower(line, 300)
-      if (allocated(columns)) deallocate (columns)
+      if (allocated(columns)) then
+         deallocate (columns)
+      end if
       call strsplit(line, 1, columns, 1)
       ncols = size(columns)
       !
@@ -1454,9 +1522,11 @@ contains
    !> do the actual fourier and min/max update
    !! write to file after last update
    subroutine postpr_fourier(time0, dts)
+      use precision, only: dp
       use m_transport, only: constituents
       use m_flowgeom, only: bl, lnx, bl_min
       use m_flow
+      use m_wind, only: wx, wy
       implicit none
 
       real(kind=fp), intent(in) :: time0 !< Current time [seconds]
@@ -1475,8 +1545,8 @@ contains
       character(len=16), dimension(:), pointer :: founam
       character(len=20) :: cnum ! string to hold a number
       character(len=20) :: cquant ! 'quantity' or 'quantities'
-      double precision, pointer :: fieldptr1(:), fieldptr2(:)
-      double precision, allocatable, target :: wmag(:) ! [m/s] wind magnitude    (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+      real(kind=dp), pointer :: fieldptr1(:), fieldptr2(:)
+      real(kind=dp), allocatable, target :: wmag(:) ! [m/s] wind magnitude    (m/s) at u point {"location": "edge", "shape": ["lnx"]}
       real(kind=fp) :: dtw
 
       fouwrt => gdfourier%fouwrt
@@ -1521,7 +1591,9 @@ contains
             end if
          end do
 
-         if (allocated(wmag)) deallocate (wmag)
+         if (allocated(wmag)) then
+            deallocate (wmag)
+         end if
 
          if (nfou > 0) then
             write (cnum, *) real(time0)
@@ -1554,9 +1626,10 @@ contains
    contains
 
       subroutine find_field_pointer(fieldptr, fieldname)
+         use precision, only: dp
          use m_gettaus
          use m_gettauswave
-         double precision, pointer :: fieldptr(:)
+         real(kind=dp), pointer :: fieldptr(:)
          character(len=*), intent(in) :: fieldname
 
          select case (fieldname)
@@ -1581,7 +1654,7 @@ contains
          case ('r1')
             fieldptr => constituents(gdfourier%fconno(ifou), :)
          case ('ta')
-            if (jawave == 0 .or. flowWithoutWaves) then
+            if (jawave == 0 .or. flow_without_waves) then
                call gettaus(1, 1)
             else
                call gettauswave(jawaveswartdelwaq)
@@ -1609,8 +1682,12 @@ contains
    subroutine cleanUpFousmaIfou(fousmi)
       type(fdata), intent(inout) :: fousmi
 
-      if (allocated(fousmi%rdata)) deallocate (fousmi%rdata)
-      if (allocated(fousmi%sdata)) deallocate (fousmi%sdata)
+      if (allocated(fousmi%rdata)) then
+         deallocate (fousmi%rdata)
+      end if
+      if (allocated(fousmi%sdata)) then
+         deallocate (fousmi%sdata)
+      end if
       if (associated(fousmi%running)) then
          if (associated(fousmi%running%runsum)) then
             deallocate (fousmi%running%runsum)
@@ -1684,8 +1761,12 @@ contains
 
       !
       ierr = unc_create(trim(FouOutputFile), 0, fileids%ncid)
-      if (ierr == NF90_NOERR) ierr = ug_addglobalatts(fileids%ncid, ug_meta_fm)
-      if (ierr /= NF90_NOERR) goto 99
+      if (ierr == NF90_NOERR) then
+         ierr = ug_addglobalatts(fileids%ncid, ug_meta_fm)
+      end if
+      if (ierr /= NF90_NOERR) then
+         goto 99
+      end if
 
       ierr = unc_meta_add_user_defined(fileids%ncid)
 
@@ -1695,7 +1776,9 @@ contains
       !
       ifou = 1
       do ivar = 1, nofouvar
-         if (fouvarnam(ivar) == ' ') cycle
+         if (fouvarnam(ivar) == ' ') then
+            cycle
+         end if
          if (ifou < nofou) then
             if (fouref(ifou + 1, 2) <= ivar) then
                ifou = ifou + 1
@@ -1809,21 +1892,39 @@ contains
             ierr = unc_def_var_map(fileids%ncid, fileids%id_tsp, idvar(:, ivar), NF90_DOUBLE, unc_loc, trim(fouvarnam(ivar)), trim(fouvarnamstd(ivar)), &
                                    AnalyseTypeShort//namfunlong//', '//trim(fouvarnamlong(ivar)), fouvarunit(ivar), is_timedep=0)
          end if
-         if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'long_name', AnalyseTypeLong//namfunlong//', '//trim(fouvarnamlong(ivar)))
-         if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'units', fouvarunit(ivar))
-         if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'reference_date_in_yyyymmdd', irefdate)
-
-         analyseType = merge('min_max', 'fourier', is_min_max_avg)
-         if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'starttime_'//analyseType//'_analysis_in_minutes_since_reference_date', tfastr)
-         if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'stoptime_'//analyseType//'_analysis_in_minutes_since_reference_date', tfasto)
-
-         if (ierr == NF90_NOERR) ierr = unc_add_gridmapping_att(fileids%ncid, idvar(:, ivar), jsferic)
-         if (.not. is_min_max_avg) then
-            if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'number_of_cycles', fnumcy(ifou))
-            if (ierr == NF90_NOERR) ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'frequency_degrees_per_hour', freqnt)
+         if (ierr == NF90_NOERR) then
+            ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'long_name', AnalyseTypeLong//namfunlong//', '//trim(fouvarnamlong(ivar)))
+         end if
+         if (ierr == NF90_NOERR) then
+            ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'units', fouvarunit(ivar))
+         end if
+         if (ierr == NF90_NOERR) then
+            ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'reference_date_in_yyyymmdd', irefdate)
          end if
 
-         if (ierr /= NF90_NOERR) goto 99
+         analyseType = merge('min_max', 'fourier', is_min_max_avg)
+         if (ierr == NF90_NOERR) then
+            ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'starttime_'//analyseType//'_analysis_in_minutes_since_reference_date', tfastr)
+         end if
+         if (ierr == NF90_NOERR) then
+            ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'stoptime_'//analyseType//'_analysis_in_minutes_since_reference_date', tfasto)
+         end if
+
+         if (ierr == NF90_NOERR) then
+            ierr = unc_add_gridmapping_att(fileids%ncid, idvar(:, ivar), jsferic)
+         end if
+         if (.not. is_min_max_avg) then
+            if (ierr == NF90_NOERR) then
+               ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'number_of_cycles', fnumcy(ifou))
+            end if
+            if (ierr == NF90_NOERR) then
+               ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'frequency_degrees_per_hour', freqnt)
+            end if
+         end if
+
+         if (ierr /= NF90_NOERR) then
+            goto 99
+         end if
          !
       end do
       !
@@ -1905,7 +2006,7 @@ contains
          ! First for Maximum or Minimum
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
@@ -1919,7 +2020,7 @@ contains
          ! for time above/below threshold
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
@@ -1927,7 +2028,7 @@ contains
 
       case ('a', 'l')
          ! For average
-         if (fousmb(1) > 0d0) then
+         if (fousmb(1) > 0.0_dp) then
             do n = 1, nmaxus
                fousma(n) = fousma(n) / fousmb(1)
             end do
@@ -1936,7 +2037,7 @@ contains
          end if
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
@@ -1947,7 +2048,7 @@ contains
          call replace_dummy(fousmas)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
@@ -1957,10 +2058,10 @@ contains
          call replace_dummy(fousmas)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
             if (idvar(1, fouvar + 1) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
@@ -1972,7 +2073,7 @@ contains
          call replace_dummy(fousmbs)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmbs)
@@ -1983,10 +2084,10 @@ contains
          call fourier_final(ifou, nmaxus)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
             if (idvar(1, fouvar + 1) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)

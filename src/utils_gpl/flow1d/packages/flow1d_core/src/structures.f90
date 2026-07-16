@@ -1,7 +1,7 @@
 module m_1d_structures
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -37,11 +37,11 @@ module m_1d_structures
    use m_CrossSections
    use m_Culvert
    use m_pump
-   use m_General_Structure
+   use m_general_structure
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search
-   use m_Dambreak
+   use m_dambreak, only: t_dambreak_settings
    use iso_c_utils
 
    implicit none
@@ -83,6 +83,7 @@ module m_1d_structures
    public get_discharge_under_compound_struc
    public set_u0isu1_structures
    public set_u1q1_structure
+   public update_bedlevels_for_bridges
 
    interface fill_hashtable
       module procedure fill_hashtable_sts
@@ -146,7 +147,7 @@ module m_1d_structures
       type(t_uni_weir),pointer         :: uniweir => null()
       type(t_bridge),pointer           :: bridge => null()
       type(t_GeneralStructure),pointer :: generalst => null()
-      type(t_dambreak),pointer         :: dambreak => null()
+      type(t_dambreak_settings),pointer         :: dambreak => null()
    end type
 
    type, public :: t_structureSet
@@ -464,35 +465,35 @@ end subroutine deallocstructure
 
    end subroutine reIndexCrossSections
 
-   integer function GetStrucType_from_string(string)
-      use string_module
+   pure function GetStrucType_from_string(string) result(istrtype)
+      use string_module, only: str_lower
 
-      character(len=*) :: string
-
+      character(len=*), value :: string
+      integer :: istrtype
       call str_lower(string, 999)
       select case(trim(string))
       case ('pump')
-         GetStrucType_from_string = ST_PUMP
+         istrtype = ST_PUMP
       case ('generalstructure')
-         GetStrucType_from_string = ST_GENERAL_ST
+         istrtype = ST_GENERAL_ST
       case ('weir')
-         GetStrucType_from_string = ST_WEIR
+         istrtype = ST_WEIR
       case ('orifice')
-         GetStrucType_from_string = ST_ORIFICE
+         istrtype = ST_ORIFICE
       case ('gate')
-         GetStrucType_from_string = ST_GATE
+         istrtype = ST_GATE
       case ('culvert')
-         GetStrucType_from_string = ST_CULVERT
+         istrtype = ST_CULVERT
       case ('universalweir')
-         GetStrucType_from_string = ST_UNI_WEIR
+         istrtype = ST_UNI_WEIR
       case ('dambreak')
-         GetStrucType_from_string = ST_DAMBREAK
+         istrtype = ST_DAMBREAK
       case ('bridge')
-         GetStrucType_from_string = ST_BRIDGE
+         istrtype = ST_BRIDGE
       case ('compound')
-         GetStrucType_from_string = ST_COMPOUND
+         istrtype = ST_COMPOUND
       case default
-         GetStrucType_from_string = -1
+         istrtype = -1
       end select
    end function GetStrucType_from_string
 
@@ -537,12 +538,12 @@ end subroutine deallocstructure
       
        select case (struc%type)
           case (ST_UNI_WEIR)
-             get_crest_level = struc%uniweir%crestlevel_actual
+             get_crest_level = struc%uniweir%crestlevel
           case (ST_CULVERT)
              get_crest_level = max(struc%culvert%leftlevel, struc%culvert%rightlevel)
           case (ST_PUMP)
              get_crest_level = huge(1d0)
-          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE)
+          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE, ST_GATE)
              get_crest_level = struc%generalst%zs_actual
           case (ST_BRIDGE)
              get_crest_level = struc%bridge%bedLevel
@@ -562,7 +563,7 @@ end subroutine deallocstructure
        select case (struc%type)
           case (ST_UNI_WEIR)
              get_crest_level_c_loc = c_loc(struc%uniweir%crestlevel)
-          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE)
+          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE, ST_GATE)
              get_crest_level_c_loc = c_loc(struc%generalst%zs)
           case default
              get_crest_level_c_loc = C_NULL_PTR
@@ -578,7 +579,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST, ST_ORIFICE)
+          case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
              get_gate_lower_edge_level_c_loc = c_loc(struc%generalst%gateLowerEdgeLevel)
           case default
              get_gate_lower_edge_level_c_loc = C_NULL_PTR
@@ -609,7 +610,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_GATE)
              get_gate_opening_width_c_loc = c_loc(struc%generalst%gateopeningwidth)
           case default
              get_gate_opening_width_c_loc = C_NULL_PTR
@@ -625,7 +626,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_GATE)
              get_gate_door_height_c_loc = c_loc(struc%generalst%gatedoorheight)
           case default
              get_gate_door_height_c_loc = C_NULL_PTR
@@ -638,7 +639,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST, ST_ORIFICE, ST_WEIR)
+          case (ST_GENERAL_ST, ST_ORIFICE, ST_WEIR, ST_GATE)
              get_width = struc%generalst%ws_actual
           case default
              get_width = huge(1d0)
@@ -651,7 +652,7 @@ end subroutine deallocstructure
       type (t_structure), intent(inout) :: struc
       
       select case(struc%type)
-      case (ST_GENERAL_ST, ST_ORIFICE)
+      case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
          get_gle = struc%generalst%gateLowerEdgeLevel_actual
       case (ST_CULVERT)
          get_gle = max(struc%culvert%leftlevel, struc%culvert%rightlevel) + struc%culvert%valveOpening
@@ -665,7 +666,7 @@ end subroutine deallocstructure
       type (t_structure), intent(inout) :: struc
       
       select case(struc%type)
-      case (ST_GENERAL_ST, ST_ORIFICE)
+      case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
          get_opening_height = struc%generalst%gateLowerEdgeLevel_actual - struc%generalst%zs_actual
       case (ST_CULVERT)
          get_opening_height = struc%culvert%valveOpening
@@ -832,6 +833,8 @@ end subroutine deallocstructure
       integer, dimension(:),           intent(in   ) :: links    !< (numlinks) The flow link numbers affected by this structure.
       double precision, dimension(:),  intent(in   ) :: wu       !< (numlinks) The width of the flow links affected by this structure.
       integer                                        :: istat    !< Result status (0 if successful).
+      
+      character(len=16) :: struct_type
 
       istat = 0
       allocate(struct%linknumbers(numlinks), struct%fu(numlinks), struct%ru(numlinks), struct%au(numlinks), struct%u0(numlinks), struct%u1(numlinks))
@@ -844,20 +847,25 @@ end subroutine deallocstructure
       struct%u1 = 0d0
       
       select case(struct%type)
-      case (ST_GENERAL_ST) ! REMARK: for version 2 files weirs, orifices and gates are implemented as general structures
+      case (ST_GENERAL_ST) ! REMARK: for version 2 files weirs, orifices and gates are implemented as general structures.
          allocate(struct%generalst%widthcenteronlink(numlinks), struct%generalst%gateclosedfractiononlink(numlinks), struct%generalst%sOnCrest(numlinks), struct%generalst%state(3,numlinks))
          struct%generalst%sOnCrest(1:numlinks) = 0d0
          struct%generalst%state = 0
-         allocate(struct%generalst%fu(3,numlinks), struct%generalst%ru(3,numlinks), struct%generalst%au(3,numlinks))
+         allocate(struct%generalst%fu(3,numlinks), struct%generalst%ru(3,numlinks), struct%generalst%au(3,numlinks),  struct%generalst%au_max(numlinks))
          struct%generalst%fu = 0d0
          struct%generalst%ru = 0d0
          struct%generalst%au = 0d0
+         struct%generalst%au_max = 0d0
          allocate(struct%generalst%gateclosedfractiononlink(numlinks))
          struct%generalst%gateclosedfractiononlink = 0d0
-      case (ST_CULVERT, ST_UNI_WEIR, ST_ORIFICE, ST_GATE, ST_WEIR, ST_PUMP, ST_BRIDGE)
+      case (ST_PUMP)
+         ! Pump is supported on multiple flow links. Needs no additional initialization here.
+         continue
+      case (ST_CULVERT, ST_UNI_WEIR, ST_ORIFICE, ST_GATE, ST_WEIR, ST_BRIDGE)
          if (numlinks > 1) then
             istat = 1
-            call setmessage(LEVEL_ERROR, 'Multiple links for culvert structures is not supported, check structure'//trim(struct%id))
+            call GetStrucType_from_int(struct%type, struct_type)
+            call setmessage(LEVEL_ERROR, 'Multiple links for '// trim(struct_type) //' structures is not supported, check structure '//trim(struct%id))
          endif
       case (ST_DAMBREAK)
          ! NOTE: flow1d currently does not contain any special computations for dambreak on multiple flow links (2D grid).
@@ -1008,14 +1016,32 @@ end subroutine deallocstructure
    !! this is relevant under compound structures.
    !! This routine typically should be called once (at the end of) every timestep.
    subroutine set_u1q1_structure(pstru, L0, s1k1, s1k2, teta)
-      type (t_structure), intent(inout) :: pstru       !< structure
-      integer,            intent(in)    :: L0          !< local link index
-      double precision,   intent(in)    :: s1k1, s1k2  !< water level on nodes k1 and k2
-      double precision,   intent(in)    :: teta        !< Theta-value of theta-time-integration for this flow link. (not used yet)
+      type (t_structure), intent(inout) :: pstru !< structure
+      integer, intent(in) :: L0 !< local link index
+      double precision, intent(in) :: s1k1, s1k2  !< water level on nodes k1 and k2
+      double precision, intent(in) :: teta !< Theta-value of theta-time-integration for this flow link. (not used yet)
 
       pstru%u1(L0) = pstru%ru(L0) - pstru%fu(L0)*( s1k2 - s1k1 )
       ! NOTE: No q1 part here, since pstru%q1 does not exist.
       
    end subroutine set_u1q1_structure
 
+   !> Sets the bed level for pillar bridges in the structure set, that use the cross section definition of the channel.
+   subroutine update_bedlevels_for_bridges(sts, bobs)
+      type(t_structureSet), intent(inout) :: sts !< Structure set that must be updated.
+      double precision, dimension(:,:), intent(in) :: bobs !< The bed level at the bridge. (dimensions (2,lnx)
+
+      integer :: i, L
+
+      do i = 1, sts%numBridges
+         associate(pstru => sts%struct(sts%bridgeIndices(i)))
+            if (.not. pstru%bridge%useOwnCrossSection) then
+               L = pstru%linknumbers(1)
+               pstru%bridge%bedLevel = max(bobs(1, L), bobs(2, L))
+            end if
+         end associate
+      end do
+
+   end subroutine update_bedlevels_for_bridges
 end module m_1d_structures
+   

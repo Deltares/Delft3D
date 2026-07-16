@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,18 +29,24 @@
 
 !
 !
-
+module m_paramtext
+   implicit none
+contains
    subroutine PARAMTEXT(OPTION, NR)
-      use M_isoscaleunit
-      implicit none
+      use M_isoscaleunit, only: unit, paramtex
+
       integer :: l1
       integer :: l2
-      character * (*) OPTION
+      character(len=*) OPTION
       integer NR
       L1 = index(OPTION, '(')
       L2 = index(OPTION, ')')
-      UNIT(NR) = ' '; PARAMTEX(NR) = ' '
-      if (L1 /= 0) write (UNIT(NR) (1:L2 - L1 + 1), '(A)') OPTION(L1:L2)
+      UNIT(NR) = ' '
+      PARAMTEX(NR) = ' '
+      if (L1 /= 0) then
+         write (UNIT(NR) (1:L2 - L1 + 1), '(A)') OPTION(L1:L2)
+      end if
       write (PARAMTEX(NR) (1:14), '(A)') OPTION(1:14)
       return
    end subroutine PARAMTEXT
+end module m_paramtext

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,9 +33,10 @@ module m_dcminmod
    implicit none
 contains
 
-   double precision function dcminmod(d1, d2) ! basic minmod definition
+   real(kind=dp) function dcminmod(d1, d2) ! basic minmod definition
+      use precision, only: dp
 
-   double precision d1, d2
+      real(kind=dp) d1, d2
       if (d1 * d2 > 0) then
          if (abs(d1) < abs(d2)) then
             dcminmod = d1
@@ -43,7 +44,7 @@ contains
             dcminmod = d2
          end if
       else
-         dcminmod = 0d0
+         dcminmod = 0.0_dp
       end if
       return
    end function dcminmod

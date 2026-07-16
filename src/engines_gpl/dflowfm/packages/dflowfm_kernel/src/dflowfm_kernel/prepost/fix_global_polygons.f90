@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,7 +30,18 @@
 !
 !
 
+module m_fix_global_polygons
+
+   implicit none
+
+   private
+
+   public :: fix_global_polygons
+
+contains
+
    subroutine fix_global_polygons(jaalwayscopyleftright, japartpols)
+      use precision, only: dp
 
       use m_sferic
       use m_polygon
@@ -39,7 +50,7 @@
       use geometry_module, only: get_startend
 
       use network_data, only: numk, nump, xk, xzw, yzw
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use m_delpol
 
       implicit none
@@ -49,9 +60,9 @@
 
       integer :: i, j, k
 
-      double precision :: x1, x2
-      double precision :: dist, dist1, dist2
-      double precision :: xmin, xmax
+      real(kind=dp) :: x1, x2
+      real(kind=dp) :: dist, dist1, dist2
+      real(kind=dp) :: xmin, xmax
 
       integer :: jpoint, jstart, jend
       integer :: i1, i2, num, NPLnew, NPLnewest
@@ -61,7 +72,9 @@
       integer :: in, idmn
 
 !     check for spherical coordinates
-      if (jsferic /= 1 .or. NPL <= 2) return
+      if (jsferic /= 1 .or. NPL <= 2) then
+         return
+      end if
 
       call mess(LEVEL_INFO, 'fixing global polygon... ')
 
@@ -79,7 +92,7 @@
          i = jstart - 1
          do while (i < jend)
             i = i + 1
-            if (abs(abs(ypl(i)) - 90d0) < dtol_pole) then
+            if (abs(abs(ypl(i)) - 90.0_dp) < dtol_pole) then
 !              add node
                call increasepol(NPL + 1, 1)
                do j = NPL, i, -1
@@ -92,8 +105,14 @@
                jpoint = jpoint + 1
                i = i + 1
 
-               im1 = i - 2; if (im1 < jstart) im1 = im1 + jend - jstart + 1
-               ip1 = i + 1; if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
+               im1 = i - 2
+               if (im1 < jstart) then
+                  im1 = im1 + jend - jstart + 1
+               end if
+               ip1 = i + 1
+               if (ip1 > jend) then
+                  ip1 = ip1 - (jend - jstart + 1)
+               end if
 
 !              shift current node above previous node
                xpl(i - 1) = xpl(im1)
@@ -123,10 +142,14 @@
          japole = 0
          do i = jstart, jend
             ip1 = i + 1
-            if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
+            if (ip1 > jend) then
+               ip1 = ip1 - (jend - jstart + 1)
+            end if
 
 !           check if the linesegment (i,i+1) exists
-            if (xpl(i) == DMISS .or. ypl(i) == DMISS .or. xpl(ip1) == DMISS .or. ypl(ip1) == DMISS) cycle
+            if (xpl(i) == DMISS .or. ypl(i) == DMISS .or. xpl(ip1) == DMISS .or. ypl(ip1) == DMISS) then
+               cycle
+            end if
 
 !           compute two other canditates for xpl(i+1)
             x1 = xpl(ip1) - 360
@@ -270,11 +293,11 @@
             xpl(jend + 2 * num + 2) = xpl(jstart)
 
             if (ypl(jend + 2 * num) > 0) then
-               ypl(jend + 2 * num + 1) = 90d0
-               ypl(jend + 2 * num + 2) = 90d0
+               ypl(jend + 2 * num + 1) = 90.0_dp
+               ypl(jend + 2 * num + 2) = 90.0_dp
             else
-               ypl(jend + 2 * num + 1) = -90d0
-               ypl(jend + 2 * num + 2) = -90d0
+               ypl(jend + 2 * num + 1) = -90.0_dp
+               ypl(jend + 2 * num + 2) = -90.0_dp
             end if
 
             zpl(jend + 2 * num + 1) = zpl(jend + 2 * num)
@@ -285,19 +308,21 @@
             jpoint = jpoint + 2 * num + 2
          end if
 
-         if (jpoint > NPL) exit
+         if (jpoint > NPL) then
+            exit
+         end if
       end do
 
       if (japartpols == 1) then
 !        check if the right areas are selected and add bounding polygon if not so
-         xmin = 1d99
+         xmin = 1.0e99_dp
          xmax = -xmin
          do k = 1, numk
             xmin = min(xk(k), xmin)
             xmax = max(xk(k), xmax)
          end do
-         xmin = 0.5d0 * (xmin + xmax) - 180d0
-         xmax = xmin + 360d0
+         xmin = 0.5_dp * (xmin + xmax) - 180.0_dp
+         xmax = xmin + 360.0_dp
 
 !        clean up
          call dealloc_tpoly(partition_pol)
@@ -316,7 +341,7 @@
 !                 check if cell is inside
 !                  in = -1
 !                  call dbpinpol(xzw(i), yzw(i), in)
-                  call dbpinpol_tpolies(partition_pol, xzw(i), yzw(i), in, dble(idmn))
+                  call dbpinpol_tpolies(partition_pol, xzw(i), yzw(i), in, real(idmn, kind=dp))
 
 !                  write(6,*) i, xzw(i), yzw(i), idomain(i)
 
@@ -329,9 +354,9 @@
                      call delpol()
                      NPL = 5
                      call increasepol(NPL, 0)
-                     xpl(1:NPL) = (/xmin - 90d0, xmin - 90d0, xmin + 360d0 + 90d0, xmin + 360d0 + 90d0, xmin - 90d0/)
-                     ypl(1:NPL) = (/90d0, -90d0, -90d0, 90d0, 90d0/)
-                     zpl(1:NPL) = dble(idmn)
+                     xpl(1:NPL) = [xmin - 90.0_dp, xmin - 90.0_dp, xmin + 360.0_dp + 90.0_dp, xmin + 360.0_dp + 90.0_dp, xmin - 90.0_dp]
+                     ypl(1:NPL) = [90.0_dp, -90.0_dp, -90.0_dp, 90.0_dp, 90.0_dp]
+                     zpl(1:NPL) = real(idmn, kind=dp)
                      call pol_to_tpoly(npartition_pol, partition_pol, keepExisting=.true.)
                   end if
 
@@ -349,3 +374,5 @@
 
       return
    end subroutine fix_global_polygons
+
+end module m_fix_global_polygons

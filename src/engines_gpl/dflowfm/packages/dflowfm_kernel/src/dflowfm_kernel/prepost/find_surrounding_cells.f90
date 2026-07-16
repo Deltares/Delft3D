@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,11 +31,19 @@
 !
 
 !>  find cells that are directly and indirectly connected to cell k
+module m_find_surrounding_cells
+
+   implicit none
+
+   private
+
+   public :: find_surrounding_cells
+
+contains
+
    subroutine find_surrounding_cells(kcell, nmax, ndirect, nindirect, kdirect, kindirect, kne)
       use m_netw
       use m_qnerror
-
-      implicit none
 
       integer, intent(in) :: kcell !< cell number
       integer, intent(in) :: nmax !< array size
@@ -57,13 +65,17 @@
       kklp: do kk = 1, netcell(kcell)%N
          L = netcell(kcell)%lin(kk)
 
-         if (lnn(L) < 2) cycle
+         if (lnn(L) < 2) then
+            cycle
+         end if
 
          kcell2 = lne(1, L) + lne(2, L) - kcell ! other cell
 
 !        check and see if the cell is already administered
          do kkk = 1, ndirect
-            if (kcell2 == kdirect(kkk)) cycle kklp
+            if (kcell2 == kdirect(kkk)) then
+               cycle kklp
+            end if
          end do
 
          ndirect = ndirect + 1
@@ -83,14 +95,20 @@
             ilp: do i = 1, lnn(L)
                kcell2 = lne(i, L)
 !              check and see if the cell is new
-               if (kcell2 == kcell) cycle ilp
+               if (kcell2 == kcell) then
+                  cycle ilp
+               end if
 
                do kkkk = 1, ndirect
-                  if (kcell2 == kdirect(kkkk)) cycle ilp
+                  if (kcell2 == kdirect(kkkk)) then
+                     cycle ilp
+                  end if
                end do
 
                do kkkk = 1, nindirect
-                  if (kcell2 == kindirect(kkkk)) cycle ilp
+                  if (kcell2 == kindirect(kkkk)) then
+                     cycle ilp
+                  end if
                end do
 
 !              add new cell
@@ -110,7 +128,9 @@
          kcell1 = kdirect(i)
          do j = 1, netcell(kcell1)%N
             L = netcell(kcell1)%lin(j)
-            if (lnn(L) < 2) cycle
+            if (lnn(L) < 2) then
+               cycle
+            end if
             kcell2 = lne(1, L) + lne(2, L) - kcell1
 !           check and see if this cell is administered
             do kk = 1, ndirect
@@ -125,7 +145,9 @@
                end if
             end do
 
-            if (kcell2 == -1234) cycle
+            if (kcell2 == -1234) then
+               cycle
+            end if
 
             do kk = 1, nindirect
                if (kindirect(kk) == kcell2) then
@@ -142,3 +164,5 @@
 
       return
    end subroutine find_surrounding_cells
+
+end module m_find_surrounding_cells

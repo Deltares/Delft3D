@@ -17,7 +17,9 @@ set_source_files_properties(${fortran_version_file}
 set(library_name gridgeom_dll)
 
 # Add dynamic gridgeom library
-add_library(${library_name} SHARED ${source_files} ${rc_version_file} ${version_file})
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${version_dir}")
+add_library(${library_name} SHARED ${source_files} ${version_file})
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 include_directories(${version_include_dir} ${version_dir})
 
 # Set the dependencies of this library
@@ -30,30 +32,22 @@ set(oss_dependencies    deltares_common
                         triangle_c
                         gridgeom)
 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if (UNIX)
-    message(STATUS "Setting oss_target_link_libraries in Unix")
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
-    target_link_libraries(${library_name} ${oss_dependencies}
-                                          triangle_c)
-
     # Set additional compilation properties
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")
 endif(WIN32)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
-
-if ((CMAKE_GENERATOR MATCHES "Visual Studio") OR UNIX)
-    # Install the shared library in the lib folder with rename
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME gridgeom.${library_suffix} DESTINATION lib)
+set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
+set_target_properties(${library_name} PROPERTIES OUTPUT_NAME gridgeom)
+if(UNIX)
+    set_target_properties(${library_name} PROPERTIES PREFIX "")
 endif()
+
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                LIBRARY DESTINATION lib
+)

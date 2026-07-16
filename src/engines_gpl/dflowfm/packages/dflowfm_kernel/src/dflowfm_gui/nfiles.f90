@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,12 @@
 !
 !
 
+module m_nfiles
+
+   implicit none
+
+contains
+
    subroutine NFILES(NUM, NWHAT, KEY)
 !  grid lijst
 !  NUM = 0, GELUKT, NUM = 1, NIET GELUKT
@@ -39,9 +45,8 @@
       use m_monitoring_crosssections
       use m_thindams
       use M_SPLINES, notinusenump => nump
-      use unstruc_model
-      use m_samples
-      use m_flowgeom
+      use m_samples, only: ns, savesam
+      use m_flowgeom, only: lnx, ndx
       use unstruc_display
       use m_flowparameters
       use unstruc_files, only: defaultFilename, close_all_files
@@ -65,24 +70,49 @@
       use m_getint
       use m_wripol
       use m_wrisam
+      use m_reasam
+      use m_change_kml_parameters
+      use m_filemenu
+      use m_loadbitmap
+      use m_reablu
+      use m_reabl
+      use m_readadcircnet
+      use m_reajanet, only: reajanet
+      use m_read_restart_from_map, only: read_restart_from_map
+      use m_rearst, only: rearst
+      use m_wriblu, only: wriblu
+      use m_wribl, only: wribl
+      use m_wricmps, only: wricmps
+      use m_wrirstfileold, only: WRIRSTfileold
+      use m_wriswan, only: WRIswan
+      use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
+      use m_inidat, only: inidat
+      use m_partition_write_domains, only: partition_write_domains
+      use m_resetFullFlowModel, only: resetFullFlowModel
+      use m_resetflow, only: resetflow
+      use m_readarcinfo, only: readarcinfo
+      use m_reagrid, only: reagrid
+      use m_wrirgf, only: wrirgf
+      use m_parsekerst, only: parsekerst
+      use m_read_land_boundary_netcdf, only: read_land_boundary_netcdf
+      use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
+      use m_read_samples_from_dem, only: read_samples_from_dem
+      use m_read_samples_from_geotiff, only: read_samples_from_geotiff
+      use m_stopint, only: stopint
+      use m_wrilan, only: wrilan
+      use m_wricrs, only: wricrs
+      use m_reapol_nampli, only: reapol_nampli
+      use m_realan, only: realan
+      use m_filez, only: doclose, newfil, message
 
-      implicit none
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
       integer :: mlan
       integer :: midp
       integer :: mtek
       integer :: i, ierror
-   integer :: ipli
+      integer :: ipli
       logical :: jawel
-      logical, external :: read_samples_from_geotiff
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
 
       character FILNAM * 86
 
@@ -328,10 +358,12 @@
             else
                ja = 0
             end if
-         ipli=0
-         CALL reapol_nampli(MLAN, ja,1,ipli) ! Read pol/pli as crs
+            ipli = 0
+            call reapol_nampli(MLAN, ja, 1, ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
-            if (NPL > 0) call delpol()
+            if (NPL > 0) then
+               call delpol()
+            end if
             call MESSAGE('YOU LOADED ', filnam, ' ')
             call MINMXNS()
             md_crsfile = ' '
@@ -452,7 +484,7 @@
                else
                   JA = 1
                end if
-               if (iperot == -1) then
+               if (Perot_type == NOT_DEFINED) then
                   call reconst2nd()
                end if
                call setucxucyucxuucyunew() ! reconstruct cell center velocities
@@ -516,23 +548,13 @@
                call doclose(mtek)
                if (nwhat == 21) then
                   if (index(filnam, '.net') > 0) then
-                     call NEWFIL(MTEK, filnam); call WRINET(MTEK)
+                     call NEWFIL(MTEK, filnam)
+                     call WRINET(MTEK)
                   else
                      call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
                else if (nwhat == 22) then ! _net.nc with extra cell info (for example necessary for Baseline/Bas2FM input)
-                  if (netstat /= NETSTAT_OK) then
-                     call findcells(0)
-                     call find1dcells()
-                  end if
-                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
-!               !call unc_write_net_ugrid2(filnam, janetcell = 0, janetbnd = 0)
-
-                  !origial call unc_write_net(filnam, janetcell = 1, janetbnd = 0)
-                  call unc_write_net('UG'//filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
-               else if (nwhat == 24) then
-                  call ini_tecplot()
-                  call wrinet_tecplot(filnam)
+                  call unc_write_net(filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                md_netfile = ' '
@@ -604,7 +626,8 @@
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                NUM = 0
-               md_plifile = ' '; md_plifile = filnam
+               md_plifile = ' '
+               md_plifile = filnam
             end if
          end if
       else if (NWHAT == 27) then
@@ -834,3 +857,5 @@
       NUM = 0
       return
    end subroutine NFILES
+
+end module m_nfiles

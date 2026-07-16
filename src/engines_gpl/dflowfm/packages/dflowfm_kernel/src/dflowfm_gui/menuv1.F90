@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,24 @@
 !
 !
 
-   subroutine MENUV1(NUM, NWHAT)
-      use m_netw
-      use m_modenow
+module m_menuv1
 
-      implicit none
+   implicit none
+
+contains
+
+   subroutine MENUV1(NUM, NWHAT)
+      use m_modenow
+      use m_menuv2
+      use m_fieldopt
+
       integer :: NUM, NWHAT
       integer :: maxopt
       integer, parameter :: MAXOP = 64
-      character(len=40) OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP)
       integer :: NFO
 
       if (NUM == 1) then
-         exp(1) = 'MENU 1                                  '
-         exp(2) = 'FILES                                   '
          OPTION(1) = 'Load MDU-file                    (*.mdu)'
          OPTION(2) = 'Load network      (*.unt/*.net/*_net.nc)'
          OPTION(3) = ' Add network      (*.unt/*.net/*_net.nc)'
@@ -68,11 +72,7 @@
          OPTION(21) = 'Save network                  (*_net.nc)'
          OPTION(22) = 'Save network with cell info   (*_net.nc)'
          OPTION(23) = 'Save network for Google Earth    (*.kml)'
-#ifdef HAVE_TECPLOT
-         OPTION(24) = 'Save network for Tecplot         (*.plt)'
-#else
          OPTION(24) = 'Not available                           '
-#endif
          OPTION(25) = 'Save curvilinear grid            (*.grd)'
          OPTION(26) = 'Save polygon                     (*.pol)'
          OPTION(27) = 'Save splines                     (*.spl)'
@@ -89,8 +89,6 @@
          OPTION(38) = 'Stop program                            '
          MAXOPT = 38
       else if (NUM == 2) then
-         exp(1) = 'MENU 2                                  '
-         exp(2) = 'OPERATIONS                              '
          OPTION(1) = 'Undo net                                '
          OPTION(2) = 'Create uniform curvilinear grid         '
          OPTION(3) = 'Create curvilinear grid from splines    '
@@ -137,8 +135,6 @@
 
          MAXOPT = 41
       else if (NUM == 3) then
-         exp(1) = 'MENU 3                                  '
-         exp(2) = 'DISPLAY                                 '
          OPTION(1) = 'Display presets...                      '
          OPTION(2) = 'Display network                         '
          OPTION(3) = 'Display previous state network          '
@@ -183,8 +179,6 @@
          MAXOPT = 40
 
       else if (NUM == 4) then
-         exp(1) = 'MENU 4                                  '
-         exp(2) = 'Edit data                               '
          OPTION(1) = 'Edit polygon                            '
          OPTION(2) = 'Edit network                            '
          OPTION(3) = 'Edit splines                            '
@@ -194,8 +188,6 @@
          OPTION(7) = 'Show flow links                         '
          MAXOPT = 7
       else if (NUM == 5) then
-         exp(1) = 'MENU 5                                  '
-         exp(2) = 'ADDSUBDEL                               '
          OPTION(1) = 'Delete polygon                          '
          OPTION(2) = 'Delete network                          '
          OPTION(3) = 'Delete network based on cell centers.   '
@@ -237,8 +229,6 @@
 
          MAXOPT = 38
       else if (NUM == 6) then
-         exp(1) = 'MENU 6                                  '
-         exp(2) = 'VARIOUS                                 '
          OPTION(1) = 'Shortstop                               '
          OPTION(2) = 'Actual and maximum data dimensions      '
          OPTION(3) = 'Change network           parameters     '
@@ -271,3 +261,5 @@
 
       return
    end subroutine MENUV1
+
+end module m_menuv1

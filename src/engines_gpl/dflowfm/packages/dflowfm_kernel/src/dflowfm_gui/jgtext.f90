@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,41 +29,51 @@
 
 !
 !
+module m_jgtext
+   use m_getpos
 
-  subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
-     use unstruc_colors
-     implicit none
-     double precision :: hic, WIC
-     integer :: jahoog
-     integer :: ncol
-     double precision :: x
-     double precision :: xa
-     double precision :: xb
-     double precision :: xp
-     double precision :: y
-     double precision :: ya
-     double precision :: yb
-     double precision :: yp
-     character TEX * (*)
+   implicit none
+contains
+   subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
+      use precision, only: dp
+      use unstruc_colors, only: kltex
+      use m_box_nop, only: boxnop
+      use m_fbox_nop, only: fboxnop
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
 
-     call SETCOL(KLTEX)
-     call DRAWTEXT(real(X), real(Y), TEX)
-     call GETPOS(XP, YP)
+      real(kind=dp) :: hic, WIC
+      integer :: jahoog
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: xa
+      real(kind=dp) :: xb
+      real(kind=dp) :: xp
+      real(kind=dp) :: y
+      real(kind=dp) :: ya
+      real(kind=dp) :: yb
+      real(kind=dp) :: yp
+      character TEX * (*)
 
-     XA = XP + 0.3d0 * WIC
-     YA = YP - 0.8d0 * HIC + JAHOOG * HIC
-     XB = XA + 1.3d0 * WIC
-     YB = YA + 0.7d0 * HIC
+      call SETCOL(KLTEX)
+      call DRAWTEXT(real(X), real(Y), TEX)
+      call GETPOS(XP, YP)
 
-     if (NCOL /= 0) then
-        call SETCOL(NCOL)
-        if (JAHOOG == 0) then
-           call FBOXnop(XA, YA, XB, YB)
-           call SETCOL(KLTEX)
-           call BOXnop(XA, YA, XB, YB)
-        else
-           call FBOXnop(XA, YA, XB, YB)
-        end if
-     end if
-     return
-  end
+      XA = XP + 0.3_dp * WIC
+      YA = YP - 0.8_dp * HIC + JAHOOG * HIC
+      XB = XA + 1.3_dp * WIC
+      YB = YA + 0.7_dp * HIC
+
+      if (NCOL /= 0) then
+         call SETCOL(NCOL)
+         if (JAHOOG == 0) then
+            call FBOXnop(XA, YA, XB, YB)
+            call SETCOL(KLTEX)
+            call BOXnop(XA, YA, XB, YB)
+         else
+            call FBOXnop(XA, YA, XB, YB)
+         end if
+      end if
+      return
+   end
+end module m_jgtext

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,44 +36,61 @@
 !>     -is not a boundary node (k.le.Ndxi), and
 !>     -is not in the own subdomain (idomain(k).ne.my_rank), and
 !>     -is not a member of ghostlist_sall
-subroutine disable_invalid_ghostcells_with_wu()
-   use m_partitioninfo
-   use m_flowgeom, only: Ndx, Ndxi, nd, wu
+module m_disable_invalid_ghostcells_with_wu
+
+   use precision, only: dp
    implicit none
 
-   integer, dimension(:), allocatable :: imask
-   integer :: i, k, L
-   integer :: ierror
+   private
 
-   ierror = 0 ! so far, so good
-   if (jampi == 0) return ! nothing to do
+   public :: disable_invalid_ghostcells_with_wu
 
-   ierror = 1
+contains
+
+   subroutine disable_invalid_ghostcells_with_wu()
+      use m_partitioninfo
+      use m_flowgeom, only: Ndx, Ndxi, nd, wu
+      implicit none
+
+      integer, dimension(:), allocatable :: imask
+      integer :: i, k, L
+      integer :: ierror
+
+      ierror = 0 ! so far, so good
+      if (jampi == 0) then
+         return ! nothing to do
+      end if
+
+      ierror = 1
 
 !  allocate
-   allocate (imask(Ndx)) ! safety, could also be Ndxi
+      allocate (imask(Ndx)) ! safety, could also be Ndxi
 
 !  mark the flownodes in the ghostlist
-   imask = 0
-   do i = 1, nghostlist_sall(ndomains - 1)
-      k = ighostlist_sall(i)
-      imask(k) = 1
-   end do
+      imask = 0
+      do i = 1, nghostlist_sall(ndomains - 1)
+         k = ighostlist_sall(i)
+         imask(k) = 1
+      end do
 
 !  check non-boundary flownodes and disable cells that are neither in own subdomain nor in ghostlist by setting wu's of their flowlinks to zero
-   do k = 1, Ndxi
-      if (imask(k) == 0 .and. idomain(k) /= my_rank) then
-         do i = 1, nd(k)%lnx
-            L = abs(nd(k)%ln(i))
-            wu(L) = 0d0
-         end do
+      do k = 1, Ndxi
+         if (imask(k) == 0 .and. idomain(k) /= my_rank) then
+            do i = 1, nd(k)%lnx
+               L = abs(nd(k)%ln(i))
+               wu(L) = 0.0_dp
+            end do
+         end if
+      end do
+
+      ierror = 0
+1234  continue
+
+      if (allocated(imask)) then
+         deallocate (imask)
       end if
-   end do
 
-   ierror = 0
-1234 continue
+      return
+   end subroutine disable_invalid_ghostcells_with_wu
 
-   if (allocated(imask)) deallocate (imask)
-
-   return
-end subroutine disable_invalid_ghostcells_with_wu
+end module m_disable_invalid_ghostcells_with_wu

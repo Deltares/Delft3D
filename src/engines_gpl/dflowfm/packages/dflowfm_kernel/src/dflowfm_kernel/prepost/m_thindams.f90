@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,9 +52,10 @@ contains
 !! The input arrays have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
    subroutine pol_to_thindams(xpl, ypl, npl)
-      use m_missing
+      use precision, only: dp
+      use m_missing, only: dmiss
 
-      double precision, intent(in) :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
+      real(kind=dp), intent(in) :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: npl !< Total number of polyline points
 
       integer :: i, i1, i2, maxthd

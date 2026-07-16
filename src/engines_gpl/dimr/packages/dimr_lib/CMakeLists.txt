@@ -9,12 +9,11 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+
     add_definitions(-DD3D_PLUGIN_EXT=".so")
     add_definitions(-DHAVE_STRUCT_TIMESPEC)
 endif(UNIX)
-              
+
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
@@ -30,62 +29,55 @@ file(GLOB headers ${header_path}/*.h)
 include_directories(${header_path}
                     ${version_include_dir})
 set(library_name dimr_lib)
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${absolute_header_path}")
 add_library(${library_name} SHARED  ${source}
                                     ${headers}
-                                    ${rc_version_file}
                                     ${header_version_file})
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
 if(UNIX)
-    set(oss_dependencies    deltares_common_c
-                            expat)
-    oss_include_libraries(${library_name} oss_dependencies)
+    set(oss_dependencies deltares_common_c getopt expat::expat netCDF::netcdf)
 
     target_compile_definitions(${library_name} PRIVATE LINUX64)
 
     target_include_directories(${library_name} 
                                PRIVATE  
                                ${header_path}
-                              "${expat_include_path}")
+                              "${getopt_include_path}")
 
-    target_link_libraries(${library_name} ${oss_dependencies})
-    target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME dimr)
 endif()
 
 if(WIN32)
-    set(oss_dependencies deltares_common_c) 
-    oss_include_libraries(${library_name} oss_dependencies)
+    set(oss_dependencies deltares_common_c getopt expat::expat netCDF::netcdf)
 
     # Define output name
     set_target_properties(${library_name} 
                           PROPERTIES
-                          OUTPUT_NAME dimr_dll)
+                          OUTPUT_NAME dimr)
 
 
     # Define preprocessor definitions
     target_compile_definitions(${library_name} PRIVATE WIN32;_WINDOWS;_USRDLL;DIMR_EXPORTS)
-    target_compile_definitions(${library_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
 
     target_include_directories(${library_name} 
                                PRIVATE  
                                ${header_path}
-                               "${expat_include_path}"
+                               "${getopt_include_path}"
                                "${mpi_include_path}"
-                               "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${expat_library_path_win}"
+                            "${getopt_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${library_name}   ${oss_dependencies}
-                                            netcdf
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
                                             "${mpi_c_library}"
-                                            "libexpat.lib"
                                             "pthreadVC2.lib"
                                             "wsock32.lib"
                                             "netapi32.lib")
@@ -94,9 +86,6 @@ endif()
 # Create the vfproj structure
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${source} ${headers} ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dimr)
-if(UNIX)
-    install(TARGETS ${library_name} RUNTIME DESTINATION lib)
-endif(UNIX)
-if(WIN32)
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME dimr.${library_suffix} DESTINATION lib)
-endif(WIN32)
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                LIBRARY DESTINATION lib
+)

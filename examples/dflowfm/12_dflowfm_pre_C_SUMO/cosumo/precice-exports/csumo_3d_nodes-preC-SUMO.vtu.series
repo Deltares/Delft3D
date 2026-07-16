@@ -1,0 +1,1 @@
+{ "file-series-version" : "1.0", "files" : [ { "name" : "csumo_3d_nodes-preC-SUMO.init.vtu", "time" : 0 }, { "name" : "csumo_3d_nodes-preC-SUMO.dt1.vtu", "time" : 7200 }, { "name" : "csumo_3d_nodes-preC-SUMO.dt2.vtu", "time" : 14400 }, { "name" : "csumo_3d_nodes-preC-SUMO.dt3.vtu", "time" : 21600 } ] }

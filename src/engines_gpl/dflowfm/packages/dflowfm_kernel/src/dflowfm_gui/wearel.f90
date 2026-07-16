@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,30 @@
 !
 !
 
-      subroutine WEAREL()
-         use m_wearelt
-         implicit none
+module m_wearel
 
-         call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
+   implicit none
 
-         !X1   = XMIN
-         !Y1   = YMIN
-         !X2   = XMAX
-         !CALL SETWY(X1,Y1,X2,Y2)
-         !IF (INI .EQ. 1) THEN
-         call INILCA()
-         !ELSE
-         !   INI = 1
-         !ENDIF
-         return
-      end
+contains
+
+   subroutine WEAREL()
+      use m_minmaxworld, only: minmaxworld
+      use m_inilca, only: inilca
+      use m_wearelt, only: xmin, ymin, xmax, ymax
+      implicit none
+
+      call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
+
+      !X1   = XMIN
+      !Y1   = YMIN
+      !X2   = XMAX
+      !CALL SETWY(X1,Y1,X2,Y2)
+      !IF (INI .EQ. 1) THEN
+      call INILCA()
+      !ELSE
+      !   INI = 1
+      !ENDIF
+      return
+   end
+
+end module m_wearel

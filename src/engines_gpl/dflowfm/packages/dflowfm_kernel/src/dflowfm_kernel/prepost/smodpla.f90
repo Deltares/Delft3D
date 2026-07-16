@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,34 +27,44 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_smodpla
 
-      subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
-         use M_ALLOC
-         implicit none
-         integer :: npl
-         double precision :: DPLA(NPL), DXS(NPL)
-         double precision, allocatable :: DH(:)
+   implicit none
 
-         double precision :: a1
-         double precision :: a2
-         integer :: k
-         integer :: n
+   private
 
-         call REALLOC(DH, NPL)
+   public :: smodpla
 
-         do K = 1, 5
+contains
 
-            DH = DPLA
-            do N = 2, NPL - 1
-               a1 = 0.5d0 * (dxs(n - 1) + dxs(N))
-               a2 = 0.5d0 * (dxs(n + 1) + dxs(N))
-               DPLA(N) = (a2 * DH(N - 1) + a1 * DH(N + 1)) / (a2 + a1)
-            end do
+   subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
+      use precision, only: dp
+      use M_ALLOC, only: realloc
 
+      integer :: npl
+      real(kind=dp) :: DPLA(NPL), DXS(NPL)
+      real(kind=dp), allocatable :: DH(:)
+
+      real(kind=dp) :: a1
+      real(kind=dp) :: a2
+      integer :: k
+      integer :: n
+
+      call REALLOC(DH, NPL)
+
+      do K = 1, 5
+
+         DH = DPLA
+         do N = 2, NPL - 1
+            a1 = 0.5_dp * (dxs(n - 1) + dxs(N))
+            a2 = 0.5_dp * (dxs(n + 1) + dxs(N))
+            DPLA(N) = (a2 * DH(N - 1) + a1 * DH(N + 1)) / (a2 + a1)
          end do
 
-         deallocate (DH)
+      end do
 
-      end subroutine SMODPLA
+      deallocate (DH)
+
+   end subroutine SMODPLA
+
+end module m_smodpla

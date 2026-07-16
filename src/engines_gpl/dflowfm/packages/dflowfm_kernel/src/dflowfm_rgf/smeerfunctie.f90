@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,19 +34,20 @@ module m_smeerfunctie
 contains
 
    subroutine SMEERFUNCTIE(I, J, MP, NP, FR, IN, JN)
-      use m_grid_block
+      use precision, only: dp
+      use m_grid_block, only: mb, nb
 
       integer :: i, j, mp, np, in, jn
-      double precision :: fr
-      double precision :: pi, phi, fri, frj
-      PI = acos(-1d0)
+      real(kind=dp) :: fr
+      real(kind=dp) :: pi, phi, fri, frj
+      PI = acos(-1.0_dp)
 
       if (I == MP) then
          PHI = 0
       else if (I > MP .and. I < MB(4)) then
-         PHI = PI * dble(I - MP) / dble(MB(4) - MP)
+         PHI = PI * real(I - MP, kind=dp) / real(MB(4) - MP, kind=dp)
       else if (I < MP .and. I > MB(3)) then
-         PHI = PI * dble(MP - I) / dble(MP - MB(3))
+         PHI = PI * real(MP - I, kind=dp) / real(MP - MB(3), kind=dp)
       else
          PHI = PI
       end if
@@ -55,9 +56,9 @@ contains
       if (J == NP) then
          PHI = 0
       else if (J > NP .and. J < NB(4)) then
-         PHI = PI * dble(J - NP) / dble(NB(4) - NP)
+         PHI = PI * real(J - NP, kind=dp) / real(NB(4) - NP, kind=dp)
       else if (J < NP .and. J > NB(3)) then
-         PHI = PI * dble(NP - J) / dble(NP - NB(3))
+         PHI = PI * real(NP - J, kind=dp) / real(NP - NB(3), kind=dp)
       else
          PHI = PI
       end if

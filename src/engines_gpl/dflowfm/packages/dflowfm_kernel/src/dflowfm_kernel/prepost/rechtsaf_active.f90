@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,6 +34,7 @@ module m_rechtsaf_active
 contains
 
    logical function rechtsaf_active(K1, K2, K3)
+      use precision, only: dp
 
       use network_data, only: xk, yk
       use geometry_module, only: duitpl
@@ -41,7 +42,7 @@ contains
 
       integer, intent(in) :: K1, K2, K3
 
-      double precision :: sig
+      real(kind=dp) :: sig
 
       rechtsaf_active = .false.
 

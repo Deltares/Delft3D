@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,52 +30,60 @@
 !
 !
 
- subroutine copynetnodestosam(jarnod)
+module m_copynetnodestosam
 
-    use m_samples
-    use m_netw
-    use m_missing
-    use m_polygon, only: NPL, xpl, ypl, zpl
-    use geometry_module, only: dbpinpol
+   implicit none
 
-    implicit none
-    integer :: in, k, n, jarnod
-    real :: r
+contains
 
-    in = -1
-    k = ns
+   subroutine copynetnodestosam(jarnod)
 
-    KC = 0
-    do n = 1, numk
-       if (jarnod == 1) then
-          r = rnod(n)
-       else
-          r = zk(n)
-       end if
+      use m_samples, only: ns, xs, ys, zs, increasesam
+      use m_netw, only: kc, numk, rnod, xk, yk, zk
+      use m_missing, only: dmiss, jins
+      use m_polygon, only: NPL, xpl, ypl, zpl
+      use geometry_module, only: dbpinpol
 
-       if (r /= dmiss) then
-          call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-          if (IN == 1) then
-             KC(N) = 1
-             K = K + 1
-          end if
-       end if
-    end do
+      integer :: in, k, n, jarnod
+      real :: r
 
-    call INCREASESAM(k)
+      in = -1
+      k = ns
 
-    K = NS
-    do n = 1, numk
-       if (KC(N) == 1) then
-          k = k + 1
-          xs(k) = xk(n); ys(k) = yk(n)
-          if (jarnod == 1) then
-             zs(k) = rnod(n)
-          else
-             zs(k) = zk(n)
-          end if
-       end if
-    end do
-    ns = k
+      KC = 0
+      do n = 1, numk
+         if (jarnod == 1) then
+            r = rnod(n)
+         else
+            r = zk(n)
+         end if
 
- end subroutine copynetnodestosam
+         if (r /= dmiss) then
+            call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+            if (IN == 1) then
+               KC(N) = 1
+               K = K + 1
+            end if
+         end if
+      end do
+
+      call INCREASESAM(k)
+
+      K = NS
+      do n = 1, numk
+         if (KC(N) == 1) then
+            k = k + 1
+            xs(k) = xk(n)
+            ys(k) = yk(n)
+            if (jarnod == 1) then
+               zs(k) = rnod(n)
+            else
+               zs(k) = zk(n)
+            end if
+         end if
+      end do
+      ns = k
+
+   end subroutine copynetnodestosam
+
+end module m_copynetnodestosam

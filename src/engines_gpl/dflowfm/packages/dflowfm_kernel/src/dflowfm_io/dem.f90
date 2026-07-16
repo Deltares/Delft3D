@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,6 +38,7 @@
 !!
 !! Validated for projected coordinates without rotation.
 module dem
+   use precision, only: dp
    implicit none
 
    private
@@ -50,21 +51,21 @@ module dem
       integer :: elevationPattern !< 1 = regular, 2 = future use
       integer :: groundSystem !< 0 = geographic, 1 = UTM, 2 = state plane
       integer :: groundZone !< UTM zone or stat plane code
-      double precision :: projectParams(15) !< parameters for various projections
+      real(kind=dp) :: projectParams(15) !< parameters for various projections
       integer :: planeUnitOfMeasure !< 0 = radians, 1 = ft, 2 = m, 3 = arcsec
       integer :: elevUnitOfMeasure !< 1 = feet, 2 = meters
       integer :: polygonSizes !< sides of DEM polygon
-      double precision :: groundCoords(2, 4) !< coords of all 4 corners, SW first
-      double precision :: elevBounds(2) !< min/max elevations for the DEM
-      double precision :: localRotation !< counterclockwise angle in radians
+      real(kind=dp) :: groundCoords(2, 4) !< coords of all 4 corners, SW first
+      real(kind=dp) :: elevBounds(2) !< min/max elevations for the DEM
+      real(kind=dp) :: localRotation !< counterclockwise angle in radians
       integer :: accuracyCode !< 0 = unknown, 1 = info in record C
-      double precision :: spatialResolution(3) !< normally 30,30,1 for 7.5-min DEMs
+      real(kind=dp) :: spatialResolution(3) !< normally 30,30,1 for 7.5-min DEMs
       integer :: profileDimension(2) !< rows and columns of DEM profiles
 
       ! The next fields are computed from the previous values
 
-      double precision :: eastMost, westMost !< furthest east/west easting value
-      double precision :: southMost, northMost !< furthest north/south northing value
+      real(kind=dp) :: eastMost, westMost !< furthest east/west easting value
+      real(kind=dp) :: southMost, northMost !< furthest north/south northing value
       integer :: eastMostSample !< furthest east sample point
       integer :: westMostSample !< furthest west sample point
       integer :: southMostSample !< furthest south sample point
@@ -99,10 +100,13 @@ contains
 !! \param yarr 2D array with raster y coordinates for all elevation samples.
 !! \param  arr 2D array with raster elevation data (in dem_info\%elevUnitOfMeasure units).
    subroutine read_dem_file(filename, dem_info, xarr, yarr, arr)
-      use unstruc_messages
+      use precision, only: dp
+      use messagehandling, only: msgbuf, msg_flush
+      use m_filez, only: message
+
       character(len=*), intent(in) :: filename
       type(DEMInfo), intent(inout) :: dem_info
-      double precision, allocatable, intent(out) :: xarr(:, :), yarr(:, :)
+      real(kind=dp), allocatable, intent(out) :: xarr(:, :), yarr(:, :)
       integer, allocatable, intent(out) :: arr(:, :)
 !
 ! Local variables
@@ -124,7 +128,9 @@ contains
          return
       end if
 
-      if (allocated(arr)) deallocate (arr, xarr, yarr)
+      if (allocated(arr)) then
+         deallocate (arr, xarr, yarr)
+      end if
       allocate (arr(dem_info%rows, dem_info%cols), &
                 xarr(dem_info%rows, dem_info%cols), &
                 yarr(dem_info%rows, dem_info%cols))
@@ -145,8 +151,9 @@ contains
 !! \param xarr 2D array for raster x coordinates for all elevation samples (including missing).
 !! \param yarr 2D array for raster y coordinates for all elevation samples (including missing).
    subroutine get_dem_grid(dem_info, xarr, yarr)
+      use precision, only: dp
       type(DEMInfo), intent(in) :: dem_info
-      double precision, intent(out) :: xarr(:, :), yarr(:, :)
+      real(kind=dp), intent(out) :: xarr(:, :), yarr(:, :)
 !
 ! Local variables
 !
@@ -169,6 +176,8 @@ contains
 !! \param fp Opened DEM file pointer, pointing to beginning (start of A-type record).
 !! \param dem_info struct in which the DEM meta-info will be stored.
    subroutine read_dem_header(fp, dem_info)
+      use m_filez, only: message
+
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
 !
@@ -293,8 +302,9 @@ contains
 !! \param dem_info DEMInfo as produced by read_dem_header.
 !! \param arr(:,:) 2D array to store elevation raster data in.
    subroutine read_dem_data(fp, dem_info, arr)
-      use unstruc_messages
-      use m_readyy
+      use precision, only: dp
+      use messagehandling, only: msgbuf, msg_flush
+      use m_readyy, only: readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
       integer, intent(out) :: arr(:, :)
@@ -306,7 +316,7 @@ contains
       integer :: firstRow, lastRow
       integer :: yspacing
       integer :: profileID(2), profileSize(2)
-      double precision :: planCoords(2), localElevation, elevExtremea(2)
+      real(kind=dp) :: planCoords(2), localElevation, elevExtremea(2)
       character(len=7) :: fmt
 !
 !! executable statements -------------------------------------------------------
@@ -316,7 +326,7 @@ contains
 
       ! sample the DEM values into our regular grid
 
-      call READYY('Reading DEM data', 0d0)
+      call READYY('Reading DEM data', 0.0_dp)
       do c = 1, dem_info%cols
 
          ! Read the Logical Record Type B at the start of the column
@@ -343,7 +353,7 @@ contains
          write (msgbuf, '(a,i6,a,i6,a)') 'Reading column ', profileID(2), ' (', profileSize(1), ' rows)...'
          call msg_flush()
          if (mod(c, 20) == 0) then
-            call READYY(' ', min(1d0, dble(c) / dem_info%cols))
+            call READYY(' ', min(1.0_dp, real(c, kind=dp) / dem_info%cols))
          end if
 
          ! read in all the data for this column
@@ -361,7 +371,7 @@ contains
             read (fp, '(I6)', advance='no') tempInt
 
             ! Handle Z-Resolution
-            if (tempInt /= 0 .and. dem_info%spatialResolution(3) /= 1d0) then
+            if (tempInt /= 0 .and. dem_info%spatialResolution(3) /= 1.0_dp) then
                tempInt = int(tempInt * dem_info%spatialResolution(3))
                !status( "zRez %f before = %d after = %d", dem_info->spatialResolution(2), t, tempInt)
             end if
@@ -410,7 +420,7 @@ contains
 
       end do ! c=1,dem_info%cols
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
    end subroutine read_dem_data
 !

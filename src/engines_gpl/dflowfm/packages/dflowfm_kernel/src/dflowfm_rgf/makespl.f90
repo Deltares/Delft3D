@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,18 +48,18 @@ module m_makespl
    implicit none
 contains
    subroutine MAKESPL(T, X, Y, imax, N, NT, MNFAC, XH, YH, KMAX, TT, H)
-      use m_gridsettings
-      use m_makes
-      use m_makessq
-      use m_getxy
+      use precision, only: dp
+      use m_makes, only: makes
+      use m_makessq, only: makessq
+      use m_getxy, only: getxy
 
       integer :: imax, n, nt, kmax, mnfac
-      double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), &
-         S2(IMAX), SSQ(IMAX), XH(IMAX), YH(IMAX), &
-         A(IMAX), SL(IMAX), SR(IMAX)
-      double precision, intent(in) :: H !< for curvature adapted meshing
+      real(kind=dp) :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), &
+                       S2(IMAX), SSQ(IMAX), XH(IMAX), YH(IMAX), &
+                       A(IMAX), SL(IMAX), SR(IMAX)
+      real(kind=dp), intent(in) :: H !< for curvature adapted meshing
 
-      double precision, dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
+      real(kind=dp), dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
 
       integer :: L, k1, k2, jadip, k
 !     Maak interpolatie

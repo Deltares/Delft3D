@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,32 @@
 !
 
 !>  determine optimum nmk in fliplinks, depending on link L
-integer function nmk_opt(k)
-   use m_netw
+module m_nmk_opt
 
    implicit none
 
-   integer, intent(in) :: k !< node number
+   private
+
+   public :: nmk_opt
+
+contains
+
+   integer function nmk_opt(k)
+      use m_netw
+
+      integer, intent(in) :: k !< node number
 
 !  default value
-   nmk_opt = 6
+      nmk_opt = 6
 
-   if (nb(k) == 2) nmk_opt = 4
-   if (nb(k) == 3) nmk_opt = 3
+      if (nb(k) == 2) then
+         nmk_opt = 4
+      end if
+      if (nb(k) == 3) then
+         nmk_opt = 3
+      end if
 
-   return
-end function nmk_opt
+      return
+   end function nmk_opt
+
+end module m_nmk_opt

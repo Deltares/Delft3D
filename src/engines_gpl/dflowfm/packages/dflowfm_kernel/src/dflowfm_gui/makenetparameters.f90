@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,12 +30,23 @@
 !
 !
 
+module m_makenetparameters
+
+   implicit none
+
+contains
+
    subroutine MAKENETPARAMETERS()
-      use M_MAKENET
-      use unstruc_display
+      use m_makenet, only: ntyp, nrx, nry, angle, size, thick, x0, y0, z0, dx0, dy0, hsize, dxdouble, radius
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
+      use unstruc_display_data, only: npos
       use dflowfm_version_module, only: company, product_name
-      use m_helpnow
-      implicit none
+
       integer :: i
       integer :: ifexit
       integer :: ifinit
@@ -56,24 +67,38 @@
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 
       NLEVEL = 4
-      OPTION(1) = 'MAZE TYPE: SQUARE, WIEBER, HEX, TRI  ( )'; IT(1 * 2) = 2
-      OPTION(2) = 'NR OF MAZES X                        ( )'; IT(2 * 2) = 2
-      OPTION(3) = 'NR OF MAZES Y                        ( )'; IT(3 * 2) = 2
-      OPTION(4) = 'MAZE ANGLE     1-90                (deg)'; IT(4 * 2) = 6
-      OPTION(5) = 'MAZE SIZE                            (m)'; IT(5 * 2) = 6
-      OPTION(6) = 'LINE THICKNESS                      (mm)'; IT(6 * 2) = 6
-      OPTION(7) = 'ORIGIN X                             (m)'; IT(7 * 2) = 6
-      OPTION(8) = 'ORIGIN Y                             (m)'; IT(8 * 2) = 6
-      OPTION(9) = 'ORIGIN Z                             (m)'; IT(9 * 2) = 6
-      OPTION(10) = 'DX (FOR TYPE 0 ONLY)                 (m)'; IT(10 * 2) = 6
-      OPTION(11) = 'DY (FOR TYPE 0 ONLY)                 (m)'; IT(11 * 2) = 6
-      OPTION(12) = '                                        '; IT(12 * 2) = 1001
-      OPTION(13) = 'MAZE SIZE HORIZONTAL PART HEXAGON   (cm)'; IT(13 * 2) = 6
-      OPTION(14) = 'Hanging nodes when dx <              (m)'; IT(14 * 2) = 6
-      OPTION(15) = 'Radius                               (m)'; IT(15 * 2) = 6
+      OPTION(1) = 'MAZE TYPE: SQUARE, WIEBER, HEX, TRI  ( )'
+      IT(1 * 2) = 2
+      OPTION(2) = 'NR OF MAZES X                        ( )'
+      IT(2 * 2) = 2
+      OPTION(3) = 'NR OF MAZES Y                        ( )'
+      IT(3 * 2) = 2
+      OPTION(4) = 'MAZE ANGLE     1-90                (deg)'
+      IT(4 * 2) = 6
+      OPTION(5) = 'MAZE SIZE                            (m)'
+      IT(5 * 2) = 6
+      OPTION(6) = 'LINE THICKNESS                      (mm)'
+      IT(6 * 2) = 6
+      OPTION(7) = 'ORIGIN X                             (m)'
+      IT(7 * 2) = 6
+      OPTION(8) = 'ORIGIN Y                             (m)'
+      IT(8 * 2) = 6
+      OPTION(9) = 'ORIGIN Z                             (m)'
+      IT(9 * 2) = 6
+      OPTION(10) = 'DX (FOR TYPE 0 ONLY)                 (m)'
+      IT(10 * 2) = 6
+      OPTION(11) = 'DY (FOR TYPE 0 ONLY)                 (m)'
+      IT(11 * 2) = 6
+      OPTION(12) = '                                        '
+      IT(12 * 2) = 1001
+      OPTION(13) = 'MAZE SIZE HORIZONTAL PART HEXAGON   (cm)'
+      IT(13 * 2) = 6
+      OPTION(14) = 'Hanging nodes when dx <              (m)'
+      IT(14 * 2) = 6
+      OPTION(15) = 'Radius                               (m)'
+      IT(15 * 2) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -114,10 +139,14 @@
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 100
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 100
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 
@@ -242,3 +271,5 @@
       goto 30
 
    end subroutine MAKENETPARAMETERS
+
+end module m_makenetparameters

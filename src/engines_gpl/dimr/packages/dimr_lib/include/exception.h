@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,29 +33,25 @@
 //  20 jan 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
-
-struct Exception 
+struct Exception
 {
-   enum ErrorCode
-   {
-      ERR_UNKNOWN                = -1,     // unknown error
-      ERR_OS                     = -2,     // operating system error (e.g. failure in changing the directory)
-      ERR_METHOD_NOT_IMPLEMENTED = -3,     // method is not implemented in the library
-      ERR_INVALID_INPUT          = -4,     // user input is not valid (e.g. in the configuration file)
-      ERR_MPI                    = -5,     // an error when calling MPI library functions is raised
-      ERR_XML_PARSING            = -6,     // and error in parsing the xml configuration file (in xmltree.cpp)
-      ERR_PTHREADS               = -7      // an error using phtreads (in log.cpp)
-   };
+    enum ErrorCode
+    {
+        ERR_UNKNOWN = -1,                // unknown error
+        ERR_OS = -2,                     // operating system error (e.g. failure in changing the directory)
+        ERR_METHOD_NOT_IMPLEMENTED = -3, // method is not implemented in the library
+        ERR_INVALID_INPUT = -4,          // user input is not valid (e.g. in the configuration file)
+        ERR_MPI = -5,                    // an error when calling MPI library functions is raised
+        ERR_XML_PARSING = -6,            // and error in parsing the xml configuration file (in xmltree.cpp)
+        ERR_PTHREADS = -7                // an error using phtreads (in log.cpp)
+    };
 
-   Exception(bool fatal, ErrorCode errorCode, const char *  format, ...);
+    Exception(ErrorCode errorCode, const char* format, ...);
 
-   ~Exception(void);
+    ~Exception();
 
-   bool        fatal;
-   char *      message;
-   ErrorCode   errorCode;
+    char* message;
+    ErrorCode errorCode;
 };
-

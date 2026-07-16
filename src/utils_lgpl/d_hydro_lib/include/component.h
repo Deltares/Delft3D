@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: component.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/component.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/component.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Abstract Component
 //  DEFINITIONS
@@ -34,61 +36,31 @@
 //  23 jan 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
+class Component
+{
+public:
+    Component(DeltaresHydro* DH);
 
-class Component {
-    public:
-        Component (
-            DeltaresHydro * DH
-            );
+    virtual ~Component(void);
 
-        virtual ~Component (
-            void
-            );
+    virtual void Run(void);
 
-        virtual void
-        Run (
-            void
-            );
+    virtual void Init(void);
 
-        virtual void
-        Init (
-            void
-            );
+    virtual void Step(double stepSize);
 
-        virtual void
-        Step (
-            double stepSize
-            );
+    virtual void Finish(void);
 
-        virtual void
-        Finish (
-            void
-            );
+    virtual double GetStartTime(void);
 
-        virtual double
-        GetStartTime (
-            void
-            );
+    virtual double GetEndTime(void);
 
-        virtual double
-        GetEndTime (
-            void
-            );
+    virtual double GetCurrentTime(void);
 
-        virtual double
-        GetCurrentTime (
-            void
-            );
+    virtual double GetTimeStep(void);
 
-        virtual double
-        GetTimeStep (
-            void
-            );
-
-    public:
-        DeltaresHydro * DH;        // DeltaresHydro instance
-
-    };
+public:
+    DeltaresHydro* DH; // DeltaresHydro instance
+};

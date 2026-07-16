@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,26 +30,40 @@
 !
 !
 
-      subroutine insertsamples(L1, L2)
-         use m_samples
-         use m_gridsettings, only: mfac
-         implicit none
-         integer :: L1, L2
-         integer :: k
-         double precision :: aa, bb
+module m_insertsamples
 
-         do k = 1, mfac
-            ns = ns + 1
-            call increasesam(ns)
-            aa = dble(k) / dble(mfac + 1); bb = 1d0 - aa
-            xs(ns) = bb * xs(L1) + aa * xs(L2)
-            ys(ns) = bb * ys(L1) + aa * ys(L2)
-            zs(ns) = bb * zs(L1) + aa * zs(L2)
-         end do
+   implicit none
+
+   private
+
+   public :: insertsamples
+
+contains
+
+   subroutine insertsamples(L1, L2)
+      use precision, only: dp
+      use m_samples, only: ns, increasesam, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok
+      use m_gridsettings, only: mfac
+
+      integer :: L1, L2
+      integer :: k
+      real(kind=dp) :: aa, bb
+
+      do k = 1, mfac
+         ns = ns + 1
+         call increasesam(ns)
+         aa = real(k, kind=dp) / real(mfac + 1, kind=dp)
+         bb = 1.0_dp - aa
+         xs(ns) = bb * xs(L1) + aa * xs(L2)
+         ys(ns) = bb * ys(L1) + aa * ys(L2)
+         zs(ns) = bb * zs(L1) + aa * zs(L2)
+      end do
 
 !     user is editing samples: mark samples as unstructured
-         MXSAM = 0
-         MYSAM = 0
-         IPSTAT = IPSTAT_NOTOK
+      MXSAM = 0
+      MYSAM = 0
+      IPSTAT = IPSTAT_NOTOK
 
-      end subroutine insertsamples
+   end subroutine insertsamples
+
+end module m_insertsamples

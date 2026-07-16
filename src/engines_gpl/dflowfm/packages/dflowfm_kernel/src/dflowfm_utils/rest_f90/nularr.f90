@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,18 +30,31 @@
 !
 !
 
-      subroutine NULARR(X, MMAX, NMAX)
-         implicit none
-         integer :: i
-         integer :: j
-         integer :: mmax
-         integer :: nmax
-         double precision :: x
-         dimension X(MMAX, NMAX)
+module m_nularr
+
+   implicit none
+
+   private
+
+   public :: nularr
+
+contains
+
+   subroutine NULARR(X, MMAX, NMAX)
+      use precision, only: dp
+
+      integer :: i
+      integer :: j
+      integer, intent(in) :: mmax
+      integer, intent(in) :: nmax
+      real(kind=dp) :: x
+      dimension X(MMAX, NMAX)
+      do J = 1, NMAX
          do I = 1, MMAX
-            do J = 1, NMAX
-               X(I, J) = 0d0
-            end do
+            X(I, J) = 0.0_dp
          end do
-         return
-      end
+      end do
+      return
+   end
+
+end module m_nularr

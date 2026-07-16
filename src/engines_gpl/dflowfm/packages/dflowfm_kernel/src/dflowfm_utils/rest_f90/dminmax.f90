@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,38 +30,43 @@
 !
 !
 module m_dminmax
-    contains
-    
-      subroutine DMINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
-         use m_missing, only: dmiss
-         implicit none
-         integer :: i
-         integer :: maxlan
-         integer :: mxlan
-         double precision :: xmax
-         double precision :: xmin
-         double precision :: xx
+contains
+
+   subroutine DMINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
+      use precision, only: dp
+      use m_missing, only: dmiss
+      implicit none
+      integer :: i
+      integer, intent(in) :: maxlan
+      integer, intent(in) :: mxlan
+      real(kind=dp) :: xmax
+      real(kind=dp) :: xmin
+      real(kind=dp) :: xx
 !     BEPAAL MINIMUM EN MAXIMUM VAN EEN EENDIMENSIONALE ARRAY
-         double precision, intent(inout) :: X(MAXLAN)
+      real(kind=dp), intent(inout) :: X(MAXLAN)
 
-         if (MXLAN == 0) then
-            XMIN = 0
-            XMAX = 0
-            return
-         end if
-
-         XMIN = 10d20
-         XMAX = -10d20
-         do I = 1, MXLAN
-            XX = X(I)
-            if (XX /= dmiss) then
-               XMIN = min(XMIN, XX)
-               XMAX = max(XMAX, XX)
-            end if
-         end do
-         if (XMIN == 10d20) XMIN = 0
-         if (XMAX == -10d20) XMAX = 0
+      if (MXLAN == 0) then
+         XMIN = 0
+         XMAX = 0
          return
-      end
+      end if
+
+      XMIN = 10.0e20_dp
+      XMAX = -10.0e20_dp
+      do I = 1, MXLAN
+         XX = X(I)
+         if (XX /= dmiss) then
+            XMIN = min(XMIN, XX)
+            XMAX = max(XMAX, XX)
+         end if
+      end do
+      if (XMIN == 10.0e20_dp) then
+         XMIN = 0
+      end if
+      if (XMAX == -10.0e20_dp) then
+         XMAX = 0
+      end if
+      return
+   end
 
 end module m_dminmax

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,20 +31,29 @@
 !
 
 !> construct matrix for first-order upwind discretization of advection
+module m_fillsystem_advec
+
+   implicit none
+
+   private
+
+   public :: fillsystem_advec
+
+contains
+
    subroutine fillsystem_advec(ierror)
-      use m_flowgeom
+      use precision, only: dp
+      use m_flowgeom, only: ln, lnx, csu, snu, nd, ndx, ndxi
       use m_flow, only: vol1, Au
-      use m_advec
-      use m_alloc
-      use m_qnerror
+      use m_advec_data, only: dfluxfac, ac, jc, ic, jaoutput
+      use m_qnerror, only: qnerror
+      use m_writematrix, only: writematrix
       implicit none
 
       integer, intent(inout) :: ierror
 
-!      double precision, dimension(:,:), allocatable :: dfluxfac
-
-      double precision :: dfac
-      double precision :: ux, uy
+      real(kind=dp) :: dfac
+      real(kind=dp) :: ux, uy
 
       integer :: i, irow, irowother, idir, ishift
       integer :: ipoint, ipointdiag
@@ -52,22 +61,20 @@
 
       ierror = 1
 
-!      call realloc(dfluxfac, (/ 2, Lnx /), keepExisting=.false., fill=0d0)
-
-      ux = 1d0
-      uy = 0.1d0
+      ux = 1.0_dp
+      uy = 0.1_dp
 
       do LL = 1, Lnx
          k1 = ln(1, LL)
          k2 = ln(2, LL)
 !         dfac = qa(LL)
          dfac = (csu(LL) * ux + snu(LL) * uy) * Au(LL)
-         dfluxfac(1, LL) = max(dfac, 0d0)
-         dfluxfac(2, LL) = min(dfac, 0d0)
+         dfluxfac(1, LL) = max(dfac, 0.0_dp)
+         dfluxfac(2, LL) = min(dfac, 0.0_dp)
       end do
 
 !     initialize matrix entries
-      aC = 0d0
+      aC = 0.0_dp
 
       ipoint = 0
       irow = 0
@@ -161,3 +168,5 @@
 
       return
    end subroutine fillsystem_advec
+
+end module m_fillsystem_advec

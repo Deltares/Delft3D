@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,27 @@
 !
 
 !> compute total grid height for a given grow factor, first grid layer height and number of grid layers
-double precision function comp_h(dgrow, dheight0, nfac)
+module m_comp_h
+
    implicit none
 
-   double precision, intent(in) :: dgrow !< grow factor
-   double precision, intent(in) :: dheight0 !< first grid layer height
-   integer, intent(in) :: nfac !< number of grid layers
+contains
 
-   if (abs(dgrow - 1d0) > 1d-8) then
-      comp_h = (dgrow**nfac - 1d0) / (dgrow - 1d0) * dheight0
-   else
-      comp_h = nfac * dheight0
-   end if
+   real(kind=dp) function comp_h(dgrow, dheight0, nfac)
+      use precision, only: dp
+      implicit none
 
-   return
-end function comp_h
+      real(kind=dp), intent(in) :: dgrow !< grow factor
+      real(kind=dp), intent(in) :: dheight0 !< first grid layer height
+      integer, intent(in) :: nfac !< number of grid layers
+
+      if (abs(dgrow - 1.0_dp) > 1.0e-8_dp) then
+         comp_h = (dgrow**nfac - 1.0_dp) / (dgrow - 1.0_dp) * dheight0
+      else
+         comp_h = nfac * dheight0
+      end if
+
+      return
+   end function comp_h
+
+end module m_comp_h

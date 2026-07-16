@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,12 +35,12 @@ contains
 !> Updates the variables of flow1d implicit solver that
 !change every time step
    subroutine fm1dimp_update_network(iresult)
+      use precision, only: dp
 
       use m_f1dimp, only: f1dimppar, reallocate_fill
       use unstruc_channel_flow, only: network
       use m_CrossSections, only: createTablesForTabulatedProfile
       use m_fm_erosed, only: lnx_mor
-      use m_oned_functions, only: gridpoint2cross
       use m_flow, only: hu
       use m_flowgeom, only: lnx
 !
@@ -48,7 +48,7 @@ contains
 !
 
 !output
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !local
       integer :: kd
@@ -67,9 +67,9 @@ contains
       real, dimension(:, :), pointer :: att
       real, dimension(:, :), pointer :: of
 
-      double precision, dimension(:), pointer :: bedlevel
+      real(kind=dp), dimension(:), pointer :: bedlevel
 
-      double precision, dimension(:, :), pointer :: hlev
+      real(kind=dp), dimension(:, :), pointer :: hlev
 
 !!
 !! POINT

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -23,26 +23,20 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 
-!  
-!  
 
-!> This module contains the messaging system.
-!! @author arjen.markus@deltares.nl
-!! @author adri.mourits@deltares.nl
-!! @author stef.hummel@deltares.nl
-!! @author edwin.spee@deltares.nl
+!> This module contains the messaging system for the EC-module.
 module m_ec_message
    use precision
 
-   implicit none
+   implicit none(type, external)
 
    private
 
-   public :: clearECMessage
-   public :: setECMessage
-   public :: dumpECMessageStack
+   public :: clear_ec_message
+   public :: set_ec_message
+   public :: dump_ec_message_stack
 
-   integer, parameter, public :: maxMessageLen = 1000
+   integer, parameter, public :: MAXIMUM_EC_MESSAGE_LENGTH = 1000
 
    integer, parameter, public :: MSG_TYPE_ALL   = 0
    integer, parameter, public :: MSG_TYPE_DEBUG = 1
@@ -53,110 +47,113 @@ module m_ec_message
    integer, parameter, public :: MSG_TYPE_NONE  = 6
 
    !> type holding one message
-   type TEcMessage
+   type t_EcMessage
       character(len=:), allocatable :: message                !< The actual message
       integer                       :: message_type           !< one of MSG_TYPE_ALL ... MSG_TYPE_NONE; but not yet used
-      type (TEcMessage), pointer    :: next_message => null() !< pointer to next message in the list of messages
-   end type TEcMessage
+      type (t_EcMessage), pointer   :: next_message => null() !< pointer to next message in the list of messages
+   end type t_EcMessage
 
-   !> list of messages
-   type(TEcMessage), pointer :: EcMessages => null()
+   type(t_EcMessage), pointer :: ec_message_list => null() !< list of messages
 
-   interface setECMessage
-      module procedure setECMessage_char
-      module procedure setECMessage_int
+   interface set_ec_message
+      module procedure set_ec_message_char
+      module procedure set_ec_message_int
    end interface
 
    contains
 
-      ! =======================================================================
-
       !> clear the message stack
-      subroutine clearECMessage()
-         type (TEcMessage), pointer :: cur_msg  !< local pointer to a message on the message stack
-         type (TEcMessage), pointer :: next_msg !< idem
+      subroutine clear_ec_message()
+         ! Local variables
+         type (t_EcMessage), pointer :: current_message  !< local pointer to a message on the message stack
+         type (t_EcMessage), pointer :: next_message !< idem
 
-         cur_msg => EcMessages
-         do while (associated(cur_msg))
-            next_msg => cur_msg%next_message
-            deallocate(cur_msg)
-            cur_msg => next_msg
-         enddo
-         EcMessages => null()
-      end subroutine clearECMessage
+         current_message => ec_message_list
+         do while (associated(current_message))
+            next_message => current_message%next_message
+            deallocate(current_message)
+            current_message => next_message
+         end do
+
+         ec_message_list => null()
+
+      end subroutine clear_ec_message
 
       !> add message to message stack
-      subroutine setECMessage_char(string, suffix)
+      subroutine set_ec_message_char(string, suffix)
+         ! Parameters
          character(len=*), intent(in)           :: string  !< message to be added to message stack
          character(len=*), intent(in), optional :: suffix  !< suffix of message
-         !
-         type (TEcMessage), pointer :: NewMessage
-         integer                    :: ierr
+         
+         ! Local variables
+         integer :: ierr
+         type (t_EcMessage), pointer :: new_message
 
-         allocate (NewMessage, stat=ierr)
+         allocate (new_message, stat=ierr)
+
          if (ierr /= 0) then
             write(*,*) 'Internal error in message stack.'
             write(*,*) 'message: ', string
          else
-            NewMessage%next_message => EcMessages
-            EcMessages => NewMessage
+            new_message%next_message => ec_message_list
+            ec_message_list => new_message
 
             if (present(suffix)) then
-               NewMessage%message = trim(string)  // " " // suffix
+               new_message%message = trim(string)  // " " // suffix
             else
-               NewMessage%message = trim(string)
-            endif
-            NewMessage%message_type = -1
-         endif
-      end subroutine setECMessage_char
+               new_message%message = trim(string)
+            end if
+            new_message%message_type = -1
+         end if
 
-      ! =======================================================================
+      end subroutine set_ec_message_char
 
       !> add message to message stack
-      subroutine setECMessage_int(string, val)
+      subroutine set_ec_message_int(string, value)
+         ! Parameters
          character(len=*), intent(in) :: string !< message to be added to message stack
-         integer,          intent(in) :: val    !< number to be added to message
-         !
-         character(len=8) :: cvalue
+         integer,          intent(in) :: value  !< number to be added to message
 
-         write(cvalue, '(i8)') val
+         ! Local variables
+         character(len=8) :: value_string
 
-         call setEcMessage(trim(adjustl(string)) // ' ' // trim(cvalue))
+         write(value_string, '(i8)') value
 
-      end subroutine setECMessage_int
+         call set_ec_message(trim(adjustl(string)) // ' ' // trim(value_string))
 
-      ! =======================================================================
+      end subroutine set_ec_message_int
 
       !> dump all messages of the stack using a user supplied messenger function
-      function dumpECMessageStack(msglevel, messenger) result(retval)
-      implicit none
-      integer, intent(in)                 :: msglevel  !< message level; not used yet
-      interface
-         subroutine messenger(lvl, msg)
-         integer, intent(in)              :: lvl
-         character(len=*), intent(in)     :: msg
-         end subroutine
-      end interface
-      character(len=32)                   :: retval    !< function result
+      function dump_ec_message_stack(message_level, messenger) result(return_value)
+         ! Parameters
+         integer, intent(in)                 :: message_level  !< message level; not used yet
+         interface
+            subroutine messenger(level, message)
+            integer, intent(in)              :: level
+            character(len=*), intent(in)     :: message
+            end subroutine
+         end interface
 
-      type (TEcMessage), pointer    :: my_msg !< local pointer to one of the messages in the stack
+         ! Local variables
+         character(len=32)          :: return_value !< function result
+         type(t_EcMessage), pointer :: my_message !< local pointer to one of the messages in the stack
 
-      !> loop over all messages in the stack
-      my_msg => EcMessages
+         my_message => ec_message_list
 
-      if ( associated(my_msg) ) then
-         call messenger (msglevel, "...")! separator
-      end if
-      
-      do while (associated(my_msg))
-         call messenger (msglevel, my_msg%message)
-         my_msg => my_msg%next_message
-      enddo
+         if ( associated(my_message) ) then
+            call messenger(message_level, "...")! separator
+         end if
+         
+         ! loop over all messages in the stack
+         do while (associated(my_message))
+            call messenger(message_level, my_message%message)
+            my_message => my_message%next_message
+         end do
 
-      call clearECMessage()
+         call clear_ec_message()
 
-      retval = 'Fatal EC-error !!'           ! TODO: make this a meaningful return string
+         return_value = 'Fatal EC-error !!' ! TODO: make this a meaningful return string
 
-      end function dumpECMessageStack
+      end function dump_ec_message_stack
 
 end module m_ec_message

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,15 +35,16 @@ contains
    !> Find a point on a polyline at a certain distance from the start.
       !! The distance is measured along the consecutive polyline segments.
    subroutine interpolateOnPolyline(X, Y, Z, T, MMAX, XP, YP, ZP, TP, JA)
+      use precision, only: dp
       integer, intent(in) :: mmax !< Nr. of polyline points.
-      double precision, intent(in) :: X(MMAX), Y(MMAX), Z(mmax) !< The polyline coordinates.
-      double precision, intent(in) :: T(MMAX) !< Accumulated segment lengths at all points.
-      double precision, intent(out) :: XP, YP, ZP !< interpolated point coordinates at distance TP.
-      double precision, intent(in) :: TP !< Distance from polyline start at which to place point XP,YP.
+      real(kind=dp), intent(in) :: X(MMAX), Y(MMAX), Z(mmax) !< The polyline coordinates.
+      real(kind=dp), intent(in) :: T(MMAX) !< Accumulated segment lengths at all points.
+      real(kind=dp), intent(out) :: XP, YP, ZP !< interpolated point coordinates at distance TP.
+      real(kind=dp), intent(in) :: TP !< Distance from polyline start at which to place point XP,YP.
       integer, intent(out) :: ja !< Whether distance is within polyline length (1) or not (0).
 
       integer :: i
-      double precision :: DT, TI
+      real(kind=dp) :: DT, TI
       I = 0
 10    continue
       I = I + 1
@@ -55,11 +56,13 @@ contains
       end if
       JA = 1
       DT = T(I) - T(I - 1)
-      TI = 0d0
-      if (DT /= 0d0) TI = (TP - T(I - 1)) / DT
-      XP = (1d0 - TI) * X(I - 1) + TI * X(I)
-      YP = (1d0 - TI) * Y(I - 1) + TI * Y(I)
-      ZP = (1d0 - TI) * Z(I - 1) + TI * Z(I)
+      TI = 0.0_dp
+      if (DT /= 0.0_dp) then
+         TI = (TP - T(I - 1)) / DT
+      end if
+      XP = (1.0_dp - TI) * X(I - 1) + TI * X(I)
+      YP = (1.0_dp - TI) * Y(I - 1) + TI * Y(I)
+      ZP = (1.0_dp - TI) * Z(I - 1) + TI * Z(I)
       return
    end subroutine interpolateOnPolyline
 end module m_interpolateOnPolyline

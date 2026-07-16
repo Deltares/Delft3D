@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,15 +35,16 @@
 !!
 !! Note: x/y or lat/lon pairs may be set to dmiss if they are not applicable.
 module m_modelbounds
-   double precision :: mb_xmin !< Smallest x-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_xmax !< Largest  x-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_ymin !< Smallest y-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_ymax !< Largest  y-value (of 2D cell vertices/1D nodes).
+   use precision, only: dp
+   real(kind=dp) :: mb_xmin !< Smallest x-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_xmax !< Largest  x-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_ymin !< Smallest y-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_ymax !< Largest  y-value (of 2D cell vertices/1D nodes).
 
-   double precision :: mb_lonmin !< Smallest longitude-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_lonmax !< Largest  longitude-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_latmin !< Smallest latitude-value (of 2D cell vertices/1D nodes).
-   double precision :: mb_latmax !< Largest  latitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_lonmin !< Smallest longitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_lonmax !< Largest  longitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_latmin !< Smallest latitude-value (of 2D cell vertices/1D nodes).
+   real(kind=dp) :: mb_latmax !< Largest  latitude-value (of 2D cell vertices/1D nodes).
 
 contains
 
@@ -57,15 +58,15 @@ contains
    !> Resets only modelbounds variables intended for a restart of flow simulation.
    !! Upon loading of new model/MDU, use default_modelbounds() instead.
    subroutine reset_modelbounds()
-      mb_xmin = huge(1d0) !< Smallest x-value (of 2D cell vertices/1D nodes).
-      mb_xmax = -huge(1d0) !< Largest  x-value (of 2D cell vertices/1D nodes).
-      mb_ymin = huge(1d0) !< Smallest y-value (of 2D cell vertices/1D nodes).
-      mb_ymax = -huge(1d0) !< Largest  y-value (of 2D cell vertices/1D nodes).
+      mb_xmin = huge(1.0_dp) !< Smallest x-value (of 2D cell vertices/1D nodes).
+      mb_xmax = -huge(1.0_dp) !< Largest  x-value (of 2D cell vertices/1D nodes).
+      mb_ymin = huge(1.0_dp) !< Smallest y-value (of 2D cell vertices/1D nodes).
+      mb_ymax = -huge(1.0_dp) !< Largest  y-value (of 2D cell vertices/1D nodes).
 
-      mb_lonmin = huge(1d0) !< Smallest longitude-value (of 2D cell vertices/1D nodes).
-      mb_lonmax = -huge(1d0) !< Largest  longitude-value (of 2D cell vertices/1D nodes).
-      mb_latmin = huge(1d0) !< Smallest latitude-value (of 2D cell vertices/1D nodes).
-      mb_latmax = -huge(1d0) !< Largest  latitude-value (of 2D cell vertices/1D nodes).
+      mb_lonmin = huge(1.0_dp) !< Smallest longitude-value (of 2D cell vertices/1D nodes).
+      mb_lonmax = -huge(1.0_dp) !< Largest  longitude-value (of 2D cell vertices/1D nodes).
+      mb_latmin = huge(1.0_dp) !< Smallest latitude-value (of 2D cell vertices/1D nodes).
+      mb_latmax = -huge(1.0_dp) !< Largest  latitude-value (of 2D cell vertices/1D nodes).
    end subroutine reset_modelbounds
 
 end module m_modelbounds

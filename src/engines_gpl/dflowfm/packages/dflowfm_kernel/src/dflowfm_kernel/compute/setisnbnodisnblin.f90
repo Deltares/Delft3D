@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,15 +26,29 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+module m_setisnbnodisnblin
+
+   implicit none
+
+   private
+
+   public :: setisnbnodisnblin
+
+contains
+
    subroutine setisnbnodisnblin()
       use m_flow
       use m_flowgeom
-      use m_netw
-      implicit none
+      use m_netw, only: kc
+
       integer :: L, LL, LLL, LLLa, L1, L2, L1a, L2a, n, nx, ja1D
 
-      if (allocated(isnbnod)) deallocate (isnbnod)
-      if (allocated(isnblin)) deallocate (isnblin)
+      if (allocated(isnbnod)) then
+         deallocate (isnbnod)
+      end if
+      if (allocated(isnblin)) then
+         deallocate (isnblin)
+      end if
       allocate (isnbnod(2, lnx), isnblin(2, lnx))
 
       if (kmx == 0 .and. lnx1D > 0) then ! setuc
@@ -105,3 +119,5 @@
       deallocate (isnbnod) ! no time now to make efficient version
 
    end subroutine setisnbnodisnblin
+
+end module m_setisnbnodisnblin

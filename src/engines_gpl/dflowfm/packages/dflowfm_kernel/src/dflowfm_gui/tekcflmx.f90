@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,25 @@
 !
 !
 
- subroutine tekcflmx()
-    use m_flowgeom
-    use m_flow
-    use m_flowtimes
-    use m_htext
-    implicit none
-    if (kkcflmx /= 0) then
-       call setcol(31)
-       call rcirc(xz(kkcflmx), yz(kkcflmx))
-       call HTEXT(dtsc, xz(kkcflmx), yz(kkcflmx))
-    end if
- end subroutine tekcflmx
+module m_tekcflmx
+
+   implicit none
+
+contains
+
+   subroutine tekcflmx()
+      use m_rcirc, only: rcirc
+      use m_flowgeom, only: xz, yz
+      use m_flow, only: kkcflmx
+      use m_flowtimes, only: dtsc
+      use m_htext, only: htext
+      use m_set_col, only: setcol
+      implicit none
+      if (kkcflmx /= 0) then
+         call setcol(31)
+         call rcirc(xz(kkcflmx), yz(kkcflmx))
+         call HTEXT(dtsc, xz(kkcflmx), yz(kkcflmx))
+      end if
+   end subroutine tekcflmx
+
+end module m_tekcflmx

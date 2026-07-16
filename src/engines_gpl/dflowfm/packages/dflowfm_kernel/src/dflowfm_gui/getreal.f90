@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,55 +30,65 @@
 !
 !
 
-      ! Now a double precision (double precision ::)
-      subroutine GETREAL(TEXT, value)
-         use m_devices
-         use M_MISSING
-         use m_helpnow
-         use m_timlin
-         use m_fkeys
-         implicit none
-         integer :: infoattribute
-         integer :: infoinput
-         integer :: ixp
-         integer :: iyp
-         integer :: key
-         integer :: nbckgr
-         integer :: nforgr
-         double precision :: val
-         double precision :: value
-         character TEXT * (*)
+module m_getreal
+   use precision, only: dp
 
-         VAL = value
-         IXP = IWS / 2
-         IYP = IHS / 2
-         NFORGR = InfoAttribute(13)
-         NBCKGR = InfoAttribute(14)
-         call INPOPUP('ON')
-20       continue
-         call ITEXTCOLOUR('BWHITE', 'RED')
-         call INHIGHLIGHT('BLUE', 'BWHITE')
-         call TIMLIN()
+   implicit none
+
+contains
+
+   ! Now a real(kind=dp) (real(kind=dp) ::)
+   subroutine GETREAL(TEXT, value)
+      use precision, only: dp
+      use m_devices, only: iws, ihs
+      use M_MISSING, only: dmiss
+      use m_helpnow, only: nlevel, wrdkey
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
+      implicit none
+      integer :: infoattribute
+      integer :: infoinput
+      integer :: ixp
+      integer :: iyp
+      integer :: key
+      integer :: nbckgr
+      integer :: nforgr
+      real(kind=dp) :: val
+      real(kind=dp) :: value
+      character TEXT * (*)
+
+      VAL = value
+      IXP = IWS / 2
+      IYP = IHS / 2
+      NFORGR = InfoAttribute(13)
+      NBCKGR = InfoAttribute(14)
+      call INPOPUP('ON')
+20    continue
+      call ITEXTCOLOUR('BWHITE', 'RED')
+      call INHIGHLIGHT('BLUE', 'BWHITE')
+      call TIMLIN()
 !      CALL INDOUBLEXYDEF(IXP,IYP,TEXT,1,VAL,6,'(F6.1)')
-         call INDOUBLEXYDEF(IXP, IYP, TEXT, 1, VAL, 12, '(F12.1)')
-         call TIMLIN()
-         KEY = InfoInput(55)
-         if (KEY >= 24 .and. KEY <= 26) then
-            NLEVEL = 3
-            WRDKEY = TEXT
-            call FKEYS(KEY)
-            if (KEY == 3) then
-               call INPOPUP('OFF')
-               call ITEXTCOLOURN(NFORGR, NBCKGR)
-               return
-            end if
-            goto 20
-         else if (KEY == 21 .or. KEY == 22) then
-            value = VAL
-         else
-            value = dmiss
+      call INDOUBLEXYDEF(IXP, IYP, TEXT, 1, VAL, 12, '(F12.1)')
+      call TIMLIN()
+      KEY = InfoInput(55)
+      if (KEY >= 24 .and. KEY <= 26) then
+         NLEVEL = 3
+         WRDKEY = TEXT
+         call FKEYS(KEY)
+         if (KEY == 3) then
+            call INPOPUP('OFF')
+            call ITEXTCOLOURN(NFORGR, NBCKGR)
+            return
          end if
-         call INPOPUP('OFF')
-         call ITEXTCOLOURN(NFORGR, NBCKGR)
-         return
-      end
+         goto 20
+      else if (KEY == 21 .or. KEY == 22) then
+         value = VAL
+      else
+         value = dmiss
+      end if
+      call INPOPUP('OFF')
+      call ITEXTCOLOURN(NFORGR, NBCKGR)
+      return
+   end
+
+end module m_getreal

@@ -1,3 +1,30 @@
+# strip_boost_header_only_deps
+# Boost's CMake config conservatively declares compile-time header
+# dependencies (e.g. thread -> atomic, chrono, container) as
+# INTERFACE_LINK_LIBRARIES. These are not actual runtime DLL dependencies
+# (verified via dumpbin /dependents), but CMake's TARGET_RUNTIME_DLLS
+# walks INTERFACE_LINK_LIBRARIES and picks them up anyway. This function
+# strips those header-only transitive deps from the given Boost targets
+# so the corresponding DLLs don't get installed.
+#
+# Arguments
+#   TARGETS       : List of Boost targets to clean (e.g. Boost::thread Boost::log)
+#   EXCLUDE_DEPS  : List of Boost targets to remove from INTERFACE_LINK_LIBRARIES
+function(strip_boost_header_only_deps)
+    cmake_parse_arguments("" "" "" "TARGETS;EXCLUDE_DEPS" ${ARGN})
+    foreach(_target IN LISTS _TARGETS)
+        if(TARGET ${_target})
+            get_target_property(_libs ${_target} INTERFACE_LINK_LIBRARIES)
+            if(_libs)
+                foreach(_dep IN LISTS _EXCLUDE_DEPS)
+                    list(REMOVE_ITEM _libs ${_dep})
+                endforeach()
+                set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
 # create_target
 # Creates a target (library or executable) of a certain module
 #
@@ -53,7 +80,22 @@ function(create_target target_name source_group_name)
     endif()
 
     # combine all the given files (if any of the parameters is given)
-    set(all_source ${op_src_files} ${op_resource_files} ${source})
+    # Separate .rc files from other resource files (e.g. .F90 version files).
+    # RC files are compiled in a separate object library to avoid resource
+    # compiler command line length issues with include directories.
+    set(rc_sources "")
+    set(non_rc_resources "")
+    if(DEFINED op_resource_files)
+        foreach(f IN LISTS op_resource_files)
+            if(f MATCHES "\\.rc$")
+                list(APPEND rc_sources ${f})
+            else()
+                list(APPEND non_rc_resources ${f})
+            endif()
+        endforeach()
+    endif()
+
+    set(all_source ${op_src_files} ${non_rc_resources} ${source})
 
     if(${op_target_type} STREQUAL "library")
         if (op_shared)
@@ -64,6 +106,11 @@ function(create_target target_name source_group_name)
     else()
         # executable
         add_executable(${target_name} ${all_source})
+    endif()
+
+    if(rc_sources)
+        add_rc_object_library(${target_name} "${rc_sources}" "${version_include_dir}")
+        target_link_libraries(${target_name} PRIVATE ${target_name}_rc)
     endif()
     # Set the language of the target.
     if(UNIX)
@@ -88,11 +135,37 @@ function(create_target target_name source_group_name)
 
 endfunction()
 
+# add_rc_object_library
+# Creates a separate OBJECT library for .rc resource files, compiled as C with
+# only the specified include directories. This prevents the resource compiler
+# command line from exceeding the Windows length limit when many transitive
+# include paths (e.g. from Conan packages) are inherited by the main target.
+# The resulting object library should be linked into the main target.
+#
+# Arguments:
+#   target_name      : The name of the main target (used to derive the object library name).
+#   rc_files         : List of .rc files to compile.
+#   include_dirs     : Include directories the .rc files actually need.
+#
+# Usage:
+#   add_rc_object_library(my_target "${rc_version_file}" "${version_include_dir}")
+#   target_link_libraries(my_target PRIVATE my_target_rc)
+function(add_rc_object_library target_name rc_files include_dirs)
+    set(rc_lib_name ${target_name}_rc)
+    if(WIN32)
+        add_library(${rc_lib_name} OBJECT ${rc_files})
+        set_target_properties(${rc_lib_name} PROPERTIES LINKER_LANGUAGE C)
+        target_include_directories(${rc_lib_name} PRIVATE ${include_dirs})
+        set_target_properties(${rc_lib_name} PROPERTIES FOLDER "rc_objects")
+    else()
+        add_library(${rc_lib_name} INTERFACE)
+    endif()
+endfunction()
 
 # Create template for Visual Studio environment paths for debugging on Windows
 function(create_vs_user_files)
     cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe" TO_NATIVE_PATH_LIST debugcommand)
-    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
     set(envpath "PATH=${path_prefix};%PATH%")
     set(userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
@@ -131,28 +204,6 @@ function(configure_visual_studio_user_file executable_name)
     endif()
 endfunction()
 
-# oss_include_libraries
-# Adds oss dependencies to the specified library.
-#
-# Note that it is assumed that the dependency is located in the PROJECT_BINARY_DIR in a subdirectory with the same dependency name.
-#
-# Argument
-# library_name : The name of the library where dependencies should be added.
-# dependencies : A list of dependencies to set for the library_name.
-function(oss_include_libraries library_name dependencies)
-
-    foreach(dependency IN LISTS ${dependencies})
-        add_dependencies(${library_name} ${dependency})
-
-        if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-            include_directories( ${PROJECT_BINARY_DIR}/${dependency} )
-        endif()
-    endforeach()
-
-endfunction()
-
-
-
 # get_fortran_source_files
 # Gathers Fortran *.f or *.f90 files from a given directory.
 #
@@ -166,7 +217,8 @@ function(get_fortran_source_files source_directory source_files)
                         ${source_directory}/*.F90
                         ${source_directory}/*.for
                         ${source_directory}/*.f
-                        ${source_directory}/*.F)
+                        ${source_directory}/*.F
+                        ${source_directory}/*.inc)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 # get_fortran_source_files_recursive
@@ -178,11 +230,11 @@ endfunction()
 # Return
 # source_files : The source files that were gathered.
 function(get_fortran_source_files_recursive source_directory source_files)
-    file(GLOB_RECURSE source ${source_directory} *.f90
-                        ${source_directory} *.F90
-                        ${source_directory} *.for
-                        ${source_directory} *.f
-                        ${source_directory} *.F)
+    file(GLOB_RECURSE source ${source_directory}/*.f90
+                        ${source_directory}/*.F90
+                        ${source_directory}/*.for
+                        ${source_directory}/*.f
+                        ${source_directory}/*.F)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 
@@ -206,33 +258,29 @@ function(get_module_include_path module_path library_name return_include_path)
     set(${return_include_path} ${public_include_path} PARENT_SCOPE)
 endfunction()
 
-
-
 # configure_package_installer
 # Configures a package for installing.
 #
 # Argument
 # name              : The name of the package.
 # description_file  : The file containing the description of the package.
-# mayor             : The mayor version nr.
+# major             : The major version nr.
 # minor             : The minor version nr.
 # build             : The build version nr.
 # generator         : The generators to be used to build the package, seperated by ';'.
-function(configure_package_installer name description_file  mayor minor build generator)
+function(configure_package_installer name description_file  major minor build generator)
   set(CPACK_VERBATIM_VARIABLES YES)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${name}")
-  set(CPACK_PACKAGE_VENDOR "Deltares 2021")
+  set(CPACK_PACKAGE_VENDOR "Deltares 2026")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${description_file}")
   set(CPACK_RESOURCE_FILE_LICENSE "${checkout_src_root}/Copyright.txt")
-  set(CPACK_PACKAGE_VERSION_MAJOR "${mayor}")
+  set(CPACK_PACKAGE_VERSION_MAJOR "${major}")
   set(CPACK_PACKAGE_VERSION_MINOR "${minor}")
   set(CPACK_PACKAGE_VERSION_PATCH "${build}")
   set(CPACK_GENERATOR "${generator}")
   include(CPack)
 endfunction(configure_package_installer)
-
-
 
 # set_rpath
 # Find all binaries in "targetDir" and set rpath to "rpathValue" in these binaries
@@ -244,7 +292,6 @@ endfunction(configure_package_installer)
 function(set_rpath targetDir rpathValue)
   execute_process(COMMAND find "${targetDir}" -type f -exec bash -c "patchelf --set-rpath '${rpathValue}' $1" _ {} \; -exec echo "patched rpath of: " {} \;)
 endfunction(set_rpath)
-
 
 # Use the `create_test` cmake function to create a unit test by providing the following arguments.
 # test_name:
@@ -259,7 +306,7 @@ endfunction(set_rpath)
 #    argument defines the directory that contains the files that are needed for the test.
 #    The `include_dir` argument is optional, if the test does not depend on external data, do not provide the argument.
 # test_list: [separate multiple values/ list]
-#   if you have one fortran file that contains multiple tests, and you want to execute each test separetly, you have to
+#   if you have one fortran file that contains multiple tests, and you want to execute each test separately, you have to
 #    implement
 #
 #   >>>   if (iargc > 0) then
@@ -305,6 +352,9 @@ function(create_test test_name)
     # For options with multiple values
     set(multi_value_args dependencies test_files include_dir test_list labels)
 
+    # set expression to check for failed tests
+    set(fail_reg_ex "Condition.*failed;Values not comparable;[A|a]ssertion.*failed")
+
     # Parse the arguments
     cmake_parse_arguments("op" "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -314,13 +364,18 @@ function(create_test test_name)
             src_files ${op_test_files}
             target_type "executable"
     )
+    # Set environment paths to find *.so/*.dll files Make sure DLL is found by adding its directory to PATH
+    if (UNIX)
+        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
+    endif (UNIX)
+    if (WIN32)
+        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/bin\;$ENV{PATH}")
+    endif (WIN32)
 
-    # add the ftnunit to the dependencies.
+
+    # Link libraries, include ftnunit in dependencies
     set(op_dependencies ftnunit ${op_dependencies})
-
-    # Link libraries
-    target_link_libraries(${test_name} ${op_dependencies})
-    # set_property(TARGET ${test_name} PROPERTY LINKER_LANGUAGE Fortran)
+    target_link_libraries(${test_name} PRIVATE ${op_dependencies})
 
     # Other link libraries
     if (WIN32)
@@ -329,50 +384,52 @@ function(create_test test_name)
                 ${mpi_library_path}
                 ${checkout_src_root}/third_party_open/pthreads/bin/x64
         )
+        set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})
     endif(WIN32)
-    set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})
 
-    
-    set(fail_reg_ex "Condition.*failed;Values not comparable;[A|a]ssertion.*failed")
-
+    # Obtain name of test, irrespective of whether a single test or a list is given
+    set(tests_to_set ${test_name})
     if(DEFINED op_test_list)
-        foreach(test_i IN LISTS op_test_list)
-            add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
-            set_property(TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
-        endforeach()
-    else()
-        add_test(NAME ${test_name} COMMAND ${test_name})
-        set_property(TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
-    endif()
-
-    if (DEFINED op_include_dir)
-        # Copy an entire directory
-        file(COPY ${op_include_dir} DESTINATION ${CMAKE_BINARY_DIR}/test_data/${test_name})
-
-        if (DEFINED op_test_list)
-            foreach(test_i IN LISTS op_test_list)
-                set_tests_properties(${test_i} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
-            endforeach()
-        else()
-            set_tests_properties(${test_name} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
-        endif()
-
+        set(tests_to_set ${op_test_list})
     endif()
 
     # add labels to tests
-
     if (DEFINED op_labels)
+        set(labels "")
         # convert the labels list to a dictionary
         list(LENGTH op_labels labels_len)
 
         foreach(pair IN LISTS op_labels)
             string(REPLACE ":" ";" pair_list ${pair})
             list(GET pair_list 0 test_i)
-            list(GET pair_list 1 label)
-            set_tests_properties(${test_i} PROPERTIES LABELS ${label})
+                list(GET pair_list 1 label)
+                list(APPEND labels ${label})
         endforeach()
-
     endif()
+
+    set(TEST_DATA_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_data)
+
+    foreach(test_i IN LISTS tests_to_set)
+        if(tests_to_set STREQUAL ${test_name})
+            add_test(NAME ${test_i} COMMAND ${test_name})
+        else()
+            add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
+        endif()
+
+        set_property(TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
+
+        if (DEFINED op_include_dir)
+            # Copy an entire directory
+            file(COPY ${op_include_dir} DESTINATION ${TEST_DATA_PATH})
+        endif()
+        # Set data path environmental variable
+        set(data_path "DATA_PATH=${TEST_DATA_PATH}")
+
+        set_tests_properties(${test_i} PROPERTIES
+            ENVIRONMENT "${lib_path};${data_path}"
+            LABELS "${labels}"
+        )
+    endforeach()
 
 endfunction()
 

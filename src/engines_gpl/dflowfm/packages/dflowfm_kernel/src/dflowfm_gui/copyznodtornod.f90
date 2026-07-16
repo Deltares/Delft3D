@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,50 +30,61 @@
 !
 !
 
- subroutine copyznodtornod() ! for smooth plotting only
-    use m_flowgeom
-    use m_flow
-    use m_netw
-    implicit none
-    integer :: k, kk, kkk, n, nn, ierr, ja
-    real, allocatable, save :: rn(:)
-    double precision :: znn
-    double precision :: znod
+module m_copyznodtornod
 
-    ja = 0
-    if (.not. allocated(rn)) then
-       ja = 1
-    else if (size(rn) < numk) then
-       deallocate (rn); ja = 1
-    end if
-    if (ja == 1) then
-       allocate (rn(numk), stat=ierr)
-       call aerr('rn(numk)', ierr, numk); rn = 0d0
-       do n = 1, ndx2d
-          nn = size(nd(n)%nod)
-          do kk = 1, nn
-             kkk = nd(n)%nod(kk)
-             rn(kkk) = rn(kkk) + ba(n)
-          end do
-       end do
-    end if
+   implicit none
 
-    rnod = 0d0
-    do n = 1, ndx2d
-       znn = znod(n)
-       if (znn /= 0d0) then
-          nn = size(nd(n)%nod)
-          do kk = 1, nn
-             kkk = nd(n)%nod(kk)
-             rnod(kkk) = rnod(kkk) + real(znn * ba(n))
-          end do
-       end if
-    end do
+contains
 
-    do k = 1, numk
-       if (rn(k) > 0) then
-          rnod(k) = rnod(k) / rn(k)
-       end if
-    end do
+   subroutine copyznodtornod() ! for smooth plotting only
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_netw
+      use m_znod
 
- end subroutine copyznodtornod
+      integer :: k, kk, kkk, n, nn, ierr, ja
+      real, allocatable, save :: rn(:)
+      real(kind=dp) :: znn
+
+      ja = 0
+      if (.not. allocated(rn)) then
+         ja = 1
+      else if (size(rn) < numk) then
+         deallocate (rn)
+         ja = 1
+      end if
+      if (ja == 1) then
+         allocate (rn(numk), stat=ierr)
+         call aerr('rn(numk)', ierr, numk)
+         rn = 0.0_dp
+         do n = 1, ndx2d
+            nn = size(nd(n)%nod)
+            do kk = 1, nn
+               kkk = nd(n)%nod(kk)
+               rn(kkk) = rn(kkk) + ba(n)
+            end do
+         end do
+      end if
+
+      rnod = 0.0_dp
+      do n = 1, ndx2d
+         znn = znod(n)
+         if (znn /= 0.0_dp) then
+            nn = size(nd(n)%nod)
+            do kk = 1, nn
+               kkk = nd(n)%nod(kk)
+               rnod(kkk) = rnod(kkk) + real(znn * ba(n))
+            end do
+         end if
+      end do
+
+      do k = 1, numk
+         if (rn(k) > 0) then
+            rnod(k) = rnod(k) / rn(k)
+         end if
+      end do
+
+   end subroutine copyznodtornod
+
+end module m_copyznodtornod

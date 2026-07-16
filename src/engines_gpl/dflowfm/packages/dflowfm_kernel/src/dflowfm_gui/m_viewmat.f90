@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,7 @@ module m_viewmat
    use precision, only: dp
 
    implicit none
-   real(dp), dimension(4,4) :: vs
+   real(dp), dimension(4, 4) :: vs
    real(dp) :: x0s
    real(dp) :: y0s
 

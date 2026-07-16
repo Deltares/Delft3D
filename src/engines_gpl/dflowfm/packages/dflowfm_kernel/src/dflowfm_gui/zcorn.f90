@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,27 @@
 !
 !
 
- double precision function zcorn(k) ! get various values at flow cell corners
-    use m_flow
-    use m_flowgeom
-    use m_drawthis
-    implicit none
+module m_zcorn
+   use precision, only: dp
+   implicit none
 
-    integer :: k, nodval
+contains
 
-    nodval = ndraw(31)
-    if (nodval == 2) then
-       zcorn = ucnx(k)
-    else if (nodval == 3) then
-       zcorn = ucny(k)
-    else if (nodval == 4) then
-       zcorn = sqrt(ucnx(k) * ucnx(k) + ucny(k) * ucny(k))
-    end if
- end function zcorn
+   real(kind=dp) function zcorn(k) ! get various values at flow cell corners
+      use m_flowgeom, only: ucnx, ucny
+      use m_drawthis, only: ndraw
+      implicit none
+
+      integer :: k, nodval
+
+      nodval = ndraw(31)
+      if (nodval == 2) then
+         zcorn = ucnx(k)
+      else if (nodval == 3) then
+         zcorn = ucny(k)
+      else if (nodval == 4) then
+         zcorn = sqrt(ucnx(k) * ucnx(k) + ucny(k) * ucny(k))
+      end if
+   end function zcorn
+
+end module m_zcorn

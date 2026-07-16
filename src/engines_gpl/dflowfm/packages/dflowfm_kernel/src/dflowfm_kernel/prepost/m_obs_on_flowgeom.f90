@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,10 +41,11 @@ contains
 !! Results are stored in `m_observations` state arrays.
    subroutine obs_on_flowgeom(iobstype)
 
-      use m_observations, only: numobs, nummovobs, kobs, namobs
-      use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
+      use m_observations_data, only: numobs, nummovobs, kobs, namobs, neighbour_nodes_obs, neighbour_weights_obs, intobs
+      use unstruc_messages, only: loglevel_StdOut
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
-      use unstruc_caching, only: cacheRetrieved, copyCachedObservations
+      use unstruc_caching, only: cache_retrieved, copy_cached_observations
 
       implicit none
 
@@ -70,8 +71,8 @@ contains
       ! Try to read normal (non-moving) stations from cache file
       cache_success = .false.
       if (iobstype == 0 .or. iobstype == 2) then
-         if (cacheRetrieved()) then
-            call copyCachedObservations(cache_success)
+         if (cache_retrieved()) then
+            call copy_cached_observations(cache_success)
          end if
       end if
 
@@ -83,6 +84,9 @@ contains
       else
          ! No cache, so process all requested observation points.
          call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+      end if
+      if (n2 - n1 >= 0) then 
+            call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs,intobs)
       end if
 
       if (loglevel_StdOut == LEVEL_DEBUG) then
@@ -104,10 +108,11 @@ contains
 !! obs that are defined in *.ini file by xy coordinate, to be snaped to only 2D flow node (Locationtype == 2), use kdtree
 !! obs that are defined in *.ini file by branchID and chainage, to be snaped to only 1D flow node (Locationtype == 3), do not use kdtree
    subroutine find_flownodes_and_links_for_all_observation_stations(nstart, nend)
+      use precision, only: dp
       use MessageHandling
       use m_network
       use m_ObservationPoints
-      use m_observations
+      use m_observations_data
       use unstruc_channel_flow
       use m_inquire_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
@@ -116,6 +121,7 @@ contains
       use m_flowgeom
       use m_find_flownode, only: find_nearest_flownodes
       use m_find_flowlink, only: find_nearest_flowlinks
+      use m_partitioninfo, only: jampi
 
       implicit none
 
@@ -125,8 +131,8 @@ contains
       integer, allocatable :: ixy2obs0(:), ixy2obs1(:), ixy2obs2(:)
       integer, allocatable :: kobs_tmp0(:), kobs_tmp1(:), kobs_tmp2(:)
       integer, allocatable :: lobs_tmp0(:), lobs_tmp1(:), lobs_tmp2(:)
-      double precision, allocatable :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
-      double precision, allocatable :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
+      real(kind=dp), allocatable :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
+      real(kind=dp), allocatable :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
       character(len=IdLen), allocatable :: namobs_tmp0(:), namobs_tmp1(:), namobs_tmp2(:)
       integer :: nloctype1D, nloctype2D, nloctypeAll
       type(t_ObservationPoint), pointer :: pOPnt
@@ -191,7 +197,9 @@ contains
                   if (ierr == DFM_NOERR) then
                      kobs(i) = nodenr
                   else
-                     call SetMessage(LEVEL_ERROR, 'Error when snapping Observation Point '''//trim(namobs(i))//''' to a 1D flow node.')
+                     if (jampi == 0) then !> in an MPI run reduce kobs will handle a missing obs
+                        call SetMessage(LEVEL_WARN, 'Cannot snap observation point '''//trim(namobs(i))//''' to a 1D flow node.')
+                     end if
                   end if
                end if
             end if
@@ -249,5 +257,59 @@ contains
       end if
 
    end subroutine find_flownodes_and_links_for_all_observation_stations
+
+   !> Inits interpolation neighbours and weights for observation stations using 2D triangulation.
+   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs,intobs)
+      
+      use m_observations_data      , only: xobs, yobs, numobs, nummovobs, kobs, namobs  
+      use m_flowgeom               , only: xz, yz, ndx2d
+      use m_missing                , only: dmiss
+      use m_sferic                 , only: jsferic, jasfer3D
+      use fm_external_forcings_data, only: transformcoef
+      use m_polygon                , only: npl, xpl, ypl, zpl
+      use precision                , only: dp
+      use messagehandling          , only: msgbuf, msg_flush
+      use m_alloc
+      
+      use m_ec_basic_interpolation, only: triinterp2
+      use m_ec_triangle, only: jagetwf, indxx, wfxx
+      
+      integer, intent(in) :: n_start !< Start index of observation stations set (typically 1, but allows to restrict to movoing observation points).
+      integer, intent(in) :: n_end   !< End index of observation stations set (typically numobs + nummovobs, but allows to restrict to moving observation points).
+      integer, dimension(:)  , intent(in   ) :: intobs              !< Flag indicating whether interpolation is needed or not    
+      integer, dimension(:,:), intent(inout) :: neighbour_nodes_obs !< Table of nearby flow node numbers for each station.
+      real(kind=dp), dimension(:,:), intent(inout) :: neighbour_weights_obs !< Table of interpolation weights for nearby flow node numbers for each station.
+      
+      integer                                         :: jdla, i, jagetwf_org
+      real(kind=dp), allocatable                      :: dummyZ (:)
+      real(kind=dp), allocatable                      :: dumout (:)
+      
+      ! Create arrays with dummy z values(samples and output, needto deallocate?)
+      call realloc(dummyZ,ndx2d             , keepexisting=.false., fill=dmiss)
+      call realloc(dumout,numobs + nummovobs, keepexisting=.false., fill=dmiss)
+      
+      ! interpolate
+      jagetwf_org = jagetwf
+      jdla     = 1
+      jagetwf  = 1
+            
+      call realloc(indxx, [3, numobs + nummovobs], keepexisting=.false., fill=0)
+      call realloc(wfxx, [3, numobs + nummovobs], keepexisting=.false., fill=0.0_dp)
+            
+      call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
+                                 jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
+      
+       do i = n_start, n_end
+         neighbour_nodes_obs  (:, i) = indxx(:, i)
+         neighbour_weights_obs(:, i) = wfxx (:, i)
+         if (intobs(i) == 1 .and. neighbour_nodes_obs(1,i) == 0 .and. kobs(i) > 0) then
+            write (msgbuf, '(a,i0,a,a,a)') 'No interpolation possible for support point from boundary pli. Observation station nr:', i, ' (', trim(namobs(i)), '). Taking nearest support point with valid signals.'
+            call msg_flush()
+         end if
+      end do
+      
+      jagetwf = jagetwf_org
+
+   end subroutine  init_interpolation_data_for_all_observation_stations
 
 end module m_obs_on_flowgeom

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: hymapper.cpp 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/hymapper.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/hymapper.cpp
+// $
 //------------------------------------------------------------------------------
 //  Module: Hydra D3dFlowMapper functions
 //  Functions to be called by D3D-Flow-DD Executive to creating and
@@ -36,59 +38,51 @@
 //  6 jun 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
 
-
-void FlowDD_Mapper (
-    Iterator *      self,
-    const char *    name,
-    Blob *          configblob
-    ) {
-
+void FlowDD_Mapper(Iterator* self, const char* name, Blob* configblob)
+{
     // Check/get neighbor processes
 
-    Category * processes = LookupCategory (DD::processCategoryName);
-    if (processes == NULL)
-        throw new Exception (true, "Process category does not exist for mapper \"%s\"", name);
+    Category* processes = LookupCategory(DD::processCategoryName);
+    if (processes == NULL) throw new Exception("Process category does not exist for mapper \"%s\"", name);
 
-    int numNeighbors = self->NeighborCount (processes);
-    if (numNeighbors != NR_CNTXTS)
-        throw new Exception (true, "Mapper \"%s\" does not have two neighbor processes", name);
+    int numNeighbors = self->NeighborCount(processes);
+    if (numNeighbors != NR_CNTXTS) throw new Exception("Mapper \"%s\" does not have two neighbor processes", name);
 
-    Iterator * neighbors[NR_CNTXTS];
+    Iterator* neighbors[NR_CNTXTS];
 
-    self->RewindNeighbors (processes);
-    neighbors[C_0]  = self->NextNeighbor (processes);  // left-side process
-    neighbors[C_1]  = self->NextNeighbor (processes);  // right-side process
+    self->RewindNeighbors(processes);
+    neighbors[C_0] = self->NextNeighbor(processes); // left-side process
+    neighbors[C_1] = self->NextNeighbor(processes); // right-side process
 
     // Determine data exchange type between Mapper and Flow
 
     MemType memType[NR_CNTXTS];
-    for (int ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
-        memType[ctx] = Mem_Distributed;
+    for (int ctx = 0; ctx < NR_CNTXTS; ctx++) memType[ctx] = Mem_Distributed;
 
     // Log results:
 
-    char * configString = (char *) configblob->Address ();
+    char* configString = (char*)configblob->Address();
 
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "Mapper \"%s\":", name);
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "    config        = \"%s\"", configString);
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "    numNeigh      = %d", self->NeighborCount ());
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "    left          = \"%s\", memType = %d", (neighbors[C_0] == NULL) ? "???" : neighbors[C_0]->name, memType[C_0]);
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "    right         = \"%s\", memType = %d", (neighbors[C_1] == NULL) ? "???" : neighbors[C_1]->name, memType[C_1]);
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MAJOR, "Mapper \"%s\":", name);
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MAJOR, "    config        = \"%s\"", configString);
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MAJOR, "    numNeigh      = %d", self->NeighborCount());
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MAJOR, "    left          = \"%s\", memType = %d",
+                             (neighbors[C_0] == NULL) ? "???" : neighbors[C_0]->name, memType[C_0]);
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MAJOR, "    right         = \"%s\", memType = %d",
+                             (neighbors[C_1] == NULL) ? "???" : neighbors[C_1]->name, memType[C_1]);
 
     // Create and Setup Mapper and ContextData objects
 
-    D3dFlowMapper * d3dFlowMapper = new D3dFlowMapper();
+    D3dFlowMapper* d3dFlowMapper = new D3dFlowMapper();
 
-    InitMinimumBarrier ();
-    self->Ready ();
+    InitMinimumBarrier();
+    self->Ready();
 
-    int retVal =  d3dFlowMapper->Setup(self, configString, neighbors, memType);
+    int retVal = d3dFlowMapper->Setup(self, configString, neighbors, memType);
 
-    if ( retVal != HY_ERR )
-        retVal =  d3dFlowMapper->DoMapping();
+    if (retVal != HY_ERR) retVal = d3dFlowMapper->DoMapping();
 
     delete d3dFlowMapper;
-    }
+}

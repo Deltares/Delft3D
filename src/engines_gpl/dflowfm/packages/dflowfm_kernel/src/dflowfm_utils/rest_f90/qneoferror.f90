@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,11 +29,14 @@
 
 !
 !
+module m_qn_eof_error
+   implicit none
+contains
+   subroutine QNEOFERROR(MINP)
+      use unstruc_files, only: filenames
+      use m_qnerror
 
-      subroutine QNEOFERROR(MINP)
-         use unstruc_files
-         use m_qnerror
-         implicit none
-         integer :: minp
-         call QNERROR('UNEXPECTED END OF FILE IN ', FILENAMES(MINP), ' ')
-      end
+      integer :: minp
+      call QNERROR('UNEXPECTED END OF FILE IN ', FILENAMES(MINP), ' ')
+   end
+end module m_qn_eof_error

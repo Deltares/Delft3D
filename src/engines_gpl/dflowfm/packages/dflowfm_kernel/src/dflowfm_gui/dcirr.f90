@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,26 @@
 !
 !
 
-      subroutine DCIRR(XD, YD, ZD, NCOL)
-         use gridoperations
-         implicit none
-         integer :: ncol
-         double precision :: x
-         double precision :: y
-         double precision :: z
-         double precision XD, YD, ZD
-         call DRIETWEE(XD, YD, ZD, X, Y, Z)
-         call CIRR(X, Y, NCOL)
-         return
-      end
+module m_dcirr
+
+   implicit none
+
+contains
+
+   subroutine DCIRR(XD, YD, ZD, NCOL)
+      use precision, only: dp
+      use m_three_two, only: drietwee
+      use m_cirr, only: cirr
+
+      implicit none
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
+      real(kind=dp) XD, YD, ZD
+      call DRIETWEE(XD, YD, ZD, X, Y, Z)
+      call CIRR(X, Y, NCOL)
+      return
+   end
+
+end module m_dcirr

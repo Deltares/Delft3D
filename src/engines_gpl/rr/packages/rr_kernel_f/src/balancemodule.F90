@@ -1,31 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
- module Balance
+module Balance
 
   !use
   use Conf_fil
@@ -304,7 +304,7 @@ contains
            Endif
            if (ncSacr .gt. 0 .or. NcRrRunoff .gt. 0) then
              WRITE (iobal,41151) Bal3b(19)
- 41151       FORMAT(' Loss flows Sacr./LGSI/Wagm/NAM (m3):',F15.2)
+ 41151       FORMAT(' Loss flows Sac/SCS/LGSI/Wag/NAM(m3):',F15.2)
            Endif
 ! discharges
            if (ncvhg .gt. 0) then
@@ -954,15 +954,16 @@ contains
           ierr = nf90_put_var(INetCdfFile(BalanceNetCdfFileNr), time_varid(BalanceNetCdfFileNr), IDays, (/ itmstp1 /))
           Call NetCdfCheck(' BalanceModule after Putvar  DDays',ierr)
           if (ierr .ne. nf90_noerr) then
-             write(*,*) ' time_varid', time_varid(BalanceNetCdfFileNr)
-             write(*,*) ' Error Putting timestep Ierr =', ierr, trim(nf90_strerror(ierr)), Ddays
+!            write(*,*) ' time_varid', time_varid(BalanceNetCdfFileNr)
+!            write(*,*) ' Error Putting timestep Ierr =', ierr, trim(nf90_strerror(ierr)), Ddays
+             call ErrMsgStandard (999, 3, ' Error putting timestep data to NetCdf file RR-balance ', '')
           endif
 ! write output variables to NetCdf
           Do i=1,NBalSeries
 !            write(*,*) ' Put variable ',i, id_vars(BalanceNetCdfFileNr,i), ' value        ',DioResult(i,1)
              ierr = nf90_put_var(INetCdfFile(BalanceNetCdfFileNr), id_vars(BalanceNetCdfFileNr,i), dble(DioResult(i,1)), (/ 1, itmstp1 /))
              Call NetCdfCheck(' BalanceModule after Putvar DioResult',ierr)
-             if (ierr .ne. 0)   write(*,*) ' Some error occurred'
+             if (ierr .ne. 0)  call ErrMsgStandard (999, 3, ' Error putting variable data to NetCdf file RR-balance ', '')
           Enddo
       Endif
 
@@ -1052,12 +1053,13 @@ contains
               if (ierr .ne. nf90_noerr) then
     !            write(*,*) ' time_varid', time_varid(NWRWSysNetCdfFileNr)
     !            write(*,*) ' Error Putting timestep Ierr =', ierr, trim(nf90_strerror(ierr)), Ddays
+                 call ErrMsgStandard (999, 3, ' Error putting timestep data to NetCdf file NWRW System balance ', '')
               endif
               Do i=1,6
     !            write(*,*) ' Put variable ',i, id_vars(NWRWSysNetCdfFileNr,i), ' value        ',DioResult(i,1)
                  ierr = nf90_put_var(INetCdfFile(NWRWSysNetCdfFileNr), id_vars(NWRWSysNetCdfFileNr,i), dble(DioResult(i,1)), (/ 1, TimestepInNWRWSys /))
                  Call NetCdfCheck(' BalanceModule after Putvar DioResult',ierr)
-                 if (ierr .ne. 0)   write(*,*) ' Some error occurred'
+                 if (ierr .ne. 0)  call ErrMsgStandard (999, 3, ' Error putting variable data to NetCdf file NWRW System Balance ', '')
               Enddo
               if (itmstp .eq. lastTm) ierr = nf90_close(iNetCdfFile(NWRWSysNetCdfFileNr))
           endif

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,26 @@
 !
 !
 
-      subroutine TRAROT(XX, YY, XG, YG)
-         use M_MAPPROPARAMETERS
-         implicit none
+module m_trarot
 
-         double precision :: XX, YY, XG, YG
-         XX = (XX - XCE) * XF
-         YY = (YY - YCE) * YF
-         XG = DELTX + XX * CSE - YY * SNE + XCE
-         YG = DELTY + XX * SNE + YY * CSE + YCE
-         return
-      end subroutine TRAROT
+   implicit none
+
+   private
+
+   public :: trarot
+
+contains
+
+   subroutine TRAROT(XX, YY, XG, YG)
+      use precision, only: dp
+      use M_MAPPROPARAMETERS, only: xce, xf, yce, yf, deltx, cse, sne, delty
+
+      real(kind=dp) :: XX, YY, XG, YG
+      XX = (XX - XCE) * XF
+      YY = (YY - YCE) * YF
+      XG = DELTX + XX * CSE - YY * SNE + XCE
+      YG = DELTY + XX * SNE + YY * CSE + YCE
+      return
+   end subroutine TRAROT
+
+end module m_trarot

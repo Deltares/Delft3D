@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,66 +31,67 @@
 !
 
 module m_heatfluxes
-   use physicalconsts
+   use precision, only: dp, fp
+
    implicit none
 
-   double precision :: albedo ! reflection coefficient of water () at average incidence angle of 60 deg,
+   real(kind=dp) :: albedo !< reflection coefficient of water () at average incidence angle of 60 deg,
    ! (albedo is .025 at angle 0 deg, 0.13 at angle 70 deg)
-   double precision :: em ! Emissivity ()
-   double precision :: cpa ! Specific heat air   [J/kg/K]
-   double precision :: rcpa !
-   double precision :: cpw ! Specific heat water [J/kg/K]
-   double precision :: rcpi ! m3K/J
-   double precision :: emstf ! Em*Stf [W/m^2/K^4]
-   double precision, parameter :: tkelvn = CtoKelvin ! Absolute zero
+   real(kind=dp), parameter :: EMMISIVITY_FACTOR = 0.985_dp !< Emissivity factor (-)
+   real(kind=dp), parameter :: SPECIFIC_HEAT_AIR = 1004.0_dp !< Specific heat air   [J/kg/K]
+   real(kind=dp), parameter :: SPECIFIC_HEAT_WATER = 3986.0_dp !< Specific heat capacity of water [J/kg/K]
+   real(kind=dp) :: rcpi !< 1/(rho*cpi) m3K/J
 
-   double precision :: QSUNav ! Solar influx              (W/m2)
-   double precision :: QEVAav ! Evaporative heat loss     (W/m2)
-   double precision :: QCONav ! Convective heat loss      (W/m2)
-   double precision :: QLongav ! Long wave back radiation  (W/m2)
-   double precision :: Qfreeav ! Free conv + evap heat loss (W/m2)
-   double precision :: Qfrconav ! Free convection heat loss (W/m2)
-   double precision :: Qfrevaav ! Free evaporation heat loss (W/m2)
+   real(kind=dp) :: qsunav !< Solar influx              (W/m2)
+   real(kind=dp) :: qevaav !< Evaporative heat loss     (W/m2)
+   real(kind=dp) :: qconav !< Convective heat loss      (W/m2)
+   real(kind=dp) :: qlongav !< Long wave back radiation  (W/m2)
+   real(kind=dp) :: qfreeav !< Free conv + evap heat loss (W/m2)
+   real(kind=dp) :: qfrconav !< Free convection heat loss (W/m2)
+   real(kind=dp) :: qfrevaav !< Free evaporation heat loss (W/m2)
 
-   double precision :: sarea ! Only for excess temp model jatem=3, lake area
-   double precision :: fwind ! Only for excess temp model jatem=3, wind factor
+   real(kind=dp) :: sarea !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, lake area
+   real(kind=dp) :: fwind !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, wind factor
 
-   integer :: jamapheatflux !< write heatfluxes to map
-   integer :: jaRichardsononoutput !< write Richardson nr to his
-   integer :: jaSecchisp !< Spatial Secchi 0,1
-   integer :: jaRoro !< Use roair(n)/rho(ntop) in windstress 0,1
+   integer :: jarichardsononoutput !< write Richardson nr to his
+   integer :: rho_water_in_wind_stress !< Use rhomean or local (surface) density of model in windstress: 0,1
+   integer, parameter :: RHO_MEAN = 0 !< Use rhomean in windstress
 
-   double precision, allocatable, target :: Qsunmap(:) !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: Qevamap(:)
-   double precision, allocatable :: Qconmap(:)
-   double precision, allocatable :: Qlongmap(:)
-   double precision, allocatable :: Qfrevamap(:)
-   double precision, allocatable :: Qfrconmap(:)
-   double precision, allocatable :: Qtotmap(:)
+   real(kind=dp), dimension(:), allocatable, target :: qsunmap !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), dimension(:), allocatable :: qevamap
+   real(kind=dp), dimension(:), allocatable :: qconmap
+   real(kind=dp), dimension(:), allocatable :: qlongmap
+   real(kind=dp), dimension(:), allocatable :: qfrevamap
+   real(kind=dp), dimension(:), allocatable :: qfrconmap
+   real(kind=dp), dimension(:), allocatable :: qtotmap
 
-   double precision, allocatable :: Rich(:)
-   double precision, allocatable :: Secchisp(:)
-   double precision, allocatable :: Roair(:)
+   ! Secchi depth variables
+   logical :: secchi_depth_is_spatially_varying !< Flag to indicate if spatially varying Secchi depth is available
+   logical :: secchi_depth_is_time_varying !< Flag to indicate if time-varying Secchi depth is available
+   real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
+
+   real(kind=dp), parameter :: PRANDTL_NUMBER_SQUARED = 0.49_dp !< Prandtl number (0.7) squared for air [dimensionless]
+   real(kind=dp), parameter :: KINEMATIC_VISCOSITY_AIR = 16.0e-06_dp !< Kinematic viscosity of air [m^2/s]   at reference temperature
+   real(kind=dp), parameter :: GAS_CONSTANT_DRY_AIR = 287.05e-02_dp !< Specific gas constant for dry air [J/kg/K]
+   real(kind=dp), parameter :: GAS_CONSTANT_WATER_VAPOR = 461.495e-02_dp !< Specific gas constant for water vapor [J/kg/K]
+   real(kind=dp), parameter :: MIN_ICE_SNOW_THICKNESS = 0.001_fp !< Threshold thickness for ice/snow to overrule the underlying layer [m]
 
 contains
 
+   !< sets heat flux model constants to default values
    subroutine default_heatfluxes()
-      use m_physcoef, only: rhomean
-      use m_wind, only: rhoair
-      !< Heat flux model constants
-      albedo = 0.06d0 !< reflection coefficient of water () at average incidence angle of 60 deg,
-      !< (albedo is .025 at angle 0 deg, 0.13 at angle 70 deg)
-      em = 0.985d0 !< Emissivity ()
-      cpa = 1004d0 !< Specific heat air   [J/kg/K]
-      rcpa = rhoair * cpa !
-      cpw = 3986d0 !< Specific heat water [J/kg/K]
-      rcpi = 1d0 / (rhomean * cpw) !< [m3K/J] or mKs2/kg
-      emstf = em * stf
-
-      jamapheatflux = 0
-      jaRichardsononoutput = 0
-      jaroro = 0
+      albedo = 0.06_dp
+      jarichardsononoutput = 0
+      rho_water_in_wind_stress = RHO_MEAN
 
    end subroutine default_heatfluxes
+
+   !> calculate derived coefficients for heatfluxes
+   subroutine calculate_derived_coefficients_heatfluxes()
+      use m_physcoef, only: rhomean
+
+      rcpi = 1.0_dp / (rhomean * SPECIFIC_HEAT_WATER)
+
+   end subroutine calculate_derived_coefficients_heatfluxes
 
 end module m_heatfluxes

@@ -1,17 +1,17 @@
+!/
+!/
+!/
+!/
 !/ ------------------------------------------------------------------- /
-!/
-!/
-!/
-!/
 !  1. purpose :
 !
-!     agioncmd is a module that provides methods to write cf1.5 compliant
+!     agioncmd is a module that provides methods to write cf1.6 compliant
 !     netcdf files containing integrated parameters and spectra.
-!     Furthermore, some methods are available to read data from cf-1.5 and
+!     Furthermore, some methods are available to read data from cf-1.6 and
 !     coads compliant files. 
 !
 !     For more information:
-!       http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.5
+!       https://cfconventions.org/Data/cf-documents/requirements-recommendations/requirements-recommendations-1.6.html
 !
 !  2. method :
 !
@@ -130,9 +130,11 @@
         use nctablemd
         use netcdf_tools
         use SWCOMM3, only : DEGRAD
+        use OCPCOMM2,  only: PROJID, PROJNR, PROJT1, VERTXT
+        use OCPCOMM3, only : VERNUM
         implicit none
         private
-        real, parameter                              :: AGIONCMD_VERSION = 1.5
+        real, parameter                              :: AGIONCMD_VERSION = 1.6
         real, parameter                              :: AGNC_DUMMY = NF90_FILL_FLOAT
         integer(kind=1), parameter                   :: AGNC_FILL_BYTE = -2**7
         integer(kind=2), parameter                   :: AGNC_FILL_SHORT= -2**15
@@ -154,11 +156,13 @@
         type, public :: pntgrid_type
             real, dimension(:), allocatable          :: longitude, latitude
             integer, dimension(:), allocatable       :: ips
+            character(len=80), dimension(:), allocatable :: id
             character(len=10)                        :: lunit = 'degrees'
-            integer                                  :: pnt_dimid, &
+            integer                                  :: pnt_dimid, name_len_dimid, &
                                                         lon_varid, lat_varid, &
                                                         npoints = 0, ips_varid = 0, &
-                                                        xdimlen = 0, ydimlen = 0
+                                                        xdimlen = 0, ydimlen = 0, &
+                                                        id_varid = 0, name_len = 80
         end type pntgrid_type
 
         type, public :: spcgrid_type
@@ -210,6 +214,10 @@
             module procedure timeindex32, timeindex64
         end interface timeindex
 
+        interface get_scalies
+            module procedure get_scalies_float, get_scalies_double
+        end interface get_scalies
+
         public :: create_ncfile, seconds_since_epoch, timeindex, open_ncfile
         public :: agnc_add_mapdata, agnc_add_pntdata, agnc_add_spcdata, agnc_get_griddef
         public :: datevec
@@ -221,7 +229,7 @@
         public :: close_ncfile, nccheck
         public :: agnc_get_recordaxe, agnc_set_recordaxe
         public :: agnc_get_spcgrid, agnc_set_spcgrid
-        public :: get_scalies_float
+        public :: get_scalies
 
       contains
 !
@@ -247,6 +255,7 @@
             logical              ,intent(   in), optional       :: Escale
             logical              ,intent(   in), optional       :: nautical
             character(len=100)                                  :: history, dconv
+            character(len=200)                                  :: comment, title
             logical                                             :: do_scale
 
             dconv = 'nautical'
@@ -264,7 +273,9 @@
             end if
 
             write(history,'(A,F4.1)') 'Created with agioncmd version', AGIONCMD_VERSION
-            call nccheck ( nf90_create( ncfile, NF90_NOCLOBBER + NF90_64BIT_OFFSET, ncid) )
+            write(comment,'(3A, F5.2)') 'SWAN Deltares version ', trim(VERTXT), ', based on SWAN Delft University of Technology version ', VERNUM
+            write(title,'(2A)') 'Waves simulated for: ', PROJT1
+            call nccheck ( nf90_create( ncfile, NF90_NOCLOBBER + NF90_NETCDF4, ncid) )
             if ( recordaxe%nstatm ) then
                 call nccheck ( nf90_def_dim( ncid, 'time', NF90_UNLIMITED, recordaxe%dimid ) );
                 call nccheck ( nf90_def_var( ncid, 'time', NF90_INT, recordaxe%dimid, recordaxe%varid ) )
@@ -272,6 +283,7 @@
                 call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'calendar', 'gregorian') )
                 call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'standard_name', 'time') )
                 call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'long_name', 'time') )
+                call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'axis', 'T') )
             else
                 call nccheck ( nf90_def_dim( ncid, 'run', NF90_UNLIMITED, recordaxe%dimid ) );
                 call nccheck ( nf90_def_var( ncid, 'run', NF90_INT, recordaxe%dimid, recordaxe%varid ) )
@@ -280,9 +292,17 @@
             end if
 
             ! global attributes
-            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'Conventions', 'CF-1.5') )
-            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'History', history) )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'Conventions', 'CF-1.6') )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'title', title) )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'institution', 'Deltares') )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'references', 'https://www.deltares.nl') )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'history', history) )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'comment', comment) )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'project', PROJID) )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'model',   VERTXT) )
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'run', PROJNR) )
             call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'Directional_convention', dconv) )
+            call update_date(ncid, 'date_created')
 
             if ( present(mapgrid) ) then
                 call agnc_define_mapgrid(ncid, mapgrid)
@@ -300,7 +320,7 @@
             ! later without reorganizing the file structure. 4kb should be
             ! enough for most attributes and negligible compared to the
             ! total file size.
-            call nccheck( nf90_enddef(ncid, h_minfree=4096) )
+            call nccheck( nf90_enddef(ncid) )
             ! Set the file back to definition mode so variables can be defined later on
             call nccheck( nf90_redef(ncid) )
 
@@ -312,9 +332,9 @@
             character(len=20),         intent(  out):: yname, yunit
              if ( trim(lunit) == 'degrees') then
                 xname = 'longitude'
-                xunit = 'degrees_east'
+                xunit = 'degree_east'
                 yname = 'latitude'
-                yunit = 'degrees_north'
+                yunit = 'degree_north'
             else
                 xname = 'x'
                 xunit = lunit
@@ -351,12 +371,14 @@
 
             call nccheck ( nf90_put_att( ncid, mapgrid%lon_varid, 'units', xunit) )
             call nccheck ( nf90_put_att( ncid, mapgrid%lon_varid, 'long_name', xname) )
+            call nccheck ( nf90_put_att( ncid, mapgrid%lon_varid, 'axis', 'X') )
             if ( trim(xname) == 'longitude' ) then
                 call nccheck ( nf90_put_att( ncid, mapgrid%lon_varid, 'standard_name', 'longitude') )
             end if
 
             call nccheck ( nf90_put_att( ncid, mapgrid%lat_varid, 'units', yunit) )
             call nccheck ( nf90_put_att( ncid, mapgrid%lat_varid, 'long_name', yname) )
+            call nccheck ( nf90_put_att( ncid, mapgrid%lat_varid, 'axis', 'Y') )
             if ( trim(yname) == 'latitude' ) then
                 call nccheck ( nf90_put_att( ncid, mapgrid%lat_varid, 'standard_name', 'latitude') )
             end if
@@ -550,10 +572,12 @@
             character(len=20)                       :: yname, yunit
             call coordinate_names_units( pntgrid%lunit, xname, xunit, yname, yunit )
             call nccheck ( nf90_def_dim( ncid, 'points', pntgrid%npoints, pntgrid%pnt_dimid ) )
+            call nccheck ( nf90_def_dim( ncid, 'name_len', pntgrid%name_len, pntgrid%name_len_dimid ) )
 
             call nccheck ( nf90_def_var( ncid, xname, NF90_FLOAT, pntgrid%pnt_dimid, pntgrid%lon_varid ) );
             call nccheck ( nf90_put_att( ncid, pntgrid%lon_varid, 'units', xunit) )
             call nccheck ( nf90_put_att( ncid, pntgrid%lon_varid, 'long_name', xname) )
+            call nccheck ( nf90_put_att( ncid, pntgrid%lon_varid, 'axis', 'X') )
 
             if ( trim(xname) == 'longitude' ) then
                 call nccheck ( nf90_put_att( ncid, pntgrid%lon_varid, 'standard_name', 'longitude') )
@@ -562,6 +586,7 @@
             call nccheck ( nf90_def_var( ncid, yname, NF90_FLOAT, pntgrid%pnt_dimid, pntgrid%lat_varid ) );
             call nccheck ( nf90_put_att( ncid, pntgrid%lat_varid, 'units', yunit) )
             call nccheck ( nf90_put_att( ncid, pntgrid%lat_varid, 'long_name', yname) )
+            call nccheck ( nf90_put_att( ncid, pntgrid%lat_varid, 'axis', 'Y') )
             if ( trim(yname) == 'latitude' ) then
                 call nccheck ( nf90_put_att( ncid, pntgrid%lat_varid, 'standard_name', 'latitude') )
             end if
@@ -580,6 +605,12 @@
                 call nccheck ( nf90_put_att( ncid, pntgrid%ips_varid, 'computed_as', '(i - 1) * dimlen1 + j') )
                 call nccheck ( nf90_put_att( ncid, pntgrid%ips_varid, 'description', 'i is index in first spatial dimension, dimlen1 its length') )
                 call nccheck ( nf90_put_att( ncid, pntgrid%ips_varid, 'long_name', 'one-dimensional index') )
+            end if
+            
+            if ( allocated(pntgrid%id) ) then
+                call nccheck ( nf90_def_var( ncid, 'id', NF90_CHAR, (/pntgrid%name_len_dimid, pntgrid%pnt_dimid/), pntgrid%id_varid ) );
+                call nccheck ( nf90_put_att( ncid, pntgrid%id_varid, 'long_name', 'location name') )
+                call nccheck ( nf90_put_att( ncid, pntgrid%id_varid, 'cf_role', 'timeseries_id') )
             end if
 
         end subroutine agnc_define_pntgrid
@@ -625,7 +656,7 @@
         subroutine agnc_add_variable_attributes( ncid, varid, trecord )
             integer,                intent(in) :: ncid, varid
             type(nctable_record),   intent(in) :: trecord
-            real(kind=4)                       :: add_offset, scale_factor, rng
+            real                               :: add_offset, scale_factor, rng
 
             call nccheck ( nf90_put_att( ncid, varid, 'units', trecord%units) )
             if ( trim(trecord%standard_name) /= 'none' ) &
@@ -678,9 +709,23 @@
             integer                            :: tmpid
             ! CF-1.2+ prescibes a "coordinates" attribute on multi-dimension fields
 
-            if ( nf90_inq_dimid(ncid, 'xc', tmpid) == nf90_noerr ) then
-                ! multi-dimension field because of the hard coded dimension name. The coordinates
-                ! are either in the longitude/latitude or x,y variables
+            if ( nf90_inq_dimid(ncid, 'points', tmpid) == nf90_noerr) then
+                ! his file
+                if ( nf90_inq_varid(ncid, 'id', tmpid) == nf90_noerr) then
+                    if ( nf90_inq_varid(ncid, 'x', tmpid) == nf90_noerr ) then
+                        call nccheck ( nf90_put_att( ncid, varid, 'coordinates', 'id x y') )
+                    else
+                        call nccheck ( nf90_put_att( ncid, varid, 'coordinates', 'id longitude latitude') )
+                    end if
+                else
+                    if ( nf90_inq_varid(ncid, 'x', tmpid) == nf90_noerr ) then
+                        call nccheck ( nf90_put_att( ncid, varid, 'coordinates', 'x y') )
+                    else
+                        call nccheck ( nf90_put_att( ncid, varid, 'coordinates', 'longitude latitude') )
+                    end if
+                end if
+            else 
+                ! map file
                 if ( nf90_inq_varid(ncid, 'x', tmpid) == nf90_noerr ) then
                     call nccheck ( nf90_put_att( ncid, varid, 'coordinates', 'x y') )
                 else
@@ -802,6 +847,9 @@
              if ( pntgrid%ips_varid > 0 ) then
                 call nccheck ( nf90_put_var(ncid, pntgrid%ips_varid, pntgrid%ips) )
             end if
+             if ( pntgrid%id_varid > 0 ) then
+                call nccheck ( nf90_put_var(ncid, pntgrid%id_varid, pntgrid%id) )
+            end if
         end subroutine agnc_set_pntgrid
 
         subroutine agnc_set_mapgrid (ncid, mapgrid)
@@ -825,12 +873,12 @@
 !       also replace dummy of -1e10 by NF90_FILL_FLOAT
         subroutine put_mapgrid_chunked_write(ncid, varid, values)
             integer, intent(in)             :: ncid, varid
-            real(kind=4), intent(in)        :: values(:,:)
+            real, intent(in)                :: values(:,:)
 
             integer                         :: chunksize, chunksizex, chunksizey, nx, ny
-            real(kind=4), allocatable       :: vloc(:,:)
+            real, allocatable               :: vloc(:,:)
             integer                         :: sx, cx, sy, cy, lxi, lyi, nf90_stat
-            real(kind=4)                    :: tmp
+            real                            :: tmp
 
             chunksize = 256
             nx = size(values,1)
@@ -968,8 +1016,8 @@
         !> helper for agnc_get_mapgrid
         subroutine getMeanOfBounds(mapgrid, coordsarray, bnd)
             type (mapgrid_type), intent (in)   :: mapgrid
-            real(kind=4)       , intent (out)  :: coordsarray(:,:)
-            real(kind=4)       , intent (in)   :: bnd(:,:,:)
+            real               , intent (out)  :: coordsarray(:,:)
+            real               , intent (in)   :: bnd(:,:,:)
 
             integer                            :: m, n
 
@@ -984,7 +1032,7 @@
         subroutine searchActivePoint(mapgrid, mp, np, fill_value)
             type (mapgrid_type), intent (in)   :: mapgrid
             integer,             intent (out)  :: mp, np
-            real(kind=4),        intent (in)   :: fill_value
+            real        ,        intent (in)   :: fill_value
 
             logical :: ok
             integer :: i, j, k
@@ -1011,7 +1059,7 @@
      
         function cornersAreFilled(mapgrid, fill_value) result(chk)
             type (mapgrid_type), target, intent (in)   :: mapgrid
-            real(kind=4),        intent (in)   :: fill_value
+            real        ,        intent (in)   :: fill_value
             logical                            :: chk
 
             real, pointer :: coords(:,:)
@@ -1101,6 +1149,11 @@
             if ( pntgrid%ips_varid /= -1 ) then
                 allocate(pntgrid%ips(pntgrid%npoints))
                 call nccheck ( nf90_get_var(ncid, pntgrid%ips_varid, pntgrid%ips) )
+            end if
+
+            if ( pntgrid%id_varid /= -1 ) then
+                allocate(pntgrid%id(pntgrid%npoints))
+                call nccheck ( nf90_get_var(ncid, pntgrid%id_varid, pntgrid%id) )
             end if
 
         end subroutine agnc_get_pntgrid
@@ -1397,6 +1450,10 @@
                 call nccheck ( nf90_get_att(ncid, pntgrid%lat_varid, 'dimlen', pntgrid%ydimlen), 'dimlen' )
             end if
 
+            if ( nf90_inq_varid(ncid, 'id', pntgrid%id_varid) /= nf90_noerr ) then
+                pntgrid%id_varid = -1
+            end if
+
         end subroutine agnc_get_griddef_pnt
 
         subroutine agnc_get_griddef_spc(ncid, spcgrid)
@@ -1557,7 +1614,7 @@
                 end do
             end do
             deallocate(vloc)
-
+            call update_date(ncid, 'date_modified')
         end subroutine agnc_add_mapdata_float
 
         subroutine agnc_add_mapdata_double(ncid, varname, ti, values, dummyvalue, skip_range_error)
@@ -1629,19 +1686,21 @@
             end do
             deallocate(vloc)
 
+            call update_date(ncid, 'date_modified')
+
        end subroutine agnc_add_mapdata_double
 
        subroutine agnc_add_spcdata_density(ncid, ti, e2d, spc_as_map)
             integer,                          intent(in   ) :: ncid, ti
-            real(kind=4),   dimension(:,:),   intent(inout) :: e2d
+            real        ,   dimension(:,:),   intent(inout) :: e2d
             logical,                          intent(in   ) :: spc_as_map
 
-            real(kind=4),   dimension(:,:,:), allocatable   :: density
-            real(kind=4),   dimension(:,:,:,:), allocatable :: edloc
-            real(kind=4),   dimension(:),     allocatable   :: scale_density
+            real        ,   dimension(:,:,:), allocatable   :: density
+            real        ,   dimension(:,:,:,:), allocatable :: edloc
+            real        ,   dimension(:),     allocatable   :: scale_density
             integer                                         :: varid_scale_density, &
                                                                varid_density
-            real(kind=4)                                    :: fv_density
+            real                                            :: fv_density
             integer                                         :: ip, ith, ik, isp, msc, &
                                                                chunksize, sx, cx, sy, cy, &
                                                                lxi, lyi
@@ -1755,11 +1814,13 @@
 
             if (do_scale) deallocate(scale_density)
 
+            call update_date(ncid, 'date_modified')
+
         end subroutine agnc_add_spcdata_density
 
         subroutine agnc_add_spcdata_3d(ncid, ti_start, energy, theta, spr, spc_as_map)
             integer,                           intent(in   )    :: ncid, ti_start
-            real(kind=4),    dimension(:,:,:), intent(inout)    :: energy, theta, spr
+            real        ,    dimension(:,:,:), intent(inout)    :: energy, theta, spr
             logical,                           intent(in   )    :: spc_as_map
 
             ! local variables
@@ -1772,23 +1833,25 @@
                                                    reshape(   spr(:,:, ti), (/s(1), s(2)/)), spc_as_map)
             end do
 
+            call update_date(ncid, 'date_modified')
+
         end subroutine agnc_add_spcdata_3d
 
         subroutine agnc_add_spcdata_2d(ncid, ti, energy, theta, spr, spc_as_map)
             integer,                           intent(in   )    :: ncid, ti
-            real(kind=4),    dimension(:,:)                     :: energy, theta, spr
+            real        ,    dimension(:,:)                     :: energy, theta, spr
             logical,                           intent(in   )    :: spc_as_map
 
             ! local variables
-            real(kind=4),    dimension(:),       allocatable    :: scale_energy
-            real(kind=4),    dimension(:,:,:),   allocatable    :: eloc, tloc, sloc
+            real        ,    dimension(:),       allocatable    :: scale_energy
+            real        ,    dimension(:,:,:),   allocatable    :: eloc, tloc, sloc
             integer                                             :: varid_scale_energy, &
                                                                    varid_energy, varid_theta, &
                                                                    varid_spr, msc, &
                                                                    ip, ik, &
                                                                    chunksize, sx, cx, sy, cy, &
                                                                    lxi, lyi
-            real(kind=4)                                        :: sf_theta, sf_spr, &
+            real                                                :: sf_theta, sf_spr, &
                                                                    ao_theta, ao_spr, &
                                                                    fv_theta, fv_spr
             type(spcgrid_type)                                  :: spcgrid
@@ -1925,6 +1988,9 @@
                 end do
             end if
             if ( do_scale ) deallocate(scale_energy)
+
+            call update_date(ncid, 'date_modified')
+
         end subroutine agnc_add_spcdata_2d
 
         subroutine agnc_add_pntdata1d_float(ncid, varname, ti, values, dummyvalue, skip_range_error)
@@ -1962,6 +2028,9 @@
                     if (.not. present(skip_range_error)) call agnc_set_error( nf90_strerror(nf90_stat))
                 end if
             end if
+
+            call update_date(ncid, 'date_modified')
+
         end subroutine agnc_add_pntdata1d_float
 
         subroutine agnc_add_pntdata2d_float(ncid, varname, ti, values, dummyvalue, skip_range_error)
@@ -1999,6 +2068,8 @@
                     if (.not. present(skip_range_error)) call agnc_set_error( nf90_strerror(nf90_stat))
                 end if
             end if
+
+            call update_date(ncid, 'date_modified')
 
         end subroutine agnc_add_pntdata2d_float
 
@@ -2038,6 +2109,8 @@
                 end if
             end if
 
+            call update_date(ncid, 'date_modified')
+
         end subroutine agnc_add_pntdata3d_float
 
         subroutine agnc_add_pntdata1d_double(ncid, varname, ti, values, dummyvalue, skip_range_error)
@@ -2074,6 +2147,8 @@
                     if (.not. present(skip_range_error)) call agnc_set_error( nf90_strerror(nf90_stat))
                 end if
             end if
+
+            call update_date(ncid, 'date_modified')
 
         end subroutine agnc_add_pntdata1d_double
 
@@ -2112,6 +2187,8 @@
                 end if
             end if
 
+            call update_date(ncid, 'date_modified')
+
         end subroutine agnc_add_pntdata2d_double
 
         subroutine agnc_add_pntdata3d_double(ncid, varname, ti, values, dummyvalue, skip_range_error)
@@ -2148,6 +2225,8 @@
                     if (.not. present(skip_range_error)) call agnc_set_error( nf90_strerror(nf90_stat))
                 end if
             end if
+
+            call update_date(ncid, 'date_modified')
 
         end subroutine agnc_add_pntdata3d_double
 !
@@ -2497,27 +2576,27 @@
             integer,                           intent(out)      :: varid_scale_energy, &
                                                                    varid_energy, varid_theta, &
                                                                    varid_spr
-            real(kind=4),                      intent(out)      :: sf_theta, sf_spr, &
+            real        ,                      intent(out)      :: sf_theta, sf_spr, &
                                                                    ao_theta, ao_spr, &
                                                                    fv_theta, fv_spr
             call agnc_get_varid_by_name(ncid, "scale_energy_1d", varid_scale_energy)
             call agnc_get_varid_by_name(ncid, "energy_1d", varid_energy)
             call agnc_get_varid_by_name(ncid, "theta_1d", varid_theta)
             call agnc_get_varid_by_name(ncid, "spread_1d", varid_spr)
-            call get_scalies_float(ncid, varid_theta, ao_theta, sf_theta, fv_theta)
-            call get_scalies_float(ncid, varid_spr, ao_spr, sf_spr, fv_spr)
+            call get_scalies(ncid, varid_theta, ao_theta, sf_theta, fv_theta)
+            call get_scalies(ncid, varid_spr, ao_spr, sf_spr, fv_spr)
         end subroutine agnc_collect_spcmeta
 
         subroutine agnc_collect_spcmeta_2d(ncid, varid_density, varid_scale_density, fv_density)
             integer,                           intent( in)      :: ncid
             integer,                           intent(out)      :: varid_scale_density, &
                                                                    varid_density
-            real(kind=4)                                        :: ao_density, sf_density
-            real(kind=4),                      intent(out)      :: fv_density
+            real                                                :: ao_density, sf_density
+            real        ,                      intent(out)      :: fv_density
 
             call agnc_get_varid_by_name(ncid, "density", varid_density)
             call agnc_get_varid_by_name(ncid, "scale_density", varid_scale_density)
-            call get_scalies_float(ncid, varid_density, ao_density, sf_density, fv_density)
+            call get_scalies(ncid, varid_density, ao_density, sf_density, fv_density)
         end subroutine agnc_collect_spcmeta_2d
 
         function datevec_from_epoch( t_in ) result (datevec)
@@ -2678,5 +2757,17 @@
             end if
 
         end subroutine agnc_scan_time
+
+        subroutine update_date(ncid, field)
+            integer,                        intent( in)         :: ncid
+            character(len=*),               intent( in)         :: field
+            integer, dimension(6)                               :: current_date_time
+            character(len=20)                                   :: date_time
+            call ocdtim(current_date_time)
+            write(date_time,'(i4,5(a,i0.2))') current_date_time(1), '-', current_date_time(2), '-', &
+                                            & current_date_time(3), 'T', current_date_time(4), ':', &
+                                            & current_date_time(5), ':', current_date_time(6)
+            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, field, date_time) )
+        end subroutine update_date
 
     end module agioncmd

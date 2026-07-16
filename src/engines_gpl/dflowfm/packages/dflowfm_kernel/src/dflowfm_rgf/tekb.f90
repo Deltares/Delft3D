@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,35 @@
 !
 !
 
-      subroutine TEKB(X, Y, MMAX, NMAX, NCOL)
-         use m_grid_block
-         implicit none
-         integer :: mmax, nmax, ncol
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
-         integer :: i
+module m_tekb
 
-         if (ITYPE == 1) then
-            call TEKLN2(X, Y, mmax, nmax, MB(1), NB(1), MB(2), NB(2), NCOL)
+   implicit none
+
+   private
+
+   public :: tekb
+
+contains
+
+   subroutine TEKB(X, Y, MMAX, NMAX, NCOL)
+      use precision, only: dp
+      use m_grid_block, only: itype, mb, nb
+      use m_cirr, only: cirr
+      use m_tekln2, only: tekln2
+
+      integer :: mmax, nmax, ncol
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+      integer :: i
+
+      if (ITYPE == 1) then
+         call TEKLN2(X, Y, mmax, nmax, MB(1), NB(1), MB(2), NB(2), NCOL)
+      end if
+      do I = 1, 6
+         if (MB(I) /= 0) then
+            call CIRR(X(MB(I), NB(I)), Y(MB(I), NB(I)), NCOL)
          end if
-         do I = 1, 6
-            if (MB(I) /= 0) then
-               call CIRR(X(MB(I), NB(I)), Y(MB(I), NB(I)), NCOL)
-            end if
-         end do
-         return
-      end subroutine tekb
+      end do
+      return
+   end subroutine tekb
+
+end module m_tekb

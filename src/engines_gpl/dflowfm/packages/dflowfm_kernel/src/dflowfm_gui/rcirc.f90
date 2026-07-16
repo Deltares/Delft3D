@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,12 +30,23 @@
 !
 !
 
-      subroutine RCIRC(X, Y)
-         use m_wearelt
-         implicit none
-         double precision :: x
-         double precision :: y
-         call MOVABS(X, Y)
-         call CIR(RCIR)
-         return
-      end
+module m_rcirc
+
+   implicit none
+
+contains
+
+   subroutine RCIRC(X, Y)
+      use precision, only: dp
+      use m_cir, only: cir
+      use m_wearelt, only: rcir
+      use m_movabs, only: movabs
+
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      call MOVABS(X, Y)
+      call CIR(RCIR)
+      return
+   end
+
+end module m_rcirc

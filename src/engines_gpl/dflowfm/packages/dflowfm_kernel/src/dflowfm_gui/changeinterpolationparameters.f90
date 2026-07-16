@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,34 +30,51 @@
 !
 !
 
+module m_changeinterpolationparameters
+
+   implicit none
+
+contains
+
    subroutine CHANGEINTERPOLATIONPARAMETERS()
-      use m_ec_interpolationsettings
+      use m_ec_interpolationsettings, only: interpolationtype, jtekinterpolationprocess, iav, nummin, rcel, interpolate_to, percentileminmax
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use M_SAMPLES, only: mxsam
       use m_arcinfo, only: mca
-      use unstruc_display
       use dflowfm_version_module, only: company, product_name
-      use m_helpnow
 
-      implicit none
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=8, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 45, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'INTERPOLATIONTYPE (1=TRI,2=AVE,3=CURV. TRI)'; it(2 * 1) = 2
-      OPTION(2) = 'JTEKINTERPOLATIONPROCESS (0/1)             '; it(2 * 2) = 2
-      OPTION(3) = 'IAV, AVERAGINGTYPE                         '; it(2 * 3) = 2
-      OPTION(4) = 'NUMMIN, MINUMUM NR OF POINTS IN AV         '; it(2 * 4) = 2
-      OPTION(5) = 'RCEL, RELATIVE SEARCH CELL SIZE            '; it(2 * 5) = 6
-      OPTION(6) = 'Interpolate_to , 1=bathy, 2=ZK, 3=S1, 4=ZC '; it(2 * 6) = 2
-      OPTION(7) = 'Percentileminmax, average min or max Perc %'; it(2 * 7) = 6
-      OPTION(8) = 'Mxsam                                      '; it(2 * 8) = 2
+      OPTION(1) = 'INTERPOLATIONTYPE (1=TRI,2=AVE,3=CURV. TRI)'
+      it(2 * 1) = 2
+      OPTION(2) = 'JTEKINTERPOLATIONPROCESS (0/1)             '
+      it(2 * 2) = 2
+      OPTION(3) = 'IAV, AVERAGINGTYPE                         '
+      it(2 * 3) = 2
+      OPTION(4) = 'NUMMIN, MINUMUM NR OF POINTS IN AV         '
+      it(2 * 4) = 2
+      OPTION(5) = 'RCEL, RELATIVE SEARCH CELL SIZE            '
+      it(2 * 5) = 6
+      OPTION(6) = 'Interpolate_to , 1=bathy, 2=ZK, 3=S1, 4=ZC '
+      it(2 * 6) = 2
+      OPTION(7) = 'Percentileminmax, average min or max Perc %'
+      it(2 * 7) = 6
+      OPTION(8) = 'Mxsam                                      '
+      it(2 * 8) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -191,7 +208,9 @@
             call IFormGEtINTEGER(2 * 6, Interpolate_to)
             call IFormGEtDouble(2 * 7, Percentileminmax)
             call IFormGEtinteger(2 * 8, Mxsam)
-            if (mxsam == 0) mca = 0
+            if (mxsam == 0) then
+               mca = 0
+            end if
 
          end if
          call IWinClose(1)
@@ -208,3 +227,5 @@
       goto 30
 
    end subroutine CHANGEINTERPOLATIONPARAMETERS
+
+end module m_changeinterpolationparameters

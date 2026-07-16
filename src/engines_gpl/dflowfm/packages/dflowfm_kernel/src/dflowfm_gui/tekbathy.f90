@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,39 +30,54 @@
 !
 !
 
- subroutine tekbathy(ja)
-    use unstruc_display
-    use m_flowgeom
-    use m_flow
-    use gridoperations
-    use m_drawthis
-    implicit none
-    integer :: nodewhat
-    integer :: k, ja, nn, ncol
-    double precision :: znod, zn
-    logical inview
+module m_tekbathy
 
-    if (ndraw(39) == 0) return
+   implicit none
 
-    nodewhat = ndraw(28)
-    ndraw(28) = 3
+contains
 
-    do k = 1, ndxi
-       if (mod(k, 200) == 0) then
-          call halt(ja)
-          if (ja == 1) then
-             ndraw(28) = nodewhat
-             return
-          end if
-       end if
+   subroutine tekbathy(ja)
+      use precision, only: dp
+      use m_isocol2
+      use m_halt
+      use unstruc_display
+      use m_flowgeom
+      use m_flow
+      use gridoperations
+      use m_drawthis
+      use m_pfiller
+      use m_inview
+      use m_znod
+      implicit none
+      integer :: nodewhat
+      integer :: k, ja, nn, ncol
+      real(kind=dp) :: zn
 
-       if (inview(xz(k), yz(k))) then
-          zn = znod(k)
-          call isocol2(zn, ncol)
-          nn = size(nd(k)%x)
-          call PFILLER(nd(k)%x, nd(k)%y, nn, NCOL, NCol)
-       end if
-    end do
+      if (ndraw(39) == 0) then
+         return
+      end if
 
-    ndraw(28) = nodewhat
- end subroutine tekbathy
+      nodewhat = ndraw(28)
+      ndraw(28) = 3
+
+      do k = 1, ndxi
+         if (mod(k, 200) == 0) then
+            call halt(ja)
+            if (ja == 1) then
+               ndraw(28) = nodewhat
+               return
+            end if
+         end if
+
+         if (inview(xz(k), yz(k))) then
+            zn = znod(k)
+            call isocol2(zn, ncol)
+            nn = size(nd(k)%x)
+            call PFILLER(nd(k)%x, nd(k)%y, nn, NCOL, NCol)
+         end if
+      end do
+
+      ndraw(28) = nodewhat
+   end subroutine tekbathy
+
+end module m_tekbathy

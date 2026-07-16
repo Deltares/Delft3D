@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,17 +29,23 @@
 
 !
 !
+module m_fbox_nop
+   use m_rectangle
 
-      subroutine FBOXNOP(XB1, YB1, XB2, YB2)
-         use m_fboxold
-         use m_drawthis
-         implicit none
-         double precision :: xb1, xb2, yb1, yb2
+   implicit none
+contains
+   subroutine FBOXNOP(XB1, YB1, XB2, YB2)
+      use precision, only: dp
+      use m_fboxold, only: fboxold
+      use m_drawthis, only: ndraw
 
-         if (ndraw(10) == 0) then
-            call RECTANGLE(real(XB1), real(YB1), real(XB2), real(YB2))
-         else
-            call fboxold(XB1, YB1, XB2, YB2)
-         end if
-         return
-      end
+      real(kind=dp) :: xb1, xb2, yb1, yb2
+
+      if (ndraw(10) == 0) then
+         call RECTANGLE(real(XB1), real(YB1), real(XB2), real(YB2))
+      else
+         call fboxold(XB1, YB1, XB2, YB2)
+      end if
+      return
+   end
+end module m_fbox_nop

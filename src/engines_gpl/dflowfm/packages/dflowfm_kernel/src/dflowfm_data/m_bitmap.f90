@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,8 +35,9 @@
 !---------------------------------------------------------------------------------------------------------------------------------
 ! rest.f90
 module M_BITMAP
+   use precision, only: dp
    implicit none
    integer, allocatable, save :: IPIX(:)
    integer, save :: MXP, NXP
-   double precision, save :: XB(4), YB(4), XP(4), YP(4)
+   real(kind=dp), save :: XB(4), YB(4), XP(4), YP(4)
 end module M_BITMAP

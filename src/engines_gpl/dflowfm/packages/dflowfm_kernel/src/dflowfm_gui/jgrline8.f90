@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,21 +30,24 @@
 !
 !
 module m_jgrline8
-      implicit none
+   use m_polyline
+
+   implicit none
 contains
    subroutine JGRLINE8(X, Y, N) ! TEKEN LIJN, INCL XYMISSEN, GEBRUIK VAN INVIEW EN PROJECTIE
+      use precision, only: dp
 
-      use m_missing
-      use m_inview2
+      use m_missing, only: dxymis
+      use m_inview2, only: inview2
 
       integer :: n
-      double precision :: X(N), Y(N)
+      real(kind=dp) :: X(N), Y(N)
 
       integer :: i
       integer :: in
       integer :: k
       integer :: l
-      double precision :: XA, YA
+      real(kind=dp) :: XA, YA
       integer, parameter :: KMAX = 4096 ! BEPERKING VAN INTERACTER
       real :: XX(KMAX), YY(KMAX)
 
@@ -55,18 +58,26 @@ contains
       do while (I < N)
          I = I + 1
          if (X(I) /= dXYMIS) then
-            if (INVIEW2(X(I), Y(I), XA, YA)) IN = 1
-            if (K == 0 .or. IN == 1 .or. I == L + 1) K = K + 1
+            if (INVIEW2(X(I), Y(I), XA, YA)) then
+               IN = 1
+            end if
+            if (K == 0 .or. IN == 1 .or. I == L + 1) then
+               K = K + 1
+            end if
             if (K == 1 .or. IN == 1 .or. I == L + 1) then
                XX(K) = XA
                YY(K) = YA
             end if
-            if (IN == 1) L = I
+            if (IN == 1) then
+               L = I
+            end if
          end if
          if (I == N .or. X(I) == dXYMIS .or. K == KMAX) then
             if (K /= 0) then
                call POLYLINE(XX, YY, K)
-               if (K == KMAX) I = I - 1
+               if (K == KMAX) then
+                  I = I - 1
+               end if
                K = 0
                L = 0
                IN = 0

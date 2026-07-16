@@ -59,32 +59,21 @@ set(oss_dependencies_general    deltares_common
                                 morphology_plugins_c)
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+                         netCDF::netcdff)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF)
+    )
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
-                        netcdff)
+                        netCDF::netcdff)
 
-    target_link_libraries(${library_name} ${oss_dependencies})
     add_definitions(-DHAVE_FC_FORM_BINARY)
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${input_files}
@@ -93,5 +82,5 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${input_files}
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
 # Change project flags at the end of this file
-target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_nobounds_flag}>")
+target_compile_options(${library_name} PRIVATE ${qauto_threaded_flags})
+target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nobounds_flag}>")

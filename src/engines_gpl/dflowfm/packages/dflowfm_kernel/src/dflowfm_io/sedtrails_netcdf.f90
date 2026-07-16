@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
 module m_sedtrails_netcdf
    use m_sedtrails_data
    use unstruc_netcdf
+   use netcdf_utils, only: ncu_ensure_define_mode, ncu_ensure_data_mode, ncu_restore_mode
 
    implicit none
 
@@ -48,19 +49,20 @@ module m_sedtrails_netcdf
 contains
 
    subroutine sedtrails_write_stats(tim)
-      use m_flowparameters, only: eps10
+      use precision, only: dp
+      use m_flowparameters, only: EPS10
       use m_flowtimes, only: ti_st, ti_sts, ti_ste, tstop_user, time_st
       use precision_basics
       use m_sedtrails_stats
 
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
       integer :: ierr
 
       ierr = 1
       if (ti_st > 0) then
-         if (comparereal(tim, time_st, eps10) >= 0) then
+         if (comparereal(tim, time_st, EPS10) >= 0) then
             call sedtrails_write_nc(time_st)
             call reset_sedtrails_stats()
             if (ti_st > 0) then
@@ -68,7 +70,7 @@ contains
             else
                time_st = tstop_user
             end if
-            if (comparereal(time_st, ti_ste, eps10) == 1) then
+            if (comparereal(time_st, ti_ste, EPS10) == 1) then
                time_st = tstop_user
             end if
          end if
@@ -81,6 +83,7 @@ contains
    end subroutine sedtrails_write_stats
 
    subroutine sedtrails_write_nc(tim)
+      use precision, only: dp
       use netcdf
       use m_flowtimes, only: it_st
       use unstruc_model
@@ -88,7 +91,7 @@ contains
       use Messagehandling
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       type(t_unc_sedtrailsids), save :: stids
       integer :: ierr
@@ -121,6 +124,7 @@ contains
 !> Reads the net data from a NetCDF file.
 !! Processing is done elsewhere.
    subroutine sedtrails_unc_read_net_ugrid(filename, numk_keep, numk_read, ierr)
+      use precision, only: dp
       use m_sedtrails_data
       use m_sedtrails_network, only: sedtrails_increasenetwork
       use m_save_ugrid_state
@@ -129,7 +133,6 @@ contains
       use netcdf_utils, only: ncu_get_att
       use m_sferic
       use m_missing
-      use unstruc_messages
       use MessageHandling
       use dfm_error
       use m_alloc
@@ -144,7 +147,7 @@ contains
       integer :: ioncid, iconvtype, start_index, networkIndex
       integer :: im, nmesh, i, numk_last
       integer :: ncid
-      double precision :: convversion
+      real(kind=dp) :: convversion
       type(t_ug_meshgeom) :: meshgeom
 
       character(len=:), allocatable :: tmpstring
@@ -244,7 +247,7 @@ contains
 
       end do
 
-      call realloc(zk, numk_read, keepExisting=.false., fill=0d0)
+      call realloc(zk, numk_read, keepExisting=.false., fill=0.0_dp)
 
       ! Success
 888   continue
@@ -307,7 +310,7 @@ contains
                  id_flowelemxcc, id_flowelemycc, &
                  id_flowelemdomain, id_flowelemglobalnr
 
-      integer :: jaInDefine
+      logical :: jaInDefine
 
       jaInDefine = 0
 
@@ -319,14 +322,12 @@ contains
       ndxndxi = numk
 
       ! Put dataset in define mode (possibly again) to add dimensions and variables.
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) jaInDefine = 1 ! Was still in define mode.
-      if (ierr /= nf90_noerr .and. ierr /= nf90_eindefine) then
+      ierr = ncu_ensure_define_mode(igeomfile, jaInDefine)
+      if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'sedtrails_unc_write_flowgeom_filepointer::Could not put header in sedtrails geometry file.')
          call check_error(ierr)
          return
       end if
-
       ierr = nf90_def_dim(igeomfile, 'nNodes', ndxndxi, id_flowelemdim)
 
       ! Net nodes
@@ -364,13 +365,12 @@ contains
       end if
 
       ! Leave the dataset in the same mode as we got it.
-      if (jaInDefine == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, jaInDefine)
 
    end subroutine sedtrails_unc_write_flowgeom_filepointer
 
    subroutine unc_write_sedtrails_filepointer(imapfile, tim)
+      use precision, only: dp
       use m_sedtrails_stats
       use m_alloc
       use m_flowtimes, only: Tudunitstr
@@ -378,11 +378,12 @@ contains
       use m_sediment, only: stm_included
       use m_flowtimes, only: it_st
       use m_flowparameters, only: jawave
+      use m_waveconst
 
       implicit none
 
       integer, intent(in) :: imapfile
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       ! Locals
       integer :: ndxndxi
@@ -393,7 +394,7 @@ contains
       integer, dimension(2), save :: id_timedim, id_time, id_timestep, id_sbx, id_sby, id_ssx, id_ssy, id_ssc, &
                                      id_sedtotdim, id_flowelemdim, id_ucx, id_ucy, id_bl, id_hs, id_taus, id_tausmax, &
                                      id_ua, id_va
-      double precision, allocatable :: work(:, :)
+      real(kind=dp), allocatable :: work(:, :)
       integer, allocatable :: nodes(:)
 
       ! Define variables and write time-invariant data
@@ -442,10 +443,10 @@ contains
             ! Fractions
             ierr = nf90_def_dim(imapfile, 'nSedTot', lsedtot, id_sedtotdim(iid))
             !
-            call definencvar(imapfile, id_sbx(iid), nf90_double, (/id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)/), 'bedload_x_comp', 'bedload transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
-            call definencvar(imapfile, id_sby(iid), nf90_double, (/id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)/), 'bedload_y_comp', 'bedload transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
-            call definencvar(imapfile, id_ssx(iid), nf90_double, (/id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)/), 'susload_x_comp', 'suspended transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
-            call definencvar(imapfile, id_ssy(iid), nf90_double, (/id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)/), 'susload_y_comp', 'suspended transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+            call definencvar(imapfile, id_sbx(iid), nf90_double, [id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)], 'bedload_x_comp', 'bedload transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+            call definencvar(imapfile, id_sby(iid), nf90_double, [id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)], 'bedload_y_comp', 'bedload transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+            call definencvar(imapfile, id_ssx(iid), nf90_double, [id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)], 'susload_x_comp', 'suspended transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+            call definencvar(imapfile, id_ssy(iid), nf90_double, [id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)], 'susload_y_comp', 'suspended transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
          end if
 
          if ((trim(sedtrails_analysis) == 'soulsby' .or. trim(sedtrails_analysis) == 'all') .and. stm_included) then
@@ -458,9 +459,9 @@ contains
             call definencvar(imapfile, id_hs(iid), nf90_double, idims, 'waterdepth', 'water depth', 'm', 'net_xcc net_ycc')
             call definencvar(imapfile, id_taus(iid), nf90_double, idims, 'mean_bss_magnitude', 'mean bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
             call definencvar(imapfile, id_tausmax(iid), nf90_double, idims, 'max_bss_magnitude', 'max bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
-            call definencvar(imapfile, id_ssc(iid), nf90_double, (/id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)/), 'suspended_sed_conc', 'depth-averaged suspended sediment concentration', 'kg m-3', 'net_xcc net_ycc')
+            call definencvar(imapfile, id_ssc(iid), nf90_double, [id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)], 'suspended_sed_conc', 'depth-averaged suspended sediment concentration', 'kg m-3', 'net_xcc net_ycc')
             !
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                call definencvar(imapfile, id_ua(iid), nf90_double, idims, 'wave_nonlin_vel_x_comp', 'non-linear wave velocity contribution, x-component', 'm s-1', 'net_xcc net_ycc')
                call definencvar(imapfile, id_va(iid), nf90_double, idims, 'wave_nonlin_vel_y_comp', 'non-linear wave velocity contribution, y-component', 'm s-1', 'net_xcc net_ycc')
             end if
@@ -474,14 +475,14 @@ contains
       itim = it_st ! increment time dimension index
 
       ! time
-      ierr = nf90_put_var(imapfile, id_time(iid), tim, (/itim/))
-      ierr = nf90_put_var(imapfile, id_timestep(iid), is_dtint, (/itim/))
+      ierr = nf90_put_var(imapfile, id_time(iid), tim, [itim])
+      ierr = nf90_put_var(imapfile, id_timestep(iid), is_dtint, [itim])
 
       ! analysis:
       if (stm_included) then
-         call realloc(work, (/numk, lsedtot/), keepexisting=.false., fill=0d0)
+         call realloc(work, [numk, lsedtot], keepexisting=.false., fill=0.0_dp)
       else
-         call realloc(work, (/numk, 1/), keepexisting=.false., fill=0d0)
+         call realloc(work, [numk, 1], keepexisting=.false., fill=0.0_dp)
       end if
 
       ! bottom level
@@ -490,7 +491,7 @@ contains
          work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_BL, st_ind(nodes, k), 1))
       end do
       work = work / is_dtint
-      ierr = nf90_put_var(imapfile, id_bl(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+      ierr = nf90_put_var(imapfile, id_bl(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
 
       ! 'flowvelocity'
       if ((trim(sedtrails_analysis) == 'flowvelocity' .or. trim(sedtrails_analysis) == 'all')) then
@@ -499,14 +500,14 @@ contains
             work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_UCX, st_ind(nodes, k), 1))
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_ucx(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_ucx(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
          !
          do k = 1, numk
             nodes = pack([(ii, ii=1, size(st_ind(:, k)))], st_ind(:, k) > 0)
             work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_UCY, st_ind(nodes, k), 1))
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_ucy(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_ucy(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
       end if
 
       !'transport'
@@ -518,7 +519,7 @@ contains
             end do
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_sbx(iid), work(1:numk, 1:lsedtot), (/1, 1, itim/), (/ndxndxi, lsedtot, 1/))
+         ierr = nf90_put_var(imapfile, id_sbx(iid), work(1:numk, 1:lsedtot), [1, 1, itim], [ndxndxi, lsedtot, 1])
          !
          do l = 1, lsedtot
             do k = 1, numk
@@ -527,7 +528,7 @@ contains
             end do
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_sby(iid), work(1:numk, 1:lsedtot), (/1, 1, itim/), (/ndxndxi, lsedtot, 1/))
+         ierr = nf90_put_var(imapfile, id_sby(iid), work(1:numk, 1:lsedtot), [1, 1, itim], [ndxndxi, lsedtot, 1])
          !
          do l = 1, lsedtot
             do k = 1, numk
@@ -536,7 +537,7 @@ contains
             end do
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_ssx(iid), work(1:numk, 1:lsedtot), (/1, 1, itim/), (/ndxndxi, lsedtot, 1/))
+         ierr = nf90_put_var(imapfile, id_ssx(iid), work(1:numk, 1:lsedtot), [1, 1, itim], [ndxndxi, lsedtot, 1])
          !
          do l = 1, lsedtot
             do k = 1, numk
@@ -545,7 +546,7 @@ contains
             end do
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_ssy(iid), work(1:numk, 1:lsedtot), (/1, 1, itim/), (/ndxndxi, lsedtot, 1/))
+         ierr = nf90_put_var(imapfile, id_ssy(iid), work(1:numk, 1:lsedtot), [1, 1, itim], [ndxndxi, lsedtot, 1])
       end if
 
       !"soulsby"
@@ -555,21 +556,21 @@ contains
             work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_HS, st_ind(nodes, k), 1))
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_hs(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_hs(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
          !
          do k = 1, numk
             nodes = pack([(ii, ii=1, size(st_ind(:, k)))], st_ind(:, k) > 0)
             work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_TAUS, st_ind(nodes, k), 1))
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_taus(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_taus(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
          !
          do k = 1, numk
             nodes = pack([(ii, ii=1, size(st_ind(:, k)))], st_ind(:, k) > 0)
             work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_TAUSMAX, st_ind(nodes, k), 1))
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_tausmax(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_tausmax(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
          !
          do l = 1, lsedtot
             do k = 1, numk
@@ -578,29 +579,28 @@ contains
             end do
          end do
          work = work / is_dtint
-         ierr = nf90_put_var(imapfile, id_ssc(iid), work(1:numk, 1:lsedtot), (/1, 1, itim/), (/ndxndxi, lsedtot, 1/))
+         ierr = nf90_put_var(imapfile, id_ssc(iid), work(1:numk, 1:lsedtot), [1, 1, itim], [ndxndxi, lsedtot, 1])
          !
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             do k = 1, numk
                nodes = pack([(ii, ii=1, size(st_ind(:, k)))], st_ind(:, k) > 0)
                work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_UA, st_ind(nodes, k), 1))
             end do
             work = work / is_dtint
-            ierr = nf90_put_var(imapfile, id_ua(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+            ierr = nf90_put_var(imapfile, id_ua(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
             !
             do k = 1, numk
                nodes = pack([(ii, ii=1, size(st_ind(:, k)))], st_ind(:, k) > 0)
                work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_VA, st_ind(nodes, k), 1))
             end do
             work = work / is_dtint
-            ierr = nf90_put_var(imapfile, id_va(iid), work(1:numk, 1), (/1, itim/), (/ndxndxi, 1/))
+            ierr = nf90_put_var(imapfile, id_va(iid), work(1:numk, 1), [1, itim], [ndxndxi, 1])
          end if
       end if
 
    end subroutine unc_write_sedtrails_filepointer
 
    subroutine sedtrails_loadNetwork(filename, istat, jadoorladen)
-      use unstruc_messages
       use m_missing
       use m_alloc
       use m_partitioninfo, only: jampi
@@ -613,7 +613,7 @@ contains
       integer, intent(out) :: istat !< Return status (0=success)
       integer, intent(in) :: jadoorladen
 
-      integer :: k0, numkn
+      integer :: k0, numkn, i
       logical :: jawel
 
       inquire (file=filename, exist=jawel)
@@ -637,7 +637,7 @@ contains
          ! Fill global domain mode numbers, before reducing the sedtrails grid to the submodel we're in
          if (jampi > 0) then
             call realloc(iglobal_s, numk, keepExisting=.false., fill=0)
-            iglobal_s = (/1:numk/)
+            iglobal_s = [(i, i=1, numk)]
          end if
       else
          call qnerror('sedtrails_loadNetwork::Error while loading network from '''//trim(filename)//''', please inspect the preceding diagnostic output.', ' ', ' ')

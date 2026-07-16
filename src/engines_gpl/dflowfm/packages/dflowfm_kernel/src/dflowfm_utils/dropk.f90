@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,23 +30,38 @@
 !
 !
 
- subroutine dropk(xp, yp)
-    use m_polygon
-    use m_flowgeom
-    use m_flow
-    implicit none
-    double precision, intent(in) :: xp, yp
+module m_dropk
 
-    ! locals
-    integer :: L, LL, Lb, Lt
+   implicit none
 
-    call isFLOWLINK(xp, yp, LL)
-    if (LL > 0) then
-       call getLbotLtop(LL, Lb, Lt)
-       do L = Lb - 1, Lt
-          turkin0(L) = turkin0(L) + 1d0
-          turkin1(L) = turkin0(L)
-       end do
-    end if
-    return
- end subroutine dropk
+   private
+
+   public :: dropk
+
+contains
+
+   subroutine dropk(xp, yp)
+      use m_isflowlink, only: isflowlink
+      use precision, only: dp
+      use m_polygon
+      use m_flowgeom
+      use m_flow
+      use m_get_Lbot_Ltop
+
+      real(kind=dp), intent(in) :: xp, yp
+
+      ! locals
+      integer :: L, LL, Lb, Lt
+
+      call isFLOWLINK(xp, yp, LL)
+      if (LL > 0) then
+         call getLbotLtop(LL, Lb, Lt)
+         do L = Lb - 1, Lt
+            turkin0(L) = turkin0(L) + 1.0_dp
+            turkin1(L) = turkin0(L)
+         end do
+      end if
+      return
+   end subroutine dropk
+
+end module m_dropk

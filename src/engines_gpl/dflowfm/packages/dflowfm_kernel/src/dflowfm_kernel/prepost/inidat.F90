@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,39 +27,24 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_inidat
 
-!----- AGPL --------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2017-2024.
-!
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).
-!
-!  Delft3D is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU Affero General Public License as
-!  published by the Free Software Foundation version 3.
-!
-!  Delft3D  is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU Affero General Public License for more details.
-!
-!  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!  All indications and logos of, and references to, "Delft3D",
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!
-!-------------------------------------------------------------------------------
-!
-!
+   use m_wrilan, only: wrilan
+   use m_ininumbers, only: ininumbers
+   use m_wrirgf, only: wrirgf
+   use m_maketekaltimes, only: maketekaltimes
+
+   use precision, only: dp
+   implicit none
+
+   private
+
+   public :: inidat, loadfile, savefile, jaSkipCmdLineArgs
+
+   integer :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
+
+contains
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -72,7 +57,6 @@
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, maxspl, maxsplen, readsplines
       use M_SAMPLES
       use m_commandline_option
@@ -86,13 +70,19 @@
       use m_cconstants
       use m_plotfil
       use m_perspx
-      implicit none
+      use m_zeronet
+      use m_paramtext
+      use m_increase_grid
+      use m_ini_sferic
+      use m_start_parameters, only: md_jaautostart
+      use properties, only: deprecate_pound_wrapped_values
 
-      double precision :: dx
+      real(kind=dp) :: dx
       integer :: k
-      double precision :: rk
-      double precision :: rmiss
-      integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
+      real(kind=dp) :: rk
+      real(kind=dp) :: rmiss
+
+      deprecate_pound_wrapped_values = .true.
 
       !  1=CLS
       !  2=GRID/NET    1=RECHT   2=SPLINE
@@ -218,37 +208,48 @@
       call ZERONET()
 !write (*,*) 'zeronet'
 
-      XK0 = 0; YK0 = 0; ZK0 = 0
+      XK0 = 0
+      YK0 = 0
+      ZK0 = 0
       !XK1  = 0 ; YK1  = 0 ; ZK1  = 0
       RK = 0
 
-      RNOD = dmiss; RLIN = dmiss
+      RNOD = dmiss
+      RLIN = dmiss
 
-      XLAN = xymis; YLAN = xymis; ZLAN = 0; NCLAN = 0
-      XPL = 0; YPL = 0
+      XLAN = xymis
+      YLAN = xymis
+      ZLAN = 0
+      NCLAN = 0
+      XPL = 0
+      YPL = 0
 
-      KN = 0; KN0 = 0
+      KN = 0
+      KN0 = 0
 
-      NMK = 0; NMK0 = 0
-      KC = 0; KC0 = 0
-      LC = 0; LC0 = 0
+      NMK = 0
+      NMK0 = 0
+      KC = 0
+      KC0 = 0
+      LC = 0
+      LC0 = 0
 
-      DX = 1.0d20
+      DX = 1.0e20_dp
       RMISS = -999
-      ZUPW = 1d0
-      AG = 9.81d0
+      ZUPW = 1.0_dp
+      AG = 9.81_dp
       PI = acos(-1.)
       RHOW = 1000
       JVAST = 0
       RLENGTH = 1
-      RWIDTH = 0.01d0
-      RTHICK = 0.01d0
+      RWIDTH = 0.01_dp
+      RTHICK = 0.01_dp
       LFAC = 2
       MOMENTS = 1
 
       XYZ = 0
 
-      TWOPI = 2 * acos(-1d0)
+      TWOPI = 2 * acos(-1.0_dp)
       WAVLEN = WAVCEL * WAVPER
       WAVKX = TWOPI / WAVLEN
       WAVOM = TWOPI / WAVPER
@@ -292,7 +293,6 @@
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, readsplines
       use M_SAMPLES
       use m_commandline_option
@@ -300,18 +300,16 @@
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
       use m_reapol
+      use m_reasam
+      use m_loadbitmap
+      use m_reagrid, only: reagrid
+      use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
+      use m_realan, only: realan
+      use m_filez, only: oldfil, doclose
 
-      implicit none
       character inarg * (*), EXT * 4
       logical JAWEL
       integer :: minp, n1, n2, istat, ja
-
-      interface
-         subroutine realan(mlan, antot)
-            integer, intent(inout) :: mlan
-            integer, intent(inout), optional :: antot
-         end subroutine realan
-      end interface
 
       inquire (FILE=trim(inarg), EXIST=JAWEL)
       if (JAWEL) then
@@ -327,7 +325,8 @@
             !CALL OLDFIL (MINP, inarg)
             call loadNetwork(trim(inarg), istat, 0)
             if (istat == 0) then
-               md_netfile = ' '; md_netfile = trim(inarg)
+               md_netfile = ' '
+               md_netfile = trim(inarg)
             end if
          else if (EXT == '.bmp' .or. EXT == '.BMP') then
             call LOADBITMAP(inarg)
@@ -371,7 +370,6 @@
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use unstruc_messages
       use M_splines, only: increasespl, readsplines, writesplines
       use M_SAMPLES
       use m_commandline_option
@@ -381,6 +379,7 @@
       use unstruc_netcdf, only: unc_write_net
       use m_wripol
       use m_wrisam
+      use m_filez, only: newfil
 
       implicit none
       character inarg * (*), EXT * 4
@@ -421,3 +420,4 @@
       end if
    end subroutine savefile
 
+end module m_inidat

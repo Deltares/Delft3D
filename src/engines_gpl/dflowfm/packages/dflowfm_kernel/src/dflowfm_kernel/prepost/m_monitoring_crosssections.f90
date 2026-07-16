@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,9 +46,9 @@ module m_monitoring_crosssections
       integer :: nval !< Amount of different quantities monitored
       type(tcrspath) :: path !< Polyline+crossed flow links that defines this cross section.
       integer :: loc2OC = 0 !< mapping from global obs index to obs that are defined by branchID and chainage
-      double precision, allocatable :: sumvalcur(:) !< Values integrated over the crs
-      double precision, allocatable :: sumvalcum(:) !< Values integrated over crs *and* time
-      double precision, allocatable :: sumvalavg(:) !< Values integrated over crs and averaged in time.
+      real(kind=dp), allocatable :: sumvalcur(:) !< Values integrated over the crs
+      real(kind=dp), allocatable :: sumvalcum(:) !< Values integrated over crs *and* time
+      real(kind=dp), allocatable :: sumvalavg(:) !< Values integrated over crs and averaged in time.
                                                    !! Size is nval: nr of monitored quantities.
    end type tcrs
 
@@ -71,8 +71,8 @@ module m_monitoring_crosssections
    integer :: nval = 0 !< number of quantities moonitored including sediment
    integer :: nNodesCrs !< [-] Total number of nodes for all cross section geometries
    integer, allocatable, target :: nodeCountCrs(:) !< [-] Count of nodes per cross section geometry.
-   double precision, allocatable, target :: geomXCrs(:) !< [m] x coordinates of cross section geometries.
-   double precision, allocatable, target :: geomYCrs(:) !< [m] y coordinates of cross section geometries.
+   real(kind=dp), allocatable, target :: geomXCrs(:) !< [m] x coordinates of cross section geometries.
+   real(kind=dp), allocatable, target :: geomYCrs(:) !< [m] y coordinates of cross section geometries.
 contains
 
 !> Returns the index/position of a named crosssection in the global set arrays of this module.
@@ -106,7 +106,7 @@ contains
 
    subroutine ReallocCrosssectionSums(cs)
       use m_transport, only: NUMCONST
-      use m_alloc
+      use m_alloc, only: realloc
       use m_sediment, only: jased, stmpar
       implicit none
       type(tcrs), allocatable, intent(inout) :: cs(:) !< Array of cross sections
@@ -125,9 +125,9 @@ contains
       end if
 
       do i = 1, size(cs)
-         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0d0, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0_dp, keepExisting=.true.)
       end do
    end subroutine ReallocCrossSectionSums
 
@@ -137,7 +137,9 @@ contains
 
       integer :: i, n
 
-      if (.not. allocated(cs)) return
+      if (.not. allocated(cs)) then
+         return
+      end if
 
       n = size(cs)
       do i = 1, n
@@ -153,14 +155,16 @@ contains
 
 !> Copies array of crs into another array of crs.
    subroutine copyCrossSections(rfrom, rto)
-      use m_alloc
+
       type(tcrs), intent(inout) :: rfrom(:)
       type(tcrs), intent(inout) :: rto(:)
 
       integer :: i, n
 
       n = size(rfrom)
-      if (n > size(rto) .or. n == 0) return
+      if (n > size(rto) .or. n == 0) then
+         return
+      end if
 
       do i = 1, n
          !maxnp  = size(rfrom(i)%path%xp)
@@ -201,8 +205,9 @@ contains
 
 !> Starts a new cross section in the active array of crs, increasing memory when necessary.
    subroutine addCrossSections(name, xp, yp, iOC)
+      use precision, only: dp
       character(len=*), intent(in) :: name
-      double precision, intent(in) :: xp(:), yp(:)
+      real(kind=dp), intent(in) :: xp(:), yp(:)
       integer, optional, intent(in) :: iOC !< local index of cross sections that are defined via *.ini, in the m_network%network%observcrs set.
 
       integer :: m
@@ -221,7 +226,7 @@ contains
          crs(ncrs)%name = ' '
          crs(ncrs)%name(1:m) = name(1:m)
       else ! No name given, generate one.
-         write (cdigits, '(i1)') max(2, int(floor(log10(dble(iUniq_)) + 1)))
+         write (cdigits, '(i1)') max(2, int(floor(log10(real(iUniq_, kind=dp)) + 1)))
          write (crs(ncrs)%name, '(a,i'//cdigits//'.'//cdigits//')') trim(defaultName_), iUniq_
          iUniq_ = iUniq_ + 1
       end if
@@ -252,7 +257,7 @@ contains
 !> Reads observation cross sections and adds them to the normal crs adm
 !! Two file types are supported: *_crs.pli and *_crs.ini.
    subroutine loadObservCrossSections(filename, jadoorladen)
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, mess
       use m_readObservCrossSections, only: readObservCrossSections
       use unstruc_channel_flow, only: network
 
@@ -287,9 +292,10 @@ contains
 !> Reads observation points from an *.pli file.
 ! Typically called via loadObservCrossSections().
    subroutine loadObservCrossSections_from_pli(filename)
-      use messageHandling
-      use dfm_error
-      use m_polygon
+      use m_polygon, only: xpl, ypl, npl, nampli
+      use m_reapol_nampli, only: reapol_nampli
+      use m_filez, only: oldfil, doclose
+
       implicit none
       character(len=*), intent(in) :: filename
 
@@ -305,22 +311,22 @@ contains
 
 !> Adds observation cross sections, that are read from *.ini file, to the normal cross section adm
    subroutine addObservCrsFromIni(network, filename)
-      use m_network
+      use precision, only: dp
+      use m_network, only: t_network, mess, level_error
+      use odugrid, only: odu_get_xy_coordinates
+      use m_save_ugrid_state, only: meshgeom1d
+      use dfm_error, only: dfm_noerr
       use m_sferic, only: jsferic
-      use odugrid
-      use m_save_ugrid_state
-      use dfm_error
-      use m_missing
-      use m_ObservCrossSections
+      use m_observcrosssections, only: t_observcrosssection
       implicit none
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the cross section file
 
       integer :: nByBrch ! number of cross sections that are defined by branchID and chainage
       integer :: ierr, ncrsini, i, numv
-      type(t_observCrossSection), pointer :: pCrs
+      type(t_observcrosssection), pointer :: pCrs
       integer, allocatable :: branchIdx_tmp(:), ibrch2crs(:)
-      double precision, allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
+      real(kind=dp), allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
 
       ierr = DFM_NOERR
       nByBrch = 0
@@ -371,11 +377,21 @@ contains
          end if
       end do
 
-      if (allocated(branchIdx_tmp)) deallocate (branchIdx_tmp)
-      if (allocated(Chainage_tmp)) deallocate (Chainage_tmp)
-      if (allocated(ibrch2crs)) deallocate (ibrch2crs)
-      if (allocated(xx_tmp)) deallocate (xx_tmp)
-      if (allocated(yy_tmp)) deallocate (yy_tmp)
+      if (allocated(branchIdx_tmp)) then
+         deallocate (branchIdx_tmp)
+      end if
+      if (allocated(Chainage_tmp)) then
+         deallocate (Chainage_tmp)
+      end if
+      if (allocated(ibrch2crs)) then
+         deallocate (ibrch2crs)
+      end if
+      if (allocated(xx_tmp)) then
+         deallocate (xx_tmp)
+      end if
+      if (allocated(yy_tmp)) then
+         deallocate (yy_tmp)
+      end if
 
    end subroutine addObservCrsFromIni
 
@@ -383,9 +399,10 @@ contains
 !! The input arrays have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
    subroutine pol_to_crosssections(xpl, ypl, npl, names)
+      use precision, only: dp
       use m_missing
 
-      double precision, intent(in) :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
+      real(kind=dp), intent(in) :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: npl !< Total number of polyline points
       character(len=*), optional, intent(in) :: names(:) !< Optional names for cross sections
 

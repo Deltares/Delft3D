@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,13 +30,25 @@
 !
 !
 
- subroutine readset(kk, mbca, a)
-    implicit none
-    integer :: kk
-    character(len=132) :: a(100)
-    integer :: k, mbca
+module m_readset
 
-    do k = 1, kk
-       read (mbca, '(a)') a(k)
-    end do
- end subroutine readset
+   implicit none
+
+   private
+
+   public :: readset
+
+contains
+
+   subroutine readset(kk, mbca, a)
+      implicit none
+      integer :: kk
+      character(len=132) :: a(100)
+      integer :: k, mbca
+
+      do k = 1, kk
+         read (mbca, '(a)') a(k)
+      end do
+   end subroutine readset
+
+end module m_readset

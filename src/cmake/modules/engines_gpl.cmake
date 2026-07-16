@@ -69,9 +69,10 @@ set(d_hydro_module "${d_hydro_module_path}/d_hydro")
 set(tests_directory src/test/engines_gpl)
 set(dflowfm_kernel_test_module ${tests_directory}/dflowfm/packages/dflowfm_kernel)
 
-# Unit tests
-# WAQ
-set(delwaq_tests_module ${unit_tests_dir}/engines_gpl/waq)
+# Unit tests dwaq
+set(delwaq_unit_tests_module ${unit_tests_dir}/engines_gpl/waq)
+# Integration tests dwaq
+set(delwaq_integration_tests_module ${integration_tests_dir}/engines_gpl/waq)
 
 # RR Rainfall Runoff
 set(rr_module_path "${engines_gpl_path}/rr/packages")
@@ -87,11 +88,8 @@ set(rtc_module "${rtc_module_path}/rtc")
 set(rtc_plugin_c_module "${rtc_module_path}/plugin_rtc_c")
 set(rtc_kernel_module "${rtc_module_path}/rtc_kernel")
 
+set(fbc_module_path "${engines_gpl_path}/fbc/packages/FBCTools")
+set(dsle_module_path "${engines_gpl_path}/dsle/packages")
+
 # Install
-set(install_dflowfm_module cmake/install_fm)
-set(install_waq_module cmake/install_waq)
-set(install_wave_module cmake/install_wave)
-set(install_dimr_module cmake/install_dimr)
-set(install_tests_module cmake/install_tests)
-set(install_d_hydro_module cmake/install_d_hydro)
-set(install_flow2d3d_module cmake/install_flow2d3d)
+set(install_linux_libs_module cmake/install_linux_libs)

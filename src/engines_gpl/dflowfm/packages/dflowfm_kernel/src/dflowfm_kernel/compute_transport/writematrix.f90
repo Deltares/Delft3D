@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_writematrix
+   implicit none
+contains
    !> output matrix in CRS format to file
    subroutine writeMatrix(FNAM, N, ia, ja, a, VARNAM, jaappend)
-      implicit none
+      use precision, only: dp
 
       character(len=*), intent(in) :: FNAM !< filename
 
@@ -40,7 +42,7 @@
 
       integer, dimension(N + 1), intent(in) :: ia
       integer, dimension(ia(N + 1) - 1), intent(in) :: ja
-      double precision, dimension(ia(N + 1) - 1), intent(in) :: a !< matrix in CRS format
+      real(kind=dp), dimension(ia(N + 1) - 1), intent(in) :: a !< matrix in CRS format
 
       character(len=*), intent(in) :: VARNAM !< variable name
 
@@ -76,3 +78,4 @@
 
       close (lunfil)
    end subroutine writeMatrix
+end module m_writematrix

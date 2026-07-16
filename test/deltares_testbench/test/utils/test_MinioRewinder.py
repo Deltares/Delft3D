@@ -32,8 +32,14 @@ def make_object(
     last_modified: datetime = datetime.min.replace(tzinfo=timezone.utc),
     is_delete_marker: bool = False,
     etag: Optional[str] = None,
+    tags: Optional[dict[str, str]] = None,
 ) -> MinioObject:
     version_id = version_id or uuid4().hex
+    new_tags = None
+    if tags is not None:
+        new_tags = Tags()
+        for k, v in tags.items():
+            new_tags[k] = v
 
     return MinioObject(
         bucket_name=bucket_name,
@@ -42,6 +48,7 @@ def make_object(
         last_modified=last_modified,
         is_delete_marker=is_delete_marker,
         etag=etag,
+        tags=new_tags,
     )
 
 
@@ -463,13 +470,20 @@ class TestMinioRewinder:
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = itertools.chain(
-            (make_object("source/path/empty-file", "my-bucket", "v42", etag=hashlib.md5(b"").hexdigest()),),
+            (
+                make_object(
+                    "source/path/empty-file",
+                    "my-bucket",
+                    "v42",
+                    etag=hashlib.md5(b"", usedforsecurity=False).hexdigest(),
+                ),
+            ),
             (
                 make_object(
                     object_name=f"source/path/{key}",
                     bucket_name="my-bucket",
                     version_id=f"v{i}",
-                    etag=hashlib.md5(key.encode("utf-8")).hexdigest(),
+                    etag=hashlib.md5(key.encode("utf-8"), usedforsecurity=False).hexdigest(),
                 )
                 for i, key in enumerate(("foo", "bar", "baz", "qux", "quux"))
             ),
@@ -514,7 +528,7 @@ class TestMinioRewinder:
                     "source/path/foo",
                     bucket_name="my-bucket",
                     version_id="v1",
-                    etag=hashlib.md5(b"new_foo").hexdigest(),
+                    etag=hashlib.md5(b"new_foo", usedforsecurity=False).hexdigest(),
                 )
             ]
         )
@@ -549,8 +563,11 @@ class TestMinioRewinder:
 
         # Generate content and compute expected ETag.
         content = random.getrandbits(content_size * 8).to_bytes(content_size, "big")
-        digests = (hashlib.md5(content[i * part_size : (i + 1) * part_size]).digest() for i in range(parts))
-        etag = hashlib.md5(b"".join(digests)).hexdigest() + f"-{parts}"
+        digests = (
+            hashlib.md5(content[i * part_size : (i + 1) * part_size], usedforsecurity=False).digest()
+            for i in range(parts)
+        )
+        etag = hashlib.md5(b"".join(digests), usedforsecurity=False).hexdigest() + f"-{parts}"
 
         logger = mocker.Mock(spec=ILogger)
         minio_client = mocker.Mock(spec=Minio)
@@ -565,7 +582,7 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        debug = f'Skipping download: {Path("destination/path/foo")}, local and online are the same version.'
+        debug = f"Skipping download: {Path('destination/path/foo')}, local and online are the same version."
         assert mocker.call(debug) in logger.debug.call_args_list
         minio_client.fget_object.assert_not_called()
 
@@ -616,7 +633,7 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / path).key,
-                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+                etag=hashlib.md5(path.encode("utf-8"), usedforsecurity=False).hexdigest(),
             )
             for path in ("foo.txt", "bar/baz.txt", "qux/quux/quuux.txt")
         )
@@ -660,7 +677,7 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / path).key,
-                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+                etag=hashlib.md5(path.encode("utf-8"), usedforsecurity=False).hexdigest(),
             )
             for path in paths
         )
@@ -695,7 +712,7 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / path).key,
-                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+                etag=hashlib.md5(path.encode("utf-8"), usedforsecurity=False).hexdigest(),
             )
             for path in paths
         )
@@ -744,17 +761,17 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / "unchanged-file").key,
-                etag=hashlib.md5(b"Content unchanged.").hexdigest(),
+                etag=hashlib.md5(b"Content unchanged.", usedforsecurity=False).hexdigest(),
             ),
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / "changed-file").key,
-                etag=hashlib.md5(b"This content is old.").hexdigest(),
+                etag=hashlib.md5(b"This content is old.", usedforsecurity=False).hexdigest(),
             ),
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / "removed-file").key,
-                etag=hashlib.md5(b"This object is removed.").hexdigest(),
+                etag=hashlib.md5(b"This object is removed.", usedforsecurity=False).hexdigest(),
             ),
         ]
 
@@ -813,7 +830,7 @@ class TestMinioRewinder:
                     MinioObject(
                         bucket_name=minio_prefix.bucket,
                         object_name=(minio_prefix / name).key,
-                        etag=hashlib.md5(object_content.encode("utf-8")).hexdigest(),
+                        etag=hashlib.md5(object_content.encode("utf-8"), usedforsecurity=False).hexdigest(),
                     )
                 )
 
@@ -848,8 +865,11 @@ class TestMinioRewinder:
         content = random.getrandbits(size * 8).to_bytes(size, "big")
         part_count = (size + part_size - 1) // part_size
         assert len(content) == 1024  # 1024 random bytes.
-        hashes = [hashlib.md5(content[i * part_size : (i + 1) * part_size]).digest() for i in range(part_count)]
-        expected_etag = hashlib.md5(b"".join(hashes)).hexdigest() + f"-{part_count}"
+        hashes = [
+            hashlib.md5(content[i * part_size : (i + 1) * part_size], usedforsecurity=False).digest()
+            for i in range(part_count)
+        ]
+        expected_etag = hashlib.md5(b"".join(hashes), usedforsecurity=False).hexdigest() + f"-{part_count}"
 
         fs.create_file(local_dir / "foo/bar.baz", contents=content)
         minio_client.list_objects.return_value = [
@@ -1111,7 +1131,7 @@ class TestMinioRewinder:
         assert minio_objects_equal(conflict.latest_version, new_object)
         assert conflict.latest_version.tags == (tags if add_tags else None)
         assert conflict.update_type == Operation.CREATE
-        minio_client.get_object_tags.call_count == int(add_tags)
+        assert minio_client.get_object_tags.call_count == int(add_tags)
 
     @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
     def test_detect_conflicts__object_didnt_exist_but_is_now_a_delete_marker__no_conflict(
@@ -1144,8 +1164,20 @@ class TestMinioRewinder:
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
         minio_client.list_objects.return_value = [
-            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="v1"),
-            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new").hexdigest(), version_id="v2"),
+            MinioObject(
+                "my-bucket",
+                "data/foo",
+                yesterday,
+                etag=hashlib.md5(b"old", usedforsecurity=False).hexdigest(),
+                version_id="v1",
+            ),
+            MinioObject(
+                "my-bucket",
+                "data/foo",
+                now,
+                etag=hashlib.md5(b"new", usedforsecurity=False).hexdigest(),
+                version_id="v2",
+            ),
         ]
 
         # Act
@@ -1166,8 +1198,20 @@ class TestMinioRewinder:
         tags = Tags()
         tags["jira-issue-id"] = "FOO-123"
         objects = [
-            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new!").hexdigest(), version_id="2"),
-            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="1"),
+            MinioObject(
+                "my-bucket",
+                "data/foo",
+                now,
+                etag=hashlib.md5(b"new!", usedforsecurity=False).hexdigest(),
+                version_id="2",
+            ),
+            MinioObject(
+                "my-bucket",
+                "data/foo",
+                yesterday,
+                etag=hashlib.md5(b"old", usedforsecurity=False).hexdigest(),
+                version_id="1",
+            ),
         ]
         minio_client.list_objects.return_value = objects
         minio_client.get_object_tags.return_value = tags
@@ -1193,7 +1237,7 @@ class TestMinioRewinder:
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
-        etag = hashlib.md5(b"old").hexdigest()
+        etag = hashlib.md5(b"old", usedforsecurity=False).hexdigest()
         minio_client.list_objects.return_value = [
             MinioObject("my-bucket", "data/foo", yesterday, etag=etag, version_id="1"),
             MinioObject("my-bucket", "data/foo", now, etag=etag, version_id="2"),
@@ -1310,7 +1354,7 @@ class TestMinioRewinder:
                     bucket_name="my-bucket",
                     object_name=key,
                     last_modified=now - timedelta(days=j),
-                    etag=hashlib.md5(f"{key}-v{j}".encode("utf-8")).hexdigest(),
+                    etag=hashlib.md5(f"{key}-v{j}".encode("utf-8"), usedforsecurity=False).hexdigest(),
                     version_id=f"{key}-v{j}",
                     is_delete_marker=False,
                 )
@@ -1336,7 +1380,7 @@ class TestMinioRewinder:
                 create_count += 1
             if 0.75 <= rand:  # The past and latest versions have the same content.
                 if past_object_exists:
-                    etag = hashlib.md5(b"same content!").hexdigest()
+                    etag = hashlib.md5(b"same content!", usedforsecurity=False).hexdigest()
                     versions[0] = MinioObject("my-bucket", key, now, etag, version_id=f"{key}-v0")
                     versions[3] = MinioObject("my-bucket", key, now - timedelta(days=3), etag, version_id=f"{key}-v3")
                 else:
@@ -1354,3 +1398,152 @@ class TestMinioRewinder:
         assert sum(1 for elem in conflicts if elem.update_type == Operation.CREATE) == create_count
         assert sum(1 for elem in conflicts if elem.update_type == Operation.UPDATE) == update_count
         assert sum(1 for elem in conflicts if elem.update_type == Operation.REMOVE) == remove_count
+
+    def test_list_objects__latest_exclude_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/bar.txt", version_id="2", last_modified=now, is_delete_marker=True),
+        ]
+
+        # Act
+        obj, *other_objects = list(rewinder.list_objects(prefix))
+
+        # Assert
+        assert not other_objects
+        assert obj.object_name == "case_data/foo.txt"
+        assert obj.version_id == "2"
+        assert obj.last_modified == now
+
+    def test_list_objects__latest_include_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/bar.txt", version_id="2", last_modified=now, is_delete_marker=True),
+        ]
+
+        # Act
+        objects = sorted(rewinder.list_objects(prefix, include_delete_markers=True), key=lambda obj: obj.object_name)
+
+        # Assert
+        assert len(objects) == 2
+        bar_obj, foo_obj = objects
+
+        assert foo_obj.version_id == "2"
+        assert not foo_obj.is_delete_marker
+        assert bar_obj.version_id == "2"
+        assert bar_obj.is_delete_marker
+
+    def test_list_objects__rewind_exclude_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object(
+                "case_data/bar.txt", version_id="2", last_modified=now - timedelta(hours=2), is_delete_marker=True
+            ),
+            make_object("case_data/bar.txt", version_id="3", last_modified=now),
+        ]
+
+        # Act
+        obj, *other_objects = sorted(
+            rewinder.list_objects(prefix, timestamp=now - timedelta(hours=1)),
+            key=lambda obj: obj.object_name or "",
+        )
+
+        # Assert
+        assert not other_objects
+
+        assert obj.version_id == "1"
+        assert obj.last_modified == now - timedelta(days=1)
+
+    def test_list_objects__rewind_include_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object(
+                "case_data/bar.txt", version_id="2", last_modified=now - timedelta(hours=2), is_delete_marker=True
+            ),
+            make_object("case_data/bar.txt", version_id="3", last_modified=now),
+        ]
+
+        # Act
+        objects = sorted(
+            rewinder.list_objects(
+                prefix,
+                timestamp=now - timedelta(hours=1),
+                include_delete_markers=True,
+            ),
+            key=lambda obj: obj.object_name or "",
+        )
+
+        # Assert
+        assert len(objects) == 2
+        bar_obj, foo_obj = objects
+
+        assert foo_obj.version_id == "1"
+        assert not foo_obj.is_delete_marker
+        assert bar_obj.version_id == "2"
+        assert bar_obj.is_delete_marker
+
+    def test_list_objects__add_tags(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now),
+        ]
+        tags = Tags()
+        tags["issue-id"] = "FOO-123"
+        client.get_object_tags.return_value = tags
+
+        # Act
+        obj, *other_objects = rewinder.list_objects(prefix, add_tags=True)
+
+        # Assert
+        assert not other_objects
+        assert obj.tags is not None
+        assert obj.tags["issue-id"] == "FOO-123"
+
+    def test_list_objects__add_tags__missing_tag(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now),
+        ]
+        client.get_object_tags.return_value = None
+
+        # Act
+        obj, *other_objects = rewinder.list_objects(prefix, add_tags=True)
+
+        # Assert
+        assert not other_objects
+        assert obj.tags is None

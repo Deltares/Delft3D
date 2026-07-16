@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,22 +31,31 @@
 !
 
 !
-      subroutine CLS1()
-         use unstruc_display
-         use m_drawthis
-         implicit none
+module m_cls1
 
-         call IGRAREACLEAR()
+   implicit none
 
-         if (NDRAW(10) == 2) then
-            call IGRPALETTERGB(2, NREDP, NGREENP, NBLUEP)
-         else
-            call IGRPALETTERGB(2, NREDS, NGREENS, NBLUES)
-         end if
+contains
 
-         call SETCOL(2)
+   subroutine CLS1()
+      use unstruc_colors, only: nredp, ngreenp, nbluep, nreds, ngreens, nblues, x1, y1, x2, y2
+      use m_drawthis, only: ndraw
+      use m_fbox_nop, only: fboxnop
+      use m_set_col, only: setcol
 
-         call FBOXnop(X1, Y1, X2, Y2)
+      call IGRAREACLEAR()
 
-         return
-      end
+      if (NDRAW(10) == 2) then
+         call IGRPALETTERGB(2, NREDP, NGREENP, NBLUEP)
+      else
+         call IGRPALETTERGB(2, NREDS, NGREENS, NBLUES)
+      end if
+
+      call SETCOL(2)
+
+      call FBOXnop(X1, Y1, X2, Y2)
+
+      return
+   end
+
+end module m_cls1

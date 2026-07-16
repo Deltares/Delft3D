@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,17 +36,22 @@ contains
     subroutine pinpok(xl, yl, n, x, y, inside)
         !
         !     programmer : frank kleissen
-        !     function   : checks whether point (xx,yy) lies inside
-        !                  the polygone
+        !     function   : checks whether point (xl,yl) lies inside
+        !                  the polygon (x, y)
         !     date       : may 2004
         !
-        real(sp), dimension(:) :: x, y
+        real, intent(in) :: xl
+        real, intent(in) :: yl
+        integer, intent(in) :: n
+        real, dimension(n), intent(in) :: x
+        real, dimension(n), intent(in) :: y
+        integer, intent(out) :: inside
         !
         !     local scalars
         !
-        integer :: i, i1, i2, inside, n, np
+        integer :: i, i1, i2,  np
         real :: amiss, rechts, rl, rm
-        real :: x1, x2, xl, y1, y2, yl
+        real :: x1, x2, y1, y2
         integer(4) ithndl              ! handle to time this subroutine
         data       ithndl / 0 /
         if (timon) call timstrt("pinpok", ithndl)

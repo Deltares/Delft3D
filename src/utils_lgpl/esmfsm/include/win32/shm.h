@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,37 +33,37 @@
 
 /* Dummy macros, but make them behave "intelligently" anyway */
 #define IPC_CREAT 1
-#define IPC_RMID  2
+#define IPC_RMID 2
 
-#define SHM_R     4
-#define SHM_W     8
+#define SHM_R 4
+#define SHM_W 8
 
-#define SEM_A    16
-#define SEM_R    32
+#define SEM_A 16
+#define SEM_R 32
 
 /*
 typedef unsigned long key_t ;
 */
-typedef long key_t ;
+typedef long key_t;
 
 struct shmid_ds
 {
-   int dummy ;
-} ;
+    int dummy;
+};
 struct sembuf
 {
-   int value1 ;
-   int value2 ;
-   int value3 ;
-} ;
+    int value1;
+    int value2;
+    int value3;
+};
 
-int   shmget( key_t ipc_key, size_t blocksize, int flags ) ;
-int   shmctl( int key_index, int flags, struct shmid_ds *buffer ) ;
-void *shmat(  int key_index, struct shmid_ds *buffer, int flags ) ;
-int   shmdt(  struct shmid_ds *buffer ) ;
+int shmget(key_t ipc_key, size_t blocksize, int flags);
+int shmctl(int key_index, int flags, struct shmid_ds* buffer);
+void* shmat(int key_index, struct shmid_ds* buffer, int flags);
+int shmdt(struct shmid_ds* buffer);
 
-int   semget( key_t ipc_key, int initial, int flags ) ;
-int   semctl( key_t ipc_key, int value, int flags ) ;
-int   semop ( key_t ipc_key, struct sembuf *buffer, int value ) ;
+int semget(key_t ipc_key, int initial, int flags);
+int semctl(key_t ipc_key, int value, int flags);
+int semop(key_t ipc_key, struct sembuf* buffer, int value);
 
-int   getpid( void ) ;
+int getpid(void);

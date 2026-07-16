@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,30 +30,43 @@
 !
 !
 
-      subroutine ARROWSxy(X0, Y0, UR, VR, VFAC)
-         implicit none
-         integer :: i
-         double precision :: ur
-         double precision :: vfac
-         double precision :: vr
-         double precision :: x0
-         double precision :: y0
-         double precision :: X(3), Y(3), XR(3), YR(3)
-         data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &
-            Y(1)/-0.1d0/, Y(2)/0d0/, Y(3)/0.1d0/
+module m_arrowsxy
 
-         if (UR == 0 .and. VR == 0) return
+   implicit none
 
-         do I = 1, 3
-            XR(I) = X0 + VFAC * (X(I) * UR - Y(I) * VR)
-            YR(I) = Y0 + VFAC * (Y(I) * UR + X(I) * VR)
-         end do
+contains
 
-         call MOVABS(X0, Y0)
-         call LNABS(XR(2), YR(2))
-         call LNABS(XR(1), YR(1))
+   subroutine ARROWSxy(X0, Y0, UR, VR, VFAC)
+      use precision, only: dp
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      integer :: i
+      real(kind=dp) :: ur
+      real(kind=dp) :: vfac
+      real(kind=dp) :: vr
+      real(kind=dp) :: x0
+      real(kind=dp) :: y0
+      real(kind=dp) :: X(3), Y(3), XR(3), YR(3)
+      data X(1)/0.8_dp/, X(2)/1.0_dp/, X(3)/0.8_dp/, &
+         Y(1)/-0.1_dp/, Y(2)/0.0_dp/, Y(3)/0.1_dp/
 
-         call MOVABS(XR(2), YR(2))
-         call LNABS(XR(3), YR(3))
+      if (UR == 0 .and. VR == 0) then
          return
-      end
+      end if
+
+      do I = 1, 3
+         XR(I) = X0 + VFAC * (X(I) * UR - Y(I) * VR)
+         YR(I) = Y0 + VFAC * (Y(I) * UR + X(I) * VR)
+      end do
+
+      call MOVABS(X0, Y0)
+      call LNABS(XR(2), YR(2))
+      call LNABS(XR(1), YR(1))
+
+      call MOVABS(XR(2), YR(2))
+      call LNABS(XR(3), YR(3))
+      return
+   end
+
+end module m_arrowsxy

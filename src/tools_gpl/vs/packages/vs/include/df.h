@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,12 +29,9 @@
 
 #ifndef _DF_INCLUDED
 
-    extern struct St_def *DF_find_definition_in_tree (
-                            struct St_def *, const BText ) ;
-    extern void           DF_remove_definition_branche (
-                            struct St_def * ) ;
-    extern struct St_def * DF_add_definition_to_tree (
-                            struct St_def *, const BText ) ;
+extern struct St_def* DF_find_definition_in_tree(struct St_def*, const BText);
+extern void DF_remove_definition_branche(struct St_def*);
+extern struct St_def* DF_add_definition_to_tree(struct St_def*, const BText);
 
-#   define _DF_INCLUDED
+    #define _DF_INCLUDED
 #endif

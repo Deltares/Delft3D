@@ -1,0 +1,24 @@
+FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025
+
+# Set powershell as shell
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+# Enable long pathnames
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
+# Use fixed locations for uv, its managed Python, and the Python executables
+ENV UV_INSTALL_DIR="C:\\uv"
+ENV UV_PYTHON_INSTALL_DIR="C:\\uv\\python"
+ENV UV_PYTHON_BIN_DIR="C:\\uv\\bin"
+ENV UV_CACHE_DIR="C:\\uv\\cache"
+
+ARG UV_VERSION=0.11.21
+RUN irm https://astral.sh/uv/${UV_VERSION}/install.ps1 | iex
+
+# Add uv and the Python executables to the machine PATH (persists at container runtime)
+RUN $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine'); \
+    [Environment]::SetEnvironmentVariable('Path', 'C:\uv;C:\uv\bin;' + $machinePath, 'Machine')
+
+# Install Python 3.12.7; --default also creates the 'python' and 'python3' executables
+RUN $env:Path = 'C:\uv;C:\uv\bin;' + $env:Path; \
+    uv python install 3.12.7 --default; exit $LASTEXITCODE

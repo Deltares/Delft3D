@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,43 +30,50 @@
 !
 !
 
- double precision function cosphiunet(L) ! get link cos on net link
+module m_cosphiunet
 
-    use m_flowgeom
-    use m_netw
-    use geometry_module, only: dcosphi
-    use m_sferic, only: jsferic, jasfer3D
-    use m_missing, only: dxymis
+   implicit none
 
-    implicit none
+contains
 
-    integer :: L ! for net link L,
+   real(kind=dp) function cosphiunet(L) ! get link cos on net link
+      use precision, only: dp
 
-    ! locals
-    integer :: k1, k2, k3, k4
+      use m_flowgeom, only: xz, yz
+      use m_netw
+      use geometry_module, only: dcosphi
+      use m_sferic, only: jsferic, jasfer3D
+      use m_missing, only: dxymis
 
-    ! Check: no findcells done yet. Report 'all bad'.
-    if (nump <= 0) then
-       cosphiunet = 1
-       return
-    end if
+      integer :: L ! for net link L,
 
-    ! Check: 1D or closed boundary link: report 'good'.
-    if (lnn(L) < 2) then
-       cosphiunet = 0
-       return
-    elseif (lne(1, L) <= 0 .or. lne(2, L) <= 0) then
-       cosphiunet = 0
-       return
-    elseif (kn(1, L) <= 0 .or. kn(2, L) <= 0) then
-       cosphiunet = 0
-       return
-    end if
+      ! locals
+      integer :: k1, k2, k3, k4
 
-    k1 = lne(1, L)
-    k2 = lne(2, L)
-    k3 = kn(1, L)
-    k4 = kn(2, L)
-    cosphiunet = dcosphi(xz(k1), yz(k1), xz(k2), yz(k2), xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dxymis)
+      ! Check: no findcells done yet. Report 'all bad'.
+      if (nump <= 0) then
+         cosphiunet = 1
+         return
+      end if
 
- end function cosphiunet
+      ! Check: 1D or closed boundary link: report 'good'.
+      if (lnn(L) < 2) then
+         cosphiunet = 0
+         return
+      elseif (lne(1, L) <= 0 .or. lne(2, L) <= 0) then
+         cosphiunet = 0
+         return
+      elseif (kn(1, L) <= 0 .or. kn(2, L) <= 0) then
+         cosphiunet = 0
+         return
+      end if
+
+      k1 = lne(1, L)
+      k2 = lne(2, L)
+      k3 = kn(1, L)
+      k4 = kn(2, L)
+      cosphiunet = dcosphi(xz(k1), yz(k1), xz(k2), yz(k2), xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dxymis)
+
+   end function cosphiunet
+
+end module m_cosphiunet

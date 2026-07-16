@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,18 +30,30 @@
 !
 !
 
+module m_soltest
+
+   implicit none
+
+   private
+
+   public :: soltest
+
+contains
+
    !> test iterative solver (as "mpitest")
    subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
-      use m_partitioninfo
-      use m_timer
-      use unstruc_messages
-      use m_flowgeom
+      use m_make_matrix, only: make_matrix
+      use m_solve_guus, only: solve_matrix, pack_matrix
+      use precision, only: dp
+      use m_update_matrix, only: update_matrix
+      use m_partitioninfo, only: jampi, jaoverlap, update_ghosts, itype_sall, idomain, my_rank, nghostlist_sall, ndomains, ighostlist_sall
+      use m_timer, only: jatimer, starttimer, itotal, stoptimer, gettimer, itotalsol, impicomm
+      use m_flowgeom, only: jarenumber, ndx, ndxi, nd
+      use m_flowparameters, only: icgsolver, epshu
+      use m_reduce, only: epsdiff, epscg, maxmatvecs, ccrsav, ccr
+      use m_flow, only: hu, realloc, s1, itsol
       use network_data, only: xzw
-      use m_flowparameters
-      use m_reduce
-      use m_flow
-      use m_alloc
-      implicit none
+      use m_flow_modelinit, only: flow_modelinit
 
       integer, intent(in) :: iCFL !< wave-based Courant number
       integer, intent(in) :: icgsolver_loc ! icgsolver (if > 0)
@@ -49,27 +61,25 @@
       integer, intent(in) :: iepsdiff ! -10log(tolerance in Schwarz iterations) (if > 0)
       integer, intent(in) :: iepscg ! -10log(tolerance in inner iterations) (if > 0)
 
-      double precision, dimension(:), allocatable :: sex ! exact solution at cell centers
-      double precision, dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
+      real(kind=dp), dimension(:), allocatable :: sex ! exact solution at cell centers
+      real(kind=dp), dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
 
-      double precision :: CFL
-      double precision :: diffmax
+      real(kind=dp) :: CFL
+      real(kind=dp) :: diffmax
 
       integer :: NRUNS
       integer :: i, ii, irun
       integer :: ierror
 
-      integer, external :: flow_modelinit
-
       jarenumber = 0
-      CFL = 10d0
+      CFL = 10.0_dp
 !      maxdge = 0d0
 !      icgsolver = 4
 !      ipre = 0
       Nruns = 1
 
-      if (iCFL > 0d0) then
-         CFL = dble(iCFL)
+      if (iCFL > 0.0_dp) then
+         CFL = real(iCFL, kind=dp)
       end if
 
 !     settings from command line
@@ -78,11 +88,11 @@
       end if
 
       if (iepsdiff > 0) then
-         epsdiff = 10d0**(-iepsdiff)
+         epsdiff = 10.0_dp**(-iepsdiff)
       end if
 
       if (iepscg > 0) then
-         epscg = 10d0**(-iepscg)
+         epscg = 10.0_dp**(-iepscg)
       end if
 
       if (maxsubmatvecs > 0) then
@@ -136,12 +146,14 @@
       allocate (dmask(Ndx))
 
 !     activate all cells
-      hu = epshu + 1d0
+      hu = epshu + 1.0_dp
 
 !     set exact solution
       sex = xzw
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
 !!     prepare matrix
 !      if ( jatimer.eq.1 ) call starttimer(IREDUCE)
@@ -159,12 +171,12 @@
 !     pack matrix
       call pack_matrix()
 
-      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0d0)
+      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0.0_dp)
       ccrsav = ccr
 
 !     solve system
       do irun = 1, Nruns
-         s1 = 0d0
+         s1 = 0.0_dp
          ccr = ccrsav
 
 !         if (icgsolver.eq.6) call setPETSCmatrixEntries()
@@ -173,10 +185,12 @@
          call solve_matrix(s1, Ndx, itsol)
 
       end do
-      if (jatimer == 1) call stoptimer(ITOTAL)
+      if (jatimer == 1) then
+         call stoptimer(ITOTAL)
+      end if
 
 !     unmask all cells
-      dmask = 0d0
+      dmask = 0.0_dp
 
       if (jampi == 1) then
          call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
@@ -184,7 +198,7 @@
 !        mask all ghost cells
          do i = 1, Ndx
             if (idomain(i) /= my_rank) then
-               dmask(i) = 1d0
+               dmask(i) = 1.0_dp
             end if
          end do
 
@@ -192,10 +206,10 @@
          call update_ghosts(ITYPE_SALL, 1, Ndx, dmask, ierror)
       end if
 
-      diffmax = 0d0
+      diffmax = 0.0_dp
       do i = 1, Ndxi
-         if (nd(i)%lnx > 0 .and. dmask(i) == 0d0) then
-            if (abs(s1(i) - sex(i)) > 1d-10) then
+         if (nd(i)%lnx > 0 .and. dmask(i) == 0.0_dp) then
+            if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
                continue
             end if
             diffmax = max(diffmax, abs(s1(i) - sex(i)))
@@ -204,7 +218,7 @@
 
       do ii = 1, nghostlist_sall(ndomains - 1)
          i = ighostlist_sall(ii)
-         if (abs(s1(i) - sex(i)) > 1d-10) then
+         if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
             continue
          end if
       end do
@@ -215,17 +229,17 @@
          write (6, '(a,E9.2,a,E9.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
          write (6, '(a,E9.2,a,E9.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
       end if
-!         call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
-
-!      call writemesg('Wallclock times')
-!      call printall(numt, t(3,:), tnams)
-!      call writemesg('CPU times')
-!      call printall(numt, tcpu(3,:), tnams)
 
 1234  continue
 
-      if (allocated(sex)) deallocate (sex)
-      if (allocated(dmask)) deallocate (dmask)
+      if (allocated(sex)) then
+         deallocate (sex)
+      end if
+      if (allocated(dmask)) then
+         deallocate (dmask)
+      end if
 
       return
    end subroutine soltest
+
+end module m_soltest

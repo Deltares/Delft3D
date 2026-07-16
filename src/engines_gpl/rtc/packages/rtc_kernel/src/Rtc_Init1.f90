@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -51,7 +51,7 @@
 ! *********************************************************************
 
       Use ParameterModule
-      Use LanguageModule
+      Use LanguageModule_rtc
       Use FileModule
       Use LocationDataModule
       Use DecisionModule
@@ -281,7 +281,7 @@
              success = success .and. Dh_AllocInit(NrHisLoc, LocDescr, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -338,7 +338,7 @@
              success = success .and. Dh_AllocInit(NrHisLoc, LocDescr, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -380,7 +380,7 @@
              success = Dh_AllocInit(NrHisLoc, LocNames, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -409,7 +409,7 @@
              success = Dh_AllocInit(NrHisLoc, LocNames, ' ')
              success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
              If (.not. success) then
-                 Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+                 call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
                  RetVal = 929
                  Return
              EndIf
@@ -446,7 +446,7 @@
            success = success .and. Dh_AllocInit(NrHisLoc, LocDescr, ' ')
            success = success .and. Dh_AllocInit(NrHisPar, ParNames, ' ')
            If (.not. success) then
-              Call ErrMsg (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
+              call write_error_message_rtc (929, Allocation_Error, ' Allocating arrays in INIT1', ' ', IOUT1)
               RetVal = 929
               Return
            EndIf

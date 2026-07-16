@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: blob.cpp 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/blob.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/blob.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Blob Class - IMPLEMENTATION
@@ -34,40 +36,16 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
 
-
-Blob::Blob (
-    const void * address,
-    const unsigned int size
-    ) {
-
-    this->address = (void *) address;   // prefectly safe; address is private and only read once
+Blob::Blob(const void* address, const unsigned int size)
+{
+    this->address = (void*)address; // prefectly safe; address is private and only read once
     this->size = size;
-    }
+}
 
+Blob::~Blob(void) {}
 
-Blob::~Blob (
-    void
-    ) {
+void* Blob::Address(void) { return this->address; }
 
-    }
-
-
-void *
-Blob::Address (
-    void
-    ) {
-
-    return this->address;
-    }
-
-
-unsigned int
-Blob::Size (
-    void
-    ) {
-
-    return this->size;
-    }
+unsigned int Blob::Size(void) { return this->size; }

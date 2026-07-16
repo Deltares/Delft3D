@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,20 +31,44 @@
 !
 
 !>    return x-component in link coordinate frame of vector in node coordinate frame
-      double precision function nod2linx(L, i12, ux, uy)
-         use m_flowgeom, only: csb, snb
-         use m_sferic
-         implicit none
+module m_nod2linx
 
-         integer, intent(in) :: L !< flowlink number
-         integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
-         double precision, intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+   implicit none
 
-         if (jsferic /= 1 .or. jasfer3D /= 1) then
-            nod2linx = ux
-         else
-            nod2linx = csb(i12, L) * ux + snb(i12, L) * uy
-         end if
+   private
 
-         return
-      end function nod2linx
+   public :: nod2linx, nod2linx_fast
+
+contains
+
+   real(kind=dp) function nod2linx(L, i12, ux, uy)
+      use precision, only: dp
+      use m_flowgeom, only: csb, snb
+      use m_sferic, only: jsferic, jasfer3d
+
+      integer, intent(in) :: L !< flowlink number
+      integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+
+      if (jsferic /= 1 .or. jasfer3D /= 1) then
+         nod2linx = ux
+      else
+         nod2linx = csb(i12, L) * ux + snb(i12, L) * uy
+      end if
+
+      return
+   end function nod2linx
+
+   !> fast version of nod2linx, for use in vectorized loops where jsferic=1 and jasfer3D=1 is guaranteed. Avoids indirect array access to csb and snb, which are expensive in vectorized loops.
+   elemental function nod2linx_fast(csb, snb, ux, uy)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+      real(kind=dp), intent(in) :: csb, snb !< cosine and sine of angle between link and x-axis in node coordinate frame
+      real(kind=dp) :: nod2linx_fast
+
+      nod2linx_fast = csb * ux + snb * uy
+
+   end function nod2linx_fast
+
+end module m_nod2linx

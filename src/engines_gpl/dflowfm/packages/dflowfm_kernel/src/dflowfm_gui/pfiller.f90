@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,42 +29,48 @@
 
 !
 !
+module m_pfiller
+   implicit none
+contains
+   subroutine PFILLER(X, Y, N_, NCOL, NCLR)
+      use precision, only: dp
+      use unstruc_opengl, only: inopenglrendering
+      use m_sferic, only: jsfertek
+      use m_drawthis, only: ndraw
+      use m_dproject, only: dproject
+      use m_set_col, only: setcol
+      use m_realpolygon, only: realpolygon
+      use m_pfiller_core, only: pfillercore
 
-    subroutine PFILLER(X, Y, N_, NCOL, NCLR)
-       use unstruc_opengl
-       use m_sferic
-       use m_colnow
-       use m_drawthis
-       use m_dproject
+      integer :: N_
+      integer :: nclr
+      integer :: ncol, i, n
+      real(kind=dp) :: X(N_), Y(N_), xx, yy
+      integer, parameter :: NMAX = 128
+      real xr(NMAX), yr(NMAX)
 
-       implicit none
-       integer :: N_
-       integer :: nclr
-       integer :: ncol, i, n
-       double precision :: X(N_), Y(N_), xx, yy
-       integer, parameter :: NMAX = 128
-       real xr(NMAX), yr(NMAX)
-
-       call SETCOL(NCOL)
+      call SETCOL(NCOL)
 
 !   safety
-       N = min(N_, NMAX)
+      N = min(N_, NMAX)
 
-       if (jsfertek == 1) then
-          do i = 1, n
-             call dproject(x(i), y(i), xx, yy, 1)
-             xr(i) = xx; yr(i) = yy
-          end do
-       else
-          xr(1:N) = x(1:N)
-          yr(1:N) = y(1:N)
-       end if
+      if (jsfertek == 1) then
+         do i = 1, n
+            call dproject(x(i), y(i), xx, yy, 1)
+            xr(i) = xx
+            yr(i) = yy
+         end do
+      else
+         xr(1:N) = x(1:N)
+         yr(1:N) = y(1:N)
+      end if
 
-       call PFILLERCORE(xr, yr, N)
+      call PFILLERCORE(xr, yr, N)
 
-       if (.not. InOpenGLRendering .and. (NCLR /= NCOL .or. ndraw(10) /= 0)) then
-          call realPolygon(Xr, Yr, N, NCLR)
-       end if
+      if (.not. InOpenGLRendering .and. (NCLR /= NCOL .or. ndraw(10) /= 0)) then
+         call realPolygon(Xr, Yr, N, NCLR)
+      end if
 
-       return
-    end
+      return
+   end
+end module m_pfiller

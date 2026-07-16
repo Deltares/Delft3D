@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,25 +30,34 @@
 !
 !
 
-      subroutine DISVAL1(DEP)
-         use unstruc_colors
-         use m_ktext
-         implicit none
-         double precision :: DEP
-         character TEX * 8
-         if (abs(DEP) < 10) then
-            write (TEX(1:), '(F8.5)') DEP
-         else if (abs(DEP) < 100) then
-            write (TEX(1:), '(F8.4)') DEP
-         else if (abs(DEP) < 1000) then
-            write (TEX(1:), '(F8.3)') DEP
-         else if (abs(DEP) < 10000) then
-            write (TEX(1:), '(F8.2)') DEP
-         else if (abs(DEP) < 100000) then
-            write (TEX(1:), '(F8.1)') DEP
-         else
-            write (TEX(1:), '(E8.1)') DEP
-         end if
-         call KTEXT(TEX, IWS - 7, 4, 15)
-         return
-      end subroutine DISVAL1
+module m_disval1
+
+   implicit none
+
+contains
+
+   subroutine DISVAL1(DEP)
+      use precision, only: dp
+      use unstruc_colors, only: iws
+      use m_ktext, only: ktext
+
+      real(kind=dp) :: DEP
+      character TEX * 8
+      if (abs(DEP) < 10) then
+         write (TEX(1:), '(F8.5)') DEP
+      else if (abs(DEP) < 100) then
+         write (TEX(1:), '(F8.4)') DEP
+      else if (abs(DEP) < 1000) then
+         write (TEX(1:), '(F8.3)') DEP
+      else if (abs(DEP) < 10000) then
+         write (TEX(1:), '(F8.2)') DEP
+      else if (abs(DEP) < 100000) then
+         write (TEX(1:), '(F8.1)') DEP
+      else
+         write (TEX(1:), '(E8.1)') DEP
+      end if
+      call KTEXT(TEX, IWS - 7, 4, 15)
+      return
+   end subroutine DISVAL1
+
+end module m_disval1

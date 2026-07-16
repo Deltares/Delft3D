@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,77 +30,87 @@
 !
 !
 
-      subroutine CONFRM(TEXT, JAZEKR)
-         use unstruc_display
-         use m_helpnow
-         use m_timlin
-         use m_fkeys
-         implicit none
+module m_confrm
 
-         character TEXT * (*)
-         integer :: jazekr
+   implicit none
 
-         integer :: imenutwo
-         integer :: infoattribute
-         integer :: infoinput
-         integer :: iopt
-         integer :: iw
-         integer :: ixp
-         integer :: iyp
-         integer :: key
-         integer :: nbckgr
-         integer :: nforgr
+contains
 
-         if (jaGUI /= 1) then
-            if (jazekr /= 1) then
-               jazekr = 0
-            end if
-            return
+   subroutine CONFRM(TEXT, JAZEKR)
+      use unstruc_display_data, only: npos
+      use m_devices, only: iws
+      use m_gui, only: jagui
+      use m_helpnow, only: nlevel, wrdkey
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
+      implicit none
+
+      character TEXT * (*)
+      integer :: jazekr
+
+      integer :: imenutwo
+      integer :: infoattribute
+      integer :: infoinput
+      integer :: iopt
+      integer :: iw
+      integer :: ixp
+      integer :: iyp
+      integer :: key
+      integer :: nbckgr
+      integer :: nforgr
+
+      if (jaGUI /= 1) then
+         if (jazekr /= 1) then
+            jazekr = 0
          end if
+         return
+      end if
 
-         IW = NPOS(3)
-         IXP = NPOS(1) + (IWS - IW) / 2
-         IYP = NPOS(2)
+      IW = NPOS(3)
+      IXP = NPOS(1) + (IWS - IW) / 2
+      IYP = NPOS(2)
 !     IXP    = INFOCURSOR(1)
 !     IYP    = INFOCURSOR(2)
-         NFORGR = InfoAttribute(13)
-         NBCKGR = InfoAttribute(14)
-         call INPOPUP('ON')
-20       continue
-         call ITEXTCOLOUR('BWHITE', 'RED')
-         call INHIGHLIGHT('BLUE', 'BWHITE')
-         call TIMLIN()
-         if (jazekr == 1) then ! SPvdP: if jazekr.eq.1, default to yes
-            IOPT = IMenuTwo('NO', 'YES', IXP, IYP, TEXT, 1, 2)
-         else
-            IOPT = IMenuTwo('NO', 'YES', IXP, IYP, TEXT, 1, 1)
+      NFORGR = InfoAttribute(13)
+      NBCKGR = InfoAttribute(14)
+      call INPOPUP('ON')
+20    continue
+      call ITEXTCOLOUR('BWHITE', 'RED')
+      call INHIGHLIGHT('BLUE', 'BWHITE')
+      call TIMLIN()
+      if (jazekr == 1) then ! SPvdP: if jazekr.eq.1, default to yes
+         IOPT = IMenuTwo('NO', 'YES', IXP, IYP, TEXT, 1, 2)
+      else
+         IOPT = IMenuTwo('NO', 'YES', IXP, IYP, TEXT, 1, 1)
+      end if
+      call TIMLIN()
+      KEY = InfoInput(55)
+      call INFLUSH()
+      if (KEY >= 24 .and. KEY <= 26) then
+         NLEVEL = 3
+         WRDKEY = TEXT
+         call FKEYS(KEY)
+         if (KEY == 3) then
+            call INPOPUP('OFF')
+            call ITEXTCOLOURN(NFORGR, NBCKGR)
+            return
          end if
-         call TIMLIN()
-         KEY = InfoInput(55)
-         call INFLUSH()
-         if (KEY >= 24 .and. KEY <= 26) then
-            NLEVEL = 3
-            WRDKEY = TEXT
-            call FKEYS(KEY)
-            if (KEY == 3) then
-               call INPOPUP('OFF')
-               call ITEXTCOLOURN(NFORGR, NBCKGR)
-               return
-            end if
-            goto 20
-         else if (KEY == 21 .or. KEY == 22) then
-            if (IOPT == 2) then
-               JAZEKR = 1
-            else
-               JAZEKR = 0
-            end if
-         else if (KEY == 23) then
+         goto 20
+      else if (KEY == 21 .or. KEY == 22) then
+         if (IOPT == 2) then
+            JAZEKR = 1
+         else
             JAZEKR = 0
-         else
-            goto 20
          end if
-         call INPOPUP('OFF')
-         call ITEXTCOLOURN(NFORGR, NBCKGR)
+      else if (KEY == 23) then
+         JAZEKR = 0
+      else
+         goto 20
+      end if
+      call INPOPUP('OFF')
+      call ITEXTCOLOURN(NFORGR, NBCKGR)
 
-         return
-      end
+      return
+   end
+
+end module m_confrm

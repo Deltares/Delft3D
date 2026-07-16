@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,34 +27,44 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> make a gridline on the spline
-subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
-   use m_makespl
+module m_spline2gridline
 
    implicit none
 
-   integer, intent(in) :: mc !< number of gridnodes
-   integer, intent(in) :: num !< number of splinenodes
-   double precision, dimension(num), intent(in) :: xsp, ysp !< splinenode coordinates
-   double precision, dimension(mc), intent(out) :: xc, yc !< coordinates of grid points
-   double precision, dimension(mc), intent(out) :: sc !< spline-coordinates of grid points
-   double precision, intent(in) :: h !< for curvature adapted meshing (>0) or disable (<=0)
+   private
 
-   double precision, dimension(2) :: startstop
+   public :: spline2gridline
 
-   integer :: kmax
+contains
 
-   if (mc < 2) return ! no curvigrid possible
+   subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
+      use precision, only: dp
+      use m_makespl, only: makespl
 
-   startstop = (/0d0, dble(num - 1)/)
-   call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)
+      integer, intent(in) :: mc !< number of gridnodes
+      integer, intent(in) :: num !< number of splinenodes
+      real(kind=dp), dimension(num), intent(in) :: xsp, ysp !< splinenode coordinates
+      real(kind=dp), dimension(mc), intent(out) :: xc, yc !< coordinates of grid points
+      real(kind=dp), dimension(mc), intent(out) :: sc !< spline-coordinates of grid points
+      real(kind=dp), intent(in) :: h !< for curvature adapted meshing (>0) or disable (<=0)
 
-   if (kmax /= mc) then
-      continue
-   end if
+      real(kind=dp), dimension(2) :: startstop
 
-   return
-end subroutine spline2gridline
+      integer :: kmax
+
+      if (mc < 2) then
+         return ! no curvigrid possible
+      end if
+
+      startstop = [0.0_dp, real(num - 1, kind=dp)]
+      call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)
+
+      if (kmax /= mc) then
+         continue
+      end if
+
+      return
+   end subroutine spline2gridline
+
+end module m_spline2gridline

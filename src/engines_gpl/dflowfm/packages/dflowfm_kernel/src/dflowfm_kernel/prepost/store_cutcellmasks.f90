@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,27 @@
 !
 
 !> add polygon and fill cutcell mask with "kc"
+module m_store_cutcellmasks
+
+   implicit none
+
+   private
+
+   public :: store_cutcellmasks
+
+contains
+
    subroutine store_cutcellmasks(numk, kc, numL, Lmask, xmL, ymL)
-      use m_cutcells
-!      use network_data, only: kc, numk
-      use m_alloc
-      use unstruc_messages
-      implicit none
+      use precision, only: dp
+      use m_cutcells, only: jastored, npol, ik, jk, idxl, xdxl, ydxl, pdxl
+      use m_alloc, only: realloc
+      use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(in) :: numk
       integer, dimension(numk), intent(in) :: kc
       integer, intent(in) :: numL
       integer, dimension(numL), intent(in) :: Lmask
-      double precision, dimension(numL), intent(in) :: xmL, ymL
+      real(kind=dp), dimension(numL), intent(in) :: xmL, ymL
 
       integer :: istart, k, L, num, i, iL, iR
       integer :: numcur, numnew
@@ -107,8 +116,8 @@
       if (NPOL == 1) then
          call realloc(idxL, numL + 1, keepExisting=.true., fill=1)
       end if
-      call realloc(xdxL, numnew, keepExisting=.true., fill=0d0)
-      call realloc(ydxL, numnew, keepExisting=.true., fill=0d0)
+      call realloc(xdxL, numnew, keepExisting=.true., fill=0.0_dp)
+      call realloc(ydxL, numnew, keepExisting=.true., fill=0.0_dp)
       call realloc(pdxL, numnew, keepExisting=.true., fill=0)
 
 !     shift pointers and data
@@ -136,3 +145,5 @@
 
       return
    end subroutine store_cutcellmasks
+
+end module m_store_cutcellmasks

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,16 @@
 !
 !
 
+module m_setmodind
+
+   implicit none
+
+   private
+
+   public :: setmodind
+
+contains
+
    subroutine setmodind(rouwav, modind)
       implicit none
       integer, intent(out) :: modind
@@ -58,3 +68,5 @@
          modind = 10
       end if
    end subroutine setmodind
+
+end module m_setmodind

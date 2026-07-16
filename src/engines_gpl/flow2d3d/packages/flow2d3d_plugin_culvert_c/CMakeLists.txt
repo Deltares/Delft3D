@@ -10,9 +10,7 @@ if (UNIX)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
@@ -38,4 +36,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
 # Change project flags at the end of this file
-# target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
+# target_compile_options(${library_name} PRIVATE ${qauto_threaded_flags})

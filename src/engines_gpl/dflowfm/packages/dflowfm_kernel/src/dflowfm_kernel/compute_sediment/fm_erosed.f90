@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,26 @@
 !
 !
 
+module m_fm_erosed_sub
+   use m_xbeachwaves, only: rollerturbulence
+   use m_setucxucy_mor, only: setucxucy_mor
+   use m_setucxqucyq_mor, only: setucxqucyq_mor
+   use m_init_1dinfo, only: init_1dinfo
+   use m_fm_upwbed, only: fm_upwbed
+   use m_fm_red_soursin, only: fm_red_soursin
+   use m_waveconst
+   use m_compdiam, only: compdiam
+   use m_comphidexp, only: comphidexp
+   use m_compsandfrac, only: compsandfrac
+
+   implicit none
+
+   private
+
+   public :: fm_erosed
+
+contains
+
    subroutine fm_erosed()
    !!--description-----------------------------------------------------------------
    !!
@@ -53,15 +73,15 @@
       ! NONE
    !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts, only: pi
+      use mathconsts, only: pi, ee
       use bedcomposition_module
       use morphology_data_module
       use sediment_basics_module
-      use m_physcoef, only: ag, vonkar, sag, ee, backgroundsalinity, backgroundwatertemperature, vismol
+      use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
-      use m_flow, only: s0, s1, u1, kmx, zws, hs, &
-                        iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+      use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
+                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -71,19 +91,20 @@
       use dfparall
       use m_alloc
       use m_missing
-      use m_physcoef, only: frcuni, ifrctypuni
-      use m_turbulence, only: vicwws, turkinepsws, rhowat
-      use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
-      use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
-      use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
-      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
-      use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
-      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
-      use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc
-      use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
-      use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
-      use m_fm_erosed, only: i10, i15, i50, i90
-      use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau
+      use m_turbulence, only: vicwws, turkinws, rhowat
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
+                                  flow_without_waves, epshu
+      use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
+                             kmxsed, taub, uuu, vvv, e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, &
+                             sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor, sourf, sourse, sour_im, sinkf, sinkse, hs_mor, &
+                             mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, sedtrcfac, sedd50, rhosol, nmudfrac, &
+                             taucr, tetacr, dstar, iform, dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, &
+                             nxx, sedd50fld, sedtyp, xx, min_dxx_sedtyp, logsedsig, asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, &
+                             iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
+                             dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
+                             cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
+                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
+      use m_fm_erosed, only: difparam, seddif_cal
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -99,6 +120,10 @@
       use m_debug
       use m_sand_mud
       use m_get_kbot_ktop
+      use m_get_chezy, only: get_chezy
+      use m_compdiam, only: compdiam
+      use m_comphidexp, only: comphidexp
+      use m_getfixfac, only: getfixfac
       !
       implicit none
       !
@@ -197,52 +222,69 @@
       real(fp), dimension(0:kmax2d) :: ws2d
       real(fp), dimension(kmax2d) :: rsdq2d
       real(fp), dimension(kmax2d), save :: sig2d = &
-         (/-0.0874, -0.2472, -0.3797, -0.4897, -0.5809, -0.6565, -0.7193, &
+         [-0.0874, -0.2472, -0.3797, -0.4897, -0.5809, -0.6565, -0.7193, &
          & -0.7713, -0.8145, -0.8503, -0.8800, -0.9046, -0.9250, -0.9419, -0.9560,&
-         & -0.9676, -0.9773, -0.9854, -0.9920, -0.9975/)
+         & -0.9676, -0.9773, -0.9854, -0.9920, -0.9975]
 
       real(fp), dimension(kmax2d), save :: thck2d = &
-         (/0.1747, 0.1449, 0.1202, 0.0997, 0.0827, 0.0686, 0.0569, 0.0472, &
+         [0.1747, 0.1449, 0.1202, 0.0997, 0.0827, 0.0686, 0.0569, 0.0472, &
          & 0.0391, 0.0325, 0.0269, 0.0223, 0.0185, 0.0154, 0.0127, 0.0106, 0.0088,&
-         & 0.0073, 0.0060, 0.0050/)
+         & 0.0073, 0.0060, 0.0050]
 
       real(fp), dimension(max(kmx, 1)) :: concin3d
       real(fp), dimension(kmax2d) :: concin2d
       character(256) :: errmsg
-      double precision :: zcc, maxdepfrac
-      double precision :: ubot
+      real(kind=dp) :: zcc, maxdepfrac
+      real(kind=dp) :: ubot
       integer :: ierr, kk, Lf, kmxvel, kb, kt
-      double precision, allocatable :: dzdx(:), dzdy(:), u1_tmp(:), ucxq_tmp(:), ucyq_tmp(:)
-      double precision, allocatable :: z0rouk(:), z0curk(:), deltas(:), ua(:), va(:)
-      double precision :: dzdn, dzds
-      double precision :: z0u, czu
+      real(kind=dp), allocatable :: dzdx(:), dzdy(:), u1_tmp(:), ucxq_tmp(:), ucyq_tmp(:)
+      real(kind=dp), allocatable :: z0rouk(:), z0curk(:), deltas(:), ua(:), va(:)
+      real(kind=dp) :: dzdn, dzds
+      real(kind=dp) :: z0u, czu
       !
       real(fp), dimension(:), allocatable :: localpar !< local array for sediment transport parameters
+
+      integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
       !
       error = .false.
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
       !
       ! Allocate memory
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
-      if (istat == 0) allocate (localpar(npar), stat=istat)
-      if (istat == 0) allocate (ua(1:ndx), va(1:ndx), stat=istat)
-      if (istat == 0) allocate (z0rouk(1:ndx), z0curk(1:ndx), deltas(1:ndx), stat=istat)
-      if ((istat == 0) .and. (.not. allocated(u1_tmp))) allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
+      if (istat == 0) then
+         allocate (localpar(npar), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (ua(1:ndx), va(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (z0rouk(1:ndx), z0curk(1:ndx), deltas(1:ndx), stat=istat)
+      end if
+      if ((istat == 0) .and. (.not. allocated(u1_tmp))) then
+         allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
+      end if
 
       localpar = 0.0_fp
-      ua = 0d0; va = 0d0; z0rouk = 0d0; z0curk = 0d0; 
+      ua = 0.0_dp
+      va = 0.0_dp
+      z0rouk = 0.0_dp
+      z0curk = 0.0_dp
       if (istat /= 0) then
          error = .true.
          write (errmsg, '(a)') 'fm_erosed::error allocating memory.'
          call mess(LEVEL_FATAL, errmsg)
       end if
       !
-      wave = (jawave > 0) .and. .not. flowWithoutWaves
+      wave = (jawave > NO_WAVES) .and. .not. flow_without_waves
       !
       ! Mass conservation; s1 is updated before entering fm_erosed
       !
@@ -258,12 +300,12 @@
       !
       u1_tmp = u1 * u_to_umain
 
-      if (jatranspvel > 0 .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          u1_tmp = u1 - ustokes
          call setucxucy_mor(u1_tmp)
       else
          !   Calculate cell centre velocities ucxq, ucyq
-         if (maxval(u_to_umain) /= 1d0 .or. minval(u_to_umain) /= 1d0) then
+         if (maxval(u_to_umain) /= 1.0_dp .or. minval(u_to_umain) /= 1.0_dp) then
             call setucxucy_mor(u1_tmp)
          end if
       end if
@@ -278,9 +320,9 @@
       !I think that it should be removed from <setucxucy_mor>
       call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
 
-      if (jawave > 2) then
-         if ((.not. (jawave == 4 .or. jawave == 3 .or. jawave == 6)) .or. flowWithoutWaves) then
-            ktb = 0d0 ! no roller turbulence
+      if (jawave > WAVE_FETCH_YOUNG) then
+         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flow_without_waves) then
+            ktb = 0.0_dp ! no roller turbulence
          else
             do k = 1, ndx
                call rollerturbulence(k) ! sets ktb values
@@ -387,7 +429,7 @@
          h1 = s1(k) - bl(k) ! To ensure to get the same results from interpolation based on constant frcu and ifrcutp in the cell centre
          ! with considering hs
          if (nd(k)%lnx == 0) then
-            z0curk(k) = 1d-5 ! safety if nd(k)%lnx==0. Happens sometimes in case of thin dams
+            z0curk(k) = 1.0e-5_dp ! safety if nd(k)%lnx==0. Happens sometimes in case of thin dams
             cycle
          end if
 
@@ -395,21 +437,21 @@
             Lf = nd(k)%ln(LL)
             L = abs(Lf)
             if (javegczu) then
-               if (cfuhi(L) > 0d0) then ! use bed contribution of baptist>1
-                  czu = 1d0 / (cfuhi(L) * max(hu(L), epshu))
+               if (cfuhi(L) > 0.0_dp) then ! use bed contribution of baptist>1
+                  czu = 1.0_dp / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
             else
                if (frcu_mor(L) > 0) then
-                  call getcz(hu(L), frcu_mor(L), ifrcutp(L), czu, L)
+                  czu = get_chezy(hu(L), frcu_mor(L), u1(L), v(L), ifrcutp(L))
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
             end if
             !
-            z0u = hu(L) * exp(-vonkar * czu / sag - 1d0) ! differs from delft3d
+            z0u = hu(L) * exp(-vonkar * czu / sag - 1.0_dp) ! differs from delft3d
             if (Lf < 0) then
                z0curk(k) = z0curk(k) + wcl(1, L) * z0u
             else
@@ -419,9 +461,10 @@
          z0curk(k) = max(epsz0, z0curk(k))
       end do
       !
-      taub = 0d0
+      taub = 0.0_dp
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          z0rouk(k1) = z0rouk(k1) + wcl(1, L) * z0urou(L)
          z0rouk(k2) = z0rouk(k2) + wcl(2, L) * z0urou(L)
          taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)
@@ -429,25 +472,26 @@
       end do
       !
       if (kmx > 0) then ! 3D
-         deltas = 0.05d0
-         maxdepfrac = 0.05
-         if (jawave > 0 .and. v2dwbl > 0) then
-            deltas = 0d0
+         deltas = 0.05_dp
+         maxdepfrac = 0.05_dp
+         if (jawave > NO_WAVES .and. v2dwbl > 0) then
+            deltas = 0.0_dp
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                deltas(k1) = deltas(k1) + wcl(1, L) * wblt(L)
                deltas(k2) = deltas(k2) + wcl(2, L) * wblt(L)
             end do
-            maxdepfrac = 0.5d0 ! cases where you want 2D velocity above the wbl, make sure 2nd criterion applies
+            maxdepfrac = 0.5_dp ! cases where you want 2D velocity above the wbl, make sure 2nd criterion applies
          end if
-         zcc = 0d0
+         zcc = 0.0_dp
 
          do kk = 1, ndx
             call getkbotktop(kk, kb, kt)
             do k = kb, kt
-               zcc = 0.5d0 * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
+               zcc = 0.5_dp * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
-               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
+               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. (jawave /= NO_WAVES .and. zcc >= (bl(kk) + deltas(kk)))) then
                   exit
                end if
             end do
@@ -495,7 +539,7 @@
       dtmor = dts * morfac
       !
       call getfixfac(stmpar%morlyr, 1, ndx, lsedtot, & ! Update underlayer bookkeeping system for erosion/sedimentation
-                   & ndx, fixfac, ffthresh)
+                   & ndx, fixfac, ffthresh, ithresh)
       !
       ! Set fixfac to 1.0 for tracer sediments and adjust frac
       !
@@ -545,13 +589,31 @@
          call compdiam(frac, sedd50, sedd50, sedtyp, lsedtot, &
             & logsedsig, nseddia, logseddia, ndx, 1, &
             & ndx, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
-            & sedd50fld, dm, dg, dxx, dgsd)
+            & spatial_d50, sedd50fld, dm, dg, dxx, dgsd)
          !
          ! determine hiding & exposure factors
          !
-         call comphidexp(frac, dm, ndx, lsedtot, &
-            & sedd50, hidexp, ihidexp, asklhe, &
-            & mwwjhe, 1, ndx)
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+            !In this case, the hiding and exposure factors are computed based on the mean grain
+            !size of the sediment in both the active layer (which is the top layer in the bed) and
+            !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
+            !in the second layer (the coarse layer) will influence the sediment transport rate. 
+            !`frac` is used for computing the sediment transport rate for each fraction. This should
+            !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
+            call getfrac(stmpar%morlyr,frac_he    ,anymud    ,mudcnt    , &
+                        & mudfrac_he   ,1, ndx, BED_LAYER_FROM, BED_LAYER_TO)
+            call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                        & logsedsig ,nseddia   ,logseddia ,ndx     ,1, &
+                        & ndx,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                        & spatial_d50, sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+            call comphidexp(frac_he   ,dm_he     ,ndx     ,lsedtot   , &
+                           & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                           & mwwjhe    ,1, ndx)
+         else
+            call comphidexp(frac, dm, ndx, lsedtot, &
+               & sedd50, hidexp, ihidexp, asklhe, &
+               & mwwjhe, 1, ndx)
+         endif
 
          !endif
          !
@@ -561,19 +623,21 @@
          ! compute sand fraction
          !
          call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
-                         & max_mud_sedtyp, sandfrac, sedd50fld, &
+                         & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                          & 1, ndx)
       end if
       !
       ! compute normal component of bed slopes at edges    (e_xxx refers to edges)
 
-      dzdx = 0d0; dzdy = 0d0
+      dzdx = 0.0_dp
+      dzdy = 0.0_dp
 
       do L = 1, lnx
          ! Get the bottom slope components in the cell centres; keep these, needed later on
          ! Bottom slopes are positive on downsloping parts, cf bedbc2004.f90 and info from Bert Jagers
          ! So bl(k1)-bl(k2) instead of other way round
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          dzdx(k1) = dzdx(k1) - wcx1(L) * (bl(k2) - bl(k1)) * dxi(L)
          dzdy(k1) = dzdy(k1) - wcy1(L) * (bl(k2) - bl(k1)) * dxi(L)
          dzdx(k2) = dzdx(k2) - wcx2(L) * (bl(k2) - bl(k1)) * dxi(L)
@@ -599,10 +663,11 @@
 
       do L = 1, lnx
          ! Interpolate back to links
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          !       e_dzdn(L) = acl(L)*(csu(L)*dzdx(k1) + snu(L)*dzdy(k1)) + (1d0-acl(L))*(csu(L)*dzdx(k2) + snu(L)*dzdy(k2))
          e_dzdn(L) = -dxi(L) * (bl(k2) - bl(k1)) ! more accurate near boundaries
-         e_dzdt(L) = acl(L) * (-snu(L) * dzdx(k1) + csu(L) * dzdy(k1)) + (1d0 - acl(L)) * (-snu(L) * dzdx(k2) + csu(L) * dzdy(k2)) ! affected near boundaries due to interpolation
+         e_dzdt(L) = acl(L) * (-snu(L) * dzdx(k1) + csu(L) * dzdy(k1)) + (1.0_dp - acl(L)) * (-snu(L) * dzdx(k2) + csu(L) * dzdy(k2)) ! affected near boundaries due to interpolation
       end do
       !
       !================================================================
@@ -619,7 +684,9 @@
          ! do not calculate sediment sources, sinks, and bed load
          ! transport in areas with very shallow water.
          !
-         if ((s1(nm) - bl(nm)) <= epshu) cycle ! dry
+         if ((s1(nm) - bl(nm)) <= epshu) then
+            cycle ! dry
+         end if
          !
          call getkbotktop(nm, kb, kt)
          if (kfsed(nm) == 0) then ! shallow but not dry, ie ]epshu sedthresh]
@@ -632,12 +699,11 @@
                ! at layer interfaces, but not at bed and surface  ! to check...
                do l = 1, lsed
                   do k = kb, kt - 1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k) ! background dico is added in solve_vertical
                   end do
                end do
                !
-               rsedeq(nm, :) = 0d0
+               rsedeq(nm, :) = 0.0_dp
             end if
             cycle
          end if
@@ -695,15 +761,15 @@
             zvelb = h1 / ee
          end if
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             ubot = uorb(nm) ! array uitgespaard
          else
-            ubot = 0d0
+            ubot = 0.0_dp
          end if
          !
          ! Calculate total (possibly wave enhanced) roughness
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             z0rou = max(epsz0, z0rouk(nm))
          else ! currents only
             z0rou = z0curk(nm) ! currents+potentially trachy
@@ -723,7 +789,7 @@
             if (iflufflyr > 0) then
                afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:, nm), stmpar%trapar, stmpar%sedpar, timhr)
             else
-               afluff = 0d0
+               afluff = 0.0_dp
             end if
             !
             if (wave) then
@@ -731,20 +797,20 @@
                                 & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
                                 & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             else
-               call compbsskin(umean, vmean, h1, wave, 0d0, 0d0, &
+               call compbsskin(umean, vmean, h1, wave, 0.0_dp, 0.0_dp, &
                                 & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
                                 & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1d-5))
+         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
          !
          !if (scour) then
          !
-         tauadd = 0d0
+         tauadd = 0.0_dp
          !
          ! Compute effective depth averaged velocity
          !
@@ -759,34 +825,32 @@
          else
             salinity = backgroundsalinity
          end if
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             temperature = constituents(itemp, kbed) ! r0(nm, kbed, ltem)
          else
             temperature = backgroundwatertemperature
          end if
          !
-         taks0 = 0d0
-         !
          ! Calculate Van Rijn's reference height
          !
          if (iopkcw == 1) then !  iopkcw: options to calculate curr related roughness height
-            rc = 30.d0 * z0curk(nm) ! 33?
+            rc = 30.0_dp * z0curk(nm) ! 33?
          else
             rc = rdc
          end if
-         taks0 = max(aksfac * rc, 0.01d0 * h1)
+         taks0 = max(aksfac * rc, 0.01_dp * h1)
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
-            if (twav(nm) > 0d0) then
-               delr = 0.025d0
-               taks0 = max(0.5d0 * delr, taks0)
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
+            if (twav(nm) > 0.0_dp) then
+               delr = 0.025_dp
+               taks0 = max(0.5_dp * delr, taks0)
             end if
          end if
          !
          ! Limit maximum aks to 20% of water depth
          ! (may be used when water depth becomes very small)
          !
-         taks0 = min(taks0, 0.2d0 * h1)
+         taks0 = min(taks0, 0.2_dp * h1)
          !
          ! Input parameters are passed via dll_reals/integers/strings-arrays
          !
@@ -812,7 +876,7 @@
             dll_reals(RP_TETA) = real(phiwav(nm), hp)
             dll_reals(RP_RLAMB) = real(rlabda(nm), hp)
             dll_reals(RP_UORB) = real(uorb(nm), hp)
-            if (jawave > 2) then
+            if (jawave > WAVE_FETCH_YOUNG) then
                dll_reals(RP_KWTUR) = real(ktb(nm), hp)
             else
                dll_reals(RP_KWTUR) = real(0.0_hp, hp) ! array not allocated for fetch length models (choice of HK)
@@ -847,7 +911,7 @@
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
          if (iturbulencemodel > 2 .and. kmx > 0) then
-            dll_reals(RP_KTUR) = real(turkinepsws(1, kb), hp) ! 1=k, 2=e
+            dll_reals(RP_KTUR) = real(turkinws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
          dll_reals(RP_VMEAN) = real(vmean, hp)
@@ -924,12 +988,14 @@
                !
                fracf = 0.0_fp
                if (iflufflyr > 0) then
-                  if (mfltot > 0.0_fp) fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
+                  if (mfltot > 0.0_fp) then
+                     fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
+                  end if
                end if
                !
-               kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
-               thick0 = max(thicklc(kmaxsd) * h0, epshs)
-               thick1 = max(thicklc(kmaxsd) * h1, epshs)
+               kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
+               thick0 = max(thicklc(kmaxsd) * h0, epshu)
+               thick1 = thicklc(kmaxsd) * h1
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
                           & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
@@ -960,10 +1026,16 @@
                      sinkse(nm, l) = 0.0_fp
                   end if
                   !
-                  sourf(l, nm) = sourfluff
+                  ! prevent fluff layer source exceeding available mass
+                  !
+                  if (mfltot <= 0.0_fp) then
+                     sourf(l, nm) = 0.0_fp
+                  else
+                     sourf(l, nm) = min(sourfluff, mfltot / dts)
+                  end if
                else
                   sinkse(nm, l) = sinktot
-                  sourse(nm, l) = sourse(nm, l) + sourfluff
+                  ! sourse(nm,l) already set (sourfluff = 0)
                end if
                !
                if (kmx > 0) then
@@ -975,7 +1047,6 @@
                   !
                   klc = 0
                   do k = kt, kb - 1, -1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k)
                      klc = klc + 1
                   end do
@@ -989,13 +1060,13 @@
                cycle
             end if
             !
-            ! sediment transport governed by bedoad vector and reference concentration
+            ! sediment transport governed by bedload vector and reference concentration
             !
             suspfrac = has_advdiff(tratyp(l))
             !
             tsd = -999.0_fp
             di50 = sedd50(l)
-            if (di50 < 0.0_fp) then
+            if (spatial_d50) then
                !  Space varying sedd50 specified in array sedd50fld:
                !  Recalculate dstar, tetacr and taucr for each nm,l - point
                di50 = sedd50fld(nm)
@@ -1026,7 +1097,7 @@
             end if
             !
             if (suspfrac) then
-               tsigmol = 1d0 ! molecular PS = 1d0
+               tsigmol = 1.0_dp ! molecular PS = 1d0
                tdss = dss(nm, l)
                twsk = ws(kb, l) ! was kb-1, should be same in 3D (see fallve)
             else
@@ -1047,7 +1118,7 @@
             !
             ! Calculate bed porosity for dilatancy
             !
-            poros = 1d0 - cdryb(l) / rhosol(l)
+            poros = 1.0_dp - cdryb(l) / rhosol(l)
             dll_reals(RP_POROS) = real(poros, hp)
             !
             localpar(1) = ag
@@ -1072,7 +1143,6 @@
                   dcwwlc = 0.0_fp
                   wslc = 0.0_fp
                   do kk = kt, kb - 1, -1 ! sigma convention
-                     !dcwwlc(klc) = max(vicwws(kk),dicoww)     ! maximalisation is safety
                      dcwwlc(klc) = vicwws(kk) !  background is added in solve_vertical
                      wslc(klc) = ws(kk, l)
                      klc = klc + 1
@@ -1084,7 +1154,7 @@
                      klc = klc + 1
                   end do
                end if
-               taks = 0.0_fp
+               taks = taks0
                !
                ! Solve equilibrium concentration vertical and
                ! integrate over vertical
@@ -1136,7 +1206,6 @@
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
@@ -1146,15 +1215,20 @@
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
+                  if (seddif_cal > 0.0_fp) then
+                     seddif(l, kb:kt) = seddif_cal * seddif(l, kb:kt)
+                  end if
+                  !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-
-                  difbot = 10.0_fp * ws(kmxsed(nm, l) - 1, l) * thick1
-                  do kk = kb - 1, kmxsed(nm, l) - 1
-                     seddif(l, kk) = difbot
-                  end do
+                  if (difparam > 0.0_fp) then
+                     difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
+                     do kk = kb - 1, kmxsed(nm, l) - 1
+                        seddif(l, kk) = difbot
+                     end do
+                  end if
                end if ! suspfrac
             else
                !
@@ -1236,9 +1310,10 @@
       ! Distribute velocity asymmetry to links
       !
       do L = 1, lnxi
-         k1 = ln(1, L); k2 = ln(2, L)
-         uau(L) = (acL(L) * ua(k1) + (1d0 - acL(L)) * ua(k2)) * csu(L) + &
-                  (acL(L) * va(k1) + (1d0 - acL(L)) * va(k2)) * snu(L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         uau(L) = (acL(L) * ua(k1) + (1.0_dp - acL(L)) * ua(k2)) * csu(L) + &
+                  (acL(L) * va(k1) + (1.0_dp - acL(L)) * va(k2)) * snu(L)
       end do
       !
       do L = lnxi + 1, lnx ! Boundaries: neumann
@@ -1262,9 +1337,14 @@
       !2DO. V: When raw transports at cell centres are requested, these are reconstructed from the edge transports in <unstruc_netcdf>. Saving
       ! <sbcx_raw> does not seem necessary.
       if (stmpar%morpar%moroutput%rawtransports) then
-         sbcx_raw = sbcx; sbcy_raw = sbcy; ! save transports before upwinding and bed slope effects
-         sbwx_raw = sbwx; sbwy_raw = sbwy; ! to compare with analytical solutions
-         sswx_raw = sswx; sswy_raw = sswy; 
+         sbcx_raw = sbcx
+         sbcy_raw = sbcy
+         ! save transports before upwinding and bed slope effects
+         sbwx_raw = sbwx
+         sbwy_raw = sbwy
+         ! to compare with analytical solutions
+         sswx_raw = sswx
+         sswy_raw = sswy
       end if
       !
       ! Upwind scheme for bed load and wave driven transport
@@ -1277,14 +1357,14 @@
          call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
       end if
       !
-      if (bedw > 0.0_fp .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          !
          ! Upwind wave-related bed load load transports
          !
          call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
       end if
       !
-      if (susw > 0.0_fp .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          !
          ! Upwind wave-related suspended load transports
          !
@@ -1295,8 +1375,12 @@
       !
       allocate (evel(lsed), stat=istat)
       do nm = 1, ndx
-         if (pmcrit(nm) < 0.0_fp) cycle
-         if (mudfrac(nm) <= 0.0_fp .or. mudfrac(nm) >= 1.0_fp) cycle
+         if (pmcrit(nm) < 0.0_fp) then
+            cycle
+         end if
+         if (mudfrac(nm) <= 0.0_fp .or. mudfrac(nm) >= 1.0_fp) then
+            cycle
+         end if
          !
          ! compute erosion velocities
          !
@@ -1304,7 +1388,9 @@
          do l = 1, lsed
             ll = lstart + l
             kmaxsd = kmxsed(nm, l) ! meaning of kmaxsd changes here!
-            if (frac(nm, l) > 0.0_fp) evel(l) = (sourse(nm, l) - sour_im(nm, l) * constituents(ll, kmaxsd)) / (cdryb(l) * frac(nm, l))
+            if (frac(nm, l) > 0.0_fp) then
+               evel(l) = (sourse(nm, l) - sour_im(nm, l) * constituents(ll, kmaxsd)) / (cdryb(l) * frac(nm, l))
+            end if
          end do
          !
          ! recompute erosion velocities
@@ -1332,19 +1418,21 @@
       end do
       !
       if (jasourcesink == 0) then
-         sourse = 0d0
-         sinkse = 0d0
+         sourse = 0.0_dp
+         sinkse = 0.0_dp
       elseif (jasourcesink == 1) then
          !
       elseif (jasourcesink == 2) then
-         sinkse = 0d0
+         sinkse = 0.0_dp
       elseif (jasourcesink == 3) then
-         sourse = 0d0
+         sourse = 0.0_dp
       end if
       !
 
       deallocate (dzdx, dzdy, stat=istat)
-      if (istat == 0) deallocate (localpar, stat=istat)
+      if (istat == 0) then
+         deallocate (localpar, stat=istat)
+      end if
       if (istat /= 0) then
          error = .true.
          write (errmsg, '(a)') 'fm_erosed::error deallocating memory.'
@@ -1352,3 +1440,5 @@
       end if
 
    end subroutine fm_erosed
+
+end module m_fm_erosed_sub

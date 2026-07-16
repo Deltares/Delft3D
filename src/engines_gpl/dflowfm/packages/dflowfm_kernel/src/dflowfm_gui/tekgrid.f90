@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,14 +29,17 @@
 
 !
 !
+module m_tek_grid
+   implicit none
+contains
+   subroutine TEKgrid(key)
+      use m_grid, only: mc, nc, mmax, nmax, xc, yc
+      use unstruc_colors, only: NCOLDG
+      use m_drawthis
+      use m_tek_grd
+      integer :: key
 
-      subroutine TEKgrid(key)
-         use m_grid
-         use unstruc_colors
-         use m_drawthis
-         implicit none
-         integer :: key
+      call tekgrd(XC, YC, MMAX, NMAX, 1, 1, mc, nc, NCOLDG, ndraw(38), key, MC)
 
-         call tekgrd(XC, YC, MMAX, NMAX, 1, 1, mc, nc, NCOLDG, ndraw(38), key, MC)
-
-      end subroutine TEKgrid
+   end subroutine TEKgrid
+end module m_tek_grid

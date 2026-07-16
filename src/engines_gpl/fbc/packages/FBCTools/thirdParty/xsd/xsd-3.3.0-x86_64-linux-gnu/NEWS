@@ -1,0 +1,1131 @@
+Version 3.3.0
+
+  * New option, --char-encoding, allows you to specify the character encoding
+    that should be used in the generated code. Valid values for the 'char'
+    character type are 'utf8' (default), 'iso8859-1' (new), 'lcp' (Xerces-C++
+    local code page), and 'custom' (provides support for custom encodings). 
+    Note that if you use a non-default character encoding and include some 
+    libxsd headers (e.g., xsd/cxx/xml/string.hxx) directly, then you will 
+    need to first include the correct xsd/cxx/xml/char-<enc>.hxx header, 
+    where <enc> is iso8859-1, lcp, etc. This mechanism replaces the 
+    XSD_USE_LCP macro.
+
+    For the wchar_t character type the only valid value for this option is 
+    'auto' and the encoding is automatically selected between UTF-16 and 
+    UTF-32, depending on the wchar_t type size.
+
+  * When the XSD compiler is built with Xerces-C++ 3.1.0 or later, the
+    handling  of multiple imports for the same namespace is enabled. Before,
+    all subsequent imports for a namespace were ignored which caused errors
+    in some schemas. Note that if your application has XML Schema validation
+    enabled, then you will also need to build it with Xerces-C++ 3.1.0 or
+    later to take advantage of this feature.
+
+  * Automatic mapping for the urn-style XML namespaces. The last component
+    in the urn name is used to derive the C++ namespace name.
+
+  * New option, --schema-file-regex, in combination with the existing
+    --type-file-regex, can be used to place the generated files into 
+    subdirectories or to resolve file name conflicts in the file-per-
+    type mode (--file-per-type).
+
+  * Warning id's have changed to start with a letter identifying the
+    component issuing the warning. F - compiler frontend, D - compiler
+    driver, P - C++/Parser mapping, T - C++/Tree mapping.
+
+  * Strings used to match regular expressions supplied with the
+    --namespace-regex and --anonymous-regex options now include the file 
+    component for the schema being compiled.
+
+  * The XSD_NO_EXPORT macro can be used to omit code generated with the
+    --export/import-maps and, for C++/Tree, --generate-xml-schema options
+    during C++ compilation. This may be useful if you would like to use 
+    the same generated code across multiple platforms.
+
+ C++/Tree
+
+  * New option, --generate-element-type, triggers the generation of types
+    instead of parsing/serialization functions for root elements. This
+    is primarily useful to distinguish object models with the same root
+    type but with different root elements. For more information, refer
+    to the messaging example and Section 2.9.1, "Element Types" in the
+    C++/Tree Mapping User Manual. To support the customization of the 
+    element type naming the --element-type-regex option has been added.
+    See the NAMING CONVENTION section in the compiler command line manual
+    (man pages) for details.
+
+  * New option, --generate-element-map, triggers the generation of a root
+    element map. The element map allows uniform parsing and serialization
+    of multiple root elements. This option can only be used together with
+    --generate-element-type. For more information, refer to the messaging
+    example and Section 2.9.2, "Element Map" in the C++/Tree Mapping
+    User Manual.
+
+  * Prior to this version, if the --generate-polymorphic option is 
+    specified, the compiler treats all types as potentially polymorphic.
+    Now by default only type hierarchies used in substitution groups and 
+    those explicitly declared polymorphic with the new --polymorphic-type
+    option are treated as polymorphic. This results in smaller and faster
+    generated code. If you would like to continue using the old behavior,
+    you will need to specify --polymorphic-type-all. For more information,
+    on this change see Section 2.11, "Mapping for xsi:type and Substitution
+    Groups" in the C++/Tree Mapping User Manual.
+
+  * New option, --generate-detach, triggers the generation of detach 
+    functions for required elements and attributes. For optional and 
+    sequence cardinalities the detach functions are now provided by the 
+    respective containers even without this option. These functions, for 
+    example, allow one to move sub-trees in the object model either within
+    the same tree or between different trees without copying. For more 
+    information, refer to Section 2.8 "Mapping for Local Elements and 
+    Attributes" in the C++/Tree Mapping User Manual.
+
+  * New option, --export-xml-schema, causes the compiler to export/import
+    types in the XML Schema namespace using the export symbol provided
+    with the --export-symbol option.
+
+  * New example, embedded, shows how to embed the binary representation of
+    the schema grammar into an application and then use it to parse and 
+    validate XML documents.
+
+  * New example, compression, shows how to compress an XML document during 
+    serialization and decompress it during parsing using the zlib library.
+
+  * New example, custom/mixed, shows how to use type customization to parse 
+    and serialize mixed content.
+
+  * The streaming example has been extended to show how to perform stream-
+    oriented, partially in-memory XML processing using the C++/Tree mapping.
+    With the partially in-memory parsing and serialization only a part of
+    the object model is in memory at any given time. With this approach one
+    can process parts of the document as they become available as well as 
+    handle documents that are too large to fit into memory.
+
+  * New default/fixed value initialization code. Now the default/fixed values
+    are parsed by the XSD compiler at compile time instead of the standard
+    parsing code at runtime. This will allow the compilation of schemas that 
+    use the default/fixed values without support for XML parsing 
+    (--suppress-parsing option).
+
+  * Empty XML Schema enumeration values are now mapped to the 'empty' C++ 
+    enumerator name instead of 'cxx'.
+
+  * XML Schema union types with members that are enumeration types are 
+    automatically converted to equivalent enumeration types with a union 
+    of all the members' enumerators.
+
+Version 3.2.0
+
+  * New option, --disable-warning, disables printing of a warning with
+    the specified id. Specifying 'all' for the warning id disables all
+    warnings.
+
+  * New options, --export-maps and --import-maps, provide support for 
+    splitting a polymorphic type hierarchy across several Win32 DLLs.
+    See the compiler command line manual (man pages) for details.
+
+ C++/Tree
+
+  * During serialization the generated code automatically assigns
+    generic prefixes (p1, p2, etc) to XML namespaces used in the
+    vocabulary and for which no custom prefix-namespace mapping
+    was provided via the xml_schema::namespace_infomap argument.
+    The xml_schema::namespace_infomap argument in the serialization
+    functions is now default-initialized to an empty map. The
+    xml_schema::no_namespace_mapping and xml_schema::xsi_already_in_use
+    exceptions have been removed.
+
+  * New example, performance, measures the performance of parsing and
+    serialization. This example also shows how to structure your code
+    to achieve the maximum performance for these two operations.
+
+  * New example, xpath, shows how to use the C++/Tree mapping together
+    with XPath.
+
+  * New options, --one-accessor-regex, --opt-accessor-regex,
+    --seq-accessor-regex, --one-modifier-regex, --opt-modifier-regex,
+    and --seq-modifier-regex, allow specification of transformations
+    for accessor and modifier function names for elements and attributes
+    with specific cardinalities. For more information see the NAMING
+    CONVENTION section in the compiler command line manual (man pages).
+
+  * Support for comparison (--generate-comparison) and printing 
+    (--generate-ostream) of polymorphic object models.
+
+  * New serialization flag, xml_schema::flags::dont_pretty_print,
+    disables extra spaces and new lines that make the resulting XML
+    slightly bigger but easier to read.
+
+  * New example, custom/double, shows how to customize parsing and 
+    serialization code for the xsd:double XML Schema built-in type.
+    It can be used as a guide on how to customize built-in XML Schema
+    types that are mapped to fundamental C++ types.
+
+  * Support for fractionDigits and totalDigits facets in serialization
+    of types derived from xsd:decimal.
+
+  * New set of compile-time macros that control how the xsd:float, 
+    xsd:double, and xsd:decimal types are serialized. The following
+    macros control the format:
+
+    XSD_CXX_TREE_FLOAT_FIXED
+    XSD_CXX_TREE_FLOAT_SCIENTIFIC
+    XSD_CXX_TREE_DOUBLE_FIXED
+    XSD_CXX_TREE_DOUBLE_SCIENTIFIC
+
+    The following macros control the precision:
+
+    XSD_CXX_TREE_FLOAT_PRECISION_MAX
+    XSD_CXX_TREE_FLOAT_PRECISION
+    XSD_CXX_TREE_DOUBLE_PRECISION_MAX
+    XSD_CXX_TREE_DOUBLE_PRECISION
+    XSD_CXX_TREE_DECIMAL_PRECISION_MAX
+    XSD_CXX_TREE_DECIMAL_PRECISION
+
+    If the *_PRECISION_MAX macro is defined then the maximum number of
+    potentially significant decimal digits that the type can represent
+    is used. Otherwise, if the *_PRECISION macro is defined then its
+    value is used. By default the precision is set to the number of
+    decimal digits that the type can represent without change. For
+    more information on these options, refer to the following paper:
+
+    http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1822.pdf
+
+    The old macro, XSD_FP_ALL_DIGITS, that was equivalent to defining
+    all three *_PRECISION_MAX macros has been removed.
+
+    An alternative to using these macros is to customize the floating
+    point type as shown in the custom/double example.
+
+  * An additional constructor is generated in situations where a type
+    contains one or more required element of complex type (that is,
+    it itself contains elements or attributes). In this constructor,
+    initializers for such elements are passed as std::auto_ptr and the
+    newly created instance is directly initialized with and assumes
+    ownership of the pointed to objects. This constructor is a logical
+    addition to the non-copying modifiers that were introduced in the
+    previous version.
+
+  * Extra conversion operators in the fundamental_base class template
+    which is used to emulate inheritance from fundamental types are now
+    disabled by default since they cause problems on several compilers.
+    To enable them compile your code with the XSD_TREE_EXTRA_FUND_CONV
+    macro defined.
+
+ C++/Parser
+
+  * New options, --generate-xml-schema and --extern-xml-schema, trigger
+    generation of the mapping for the XML Schema namespace to a separate
+    header file and inclusion of that header into other generated header
+    files instead of generating the necessary declarations inline,
+    respectively. See the compiler command line manual (man pages) for
+    details.
+
+  * New example, performance, measures the performance of XML parsing.
+    This example also shows how to structure your code to achieve the
+    maximum performance for this operation.
+
+  * Type map files can now include comments. A comment starts with #
+    and ends with a new line or end of file. To specify a name that
+    contains # enclose it in "".
+
+  * In type map files the optional argument type now defaults to the
+    return type if the return type ends with * or & (that is, it is
+    a pointer or a reference) and 'const return type&' otherwise.
+
+  * The interface for polymorphic parsing has been simplified. Calling the
+    *_parser() functions multiple times to specify several parsers is no 
+    longer supported. Instead you need to pass the xml_schema::parser_map
+    object which contains the parsers. For more information refer to
+    Section 5.4, "Support for Polymorphism" in the C++/Parser Mapping
+    Getting Started Guide.
+
+  * The use of virtual inheritance has been reduced which results in a
+    much smaller object code size (more than factor of 2 on some tests)
+    and faster C++ compilation with less RAM used.
+
+  * The low-level Expat-specific parsing API (parse_begin() and parse_end())
+    has been extended to provide XML and XML Schema error translation to
+    exceptions or error handler calls. See Section 7.2, "Expat Document
+    Parser" in the C++/Parser Mapping Getting Started Guide for more
+    information.
+
+Version 3.1.0
+
+  * New option, --file-per-type, triggers generation of a separate set
+    of C++ files for each type defined in XML Schema. This compilation
+    mode is primarily useful when some of your schemas cannot be compiled
+    separately or have cyclic dependencies which involve inheritance.
+    Other new options that are useful in this compilation mode are
+    --type-file-regex, --type-file-regex-trace, and --file-list. See the
+    compiler command line manual (man pages) for more information.
+
+  * New option, --options-file, allows additional command line options
+    to be provided in files, with one option per line.
+
+  * New option, --reserved-name, allows insertion of additional names
+    with optional replacements to the list of names that should not be
+    used as identifiers. See the compiler command line manual (man pages)
+    for details.
+
+  * New options, --location-map, --location-regex, and
+    --location-regex-trace, allow re-mapping of schema locations
+    specified in the include and import elements without modifying the
+    schema files. See the compiler command line manual (man pages) for
+    more information.
+
+  * New option, --guard-prefix, allows specification of a prefix that
+    should be added to generated header inclusion guards.
+
+  * New option, --file-list, triggers creation of a file with a list of
+    generated C++ files. This option is primarily useful in the file-per-
+    type compilation mode (--file-per-type) to create a list of generated
+    C++ files, for example, as a makefile fragment. Other new options
+    that are useful with --file-list are --file-list-prologue,
+    --file-list-epilogue, and --file-list-delim. See the compiler command
+    line manual (man pages) for more information.
+
+  * Support for the upcoming Xerces-C++ 3.0.0 release.
+
+ C++/Tree
+
+  * New option, --generate-intellisense, triggers generation of workarounds
+    for IntelliSense bugs in Visual Studio 2005 (8.0). When this option is
+    used, the resulting code is slightly more verbose. IntelliSense in
+    Visual Studio 2008 (9.0) does not require these workarounds. Support
+    for IntelliSense in Visual Studio 2003 (7.1) is improved with this
+    option but is still incomplete.
+
+  * New options, --type-naming and --function-naming, allow specification
+    of the type and function naming conventions that should be used in the
+    generated code. Supported values for --type-naming are: knr (K&R), ucc
+    (upper-camel-case), and java. Supported values for --function-naming
+    are: knr (K&R), lcc (lower-camel-case), and java. For more information
+    see the NAMING CONVENTION section in the compiler command line manual
+    (man pages).
+
+  * New options, --type-regex, --accessor-regex, --modifier-regex,
+    --parser-regex, --serializer-regex, and --enumerator-regex, allow
+    specification of transformations for type, accessor function,
+    modifier function, parsing function, serialization function, and
+    enumerator names in order to produce the generated code using a
+    custom naming convention. For more information see the NAMING
+    CONVENTION section in the compiler command line manual (man pages).
+
+  * Generated list classes now provide a complete set of constructors and
+    conform to the standard C++ sequence interface.
+
+  * String-based types now provide two extra constructors that expect a
+    C string and std::string as their arguments. This allows direct
+    initialization of string-based types from string literals.
+
+  * New implementations of the XML Schema date/time types (date, dateTime,
+    duration, gDay, gMonth, gMonthDay, gYear, gYearMonth, and time) that
+    represent the information in the numerical form.
+
+  * New binary serialization examples: binary/boost, which shows how to
+    save/load the object model to/from a custom format using the Boost
+    serialization library as an example, and binary/xdr, which shows how to
+    save/load the object model to/from XDR (eXternal Data Representation)
+    binary format using the XDR API provided as part of Sun RPC.
+
+  * The non-copying modifier functions can now be used to assemble object
+    models from scratch. For more information see Section 4.4, "Creating
+    the Object Model from Scratch" in the C++/Tree Mapping Getting Started
+    Guide as well as Section 2.8, "Mapping for Local Elements and Attributes"
+    in the C++/Tree Mapping User Manual.
+
+  * Doxygen documentation was added to the XSD runtime for the built-in XML
+    Schema types, exceptions, etc. This allows linking of the generated
+    documentation to the XSD runtime documentation using the Doxygen tags
+    mechanism. The Doxygen configuration file for the XSD runtime is
+    provided in the documentation/cxx/tree/reference/ directory.
+
+  * Support for customization of anyType. Because anyType is a base type
+    for every generated type, customizing it allows one to implement custom
+    functionality that spans the entire type system. See the comments
+    example in the examples/cxx/tree/custom/ directory.
+
+  * New option, --omit-default-attributes, triggers generation of extra
+    checks that exclude attributes with default and fixed values from the
+    serialized XML documents.
+
+  * The parsing functions that used to read from DOMInputSource were changed
+    to use InputSource to ease support of Xerces-C++ 3 and 2 series in the
+    same code base.
+
+  * The parsing function that used to parse DOMDocument* was changed to
+    parse xml_schema::dom::auto_ptr<DOMDocument>& instead. If the keep_dom
+    and own_dom flags are specified then this parsing function resets the
+    passed automatic pointer and the returned object model assumes
+    ownership of the DOM document. xml_schema::dom::auto_ptr is a simple
+    automatic pointer for Xerces-C++ DOM with the same interface as
+    std::auto_ptr.
+
+  * The xml_schema::tree_node_key DOM user data key was moved to
+    xml_schema::dom::tree_node_key.
+
+ C++/Parser
+
+  * New option, --generate-polymorphic, triggers generation of polymorphism-
+    aware code. This option should be used on XML vocabularies which use
+    xsi:type and/or substitution groups. For more information see Section
+    5.4, "Support for Polymorphism" in the C++/Parser Mapping Getting
+    Started Guide we well as the polymorphism and polyroot examples in the
+    examples/cxx/parser/ directory.
+
+  * The date/time types (date, dateTime, gDay, gMonth, gMonthDay, gYear,
+    gYearMonth, and time) now represent time zone in the numerical form.
+
+  * In order to support parsing of polymorphic XML documents, the signatures
+    of the start_* functions (_start_element, _start_any_element, and
+    start_root_element) have changed to include a third argument of type
+    const ro_string<C>*. This argument contains the resolved type name and
+    namespace in case the xsi:type attribute was specified.
+
+Version 3.0.0
+
+  * Anonymous type morphing (automatic type naming) is now performed by
+    default in both mappings. The --morph-anonymous option does not have
+    any effect but is preserved for backwards compatibility. A new option,
+    --preserve-anonymous, disables anonymous type morphing. This option is
+    useful together with --show-anonymous if you want to make sure your
+    schemas do not have any anonymous types.
+
+  * A number of bugs fixed in both C++/Tree and C++/Parser mappings.
+
+ C++/Tree
+
+  * The new C++/Tree Mapping Getting Started Guide is available in the
+    documentation/cxx/tree/guide/ directory.
+
+  * The type definitions for local elements and attributes in the form
+    name::type have been changed to name_type. For example, an element
+    bar in type foo with maxOccurs="unbounded" used to have its iterator
+    type defined as foo::bar::iterator. With this change it becomes
+    foo::bar_iterator. Furthermore, the container type name for sequence
+    elements has changed from foo::bar::container to foo::bar_sequence
+    and for optional elements and attributes from foo::bar::container
+    to foo::bar_optional. This is a backwards incompatible change and
+    may require application code adjustments (the C++ compiler will
+    pinpoint the affected places).
+
+  * New option, --generate-doxygen, triggers generation of documentation
+    comments suitable for extraction by the Doxygen documentation system.
+    Documentation from annotations is added to the comments if present in
+    the schema.
+
+  * New option, --generate-wildcard, triggers generation of the new
+    wildcard (any and anyAttribute) mapping. This mapping represents the
+    content matched by wildcards as DOM fragments. For more information on
+    the new mapping see Section 2.12, "Mapping for any and anyAttribute"
+    in the C++/Tree Mapping User Manual as well as the wildcard example in
+    the examples/cxx/tree/ directory.
+
+  * New option, --generate-comparison, triggers generation of comparison
+    operators (== and !=) for complex types. Comparison is performed
+    memberwise.
+
+  * Support for the RPC XDR binary stream in addition to ACE CDR.
+
+  * New constructor is generated for complex types with ultimate bases
+    that are simple types and can be default-initialized. This constructor
+    includes initializers for all required members but omits the initializer
+    for the base type. See Section 2.7, "Mapping for Complex Types" in the
+    C++/Tree Mapping User Manual for more information.
+
+  * Support for polymorphic binary serialization and extraction. Note that
+    the semantics of the --generate-insertion and --generate-extraction
+    options has changed. See the the compiler command line manual (man
+    pages) for details.
+
+  * New parsing function with the DOMDocument* argument and the own_dom
+    flag allow the tree to assume the ownership of the DOM document
+    being parsed when DOM association is requested (keep_dom flag).
+    See the C++/Tree Mapping User Manual for more information.
+
+  * New example, multiroot, shows how to handle XML vocabularies with
+    multiple root elements.
+
+  * New example, caching, shows how to parse several XML documents while
+    reusing the underlying XML parser and caching the schemas used for
+    validation.
+
+  * The mapping of built-in XML Schema type decimal has changed from
+    long double to double. The old mapping can be obtained by providing
+    a custom mapping for this type.
+
+  * The xml_schema::errors type which is used in the xml_schema::parsing
+    and xml_schema::serialization exceptions has been renamed to
+    xml_schema::diagnostics and extended to include warnings in addition
+    to errors.
+
+  * Serialization operators now clear the element being serialized to from
+    existing child nodes and attributes (except for special attributes such
+    as prefix-namespace mappings, etc.).
+
+  * Improved built-in type parsing, including support for normalization and
+    whitespace collapsing.
+
+  * Optimizations for the generated code size and compilation time,
+    including space optimizations for polymorphic parsing and
+    serialization. Optimizations for XML parsing speed.
+
+ C++/Parser
+
+  * The C++/Parser mapping have been significantly redesigned. See the new
+    Getting Started Guide in documentation/cxx/parser/guide/ for details.
+
+  * The new C++/Parser Mapping Getting Started Guide is available in the
+    documentation/cxx/parser/guide/ directory.
+
+  * The mapping now provides parser implementations for all built-in XML
+    Schema types. See Chapter 6, "Built-In XML Schema Type Parsers" in
+    the C++/Parser Mapping Getting Started Guide for more information.
+
+  * The mapping now supports automatic generation of sample parser
+    implementations and a test driver. The --generate-noop-impl option
+    triggers generation of a sample implementation with empty function
+    bodies. The --generate-print-impl option triggers generation of a
+    sample implementation that prints the data stored in XML to STDOUT.
+    The --generate-test-driver option trigger generation of a test driver.
+    For more information on this feature see the compiler command line
+    manual (man pages) and the generated example in the examples/cxx/parser/
+    directory. Other relevant options include: --force-overwrite,
+    --root-element-first, --root-element-last, and --root-element.
+
+  * New example, wildcard, shows how to parse the XML data matched by
+    XML Schema wildcards (any and anyAttribute).
+
+  * The xml_schema::document parser has been extended with overridable
+    virtual functions start_root_element and end_root_element to support
+    parsing of XML vocabularies with multiple document roots. See the
+    multiroot example in the examples/cxx/parser/ directory for more
+    information.
+
+  * The xml_schema::errors type which is used in the xml_schema::parsing
+    exception has been renamed to xml_schema::diagnostics and extended to
+    include warnings in addition to errors.
+
+Version 2.3.1
+
+  * The compiler is now capable of translating multiple schemas with
+    one invocation.
+
+  * New option, --sloc-limit, allows one to limit the amount of the
+    generated code.
+
+  * New option, --proprietary-license, instructs the compiler not to
+    include the GPL banner in each generated file. Instead a short
+    notice about a required proprietary license is generated. You
+    should not use this option unless you have obtained a proprietary
+    license from Code Synthesis Tools CC.
+
+  * The default encoding for the 'char' character type is now UTF-8.
+    To get the previous behavior (local code page via the Xerces-C++
+    transcode functions) define the XSD_USE_LCP preprocessor macro
+    when compiling your source code.
+
+  C++/Tree
+
+    * The --parts option has been improved to split generated code more
+      evenly by analyzing the complexity of the generated schema constructs.
+
+    * Ability to customize serialization, std::ostream, and binary
+      insertion/extraction operators. See examples/cxx/tree/custom/wildcard
+      for an example on how to handle XML Schema wildcards (xsd:any and
+      xsd:anyAttribute) by customizing the parsing constructor and
+      serialization operators.
+
+    * Optimizations for the run-time memory consumption.
+
+    * Optimizations for space in the generated code.
+
+    * Number of bug fixes.
+
+  C++/Parser
+
+    * Proper handling of an xsd:any nested content. Nested elements,
+      attributes, and text are reported via _any_* hooks of the current
+      parser.
+
+    * Number of bug fixes, mostly in the generated validation code.
+
+
+Version 2.3.0
+
+    * Name conflicts across type inheritance hierarchies are now detected
+      and resolved via name escaping.
+
+  C++/Tree
+
+    * New option, --suppress-parsing, suppresses generation of the parsing
+      constructors and functions. This can be used to minimize the generated
+      code footprint when parsing from XML is not used.
+
+    * New option, --generate-forward, triggers generation of a forward
+      declaration header file for types defined in the schema. A set of
+      --fwd-* options that control the resulting file name as well as
+      prologue and epilogue code are available.
+
+    * New option, --generate-xml-schema, triggers generation of the mapping
+      for the XML Schema namespace to a separate header file. See the man
+      pages for details and examples/cxx/tree/custom/calendar for an example.
+
+    * New option, --extern-xml-schema, triggers inclusion of a header
+      file for the XML Schema namespace instead of generating the
+      necessary declarations inline. See the man pages for details and
+      examples/cxx/tree/custom/calendar for an example.
+
+    * New options, --custom-type and --custom-type-regex, instruct the
+      compiler to use custom C++ type for a type defined in the schema.
+      The standard mapping can still be generated (with a different name)
+      usually to be used as a base. Built-in XML Schema types can be
+      customized using this mechanism. See the man pages for details and
+      examples/cxx/tree/custom/* for examples.
+
+    * The generated parsing constructors and serialization operators have
+      been changed to use the Xerces-C++ DOM elements and attributes
+      instead of the internal wrapper types. This should provide easier
+      integration with other code and libraries that use the Xerces-C++
+      DOM types such as Berkeley DB XML.
+
+    * New example, examples/cxx/tree/dbxml, shows how to use the C++/Tree
+      mapping on top of the Berkeley DB XML database.
+
+  C++/Parser
+
+    * Validation of the attribute structure in the generated code.
+
+    * Validation of the character content models including mixed content in
+      the generated code.
+
+    * Validation of the built-in XML Schema types.
+
+    * Optimizations for space and time in the generated code. In particular
+      data coping during parsing and validation was significantly reduced.
+
+
+Version 2.2.0
+
+    * Detection of a version mismatch between the generated code and
+      the runtime.
+
+  C++/Tree
+
+    * Escaping of a global element name that conflicts with a global type
+      name. This is a backwards-incompatible change. Previous versions
+      map them to the same name.
+
+    * New options, --generate--insertion and --generate-extraction,
+      trigger generation of (binary) data representation stream
+      insertion and extraction operators, respectively. This allows
+      one to serialize/deserialize in-memory representation to/from
+      data representation streams such as XSD, CDR, etc. ACE CDR
+      streams are supported out of the box (see the binary example).
+      User-supplied streams can be used via an adaptation layer.
+
+    * New serialization flag, no_xml_declaration, instructs the XML
+      serialization functions to omit an XML declaration. This is useful
+      for streaming serialization (see the streaming example).
+
+    * Optimizations to reduce generated code size.
+
+
+  C++/Parser
+
+    * New options, --generate-validation and --suppress-validation,
+      trigger and suppress generation of the validation code,
+      respectively. The validation code is the implementation of the
+      XML Schema validation in the generated code (also known as
+      "perfect" parser). In this version validation of the element
+      structure has been implemented.
+
+    * New architecture for underlying XML parsers. This is a backwards-
+      incompatible change. Existing applications will have to be
+      modified. See examples for details.
+
+
+Version 2.1.1
+
+  C++/Tree
+
+    * New option, --namespace-map, allows direct mapping of XML Schema
+      namespaces to C++ namespaces without the use of regular expressions.
+
+    * Further optimizations in the container code and enum mapping to
+      reduce generated code size.
+
+    * Number of bug fixes in the generated code.
+
+
+  C++/Parser
+
+    * New option, --namespace-map, allows direct mapping of XML Schema
+      namespaces to C++ namespaces without the use of regular expressions.
+
+
+Version 2.1.0
+
+  * Automatic handling of forward inheritance. XML Schema allows
+    inheritance from yet undefined types while it is illegal to do
+    so in C++. Now the translator automatically handles forward
+    inheritance by re-arranging the schema during compilation.
+
+
+  C++/Tree
+
+    * New enum mapping with support for inheritance. Enumerators are
+      now parsed using binary search instead of linear search.
+
+    * Associated DOM nodes now retain "back" pointers to tree nodes.
+
+    * Optimizations to reduce generated code size.
+
+
+  C++/Parser
+
+    * Specialization for void. You can now use void as a hook argument
+      type if you don't want to pass any data between parsers.
+
+    * Support for re-use of implementations of base parsers in derived
+      parsers using the mixin C++ idiom. See the examples/cxx/parser/mixin
+      for more information.
+
+    * Support for uninitialized parser. If you don't provide a parser
+      for element/attribute, that element/attribute will be ignored
+      during parsing.
+
+
+Version 2.0.0
+
+  * New cardinality calculator. This improves support for schemas that
+    use complex structures with repeated elements, e.g.,
+
+    <complexType name="Type">
+      <choice>
+        <sequence>
+          <element name="a" type="string"/>
+          <element name="c" type="string"/>
+        </sequence>
+        <sequence>
+          <element name="b" type="string"/>
+          <element name="c" type="string"/>
+        </sequence>
+      </choice>
+    </complexType>
+
+
+  * New identifier escaping code. With this feature xsd generates proper
+    code for schemas that use the same name for an element and an attribute
+    in the same type or use several elements/attributes with different
+    qualified names but with the same local name, e.g.,
+
+    <!-- base.xsd -->
+    <schema xmlns="http://codesynthesis.com/xmlns/test/foo"
+            targetNamespace="http://codesynthesis.com/xmlns/test/foo">
+
+      <element name="foo" type="int"/>
+    </schema>
+
+    <schema xmlns="http://codesynthesis.com/xmlns/test/bar"
+	    xmlns:f="http://codesynthesis.com/xmlns/test/foo"
+            targetNamespace="http://codesynthesis.com/xmlns/test/bar">
+
+      <import namespace="http://codesynthesis.com/xmlns/test/foo"
+              schemaLocation="base.xsd"/>
+
+      <element name="foo" type="string"/>
+
+      <complexType name="Foo">
+        <sequence>
+          <element ref="foo"/>
+          <element name="foo" type="long"/>
+          <element ref="f:foo"/>
+          <element ref="f:foo"/>
+        </sequence>
+        <attribute name="foo" type="string"/>
+      </complexType>
+    </schema>
+
+
+  C++/Tree
+
+    * New option, --generate-polymorphic, triggers generation of
+      polymorphism-aware code. Before this release xsd used to always
+      generate polymorphism-aware code. However, it appears to be quite
+      wasteful in terms of the generated code size (up to 40%). You will
+      now need to explicitly specify this option if you use substitution
+      groups or xsi:type. A warning is issued if this option is not
+      specified but the schema makes use of substitution groups.
+
+    * New options, --root-element-first, --root-element-last,
+      --root-element-all, --root-element-none, and --root-element, control
+      generation of parsing and serialization functions. With these options
+      you can avoid generating extra code for global elements that are not
+      document roots. See the man pages for details.
+
+    * New options, --parts and -parts-suffix, allows you to split generated
+      source code into a number of parts. This is useful when translating
+      large, monolithic schemas and a C++ compiler is not able to compile
+      the resulting source code at once (usually due to insufficient memory).
+
+    * New option, --generate-default-ctor, triggers generation of default
+      constructors even for types that have required members. Required
+      members of an instance constructed using such a constructor are not
+      initialized and accessing them results in undefined behavior. Thanks
+      to Jean-Francois Dube <jf at magnu.polymtl.ca> for suggesting this
+      feature.
+
+    * New option, --generate-from-base-ctor, triggers generation of
+      constructors that expect an instance of a base type followed by all
+      required members. Thanks to Jean-Francois Dube <jf at magnu.polymtl.ca>
+      for suggesting this feature.
+
+    * Information scopes for attributes and elements with default/fixed values
+      now define the public static default_value function which allows one to
+      obtain the default/fixed value for the element/attribute. Thanks to
+      Dave Moss <david.r.moss at selex-comm.com> for suggesting this feature.
+
+    * MSVC 7.1 has a limit on the length of the "if else if" chain. This
+      results in ICE when compiling generated code for enumerations with
+      a large number of values. This version addresses this issue. Thanks
+      to Cyrille Chépélov <cyrille at chepelov.org> for reporting this and
+      suggesting a fix.
+
+
+  C++/Parser
+
+    * The parser construction API has changed. Now, for element 'foo',
+      the name of the parser modifier function is 'foo_parser'. Likewise,
+      operator() for setting all parsers at once has been changed to the
+      'parsers' function.
+
+
+Version 1.9.0
+
+  C++/Tree
+
+    * The size modifier function in the base64_binary and hex_binary
+      built-in types automatically adjusts capacity if needed.
+
+    * More internal names (names that start with _xsd_) were made
+      private or protected.
+
+  C++/Parser
+
+    * Typedef for the parser base in the xml_schema namespace.
+
+  C++/Parser-E
+
+    * C++/Parser mapping optimized for embedded systems. For now it
+      is equivalent to 'cxx-parser --xml-parser expat'.
+
+
+Version 1.8.0
+
+  * Moved to the build 0.2 series.
+
+  C++/Tree
+
+    * Support for default and fixed values in attributes. An optional
+      attribute with a default or fixed value is mapped to the One
+      cardinality class instead of the Optional cardinality class.
+
+    * Mapping for base64Binary and hexBinary has improved. Now these
+      types support a basic buffer abstraction and perform automatic
+      encoding and decoding.
+
+    * Internal names are protected. We've noticed (via bug reports) a
+      wide use of internal names (names that start with _xsd_) in user
+      code. This is not portable and instead you should use public
+      names. To prevent this from happening in the future we've made
+      all internal names protected.
+
+  C++/Parser
+
+    * Support for Expat as the underlying XML parser in addition to
+      Xerces-C++. This allows one to use the C++/Parser mapping in
+      memory-constrained environments such as embedded systems. To
+      select Expat instead of Xerces-C++ (default) add
+      '--xml-parser expat' to the command line. At the moment only
+      'char' (UTF-8) is supported as the base character type when
+      Expat is selected.
+
+    * The invalid_instance exception has been renamed to parsing.
+
+    * Generic error_handler interface has been added in addition
+      to Xerces-C++-specific DOMErrorHandler. It allows you to
+      handle parsing errors and warnings without having to deal
+      with Xerces-C++ specifics.
+
+    * The default error handling behavior has changed in parsing
+      functions. Instead of printing errors and warnings to STDERR,
+      the errors are now collected and thrown as part of the parsing
+      exception.
+
+    * In parsing functions, the name, namespace arguments order has
+      been reversed to be consistent with the one used in parsing
+      hooks.
+
+Version 1.7.0
+
+  * Number of bug fixes in libxsd and the generated code.
+
+  C++/Tree
+
+    * Comprehensive XML Schema C++/Tree Mapping User Manual.
+
+    * Basic support for union. A simple type that is defined using
+      derivation by union is mapped to a C++ class that derives from
+      string.
+
+    * The _clone function has its arguments default-initialized.
+
+    * The invalid_instance exception has been renamed to parsing.
+
+    * Generic error_handler interface has been added in addition
+      to Xerces-C++-specific DOMErrorHandler. It allows you to
+      handle parsing/serialization errors and warnings without
+      having to deal with Xerces-C++ specifics. See the user
+      manual for more information.
+
+    * The default error handling behavior has changed in parsing
+      and serialization functions. Instead of printing errors and
+      warnings to STDERR, the errors are now collected and thrown
+      as part of the parsing/serialization exception. See the user
+      manual for more information.
+
+    * The optional and sequence containers now support operators ==,
+      !=, <, >, <=, and >=.
+
+    * Flags argument has been added to serialization functions. The
+      only flag that is currently supported is dont_initialize.
+
+    * Generated code cleanups.
+
+  C++/Parser
+
+    * Basic support for union. A simple type that is defined using
+      derivation by union is mapped to a C++ class template that
+      is just an alias for the generic parser. You are expected to
+      override the _characters function in your implementation.
+
+    * Properties argument to parsing functions which allows to
+      programmatically specify schemas for instance document
+      validation.
+
+    * Flags argument to parsing functions. The following flags
+      are supported:
+
+      dont_validate   - do not validate instance documents
+      dont_initialize - do not initialize the Xerces-C++ runtime
+
+Version 1.6.0
+
+  * Number of bug fixes in libxsd and the generated code.
+
+  C++/Tree
+
+    * Support for xsi:type and substitution groups in parsing and
+      serialization. See examples/cxx/tree/polymorphism for a code
+      sample.
+
+    * Properties argument to parsing functions which allows to
+      programmatically specify schemas for instance document
+      validation.
+
+    * Extra checks in parsing code which prevents construction
+      of inconsistent in-memory representation from invalid
+      instance documents. Should be useful when validation is
+      disabled.
+
+    * Accessors and modifier were made normal member functions.
+      Before they were implemented via functors.
+
+    * Workaround for g++-3.3 bug# 16650:
+
+      http://gcc.gnu.org/bugzilla/show_bug.cgi?id=16650
+
+  C++/Parser
+
+    * All "service" functions were renamed to start with '_'.
+      This should prevent hiding of service functions by
+      elements/attributes with the same names.
+
+Version 1.5.0
+
+  * Number of bug fixes in libxsd and the generated code.
+
+  C++/Tree
+
+    * Basic support for inheritance-by-restriction in complex types.
+
+    * The following parsing flags have been introduced:
+
+      keep_dom        - keep association with underlying DOM nodes
+      dont_validate   - do not validate instance documents
+      dont_initialize - do not initialize the Xerces-C++ runtime
+
+    * "Type-less content" such as mixed content models, xsd:anyType/
+      xsd:anySimpleType, and xsd:any/xsd:anyAttribute is supported by
+      exposing corresponding DOM nodes (see the keep_dom parsing flag).
+      Note that only a subset of XML Schema xsd:any functionality is
+      supported. The compiler will issue diagnostics for unsupported
+      cases. See examples/cxx/tree/mixed for a code sample.
+
+  C++/Parser
+
+    * Support for inheritance-by-restriction in complex types.
+
+    * "Type-less content" such as mixed content models, xsd:anyType/
+      xsd:anySimpleType, and xsd:any/xsd:anyAttribute is supported
+      by forwarding parsing events to a set of "unexpected" hooks.
+      Note that only a subset of XML Schema xsd:any functionality is
+      supported. The compiler will issue diagnostics for unsupported
+      cases. See examples/cxx/parser/mixed for a code sample.
+
+Version 1.4.0
+
+  * Number of improvements and bug fixes in the diagnostics code.
+
+  * libxsd has been reorganized to provide a clean split of code with
+    regards to char/wchar_t use. It should be possible to use libxsd
+    and the xsd-generated code on platforms that lack wchar_t support,
+    such as mingw.
+
+  C++/Tree
+
+    * Work around for g++ bug# 23206.
+
+    * Support for xsd:list.
+
+    * Type/member name conflicts are auto-resolved. Such conflicts
+      occur when a type and an element or attribute withing this type
+      share the same name.
+
+    * XML Schema extension, the 'refType' attribute, allows one to
+      specify referenced type for xsd:IDREF and xsd:IDREFS data types.
+      See examples/cxx/tree/library for details.
+
+    * New option, --morph-anonymous, allows automatic morphing
+      of anonymous types to named ones. See the man pages for
+      details.
+
+    * New option, --namespace-regex-trace, allows one to trace the
+      namespace mapping process. See the man pages for details.
+
+    * Mapping for optional elements/attributes (cardinality 0..1)
+      has changed in a backwards-incompatible way. In the previous
+      version you would write:
+
+      Bar& bar = ...
+
+      if (bar.foo.present ())  // test
+      {
+        Foo& foo (bar.foo ()); // get
+
+        bar.foo (Foo (...));   // set
+
+        bar.foo.reset ();      // reset
+      }
+
+      Now you would write it like this:
+
+      if (bar.foo ().present ())      // test
+      {
+        Foo& foo (bar.foo ().get ()); // get
+
+        bar.foo (Foo (...));          // set
+
+        bar.foo ().reset ();          // reset
+      }
+
+      Or using the pointer notation:
+
+      if (bar.foo ())           // test
+      {
+        Foo& foo (*bar.foo ()); // get
+
+        bar.foo (Foo (...));    // set
+
+        bar.foo ().reset ();    // reset
+      }
+
+  C++/Parser
+
+    * Support for xsd:list.
+
+    * Type/member name conflicts are auto-resolved. Such conflicts
+      occur when a type and an element or attribute withing this type
+      share the same name.
+
+    * New option, --namespace-regex-trace, allows one to trace the
+      namespace mapping process. See the man pages for details.
+
+Version 1.3.0
+
+  * Numerous bug fixes.
+
+  * The XML subsystem of libxsd has been reorganized to provide
+    a clean split of DOM and SAX functionalities.
+
+  C++/Parser
+
+    * New option, --morph-anonymous, allows automatic morphing
+      of anonymous types to named ones. See the man pages for
+      details.
+
+  C++/Tree
+
+    * Additional parser functions provide support for reading
+      from std::istream.
+
+Version 1.2.0
+
+  C++/Parser
+
+    * New backend that generates the C++/Parser mapping.
+
+Version 1.1.1
+
+  all backends
+
+    * Bug fixes in the filesystem path handling logic.
+
+Version 1.1.0
+
+  C++/Tree
+
+    * New option, --generate-serialization, triggers generation of
+      serialization functions. Serialization functions convert an in-memory
+      representation back to XML.
+
+    * xsd::cxx::tree::vector has been extended to closely follow std::vector
+      API. This allows you to access and modify element sequences as if they
+      were of type std::vector.
+
+    * Generated constructors from xml::attribute and xml::element are made
+      explicit.
+
+    * The library example was extended to showcase modification and
+      serialization of the in-memory representation.
+
+    * New "XML Schema C++/Tree Mapping Serialization Guide" has an in-depth
+      treatment of the serialization mechanisms provided by xsd.
+
+Version 1.0.1
+
+  all backends
+
+    * Improved diagnostics.
+
+    * Bug fixes in the schema inclusion/importing logic.
+
+  C++/Tree
+
+    * Two new options: --include-with-brackets and --include-prefix
+
+Version 1.0.0
+
+  * First public release.

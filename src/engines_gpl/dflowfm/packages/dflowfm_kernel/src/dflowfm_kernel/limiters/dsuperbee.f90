@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,15 +33,16 @@ module m_dsuperbee
    implicit none
 contains
 
-   double precision function dsuperbee(ds1, ds2)
-      double precision :: ds1, ds2, r
+   real(kind=dp) function dsuperbee(ds1, ds2)
+      use precision, only: dp
+      real(kind=dp) :: ds1, ds2, r
 
-      if (ds1 * ds2 > 0d0) then
+      if (ds1 * ds2 > 0.0_dp) then
          r = ds1 / ds2
-         dsuperbee = max(0d0, min(2d0 * r, 1d0), min(r, 2d0))
+         dsuperbee = max(0.0_dp, min(2.0_dp * r, 1.0_dp), min(r, 2.0_dp))
          dsuperbee = dsuperbee * ds2
       else
-         dsuperbee = 0d0
+         dsuperbee = 0.0_dp
       end if
    end function
 end module m_dsuperbee

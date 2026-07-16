@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,30 +30,33 @@
 !
 !
 module m_dlimiter_nonequi
-    implicit none
+   implicit none
 contains
 !> MC limiter function for non-equidistant grid
-   double precision function dlimiter_nonequi(d1, d2, alpha, s)
+   real(kind=dp) function dlimiter_nonequi(d1, d2, alpha, s)
+      use precision, only: dp
 
-      double precision, intent(in) :: d1, d2 !< left and right slopes
-      double precision, intent(in) :: alpha !< interface distance
-      double precision, intent(in) :: s !< mesh width ratio DX2/DX1
+      real(kind=dp), intent(in) :: d1, d2 !< left and right slopes
+      real(kind=dp), intent(in) :: alpha !< interface distance
+      real(kind=dp), intent(in) :: s !< mesh width ratio DX2/DX1
 
-      double precision :: r
-      double precision, parameter :: dtol = 1d-16
+      real(kind=dp) :: r
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
-      double precision :: TWO1, TWO2
+      real(kind=dp) :: TWO1, TWO2
 
-      dlimiter_nonequi = 0d0
-      if (d1 * d2 < dtol) return
+      dlimiter_nonequi = 0.0_dp
+      if (d1 * d2 < dtol) then
+         return
+      end if
 
       r = d1 / d2 ! d1/d2
 
-      TWO2 = 1d0 / max(alpha, dtol)
+      TWO2 = 1.0_dp / max(alpha, dtol)
       TWO1 = TWO2 / max(s, dtol)
 
 !  Monotinized Central
-      dlimiter_nonequi = max(0d0, min(TWO1 * r, TWO2, 0.5d0 * (1d0 + r)))
+      dlimiter_nonequi = max(0.0_dp, min(TWO1 * r, TWO2, 0.5_dp * (1.0_dp + r)))
 
    end function dlimiter_nonequi
 end module m_dlimiter_nonequi

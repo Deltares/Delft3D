@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,16 +33,17 @@ module m_lubksb
    implicit none
 contains
    subroutine LUBKSB(A, N, NP, INDX, B)
-      double precision :: a
-      double precision :: b
+      use precision, only: dp
+      real(kind=dp) :: a
+      real(kind=dp) :: b
       integer :: i
       integer :: ii
-      integer :: indx
+      integer, intent(in) :: indx
       integer :: j
       integer :: ll
-      integer :: n
-      integer :: np
-      double precision :: sum
+      integer, intent(in) :: n
+      integer, intent(in) :: np
+      real(kind=dp) :: sum
       dimension A(NP, NP), INDX(N), B(N)
       II = 0
       do I = 1, N
@@ -53,7 +54,7 @@ contains
             do J = II, I - 1
                SUM = SUM - A(I, J) * B(J)
             end do
-         else if (SUM /= 0d0) then
+         else if (SUM /= 0.0_dp) then
             II = I
          end if
          B(I) = SUM

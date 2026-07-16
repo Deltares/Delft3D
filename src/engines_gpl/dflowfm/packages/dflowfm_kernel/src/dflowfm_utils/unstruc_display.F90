@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,139 +29,35 @@
 
 !
 !
-
-! m_WEARELT movet to gridgeom
-
-module m_textlines
-   double precision :: txsize
-   double precision :: txxpos
-   double precision :: txypos
-   character(len=60) :: txlin(3)
-end module m_textlines
-
-module unstruc_colors
-
-   use m_WEARELT
-   use M_DEVICES
-   use m_textlines
-!! Centralizes color definitions for unstruc.
-!! Color specifications are based on Interactor.
-
-   implicit none
-
-   integer :: klvec = 4, klaxs = 30, klscl = 221, kltex = 3, klfra = 31, klobs = 227, klsam = 33, klzm = 31, klank = 31, klprof = 222, KLSRC = 233
-
-   ! Color numbers for standard colors.
-   integer :: ncolgray = 255
-   integer :: ncolred = 252
-   integer :: ncolyellow = 251
-   integer :: ncolgreen = 250
-   integer :: ncolcyan = 249
-   integer :: ncolblue = 248
-   integer :: ncolmagenta = 247
-   integer :: ncolmaroon = 246
-   integer :: ncoldarkgreen = 245
-   integer :: ncolteal = 244
-   integer :: ncolpink = 243
-   integer :: ncolorange = 242
-   integer :: ncollavender = 241
-   integer :: ncolbrown = 240
-
-   integer :: ncoldn = 3 !< Design net
-   integer :: ncolrn = 211 !< Previous state net
-   integer :: ncolnn = 89 ! 203 !< Net node dots
-   integer :: ncoldg = 31 !< Design grid
-   integer :: ncolrg = 212 !< Previous state grid
-   integer :: ncolln = 120 !< Land boundary
-   integer :: ncolsp = 204 !< Splines
-   integer :: ncoltx = 210 !< Some textlines
-   integer :: ncolpl = 221 !< Polygons
-   integer :: ncolcrs = 230 !< Cross sections
-   integer :: ncolthd = 231 !< Thin dams
-   integer :: ncolfxw = 232 !< Fixed weirs
-   integer :: ncolmh = 191 !< Fixed weirs
-   integer :: ncolwarn1 = 191 ! warning1
-   integer :: ncolwarn2 = 31 ! warning2
-   integer :: ncolwarn3 = 22 ! warning3
-   integer :: ncolhl = 31 ! Highlight nodes/links
-   integer :: ncolANA = 63 ! 180! ANALYTIC SOLOUTIONS
-
-   integer :: ncolblack = 254
-   integer :: ncolwhite = 253
-
-   ! colors in text screens
-   ! 0 : Black       4 : Cyan
-   ! 1 : Red         5 : Blue
-   ! 2 : Yellow      6 : Magenta
-   ! 3 : Green       7 : White
-
-   integer :: STDFOR = 0, STDBCK = 5, & !   std
-              MNUFOR = 0, MNUBCK = 4, & !   choice menu's
-              INPFOR = 0, INPBCK = 4, & !   input menu's
-              ERRFOR = 1, ERRBCK = 7, & !   error messages
-              LBLFOR = 7, LBLBCK = 5, & !   menu names
-              LINFOR = 0, LINBCK = 4, & !   lines
-              TOPFOR = 1, TOPBCK = 7, & !   top line
-              HLPFOR = 7, HLPBCK = 5, & !   help window
-              BOTFOR = 7, BOTBCK = 5, & !   page indication
-              KEYFOR = 1, KEYBCK = 4, & !   key indication
-              WNDFOR = 0, WNDBCK = 4, & !   menu indication, POPUP WINDOW HELP
-              SHAFOR = 7, SHABCK = 0 !   menu indication, shadow behind input forms
-
-   integer :: nbluep
-   integer :: nblues
-   integer :: ngreenp
-   integer :: ngreens
-   integer :: nredp
-   integer :: nreds
-
-   character(len=255) :: coltabfile = ' '
-   character(len=255) :: coltabfile2 = ' '
-
-end module unstruc_colors
-
 module unstruc_display
+
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
-!
-
+   use m_setcoltabfile, only: setcoltabfile
+   use m_iset_jaopengl, only: iset_jaopengl
+   use m_setwynew
+   use m_setwor
+   use m_settextsizefac
+   use m_settextsize
+   use m_plotdiamond
+   use m_plotcross
+   use m_minmaxworld
+   use m_linewidth
+   use m_isocol
+   use m_inqasp
+   use m_cir
+   use m_arrowsxy
    use unstruc_colors
    use m_gui
+   use unstruc_display_data
+   use m_set_col
+   use m_movabs
+   use m_lnabs
+   use m_waveconst
+
+   use precision, only: dp
    implicit none
-
-   integer :: ntek = 0
-   integer :: plottofile = 0
-   integer :: jadatetime = 0
-   integer :: jareinitialize = 0
-
-   ! Highlight certain net/flow node/link numbers
-   integer :: nhlNetNode = 0 !< Number of netnode  to be highlighted
-   integer :: nhlNetLink = 0 !< Number of netlink  to be highlighted
-   integer :: nhlFlowNode = 0 !< Number of flownode to be highlighted
-   integer :: nhlFlowLink = 0 !< Number of flowlink to be highlighted
-   integer :: NPOS(4) !< Size + position of HELP text screen
-   integer :: jaHighlight = 0 !< Completely enable/disable highlighting.
-
-   integer :: ndrawPol = 2 !< Polygon, 1=No, 2=Regular, 3=plus numbers ZPL, 4=plus isocolour ZPL
-   integer :: ndrawObs = 2 !< Observationstation : 1='NO, 2=Cross, 3=Cross + name4=Polyfil,5='Polyfil + name,6=Cross+waterlevel,7=Cross+velocity magnitudes
-   integer :: ndrawCrossSections = 5 !< how draw cross sections
-   integer :: ndrawThinDams = 2 !< show thin dams  0=no, 1=polylines, 2=net links
-   integer :: ndrawFixedWeirs = 1 !< show fixed weirs 0=no, 1=polylines, 2=flow links
-   integer :: ndrawPart = 2 !< Particles, 1=No, 2=Yes
-   integer :: ndrawDots = 2 !< dots, 1=No, 2=Yes
-   integer :: ndrawStructures = 1 !< structures, 1=No, 2=Yes (only symbols), 3=Yes (symbols and IDs)
-   integer :: idisLink = 0 !< Index of flowlink which is to be displayed with more information
-
-   integer :: grwhydopt = 1 !< Groundwater & Hydrology display menu item
-
-   integer :: numzoomshift = 250 !< nr of steps in zoomshift
-   double precision :: wetplot = 0.001 !< only show wet waterlevel points if (hs>wetplot)
-   double precision :: yfac = 0.0 !< cheap perspective
-   integer :: jafullbottomline = 0 !<larger bottomline with more complete description in screen
-   double precision :: profmax(20) = -999d0 !< minmax axes of tekprofiles
-   double precision :: profmin(20) = -999d0
-   double precision :: ymn, zmn ! for tekrailines
 
    public dis_info_1d_link
    public plotStructures
@@ -176,14 +72,13 @@ contains
 
    subroutine load_displaysettings(filename)
       use properties
-      use unstruc_messages
       use dflowfm_version_module
       use m_missing
       use M_RAAITEK
       use M_isoscaleunit
       use m_transport, only: iconst_cur
       use M_FLOW, only: kplot, nplot, kplotfrombedorsurface, kplotordepthaveraged
-      use m_observations, only: jafahrenheit
+      use m_observations_data, only: jafahrenheit
       use m_sferic
       use m_depmax
       use m_screenarea
@@ -193,6 +88,7 @@ contains
       use m_vfac
       use m_drawthis
       use m_depmax2
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_ERROR, mess
 
       character(len=*), intent(in) :: filename
 
@@ -203,7 +99,7 @@ contains
       integer :: jaeps, jaland
       integer :: KRGB(4)
       integer :: jaopengl_loc
-      double precision :: x, y, dy, asp
+      real(kind=dp) :: x, y, dy, asp
 
       ! Put .dis file into a property tree
       call tree_create(trim(filename), dis_ptr)
@@ -292,10 +188,10 @@ contains
       call prop_get(dis_ptr, '*', 'Y0           ', Y, success)
       call prop_get(dis_ptr, '*', 'DYH          ', DY, success)
       if (.not. success) then ! to also use old cfg files
-         x = 0.5d0 * (x1 + x2)
+         x = 0.5_dp * (x1 + x2)
          call inqasp(asp)
          dy = (x2 - x1) * asp
-         y = y1 + 0.5d0 * dy
+         y = y1 + 0.5_dp * dy
       end if
 
       call prop_get(dis_ptr, '*', 'SFERTEK      ', JSFERTEK, success)
@@ -321,26 +217,146 @@ contains
          call iset_jaopengl(jaopengl_loc)
       end if
 
-      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success); if (success) NCOLDG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success); if (success) NCOLRG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success); if (success) NCOLDN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success); if (success) NCOLRN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success); if (success) NCOLNN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success); if (success) NCOLSP = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success); if (success) NCOLLN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success); if (success) NCOLTX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success); if (success) NCOLPL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success); if (success) NCOLCRS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success); if (success) NCOLTHD = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success); if (success) NCOLFXW = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success); if (success) NCOLHL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success); if (success) KLVEC = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success); if (success) KLAXS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success); if (success) KLSCL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success); if (success) KLTEX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success); if (success) KLOBS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success); if (success) KLPROF = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success); if (success) KLSRC = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success)
+      if (success) then
+         NCOLDG = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success)
+      if (success) then
+         NCOLRG = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success)
+      if (success) then
+         NCOLDN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success)
+      if (success) then
+         NCOLRN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success)
+      if (success) then
+         NCOLNN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success)
+      if (success) then
+         NCOLSP = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success)
+      if (success) then
+         NCOLLN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success)
+      if (success) then
+         NCOLTX = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success)
+      if (success) then
+         NCOLPL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success)
+      if (success) then
+         NCOLCRS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success)
+      if (success) then
+         NCOLTHD = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success)
+      if (success) then
+         NCOLFXW = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success)
+      if (success) then
+         NCOLHL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success)
+      if (success) then
+         KLVEC = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success)
+      if (success) then
+         KLAXS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success)
+      if (success) then
+         KLSCL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success)
+      if (success) then
+         KLTEX = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success)
+      if (success) then
+         KLOBS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success)
+      if (success) then
+         KLPROF = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success)
+      if (success) then
+         KLSRC = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
 
       call prop_get(dis_ptr, '*', 'NREDS  ', NREDS, success)
       call prop_get(dis_ptr, '*', 'NGREENS', NGREENS, success)
@@ -362,19 +378,27 @@ contains
       call prop_get(dis_ptr, '*', 'profmin(2)', profmin(2), success)
 
       RCIR = CR * (X2 - X1)
-      VFAC = max(0d0, VFAC)
-      VFACFORCE = max(0d0, VFACFORCE)
-      XLEFT = max(0d0, (min(XLEFT, 0.25d0)))
-      YBOT = max(0d0, (min(YBOT, 0.25d0)))
+      VFAC = max(0.0_dp, VFAC)
+      VFACFORCE = max(0.0_dp, VFACFORCE)
+      XLEFT = max(0.0_dp, (min(XLEFT, 0.25_dp)))
+      YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
       JAXIS = min(1, (max(JAXIS, 0)))
       if (JAXIS == 1) then
-         if (XLEFT == 0) XLEFT = .15
-         if (YBOT == 0) YBOT = .10
+         if (XLEFT == 0) then
+            XLEFT = .15
+         end if
+         if (YBOT == 0) then
+            YBOT = .10
+         end if
       end if
 
       do I = 1, NUMHCOPTS
-         if (IHCOPTS(1, I) == 22) IHCOPTS(2, I) = JAEPS
-         if (IHCOPTS(1, I) == 5) IHCOPTS(2, I) = JALAND
+         if (IHCOPTS(1, I) == 22) then
+            IHCOPTS(2, I) = JAEPS
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            IHCOPTS(2, I) = JALAND
+         end if
       end do
 
       call SETTEXTSIZE()
@@ -386,7 +410,6 @@ contains
 
    subroutine save_displaysettings(filename)
       use properties
-      use unstruc_messages
       use dflowfm_version_module
       use m_missing
       use M_RAAITEK
@@ -394,7 +417,7 @@ contains
       use M_isoscaleunit
       use m_transport, only: iconst_cur
       use m_flow
-      use m_observations
+      use m_observations_data
       use m_sferic
       use m_depmax
       use m_screenarea
@@ -404,6 +427,9 @@ contains
       use m_vfac
       use m_drawthis
       use m_depmax2
+      use m_datum
+      use m_iget_jaopengl, only: iget_jaopengl
+      use m_filez, only: doclose, newfil
 
       character(len=*), intent(in) :: filename
 
@@ -411,7 +437,6 @@ contains
       character(len=20) :: rundat
       integer :: mfil, istat, i, KRGB(4)
       integer :: jaeps, jaland
-      integer, external :: iget_jaopengl
 
       call newfil(mfil, filename)
 
@@ -467,8 +492,12 @@ contains
       call prop_set(dis_ptr, '*', 'ICONST', iconst_cur, ' ! active constituent number')
 
       do I = 1, NUMHCOPTs
-         if (IHCOPTS(1, I) == 22) JAEPS = IHCOPTS(2, I)
-         if (IHCOPTS(1, I) == 5) JALAND = IHCOPTS(2, I)
+         if (IHCOPTS(1, I) == 22) then
+            JAEPS = IHCOPTS(2, I)
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            JALAND = IHCOPTS(2, I)
+         end if
       end do
 
       call prop_set(dis_ptr, '*', 'NHCDEV       ', NHCDEV)
@@ -532,26 +561,66 @@ contains
 
       call prop_set(dis_ptr, '*', 'jaopengl', iget_jaopengl())
 
-      KRGB(1) = NCOLDG; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLDG ', KRGB)
-      KRGB(1) = NCOLRG; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLRG ', KRGB)
-      KRGB(1) = NCOLDN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLDN ', KRGB)
-      KRGB(1) = NCOLRN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLRN ', KRGB)
-      KRGB(1) = NCOLNN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLNN ', KRGB)
-      KRGB(1) = NCOLSP; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLSP ', KRGB)
-      KRGB(1) = NCOLLN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLLN ', KRGB)
-      KRGB(1) = NCOLTX; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLTX ', KRGB)
-      KRGB(1) = NCOLPL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLPL ', KRGB)
-      KRGB(1) = NCOLCRS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLCRS', KRGB)
-      KRGB(1) = NCOLTHD; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLTHD', KRGB)
-      KRGB(1) = NCOLFXW; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLFXW', KRGB)
-      KRGB(1) = NCOLHL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLHL ', KRGB)
-      KRGB(1) = KLVEC; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLVEC  ', KRGB)
-      KRGB(1) = KLAXS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLAXS  ', KRGB)
-      KRGB(1) = KLSCL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLSCL  ', KRGB)
-      KRGB(1) = KLTEX; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLTEX  ', KRGB)
-      KRGB(1) = KLOBS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLOBS  ', KRGB)
-      KRGB(1) = KLPROF; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLPROF ', KRGB)
-      KRGB(1) = KLSRC; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLSRC  ', KRGB)
+      KRGB(1) = NCOLDG
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLDG ', KRGB)
+      KRGB(1) = NCOLRG
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLRG ', KRGB)
+      KRGB(1) = NCOLDN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLDN ', KRGB)
+      KRGB(1) = NCOLRN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLRN ', KRGB)
+      KRGB(1) = NCOLNN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLNN ', KRGB)
+      KRGB(1) = NCOLSP
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLSP ', KRGB)
+      KRGB(1) = NCOLLN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLLN ', KRGB)
+      KRGB(1) = NCOLTX
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLTX ', KRGB)
+      KRGB(1) = NCOLPL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLPL ', KRGB)
+      KRGB(1) = NCOLCRS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLCRS', KRGB)
+      KRGB(1) = NCOLTHD
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLTHD', KRGB)
+      KRGB(1) = NCOLFXW
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLFXW', KRGB)
+      KRGB(1) = NCOLHL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLHL ', KRGB)
+      KRGB(1) = KLVEC
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLVEC  ', KRGB)
+      KRGB(1) = KLAXS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLAXS  ', KRGB)
+      KRGB(1) = KLSCL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLSCL  ', KRGB)
+      KRGB(1) = KLTEX
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLTEX  ', KRGB)
+      KRGB(1) = KLOBS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLOBS  ', KRGB)
+      KRGB(1) = KLPROF
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLPROF ', KRGB)
+      KRGB(1) = KLSRC
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLSRC  ', KRGB)
 
       call prop_set(dis_ptr, '*', 'NREDS  ', NREDS)
       call prop_set(dis_ptr, '*', 'NGREENS', NGREENS)
@@ -583,24 +652,31 @@ contains
 !> Plots all observation points in the current viewport
    subroutine plotObservations() ! TEKOBS
 
-      use m_observations
+      use m_observations_data
       use M_FLOWGEOM
       use m_flow
       use m_transport, only: itemp, constituents
       use m_get_kbot_ktop
+      use m_pfiller
+      use m_gtext
+      use m_inview
+      use m_znod
 
       integer :: n, NN, K, kb, kt
       character(len=40) :: tex
-      double precision :: znod, temb, temt
-      logical inview
+      real(kind=dp) :: temb, temt
 
-      if (ndrawobs == 1) return
+      if (ndrawobs == 1) then
+         return
+      end if
 
       call IGrCharJustify('L')
-      call settextsizefac(1.0d0)
+      call settextsizefac(1.0_dp)
 
       do n = 1, numobs + nummovobs
-         if (.not. inview(xobs(n), yobs(n))) cycle
+         if (.not. inview(xobs(n), yobs(n))) then
+            cycle
+         end if
 
          call setcol(klobs)
 
@@ -613,7 +689,7 @@ contains
             end if
          end if
          if (ndrawobs == 3) then
-            call settextsizefac(1.5d0)
+            call settextsizefac(1.5_dp)
             call igrcharfont(7)
             call gtext(' '//trim(namobs(n)), xobs(n), yobs(n), klobs)
             call igrcharfont(1)
@@ -648,8 +724,8 @@ contains
                      temt = constituents(itemp, kt)
                      temb = constituents(itemp, kb)
                   else
-                     temt = 32d0 + (9d0 / 5d0) * constituents(itemp, kt)
-                     temb = 32d0 + (9d0 / 5d0) * constituents(itemp, kb)
+                     temt = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, kt)
+                     temb = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, kb)
                   end if
                   write (tex, '(2f6.1)') temt, temb
                   call gtext(tex(1:14), xobs(n), yobs(n), ncolblack)
@@ -679,7 +755,7 @@ contains
       integer :: m1_, m2_, ncol_
       integer :: m, n2, numpi, numnew
 
-      double precision, allocatable, dimension(:) :: xlist, ylist
+      real(kind=dp), allocatable, dimension(:) :: xlist, ylist
 
 !   allocate
       allocate (xlist(1), ylist(1))
@@ -707,7 +783,7 @@ contains
 
 !           reallocate if necessary
             if (numpi > ubound(xlist, 1)) then
-               numnew = int(1.2d0 * dble(numpi)) + 1
+               numnew = int(1.2_dp * real(numpi, kind=dp)) + 1
                call realloc(xlist, numnew)
                call realloc(ylist, numnew)
             end if
@@ -733,17 +809,19 @@ contains
       implicit none
 
       integer, intent(in) :: numpi
-      double precision, dimension(numpi), intent(in) :: xh, yh
+      real(kind=dp), dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: ncol
 
       !integer :: imax = 500 ! TODO: uit DIMENS [AvD]
-!    double precision :: XH2(1000), YH2(1000)
-      double precision, allocatable, dimension(:) :: xh2, yh2
-      double precision :: xk, yk, tn
+!    real(kind=dp) :: XH2(1000), YH2(1000)
+      real(kind=dp), allocatable, dimension(:) :: xh2, yh2
+      real(kind=dp) :: xk, yk, tn
       integer :: i, met, k, numk
       MET = NDRAW(15)
 
-      if (met == 0) return
+      if (met == 0) then
+         return
+      end if
 
 !   allocate
       allocate (xh2(numpi), yh2(numpi))
@@ -753,21 +831,27 @@ contains
 
       if (NUMPI == 1) then
          call MOVABS(XH(1), YH(1))
-         if (MET <= 2) call CIR(1.4 * RCIR)
+         if (MET <= 2) then
+            call CIR(1.4 * RCIR)
+         end if
       else if (NUMPI > 1) then
          call MOVABS(XH(1), YH(1))
-         if (MET <= 2) call CIR(1.4 * RCIR)
+         if (MET <= 2) then
+            call CIR(1.4 * RCIR)
+         end if
          call SPLINE(XH, NUMPI, XH2)
          call SPLINE(YH, NUMPI, YH2)
 
          do I = 1, NUMPI - 1
             do k = 1, NUMK
-               TN = (I - 1) + dble(K) / dble(NUMK)
+               TN = (I - 1) + real(K, kind=dp) / real(NUMK, kind=dp)
                call SPLINT(XH, XH2, NUMPI, TN, XK)
                call SPLINT(YH, YH2, NUMPI, TN, YK)
                call LNABS(XK, YK)
             end do
-            if (MET <= 2) call CIR(RCIR)
+            if (MET <= 2) then
+               call CIR(RCIR)
+            end if
          end do
       end if
 
@@ -785,7 +869,9 @@ contains
       character :: tex * 40
 
       met = ndrawCrosssections
-      if (met == 1) return
+      if (met == 1) then
+         return
+      end if
 
       if (met >= 3) then
          jaArrow = 1
@@ -834,11 +920,11 @@ contains
          implicit none
          integer, intent(in) :: numw !< Available chars (10?)
          integer, intent(in) :: numd !< Num digits preferred (3?)
-         double precision, intent(in) :: val !< Value to be printed
+         real(kind=dp), intent(in) :: val !< Value to be printed
 
          character(len=7) :: fmt
          fmt = '(f10.3)'
-         if (val > -1d0 * 10**(numw - numd - 2) .and. val < 10**(numw - numd - 1)) then
+         if (val > -1.0_dp * 10**(numw - numd - 2) .and. val < 10**(numw - numd - 1)) then
             write (fmt(3:4), '(i2)') numw
             write (fmt(6:6), '(i1)') numd
             write (tex(1:numw), fmt) val
@@ -860,7 +946,9 @@ contains
 
       integer :: i
 
-      if (ndrawThinDams == 0 .or. nthd == 0) return
+      if (ndrawThinDams == 0 .or. nthd == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolthd)
 
@@ -879,9 +967,11 @@ contains
       use m_htext
 
       integer :: i, L, k3, k4, ncol
-      double precision :: xu, yu
+      real(kind=dp) :: xu, yu
 
-      if (ndrawFixedWeirs == 0 .or. nfxw == 0) return
+      if (ndrawFixedWeirs == 0 .or. nfxw == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolfxw)
 
@@ -904,7 +994,8 @@ contains
 
                call setcol(ncolfxw)
 
-               k3 = lncn(1, L); k4 = lncn(2, L)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
 
                if (ndrawfixedweirs == 3 .or. ndrawfixedweirs == 4) then
                   call isocol(bob(1, L), ncol)
@@ -923,9 +1014,11 @@ contains
          if (ndrawFixedWeirs == 2 .or. ndrawFixedWeirs == 4) then
             call setcol(ncolblack)
             do i = 1, nfxw
-               L = lnfxw(i); k3 = lncn(1, L); k4 = lncn(2, L)
-               xu = 0.5d0 * (xk(k3) + xk(k4))
-               yu = 0.5d0 * (yk(k3) + yk(k4))
+               L = lnfxw(i)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
+               xu = 0.5_dp * (xk(k3) + xk(k4))
+               yu = 0.5_dp * (yk(k3) + yk(k4))
                if (ndrawFixedWeirs == 4) then
                   call isocol(bob(1, L), ncol)
                end if
@@ -949,16 +1042,17 @@ contains
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D
       use gridoperations
+      use m_gtext
+      use m_inview
 
       type(tcrspath), intent(in) :: path !< Path definition
       integer, intent(in) :: met !< Method: 1=plot polyline, 2=plot crossed net/flow links (as stored in path%xk)
       integer, intent(in) :: ncol !< Drawing color
       character(len=*), intent(in) :: label !< Text label to be displayed.
       integer, intent(in) :: jaArrow !< Whether or not (1/0) to draw an outgoing arrow.
-      logical inview
 
       integer :: j, jj, jmin, jmax
-      double precision :: xt, yt, rn, rt, xx1, yy1, xx2, yy2, xx, yy
+      real(kind=dp) :: xt, yt, rn, rt, xx1, yy1, xx2, yy2, xx, yy
 
       call setcol(ncol)
 
@@ -991,13 +1085,16 @@ contains
          do j = 1, path%lnx
             call movabs(path%xk(1, j), path%yk(1, j))
             ! call cir(.2d0*rcir)
-            xx = path%xk(2, j); yy = path%yk(2, j)
+            xx = path%xk(2, j)
+            yy = path%yk(2, j)
             call lnabs(xx, yy)
             ! call cir(.2d0*rcir)
 
             if (inview(xx, yy)) then ! find first and last j in viewing area
                jmax = j
-               if (jmin == 0) jmin = j
+               if (jmin == 0) then
+                  jmin = j
+               end if
             end if
          end do
          if (jmax == 0 .and. jmin == 0) then
@@ -1005,26 +1102,33 @@ contains
             return
          else
             if (path%xk(1, jmin) > path%xk(1, jmax)) then
-               jj = jmin; jmin = jmax; jmax = jj
+               jj = jmin
+               jmin = jmax
+               jmax = jj
             end if
-            xx1 = path%xk(1, jmin); yy1 = path%yk(1, jmin)
-            xx2 = path%xk(1, jmax); yy2 = path%yk(1, jmax)
+            xx1 = path%xk(1, jmin)
+            yy1 = path%yk(1, jmin)
+            xx2 = path%xk(1, jmax)
+            yy2 = path%yk(1, jmax)
          end if
 
          ! For a monitoring cross section, plot the positive direction
          ! as an arrow in view area, and show discharge or other quant.
          if (jaArrow == 1) then
-            xt = .5d0 * (path%xk(1, jmin) + path%xk(2, jmin))
-            yt = .5d0 * (path%yk(1, jmin) + path%yk(2, jmin))
+            xt = 0.5_dp * (path%xk(1, jmin) + path%xk(2, jmin))
+            yt = 0.5_dp * (path%yk(1, jmin) + path%yk(2, jmin))
             call normalout(path%xk(1, jmin), path%yk(1, jmin), path%xk(2, jmin), path%yk(2, jmin), rn, rt, jsferic, jasfer3D, dmiss, dxymis)
-            call arrowsxy(xt, yt, rn, rt, 4d0 * rcir)
+            call arrowsxy(xt, yt, rn, rt, 4.0_dp * rcir)
          end if
 
       end if ! path%lnx > 0
       if (len_trim(label) > 0) then
          call igrcharfont(7)
-         xt = xx2; yt = yy2
-         if (xt > x2 - dsix) xt = x2 - dsix
+         xt = xx2
+         yt = yy2
+         if (xt > x2 - dsix) then
+            xt = x2 - dsix
+         end if
          call gtext(trim(label), xt, yt, kltex)
       end if
 
@@ -1032,7 +1136,7 @@ contains
 
    subroutine thicklinetexcol(ncol)
       integer :: ncol
-      call settextsizefac(2.0d0)
+      call settextsizefac(2.0_dp)
       call LINEWIDTH(2)
       call setcol(ncol)
    end subroutine thicklinetexcol
@@ -1053,11 +1157,11 @@ contains
       use m_dminmax
       use m_drawthis
       implicit none
-      double precision :: aspect
+      real(kind=dp) :: aspect
       integer :: n
-      double precision :: xcmax, xcmin, xlmax, xlmin, xplmax, xplmin, xsmax, xsmin, xspmax, xspmin
-      double precision :: ycmax, ycmin, ylmax, ylmin, yplmax, yplmin, ysmax, ysmin, yspmax, yspmin
-      double precision :: XH(10), YH(10)
+      real(kind=dp) :: xcmax, xcmin, xlmax, xlmin, xplmax, xplmin, xsmax, xsmin, xspmax, xspmin
+      real(kind=dp) :: ycmax, ycmin, ylmax, ylmin, yplmax, yplmin, ysmax, ysmin, yspmax, yspmin
+      real(kind=dp) :: XH(10), YH(10)
 
       call DMINMAX(XLAN, MXLAN, XLMIN, XLMAX, MAXLAN)
       call DMINMAX(YLAN, MXLAN, YLMIN, YLMAX, MAXLAN)
@@ -1083,10 +1187,10 @@ contains
          ysmin = y0
          ysmax = y0 + dya * (nca - 1)
       else
-         xsmin = 0d0
-         xsmax = 0d0
-         ysmin = 0d0
-         ysmax = 0d0
+         xsmin = 0.0_dp
+         xsmax = 0.0_dp
+         ysmin = 0.0_dp
+         ysmax = 0.0_dp
       end if
 
       if (NDRAW(26) == 1) then
@@ -1155,9 +1259,11 @@ contains
       call DMINMAX(YH, N, YMIN, YMAX, 10)
 
       if (XMAX == XMIN .and. YMAX == YMIN) then
-         XMIN = 0d0; YMIN = 0d0
+         XMIN = 0.0_dp
+         YMIN = 0.0_dp
          call INQASP(ASPECT)
-         XMAX = 1000d0; Ymax = aspect * 1000d0
+         XMAX = 1000.0_dp
+         Ymax = aspect * 1000.0_dp
       end if
 
       call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
@@ -1175,12 +1281,14 @@ contains
       use m_flowparameters, only: epshu
       use m_flow, only: hu
       use m_wearelt, only: rcir
+      use m_gtext
+      use m_inview
       implicit none
 
       integer :: is, link
-      double precision :: icon_rw_size !< Size of plotted icons in real-world coordinates.
-      double precision :: x, y
-      logical :: active, inview
+      real(kind=dp) :: icon_rw_size !< Size of plotted icons in real-world coordinates.
+      real(kind=dp) :: x, y
+      logical :: active
 
       if (ndrawStructures <= 1) then
          return
@@ -1205,7 +1313,9 @@ contains
             if (link > 0 .and. link <= lnx) then ! for safety
                x = xu(link)
                y = yu(link)
-               if (.not. inView(x, y)) cycle
+               if (.not. inView(x, y)) then
+                  cycle
+               end if
 
                ! Draw structure.
                active = hu(link) > epshu
@@ -1252,9 +1362,9 @@ contains
    subroutine drawTriangle(x, y, size, icolfill, icoledge, filled)
       implicit none
 
-      double precision, intent(in) :: x !< x coordinate of center of triangle.
-      double precision, intent(in) :: y !< y coordinate of center of triangle.
-      double precision, intent(in) :: size !< size of triangle in world coordinates.
+      real(kind=dp), intent(in) :: x !< x coordinate of center of triangle.
+      real(kind=dp), intent(in) :: y !< y coordinate of center of triangle.
+      real(kind=dp), intent(in) :: size !< size of triangle in world coordinates.
       integer, intent(in) :: icolfill !< Colour number for inner fill
       integer, intent(in) :: icoledge !< Colour number for edge
       logical, intent(in) :: filled !< Filled or empty
@@ -1287,17 +1397,17 @@ contains
    subroutine drawStar(x, y, size, icolfill, icoledge)
       implicit none
 
-      double precision, intent(in) :: x !< x coordinate of center of star.
-      double precision, intent(in) :: y !< y coordinate of center of star.
-      double precision, intent(in) :: size !< size of start in world coordinates.
+      real(kind=dp), intent(in) :: x !< x coordinate of center of star.
+      real(kind=dp), intent(in) :: y !< y coordinate of center of star.
+      real(kind=dp), intent(in) :: size !< size of start in world coordinates.
       integer, intent(in) :: icolfill !< Colour number for inner fill
       integer, intent(in) :: icoledge !< Colour number for edge
 
-      double precision, dimension(8) :: xs
-      double precision, dimension(8) :: ys
+      real(kind=dp), dimension(8) :: xs
+      real(kind=dp), dimension(8) :: ys
 
-      xs = (/x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8/)
-      ys = (/y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8/)
+      xs = [x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8]
+      ys = [y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8]
 
 ! Fill
       call IGrFillPattern(4, 0, 0)
@@ -1325,6 +1435,8 @@ contains
       use m_1d_structures
       use m_Pump
       use m_Culvert
+      use m_zlin
+      use m_znod
       implicit none
 
       integer, intent(in) :: LL !< flow link number
@@ -1336,7 +1448,6 @@ contains
       integer :: L ! net link number
       integer :: line_max ! maximal line number
       integer :: branchindex, ilocallin, nstruc, istrtype, i
-      double precision, external :: zlin, znod
       type(t_pump), pointer :: ppump
       type(t_culvert), pointer :: pculvert
 
@@ -1402,7 +1513,7 @@ contains
       call Write2Scr(linec, 'Net link number', L, '-')
       call Write2Scr(linec, 'Net link type  (kn3)', kn(3, L), '-')
 
-      if (network%loaded .and. kcu(LL) == 1) then
+      if (network%loaded .and. kcu(LL) == LINK_1D) then
          branchindex = network%adm%lin2ibr(LL)
          if (branchindex >= 1 .and. branchindex <= network%brs%Count) then
             call Write2Scr(linec, 'Branch id', network%brs%branch(branchindex)%id(1:21))
@@ -1436,7 +1547,7 @@ contains
       end if
 
 ! If this flowlink has a stucture on it, then also display related info.
-      if (network%loaded .and. kcu(LL) == 1) then
+      if (network%loaded .and. kcu(LL) == LINK_1D) then
          nstruc = network%adm%lin2str(LL) ! Assume only 1 structure on the flowlink
       else
          nstruc = 0
@@ -1504,12 +1615,12 @@ contains
       call IOUTSTRINGXY(1, ipos, tex)
    end subroutine Write2ScrInt
 
-   !> Writes a line with double precision data to the interacter screen.
+   !> Writes a line with real(kind=dp) data to the interacter screen.
    subroutine Write2ScrDouble(ipos, desc, val, unit)
       implicit none
       integer, intent(inout) :: ipos
       character(len=*), intent(in) :: desc
-      double precision, intent(in) :: val
+      real(kind=dp), intent(in) :: val
       character(len=*), intent(in) :: unit
 
       character :: tex * 48, help * 27
@@ -1536,468 +1647,344 @@ contains
       call IOUTSTRINGXY(1, ipos, text)
    end subroutine Write2ScrChar
 
-end module unstruc_display
+   subroutine GETINTRGB(KRGB) ! GET interacter RGB FOR NCOL
+      integer :: KRGB(4)
+      integer :: rgb
+      integer, external :: InfoGrPalette !access interacter palette info
 
-subroutine zoomshift(nshift) ! based on polygon
-   use unstruc_display
-   use m_flowtimes
-   use m_polygon
-   use m_drawthis
-   implicit none
-   integer :: nshift, i1
-   double precision :: dr, x00, y00, dxw, dyw, rshift
+      ! grab the rgb value of the color nr
+      rgb = InfoGrPalette(KRGB(1))
 
-   nshift = nshift + 1
-   rshift = dble(nshift) / dble(numzoomshift)
-   i1 = int(rshift) + 1
-   i1 = min(i1, npl - 1)
-   dr = rshift - i1 + 1
-   x00 = (1d0 - dr) * xpl(i1) + dr * xpl(i1 + 1)
-   y00 = (1d0 - dr) * ypl(i1) + dr * ypl(i1 + 1)
-   dxw = 0.5d0 * (x2 - x1)
-   dyw = 0.5d0 * (y2 - y1)
-   x1 = x00 - dxw
-   x2 = x00 + dxw
-   y1 = y00 - dyw
-   y2 = y00 + dyw
-   call setwor(x1, y1, x2, y2)
-   ndraw(10) = 1 ! wel plotten
-end subroutine zoomshift
+      ! split into separate r, g, b channel values (0.0 - 1.0)
+      KRGB(2) = iand(rgb, z'ff')
+      KRGB(3) = iand(ishft(rgb, -8), z'ff')
+      KRGB(4) = iand(ishft(rgb, -16), z'ff')
 
-subroutine tekship()
-   use m_ship
-   implicit none
-   double precision :: sx2, sy2, css, sns, rr, cr, sr, snum
-   integer :: n
-   if (iniship == 0) return
+   end subroutine
 
-   call setcol(4)
+   subroutine SETINTRGB(KRGB) ! SAME, SET
+      integer :: KRGB(4)
+      call IGRPALETTERGB(KRGB(1), KRGB(2), KRGB(3), KRGB(4))
+   end subroutine
 
-   do n = 1, nshiptxy
-      css = cos(shi(n)); sns = sin(shi(n))
+   subroutine zoomshift(nshift) ! based on polygon
+      use m_polygon, only: npl, xpl, ypl
+      use m_drawthis, only: ndraw
 
-      call smovabs(n, 1.0d0, 0.0d0)
-      call slnabs(n, 0.9d0, -1.0d0)
-      call slnabs(n, -1.0d0, -1.0d0)
-      call slnabs(n, -1.0d0, 1.0d0)
-      call slnabs(n, 0.9d0, 1.0d0)
-      call slnabs(n, 1.0d0, 0.0d0)
+      integer :: nshift, i1
+      real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
 
-      snum = css * fx2(n) + sns * fy2(n) ! pressure force in shipL dir
-      call shtext(n, snum, -1.3d0, 0d0)
+      nshift = nshift + 1
+      rshift = real(nshift, kind=dp) / real(numzoomshift, kind=dp)
+      i1 = int(rshift) + 1
+      i1 = min(i1, npl - 1)
+      dr = rshift - i1 + 1
+      x00 = (1.0_dp - dr) * xpl(i1) + dr * xpl(i1 + 1)
+      y00 = (1.0_dp - dr) * ypl(i1) + dr * ypl(i1 + 1)
+      dxw = 0.5_dp * (x2 - x1)
+      dyw = 0.5_dp * (y2 - y1)
+      x1 = x00 - dxw
+      x2 = x00 + dxw
+      y1 = y00 - dyw
+      y2 = y00 + dyw
+      call setwor(x1, y1, x2, y2)
+      ndraw(10) = 1 ! wel plotten
+   end subroutine zoomshift
 
-      snum = -sns * fx2(n) + css * fy2(n) ! pressure force in shipB dir
-      call shtext(n, snum, -1.3d0, 1d0)
+   subroutine tekwindvector()
+      use m_flow
+      use m_transport, only: numconst, constituents
+      use m_flowgeom, only: ndxi
+      use m_xbeach_data, only: csx, snx, itheta_view
+      use m_flowparameters, only: jawave
+      use m_statistics, only: npdf, xpdf, ypdf
+      use messagehandling, only: msgbuf, msg_flush
+      use m_drawthis, only: ndraw
+      use m_gtext, only: gtext
+      use m_filez, only: doclose, newfil
+      use m_upotukinueaa, only: upotukinueaa
+      use m_wind, only: jawind, windxav, windyav
 
-      snum = fm2(n) / shL(n) ! pressure mom vertical ax
-      call shtext(n, snum, -1.3d0, -1d0)
+      real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
+      character tex * 60
+      integer :: ncol, k, kk, vlatin, vlatout, i, mout
 
-      snum = css * fricx(n) + sns * fricy(n) ! fric force in shipL dir
-      call shtext(n, snum, 1.3d0, 0d0)
-
-      snum = -sns * fricx(n) + css * fricy(n) ! fric force in shipB dir
-      call shtext(n, snum, 1.3d0, 1d0)
-
-      snum = fricm(n) / shL(n) ! fric mom vertical ax
-      call shtext(n, snum, 1.3d0, -1d0)
-
-      snum = css * stuwx(n) + sns * stuwy(n) ! stuwforce in shipL dir
-      call shtext(n, snum, -0.8d0, 0d0)
-
-      snum = -sns * stuwx(n) + css * stuwy(n) ! stuwforce in shipB dir
-      call shtext(n, snum, -0.8d0, 1d0)
-
-      snum = stuwm(n) / shL(n) ! stuwmom vertical ax normalised by half length
-      call shtext(n, snum, -0.8d0, -1d0)
-
-      snum = css * shu(n) + sns * shv(n) ! snelheid in shipL dir
-      call shtext(n, snum, -0.d0, 0d0)
-
-      snum = -sns * shu(n) + css * shv(n) ! snelheid in shipB dir
-      call shtext(n, snum, -0.0d0, 1.1d0)
-
-      snum = sho(n) ! ronjes/minuut vertical ax
-      call shtext(n, snum * 60d0 / 6.28d0, -0.d0, -1.1d0)
-
-      sx2 = shx(n) - shL(n) * css ! rudder
-      sy2 = shy(n) - shL(n) * sns
-      call movabs(sx2, sy2)
-      rr = 0.4d0 * shb(n); cr = cos(shi(n) + roer(n)); sr = sin(shi(n) + roer(n))
-      call lnabs(sx2 - rr * cr, sy2 - rr * sr)
-
-   end do
-end subroutine tekship
-
-subroutine tekwindvector()
-   use m_wind
-   use m_wearelt
-   use unstruc_display
-   use m_heatfluxes
-   use m_flow
-   use m_transport
-   use m_flowgeom
-   use m_wind
-   use m_xbeach_data, only: csx, snx, itheta_view
-   use m_flowparameters, only: jawave
-   use m_missing
-   use m_statistics
-   use messagehandling
-   use m_drawthis
-
-   implicit none
-   double precision :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
-   character tex * 60
-   integer :: ncol, k, kk, vlatin, vlatout, i, mout
-
-   if (ndraw(40) == 0 .and. npdf == 0) return
-
-   call thicklinetexcol(ncolln)
-
-   yp = 0.15 * y1 + 0.85 * y2
-   dyp = 0.025 * (y2 - y1)
-
-   if (npdf > 0) then
-      xp = 0.97 * x1 + 0.03 * x2
-
-      call newfil(mout, 'cumulative.tek')
-      write (mout, '(a)') '* Column 1 : cos ()'
-      write (mout, '(a)') '* Column 2 : fraction ()'
-
-      msgbuf = 'BL01'
-      call msg_flush(); write (mout, '(a)') msgbuf
-      write (msgbuf, '(i4,A)') npdf, ' 2 '
-      call msg_flush(); write (mout, '(a)') msgbuf
-
-      do i = npdf - 1, 1, -1
-         yp = yp - dyp
-         tex = '                                 '
-         write (tex(1:), '(2F10.6)') ypdf(i), xpdf(i)
-         call GTEXT(tex, xp, yp, ncolln)
-         write (msgbuf, '(a)') tex
-         call msg_flush(); write (mout, '(a)') msgbuf
-      end do
-      call doclose(mout)
-   end if
-
-   if (jawind > 0) then
-      xp = 0.90 * x1 + 0.10 * x2
-      vfw = 0.1d0 * (x2 - x1) / 10d0 ! 10 m/s is 0.1*screen
-      call arrowsxy(xp, yp, windxav, windyav, vfw)
-      ws = sqrt(windxav * windxav + windyav * windyav)
-      xp = 0.97 * x1 + 0.03 * x2
-      yp = 0.25 * y1 + 0.75 * y2
-      tex = 'Wind   :             (m/s)'
-      write (tex(10:17), '(F8.3)') ws
-      call GTEXT(tex, xp, yp, ncolln)
-   end if
-
-   if (a1ini == 0d0) then
-      call resetlinesizesetc()
-      return
-   end if
-
-   yp = 0.25 * y1 + 0.75 * y2
-   xp = 0.97 * x1 + 0.03 * x2
-   if (vinraincum > 0) then
-      xp = 0.97 * x1 + 0.03 * x2
-      yp = yp - 2 * dyp
-      tex = 'Rain   :           (mm/hr)'
-      write (tex(10:17), '(F8.4)') 3600 * 1000 * qinrain / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-      yp = yp - dyp
-      tex = 'Hrain  :               (m)'
-      write (tex(10:20), '(F11.4)') vinraincum / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-   end if
-
-   if (voutevacum > 0) then
-      yp = yp - dyp
-      tex = 'Evap   :           (mm/hr)'
-      write (tex(10:17), '(F8.4)') 3600 * 1000 * qouteva / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-      yp = yp - dyp
-      tex = 'Hevap  :               (m)'
-      write (tex(10:20), '(F11.4)') voutevacum / a1ini
-      call GTEXT(tex, xp, yp, ncolln)
-   end if
-
-   if (ndraw(40) == 1) then
-
-      ncol = ncoltx
-      call thicklinetexcol(ncol)
-
-      if (vinbndcum > 0 .or. voutbndcum > 0) then
-         yp = yp - dyp
-         tex = 'HinBnd :               (m)'
-         write (tex(10:20), '(F11.4)') vinbndcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'HoutBnd:               (m)'
-         write (tex(10:20), '(F11.4)') - voutbndcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
+      if (ndraw(40) == 0 .and. npdf == 0) then
+         return
       end if
-
-      vlatin = sum(vinlatcum(1:2))
-      vlatout = sum(voutlatcum(1:2))
-      if (vlatin > 0 .or. vlatout > 0) then
-         yp = yp - dyp
-         tex = 'HinLat :               (m)'
-         write (tex(10:20), '(F11.4)') vlatin / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'HoutLat:               (m)'
-         write (tex(10:20), '(F11.4)') - vlatout / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      if (vingrwcum > 0 .or. voutgrwcum > 0) then
-         yp = yp - dyp
-         tex = 'Hingrw :               (m)'
-         write (tex(10:20), '(F11.4)') vingrwcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'Houtgrw:               (m)'
-         write (tex(10:20), '(F11.4)') - voutgrwcum / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      yp = yp - dyp
-      tex = 'Htot   :               (m)'
-      write (tex(10:20), '(F11.4)') (vol1tot - vol1ini) / a1ini
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jagrw > 0) then
-         yp = yp - dyp
-         tex = 'Hgrw   :               (m)'
-         write (tex(10:20), '(F11.4)') (volgrw - volgrwini) / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      yp = yp - dyp
-      tex = 'Hini   :               (m)'
-      write (tex(10:20), '(F11.4)') vol1ini / a1ini
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jagrw > 0) then
-         yp = yp - dyp
-         tex = 'Hgrwini:               (m)'
-         write (tex(10:20), '(F11.4)') volgrwini / a1ini
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-      yp = yp - dyp
-      tex = 'Areatot:               (m)'
-      write (tex(10:21), '(E12.5)') a1ini
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jatem == 5) then
-         yp = yp - 2 * dyp
-         tex = 'QSUNav :              (W/m2)'
-         write (tex(10:21), '(E12.5)') Qsunav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'QEVAav :              (W/m2)'
-         write (tex(10:21), '(E12.5)') Qevaav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'QCONav :              (W/m2)'
-         write (tex(10:21), '(E12.5)') QCONav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'QLongav:              (W/m2)'
-         write (tex(10:21), '(E12.5)') QLongav
-         call GTEXT(tex, xp, yp, ncol)
-
-         yp = yp - dyp
-         tex = 'Qfreeav:              (W/m2)'
-         write (tex(10:21), '(E12.5)') Qfreeav
-         call GTEXT(tex, xp, yp, ncol)
-
-      end if
-
-   else if (ndraw(40) == 2) then
-
-      call upotukinueaa(upot, ukin, ueaa)
-
-      ncol = ncoltx
-
-      yp = yp - 2.5 * dyp
-      tex = 'Ut0:                 (kg/(m.s2))'
-      if (upot0 + ukin0 > 1000) then
-         write (tex(8:20), '(F11.2)') ukin0 + upot0
-      else
-         write (tex(8:20), '(F11.7)') ukin0 + upot0
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Upot :               (kg/(m.s2))'
-      if (upot > 1000) then
-         write (tex(8:20), '(F11.2)') upot
-      else
-         write (tex(8:20), '(F11.7)') upot
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Ukin :               (kg/(m.s2))'
-      if (ukin > 1000) then
-         write (tex(8:20), '(F11.2)') ukin
-      else
-         write (tex(8:20), '(F11.7)') ukin
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Utot :               (kg/(m.s2))'
-      if (upot + ukin > 1000) then
-         write (tex(8:20), '(F11.2)') upot + ukin
-      else
-         write (tex(8:20), '(F11.7)') upot + ukin
-      end if
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Upot/Ut0:                   ( )'
-      write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, eps4)
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Ukin/Ut0:                   ( )'
-      write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, eps4)
-      call GTEXT(tex, xp, yp, ncol)
-
-      yp = yp - dyp
-      tex = 'Utot/Ut0:                   ( )'
-      write (tex(8:20), '(F11.7)') (ukin + upot) / (ukin0 + upot0)
-      call GTEXT(tex, xp, yp, ncol)
-
-      if (jasal > 0 .or. jatem > 0) then
-         yp = yp - dyp
-         tex = 'Ueaa :               (kg/(m.s2))'
-         write (tex(8:20), '(F11.2)') ueaa
-         call GTEXT(tex, xp, yp, ncol)
-      end if
-
-   else if (ndraw(40) == 3) then
-
-      ncol = ncoltx
-      do i = 1, numconst
-         ueaa = 0d0
-         do kk = 1, ndxi
-            do k = kbot(kk), ktop(kk)
-               ueaa = ueaa + vol1(k) * constituents(i, k)
-            end do
-         end do
-
-         yp = yp - 2.5 * dyp
-         tex = 'Mass :                 (c*m3)'
-         if (ueaa > 1000) then
-            write (tex(8:20), '(F11.2)') ueaa
-         else
-            write (tex(8:20), '(F11.7)') ueaa
-         end if
-         call GTEXT(tex, xp, yp, ncol)
-
-      end do
-
-   end if
-
-   if (jawave == 4) then
-      xp = 0.90 * x1 + 0.10 * x2
-      yp = 0.85 * y1 + 0.15 * y2
 
       call thicklinetexcol(ncolln)
-      call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1d0 * (x2 - x1))
-   end if
 
-   call resetlinesizesetc()
+      yp = 0.15 * y1 + 0.85 * y2
+      dyp = 0.025 * (y2 - y1)
 
-end subroutine tekwindvector
+      if (npdf > 0) then
+         xp = 0.97 * x1 + 0.03 * x2
 
-subroutine upotukinueaa(upot, ukin, ueaa)
-   use m_flow
-   use m_flowgeom
-   use m_missing
-   implicit none
-   double precision :: upot, ukin, ueaa
-   double precision :: vtot, roav, zz, rhok, bmin
-   integer k, kk
+         call newfil(mout, 'cumulative.tek')
+         write (mout, '(a)') '* Column 1 : cos ()'
+         write (mout, '(a)') '* Column 2 : fraction ()'
 
-   upot = 0d0; ukin = 0d0; ueaa = 0d0; vtot = 0d0; roav = 0d0; bmin = 1d9
+         msgbuf = 'BL01'
+         call msg_flush()
+         write (mout, '(a)') msgbuf
+         write (msgbuf, '(i4,A)') npdf, ' 2 '
+         call msg_flush()
+         write (mout, '(a)') msgbuf
 
-   do kk = 1, ndx
-      bmin = min(bmin, bl(kk))
-      if (hs(kk) == 0) cycle
-      do k = kbot(kk), ktop(kk)
-         vtot = vtot + vol1(k) ! m3
-         if (jasal > 0) then
-            roav = roav + vol1(k) * rho(k) ! kg
-         else
-            roav = roav + vol1(k) * rhomean ! kg
+         do i = npdf - 1, 1, -1
+            yp = yp - dyp
+            tex = '                                 '
+            write (tex(1:), '(2F10.6)') ypdf(i), xpdf(i)
+            call GTEXT(tex, xp, yp, ncolln)
+            write (msgbuf, '(a)') tex
+            call msg_flush()
+            write (mout, '(a)') msgbuf
+         end do
+         call doclose(mout)
+      end if
+
+      if (jawind > 0) then
+         xp = 0.90 * x1 + 0.10 * x2
+         vfw = 0.1_dp * (x2 - x1) / 10.0_dp ! 10 m/s is 0.1*screen
+         call arrowsxy(xp, yp, windxav, windyav, vfw)
+         ws = sqrt(windxav * windxav + windyav * windyav)
+         xp = 0.97 * x1 + 0.03 * x2
+         yp = 0.25 * y1 + 0.75 * y2
+         tex = 'Wind   :             (m/s)'
+         write (tex(10:17), '(F8.3)') ws
+         call GTEXT(tex, xp, yp, ncolln)
+      end if
+
+      if (a1ini == 0.0_dp) then
+         call resetlinesizesetc()
+         return
+      end if
+
+      yp = 0.25 * y1 + 0.75 * y2
+      xp = 0.97 * x1 + 0.03 * x2
+      if (vinraincum > 0) then
+         xp = 0.97 * x1 + 0.03 * x2
+         yp = yp - 2 * dyp
+         tex = 'Rain   :           (mm/hr)'
+         write (tex(10:17), '(F8.4)') 3600 * 1000 * qinrain / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+         yp = yp - dyp
+         tex = 'Hrain  :               (m)'
+         write (tex(10:20), '(F11.4)') vinraincum / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+      end if
+
+      if (voutevacum > 0) then
+         yp = yp - dyp
+         tex = 'Evap   :           (mm/hr)'
+         write (tex(10:17), '(F8.4)') 3600 * 1000 * qouteva / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+         yp = yp - dyp
+         tex = 'Hevap  :               (m)'
+         write (tex(10:20), '(F11.4)') voutevacum / a1ini
+         call GTEXT(tex, xp, yp, ncolln)
+      end if
+
+      if (ndraw(40) == 1) then
+
+         ncol = ncoltx
+         call thicklinetexcol(ncol)
+
+         if (vinbndcum > 0 .or. voutbndcum > 0) then
+            yp = yp - dyp
+            tex = 'HinBnd :               (m)'
+            write (tex(10:20), '(F11.4)') vinbndcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'HoutBnd:               (m)'
+            write (tex(10:20), '(F11.4)') - voutbndcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
          end if
-      end do
-   end do
-   if (vtot == 0d0) then
-      return
-   end if
 
-   roav = roav / vtot ! kg/m3
+         vlatin = sum(vinlatcum(1:2))
+         vlatout = sum(voutlatcum(1:2))
+         if (vlatin > 0 .or. vlatout > 0) then
+            yp = yp - dyp
+            tex = 'HinLat :               (m)'
+            write (tex(10:20), '(F11.4)') vlatin / a1ini
+            call GTEXT(tex, xp, yp, ncol)
 
-   do kk = 1, ndx
-      if (hs(kk) == 0) cycle
-      do k = kbot(kk), ktop(kk)
-         if (kmx > 0) then
-            zz = (zws(k) + zws(k - 1)) * 0.5d0 - bmin ! m
-         else
-            zz = s1(k) - bmin
+            yp = yp - dyp
+            tex = 'HoutLat:               (m)'
+            write (tex(10:20), '(F11.4)') - vlatout / a1ini
+            call GTEXT(tex, xp, yp, ncol)
          end if
-         if (jasal > 0) then
-            rhok = rho(k)
-         else
-            rhok = rhomean
+
+         if (vingrwcum > 0 .or. voutgrwcum > 0) then
+            yp = yp - dyp
+            tex = 'Hingrw :               (m)'
+            write (tex(10:20), '(F11.4)') vingrwcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'Houtgrw:               (m)'
+            write (tex(10:20), '(F11.4)') - voutgrwcum / a1ini
+            call GTEXT(tex, xp, yp, ncol)
          end if
-         ueaa = ueaa + vol1(k) * zz * (rho(k) - roav) ! kg.m
-         upot = upot + vol1(k) * zz * rho(k) ! kg.m
-         ukin = ukin + vol1(k) * rho(k) * (ucx(k) * ucx(k) + ucy(k) * ucy(k)) * 0.5d0 ! kg.m2/s2
-      end do
-   end do
 
-   ueaa = ueaa * ag / vtot ! kg/(m.s2)
-   upot = upot * ag / vtot
-   ukin = ukin * 0.5 / vtot
+         yp = yp - dyp
+         tex = 'Htot   :               (m)'
+         write (tex(10:20), '(F11.4)') (vol1tot - vol1ini) / a1ini
+         call GTEXT(tex, xp, yp, ncol)
 
-   if (upot0 == dmiss) upot0 = upot
-   if (ukin0 == dmiss) ukin0 = ukin
+         if (jagrw > 0) then
+            yp = yp - dyp
+            tex = 'Hgrw   :               (m)'
+            write (tex(10:20), '(F11.4)') (volgrw - volgrwini) / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+         end if
 
-! upot = upot - upot0
-   !
-end subroutine upotukinueaa
+         yp = yp - dyp
+         tex = 'Hini   :               (m)'
+         write (tex(10:20), '(F11.4)') vol1ini / a1ini
+         call GTEXT(tex, xp, yp, ncol)
 
-subroutine GETINTRGB(KRGB) ! GET interacter RGB FOR NCOL
-   implicit none
-   integer :: KRGB(4)
-   integer :: rgb
-   integer, external :: InfoGrPalette !access interacter palette info
+         if (jagrw > 0) then
+            yp = yp - dyp
+            tex = 'Hgrwini:               (m)'
+            write (tex(10:20), '(F11.4)') volgrwini / a1ini
+            call GTEXT(tex, xp, yp, ncol)
+         end if
 
-   ! grab the rgb value of the color nr
-   rgb = InfoGrPalette(KRGB(1))
+         yp = yp - dyp
+         tex = 'Areatot:               (m)'
+         write (tex(10:21), '(E12.5)') a1ini
+         call GTEXT(tex, xp, yp, ncol)
 
-   ! split into separate r, g, b channel values (0.0 - 1.0)
-   KRGB(2) = iand(rgb, z'ff')
-   KRGB(3) = iand(ishft(rgb, -8), z'ff')
-   KRGB(4) = iand(ishft(rgb, -16), z'ff')
+         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            yp = yp - 2 * dyp
+            tex = 'QSUNav :              (W/m2)'
+            write (tex(10:21), '(E12.5)') Qsunav
+            call GTEXT(tex, xp, yp, ncol)
 
-end subroutine
+            yp = yp - dyp
+            tex = 'QEVAav :              (W/m2)'
+            write (tex(10:21), '(E12.5)') Qevaav
+            call GTEXT(tex, xp, yp, ncol)
 
-subroutine SETINTRGB(KRGB) ! SAME, SET
-   implicit none
-   integer :: KRGB(4)
-   call IGRPALETTERGB(KRGB(1), KRGB(2), KRGB(3), KRGB(4))
-end subroutine
+            yp = yp - dyp
+            tex = 'QCONav :              (W/m2)'
+            write (tex(10:21), '(E12.5)') QCONav
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'QLongav:              (W/m2)'
+            write (tex(10:21), '(E12.5)') QLongav
+            call GTEXT(tex, xp, yp, ncol)
+
+            yp = yp - dyp
+            tex = 'Qfreeav:              (W/m2)'
+            write (tex(10:21), '(E12.5)') Qfreeav
+            call GTEXT(tex, xp, yp, ncol)
+
+         end if
+
+      else if (ndraw(40) == 2) then
+
+         call upotukinueaa(upot, ukin, ueaa)
+
+         ncol = ncoltx
+
+         yp = yp - 2.5 * dyp
+         tex = 'Ut0:                 (kg/(m.s2))'
+         if (upot0 + ukin0 > 1000) then
+            write (tex(8:20), '(F11.2)') ukin0 + upot0
+         else
+            write (tex(8:20), '(F11.7)') ukin0 + upot0
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Upot :               (kg/(m.s2))'
+         if (upot > 1000) then
+            write (tex(8:20), '(F11.2)') upot
+         else
+            write (tex(8:20), '(F11.7)') upot
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Ukin :               (kg/(m.s2))'
+         if (ukin > 1000) then
+            write (tex(8:20), '(F11.2)') ukin
+         else
+            write (tex(8:20), '(F11.7)') ukin
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Utot :               (kg/(m.s2))'
+         if (upot + ukin > 1000) then
+            write (tex(8:20), '(F11.2)') upot + ukin
+         else
+            write (tex(8:20), '(F11.7)') upot + ukin
+         end if
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Upot/Ut0:                   ( )'
+         write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, EPS4)
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Ukin/Ut0:                   ( )'
+         write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, EPS4)
+         call GTEXT(tex, xp, yp, ncol)
+
+         yp = yp - dyp
+         tex = 'Utot/Ut0:                   ( )'
+         write (tex(8:20), '(F11.7)') (ukin + upot) / (ukin0 + upot0)
+         call GTEXT(tex, xp, yp, ncol)
+
+         if (jasal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE) then
+            yp = yp - dyp
+            tex = 'Ueaa :               (kg/(m.s2))'
+            write (tex(8:20), '(F11.2)') ueaa
+            call GTEXT(tex, xp, yp, ncol)
+         end if
+
+      else if (ndraw(40) == 3) then
+
+         ncol = ncoltx
+         do i = 1, numconst
+            ueaa = 0.0_dp
+            do kk = 1, ndxi
+               do k = kbot(kk), ktop(kk)
+                  ueaa = ueaa + vol1(k) * constituents(i, k)
+               end do
+            end do
+
+            yp = yp - 2.5 * dyp
+            tex = 'Mass :                 (c*m3)'
+            if (ueaa > 1000) then
+               write (tex(8:20), '(F11.2)') ueaa
+            else
+               write (tex(8:20), '(F11.7)') ueaa
+            end if
+            call GTEXT(tex, xp, yp, ncol)
+
+         end do
+
+      end if
+
+      if (jawave == WAVE_SURFBEAT) then
+         xp = 0.90 * x1 + 0.10 * x2
+         yp = 0.85 * y1 + 0.15 * y2
+
+         call thicklinetexcol(ncolln)
+         call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1_dp * (x2 - x1))
+      end if
+
+      call resetlinesizesetc()
+
+   end subroutine tekwindvector
+
+end module unstruc_display
+

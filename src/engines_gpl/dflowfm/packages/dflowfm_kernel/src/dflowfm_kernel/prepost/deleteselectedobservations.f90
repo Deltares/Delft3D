@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,13 +30,22 @@
 !
 !
 
+module m_deleteselectedobservations
+
+   implicit none
+
+   private
+
+   public :: deleteselectedobservations
+
+contains
+
    subroutine deleteSelectedObservations()
-      use m_observations
-      use M_SAMPLES
-      use M_POLYGON
-      use m_missing
+      use m_confrm
+      use m_observations, only: numobs, xobs, yobs, deleteobservation, deleteobservations, purgeobservations
+      use m_polygon, only: npl, xpl, ypl
+      use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok
-      implicit none
 
       integer :: i
       integer :: inhul
@@ -64,3 +73,5 @@
       return
 
    end subroutine deleteSelectedObservations
+
+end module m_deleteselectedobservations

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,10 +33,11 @@ module m_qorifdif
    implicit none
 contains
    subroutine qorifdif(hg, d, h1, h3, h2, qd)
-      use m_getq1
-      use m_getq2
-      double precision :: hg, d, h1, h3, h2, qd
-      double precision :: ql, qr
+      use precision, only: dp
+      use m_getq1, only: getq1
+      use m_getq2, only: getq2
+      real(kind=dp) :: hg, d, h1, h3, h2, qd
+      real(kind=dp) :: ql, qr
 
       call getq1(hg, d, h1, h2, ql)
       call getq2(hg, h2, h3, qr)

@@ -14,11 +14,11 @@ set_source_files_properties(
                    src/Cmpdecv.F90
                    src/datafrommatlab.F90
                    src/datatomatlab.F90
-                   src/ERRMSG.F90
+                   src/write_error_message_rtc.F90
                    src/filemodule.F90
                    src/LocationDataModule.F90  # no preprocessot needed, should be .f90
                    src/OpenMatlab.F90
-                   src/readlib.F90
+                   src/readlib_rtc.F90
                    src/rtc_matlab_module.F90
                    src/Rtc_Rdini.F90
                    PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
@@ -35,28 +35,18 @@ set(oss_dependencies_general delftio
                              
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies ${oss_dependencies_general})
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+    )
     add_definitions(-DHAVE_CONFIG_H)    
 endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdf4
-                                            netcdff)
+                                            netCDF::netcdff)
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
 
 # Define how the files should be structured within Visual Studio

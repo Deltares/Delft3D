@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,12 +30,21 @@
 !
 !
 
- subroutine shtext(n, snum, sx1, sy1)
-    use m_shipcoor
-    use m_htext
-    implicit none
-    integer :: n
-    double precision :: snum, sx1, sx2, sy1, sy2
-    call shipcoor(n, sx1, sy1, sx2, sy2)
-    call htext(snum, sx2, sy2)
- end subroutine shtext
+module m_shtext
+
+   implicit none
+
+contains
+
+   subroutine shtext(n, snum, sx1, sy1)
+      use precision, only: dp
+      use m_shipcoor, only: shipcoor
+      use m_htext, only: htext
+      implicit none
+      integer :: n
+      real(kind=dp) :: snum, sx1, sx2, sy1, sy2
+      call shipcoor(n, sx1, sy1, sx2, sy2)
+      call htext(snum, sx2, sy2)
+   end subroutine shtext
+
+end module m_shtext

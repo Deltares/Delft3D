@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,22 +29,25 @@
 
 !
 !
+module m_datum
+   implicit none
+contains
+   subroutine DATUM(DATE)
+      use m_dateandtimenow, only: dateandtimenow
 
-      subroutine DATUM(DATE)
-         use m_dateandtimenow
-         implicit none
-         integer :: iyear, month, iday, ihour, minute, isecnd
-         character DATE * 20
+      integer :: iyear, month, iday, ihour, minute, isecnd
+      character DATE * 20
 !              1  4  7   11 14 17
-         DATE = 'hh:mm:ss, dd-mm-yyyy'
+      DATE = 'hh:mm:ss, dd-mm-yyyy'
 
-         call dateandtimenow(iyear, month, iday, ihour, minute, isecnd)
+      call dateandtimenow(iyear, month, iday, ihour, minute, isecnd)
 
-         write (DATE(1:2), '(I2.2)') IHOUR
-         write (DATE(4:5), '(I2.2)') MINUTE
-         write (DATE(7:8), '(I2.2)') ISECND
-         write (DATE(11:12), '(I2.2)') IDAY
-         write (DATE(14:15), '(I2.2)') MONTH
-         write (DATE(17:20), '(I4)') IYEAR
-         return
-      end
+      write (DATE(1:2), '(I2.2)') IHOUR
+      write (DATE(4:5), '(I2.2)') MINUTE
+      write (DATE(7:8), '(I2.2)') ISECND
+      write (DATE(11:12), '(I2.2)') IDAY
+      write (DATE(14:15), '(I2.2)') MONTH
+      write (DATE(17:20), '(I4)') IYEAR
+      return
+   end
+end module m_datum

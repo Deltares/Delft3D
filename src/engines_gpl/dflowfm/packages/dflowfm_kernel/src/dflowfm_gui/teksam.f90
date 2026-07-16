@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,32 +30,44 @@
 !
 !
 
-   subroutine TEKSAM(MET)
+module m_teksam
 
+   implicit none
+
+contains
+
+   subroutine TEKSAM(MET)
+      use precision, only: dp
+
+      use m_settextsize
+      use m_minmxsam
       use unstruc_colors
       use m_missing, only: DMISS
       use unstruc_opengl, only: jaopengl
       use m_samples
-      use unstruc_display
       use m_arcinfo
       use m_perspx
       use m_halt2
-      
-      implicit none
-      double precision :: RC
-      double precision :: hrc
+      use m_set_col
+
+      real(kind=dp) :: RC
+      real(kind=dp) :: hrc
       integer :: i, KMOD
       integer :: key
-      double precision :: x
-      double precision :: y
-      double precision :: z
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
       integer :: MET
 !     TEKEN SAMPLES
 
-      if (MET == 0) return
+      if (MET == 0) then
+         return
+      end if
 
-      if (MET == 4 .or. MET == 5) call SETTEXTSIZE()
-      RC = 1.7d0 * RCIR
+      if (MET == 4 .or. MET == 5) then
+         call SETTEXTSIZE()
+      end if
+      RC = 1.7_dp * RCIR
       HRC = RCIR / 2
       KMOD = max(1, NS / 100)
       key = 0
@@ -75,14 +87,18 @@
 
          if (mod(I, KMOD) == 0) then
             call HALT2(KEY)
-            if (KEY == 1) return
+            if (KEY == 1) then
+               return
+            end if
          end if
 
          X = XS(I)
          Y = YS(I)
          Z = ZS(I)
 
-         if (Z == DMISS) cycle ! SPvdP: structured sample data may comprise missing values
+         if (Z == DMISS) then
+            cycle ! SPvdP: structured sample data may comprise missing values
+         end if
 
          call tek1sample(x, y, z, met, hrc, i)
 
@@ -94,17 +110,23 @@
    end subroutine TEKSAM
 
    subroutine TEKarc(MET)
+      use precision, only: dp
+      use m_settextsize
+      use m_minmxsam
       use m_arcinfo
       use unstruc_display
       use m_missing, only: DMISS
       use m_halt2
+      use m_set_col
 
       implicit none
-      double precision :: hrc, rc, x, y, z
+      real(kind=dp) :: hrc, rc, x, y, z
       integer :: met, m, n, key
 
-      if (MET == 4 .or. MET == 5) call SETTEXTSIZE()
-      RC = 1.7d0 * RCIR
+      if (MET == 4 .or. MET == 5) then
+         call SETTEXTSIZE()
+      end if
+      RC = 1.7_dp * RCIR
       HRC = RCIR / 2
 
       if (met == 5) then
@@ -116,11 +138,15 @@
       do n = 1, nca
 
          call HALT2(KEY)
-         if (KEY == 1) return
+         if (KEY == 1) then
+            return
+         end if
          do m = 1, mca
 
             z = d(m, n)
-            if (z == dmiss) cycle
+            if (z == dmiss) then
+               cycle
+            end if
             x = x0 + dxa * (m - 1)
             y = y0 + dya * (n - 1)
             call tek1sample(x, y, z, met, hrc, m)
@@ -130,17 +156,26 @@
    end subroutine TEKarc
 
    subroutine tek1sample(x, y, z, met, hrc, m)
+      use precision, only: dp
+      use m_isocol2
+      use m_cir
+      use m_box
       use unstruc_colors
       use unstruc_display
       use m_arcinfo
       use m_drawthis
       use m_htext
+      use m_hi_text
+      use m_krec5
+      use m_set_col
+      use m_inview
+      use m_movabs
+      use m_ptabs
 
       implicit none
 
-      double precision :: x, y, z, hrc
+      real(kind=dp) :: x, y, z, hrc
       integer :: met, m, ncol
-      logical, external :: inview
 
       if (INVIEW(X, Y)) then
          if (NDRAW(9) == 2) then
@@ -156,7 +191,7 @@
 !               CALL CIR(RCIR)
 !!              CALL HTEXT(ZS(I),X,Y)
 
-               call box(x - 0.5d0 * rcir, y - 0.5d0 * rcir, x + 0.5d0 * rcir, y + 0.5d0 * rcir)
+               call box(x - 0.5_dp * rcir, y - 0.5_dp * rcir, x + 0.5_dp * rcir, y + 0.5_dp * rcir)
 
                if (MET == 2) then
                   call MOVABS(X, Y)
@@ -184,3 +219,4 @@
 
    end subroutine tek1sample
 
+end module m_teksam

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,13 +30,24 @@
 !
 !
 
+module m_addmaze
+   use m_isnodedb, only: isnodedb
+
+   implicit none
+
+   private
+
+   public :: addmaze
+
+contains
+
    subroutine ADDMAZE(X, Y, Z, N, JAFIVE) ! FOR FLOW GRIDS
+      use precision, only: dp
       use m_netw
       use gridoperations
 
-      implicit none
       integer :: N
-      double precision :: X(N), Y(N), Z(N)
+      real(kind=dp) :: X(N), Y(N), Z(N)
       integer :: k
       integer :: k2
       integer :: lnu
@@ -46,12 +57,19 @@
          call ISNODEDB(KK(k), X(k), Y(k))
          if (kk(k) == 0) then
             numk = numk + 1
-            XK(numk) = X(K); YK(numk) = Y(K); ZK(numk) = Z(K); KC(numk) = 1; kk(k) = numk
+            XK(numk) = X(K)
+            YK(numk) = Y(K)
+            ZK(numk) = Z(K)
+            KC(numk) = 1
+            kk(k) = numk
          end if
       end do
 
       do K = 1, N
-         K2 = K + 1; if (K == N) K2 = 1
+         K2 = K + 1
+         if (K == N) then
+            K2 = 1
+         end if
          call CONNECTDB(kk(k), kk(k2), lnu)
       end do
 
@@ -62,3 +80,5 @@
 
       return
    end subroutine ADDMAZE
+
+end module m_addmaze

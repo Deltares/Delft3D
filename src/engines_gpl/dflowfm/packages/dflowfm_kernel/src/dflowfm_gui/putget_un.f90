@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@ module m_putget_un
    implicit none
 contains
    subroutine putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
+      use precision, only: dp
       use m_drawthis
       use m_fkeys
       use m_disput
@@ -49,8 +50,8 @@ contains
       integer :: num
       integer :: numb
       integer :: nwhat
-      double precision :: xp
-      double precision :: yp
+      real(kind=dp) :: xp
+      real(kind=dp) :: yp
 
 !
       call DISPUT(NPUT)
@@ -67,18 +68,24 @@ contains
 !
       if (KEY >= 24 .and. KEY <= 26) then
          call FKEYS(KEY)
-         if (KEY == 3) return
+         if (KEY == 3) then
+            return
+         end if
       else if (KEY == 1) then
 !        BOVEN
          JA = KEY
          call MENUH(JA, NUM, NWHAT)
          call BOTLIN(0, NUMB, KEY)
-         if (JA /= 0) return
+         if (JA /= 0) then
+            return
+         end if
       else if (KEY == 2) then
 !        ONDER
          JA = KEY
          call BOTLIN(JA, NUMB, KEY)
-         if (JA /= 0) return
+         if (JA /= 0) then
+            return
+         end if
       else if (KEY == 90 .or. KEY == 90 + 32) then
 !        Z(oomin)
          call ZOOMIN(KEY, NPUT)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,35 @@
 !
 !
 
- subroutine sincosdis(x1, y1, x2, y2, s, c, d) ! get sin, cos, length of a line segment
-    use m_missing
-    use m_sferic, only: jsferic
-    use geometry_module, only: getdx, getdy
-    implicit none
-    double precision :: x1, y1, x2, y2, s, c, d
-    double precision :: dx1, dy1
+module m_sincosdis
 
-    dx1 = getdx(x1, y1, x2, y2, jsferic)
-    dy1 = getdy(x1, y1, x2, y2, jsferic)
-    d = sqrt(dx1 * dx1 + dy1 * dy1)
-    if (d > 0d0) then
-       s = dy1 / d
-       c = dx1 / d
-    else
-       s = 0d0
-       c = 0d0
-    end if
- end subroutine sincosdis
+   implicit none
+
+   private
+
+   public :: sincosdis
+
+contains
+
+   subroutine sincosdis(x1, y1, x2, y2, s, c, d) ! get sin, cos, length of a line segment
+      use precision, only: dp
+
+      use m_sferic, only: jsferic
+      use geometry_module, only: getdx, getdy
+
+      real(kind=dp) :: x1, y1, x2, y2, s, c, d
+      real(kind=dp) :: dx1, dy1
+
+      dx1 = getdx(x1, y1, x2, y2, jsferic)
+      dy1 = getdy(x1, y1, x2, y2, jsferic)
+      d = sqrt(dx1 * dx1 + dy1 * dy1)
+      if (d > 0.0_dp) then
+         s = dy1 / d
+         c = dx1 / d
+      else
+         s = 0.0_dp
+         c = 0.0_dp
+      end if
+   end subroutine sincosdis
+
+end module m_sincosdis

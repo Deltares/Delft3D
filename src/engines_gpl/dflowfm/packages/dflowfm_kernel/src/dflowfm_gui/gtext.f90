@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,18 +29,24 @@
 
 !
 !
+module m_gtext
+   implicit none
+contains
+   subroutine GTEXT(TEX, X, Y, NCOL)
+      use precision, only: dp
+      use m_colnow, only: ncolnow
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
 
-      subroutine GTEXT(TEX, X, Y, NCOL)
-         use m_colnow
-         implicit none
-         integer :: ncol
-         double precision :: x
-         double precision :: y
+      integer :: ncol
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 !     grafische text op grafische posities
-         character TEX * (*)
-         call SETCOL(NCOL)
-         if (NCOLNOW >= 0) then
-            call DRAWTEXT(real(X), real(Y), TEX)
-         end if
-         return
-      end
+      character TEX * (*)
+      call SETCOL(NCOL)
+      if (NCOLNOW >= 0) then
+         call DRAWTEXT(real(X), real(Y), TEX)
+      end if
+      return
+   end
+end module m_gtext

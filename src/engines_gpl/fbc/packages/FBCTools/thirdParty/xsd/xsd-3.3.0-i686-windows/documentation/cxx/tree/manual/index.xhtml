@@ -1,0 +1,6032 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+  <title>C++/Tree Mapping User Manual</title>
+
+  <meta name="copyright" content="&copy; 2005-2010 Code Synthesis Tools CC"/>
+  <meta name="keywords" content="xsd,xml,schema,c++,mapping,data,binding,tree,serialization,guide,manual,examples"/>
+  <meta name="description" content="C++/Tree Mapping User Manual"/>
+  <meta name="revision" content="2.3.0"/>
+
+  <link rel="stylesheet" type="text/css" href="../../../default.css" />
+  <!--[if lt IE 7]><link rel="stylesheet" type="text/css" href="/default-ie.css"/><![endif]-->
+
+<style type="text/css">
+  pre {
+    padding    : 0 0 0 0em;
+    margin     : 0em 0em 0em 0;
+
+    font-size  : 102%
+  }
+
+  body {
+    min-width: 48em;
+  }
+
+  h1 {
+    font-weight: bold;
+    font-size: 200%;
+  }
+
+  h2 {
+    font-weight : bold;
+    font-size   : 150%;
+
+    padding-top : 0.8em;
+  }
+
+  h3 {
+    font-size   : 130%;
+    padding-top : 0.8em;
+  }
+
+  /* Adjust indentation for three levels. */
+  #container {
+    max-width: 48em;
+  }
+
+  #content {
+    padding: 0 0.1em 0 4em;
+    /*background-color: red;*/
+  }
+
+  #content h1 {
+    margin-left: -2.06em;
+  }
+
+  #content h2 {
+    margin-left: -1.33em;
+  }
+
+  /* Title page */
+
+  #titlepage {
+    padding: 2em 0 1em 0;
+    border-bottom: 1px solid black;
+  }
+
+  #titlepage #title {
+    font-weight: bold;
+    font-size: 200%;
+    text-align: center;
+    padding: 1em 0 2em 0;
+  }
+
+  /* Lists */
+  ul.list li {
+    padding-top      : 0.3em;
+    padding-bottom   : 0.3em;
+  }
+
+
+  /* Built-in table */
+  #builtin {
+    margin: 2em 0 2em 0;
+
+    border-collapse   : collapse;
+    border            : 1px solid;
+    border-color      : #000000;
+
+    font-size        : 11px;
+    line-height      : 14px;
+  }
+
+  #builtin th, #builtin td {
+    border: 1px solid;
+    padding           : 0.9em 0.9em 0.7em 0.9em;
+  }
+
+  #builtin th {
+    background : #cde8f6;
+  }
+
+  #builtin td {
+    text-align: left;
+  }
+
+
+  /* default-fixed */
+  #default-fixed {
+    margin: 2em 0 2em 0;
+
+    border-collapse   : collapse;
+    border            : 1px solid;
+    border-color      : #000000;
+
+    font-size        : 11px;
+    line-height      : 14px;
+  }
+
+  #default-fixed th, #default-fixed td {
+    border: 1px solid;
+    padding           : 0.9em 0.9em 0.7em 0.9em;
+  }
+
+  #default-fixed th {
+    background : #cde8f6;
+  }
+
+  #default-fixed td {
+    text-align: center;
+  }
+
+
+  /*  */
+  dl dt {
+    padding   : 0.8em 0 0 0;
+  }
+
+
+  /* TOC */
+  table.toc {
+    border-style      : none;
+    border-collapse   : separate;
+    border-spacing    : 0;
+
+    margin            : 0.2em 0 0.2em 0;
+    padding           : 0 0 0 0;
+  }
+
+  table.toc tr {
+    padding           : 0 0 0 0;
+    margin            : 0 0 0 0;
+  }
+
+  table.toc * td, table.toc * th {
+    border-style      : none;
+    margin            : 0 0 0 0;
+    vertical-align    : top;
+  }
+
+  table.toc * th {
+    font-weight       : normal;
+    padding           : 0em 0.1em 0em 0;
+    text-align        : left;
+    white-space       : nowrap;
+  }
+
+  table.toc * table.toc th {
+    padding-left      : 1em;
+  }
+
+  table.toc * td {
+    padding           : 0em 0 0em 0.7em;
+    text-align        : left;
+  }
+</style>
+
+
+</head>
+
+<body>
+<div id="container">
+  <div id="content">
+
+  <div class="noprint">
+
+  <div id="titlepage">
+    <div id="title">C++/Tree Mapping User Manual</div>
+
+  <p>Copyright &copy; 2005-2010 CODE SYNTHESIS TOOLS CC</p>
+
+  <p>Permission is granted to copy, distribute and/or modify this
+     document under the terms of the
+     <a href="http://www.codesynthesis.com/licenses/fdl-1.2.txt">GNU Free
+     Documentation License, version 1.2</a>; with no Invariant Sections,
+     no Front-Cover Texts and no Back-Cover Texts.
+  </p>
+
+  <p>This document is available in the following formats:
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/index.xhtml">XHTML</a>,
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/cxx-tree-manual.pdf">PDF</a>, and
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/cxx-tree-manual.ps">PostScript</a>.</p>
+  </div>
+
+  <h1>Table of Contents</h1>
+
+  <table class="toc">
+    <tr>
+      <th></th><td><a href="#0">Preface</a>
+        <table class="toc">
+          <tr><th></th><td><a href="#0.1">About This Document</a></td></tr>
+	  <tr><th></th><td><a href="#0.2">More Information</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>1</th><td><a href="#1">Introduction</a></td>
+    </tr>
+
+    <tr>
+      <th>2</th><td><a href="#2">C++/Tree Mapping</a>
+        <table class="toc">
+          <tr>
+            <th>2.1</th><td><a href="#2.1">Preliminary Information</a>
+              <table class="toc">
+                <tr><th>2.1.1</th><td><a href="#2.1.1">Identifiers</a></td></tr>
+                <tr><th>2.1.2</th><td><a href="#2.1.2">Character Type and Encoding</a></td></tr>
+                <tr><th>2.1.3</th><td><a href="#2.1.3">XML Schema Namespace</a></td></tr>
+		<tr><th>2.1.4</th><td><a href="#2.1.4">Anonymous Types</a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.2</th><td><a href="#2.2">Error Handling</a>
+              <table class="toc">
+                <tr><th>2.2.1</th><td><a href="#2.2.1"><code>xml_schema::duplicate_id</code></a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.3</th><td><a href="#2.3">Mapping for <code>import</code> and <code>include</code></a>
+              <table class="toc">
+                <tr><th>2.3.1</th><td><a href="#2.3.1">Import</a></td></tr>
+		<tr><th>2.3.2</th><td><a href="#2.3.2">Inclusion with Target Namespace</a></td></tr>
+		<tr><th>2.3.3</th><td><a href="#2.3.3">Inclusion without Target Namespace</a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.4</th><td><a href="#2.4">Mapping for Namespaces</a></td>
+          </tr>
+          <tr>
+            <th>2.5</th><td><a href="#2.5">Mapping for Built-in Data Types</a>
+              <table class="toc">
+                <tr><th>2.5.1</th><td><a href="#2.5.1">Inheritance from Built-in Data Types</a></td></tr>
+                <tr><th>2.5.2</th><td><a href="#2.5.2">Mapping for <code>anyType</code></a></td></tr>
+                <tr><th>2.5.3</th><td><a href="#2.5.3">Mapping for <code>anySimpleType</code></a></td></tr>
+                <tr><th>2.5.4</th><td><a href="#2.5.4">Mapping for <code>QName</code></a></td></tr>
+                <tr><th>2.5.5</th><td><a href="#2.5.5">Mapping for <code>IDREF</code></a></td></tr>
+		<tr><th>2.5.6</th><td><a href="#2.5.6">Mapping for <code>base64Binary</code> and <code>hexBinary</code></a></td></tr>
+		<tr><th>2.5.7</th><td><a href="#2.5.7">Time Zone Representation</a></td></tr>
+		<tr><th>2.5.8</th><td><a href="#2.5.8">Mapping for <code>date</code></a></td></tr>
+		<tr><th>2.5.9</th><td><a href="#2.5.9">Mapping for <code>dateTime</code></a></td></tr>
+		<tr><th>2.5.10</th><td><a href="#2.5.10">Mapping for <code>duration</code></a></td></tr>
+		<tr><th>2.5.11</th><td><a href="#2.5.11">Mapping for <code>gDay</code></a></td></tr>
+		<tr><th>2.5.12</th><td><a href="#2.5.12">Mapping for <code>gMonth</code></a></td></tr>
+		<tr><th>2.5.13</th><td><a href="#2.5.13">Mapping for <code>gMonthDay</code></a></td></tr>
+		<tr><th>2.5.14</th><td><a href="#2.5.14">Mapping for <code>gYear</code></a></td></tr>
+		<tr><th>2.5.15</th><td><a href="#2.5.15">Mapping for <code>gYearMonth</code></a></td></tr>
+		<tr><th>2.5.16</th><td><a href="#2.5.16">Mapping for <code>time</code></a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.6</th><td><a href="#2.6">Mapping for Simple Types</a>
+              <table class="toc">
+                <tr><th>2.6.1</th><td><a href="#2.6.1">Mapping for Derivation by Restriction</a></td></tr>
+                <tr><th>2.6.2</th><td><a href="#2.6.2">Mapping for Enumerations</a></td></tr>
+                <tr><th>2.6.3</th><td><a href="#2.6.3">Mapping for Derivation by List</a></td></tr>
+                <tr><th>2.6.4</th><td><a href="#2.6.4">Mapping for Derivation by Union</a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.7</th><td><a href="#2.7">Mapping for Complex Types</a>
+              <table class="toc">
+	        <tr><th>2.7.1</th><td><a href="#2.7.1">Mapping for Derivation by Extension</a></td></tr>
+                <tr><th>2.7.2</th><td><a href="#2.7.2">Mapping for Derivation by Restriction</a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.8</th><td><a href="#2.8">Mapping for Local Elements and Attributes</a>
+              <table class="toc">
+	        <tr><th>2.8.1</th><td><a href="#2.8.1">Mapping for Members with the One Cardinality Class</a></td></tr>
+	        <tr><th>2.8.2</th><td><a href="#2.8.2">Mapping for Members with the Optional Cardinality Class</a></td></tr>
+	        <tr><th>2.8.3</th><td><a href="#2.8.3">Mapping for Members with the Sequence Cardinality Class</a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.9</th><td><a href="#2.9">Mapping for Global Elements</a>
+              <table class="toc">
+	        <tr><th>2.9.1</th><td><a href="#2.9.1">Element Types</a></td></tr>
+	        <tr><th>2.9.2</th><td><a href="#2.9.2">Element Map</a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>2.10</th><td><a href="#2.10">Mapping for Global Attributes</a></td>
+          </tr>
+          <tr>
+            <th>2.11</th><td><a href="#2.11">Mapping for <code>xsi:type</code> and Substitution Groups</a></td>
+          </tr>
+          <tr>
+            <th>2.12</th><td><a href="#2.12">Mapping for <code>any</code> and <code>anyAttribute</code></a>
+              <table class="toc">
+	        <tr><th>2.12.1</th><td><a href="#2.12.1">Mapping for <code>any</code> with the One Cardinality Class</a></td></tr>
+	        <tr><th>2.12.2</th><td><a href="#2.12.2">Mapping for <code>any</code> with the Optional Cardinality Class</a></td></tr>
+	        <tr><th>2.12.3</th><td><a href="#2.12.3">Mapping for <code>any</code> with the Sequence Cardinality Class</a></td></tr>
+		<tr><th>2.12.4</th><td><a href="#2.12.4">Mapping for <code>anyAttribute</code></a></td></tr>
+              </table>
+            </td>
+          </tr>
+	  <tr>
+            <th>2.13</th><td><a href="#2.13">Mapping for Mixed Content Models</a></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>3</th><td><a href="#3">Parsing</a>
+        <table class="toc">
+          <tr>
+            <th>3.1</th><td><a href="#3.1">Initializing the Xerces-C++ Runtime</a></td>
+          </tr>
+          <tr>
+            <th>3.2</th><td><a href="#3.2">Flags and Properties</a></td>
+          </tr>
+          <tr>
+            <th>3.3</th><td><a href="#3.3">Error Handling</a>
+              <table class="toc">
+	        <tr><th>3.3.1</th><td><a href="#3.3.1"><code>xml_schema::parsing</code></a></td></tr>
+	        <tr><th>3.3.2</th><td><a href="#3.3.2"><code>xml_schema::expected_element</code></a></td></tr>
+	        <tr><th>3.3.3</th><td><a href="#3.3.3"><code>xml_schema::unexpected_element</code></a></td></tr>
+	        <tr><th>3.3.4</th><td><a href="#3.3.4"><code>xml_schema::expected_attribute</code></a></td></tr>
+	        <tr><th>3.3.5</th><td><a href="#3.3.5"><code>xml_schema::unexpected_enumerator</code></a></td></tr>
+		<tr><th>3.3.6</th><td><a href="#3.3.6"><code>xml_schema::expected_text_content</code></a></td></tr>
+	        <tr><th>3.3.7</th><td><a href="#3.3.7"><code>xml_schema::no_type_info</code></a></td></tr>
+	        <tr><th>3.3.8</th><td><a href="#3.3.8"><code>xml_schema::not_derived</code></a></td></tr>
+		<tr><th>3.3.9</th><td><a href="#3.3.9"><code>xml_schema::not_prefix_mapping</code></a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>3.4</th><td><a href="#3.4">Reading from a Local File or URI</a></td>
+          </tr>
+          <tr>
+            <th>3.5</th><td><a href="#3.5">Reading from <code>std::istream</code></a></td>
+          </tr>
+          <tr>
+            <th>3.6</th><td><a href="#3.6">Reading from <code>xercesc::InputSource</code></a></td>
+          </tr>
+          <tr>
+            <th>3.7</th><td><a href="#3.7">Reading from DOM</a></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>4</th><td><a href="#4">Serialization</a>
+        <table class="toc">
+          <tr>
+            <th>4.1</th><td><a href="#4.1">Initializing the Xerces-C++ Runtime</a></td>
+          </tr>
+          <tr>
+            <th>4.2</th><td><a href="#4.2">Namespace Infomap and Character Encoding</a></td>
+          </tr>
+          <tr>
+            <th>4.3</th><td><a href="#4.3">Flags</a></td>
+          </tr>
+          <tr>
+            <th>4.4</th><td><a href="#4.4">Error Handling</a>
+              <table class="toc">
+	        <tr><th>4.4.1</th><td><a href="#4.4.1"><code>xml_schema::serialization</code></a></td></tr>
+		<tr><th>4.4.2</th><td><a href="#4.4.2"><code>xml_schema::unexpected_element</code></a></td></tr>
+		<tr><th>4.4.3</th><td><a href="#4.4.3"><code>xml_schema::no_type_info</code></a></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th>4.5</th><td><a href="#4.5">Serializing to <code>std::ostream</code></a></td>
+          </tr>
+          <tr>
+            <th>4.6</th><td><a href="#4.6">Serializing to <code>xercesc::XMLFormatTarget</code></a></td>
+          </tr>
+          <tr>
+            <th>4.7</th><td><a href="#4.7">Serializing to DOM</a></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>5</th><td><a href="#5">Additional Functionality</a>
+        <table class="toc">
+          <tr>
+            <th>5.1</th><td><a href="#5.1">DOM Association</a></td>
+          </tr>
+          <tr>
+            <th>5.2</th><td><a href="#5.2">Binary Serialization</a></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th></th><td><a href="#A">Appendix A &mdash; Default and Fixed Values</a></td>
+    </tr>
+
+  </table>
+  </div>
+
+  <h1><a name="0">Preface</a></h1>
+
+  <h2><a name="0.1">About This Document</a></h2>
+
+  <p>This document describes the mapping of W3C XML Schema
+     to the C++ programming language as implemented by
+     <a href="http://www.codesynthesis.com/products/xsd">CodeSynthesis
+     XSD</a> - an XML Schema to C++ data binding compiler. The mapping
+     represents information stored in XML instance documents as a
+     statically-typed, tree-like in-memory data structure and is
+     called C++/Tree.
+  </p>
+
+  <p>Revision 2.3.0<br/> <!-- Remember to change revision in other places -->
+     This revision of the manual describes the C++/Tree
+     mapping as implemented by CodeSynthesis XSD version 3.3.0.
+  </p>
+
+  <p>This document is available in the following formats:
+     <a href="http://codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/index.xhtml">XHTML</a>,
+     <a href="http://codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/cxx-tree-manual.pdf">PDF</a>, and
+     <a href="http://codesynthesis.com/projects/xsd/documentation/cxx/tree/manual/cxx-tree-manual.ps">PostScript</a>.</p>
+
+  <h2><a name="0.2">More Information</a></h2>
+
+  <p>Beyond this manual, you may also find the following sources of
+     information useful:</p>
+
+  <ul class="list">
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/guide/">C++/Tree
+        Mapping Getting Started Guide</a></li>
+
+    <li><a href="http://wiki.codesynthesis.com/Tree/Customization_guide">C++/Tree
+        Mapping Customization Guide</a></li>
+
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/tree/dbxml/">C++/Tree
+        Mapping and Berkeley DB XML Integration Guide</a></li>
+
+    <li><a href="http://wiki.codesynthesis.com/Tree/FAQ">C++/Tree
+        Mapping Frequently Asked Questions (FAQ)</a></li>
+
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+        Compiler Command Line Manual</a></li>
+
+    <li>The <code>examples/cxx/tree/</code> directory in the XSD
+        distribution contains a collection of examples and a README
+        file with an overview of each example.</li>
+
+    <li>The <code>README</code> file in the XSD distribution explains
+        how to compile the examples on various platforms.</li>
+
+    <li>The <a href="http://www.codesynthesis.com/mailman/listinfo/xsd-users">xsd-users</a>
+        mailing list is a place to ask questions. Furthermore the
+        <a href="http://www.codesynthesis.com/pipermail/xsd-users/">archives</a>
+        may already have answers to some of your questions.</li>
+
+  </ul>
+
+
+  <h1><a name="1">1 Introduction</a></h1>
+
+  <p>C++/Tree is a W3C XML Schema to C++ mapping that represents the
+     data stored in XML as a statically-typed, vocabulary-specific
+     object model. Based on a formal description of an XML vocabulary
+     (schema), the C++/Tree mapping produces a tree-like data structure
+     suitable for in-memory processing as well as XML parsing and
+     serialization code.</p>
+
+  <p>A typical application that processes XML documents usually
+     performs the following three steps: it first reads (parses) an XML
+     instance document to an object model, it then performs
+     some useful computations on that model which may involve
+     modification of the model, and finally it may write (serialize)
+     the modified object model back to XML.
+  </p>
+
+  <p>The C++/Tree mapping consists of C++ types that represent the
+     given vocabulary (<a href="#2">Chapter 2, "C++/Tree Mapping"</a>),
+     a set of parsing functions that convert XML documents to
+     a tree-like in-memory data structure (<a href="#3">Chapter 3,
+     "Parsing"</a>), and a set of serialization functions that convert
+     the object model back to XML (<a href="#4">Chapter 4,
+     "Serialization"</a>). Furthermore, the mapping provides a number
+     of additional features, such as DOM association and binary
+     serialization, that can be useful in some applications
+     (<a href="#5">Chapter 5, "Additional Functionality"</a>).
+  </p>
+
+
+  <!-- Chapter 2 -->
+
+
+  <h1><a name="2">2 C++/Tree Mapping</a></h1>
+
+  <h2><a name="2.1">2.1 Preliminary Information</a></h2>
+
+  <h3><a name="2.1.1">2.1.1 Identifiers</a></h3>
+
+  <p>XML Schema names may happen to be reserved C++ keywords or contain
+     characters that are illegal in C++ identifiers. To avoid C++ compilation
+     problems, such names are changed (escaped) when mapped to C++. If an
+     XML Schema name is a C++ keyword, the "_" suffix is added to it. All
+     character of an XML Schema name that are not allowed in C++ identifiers
+     are replaced with "_".
+  </p>
+
+  <p>For example, XML Schema name <code>try</code> will be mapped to
+     C++ identifier <code>try_</code>. Similarly, XML Schema name
+     <code>strange.na-me</code> will be mapped to C++ identifier
+     <code>strange_na_me</code>.
+  </p>
+
+  <p>Furthermore, conflicts between type names and function names in the
+     same scope are resolved using name escaping. Such conflicts include
+     both a global element (which is mapped to a set of parsing and/or
+     serialization functions or element types, see <a href="#2.9">Section
+     2.9, "Mapping for Global Elements"</a>) and a global type sharing the
+     same name as well as a local element or attribute inside a type having
+     the same name as the type itself.</p>
+
+  <p>For example, if we had a global type <code>catalog</code>
+     and a global element with the same name then the type would be
+     mapped to a C++ class with name <code>catalog</code> while the
+     parsing functions corresponding to the global element would have
+     their names escaped as <code>catalog_</code>.
+  </p>
+
+  <p>By default the mapping uses the so-called K&amp;R (Kernighan and
+     Ritchie) identifier naming convention which is also used throughout
+     this manual. In this convention both type and function names are in
+     lower case and words are separated by underscores. If your application
+     code or schemas use a different notation, you may want to change the
+     naming convention used by the mapping for consistency.
+     The compiler supports a set of widely-used naming conventions
+     that you can select with the <code>--type-naming</code> and
+     <code>--function-naming</code> options. You can also further
+     refine one of the predefined conventions or create a completely
+     custom naming scheme by using the  <code>--*-regex</code> options.
+     For more detailed information on these options refer to the NAMING
+     CONVENTION section in the <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a>.</p>
+
+  <h3><a name="2.1.2">2.1.2 Character Type and Encoding</a></h3>
+
+  <p>The code that implements the mapping, depending on the
+     <code>--char-type</code>  option, is generated using either
+     <code>char</code> or <code>wchar_t</code> as the character
+     type. In this document code samples use symbol <code>C</code>
+     to refer to the character type you have selected when translating
+     your schemas, for example <code>std::basic_string&lt;C></code>.
+  </p>
+
+  <p>Another aspect of the mapping that depends on the character type
+     is character encoding. For the <code>char</code> character type
+     the default encoding is UTF-8. Other supported encodings are
+     ISO-8859-1, Xerces-C++ Local Code Page (LPC), as well as
+     custom encodings and can be selected with the
+     <code>--char-encoding</code> command line option.</p>
+
+  <p>For the <code>wchar_t</code> character type the encoding is
+     automatically selected between UTF-16 and UTF-32/UCS-4 depending
+     on the size of the <code>wchar_t</code> type. On some platforms
+     (for example, Windows with Visual C++ and AIX with IBM XL C++)
+     <code>wchar_t</code> is 2 bytes long. For these platforms the
+     encoding is UTF-16. On other platforms <code>wchar_t</code> is 4 bytes
+     long and UTF-32/UCS-4 is used.</p>
+
+  <h3><a name="2.1.3">2.1.3 XML Schema Namespace</a></h3>
+
+  <p>The mapping relies on some predefined types, classes, and functions
+     that are logically defined in the XML Schema namespace reserved for
+     the XML Schema language (<code>http://www.w3.org/2001/XMLSchema</code>).
+     By default, this namespace is mapped to C++ namespace
+     <code>xml_schema</code>. It is automatically accessible
+     from a C++ compilation unit that includes a header file generated
+     from an XML Schema definition.
+  </p>
+
+  <p>Note that, if desired, the default mapping of this namespace can be
+     changed as described in <a href="#2.4">Section 2.4, "Mapping for
+     Namespaces"</a>.
+  </p>
+
+
+  <h3><a name="2.1.4">2.1.4 Anonymous Types</a></h3>
+
+  <p>For the purpose of code generation, anonymous types defined in
+     XML Schema are automatically assigned names that are derived
+     from enclosing attributes and elements. Otherwise, such types
+     follows standard mapping rules for simple and complex type
+     definitions (see <a href="#2.6">Section 2.6, "Mapping for Simple Types"</a>
+     and <a href="#2.7">Section 2.7, "Mapping for Complex Types"</a>).
+     For example, in the following schema fragment:
+  </p>
+
+  <pre class="xml">
+&lt;element name="object">
+  &lt;complexType>
+    ...
+  &lt;/complexType>
+&lt;/element>
+  </pre>
+
+  <p>The anonymous type defined inside element <code>object</code> will
+     be given name <code>object</code>. The compiler has a number of
+     options that control the process of anonymous type naming. For more
+     information refer to the <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a>.</p>
+
+
+  <h2><a name="2.2">2.2 Error Handling</a></h2>
+
+  <p>The mapping uses the C++ exception handling mechanism as a primary way
+     of reporting error conditions. All exceptions that are specified in
+     this mapping derive from <code>xml_schema::exception</code> which
+     itself is derived from <code>std::exception</code>:
+  </p>
+
+  <pre class="c++">
+struct exception: virtual std::exception
+{
+  friend
+  std::basic_ostream&lt;C>&amp;
+  operator&lt;&lt; (std::basic_ostream&lt;C>&amp; os, const exception&amp; e)
+  {
+    e.print (os);
+    return os;
+  }
+
+protected:
+  virtual void
+  print (std::basic_ostream&lt;C>&amp;) const = 0;
+};
+  </pre>
+
+  <p>The exception hierarchy supports "virtual" <code>operator&lt;&lt;</code>
+     which allows you to obtain diagnostics corresponding to the thrown
+     exception using the base exception interface. For example:</p>
+
+  <pre class="c++">
+try
+{
+  ...
+}
+catch (const xml_schema::exception&amp; e)
+{
+  cerr &lt;&lt; e &lt;&lt; endl;
+}
+  </pre>
+
+  <p>The following sub-sections describe exceptions thrown by the
+     types that constitute the object model.
+     <a href="#3.3">Section 3.3, "Error Handling"</a> of
+     <a href="#3">Chapter 3, "Parsing"</a> describes exceptions
+     and error handling mechanisms specific to the parsing functions.
+     <a href="#4.4">Section 4.4, "Error Handling"</a> of
+     <a href="#4">Chapter 4, "Serialization"</a> describes exceptions
+     and error handling mechanisms specific to the serialization functions.
+  </p>
+
+
+  <h3><a name="2.2.1">2.2.1 <code>xml_schema::duplicate_id</code></a></h3>
+
+  <pre class="c++">
+struct duplicate_id: virtual exception
+{
+  duplicate_id (const std::basic_string&lt;C>&amp; id);
+
+  const std::basic_string&lt;C>&amp;
+  id () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::duplicate_id</code> is thrown when
+     a conflicting instance of <code>xml_schema::id</code> (see
+     <a href="#2.5">Section 2.5, "Mapping for Built-in Data Types"</a>)
+     is added to a tree. The offending ID value can be obtained using
+     the <code>id</code> function.
+  </p>
+
+  <h2><a name="2.3">2.3 Mapping for <code>import</code> and <code>include</code></a></h2>
+
+  <h3><a name="2.3.1">2.3.1 Import</a></h3>
+
+  <p>The XML Schema <code>import</code> element is mapped to the C++
+     Preprocessor <code>#include</code> directive. The value of
+     the <code>schemaLocation</code> attribute is used to derive
+     the name of the header file that appears in the <code>#include</code>
+     directive. For instance:
+  </p>
+
+  <pre class="xml">
+&lt;import namespace="http://www.codesynthesis.com/test"
+        schemaLocation="test.xsd"/>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+#include "test.hxx"
+  </pre>
+
+  <p>Note that you will need to compile imported schemas separately
+     in order to produce corresponding header files.</p>
+
+  <h3><a name="2.3.2">2.3.2 Inclusion with Target Namespace</a></h3>
+
+  <p>The XML Schema <code>include</code> element which refers to a schema
+     with a target namespace or appears in a schema without a target namespace
+     follows the same mapping rules as the <code>import</code> element,
+     see <a href="#2.3.1">Section 2.3.1, "Import"</a>.
+  </p>
+
+  <h3><a name="2.3.3">2.3.3 Inclusion without Target Namespace</a></h3>
+
+  <p>For the XML Schema <code>include</code> element which refers to a schema
+     without a target namespace and appears in a schema with a target
+     namespace (such inclusion sometimes called "chameleon inclusion"),
+     declarations and definitions from the included schema are generated
+     in-line in the namespace of the including schema as if they were
+     declared and defined there verbatim. For example, consider the
+     following two schemas:
+  </p>
+
+  <pre class="xml">
+&lt;-- common.xsd -->
+&lt;schema>
+  &lt;complexType name="type">
+  ...
+  &lt;/complexType>
+&lt;/schema>
+
+&lt;-- test.xsd -->
+&lt;schema targetNamespace="http://www.codesynthesis.com/test">
+  &lt;include schemaLocation="common.xsd"/>
+&lt;/schema>
+  </pre>
+
+  <p>The fragment of interest from the generated header file for
+     <code>text.xsd</code> would look like this:</p>
+
+  <pre class="c++">
+// test.hxx
+namespace test
+{
+  class type
+  {
+    ...
+  };
+}
+  </pre>
+
+  <h2><a name="2.4">2.4 Mapping for Namespaces</a></h2>
+
+  <p>An XML Schema namespace is mapped to one or more nested C++
+     namespaces. XML Schema namespaces are identified by URIs.
+     By default, a namespace URI is mapped to a sequence of
+     C++ namespace names by removing the protocol and host parts
+     and splitting the rest into a sequence of names with '<code>/</code>'
+     as the name separator. For instance:
+  </p>
+
+  <pre class="xml">
+&lt;schema targetNamespace="http://www.codesynthesis.com/system/test">
+  ...
+&lt;/schema>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+namespace system
+{
+  namespace test
+  {
+    ...
+  }
+}
+  </pre>
+
+  <p>The default mapping of namespace URIs to C++ namespace names can be
+     altered using the <code>--namespace-map</code> and
+     <code>--namespace-regex</code> options. See  the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a> for more information.
+  </p>
+
+  <h2><a name="2.5">2.5 Mapping for Built-in Data Types</a></h2>
+
+  <p>The mapping of XML Schema built-in data types to C++ types is
+     summarized in the table below.</p>
+
+  <!-- border="1" is necessary for html2ps -->
+  <table id="builtin" border="1">
+    <tr>
+      <th>XML Schema type</th>
+      <th>Alias in the <code>xml_schema</code> namespace</th>
+      <th>C++ type</th>
+    </tr>
+
+    <tr>
+      <th colspan="3">anyType and anySimpleType types</th>
+    </tr>
+    <tr>
+      <td><code>anyType</code></td>
+      <td><code>type</code></td>
+      <td><a href="#2.5.2">Section 2.5.2, "Mapping for <code>anyType</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>anySimpleType</code></td>
+      <td><code>simple_type</code></td>
+      <td><a href="#2.5.3">Section 2.5.3, "Mapping for <code>anySimpleType</code>"</a></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">fixed-length integral types</th>
+    </tr>
+    <!-- 8-bit -->
+    <tr>
+      <td><code>byte</code></td>
+      <td><code>byte</code></td>
+      <td><code>signed&nbsp;char</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedByte</code></td>
+      <td><code>unsigned_byte</code></td>
+      <td><code>unsigned&nbsp;char</code></td>
+    </tr>
+
+    <!-- 16-bit -->
+    <tr>
+      <td><code>short</code></td>
+      <td><code>short_</code></td>
+      <td><code>short</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedShort</code></td>
+      <td><code>unsigned_short</code></td>
+      <td><code>unsigned&nbsp;short</code></td>
+    </tr>
+
+    <!-- 32-bit -->
+    <tr>
+      <td><code>int</code></td>
+      <td><code>int_</code></td>
+      <td><code>int</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedInt</code></td>
+      <td><code>unsigned_int</code></td>
+      <td><code>unsigned&nbsp;int</code></td>
+    </tr>
+
+    <!-- 64-bit -->
+    <tr>
+      <td><code>long</code></td>
+      <td><code>long_</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedLong</code></td>
+      <td><code>unsigned_long</code></td>
+      <td><code>unsigned&nbsp;long&nbsp;long</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">arbitrary-length integral types</th>
+    </tr>
+    <tr>
+      <td><code>integer</code></td>
+      <td><code>integer</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>nonPositiveInteger</code></td>
+      <td><code>non_positive_integer</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>nonNegativeInteger</code></td>
+      <td><code>non_negative_integer</code></td>
+      <td><code>unsigned long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>positiveInteger</code></td>
+      <td><code>positive_integer</code></td>
+      <td><code>unsigned long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>negativeInteger</code></td>
+      <td><code>negative_integer</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">boolean types</th>
+    </tr>
+    <tr>
+      <td><code>boolean</code></td>
+      <td><code>boolean</code></td>
+      <td><code>bool</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">fixed-precision floating-point types</th>
+    </tr>
+    <tr>
+      <td><code>float</code></td>
+      <td><code>float_</code></td>
+      <td><code>float</code></td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>double_</code></td>
+      <td><code>double</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">arbitrary-precision floating-point types</th>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td><code>decimal</code></td>
+      <td><code>double</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">string types</th>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>string</code></td>
+      <td>type derived from <code>std::basic_string</code></td>
+    </tr>
+    <tr>
+      <td><code>normalizedString</code></td>
+      <td><code>normalized_string</code></td>
+      <td>type derived from <code>string</code></td>
+    </tr>
+    <tr>
+      <td><code>token</code></td>
+      <td><code>token</code></td>
+      <td>type&nbsp;derived&nbsp;from&nbsp;<code>normalized_string</code></td>
+    </tr>
+    <tr>
+      <td><code>Name</code></td>
+      <td><code>name</code></td>
+      <td>type derived from <code>token</code></td>
+    </tr>
+    <tr>
+      <td><code>NMTOKEN</code></td>
+      <td><code>nmtoken</code></td>
+      <td>type derived from <code>token</code></td>
+    </tr>
+    <tr>
+      <td><code>NMTOKENS</code></td>
+      <td><code>nmtokens</code></td>
+      <td>type derived from <code>sequence&lt;nmtoken></code></td>
+    </tr>
+    <tr>
+      <td><code>NCName</code></td>
+      <td><code>ncname</code></td>
+      <td>type derived from <code>name</code></td>
+    </tr>
+    <tr>
+      <td><code>language</code></td>
+      <td><code>language</code></td>
+      <td>type derived from <code>token</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">qualified name</th>
+    </tr>
+    <tr>
+      <td><code>QName</code></td>
+      <td><code>qname</code></td>
+      <td><a href="#2.5.4">Section 2.5.4, "Mapping for <code>QName</code>"</a></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">ID/IDREF types</th>
+    </tr>
+    <tr>
+      <td><code>ID</code></td>
+      <td><code>id</code></td>
+      <td>type derived from <code>ncname</code></td>
+    </tr>
+    <tr>
+      <td><code>IDREF</code></td>
+      <td><code>idref</code></td>
+      <td><a href="#2.5.5">Section 2.5.5, "Mapping for <code>IDREF</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>IDREFS</code></td>
+      <td><code>idrefs</code></td>
+      <td>type derived from <code>sequence&lt;idref></code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">URI types</th>
+    </tr>
+    <tr>
+      <td><code>anyURI</code></td>
+      <td><code>uri</code></td>
+      <td>type derived from <code>std::basic_string</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">binary types</th>
+    </tr>
+    <tr>
+      <td><code>base64Binary</code></td>
+      <td><code>base64_binary</code></td>
+      <td rowspan="2"><a href="#2.5.6">Section 2.5.6, "Mapping for
+         <code>base64Binary</code> and <code>hexBinary</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>hexBinary</code></td>
+      <td><code>hex_binary</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">date/time types</th>
+    </tr>
+    <tr>
+      <td><code>date</code></td>
+      <td><code>date</code></td>
+      <td><a href="#2.5.8">Section 2.5.8, "Mapping for
+          <code>date</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>dateTime</code></td>
+      <td><code>date_time</code></td>
+      <td><a href="#2.5.9">Section 2.5.9, "Mapping for
+          <code>dateTime</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>duration</code></td>
+      <td><code>duration</code></td>
+      <td><a href="#2.5.10">Section 2.5.10, "Mapping for
+          <code>duration</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>gDay</code></td>
+      <td><code>gday</code></td>
+      <td><a href="#2.5.11">Section 2.5.11, "Mapping for
+          <code>gDay</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>gMonth</code></td>
+      <td><code>gmonth</code></td>
+      <td><a href="#2.5.12">Section 2.5.12, "Mapping for
+          <code>gMonth</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>gMonthDay</code></td>
+      <td><code>gmonth_day</code></td>
+      <td><a href="#2.5.13">Section 2.5.13, "Mapping for
+          <code>gMonthDay</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>gYear</code></td>
+      <td><code>gyear</code></td>
+      <td><a href="#2.5.14">Section 2.5.14, "Mapping for
+          <code>gYear</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>gYearMonth</code></td>
+      <td><code>gyear_month</code></td>
+      <td><a href="#2.5.15">Section 2.5.15, "Mapping for
+          <code>gYearMonth</code>"</a></td>
+    </tr>
+    <tr>
+      <td><code>time</code></td>
+      <td><code>time</code></td>
+      <td><a href="#2.5.16">Section 2.5.16, "Mapping for
+          <code>time</code>"</a></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">entity types</th>
+    </tr>
+    <tr>
+      <td><code>ENTITY</code></td>
+      <td><code>entity</code></td>
+      <td>type derived from <code>name</code></td>
+    </tr>
+    <tr>
+      <td><code>ENTITIES</code></td>
+      <td><code>entities</code></td>
+      <td>type derived from <code>sequence&lt;entity></code></td>
+    </tr>
+  </table>
+
+  <p>All XML Schema built-in types are mapped to C++ classes that are
+     derived from the <code>xml_schema::simple_type</code> class except
+     where the mapping is to a fundamental C++ type.</p>
+
+  <p>The <code>sequence</code> class template is defined in an
+     implementation-specific namespace. It conforms to the
+     sequence interface as defined by the ISO/ANSI Standard for
+     C++ (ISO/IEC 14882:1998, Section 23.1.1, "Sequences").
+     Practically, this means that you can treat such a sequence
+     as if it was <code>std::vector</code>. One notable extension
+     to the standard interface that is available only for
+     sequences of non-fundamental C++ types is the addition of
+     the overloaded <code>push_back</code> and <code>insert</code>
+     member functions which instead of the constant reference
+     to the element type accept automatic pointer to the element
+     type. These functions assume ownership of the pointed to
+     object and resets the passed automatic pointer.
+  </p>
+
+  <h3><a name="2.5.1">2.5.1 Inheritance from Built-in Data Types</a></h3>
+
+  <p>In cases where the mapping calls for an inheritance from a built-in
+     type which is mapped to a fundamental C++ type, a proxy type is
+     used instead of the fundamental C++ type (C++ does not allow
+     inheritance from fundamental types). For instance:</p>
+
+  <pre class="xml">
+&lt;simpleType name="my_int">
+  &lt;restriction base="int"/>
+&lt;/simpleType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class my_int: public fundamental_base&lt;int>
+{
+  ...
+};
+  </pre>
+
+  <p>The <code>fundamental_base</code> class template provides a close
+     emulation (though not exact) of a fundamental C++ type.
+     It is defined in an implementation-specific namespace and has the
+     following interface:</p>
+
+  <pre class="c++">
+template &lt;typename X>
+class fundamental_base: public simple_type
+{
+public:
+  fundamental_base ();
+  fundamental_base (X)
+  fundamental_base (const fundamental_base&amp;)
+
+public:
+  fundamental_base&amp;
+  operator= (const X&amp;);
+
+public:
+  operator const X &amp; () const;
+  operator X&amp; ();
+
+  template &lt;typename Y>
+  operator Y () const;
+
+  template &lt;typename Y>
+  operator Y ();
+};
+  </pre>
+
+  <h3><a name="2.5.2">2.5.2 Mapping for <code>anyType</code></a></h3>
+
+  <p>The XML Schema <code>anyType</code> built-in data type is mapped to the
+     <code>xml_schema::type</code> C++ class:</p>
+
+  <pre class="c++">
+class type
+{
+public:
+  virtual
+  ~type ();
+
+public:
+  type ();
+  type (const type&amp;);
+
+public:
+  type&amp;
+  operator= (const type&amp;);
+
+public:
+  virtual type*
+  _clone () const;
+
+  // DOM association.
+  //
+public:
+  const xercesc::DOMNode*
+  _node () const;
+
+  xercesc::DOMNode*
+  _node ();
+};
+  </pre>
+
+  <p>For more information about DOM association refer to
+     <a href="#5.1">Section 5.1, "DOM Association"</a>.</p>
+
+  <h3><a name="2.5.3">2.5.3 Mapping for <code>anySimpleType</code></a></h3>
+
+  <p>The XML Schema <code>anySimpleType</code> built-in data type is mapped
+     to the <code>xml_schema::simple_type</code> C++ class:</p>
+
+  <pre class="c++">
+class simple_type: public type
+{
+public:
+  simple_type ();
+  simple_type (const simple_type&amp;);
+
+public:
+  simple_type&amp;
+  operator= (const simple_type&amp;);
+
+public:
+  virtual simple_type*
+  _clone () const;
+};
+  </pre>
+
+
+  <h3><a name="2.5.4">2.5.4 Mapping for <code>QName</code></a></h3>
+
+  <p>The XML Schema <code>QName</code> built-in data type is mapped to the
+     <code>xml_schema::qname</code> C++ class:</p>
+
+  <pre class="c++">
+class qname: public simple_type
+{
+public:
+  qname (const ncname&amp;);
+  qname (const uri&amp;, const ncname&amp;);
+  qname (const qname&amp;);
+
+public:
+  qname&amp;
+  operator= (const qname&amp;);
+
+public:
+  virtual qname*
+  _clone () const;
+
+public:
+  bool
+  qualified () const;
+
+  const uri&amp;
+  namespace_ () const;
+
+  const ncname&amp;
+  name () const;
+};
+  </pre>
+
+  <p>The <code>qualified</code> accessor function can be used to determine
+     if the name is qualified.</p>
+
+  <h3><a name="2.5.5">2.5.5 Mapping for <code>IDREF</code></a></h3>
+
+  <p>The XML Schema <code>IDREF</code> built-in data type is mapped to the
+     <code>xml_schema::idref</code> C++ class. This class implements the
+     smart pointer C++ idiom:</p>
+
+  <pre class="c++">
+class idref: public ncname
+{
+public:
+  idref (const C* s);
+  idref (const C* s, std::size_t n);
+  idref (std::size_t n, C c);
+  idref (const std::basic_string&lt;C>&amp;);
+  idref (const std::basic_string&lt;C>&amp;,
+         std::size_t pos,
+         std::size_t n = npos);
+
+public:
+  idref (const idref&amp;);
+
+public:
+  virtual idref*
+  _clone () const;
+
+public:
+  idref&amp;
+  operator= (C c);
+
+  idref&amp;
+  operator= (const C* s);
+
+  idref&amp;
+  operator= (const std::basic_string&lt;C>&amp;)
+
+  idref&amp;
+  operator= (const idref&amp;);
+
+public:
+  const type*
+  operator-> () const;
+
+  type*
+  operator-> ();
+
+  const type&amp;
+  operator* () const;
+
+  type&amp;
+  operator* ();
+
+  const type*
+  get () const;
+
+  type*
+  get ();
+
+  // Conversion to bool.
+  //
+public:
+  typedef void (idref::*bool_convertible)();
+  operator bool_convertible () const;
+};
+  </pre>
+
+  <p>The object, <code>idref</code> instance refers to, is the immediate
+     container of the matching <code>id</code> instance. For example,
+     with the following instance document and schema:
+  </p>
+
+
+  <pre class="xml">
+&lt;!-- test.xml -->
+&lt;root>
+  &lt;object id="obj-1" text="hello"/>
+  &lt;reference>obj-1&lt;/reference>
+&lt;/root>
+
+&lt;!-- test.xsd -->
+&lt;schema>
+  &lt;complexType name="object_type">
+    &lt;attribute name="id" type="ID"/>
+    &lt;attribute name="text" type="string"/>
+  &lt;/complexType>
+
+  &lt;complexType name="root_type">
+    &lt;sequence>
+      &lt;element name="object" type="object_type"/>
+      &lt;element name="reference" type="IDREF"/>
+    &lt;/sequence>
+  &lt;/complexType>
+
+  &lt;element name="root" type="root_type"/>
+&lt;/schema>
+  </pre>
+
+  <p>The <code>ref</code> instance in the code below will refer to
+     an object of type <code>object_type</code>:</p>
+
+  <pre class="c++">
+root_type&amp; root = ...;
+xml_schema::idref&amp; ref (root.reference ());
+object_type&amp; obj (dynamic_cast&lt;object_type&amp;> (*ref));
+cout &lt;&lt; obj.text () &lt;&lt; endl;
+  </pre>
+
+  <p>The smart pointer interface of the <code>idref</code> class always
+     returns a pointer or reference to <code>xml_schema::type</code>.
+     This means that you will need to manually cast such pointer or
+     reference to its real (dynamic) type before you can use it (unless
+     all you need is the base interface provided by
+     <code>xml_schema::type</code>). As a special extension to the XML
+     Schema language, the mapping supports static typing of <code>idref</code>
+     references by employing the <code>refType</code> extension attribute.
+     The following example illustrates this mechanism:
+  </p>
+
+  <pre class="xml">
+&lt;!-- test.xsd -->
+&lt;schema
+  xmlns:xse="http://www.codesynthesis.com/xmlns/xml-schema-extension">
+
+  ...
+
+      &lt;element name="reference" type="IDREF" xse:refType="object_type"/>
+
+  ...
+
+&lt;/schema>
+  </pre>
+
+  <p>With this modification we do not need to do manual casting anymore:
+  </p>
+
+  <pre class="c++">
+root_type&amp; root = ...;
+root_type::reference_type&amp; ref (root.reference ());
+object_type&amp; obj (*ref);
+cout &lt;&lt; ref->text () &lt;&lt; endl;
+  </pre>
+
+
+  <h3><a name="2.5.6">2.5.6 Mapping for <code>base64Binary</code> and
+      <code>hexBinary</code></a></h3>
+
+  <p>The XML Schema <code>base64Binary</code> and <code>hexBinary</code>
+     built-in data types are mapped to the
+     <code>xml_schema::base64_binary</code> and
+     <code>xml_schema::hex_binary</code> C++ classes, respectively. The
+     <code>base64_binary</code> and <code>hex_binary</code> classes
+     support a simple buffer abstraction by inheriting from the
+     <code>xml_schema::buffer</code> class:
+  </p>
+
+  <pre class="c++">
+class bounds: public virtual exception
+{
+public:
+  virtual const char*
+  what () const throw ();
+};
+
+class buffer
+{
+public:
+  typedef std::size_t size_t;
+
+public:
+  buffer (size_t size = 0);
+  buffer (size_t size, size_t capacity);
+  buffer (const void* data, size_t size);
+  buffer (const void* data, size_t size, size_t capacity);
+  buffer (void* data,
+          size_t size,
+          size_t capacity,
+          bool assume_ownership);
+
+public:
+  buffer (const buffer&amp;);
+
+  buffer&amp;
+  operator= (const buffer&amp;);
+
+  void
+  swap (buffer&amp;);
+
+public:
+  size_t
+  capacity () const;
+
+  bool
+  capacity (size_t);
+
+public:
+  size_t
+  size () const;
+
+  bool
+  size (size_t);
+
+public:
+  const char*
+  data () const;
+
+  char*
+  data ();
+
+  const char*
+  begin () const;
+
+  char*
+  begin ();
+
+  const char*
+  end () const;
+
+  char*
+  end ();
+};
+  </pre>
+
+  <p>The last overloaded constructor reuses an existing data buffer instead
+     of making a copy. If the <code>assume_ownership</code> argument is
+     <code>true</code>, the instance assumes ownership of the
+     memory block pointed to by the <code>data</code> argument and will
+     eventually release it by calling <code>operator delete</code>. The
+     <code>capacity</code> and <code>size</code> modifier functions return
+     <code>true</code> if the underlying buffer has moved.
+  </p>
+
+  <p>The <code>bounds</code> exception is thrown if the constructor
+     arguments violate the <code>(size&nbsp;&lt;=&nbsp;capacity)</code>
+     constraint.</p>
+
+  <p>The <code>base64_binary</code> and <code>hex_binary</code> classes
+     support the <code>buffer</code> interface and perform automatic
+     decoding/encoding from/to the Base64 and Hex formats, respectively:
+  </p>
+
+  <pre class="c++">
+class base64_binary: public simple_type, public buffer
+{
+public:
+  base64_binary (size_t size = 0);
+  base64_binary (size_t size, size_t capacity);
+  base64_binary (const void* data, size_t size);
+  base64_binary (const void* data, size_t size, size_t capacity);
+  base64_binary (void* data,
+                 size_t size,
+                 size_t capacity,
+                 bool assume_ownership);
+
+public:
+  base64_binary (const base64_binary&amp;);
+
+  base64_binary&amp;
+  operator= (const base64_binary&amp;);
+
+  virtual base64_binary*
+  _clone () const;
+
+public:
+  std::basic_string&lt;C>
+  encode () const;
+};
+  </pre>
+
+  <pre class="c++">
+class hex_binary: public simple_type, public buffer
+{
+public:
+  hex_binary (size_t size = 0);
+  hex_binary (size_t size, size_t capacity);
+  hex_binary (const void* data, size_t size);
+  hex_binary (const void* data, size_t size, size_t capacity);
+  hex_binary (void* data,
+              size_t size,
+              size_t capacity,
+              bool assume_ownership);
+
+public:
+  hex_binary (const hex_binary&amp;);
+
+  hex_binary&amp;
+  operator= (const hex_binary&amp;);
+
+  virtual hex_binary*
+  _clone () const;
+
+public:
+  std::basic_string&lt;C>
+  encode () const;
+};
+  </pre>
+
+
+  <h2><a name="2.5.7">2.5.7 Time Zone Representation</a></h2>
+
+  <p>The <code>date</code>, <code>dateTime</code>, <code>gDay</code>,
+     <code>gMonth</code>, <code>gMonthDay</code>, <code>gYear</code>,
+     <code>gYearMonth</code>, and <code>time</code> XML Schema built-in
+     types all include an optional time zone component. The following
+     <code>xml_schema::time_zone</code> base class is used to represent
+     this information:</p>
+
+  <pre class="c++">
+class time_zone
+{
+public:
+  time_zone ();
+  time_zone (short hours, short minutes);
+
+  bool
+  zone_present () const;
+
+  void
+  zone_reset ();
+
+  short
+  zone_hours () const;
+
+  void
+  zone_hours (short);
+
+  short
+  zone_minutes () const;
+
+  void
+  zone_minutes (short);
+};
+
+bool
+operator== (const time_zone&amp;, const time_zone&amp;);
+
+bool
+operator!= (const time_zone&amp;, const time_zone&amp;);
+  </pre>
+
+  <p>The <code>zone_present()</code> accessor function returns <code>true</code>
+     if the time zone is specified. The <code>zone_reset()</code> modifier
+     function resets the time zone object to the <em>not specified</em>
+     state. If the time zone offset is negative then both hours and
+     minutes components are represented as negative integers.</p>
+
+
+  <h2><a name="2.5.8">2.5.8 Mapping for <code>date</code></a></h2>
+
+ <p>The XML Schema <code>date</code> built-in data type is mapped to the
+    <code>xml_schema::date</code> C++ class which represents a year, a day,
+    and a month with an optional time zone. Its interface is presented
+    below. For more information on the base <code>xml_schema::time_zone</code>
+    class refer to <a href="#2.5.7">Section 2.5.7, "Time Zone
+    Representation"</a>.</p>
+
+  <pre class="c++">
+class date: public simple_type, public time_zone
+{
+public:
+  date (int year, unsigned short month, unsigned short day);
+  date (int year, unsigned short month, unsigned short day,
+        short zone_hours, short zone_minutes);
+
+public:
+  date (const date&amp;);
+
+  date&amp;
+  operator= (const date&amp;);
+
+  virtual date*
+  _clone () const;
+
+public:
+  int
+  year () const;
+
+  void
+  year (int);
+
+  unsigned short
+  month () const;
+
+  void
+  month (unsigned short);
+
+  unsigned short
+  day () const;
+
+  void
+  day (unsigned short);
+};
+
+bool
+operator== (const date&amp;, const date&amp;);
+
+bool
+operator!= (const date&amp;, const date&amp;);
+  </pre>
+
+  <h2><a name="2.5.9">2.5.9 Mapping for <code>dateTime</code></a></h2>
+
+ <p>The XML Schema <code>dateTime</code> built-in data type is mapped to the
+    <code>xml_schema::date_time</code> C++ class which represents a year, a month,
+    a day, hours, minutes, and seconds with an optional time zone. Its interface
+    is presented below. For more information on the base
+    <code>xml_schema::time_zone</code> class refer to <a href="#2.5.7">Section
+    2.5.7, "Time Zone Representation"</a>.</p>
+
+  <pre class="c++">
+class date_time: public simple_type, public time_zone
+{
+public:
+  date_time (int year, unsigned short month, unsigned short day,
+             unsigned short hours, unsigned short minutes,
+             double seconds);
+
+  date_time (int year, unsigned short month, unsigned short day,
+             unsigned short hours, unsigned short minutes,
+             double seconds, short zone_hours, short zone_minutes);
+public:
+  date_time (const date_time&amp;);
+
+  date_time&amp;
+  operator= (const date_time&amp;);
+
+  virtual date_time*
+  _clone () const;
+
+public:
+  int
+  year () const;
+
+  void
+  year (int);
+
+  unsigned short
+  month () const;
+
+  void
+  month (unsigned short);
+
+  unsigned short
+  day () const;
+
+  void
+  day (unsigned short);
+
+  unsigned short
+  hours () const;
+
+  void
+  hours (unsigned short);
+
+  unsigned short
+  minutes () const;
+
+  void
+  minutes (unsigned short);
+
+  double
+  seconds () const;
+
+  void
+  seconds (double);
+};
+
+bool
+operator== (const date_time&amp;, const date_time&amp;);
+
+bool
+operator!= (const date_time&amp;, const date_time&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.10">2.5.10 Mapping for <code>duration</code></a></h2>
+
+  <p>The XML Schema <code>duration</code> built-in data type is mapped to the
+    <code>xml_schema::duration</code> C++ class which represents a potentially
+     negative duration in the form of years, months, days, hours, minutes,
+     and seconds. Its interface is presented below.</p>
+
+  <pre class="c++">
+class duration: public simple_type
+{
+public:
+  duration (bool negative,
+            unsigned int years, unsigned int months, unsigned int days,
+            unsigned int hours, unsigned int minutes, double seconds);
+public:
+  duration (const duration&amp;);
+
+  duration&amp;
+  operator= (const duration&amp;);
+
+  virtual duration*
+  _clone () const;
+
+public:
+  bool
+  negative () const;
+
+  void
+  negative (bool);
+
+  unsigned int
+  years () const;
+
+  void
+  years (unsigned int);
+
+  unsigned int
+  months () const;
+
+  void
+  months (unsigned int);
+
+  unsigned int
+  days () const;
+
+  void
+  days (unsigned int);
+
+  unsigned int
+  hours () const;
+
+  void
+  hours (unsigned int);
+
+  unsigned int
+  minutes () const;
+
+  void
+  minutes (unsigned int);
+
+  double
+  seconds () const;
+
+  void
+  seconds (double);
+};
+
+bool
+operator== (const duration&amp;, const duration&amp;);
+
+bool
+operator!= (const duration&amp;, const duration&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.11">2.5.11 Mapping for <code>gDay</code></a></h2>
+
+  <p>The XML Schema <code>gDay</code> built-in data type is mapped to the
+    <code>xml_schema::gday</code> C++ class which represents a day of the
+     month with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#2.5.7">Section 2.5.7, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+class gday: public simple_type, public time_zone
+{
+public:
+  explicit
+  gday (unsigned short day);
+  gday (unsigned short day, short zone_hours, short zone_minutes);
+
+public:
+  gday (const gday&amp;);
+
+  gday&amp;
+  operator= (const gday&amp;);
+
+  virtual gday*
+  _clone () const;
+
+public:
+  unsigned short
+  day () const;
+
+  void
+  day (unsigned short);
+};
+
+bool
+operator== (const gday&amp;, const gday&amp;);
+
+bool
+operator!= (const gday&amp;, const gday&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.12">2.5.12 Mapping for <code>gMonth</code></a></h2>
+
+  <p>The XML Schema <code>gMonth</code> built-in data type is mapped to the
+    <code>xml_schema::gmonth</code> C++ class which represents a month of the
+     year with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#2.5.7">Section 2.5.7, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+class gmonth: public simple_type, public time_zone
+{
+public:
+  explicit
+  gmonth (unsigned short month);
+  gmonth (unsigned short month,
+          short zone_hours, short zone_minutes);
+
+public:
+  gmonth (const gmonth&amp;);
+
+  gmonth&amp;
+  operator= (const gmonth&amp;);
+
+  virtual gmonth*
+  _clone () const;
+
+public:
+  unsigned short
+  month () const;
+
+  void
+  month (unsigned short);
+};
+
+bool
+operator== (const gmonth&amp;, const gmonth&amp;);
+
+bool
+operator!= (const gmonth&amp;, const gmonth&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.13">2.5.13 Mapping for <code>gMonthDay</code></a></h2>
+
+  <p>The XML Schema <code>gMonthDay</code> built-in data type is mapped to the
+    <code>xml_schema::gmonth_day</code> C++ class which represents a day and
+     a month of the year with an optional time zone. Its interface is presented
+     below. For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#2.5.7">Section 2.5.7, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+class gmonth_day: public simple_type, public time_zone
+{
+public:
+  gmonth_day (unsigned short month, unsigned short day);
+  gmonth_day (unsigned short month, unsigned short day,
+              short zone_hours, short zone_minutes);
+
+public:
+  gmonth_day (const gmonth_day&amp;);
+
+  gmonth_day&amp;
+  operator= (const gmonth_day&amp;);
+
+  virtual gmonth_day*
+  _clone () const;
+
+public:
+  unsigned short
+  month () const;
+
+  void
+  month (unsigned short);
+
+  unsigned short
+  day () const;
+
+  void
+  day (unsigned short);
+};
+
+bool
+operator== (const gmonth_day&amp;, const gmonth_day&amp;);
+
+bool
+operator!= (const gmonth_day&amp;, const gmonth_day&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.14">2.5.14 Mapping for <code>gYear</code></a></h2>
+
+  <p>The XML Schema <code>gYear</code> built-in data type is mapped to the
+    <code>xml_schema::gyear</code> C++ class which represents a year with
+     an optional time zone. Its interface is presented below. For more
+     information on the base <code>xml_schema::time_zone</code> class refer
+     to <a href="#2.5.7">Section 2.5.7, "Time Zone Representation"</a>.</p>
+
+  <pre class="c++">
+class gyear: public simple_type, public time_zone
+{
+public:
+  explicit
+  gyear (int year);
+  gyear (int year, short zone_hours, short zone_minutes);
+
+public:
+  gyear (const gyear&amp;);
+
+  gyear&amp;
+  operator= (const gyear&amp;);
+
+  virtual gyear*
+  _clone () const;
+
+public:
+  int
+  year () const;
+
+  void
+  year (int);
+};
+
+bool
+operator== (const gyear&amp;, const gyear&amp;);
+
+bool
+operator!= (const gyear&amp;, const gyear&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.15">2.5.15 Mapping for <code>gYearMonth</code></a></h2>
+
+  <p>The XML Schema <code>gYearMonth</code> built-in data type is mapped to
+     the <code>xml_schema::gyear_month</code> C++ class which represents
+     a year and a month with an optional time zone. Its interface is presented
+     below. For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#2.5.7">Section 2.5.7, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+class gyear_month: public simple_type, public time_zone
+{
+public:
+  gyear_month (int year, unsigned short month);
+  gyear_month (int year, unsigned short month,
+               short zone_hours, short zone_minutes);
+public:
+  gyear_month (const gyear_month&amp;);
+
+  gyear_month&amp;
+  operator= (const gyear_month&amp;);
+
+  virtual gyear_month*
+  _clone () const;
+
+public:
+  int
+  year () const;
+
+  void
+  year (int);
+
+  unsigned short
+  month () const;
+
+  void
+  month (unsigned short);
+};
+
+bool
+operator== (const gyear_month&amp;, const gyear_month&amp;);
+
+bool
+operator!= (const gyear_month&amp;, const gyear_month&amp;);
+  </pre>
+
+
+  <h2><a name="2.5.16">2.5.16 Mapping for <code>time</code></a></h2>
+
+  <p>The XML Schema <code>time</code> built-in data type is mapped to
+     the <code>xml_schema::time</code> C++ class which represents hours,
+     minutes, and seconds with an optional time zone. Its interface is
+     presented below. For more information on the base
+     <code>xml_schema::time_zone</code> class refer to
+     <a href="#2.5.7">Section 2.5.7, "Time Zone Representation"</a>.</p>
+
+  <pre class="c++">
+class time: public simple_type, public time_zone
+{
+public:
+  time (unsigned short hours, unsigned short minutes, double seconds);
+  time (unsigned short hours, unsigned short minutes, double seconds,
+        short zone_hours, short zone_minutes);
+
+public:
+  time (const time&amp;);
+
+  time&amp;
+  operator= (const time&amp;);
+
+  virtual time*
+  _clone () const;
+
+public:
+  unsigned short
+  hours () const;
+
+  void
+  hours (unsigned short);
+
+  unsigned short
+  minutes () const;
+
+  void
+  minutes (unsigned short);
+
+  double
+  seconds () const;
+
+  void
+  seconds (double);
+};
+
+bool
+operator== (const time&amp;, const time&amp;);
+
+bool
+operator!= (const time&amp;, const time&amp;);
+  </pre>
+
+
+  <!-- Mapping for Simple Types -->
+
+  <h2><a name="2.6">2.6 Mapping for Simple Types</a></h2>
+
+  <p>An XML Schema simple type is mapped to a C++ class with the same
+     name as the simple type. The class defines a public copy constructor,
+     a public copy assignment operator, and a public virtual
+     <code>_clone</code> function. The <code>_clone</code> function is
+     declared <code>const</code>, does not take any arguments, and returns
+     a pointer to a complete copy of the instance allocated in the free
+     store. The <code>_clone</code> function shall be used to make copies
+     when static type and dynamic type of the instance may differ (see
+     <a href="#2.11">Section 2.11, "Mapping for <code>xsi:type</code>
+     and Substitution Groups"</a>). For instance:</p>
+
+  <pre class="xml">
+&lt;simpleType name="object">
+  ...
+&lt;/simpleType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: ...
+{
+public:
+  object (const object&amp;);
+
+public:
+  object&amp;
+  operator= (const object&amp;);
+
+public:
+  virtual object*
+  _clone () const;
+
+  ...
+
+};
+  </pre>
+
+  <p>The base class specification and the rest of the class definition
+     depend on the type of derivation used to define the simple type. </p>
+
+
+  <h3><a name="2.6.1">2.6.1 Mapping for Derivation by Restriction</a></h3>
+
+  <p>XML Schema derivation by restriction is mapped to C++ public
+     inheritance. The base type of the restriction becomes the base
+     type for the resulting C++ class. In addition to the members described
+     in <a href="#2.6">Section 2.6, "Mapping for Simple Types"</a>, the
+     resulting C++ class defines a public constructor with the base type
+     as its single argument. For instance:</p>
+
+  <pre class="xml">
+&lt;simpleType name="object">
+  &lt;restriction base="base">
+    ...
+  &lt;/restriction>
+&lt;/simpleType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: public base
+{
+public:
+  object (const base&amp;);
+  object (const object&amp;);
+
+public:
+  object&amp;
+  operator= (const object&amp;);
+
+public:
+  virtual object*
+  _clone () const;
+};
+  </pre>
+
+
+  <h3><a name="2.6.2">2.6.2 Mapping for Enumerations</a></h3>
+
+<p>XML Schema restriction by enumeration is mapped to a C++ class
+   with semantics similar to C++ <code>enum</code>. Each XML Schema
+   enumeration element is mapped to a C++ enumerator with the
+   name derived from the <code>value</code> attribute and defined
+   in the class scope. In addition to the members
+   described in <a href="#2.6">Section 2.6, "Mapping for Simple Types"</a>,
+   the resulting C++ class defines a public constructor that can be called
+   with one of the enumerators as its single argument, a public constructor
+   that can be called with enumeration's base value as its single
+   argument, a public assignment operator that can be used to assign the
+   value of one of the enumerators, and a public implicit conversion
+   operator to the underlying C++ enum type.</p>
+
+<p>Furthermore, for string-based enumeration types, the resulting C++
+   class defines a public constructor with a single argument of type
+   <code>const C*</code> and a public constructor with a single
+   argument of type <code>const std::basic_string&lt;C>&amp;</code>.
+   For instance:</p>
+
+  <pre class="xml">
+&lt;simpleType name="color">
+  &lt;restriction base="string">
+    &lt;enumeration value="red"/>
+    &lt;enumeration value="green"/>
+    &lt;enumeration value="blue"/>
+  &lt;/restriction>
+&lt;/simpleType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class color: xml_schema::string
+{
+public:
+  enum value
+  {
+    red,
+    green,
+    blue
+  };
+
+public:
+  color (value);
+  color (const C*);
+  color (const std::basic_string&lt;C>&amp;);
+  color (const xml_schema::string&amp;);
+  color (const color&amp;);
+
+public:
+  color&amp;
+  operator= (value);
+
+  color&amp;
+  operator= (const color&amp;);
+
+public:
+  virtual color*
+  _clone () const;
+
+public:
+  operator value () const;
+};
+  </pre>
+
+  <h3><a name="2.6.3">2.6.3 Mapping for Derivation by List</a></h3>
+
+  <p>XML Schema derivation by list is mapped to C++ public
+     inheritance from <code>xml_schema::simple_type</code>
+     (<a href="#2.5.3">Section 2.5.3, "Mapping for
+     <code>anySimpleType</code>"</a>) and a suitable sequence type.
+     The list item type becomes the element type of the sequence.
+     In addition to the members described in <a href="#2.6">Section 2.6,
+     "Mapping for Simple Types"</a>, the resulting C++ class defines
+     a public default constructor, a public constructor
+     with the first argument of type <code>size_type</code> and
+     the second argument of list item type that creates
+     a list object with the specified number of copies of the specified
+     element value, and a public constructor with the two arguments
+     of an input iterator type that creates a list object from an
+     iterator range. For instance:
+  </p>
+
+  <pre class="xml">
+&lt;simpleType name="int_list">
+  &lt;list itemType="int"/>
+&lt;/simpleType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class int_list: public simple_type,
+                public sequence&lt;int>
+{
+public:
+  int_list ();
+  int_list (size_type n, int x);
+
+  template &lt;typename I>
+  int_list (const I&amp; begin, const I&amp; end);
+  int_list (const int_list&amp;);
+
+public:
+  int_list&amp;
+  operator= (const int_list&amp;);
+
+public:
+  virtual int_list*
+  _clone () const;
+};
+  </pre>
+
+  <p>The <code>sequence</code> class template is defined in an
+     implementation-specific namespace. It conforms to the
+     sequence interface as defined by the ISO/ANSI Standard for
+     C++ (ISO/IEC 14882:1998, Section 23.1.1, "Sequences").
+     Practically, this means that you can treat such a sequence
+     as if it was <code>std::vector</code>. One notable extension
+     to the standard interface that is available only for
+     sequences of non-fundamental C++ types is the addition of
+     the overloaded <code>push_back</code> and <code>insert</code>
+     member functions which instead of the constant reference
+     to the element type accept automatic pointer to the element
+     type. These functions assume ownership of the pointed to
+     object and resets the passed automatic pointer.
+  </p>
+
+  <h3><a name="2.6.4">2.6.4 Mapping for Derivation by Union</a></h3>
+
+  <p>XML Schema derivation by union is mapped to C++ public
+     inheritance from <code>xml_schema::simple_type</code>
+     (<a href="#2.5.3">Section 2.5.3, "Mapping for
+     <code>anySimpleType</code>"</a>) and <code>std::basic_string&lt;C></code>.
+     In addition to the members described in <a href="#2.6">Section 2.6,
+     "Mapping for Simple Types"</a>, the resulting C++ class defines a
+     public constructor with a single argument of type <code>const C*</code>
+     and a public constructor with a single argument of type
+     <code>const std::basic_string&lt;C>&amp;</code>. For instance:
+  </p>
+
+  <pre class="xml">
+&lt;simpleType name="int_string_union">
+  &lt;xsd:union memberTypes="xsd:int xsd:string"/>
+&lt;/simpleType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class int_string_union: public simple_type,
+                        public std::basic_string&lt;C>
+{
+public:
+  int_string_union (const C*);
+  int_string_union (const std::basic_string&lt;C>&amp;);
+  int_string_union (const int_string_union&amp;);
+
+public:
+  int_string_union&amp;
+  operator= (const int_string_union&amp;);
+
+public:
+  virtual int_string_union*
+  _clone () const;
+};
+  </pre>
+
+  <h2><a name="2.7">2.7 Mapping for Complex Types</a></h2>
+
+  <p>An XML Schema complex type is mapped to a C++ class with the same
+     name as the complex type. The class defines a public copy constructor,
+     a public copy assignment operator, and a public virtual
+     <code>_clone</code> function. The <code>_clone</code> function is
+     declared <code>const</code>, does not take any arguments, and returns
+     a pointer to a complete copy of the instance allocated in the free
+     store. The <code>_clone</code> function shall be used to make copies
+     when static type and dynamic type of the instance may differ (see
+     <a href="#2.11">Section 2.11, "Mapping for <code>xsi:type</code>
+     and Substitution Groups"</a>).</p>
+
+  <p>Additionally, the resulting C++ class
+     defines two public constructors that take an initializer for each
+     member of the complex type and all its base types that belongs to
+     the One cardinality class (see <a href="#2.8">Section 2.8, "Mapping
+     for Local Elements and Attributes"</a>). In the first constructor,
+     the arguments are passed as constant references and the newly created
+     instance is initialized with copies of the passed objects. In the
+     second constructor, arguments that are complex types (that is,
+     they themselves contain elements or attributes) are passed as
+     references to <code>std::auto_ptr</code>. In this case the newly
+     created instance is directly initialized with and assumes ownership
+     of the pointed to objects and the <code>std::auto_ptr</code> arguments
+     are reset to <code>0</code>. For instance:</p>
+
+  <pre class="xml">
+&lt;complexType name="complex">
+  &lt;sequence>
+    &lt;element name="a" type="int"/>
+    &lt;element name="b" type="string"/>
+  &lt;/sequence>
+&lt;/complexType>
+
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="s-one" type="boolean"/>
+    &lt;element name="c-one" type="complex"/>
+    &lt;element name="optional" type="int" minOccurs="0"/>
+    &lt;element name="sequence" type="string" maxOccurs="unbounded"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class complex: xml_schema::type
+{
+public:
+  object (const int&amp; a, const xml_schema::string&amp; b);
+  object (const complex&amp;);
+
+public:
+  object&amp;
+  operator= (const complex&amp;);
+
+public:
+  virtual complex*
+  _clone () const;
+
+  ...
+
+};
+
+class object: xml_schema::type
+{
+public:
+  object (const bool&amp; s_one, const complex&amp; c_one);
+  object (const bool&amp; s_one, std::auto_ptr&lt;complex>&amp; c_one);
+  object (const object&amp;);
+
+public:
+  object&amp;
+  operator= (const object&amp;);
+
+public:
+  virtual object*
+  _clone () const;
+
+  ...
+
+};
+  </pre>
+
+  <p>Notice that the generated <code>complex</code> class does not
+     have the second (<code>std::auto_ptr</code>) version of the
+     constructor since all its required members are of simple types.</p>
+
+  <p>If an XML Schema complex type has an ultimate base which is an XML
+     Schema simple type then the resulting C++ class also defines a public
+     constructor that takes an initializer for the base type as well as
+     for each member of the complex type and all its base types that
+     belongs to the One cardinality class. For instance:</p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;simpleContent>
+    &lt;extension base="date">
+      &lt;attribute name="lang" type="language" use="required"/>
+    &lt;/extension>
+  &lt;/simpleContent>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::string
+{
+public:
+  object (const xml_schema::language&amp; lang);
+
+  object (const xml_schema::date&amp; base,
+          const xml_schema::language&amp; lang);
+
+  ...
+
+};
+  </pre>
+
+  <p>Furthermore, for string-based XML Schema complex types, the resulting C++
+     class also defines two  public constructors with the first arguments
+     of type <code>const C*</code> and <code>std::basic_string&lt;C>&amp;</code>,
+     respectively, followed by arguments for each member of the complex
+     type and all its base types that belongs to the One cardinality
+     class. For enumeration-based complex types the resulting C++
+     class also defines a public constructor with the first arguments
+     of the underlying enum type followed by arguments for each member
+     of the complex type and all its base types that belongs to the One
+     cardinality class. For instance:</p>
+
+  <pre class="xml">
+&lt;simpleType name="color">
+  &lt;restriction base="string">
+    &lt;enumeration value="red"/>
+    &lt;enumeration value="green"/>
+    &lt;enumeration value="blue"/>
+  &lt;/restriction>
+&lt;/simpleType>
+
+&lt;complexType name="object">
+  &lt;simpleContent>
+    &lt;extension base="color">
+      &lt;attribute name="lang" type="language" use="required"/>
+    &lt;/extension>
+  &lt;/simpleContent>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class color: xml_schema::string
+{
+public:
+  enum value
+  {
+    red,
+    green,
+    blue
+  };
+
+public:
+  color (value);
+  color (const C*);
+  color (const std::basic_string&lt;C>&amp;);
+
+  ...
+
+};
+
+class object: color
+{
+public:
+  object (const color&amp; base,
+          const xml_schema::language&amp; lang);
+
+  object (const color::value&amp; base,
+          const xml_schema::language&amp; lang);
+
+  object (const C* base,
+          const xml_schema::language&amp; lang);
+
+  object (const std::basic_string&lt;C>&amp; base,
+          const xml_schema::language&amp; lang);
+
+  ...
+
+};
+  </pre>
+
+  <p>Additional constructors can be requested with the
+     <code>--generate-default-ctor</code> and
+     <code>--generate-from-base-ctor</code> options. See the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a> for details.</p>
+
+  <p>If an XML Schema complex type is not explicitly derived from any type,
+     the resulting C++ class is derived from <code>xml_schema::type</code>.
+     In cases where an XML Schema complex type is defined using derivation
+     by extension or restriction, the resulting C++ base class specification
+     depends on the type of derivation and is described in the subsequent
+     sections.
+  </p>
+
+  <p>The mapping for elements and attributes that are defined in a complex
+     type is described in <a href="#2.8">Section 2.8, "Mapping for Local
+     Elements and Attributes"</a>.
+  </p>
+
+  <h3><a name="2.7.1">2.7.1 Mapping for Derivation by Extension</a></h3>
+
+  <p>XML Schema derivation by extension is mapped to C++ public
+     inheritance. The base type of the extension becomes the base
+     type for the resulting C++ class.
+  </p>
+
+  <h3><a name="2.7.2">2.7.2 Mapping for Derivation by Restriction</a></h3>
+
+  <p>XML Schema derivation by restriction is mapped to C++ public
+     inheritance. The base type of the restriction becomes the base
+     type for the resulting C++ class. XML Schema elements and
+     attributes defined within restriction do not result in any
+     definitions in the resulting C++ class. Instead, corresponding
+     (unrestricted) definitions are inherited from the base class.
+     In the future versions of this mapping, such elements and
+     attributes may result in redefinitions of accessors and
+     modifiers to reflect their restricted semantics.
+  </p>
+
+  <!-- 2.8 Mapping for Local Elements and Attributes -->
+
+  <h2><a name="2.8">2.8 Mapping for Local Elements and Attributes</a></h2>
+
+   <p>XML Schema element and attribute definitions are called local
+      if they appear within a complex type definition, an element group
+      definition, or an attribute group definitions.
+   </p>
+
+   <p>Local XML Schema element and attribute definitions have the same
+      C++ mapping. Therefore, in this section, local elements and
+      attributes are collectively called members.
+   </p>
+
+   <p>While there are many different member cardinality combinations
+      (determined by the <code>use</code> attribute for attributes and
+       the <code>minOccurs</code> and <code>maxOccurs</code> attributes
+       for elements), the mapping divides all possible cardinality
+       combinations into three cardinality classes:
+   </p>
+
+   <dl>
+     <dt><i>one</i></dt>
+     <dd>attributes: <code>use == "required"</code></dd>
+     <dd>attributes: <code>use == "optional"</code> and has default or fixed value</dd>
+     <dd>elements: <code>minOccurs == "1"</code> and <code>maxOccurs == "1"</code></dd>
+
+     <dt><i>optional</i></dt>
+     <dd>attributes: <code>use == "optional"</code> and doesn't have default or fixed value</dd>
+     <dd>elements: <code>minOccurs == "0"</code> and <code>maxOccurs == "1"</code></dd>
+
+     <dt><i>sequence</i></dt>
+     <dd>elements: <code>maxOccurs > "1"</code></dd>
+   </dl>
+
+   <p>An optional attribute with a default or fixed value acquires this value
+      if the attribute hasn't been specified in an instance document (see
+      <a href="#A">Appendix A, "Default and Fixed Values"</a>). This
+      mapping places such optional attributes to the One cardinality
+      class.</p>
+
+   <p>A member is mapped to a set of public type definitions
+      (<code>typedef</code>s) and a set of public accessor and modifier
+      functions. Type definitions have names derived from the member's
+      name. The accessor and modifier functions have the same name as the
+      member. For example:
+   </p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="member" type="string"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  typedef xml_schema::string member_type;
+
+  const member_type&amp;
+  member () const;
+
+  ...
+
+};
+  </pre>
+
+   <p>In addition, if a member has a default or fixed value, a static
+      accessor function is generated that returns this value. For
+      example:</p>
+
+<pre class="xml">
+&lt;complexType name="object">
+  &lt;attribute name="data" type="string" default="test"/>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  typedef xml_schema::string data_type;
+
+  const data_type&amp;
+  data () const;
+
+  static const data_type&amp;
+  data_default_value ();
+
+  ...
+
+};
+  </pre>
+
+   <p>Names and semantics of type definitions for the member as well
+      as signatures of the accessor and modifier functions depend on
+      the member's cardinality class and are described in the following
+      sub-sections.
+   </p>
+
+
+  <h3><a name="2.8.1">2.8.1 Mapping for Members with the One Cardinality Class</a></h3>
+
+   <p>For the One cardinality class, the type definitions consist of
+      an alias for the member's type with the name created by appending
+      the <code>_type</code> suffix to the member's name.
+   </p>
+
+   <p>The accessor functions come in constant and non-constant versions.
+      The constant accessor function returns a constant reference to the
+      member and can be used for read-only access. The non-constant
+      version returns an unrestricted reference to the member and can
+      be used for read-write access.
+   </p>
+
+   <p>The first modifier function expects an argument of type reference to
+      constant of the member's type. It makes a deep copy of its argument.
+      Except for member's types that are mapped to fundamental C++ types,
+      the second modifier function is provided that expects an argument
+      of type automatic pointer to the member's type. It assumes ownership
+      of the pointed to object and resets the passed automatic pointer.
+      For instance:</p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="member" type="string"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Type definitions.
+  //
+  typedef xml_schema::string member_type;
+
+  // Accessors.
+  //
+  const member_type&amp;
+  member () const;
+
+  member_type&amp;
+  member ();
+
+  // Modifiers.
+  //
+  void
+  member (const member_type&amp;);
+
+  void
+  member (std::auto_ptr&lt;member_type>);
+  ...
+
+};
+  </pre>
+
+   <p>In addition, if requested by specifying the <code>--generate-detach</code>
+      option and only for members of non-fundamental C++ types, the mapping
+      provides a detach function that returns an automatic pointer to the
+      member's type, for example:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  ...
+
+  std::auto_ptr&lt;member_type>
+  detach_member ();
+  ...
+
+};
+  </pre>
+
+   <p>This function detaches the value from the tree leaving the member
+      value uninitialized. Accessing such an uninitialized value prior to
+      re-initializing it results in undefined behavior.</p>
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o)
+{
+  using xml_schema::string;
+
+  string s (o.member ());                // get
+  object::member_type&amp; sr (o.member ()); // get
+
+  o.member ("hello");           // set, deep copy
+  o.member () = "hello";        // set, deep copy
+
+  std::auto_ptr&lt;string> p (new string ("hello"));
+  o.member (p);                 // set, assumes ownership
+  p = o.detach_member ();       // detach, member is uninitialized
+  o.member (p);                 // re-attach
+}
+  </pre>
+
+
+<h3><a name="2.8.2">2.8.2 Mapping for Members with the Optional Cardinality Class</a></h3>
+
+   <p>For the Optional cardinality class, the type definitions consist of
+      an alias for the member's type with the name created by appending
+      the <code>_type</code> suffix to the member's name and an alias for
+      the container type with the name created by appending the
+      <code>_optional</code> suffix to the member's name.
+   </p>
+
+   <p>Unlike accessor functions for the One cardinality class, accessor
+      functions for the Optional cardinality class return references to
+      corresponding containers rather than directly to members. The
+      accessor functions come in constant and non-constant versions.
+      The constant accessor function returns a constant reference to
+      the container and can be used for read-only access. The non-constant
+      version returns an unrestricted reference to the container
+      and can be used for read-write access.
+   </p>
+
+   <p>The modifier functions are overloaded for the member's
+      type and the container type. The first modifier function
+      expects an argument of type reference to constant of the
+      member's type. It makes a deep copy of its argument.
+      Except for member's types that are mapped to fundamental C++ types,
+      the second modifier function is provided that expects an argument
+      of type automatic pointer to the member's type. It assumes ownership
+      of the pointed to object and resets the passed automatic pointer.
+      The last modifier function expects an argument of type reference
+      to constant of the container type. It makes a deep copy of its
+      argument. For instance:
+   </p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="member" type="string" minOccurs="0"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Type definitions.
+  //
+  typedef xml_schema::string member_type;
+  typedef optional&lt;member_type> member_optional;
+
+  // Accessors.
+  //
+  const member_optional&amp;
+  member () const;
+
+  member_optional&amp;
+  member ();
+
+  // Modifiers.
+  //
+  void
+  member (const member_type&amp;);
+
+  void
+  member (std::auto_ptr&lt;member_type>);
+
+  void
+  member (const member_optional&amp;);
+
+  ...
+
+};
+  </pre>
+
+
+  <p>The <code>optional</code> class template is defined in an
+     implementation-specific namespace and has the following
+     interface. The <code>auto_ptr</code>-based constructor
+     and modifier function are only available if the template
+     argument is not a fundamental C++ type.
+  </p>
+
+  <pre class="c++">
+template &lt;typename X>
+class optional
+{
+public:
+  optional ();
+
+  // Makes a deep copy.
+  //
+  explicit
+  optional (const X&amp;);
+
+  // Assumes ownership.
+  //
+  explicit
+  optional (std::auto_ptr&lt;X>);
+
+  optional (const optional&amp;);
+
+public:
+  optional&amp;
+  operator= (const X&amp;);
+
+  optional&amp;
+  operator= (const optional&amp;);
+
+  // Pointer-like interface.
+  //
+public:
+  const X*
+  operator-> () const;
+
+  X*
+  operator-> ();
+
+  const X&amp;
+  operator* () const;
+
+  X&amp;
+  operator* ();
+
+  typedef void (optional::*bool_convertible) ();
+  operator bool_convertible () const;
+
+  // Get/set interface.
+  //
+public:
+  bool
+  present () const;
+
+  const X&amp;
+  get () const;
+
+  X&amp;
+  get ();
+
+  // Makes a deep copy.
+  //
+  void
+  set (const X&amp;);
+
+  // Assumes ownership.
+  //
+  void
+  set (std::auto_ptr&lt;X>);
+
+  // Detach and return the contained value.
+  //
+  std::auto_ptr&lt;X>
+  detach ();
+
+  void
+  reset ();
+};
+
+template &lt;typename X>
+bool
+operator== (const optional&lt;X>&amp;, const optional&lt;X>&amp;);
+
+template &lt;typename X>
+bool
+operator!= (const optional&lt;X>&amp;, const optional&lt;X>&amp;);
+
+template &lt;typename X>
+bool
+operator&lt; (const optional&lt;X>&amp;, const optional&lt;X>&amp;);
+
+template &lt;typename X>
+bool
+operator> (const optional&lt;X>&amp;, const optional&lt;X>&amp;);
+
+template &lt;typename X>
+bool
+operator&lt;= (const optional&lt;X>&amp;, const optional&lt;X>&amp;);
+
+template &lt;typename X>
+bool
+operator>= (const optional&lt;X>&amp;, const optional&lt;X>&amp;);
+  </pre>
+
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o)
+{
+  using xml_schema::string;
+
+  if (o.member ().present ())       // test
+  {
+    string&amp; s (o.member ().get ()); // get
+    o.member ("hello");             // set, deep copy
+    o.member ().set ("hello");      // set, deep copy
+    o.member ().reset ();           // reset
+  }
+
+  // Same as above but using pointer notation:
+  //
+  if (o.member ())                  // test
+  {
+    string&amp; s (*o.member ());       // get
+    o.member ("hello");             // set, deep copy
+    *o.member () = "hello";         // set, deep copy
+    o.member ().reset ();           // reset
+  }
+
+  std::auto_ptr&lt;string> p (new string ("hello"));
+  o.member (p);                     // set, assumes ownership
+
+  p = new string ("hello");
+  o.member ().set (p);              // set, assumes ownership
+
+  p = o.member ().detach ();        // detach, member is reset
+  o.member ().set (p);              // re-attach
+}
+  </pre>
+
+
+  <h3><a name="2.8.3">2.8.3 Mapping for Members with the Sequence Cardinality Class</a></h3>
+
+   <p>For the Sequence cardinality class, the type definitions consist of an
+      alias for the member's type with the name created by appending
+      the <code>_type</code> suffix to the member's name, an alias of
+      the container type with the name created by appending the
+      <code>_sequence</code> suffix to the member's name, an alias of
+      the iterator type with the name created by appending the
+      <code>_iterator</code> suffix to the member's name, and an alias
+      of the constant iterator type with the name created by appending the
+      <code>_const_iterator</code> suffix to the member's name.
+   </p>
+
+   <p>The accessor functions come in constant and non-constant versions.
+      The constant accessor function returns a constant reference to the
+      container and can be used for read-only access. The non-constant
+      version returns an unrestricted reference to the container and can
+      be used for read-write access.
+   </p>
+
+   <p>The modifier function expects an argument of type reference to
+      constant of the container type. The modifier function
+      makes a deep copy of its argument. For instance:
+   </p>
+
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="member" type="string" minOccurs="unbounded"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Type definitions.
+  //
+  typedef xml_schema::string member_type;
+  typedef sequence&lt;member_type> member_sequence;
+  typedef member_sequence::iterator member_iterator;
+  typedef member_sequence::const_iterator member_const_iterator;
+
+  // Accessors.
+  //
+  const member_sequence&amp;
+  member () const;
+
+  member_sequence&amp;
+  member ();
+
+  // Modifier.
+  //
+  void
+  member (const member_sequence&amp;);
+
+  ...
+
+};
+  </pre>
+
+  <p>The <code>sequence</code> class template is defined in an
+     implementation-specific namespace. It conforms to the
+     sequence interface as defined by the ISO/ANSI Standard for
+     C++ (ISO/IEC 14882:1998, Section 23.1.1, "Sequences").
+     Practically, this means that you can treat such a sequence
+     as if it was <code>std::vector</code>. Two notable extensions
+     to the standard interface that are available only for
+     sequences of non-fundamental C++ types are the addition of
+     the overloaded <code>push_back</code> and <code>insert</code>
+     as well as the <code>detach_back</code> and <code>detach</code>
+     member functions. The additional <code>push_back</code> and
+     <code>insert</code> functions accept an automatic pointer to the
+     element type instead of the constant reference. They assume
+     ownership of the pointed to object and resets the passed
+     automatic pointer. The <code>detach_back</code> and
+     <code>detach</code> functions detach the element
+     value from the sequence container and, by default, remove
+     the element from the sequence. These additional functions
+     have the following signatures:</p>
+
+  <pre class="c++">
+template &lt;typename X>
+class sequence
+{
+public:
+  ...
+
+  void
+  push_back (std::auto_ptr&lt;X>)
+
+  iterator
+  insert (iterator position, std::auto_ptr&lt;X>)
+
+  std::auto_ptr&lt;X>
+  detach_back (bool pop = true);
+
+  iterator
+  detach (iterator position,
+          std::auto_ptr&lt;X>&amp; result,
+          bool erase = true)
+
+  ...
+}
+  </pre>
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o)
+{
+  using xml_schema::string;
+
+  object::member_sequence&amp; s (o.member ());
+
+  // Iteration.
+  //
+  for (object::member_iterator i (s.begin ()); i != s.end (); ++i)
+  {
+    string&amp; value (*i);
+  }
+
+  // Modification.
+  //
+  s.push_back ("hello");  // deep copy
+
+  std::auto_ptr&lt;string> p (new string ("hello"));
+  s.push_back (p);        // assumes ownership
+  p = s.detach_back ();   // detach and pop
+  s.push_back (p);        // re-append
+
+  // Setting a new container.
+  //
+  object::member_sequence n;
+  n.push_back ("one");
+  n.push_back ("two");
+  o.member (n);           // deep copy
+}
+  </pre>
+
+  <h2><a name="2.9">2.9 Mapping for Global Elements</a></h2>
+
+  <p>An XML Schema element definition is called global if it appears
+     directly under the <code>schema</code> element.
+     A global element is a valid root of an instance document. By
+     default, a global element is mapped to a set of overloaded
+     parsing and, optionally, serialization functions with the
+     same name as the element. It is also possible to generate types
+     for root elements instead of parsing and serialization functions.
+     This is primarily useful to distinguish object models with the
+     same root type but with different root elements. See
+     <a href="#2.9.1">Section 2.9.1, "Element Types"</a> for details.
+     It is also possible to request the generation of an element map
+     which allows uniform parsing and serialization of multiple root
+     elements. See <a href="#2.9.2">Section 2.9.2, "Element Map"</a>
+     for details.
+  </p>
+
+  <p>The parsing functions read XML instance documents and return
+     corresponding object models. Their signatures
+     have the following pattern (<code>type</code> denotes
+     element's type and <code>name</code> denotes element's
+     name):
+  </p>
+
+  <pre class="c++">
+std::auto_ptr&lt;type>
+name (....);
+  </pre>
+
+  <p>The process of parsing, including the exact signatures of the parsing
+     functions, is the subject of <a href="#3">Chapter 3, "Parsing"</a>.
+  </p>
+
+  <p>The serialization functions write object models
+     back to XML instance documents. Their signatures
+     have the following pattern:
+  </p>
+
+  <pre class="c++">
+void
+name (&lt;stream type>&amp;, const type&amp;, ....);
+  </pre>
+
+  <p>The process of serialization, including the exact signatures of the
+     serialization functions, is the subject of <a href="#4">Chapter 4,
+     "Serialization"</a>.
+  </p>
+
+
+  <h3><a name="2.9.1">2.9.1 Element Types</a></h3>
+
+  <p>The generation of element types is requested with the
+     <code>--generate-element-map</code> option. With this option
+     each global element is mapped to a C++ class with the
+     same name as the element. Such a class is derived from
+     <code>xml_schema::element_type</code> and contains the same set
+     of type definitions, constructors, and member function as would a
+     type containing a single element with the One cardinality class
+     named <code>"value"</code>. In addition, the element type also
+     contains a set of member functions for accessing the element
+     name and namespace as well as its value in a uniform manner.
+     For example:</p>
+
+  <pre class="xml">
+&lt;complexType name="type">
+  &lt;sequence>
+    ...
+  &lt;/sequence>
+&lt;/complexType>
+
+&lt;element name="root" type="type"/>
+  </pre>
+
+<p>is mapped to:</p>
+
+  <pre class="c++">
+class type
+{
+  ...
+};
+
+class root: public xml_schema::element_type
+{
+public:
+  // Element value.
+  //
+  typedef type value_type;
+
+  const value_type&amp;
+  value () const;
+
+  value_type&amp;
+  value ();
+
+  void
+  value (const value_type&amp;);
+
+  void
+  value (std::auto_ptr&lt;value_type>);
+
+  // Constructors.
+  //
+  root (const value_type&amp;);
+
+  root (std::auto_ptr&lt;value_type>);
+
+  root (const xercesc::DOMElement&amp;, xml_schema::flags = 0);
+
+  root (const root&amp;, xml_schema::flags = 0);
+
+  virtual root*
+  _clone (xml_schema::flags = 0) const;
+
+  // Element name and namespace.
+  //
+  static const std::string&amp;
+  name ();
+
+  static const std::string&amp;
+  namespace_ ();
+
+  virtual const std::string&amp;
+  _name () const;
+
+  virtual const std::string&amp;
+  _namespace () const;
+
+  // Element value as xml_schema::type.
+  //
+  virtual const xml_schema::type*
+  _value () const;
+
+  virtual xml_schema::type*
+  _value ();
+};
+
+void
+operator&lt;&lt; (xercesc::DOMElement&amp;, const root&amp;);
+  </pre>
+
+  <p>The <code>xml_schema::element_type</code> class is a common
+     base type for all element types and is defined as follows:</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class element_type
+  {
+  public:
+    virtual
+    ~element_type ();
+
+    virtual element_type*
+    _clone (flags f = 0) const = 0;
+
+    virtual const std::basic_string&lt;C>&amp;
+    _name () const = 0;
+
+    virtual const std::basic_string&lt;C>&amp;
+    _namespace () const = 0;
+
+    virtual xml_schema::type*
+    _value () = 0;
+
+    virtual const xml_schema::type*
+    _value () const = 0;
+  };
+}
+  </pre>
+
+  <p>The <code>_value()</code> member function returns a pointer to
+     the element value or 0 if the element is of a fundamental C++
+     type and therefore is not derived from <code>xml_schema::type</code>.
+  </p>
+
+  <p>Unlike parsing and serialization functions, element types
+     are only capable of parsing and serializing from/to a
+     <code>DOMElement</code> object. This means that the application
+     will need to perform its own XML-to-DOM parsing and DOM-to-XML
+     serialization. The following section describes a mechanism
+     provided by the mapping to uniformly parse and serialize
+     multiple root elements.</p>
+
+
+  <h3><a name="2.9.2">2.9.2 Element Map</a></h3>
+
+  <p>When element types are generated for root elements it is also
+     possible to request the generation of an element map with the
+     <code>--generate-element-map</code> option. The element map
+     allows uniform parsing and serialization of multiple root
+     elements via the common <code>xml_schema::element_type</code>
+     base type. The <code>xml_schema::element_map</code> class is
+     defined as follows:</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class element_map
+  {
+  public:
+    static std::auto_ptr&lt;xml_schema::element_type>
+    parse (const xercesc::DOMElement&amp;, flags = 0);
+
+    static void
+    serialize (xercesc::DOMElement&amp;, const element_type&amp;);
+  };
+}
+  </pre>
+
+  <p>The <code>parse()</code> function creates the corresponding
+     element type object based on the element name and namespace
+     and returns it as a pointer to <code>xml_schema::element_type</code>.
+     The <code>serialize()</code> function serializes the passed element
+     object to <code>DOMElement</code>. Note that in case of
+     <code>serialize()</code>, the <code>DOMElement</code> object
+     should have the correct name and namespace. If no element type is
+     available for an element, both functions throw the
+     <code>xml_schema::no_element_info</code> exception:</p>
+
+  <pre class="c++">
+struct no_element_info: virtual exception
+{
+  no_element_info (const std::basic_string&lt;C>&amp; element_name,
+                   const std::basic_string&lt;C>&amp; element_namespace);
+
+  const std::basic_string&lt;C>&amp;
+  element_name () const;
+
+  const std::basic_string&lt;C>&amp;
+  element_namespace () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The application can discover the actual type of the element
+     object returned by <code>parse()</code> either using
+     <code>dynamic_cast</code> or by comparing element names and
+     namespaces. The following code fragments illustrate how the
+     element map can be used:</p>
+
+  <pre class="c++">
+// Parsing.
+//
+DOMElement&amp; e = ... // Parse XML to DOM.
+
+auto_ptr&lt;xml_schema::element_type> r (
+  xml_schema::element_map::parse (e));
+
+if (root1 r1 = dynamic_cast&lt;root1*> (r.get ()))
+{
+  ...
+}
+else if (r->_name == root2::name () &amp;&amp;
+         r->_namespace () == root2::namespace_ ())
+{
+  root2&amp; r2 (static_cast&lt;root2&amp;> (*r));
+
+  ...
+}
+  </pre>
+
+  <pre class="c++">
+// Serialization.
+//
+xml_schema::element_type&amp; r = ...
+
+string name (r._name ());
+string ns (r._namespace ());
+
+DOMDocument&amp; doc = ... // Create a new DOMDocument with name and ns.
+DOMElement&amp; e (*doc->getDocumentElement ());
+
+xml_schema::element_map::serialize (e, r);
+
+// Serialize DOMDocument to XML.
+  </pre>
+
+  <!-- -->
+
+  <h2><a name="2.10">2.10 Mapping for Global Attributes</a></h2>
+
+  <p>An XML Schema attribute definition is called global if it appears
+     directly under the <code>schema</code> element. A global
+     attribute does not have any mapping.
+  </p>
+
+  <!--
+     When it is referenced from
+     a local attribute definition (using the <code>ref</code> attribute)
+     it is treated as a local attribute (see Section 2.8, "Mapping for
+     Local Elements and Attributes").
+  -->
+
+  <h2><a name="2.11">2.11 Mapping for <code>xsi:type</code> and Substitution
+      Groups</a></h2>
+
+  <p>The mapping provides optional support for the XML Schema polymorphism
+     features (<code>xsi:type</code> and substitution groups) which can
+     be requested with the <code>--generate-polymorphic</code> option.
+     When used, the dynamic type of a member may be different from
+     its static type. Consider the following schema definition and
+     instance document:
+  </p>
+
+  <pre class="xml">
+&lt;!-- test.xsd -->
+&lt;schema>
+  &lt;complexType name="base">
+    &lt;attribute name="text" type="string"/>
+  &lt;/complexType>
+
+  &lt;complexType name="derived">
+    &lt;complexContent>
+      &lt;extension base="base">
+        &lt;attribute name="extra-text" type="string"/>
+      &lt;/extension>
+    &lt;/complexContent>
+  &lt;/complexType>
+
+  &lt;complexType name="root_type">
+    &lt;sequence>
+      &lt;element name="item" type="base" maxOccurs="unbounded"/>
+    &lt;/sequence>
+  &lt;/complexType>
+
+  &lt;element name="root" type="root_type"/>
+&lt;/schema>
+
+&lt;!-- test.xml -->
+&lt;root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  &lt;item text="hello"/>
+  &lt;item text="hello" extra-text="world" xsi:type="derived"/>
+&lt;/root>
+  </pre>
+
+  <p>In the resulting object model, the container for
+     the <code>root::item</code> member will have two elements:
+     the first element's type will be <code>base</code> while
+     the second element's (dynamic) type will be
+     <code>derived</code>. This can be discovered using the
+     <code>dynamic_cast</code> operator as shown in the following
+     example:
+  </p>
+
+  <pre class="c++">
+void
+f (root&amp; r)
+{
+  for (root::item_const_iterator i (r.item ().begin ());
+       i != r.item ().end ()
+       ++i)
+  {
+    if (derived* d = dynamic_cast&lt;derived*> (&amp;(*i)))
+    {
+      // derived
+    }
+    else
+    {
+      // base
+    }
+  }
+}
+  </pre>
+
+  <p>The <code>_clone</code> virtual function should be used instead of
+     copy constructors to make copies of members that might use
+     polymorphism:
+  </p>
+
+  <pre class="c++">
+void
+f (root&amp; r)
+{
+  for (root::item_const_iterator i (r.item ().begin ());
+       i != r.item ().end ()
+       ++i)
+  {
+    std::auto_ptr&lt;base> c (i->_clone ());
+  }
+}
+  </pre>
+
+  <p>The mapping can often automatically determine which types are
+     polymorphic based on the substitution group declarations. However,
+     if your XML vocabulary is not using substitution groups or if
+     substitution groups are defined in a separate schema, then you will
+     need to use the <code>--polymorphic-type</code> option to specify
+     which types are polymorphic. When using this option you only need
+     to specify the root of a polymorphic type hierarchy and the mapping
+     will assume that all the derived types are also polymorphic.
+     Also note that you need to specify this option when compiling every
+     schema file that references the polymorphic type. Consider the following
+     two schemas as an example:</p>
+
+  <pre class="xml">
+&lt;!-- base.xsd -->
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:complexType name="base">
+    &lt;xs:sequence>
+      &lt;xs:element name="b" type="xs:int"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;!-- substitution group root -->
+  &lt;xs:element name="base" type="base"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <pre class="xml">
+&lt;!-- derived.xsd -->
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;include schemaLocation="base.xsd"/>
+
+  &lt;xs:complexType name="derived">
+    &lt;xs:complexContent>
+      &lt;xs:extension base="base">
+        &lt;xs:sequence>
+          &lt;xs:element name="d" type="xs:string"/>
+        &lt;/xs:sequence>
+      &lt;/xs:extension>
+    &lt;/xs:complexContent>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="derived" type="derived" substitutionGroup="base"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>In this example we need to specify "<code>--polymorphic-type base</code>"
+     when compiling both schemas because the substitution group is declared
+     in a schema other than the one defining type <code>base</code>.</p>
+
+  <p>You can also indicate that all types should be treated as polymorphic
+     with the <code>--polymorphic-type-all</code>. However, this may result
+     in slower generated code with a greater footprint.</p>
+
+
+  <!-- Mapping for any and anyAttribute -->
+
+
+  <h2><a name="2.12">2.12 Mapping for <code>any</code> and <code>anyAttribute</code></a></h2>
+
+  <p>For the XML Schema <code>any</code> and <code>anyAttribute</code>
+     wildcards an optional mapping can be requested with the
+     <code>--generate-wildcard</code> option. The mapping represents
+     the content matched by wildcards as DOM fragments. Because the
+     DOM API is used to access such content, the Xerces-C++ runtime
+     should be initialized by the application prior to parsing and
+     should remain initialized for the lifetime of objects with
+     the wildcard content. For more information on the Xerces-C++
+     runtime initialization see <a href="#3.1">Section 3.1,
+     "Initializing the Xerces-C++ Runtime"</a>.
+  </p>
+
+  <p>The mapping for <code>any</code> is similar to the mapping for
+     local elements (see <a href="#2.8">Section 2.8, "Mapping for Local
+     Elements and Attributes"</a>) except that the type used in the
+     wildcard mapping is <code>xercesc::DOMElement</code>. As with local
+     elements, the mapping divides all possible cardinality combinations
+     into three cardinality classes: <i>one</i>, <i>optional</i>, and
+     <i>sequence</i>.
+  </p>
+
+  <p>The mapping for <code>anyAttribute</code> represents the attributes
+     matched by this wildcard as a set of <code>xercesc::DOMAttr</code>
+     objects with a key being the attribute's name and namespace.</p>
+
+  <p>Similar to local elements and attributes, the <code>any</code> and
+     <code>anyAttribute</code> wildcards are mapped to a set of public type
+     definitions (typedefs) and a set of public accessor and modifier
+     functions. Type definitions have names derived from <code>"any"</code>
+     for the <code>any</code> wildcard and <code>"any_attribute"</code>
+     for the <code>anyAttribute</code> wildcard. The accessor and modifier
+     functions are named <code>"any"</code> for the <code>any</code> wildcard
+     and <code>"any_attribute"</code> for the <code>anyAttribute</code>
+     wildcard. Subsequent wildcards in the same type have escaped names
+     such as <code>"any1"</code> or <code>"any_attribute1"</code>.
+  </p>
+
+  <p>Because Xerces-C++ DOM nodes always belong to a <code>DOMDocument</code>,
+     each type with a wildcard has an associated <code>DOMDocument</code>
+     object. The reference to this object can be obtained using the accessor
+     function called <code>dom_document</code>. The access to the document
+     object from the application code may be necessary to create or modify
+     the wildcard content. For example:
+  </p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;any namespace="##other"/>
+  &lt;/sequence>
+  &lt;anyAttribute namespace="##other"/>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // any
+  //
+  const xercesc::DOMElement&amp;
+  any () const;
+
+  void
+  any (const xercesc::DOMElement&amp;);
+
+  ...
+
+  // any_attribute
+  //
+  typedef attribute_set any_attribute_set;
+  typedef any_attribute_set::iterator any_attribute_iterator;
+  typedef any_attribute_set::const_iterator any_attribute_const_iterator;
+
+  const any_attribute_set&amp;
+  any_attribute () const;
+
+  any_attribute_set&amp;
+  any_attribute ();
+
+  ...
+
+  // DOMDocument object for wildcard content.
+  //
+  const xercesc::DOMDocument&amp;
+  dom_document () const;
+
+  xercesc::DOMDocument&amp;
+  dom_document ();
+
+  ...
+};
+  </pre>
+
+
+  <p>Names and semantics of type definitions for the wildcards as well
+     as signatures of the accessor and modifier functions depend on the
+     wildcard type as well as the cardinality class for the <code>any</code>
+     wildcard. They are described in the following sub-sections.
+  </p>
+
+
+  <h3><a name="2.12.1">2.12.1 Mapping for <code>any</code> with the One Cardinality Class</a></h3>
+
+  <p>For <code>any</code> with the One cardinality class,
+     there are no type definitions. The accessor functions come in
+     constant and non-constant versions. The constant accessor function
+     returns a constant reference to <code>xercesc::DOMElement</code> and
+     can be used for read-only access. The non-constant version returns
+     an unrestricted reference to <code>xercesc::DOMElement</code> and can
+     be used for read-write access.
+  </p>
+
+  <p>The first modifier function expects an argument of type reference
+     to constant <code>xercesc::DOMElement</code> and makes a deep copy
+     of its argument. The second modifier function expects an argument of
+     type pointer to <code>xercesc::DOMElement</code>. This modifier
+     function assumes ownership of its argument and expects the element
+     object to be created using the DOM document associated with this
+     instance. For example:
+  </p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;any namespace="##other"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Accessors.
+  //
+  const xercesc::DOMElement&amp;
+  any () const;
+
+  xercesc::DOMElement&amp;
+  any ();
+
+  // Modifiers.
+  //
+  void
+  any (const xercesc::DOMElement&amp;);
+
+  void
+  any (xercesc::DOMElement*);
+
+  ...
+
+};
+  </pre>
+
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o, const xercesc::DOMElement&amp; e)
+{
+  using namespace xercesc;
+
+  DOMElement&amp; e1 (o.any ());             // get
+  o.any (e)                              // set, deep copy
+  DOMDocument&amp; doc (o.dom_document ());
+  o.any (doc.createElement (...));       // set, assumes ownership
+}
+  </pre>
+
+  <h3><a name="2.12.2">2.12.2 Mapping for <code>any</code> with the Optional Cardinality Class</a></h3>
+
+  <p>For <code>any</code> with the Optional cardinality class, the type
+     definitions consist of an alias for the container type with name
+     <code>any_optional</code> (or <code>any1_optional</code>, etc., for
+     subsequent wildcards in the type definition).
+  </p>
+
+  <p>Unlike accessor functions for the One cardinality class, accessor
+     functions for the Optional cardinality class return references to
+     corresponding containers rather than directly to <code>DOMElement</code>.
+     The accessor functions come in constant and non-constant versions.
+     The constant accessor function returns a constant reference to
+     the container and can be used for read-only access. The non-constant
+     version returns an unrestricted reference to the container
+     and can be used for read-write access.
+  </p>
+
+  <p>The modifier functions are overloaded for <code>xercesc::DOMElement</code>
+     and the container type. The first modifier function expects an argument of
+     type reference to constant <code>xercesc::DOMElement</code> and
+     makes a deep copy of its argument. The second modifier function
+     expects an argument of type pointer to <code>xercesc::DOMElement</code>.
+     This modifier function assumes ownership of its argument and expects
+     the element object to be created using the DOM document associated
+     with this instance. The third modifier function expects an argument
+     of type reference to constant of the container type and makes a
+     deep copy of its argument. For instance:
+  </p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;any namespace="##other" minOccurs="0"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Type definitions.
+  //
+  typedef element_optional any_optional;
+
+  // Accessors.
+  //
+  const any_optional&amp;
+  any () const;
+
+  any_optional&amp;
+  any ();
+
+  // Modifiers.
+  //
+  void
+  any (const xercesc::DOMElement&amp;);
+
+  void
+  any (xercesc::DOMElement*);
+
+  void
+  any (const any_optional&amp;);
+
+  ...
+
+};
+  </pre>
+
+
+  <p>The <code>element_optional</code> container is a
+     specialization of the <code>optional</code> class template described
+     in <a href="#2.8.2">Section 2.8.2, "Mapping for Members with the Optional
+     Cardinality Class"</a>. Its interface is presented below:
+  </p>
+
+  <pre class="c++">
+class element_optional
+{
+public:
+  explicit
+  element_optional (xercesc::DOMDocument&amp;);
+
+  // Makes a deep copy.
+  //
+  element_optional (const xercesc::DOMElement&amp;, xercesc::DOMDocument&amp;);
+
+  // Assumes ownership.
+  //
+  element_optional (xercesc::DOMElement*, xercesc::DOMDocument&amp;);
+
+  element_optional (const element_optional&amp;, xercesc::DOMDocument&amp;);
+
+public:
+  element_optional&amp;
+  operator= (const xercesc::DOMElement&amp;);
+
+  element_optional&amp;
+  operator= (const element_optional&amp;);
+
+  // Pointer-like interface.
+  //
+public:
+  const xercesc::DOMElement*
+  operator-> () const;
+
+  xercesc::DOMElement*
+  operator-> ();
+
+  const xercesc::DOMElement&amp;
+  operator* () const;
+
+  xercesc::DOMElement&amp;
+  operator* ();
+
+  typedef void (element_optional::*bool_convertible) ();
+  operator bool_convertible () const;
+
+  // Get/set interface.
+  //
+public:
+  bool
+  present () const;
+
+  const xercesc::DOMElement&amp;
+  get () const;
+
+  xercesc::DOMElement&amp;
+  get ();
+
+  // Makes a deep copy.
+  //
+  void
+  set (const xercesc::DOMElement&amp;);
+
+  // Assumes ownership.
+  //
+  void
+  set (xercesc::DOMElement*);
+
+  void
+  reset ();
+};
+
+bool
+operator== (const element_optional&amp;, const element_optional&amp;);
+
+bool
+operator!= (const element_optional&amp;, const element_optional&amp;);
+  </pre>
+
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o, const xercesc::DOMElement&amp; e)
+{
+  using namespace xercesc;
+
+  DOMDocument&amp; doc (o.dom_document ());
+
+  if (o.any ().present ())                  // test
+  {
+    DOMElement&amp; e1 (o.any ().get ());       // get
+    o.any ().set (e);                       // set, deep copy
+    o.any ().set (doc.createElement (...)); // set, assumes ownership
+    o.any ().reset ();                      // reset
+  }
+
+  // Same as above but using pointer notation:
+  //
+  if (o.member ())                          // test
+  {
+    DOMElement&amp; e1 (*o.any ());             // get
+    o.any (e);                              // set, deep copy
+    o.any (doc.createElement (...));        // set, assumes ownership
+    o.any ().reset ();                      // reset
+  }
+}
+  </pre>
+
+
+
+  <h3><a name="2.12.3">2.12.3 Mapping for <code>any</code> with the Sequence Cardinality Class</a></h3>
+
+  <p>For <code>any</code> with the Sequence cardinality class, the type
+     definitions consist of an alias of the container type with name
+     <code>any_sequence</code> (or <code>any1_sequence</code>, etc., for
+     subsequent wildcards in the type definition), an alias of the iterator
+     type with name <code>any_iterator</code> (or <code>any1_iterator</code>,
+     etc., for subsequent wildcards in the type definition), and an alias
+     of the constant iterator type with name <code>any_const_iterator</code>
+     (or <code>any1_const_iterator</code>, etc., for subsequent wildcards
+     in the type definition).
+  </p>
+
+  <p>The accessor functions come in constant and non-constant versions.
+     The constant accessor function returns a constant reference to the
+     container and can be used for read-only access. The non-constant
+     version returns an unrestricted reference to the container and can
+     be used for read-write access.
+  </p>
+
+  <p>The modifier function expects an argument of type reference to
+     constant of the container type. The modifier function makes
+     a deep copy of its argument. For instance:
+  </p>
+
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;any namespace="##other" minOccurs="unbounded"/>
+  &lt;/sequence>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Type definitions.
+  //
+  typedef element_sequence any_sequence;
+  typedef any_sequence::iterator any_iterator;
+  typedef any_sequence::const_iterator any_const_iterator;
+
+  // Accessors.
+  //
+  const any_sequence&amp;
+  any () const;
+
+  any_sequence&amp;
+  any ();
+
+  // Modifier.
+  //
+  void
+  any (const any_sequence&amp;);
+
+  ...
+
+};
+  </pre>
+
+  <p>The <code>element_sequence</code> container is a
+     specialization of the <code>sequence</code> class template described
+     in <a href="#2.8.3">Section 2.8.3, "Mapping for Members with the
+     Sequence Cardinality Class"</a>. Its interface is similar to
+     the sequence interface as defined by the ISO/ANSI Standard for
+     C++ (ISO/IEC 14882:1998, Section 23.1.1, "Sequences") and is
+     presented below:
+  </p>
+
+  <pre class="c++">
+class element_sequence
+{
+public:
+  typedef xercesc::DOMElement        value_type;
+  typedef xercesc::DOMElement*       pointer;
+  typedef const xercesc::DOMElement* const_pointer;
+  typedef xercesc::DOMElement&amp;       reference;
+  typedef const xercesc::DOMElement&amp; const_reference;
+
+  typedef &lt;implementation-defined>   iterator;
+  typedef &lt;implementation-defined>   const_iterator;
+  typedef &lt;implementation-defined>   reverse_iterator;
+  typedef &lt;implementation-defined>   const_reverse_iterator;
+
+  typedef &lt;implementation-defined>   size_type;
+  typedef &lt;implementation-defined>   difference_type;
+  typedef &lt;implementation-defined>   allocator_type;
+
+public:
+  explicit
+  element_sequence (xercesc::DOMDocument&amp;);
+
+  // DOMElement cannot be default-constructed.
+  //
+  // explicit
+  // element_sequence (size_type n);
+
+  element_sequence (size_type n,
+                    const xercesc::DOMElement&amp;,
+                    xercesc::DOMDocument&amp;);
+
+  template &lt;typename I>
+  element_sequence (const I&amp; begin,
+                    const I&amp; end,
+                    xercesc::DOMDocument&amp;);
+
+  element_sequence (const element_sequence&amp;, xercesc::DOMDocument&amp;);
+
+  element_sequence&amp;
+  operator= (const element_sequence&amp;);
+
+public:
+  void
+  assign (size_type n, const xercesc::DOMElement&amp;);
+
+  template &lt;typename I>
+  void
+  assign (const I&amp; begin, const I&amp; end);
+
+public:
+  // This version of resize can only be used to shrink the
+  // sequence because DOMElement cannot be default-constructed.
+  //
+  void
+  resize (size_type);
+
+  void
+  resize (size_type, const xercesc::DOMElement&amp;);
+
+public:
+  size_type
+  size () const;
+
+  size_type
+  max_size () const;
+
+  size_type
+  capacity () const;
+
+  bool
+  empty () const;
+
+  void
+  reserve (size_type);
+
+  void
+  clear ();
+
+public:
+  const_iterator
+  begin () const;
+
+  const_iterator
+  end () const;
+
+  iterator
+  begin ();
+
+  iterator
+  end ();
+
+  const_reverse_iterator
+  rbegin () const;
+
+  const_reverse_iterator
+  rend () const
+
+    reverse_iterator
+  rbegin ();
+
+  reverse_iterator
+  rend ();
+
+public:
+  xercesc::DOMElement&amp;
+  operator[] (size_type);
+
+  const xercesc::DOMElement&amp;
+  operator[] (size_type) const;
+
+  xercesc::DOMElement&amp;
+  at (size_type);
+
+  const xercesc::DOMElement&amp;
+  at (size_type) const;
+
+  xercesc::DOMElement&amp;
+  front ();
+
+  const xercesc::DOMElement&amp;
+  front () const;
+
+  xercesc::DOMElement&amp;
+  back ();
+
+  const xercesc::DOMElement&amp;
+  back () const;
+
+public:
+  // Makes a deep copy.
+  //
+  void
+  push_back (const xercesc::DOMElement&amp;);
+
+  // Assumes ownership.
+  //
+  void
+  push_back (xercesc::DOMElement*);
+
+  void
+  pop_back ();
+
+  // Makes a deep copy.
+  //
+  iterator
+  insert (iterator position, const xercesc::DOMElement&amp;);
+
+  // Assumes ownership.
+  //
+  iterator
+  insert (iterator position, xercesc::DOMElement*);
+
+  void
+  insert (iterator position, size_type n, const xercesc::DOMElement&amp;);
+
+  template &lt;typename I>
+  void
+  insert (iterator position, const I&amp; begin, const I&amp; end);
+
+  iterator
+  erase (iterator position);
+
+  iterator
+  erase (iterator begin, iterator end);
+
+public:
+  // Note that the DOMDocument object of the two sequences being
+  // swapped should be the same.
+  //
+  void
+  swap (sequence&amp; x);
+};
+
+inline bool
+operator== (const element_sequence&amp;, const element_sequence&amp;);
+
+inline bool
+operator!= (const element_sequence&amp;, const element_sequence&amp;);
+  </pre>
+
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o, const xercesc::DOMElement&amp; e)
+{
+  using namespace xercesc;
+
+  object::any_sequence&amp; s (o.any ());
+
+  // Iteration.
+  //
+  for (object::any_iterator i (s.begin ()); i != s.end (); ++i)
+  {
+    DOMElement&amp; e (*i);
+  }
+
+  // Modification.
+  //
+  s.push_back (e);                       // deep copy
+  DOMDocument&amp; doc (o.dom_document ());
+  s.push_back (doc.createElement (...)); // assumes ownership
+}
+  </pre>
+
+
+  <h3><a name="2.12.4">2.12.4 Mapping for <code>anyAttribute</code></a></h3>
+
+  <p>For <code>anyAttribute</code> the type definitions consist of an alias
+     of the container type with name <code>any_attribute_set</code>
+     (or <code>any1_attribute_set</code>, etc., for subsequent wildcards
+     in the type definition), an alias of the iterator type with name
+     <code>any_attribute_iterator</code> (or <code>any1_attribute_iterator</code>,
+     etc., for subsequent wildcards in the type definition), and an alias
+     of the constant iterator type with name <code>any_attribute_const_iterator</code>
+     (or <code>any1_attribute_const_iterator</code>, etc., for subsequent
+     wildcards in the type definition).
+  </p>
+
+  <p>The accessor functions come in constant and non-constant versions.
+     The constant accessor function returns a constant reference to the
+     container and can be used for read-only access. The non-constant
+     version returns an unrestricted reference to the container and can
+     be used for read-write access.
+  </p>
+
+  <p>The modifier function expects an argument of type reference to
+     constant of the container type. The modifier function makes
+     a deep copy of its argument. For instance:
+  </p>
+
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    ...
+  &lt;/sequence>
+  &lt;anyAttribute namespace="##other"/>
+&lt;/complexType>
+  </pre>
+
+  <p>is mapped to:</p>
+
+  <pre class="c++">
+class object: xml_schema::type
+{
+public:
+  // Type definitions.
+  //
+  typedef attribute_set any_attribute_set;
+  typedef any_attribute_set::iterator any_attribute_iterator;
+  typedef any_attribute_set::const_iterator any_attribute_const_iterator;
+
+  // Accessors.
+  //
+  const any_attribute_set&amp;
+  any_attribute () const;
+
+  any_attribute_set&amp;
+  any_attribute ();
+
+  // Modifier.
+  //
+  void
+  any_attribute (const any_attribute_set&amp;);
+
+  ...
+
+};
+  </pre>
+
+  <p>The <code>attribute_set</code> class is an associative container
+     similar to the <code>std::set</code> class template as defined by
+     the ISO/ANSI Standard for C++ (ISO/IEC 14882:1998, Section 23.3.3,
+     "Class template set") with the key being the attribute's name
+     and namespace. Unlike <code>std::set</code>, <code>attribute_set</code>
+     allows searching using names and namespaces instead of
+     <code>xercesc::DOMAttr</code> objects. It is defined in an
+     implementation-specific namespace and its interface is presented
+     below:
+  </p>
+
+  <pre class="c++">
+class attribute_set
+{
+public:
+  typedef xercesc::DOMAttr         key_type;
+  typedef xercesc::DOMAttr         value_type;
+  typedef xercesc::DOMAttr*        pointer;
+  typedef const xercesc::DOMAttr*  const_pointer;
+  typedef xercesc::DOMAttr&amp;        reference;
+  typedef const xercesc::DOMAttr&amp;  const_reference;
+
+  typedef &lt;implementation-defined> iterator;
+  typedef &lt;implementation-defined> const_iterator;
+  typedef &lt;implementation-defined> reverse_iterator;
+  typedef &lt;implementation-defined> const_reverse_iterator;
+
+  typedef &lt;implementation-defined> size_type;
+  typedef &lt;implementation-defined> difference_type;
+  typedef &lt;implementation-defined> allocator_type;
+
+public:
+  attribute_set (xercesc::DOMDocument&amp;);
+
+  template &lt;typename I>
+  attribute_set (const I&amp; begin, const I&amp; end, xercesc::DOMDocument&amp;);
+
+  attribute_set (const attribute_set&amp;, xercesc::DOMDocument&amp;);
+
+  attribute_set&amp;
+  operator= (const attribute_set&amp;);
+
+public:
+  const_iterator
+  begin () const;
+
+  const_iterator
+  end () const;
+
+  iterator
+  begin ();
+
+  iterator
+  end ();
+
+  const_reverse_iterator
+  rbegin () const;
+
+  const_reverse_iterator
+  rend () const;
+
+  reverse_iterator
+  rbegin ();
+
+  reverse_iterator
+  rend ();
+
+public:
+  size_type
+  size () const;
+
+  size_type
+  max_size () const;
+
+  bool
+  empty () const;
+
+  void
+  clear ();
+
+public:
+  // Makes a deep copy.
+  //
+  std::pair&lt;iterator, bool>
+  insert (const xercesc::DOMAttr&amp;);
+
+  // Assumes ownership.
+  //
+  std::pair&lt;iterator, bool>
+  insert (xercesc::DOMAttr*);
+
+  // Makes a deep copy.
+  //
+  iterator
+  insert (iterator position, const xercesc::DOMAttr&amp;);
+
+  // Assumes ownership.
+  //
+  iterator
+  insert (iterator position, xercesc::DOMAttr*);
+
+  template &lt;typename I>
+  void
+  insert (const I&amp; begin, const I&amp; end);
+
+public:
+  void
+  erase (iterator position);
+
+  size_type
+  erase (const std::basic_string&lt;C>&amp; name);
+
+  size_type
+  erase (const std::basic_string&lt;C>&amp; namespace_,
+         const std::basic_string&lt;C>&amp; name);
+
+  size_type
+  erase (const XMLCh* name);
+
+  size_type
+  erase (const XMLCh* namespace_, const XMLCh* name);
+
+  void
+  erase (iterator begin, iterator end);
+
+public:
+  size_type
+  count (const std::basic_string&lt;C>&amp; name) const;
+
+  size_type
+  count (const std::basic_string&lt;C>&amp; namespace_,
+         const std::basic_string&lt;C>&amp; name) const;
+
+  size_type
+  count (const XMLCh* name) const;
+
+  size_type
+  count (const XMLCh* namespace_, const XMLCh* name) const;
+
+  iterator
+  find (const std::basic_string&lt;C>&amp; name);
+
+  iterator
+  find (const std::basic_string&lt;C>&amp; namespace_,
+        const std::basic_string&lt;C>&amp; name);
+
+  iterator
+  find (const XMLCh* name);
+
+  iterator
+  find (const XMLCh* namespace_, const XMLCh* name);
+
+  const_iterator
+  find (const std::basic_string&lt;C>&amp; name) const;
+
+  const_iterator
+  find (const std::basic_string&lt;C>&amp; namespace_,
+        const std::basic_string&lt;C>&amp; name) const;
+
+  const_iterator
+  find (const XMLCh* name) const;
+
+  const_iterator
+  find (const XMLCh* namespace_, const XMLCh* name) const;
+
+public:
+  // Note that the DOMDocument object of the two sets being
+  // swapped should be the same.
+  //
+  void
+  swap (attribute_set&amp;);
+};
+
+bool
+operator== (const attribute_set&amp;, const attribute_set&amp;);
+
+bool
+operator!= (const attribute_set&amp;, const attribute_set&amp;);
+  </pre>
+
+  <p>The following code shows how one could use this mapping:</p>
+
+  <pre class="c++">
+void
+f (object&amp; o, const xercesc::DOMAttr&amp; a)
+{
+  using namespace xercesc;
+
+  object::any_attribute_set&amp; s (o.any_attribute ());
+
+  // Iteration.
+  //
+  for (object::any_attribute_iterator i (s.begin ()); i != s.end (); ++i)
+  {
+    DOMAttr&amp; a (*i);
+  }
+
+  // Modification.
+  //
+  s.insert (a);                         // deep copy
+  DOMDocument&amp; doc (o.dom_document ());
+  s.insert (doc.createAttribute (...)); // assumes ownership
+
+  // Searching.
+  //
+  object::any_attribute_iterator i (s.find ("name"));
+  i = s.find ("http://www.w3.org/XML/1998/namespace", "lang");
+}
+  </pre>
+
+  <!-- Mapping for Mixed Content Models -->
+
+  <h2><a name="2.13">2.13 Mapping for Mixed Content Models</a></h2>
+
+  <p>XML Schema mixed content models do not have a direct C++ mapping.
+     Instead, information in XML instance documents, corresponding to
+     a mixed content model, can be accessed using generic DOM nodes that
+     can optionally be associated with object model nodes. See
+     <a href="#5.1">Section 5.1, "DOM Association"</a> for more
+     information about keeping association with DOM nodes.
+  </p>
+
+
+  <!-- Parsing -->
+
+
+  <h1><a name="3">3 Parsing</a></h1>
+
+  <p>This chapter covers various aspects of parsing XML instance
+     documents in order to obtain corresponding tree-like object
+     model.
+  </p>
+
+  <p>Each global XML Schema element in the form:</p>
+
+  <pre class="xml">
+&lt;element name="name" type="type"/>
+  </pre>
+
+  <p>is mapped to 14 overloaded C++ functions in the form:</p>
+
+  <pre class="c++">
+// Read from a URI or a local file.
+//
+
+std::auto_ptr&lt;type>
+name (const std::basic_string&lt;C>&amp; uri,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (const std::basic_string&lt;C>&amp; uri,
+      xml_schema::error_handler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (const std::basic_string&lt;C>&amp; uri,
+      xercesc::DOMErrorHandler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+
+// Read from std::istream.
+//
+
+std::auto_ptr&lt;type>
+name (std::istream&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (std::istream&amp;,
+      xml_schema::error_handler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (std::istream&amp;,
+      xercesc::DOMErrorHandler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+
+std::auto_ptr&lt;type>
+name (std::istream&amp;,
+      const std::basic_string&lt;C>&amp; id,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (std::istream&amp;,
+      const std::basic_string&lt;C>&amp; id,
+      xml_schema::error_handler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (std::istream&amp;,
+      const std::basic_string&lt;C>&amp; id,
+      xercesc::DOMErrorHandler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+
+// Read from InputSource.
+//
+
+std::auto_ptr&lt;type>
+name (xercesc::InputSource&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (xercesc::InputSource&amp;,
+      xml_schema::error_handler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (xercesc::InputSource&amp;,
+      xercesc::DOMErrorHandler&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+
+// Read from DOM.
+//
+
+std::auto_ptr&lt;type>
+name (const xercesc::DOMDocument&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+
+std::auto_ptr&lt;type>
+name (xml_schema::dom::auto_ptr&lt;xercesc::DOMDocument>&amp;,
+      xml_schema::flags = 0,
+      const xml_schema::properties&amp; = xml_schema::properties ());
+  </pre>
+
+  <p>You can choose between reading an XML instance from a local file,
+     URI, <code>std::istream</code>, <code>xercesc::InputSource</code>,
+     or a pre-parsed DOM instance in the form of
+     <code>xercesc::DOMDocument</code>. Each of these parsing functions
+     is discussed in more detail in the following sections.
+  </p>
+
+  <h2><a name="3.1">3.1 Initializing the Xerces-C++ Runtime</a></h2>
+
+  <p>Some parsing functions expect you to initialize the Xerces-C++
+     runtime while others initialize and terminate it as part of their
+     work. The general rule is as follows: if a function has any arguments
+     or return a value that is an instance of a Xerces-C++ type, then
+     this function expects you to initialize the Xerces-C++ runtime.
+     Otherwise, the function initializes and terminates the runtime for
+     you. Note that it is legal to have nested calls to the Xerces-C++
+     initialize and terminate functions as long as the calls are balanced.
+  </p>
+
+  <p>You can instruct parsing functions that initialize and terminate
+     the runtime not to do so by passing the
+     <code>xml_schema::flags::dont_initialize</code> flag (see
+     <a href="#3.2">Section 3.2, "Flags and Properties"</a>).
+  </p>
+
+
+  <h2><a name="3.2">3.2 Flags and Properties</a></h2>
+
+  <p>Parsing flags and properties are the last two arguments of every
+     parsing function. They allow you to fine-tune the process of
+     instance validation and parsing. Both arguments are optional.
+  </p>
+
+
+  <p>The following flags are recognized by the parsing functions:</p>
+
+  <dl>
+    <dt><code>xml_schema::flags::keep_dom</code></dt>
+    <dd>Keep association between DOM nodes and the resulting
+        object model nodes. For more information about DOM association
+        refer to <a href="#5.1">Section 5.1, "DOM Association"</a>.</dd>
+
+    <dt><code>xml_schema::flags::own_dom</code></dt>
+    <dd>Assume ownership of the DOM document passed. This flag only
+        makes sense together with the <code>keep_dom</code> flag in
+        the call to the parsing function with the
+        <code>xml_schema::dom::auto_ptr&lt;DOMDocument></code>
+        argument.</dd>
+
+    <dt><code>xml_schema::flags::dont_validate</code></dt>
+    <dd>Do not validate instance documents against schemas.</dd>
+
+    <dt><code>xml_schema::flags::dont_initialize</code></dt>
+    <dd>Do not initialize the Xerces-C++ runtime.</dd>
+  </dl>
+
+  <p>You can pass several flags by combining them using the bit-wise OR
+     operator. For example:</p>
+
+  <pre class="c++">
+using xml_schema::flags;
+
+std::auto_ptr&lt;type> r (
+  name ("test.xml", flags::keep_dom | flags::dont_validate));
+  </pre>
+
+  <p>By default, validation of instance documents is turned on even
+     though parsers generated by XSD do not assume instance
+     documents are valid. They include a number of checks that prevent
+     construction of inconsistent object models. This,
+     however, does not mean that an instance document that was
+     successfully parsed by the XSD-generated parsers is
+     valid per the corresponding schema. If an instance document is not
+     "valid enough" for the generated parsers to construct consistent
+     object model, one of the exceptions defined in
+     <code>xml_schema</code> namespace is thrown (see
+     <a href="#3.3">Section 3.3, "Error Handling"</a>).
+  </p>
+
+  <p>For more information on the Xerces-C++ runtime initialization
+     refer to <a href="#3.1">Section 3.1, "Initializing the Xerces-C++
+     Runtime"</a>.
+  </p>
+
+  <p>The <code>xml_schema::properties</code> class allows you to
+     programmatically specify schema locations to be used instead
+     of those specified with the <code>xsi::schemaLocation</code>
+     and <code>xsi::noNamespaceSchemaLocation</code> attributes
+     in instance documents. The interface of the <code>properties</code>
+     class is presented below:
+  </p>
+
+  <pre class="c++">
+class properties
+{
+public:
+  void
+  schema_location (const std::basic_string&lt;C>&amp; namespace_,
+                   const std::basic_string&lt;C>&amp; location);
+  void
+  no_namespace_schema_location (const std::basic_string&lt;C>&amp; location);
+};
+  </pre>
+
+  <p>Note that all locations are relative to an instance document unless
+     they are URIs. For example, if you want to use a local file as your
+     schema, then you will need to pass
+     <code>file:///absolute/path/to/your/schema</code> as the location
+     argument.
+  </p>
+
+  <h2><a name="3.3">3.3 Error Handling</a></h2>
+
+  <p>As discussed in <a href="#2.2">Section 2.2, "Error Handling"</a>,
+     the mapping uses the C++ exception handling mechanism as its primary
+     way of reporting error conditions. However, to handle recoverable
+     parsing and validation errors and warnings, a callback interface maybe
+     preferred by the application.</p>
+
+  <p>To better understand error handling and reporting strategies employed
+     by the parsing functions, it is useful to know that the
+     transformation of an XML instance document to a statically-typed
+     tree happens in two stages. The first stage, performed by Xerces-C++,
+     consists of parsing an XML document into a DOM instance. For short,
+     we will call this stage the XML-DOM stage. Validation, if not disabled,
+     happens during this stage. The second stage,
+     performed by the generated parsers, consist of parsing the DOM
+     instance into the statically-typed tree. We will call this stage
+     the DOM-Tree stage. Additional checks are performed during this
+     stage in order to prevent construction of inconsistent tree which
+     could otherwise happen when validation is disabled, for example.</p>
+
+  <p>All parsing functions except the one that operates on a DOM instance
+     come in overloaded triples. The first function in such a triple
+     reports error conditions exclusively by throwing exceptions. It
+     accumulates all the parsing and validation errors of the XML-DOM
+     stage and throws them in a single instance of the
+     <code>xml_schema::parsing</code> exception (described below).
+     The second and the third functions in the triple use callback
+     interfaces to report parsing and validation errors and warnings.
+     The two callback interfaces are <code>xml_schema::error_handler</code>
+     and <code>xercesc::DOMErrorHandler</code>. For more information
+     on the <code>xercesc::DOMErrorHandler</code> interface refer to
+     the Xerces-C++ documentation. The <code>xml_schema::error_handler</code>
+     interface is presented below:
+  </p>
+
+  <pre class="c++">
+class error_handler
+{
+public:
+  struct severity
+  {
+    enum value
+    {
+      warning,
+      error,
+      fatal
+    };
+  };
+
+  virtual bool
+  handle (const std::basic_string&lt;C>&amp; id,
+          unsigned long line,
+          unsigned long column,
+          severity,
+          const std::basic_string&lt;C>&amp; message) = 0;
+
+  virtual
+  ~error_handler ();
+};
+  </pre>
+
+  <p>The <code>id</code> argument of the <code>error_handler::handle</code>
+     function identifies the resource being parsed (e.g., a file name or
+     URI).
+  </p>
+
+  <p>By returning <code>true</code> from the <code>handle</code> function
+     you instruct the parser to recover and continue parsing. Returning
+     <code>false</code> results in termination of the parsing process.
+     An error with the <code>fatal</code> severity level results in
+     termination of the parsing process no matter what is returned from
+     the <code>handle</code> function. It is safe to throw an exception
+     from the <code>handle</code> function.
+  </p>
+
+  <p>The DOM-Tree stage reports error conditions exclusively by throwing
+     exceptions. Individual exceptions thrown by the parsing functions
+     are described in the following sub-sections.
+  </p>
+
+
+  <h3><a name="3.3.1">3.3.1 <code>xml_schema::parsing</code></a></h3>
+
+  <pre class="c++">
+struct severity
+{
+  enum value
+  {
+    warning,
+    error
+  };
+
+  severity (value);
+  operator value () const;
+};
+
+struct error
+{
+  error (severity,
+         const std::basic_string&lt;C>&amp; id,
+         unsigned long line,
+         unsigned long column,
+         const std::basic_string&lt;C>&amp; message);
+
+  severity
+  severity () const;
+
+  const std::basic_string&lt;C>&amp;
+  id () const;
+
+  unsigned long
+  line () const;
+
+  unsigned long
+  column () const;
+
+  const std::basic_string&lt;C>&amp;
+  message () const;
+};
+
+std::basic_ostream&lt;C>&amp;
+operator&lt;&lt; (std::basic_ostream&lt;C>&amp;, const error&amp;);
+
+struct diagnostics: std::vector&lt;error>
+{
+};
+
+std::basic_ostream&lt;C>&amp;
+operator&lt;&lt; (std::basic_ostream&lt;C>&amp;, const diagnostics&amp;);
+
+struct parsing: virtual exception
+{
+  parsing ();
+  parsing (const diagnostics&amp;);
+
+  const diagnostics&amp;
+  diagnostics () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::parsing</code> exception is thrown if there
+     were parsing or validation errors reported during the XML-DOM stage.
+     If no callback interface was provided to the parsing function, the
+     exception contains a list of errors and warnings accessible using
+     the <code>diagnostics</code> function. The usual conditions when
+     this exception is thrown include malformed XML instances and, if
+     validation is turned on, invalid instance documents.
+  </p>
+
+  <h3><a name="3.3.2">3.3.2 <code>xml_schema::expected_element</code></a></h3>
+
+  <pre class="c++">
+struct expected_element: virtual exception
+{
+  expected_element (const std::basic_string&lt;C>&amp; name,
+                    const std::basic_string&lt;C>&amp; namespace_);
+
+
+  const std::basic_string&lt;C>&amp;
+  name () const;
+
+  const std::basic_string&lt;C>&amp;
+  namespace_ () const;
+
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::expected_element</code> exception is thrown
+     when an expected element is not encountered by the DOM-Tree stage.
+     The name and namespace of the expected element can be obtained using
+     the <code>name</code> and <code>namespace_</code> functions respectively.
+  </p>
+
+
+  <h3><a name="3.3.3">3.3.3 <code>xml_schema::unexpected_element</code></a></h3>
+
+  <pre class="c++">
+struct unexpected_element: virtual exception
+{
+  unexpected_element (const std::basic_string&lt;C>&amp; encountered_name,
+                      const std::basic_string&lt;C>&amp; encountered_namespace,
+                      const std::basic_string&lt;C>&amp; expected_name,
+                      const std::basic_string&lt;C>&amp; expected_namespace)
+
+
+  const std::basic_string&lt;C>&amp;
+  encountered_name () const;
+
+  const std::basic_string&lt;C>&amp;
+  encountered_namespace () const;
+
+
+  const std::basic_string&lt;C>&amp;
+  expected_name () const;
+
+  const std::basic_string&lt;C>&amp;
+  expected_namespace () const;
+
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::unexpected_element</code> exception is thrown
+     when an unexpected element is encountered by the DOM-Tree stage.
+     The name and namespace of the encountered element can be obtained
+     using the <code>encountered_name</code> and
+     <code>encountered_namespace</code> functions respectively. If an
+     element was expected instead of the encountered one, its name
+     and namespace can be obtained using the <code>expected_name</code> and
+     <code>expected_namespace</code> functions respectively. Otherwise
+     these functions return empty strings.
+  </p>
+
+  <h3><a name="3.3.4">3.3.4 <code>xml_schema::expected_attribute</code></a></h3>
+
+  <pre class="c++">
+struct expected_attribute: virtual exception
+{
+  expected_attribute (const std::basic_string&lt;C>&amp; name,
+                      const std::basic_string&lt;C>&amp; namespace_);
+
+
+  const std::basic_string&lt;C>&amp;
+  name () const;
+
+  const std::basic_string&lt;C>&amp;
+  namespace_ () const;
+
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::expected_attribute</code> exception is thrown
+     when an expected attribute is not encountered by the DOM-Tree stage.
+     The name and namespace of the expected attribute can be obtained using
+     the <code>name</code> and <code>namespace_</code> functions respectively.
+  </p>
+
+
+  <h3><a name="3.3.5">3.3.5 <code>xml_schema::unexpected_enumerator</code></a></h3>
+
+  <pre class="c++">
+struct unexpected_enumerator: virtual exception
+{
+  unexpected_enumerator (const std::basic_string&lt;C>&amp; enumerator);
+
+  const std::basic_string&lt;C>&amp;
+  enumerator () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::unexpected_enumerator</code> exception is thrown
+     when an unexpected enumerator is encountered by the DOM-Tree stage.
+     The enumerator can be obtained using the <code>enumerator</code>
+     functions.
+  </p>
+
+  <h3><a name="3.3.6">3.3.6 <code>xml_schema::expected_text_content</code></a></h3>
+
+  <pre class="c++">
+struct expected_text_content: virtual exception
+{
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::expected_text_content</code> exception is thrown
+     when a content other than text is encountered and the text content was
+     expected by the DOM-Tree stage.
+  </p>
+
+  <h3><a name="3.3.7">3.3.7 <code>xml_schema::no_type_info</code></a></h3>
+
+  <pre class="c++">
+struct no_type_info: virtual exception
+{
+  no_type_info (const std::basic_string&lt;C>&amp; type_name,
+                const std::basic_string&lt;C>&amp; type_namespace);
+
+  const std::basic_string&lt;C>&amp;
+  type_name () const;
+
+  const std::basic_string&lt;C>&amp;
+  type_namespace () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::no_type_info</code> exception is thrown
+     when there is no type information associated with a type specified
+     by the <code>xsi:type</code> attribute. This exception is thrown
+     by the DOM-Tree stage. The name and namespace of the type in question
+     can be obtained using the <code>type_name</code> and
+     <code>type_namespace</code> functions respectively. Usually, catching
+     this exception means that you haven't linked the code generated
+     from the schema defining the type in question with your application
+     or this schema has been compiled without the
+     <code>--generate-polymorphic</code> option.
+  </p>
+
+
+  <h3><a name="3.3.8">3.3.8 <code>xml_schema::not_derived</code></a></h3>
+
+  <pre class="c++">
+struct not_derived: virtual exception
+{
+  not_derived (const std::basic_string&lt;C>&amp; base_type_name,
+               const std::basic_string&lt;C>&amp; base_type_namespace,
+               const std::basic_string&lt;C>&amp; derived_type_name,
+               const std::basic_string&lt;C>&amp; derived_type_namespace);
+
+  const std::basic_string&lt;C>&amp;
+  base_type_name () const;
+
+  const std::basic_string&lt;C>&amp;
+  base_type_namespace () const;
+
+
+  const std::basic_string&lt;C>&amp;
+  derived_type_name () const;
+
+  const std::basic_string&lt;C>&amp;
+  derived_type_namespace () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::not_derived</code> exception is thrown
+     when a type specified by the <code>xsi:type</code> attribute is
+     not derived from the expected base type. This exception is thrown
+     by the DOM-Tree stage. The name and namespace of the expected
+     base type can be obtained using the <code>base_type_name</code> and
+     <code>base_type_namespace</code> functions respectively. The name
+     and namespace of the offending type can be obtained using the
+     <code>derived_type_name</code> and
+     <code>derived_type_namespace</code> functions respectively.
+  </p>
+
+  <h3><a name="3.3.9">3.3.9 <code>xml_schema::no_prefix_mapping</code></a></h3>
+
+  <pre class="c++">
+struct no_prefix_mapping: virtual exception
+{
+  no_prefix_mapping (const std::basic_string&lt;C>&amp; prefix);
+
+  const std::basic_string&lt;C>&amp;
+  prefix () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::no_prefix_mapping</code> exception is thrown
+     during the DOM-Tree stage if a namespace prefix is encountered for
+     which a prefix-namespace mapping hasn't been provided. The namespace
+     prefix in question can be obtained using the <code>prefix</code>
+     function.
+  </p>
+
+  <h2><a name="3.4">3.4 Reading from a Local File or URI</a></h2>
+
+  <p>Using a local file or URI is the simplest way to parse an XML instance.
+     For example:</p>
+
+  <pre class="c++">
+using std::auto_ptr;
+
+auto_ptr&lt;type> r1 (name ("test.xml"));
+auto_ptr&lt;type> r2 (name ("http://www.codesynthesis.com/test.xml"));
+  </pre>
+
+  <h2><a name="3.5">3.5 Reading from <code>std::istream</code></a></h2>
+
+  <p>When using an <code>std::istream</code> instance, you may also
+     pass an optional resource id. This id is used to identify the
+     resource (for example in error messages) as well as to resolve
+     relative paths. For instance:</p>
+
+  <pre class="c++">
+using std::auto_ptr;
+
+{
+  std::ifstream ifs ("test.xml");
+  auto_ptr&lt;type> r (name (ifs, "test.xml"));
+}
+
+{
+  std::string str ("..."); // Some XML fragment.
+  std::istringstream iss (str);
+  auto_ptr&lt;type> r (name (iss));
+}
+  </pre>
+
+  <h2><a name="3.6">3.6 Reading from <code>xercesc::InputSource</code></a></h2>
+
+  <p>Reading from a <code>xercesc::InputSource</code> instance
+     is similar to the <code>std::istream</code> case except
+     the resource id is maintained by the <code>InputSource</code>
+     object. For instance:</p>
+
+  <pre class="c++">
+xercesc::StdInInputSource is;
+std::auto_ptr&lt;type> r (name (is));
+  </pre>
+
+  <h2><a name="3.7">3.7 Reading from DOM</a></h2>
+
+  <p>Reading from a <code>xercesc::DOMDocument</code> instance allows
+     you to setup a custom XML-DOM stage. Things like DOM
+     parser reuse, schema pre-parsing, and schema caching can be achieved
+     with this approach. For more information on how to obtain DOM
+     representation from an XML instance refer to the Xerces-C++
+     documentation. In addition, the
+     <a href="http://wiki.codesynthesis.com/Tree/FAQ">C++/Tree Mapping
+     FAQ</a> shows how to parse an XML instance to a Xerces-C++
+     DOM document using the XSD runtime utilities.
+  </p>
+
+  <p>The last parsing function is useful when you would like to perform
+     your own XML-to-DOM parsing and associate the resulting DOM document
+     with the object model nodes. If parsing is successeful, the
+     automatic <code>DOMDocument</code> pointer is reset and the
+     resulting object model assumes ownership of the DOM document
+     passed. For example:</p>
+
+  <pre class="c++">
+xml_schema::dom::auto_ptr&lt;xercesc::DOMDocument> doc = ...
+
+std::auto_ptr&lt;type> r (
+  name (doc, xml_schema::flags::keep_dom | xml_schema::flags::own_dom));
+
+// At this point doc is reset to 0.
+  </pre>
+
+
+
+  <h1><a name="4">4 Serialization</a></h1>
+
+  <p>This chapter covers various aspects of serializing a
+     tree-like object model to DOM or XML.
+     In this regard, serialization is complimentary to the reverse
+     process of parsing a DOM or XML instance into an object model
+     which is discussed in <a href="#3">Chapter 3,
+     "Parsing"</a>. Note that the generation of the serialization code
+     is optional and should be explicitly requested with the
+     <code>--generate-serialization</code> option. See the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a> for more information.
+  </p>
+
+  <p>Each global XML Schema element in the form:
+  </p>
+
+
+  <pre class="xml">
+&lt;xsd:element name="name" type="type"/>
+  </pre>
+
+  <p>is mapped to 8 overloaded C++ functions in the form:</p>
+
+  <pre class="c++">
+// Serialize to std::ostream.
+//
+void
+name (std::ostream&amp;,
+      const type&amp;,
+      const xml_schema::namespace_fomap&amp; =
+        xml_schema::namespace_infomap (),
+      const std::basic_string&lt;C>&amp; encoding = "UTF-8",
+      xml_schema::flags = 0);
+
+void
+name (std::ostream&amp;,
+      const type&amp;,
+      xml_schema::error_handler&amp;,
+      const xml_schema::namespace_infomap&amp; =
+        xml_schema::namespace_infomap (),
+      const std::basic_string&lt;C>&amp; encoding = "UTF-8",
+      xml_schema::flags = 0);
+
+void
+name (std::ostream&amp;,
+      const type&amp;,
+      xercesc::DOMErrorHandler&amp;,
+      const xml_schema::namespace_infomap&amp; =
+        xml_schema::namespace_infomap (),
+      const std::basic_string&lt;C>&amp; encoding = "UTF-8",
+      xml_schema::flags = 0);
+
+
+// Serialize to XMLFormatTarget.
+//
+void
+name (xercesc::XMLFormatTarget&amp;,
+      const type&amp;,
+      const xml_schema::namespace_infomap&amp; =
+        xml_schema::namespace_infomap (),
+      const std::basic_string&lt;C>&amp; encoding = "UTF-8",
+      xml_schema::flags = 0);
+
+void
+name (xercesc::XMLFormatTarget&amp;,
+      const type&amp;,
+      xml_schema::error_handler&amp;,
+      const xml_schema::namespace_infomap&amp; =
+        xml_schema::namespace_infomap (),
+      const std::basic_string&lt;C>&amp; encoding = "UTF-8",
+      xml_schema::flags = 0);
+
+void
+name (xercesc::XMLFormatTarget&amp;,
+      const type&amp;,
+      xercesc::DOMErrorHandler&amp;,
+      const xml_schema::namespace_infomap&amp; =
+        xml_schema::namespace_infomap (),
+      const std::basic_string&lt;C>&amp; encoding = "UTF-8",
+      xml_schema::flags = 0);
+
+
+// Serialize to DOM.
+//
+xml_schema::dom::auto_ptr&lt;xercesc::DOMDocument>
+name (const type&amp;,
+      const xml_schema::namespace_infomap&amp;
+        xml_schema::namespace_infomap (),
+      xml_schema::flags = 0);
+
+void
+name (xercesc::DOMDocument&amp;,
+      const type&amp;,
+      xml_schema::flags = 0);
+  </pre>
+
+  <p>You can choose between writing XML to <code>std::ostream</code> or
+     <code>xercesc::XMLFormatTarget</code> and creating a DOM instance
+     in the form of <code>xercesc::DOMDocument</code>. Serialization
+     to <code>ostream</code> or <code>XMLFormatTarget</code> requires a
+     considerably less work while serialization to DOM provides
+     for greater flexibility. Each of these serialization functions
+     is discussed in more detail in the following sections.
+  </p>
+
+
+  <h2><a name="4.1">4.1 Initializing the Xerces-C++ Runtime</a></h2>
+
+  <p>Some serialization functions expect you to initialize the Xerces-C++
+     runtime while others initialize and terminate it as part of their
+     work. The general rule is as follows: if a function has any arguments
+     or return a value that is an instance of a Xerces-C++ type, then
+     this function expects you to initialize the Xerces-C++ runtime.
+     Otherwise, the function initializes and terminates the runtime for
+     you. Note that it is legal to have nested calls to the Xerces-C++
+     initialize and terminate functions as long as the calls are balanced.
+  </p>
+
+  <p>You can instruct serialization functions that initialize and terminate
+     the runtime not to do so by passing the
+     <code>xml_schema::flags::dont_initialize</code> flag (see
+     <a href="#4.3">Section 4.3, "Flags"</a>).
+  </p>
+
+  <h2><a name="4.2">4.2 Namespace Infomap and Character Encoding</a></h2>
+
+  <p>When a document being serialized uses XML namespaces, custom
+     prefix-namespace associations can to be established. If custom
+     prefix-namespace mapping is not provided then generic prefixes
+     (<code>p1</code>, <code>p2</code>, etc) are automatically assigned
+     to namespaces as needed. Also, if
+     you would like the resulting instance document to contain the
+     <code>schemaLocation</code> or <code>noNamespaceSchemaLocation</code>
+     attributes, you will need to provide namespace-schema associations.
+     The <code>xml_schema::namespace_infomap</code> class is used
+     to capture this information:</p>
+
+  <pre class="c++">
+struct namespace_info
+{
+  namespace_info ();
+  namespace_info (const std::basic_string&lt;C>&amp; name,
+                  const std::basic_string&lt;C>&amp; schema);
+
+  std::basic_string&lt;C> name;
+  std::basic_string&lt;C> schema;
+};
+
+// Map of namespace prefix to namespace_info.
+//
+struct namespace_infomap: public std::map&lt;std::basic_string&lt;C>,
+                                          namespace_info>
+{
+};
+  </pre>
+
+  <p>Consider the following associations as an example:</p>
+
+  <pre class="c++">
+xml_schema::namespace_infomap map;
+
+map["t"].name = "http://www.codesynthesis.com/test";
+map["t"].schema = "test.xsd";
+  </pre>
+
+  <p>This map, if passed to one of the serialization functions,
+     could result in the following XML fragment:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;t:name xmlns:t="http://www.codesynthesis.com/test"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.codesynthesis.com/test test.xsd">
+  </pre>
+
+  <p>As you can see, the serialization function automatically added namespace
+     mapping for the <code>xsi</code> prefix. You can change this by
+     providing your own prefix:</p>
+
+  <pre class="c++">
+xml_schema::namespace_infomap map;
+
+map["xsn"].name = "http://www.w3.org/2001/XMLSchema-instance";
+
+map["t"].name = "http://www.codesynthesis.com/test";
+map["t"].schema = "test.xsd";
+  </pre>
+
+  <p>This could result in the following XML fragment:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;t:name xmlns:t="http://www.codesynthesis.com/test"
+        xmlns:xsn="http://www.w3.org/2001/XMLSchema-instance"
+        xsn:schemaLocation="http://www.codesynthesis.com/test test.xsd">
+  </pre>
+
+  <p>To specify the location of a schema without a namespace you can use
+     an empty prefix as in the example below: </p>
+
+  <pre class="c++">
+xml_schema::namespace_infomap map;
+
+map[""].schema = "test.xsd";
+  </pre>
+
+  <p>This would result in the following XML fragment:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;name xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="test.xsd">
+  </pre>
+
+  <p>To make a particular namespace default you can use an empty
+     prefix, for example:</p>
+
+  <pre class="c++">
+xml_schema::namespace_infomap map;
+
+map[""].name = "http://www.codesynthesis.com/test";
+map[""].schema = "test.xsd";
+  </pre>
+
+  <p>This could result in the following XML fragment:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0" ?>
+&lt;name xmlns="http://www.codesynthesis.com/test"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.codesynthesis.com/test test.xsd">
+  </pre>
+
+
+  <p>Another bit of information that you can pass to the serialization
+     functions is the character encoding method that you would like to use.
+     Common values for this argument are <code>"US-ASCII"</code>,
+     <code>"ISO8859-1"</code>, <code>"UTF-8"</code>,
+     <code>"UTF-16BE"</code>, <code>"UTF-16LE"</code>,
+     <code>"UCS-4BE"</code>, and <code>"UCS-4LE"</code>. The default
+     encoding is <code>"UTF-8"</code>. For more information on
+     encoding methods see the
+     "<a href="http://en.wikipedia.org/wiki/Character_code">Character
+     Encoding</a>" article from Wikipedia.
+  </p>
+
+  <h2><a name="4.3">4.3 Flags</a></h2>
+
+  <p>Serialization flags are the last argument of every serialization
+     function. They allow you to fine-tune the process of serialization.
+     The flags argument is optional.
+  </p>
+
+
+  <p>The following flags are recognized by the serialization
+     functions:</p>
+
+  <dl>
+    <dt><code>xml_schema::flags::dont_initialize</code></dt>
+    <dd>Do not initialize the Xerces-C++ runtime.</dd>
+
+    <dt><code>xml_schema::flags::dont_pretty_print</code></dt>
+    <dd>Do not add extra spaces or new lines that make the resulting XML
+        slightly bigger but easier to read.</dd>
+
+    <dt><code>xml_schema::flags::no_xml_declaration</code></dt>
+    <dd>Do not write XML declaration (&lt;?xml ... ?>).</dd>
+  </dl>
+
+  <p>You can pass several flags by combining them using the bit-wise OR
+     operator. For example:</p>
+
+  <pre class="c++">
+std::auto_ptr&lt;type> r = ...
+std::ofstream ofs ("test.xml");
+xml_schema::namespace_infomap map;
+name (ofs,
+      *r,
+      map,
+      "UTF-8",
+      xml_schema::flags::no_xml_declaration |
+      xml_schema::flags::dont_pretty_print);
+  </pre>
+
+  <p>For more information on the Xerces-C++ runtime initialization
+     refer to <a href="#4.1">Section 4.1, "Initializing the Xerces-C++
+     Runtime"</a>.
+  </p>
+
+  <h2><a name="4.4">4.4 Error Handling</a></h2>
+
+  <p>As with the parsing functions (see <a href="#3.3">Section 3.3,
+     "Error Handling"</a>), to better understand error handling and
+     reporting strategies employed by the serialization functions, it
+     is useful to know that the transformation of a statically-typed
+     tree to an XML instance document happens in two stages. The first
+     stage, performed by the generated code, consist of building a DOM
+     instance from the statically-typed tree . For short, we will call
+     this stage the Tree-DOM stage. The second stage, performed by
+     Xerces-C++, consists of serializing the DOM instance into the XML
+     document. We will call this stage the DOM-XML stage.
+  </p>
+
+  <p>All serialization functions except the two that serialize into
+     a DOM instance come in overloaded triples. The first function
+     in such a triple reports error conditions exclusively by throwing
+     exceptions. It accumulates all the serialization errors of the
+     DOM-XML stage and throws them in a single instance of the
+     <code>xml_schema::serialization</code> exception (described below).
+     The second and the third functions in the triple use callback
+     interfaces to report serialization errors and warnings. The two
+     callback interfaces are <code>xml_schema::error_handler</code> and
+     <code>xercesc::DOMErrorHandler</code>. The
+     <code>xml_schema::error_handler</code> interface is described in
+     <a href="#3.3">Section 3.3, "Error Handling"</a>. For more information
+     on the <code>xercesc::DOMErrorHandler</code> interface refer to the
+     Xerces-C++ documentation.
+  </p>
+
+  <p>The Tree-DOM stage reports error conditions exclusively by throwing
+     exceptions. Individual exceptions thrown by the serialization functions
+     are described in the following sub-sections.
+  </p>
+
+  <h3><a name="4.4.1">4.4.1 <code>xml_schema::serialization</code></a></h3>
+
+  <pre class="c++">
+struct serialization: virtual exception
+{
+  serialization ();
+  serialization (const diagnostics&amp;);
+
+  const diagnostics&amp;
+  diagnostics () const;
+
+  virtual const char*
+  what () const throw ();
+};
+  </pre>
+
+  <p>The <code>xml_schema::diagnostics</code> class is described in
+     <a href="#3.3.1">Section 3.3.1, "<code>xml_schema::parsing</code>"</a>.
+     The <code>xml_schema::serialization</code> exception is thrown if
+     there were serialization errors reported during the DOM-XML stage.
+     If no callback interface was provided to the serialization function,
+     the exception contains a list of errors and warnings accessible using
+     the <code>diagnostics</code> function.
+  </p>
+
+
+  <h3><a name="4.4.2">4.4.2 <code>xml_schema::unexpected_element</code></a></h3>
+
+  <p>The <code>xml_schema::unexpected_element</code> exception is
+     described in <a href="#3.3.3">Section 3.3.3,
+     "<code>xml_schema::unexpected_element</code>"</a>. It is thrown
+     by the serialization functions during the Tree-DOM stage if the
+     root element name of the provided DOM instance does not match with
+     the name of the element this serialization function is for.
+  </p>
+
+  <h3><a name="4.4.3">4.4.3 <code>xml_schema::no_type_info</code></a></h3>
+
+  <p>The <code>xml_schema::no_type_info</code> exception is
+     described in <a href="#3.3.7">Section 3.3.7,
+     "<code>xml_schema::no_type_info</code>"</a>. It is thrown
+     by the serialization functions during the Tree-DOM stage when there
+     is no type information associated with a dynamic type of an
+     element. Usually, catching this exception means that you haven't
+     linked the code generated from the schema defining the type in
+     question with your application or this schema has been compiled
+     without the <code>--generate-polymorphic</code> option.
+  </p>
+
+  <h2><a name="4.5">4.5 Serializing to <code>std::ostream</code></a></h2>
+
+  <p>In order to serialize to <code>std::ostream</code> you will need
+     an object model, an output stream and, optionally, a namespace
+     infomap. For instance:</p>
+
+  <pre class="c++">
+// Obtain the object model.
+//
+std::auto_ptr&lt;type> r = ...
+
+// Prepare namespace mapping and schema location information.
+//
+xml_schema::namespace_infomap map;
+
+map["t"].name = "http://www.codesynthesis.com/test";
+map["t"].schema = "test.xsd";
+
+// Write it out.
+//
+name (std::cout, *r, map);
+  </pre>
+
+  <p>Note that the output stream is treated as a binary stream. This
+     becomes important when you use a character encoding that is wider
+     than 8-bit <code>char</code>, for instance UTF-16 or UCS-4. For
+     example, things will most likely break if you try to serialize
+     to <code>std::ostringstream</code> with UTF-16 or UCS-4 as an
+     encoding. This is due to the special value,
+     <code>'\0'</code>, that will most likely occur as part of such
+     serialization and it won't have the special meaning assumed by
+     <code>std::ostringstream</code>.
+  </p>
+
+
+  <h2><a name="4.6">4.6 Serializing to <code>xercesc::XMLFormatTarget</code></a></h2>
+
+  <p>Serializing to an <code>xercesc::XMLFormatTarget</code> instance
+     is similar the <code>std::ostream</code> case. For instance:
+  </p>
+
+  <pre class="c++">
+using std::auto_ptr;
+
+// Obtain the object model.
+//
+auto_ptr&lt;type> r = ...
+
+// Prepare namespace mapping and schema location information.
+//
+xml_schema::namespace_infomap map;
+
+map["t"].name = "http://www.codesynthesis.com/test";
+map["t"].schema = "test.xsd";
+
+using namespace xercesc;
+
+XMLPlatformUtils::Initialize ();
+
+{
+  // Choose a target.
+  //
+  auto_ptr&lt;XMLFormatTarget> ft;
+
+  if (argc != 2)
+  {
+    ft = auto_ptr&lt;XMLFormatTarget> (new StdOutFormatTarget ());
+  }
+  else
+  {
+    ft = auto_ptr&lt;XMLFormatTarget> (
+      new LocalFileFormatTarget (argv[1]));
+  }
+
+  // Write it out.
+  //
+  name (*ft, *r, map);
+}
+
+XMLPlatformUtils::Terminate ();
+  </pre>
+
+  <p>Note that we had to initialize the Xerces-C++ runtime before we
+     could call this serialization function.</p>
+
+  <h2><a name="4.7">4.7 Serializing to DOM</a></h2>
+
+  <p>The mapping provides two overloaded functions that implement
+     serialization to a DOM instance. The first creates a DOM instance
+     for you and the second serializes to an existing DOM instance.
+     While serializing to a new DOM instance is similar to serializing
+     to <code>std::ostream</code> or <code>xercesc::XMLFormatTarget</code>,
+     serializing to an existing DOM instance requires quite a bit of work
+     from your side. You will need to set all the custom namespace mapping
+     attributes as well as the <code>schemaLocation</code> and/or
+     <code>noNamespaceSchemaLocation</code> attributes. The following
+     listing should give you an idea about what needs to be done:
+  </p>
+
+  <pre class="c++">
+// Obtain the object model.
+//
+std::auto_ptr&lt;type> r = ...
+
+using namespace xercesc;
+
+XMLPlatformUtils::Initialize ();
+
+{
+  // Create a DOM instance. Set custom namespace mapping and schema
+  // location attributes.
+  //
+  DOMDocument&amp; doc = ...
+
+  // Serialize to DOM.
+  //
+  name (doc, *r);
+
+  // Serialize the DOM document to XML.
+  //
+  ...
+}
+
+XMLPlatformUtils::Terminate ();
+  </pre>
+
+  <p>For more information on how to create and serialize a DOM instance
+     refer to the Xerces-C++ documentation. In addition, the
+     <a href="http://wiki.codesynthesis.com/Tree/FAQ">C++/Tree Mapping
+     FAQ</a> shows how to implement these operations using the XSD
+     runtime utilities.
+  </p>
+
+  <h1><a name="5">5 Additional Functionality</a></h1>
+
+  <p>The C++/Tree mapping provides a number of optional features
+     that can be useful in certain situations. They are described
+     in the following sections.</p>
+
+  <h2><a name="5.1">5.1 DOM Association</a></h2>
+
+  <p>Normally, after parsing is complete, the DOM document which
+     was used to extract the data is discarded. However, the parsing
+     functions can be instructed to preserve the DOM document
+     and create an association between the DOM nodes and object model
+     nodes. When there is an association between the DOM and
+     object model nodes, you can obtain the corresponding DOM element
+     or attribute node from an object model node as well as perform
+     the reverse transition: obtain the corresponding object model
+     from a DOM element or attribute node.</p>
+
+  <p>Maintaining DOM association is normally useful when the application
+     needs access to XML constructs that are not preserved in the
+     object model, for example, text in the mixed content model.
+     Another useful aspect of DOM association is the ability of the
+     application to navigate the document tree using the generic DOM
+     interface (for example, with the help of an XPath processor)
+     and then move back to the statically-typed object model. Note
+     also that while you can change the underlying DOM document,
+     these changes are not reflected in the object model and will
+     be ignored during serialization. If you need to not only access
+     but also modify some aspects of XML that are not preserved in
+     the object model, then type customization with custom parsing
+     constructs and serialization operators should be used instead.</p>
+
+  <p>To request DOM association you will need to pass the
+     <code>xml_schema::flags::keep_dom</code> flag to one of the
+     parsing functions (see <a href="#3.2">Section 3.2,
+     "Flags and Properties"</a> for more information). In this case the
+     DOM document is retained and will be released when the object model
+     is deleted. Note that since DOM nodes "out-live" the parsing function
+     call, you need to initialize the Xerces-C++ runtime before calling
+     one of the parsing functions with the <code>keep_dom</code> flag and
+     terminate it after the object model is destroyed (see
+     <a href="#3.1">Section 3.1, "Initializing the Xerces-C++ Runtime"</a>).
+     The DOM association is also maintained in complete copies of the
+     object model (that is, the DOM document is cloned and associations
+     are reestablished).</p>
+
+  <p>To obtain the corresponding DOM node from an object model node
+     you will need to call the <code>_node</code> accessor function
+     which returns a pointer to <code>DOMNode</code>. You can then query
+     this DOM node's type and cast it to either <code>DOMAttr*</code>
+     or <code>DOMElement*</code>. To obtain the corresponding object
+     model node from a DOM node, the DOM user data API is used. The
+     <code>xml_schema::dom::tree_node_key</code> variable contains
+     the key for object model nodes. The following schema and code
+     fragment show how to navigate from DOM to object model nodes
+     and in the opposite direction:</p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="a" type="string"/>
+  &lt;/sequence>
+&lt;/complexType>
+
+&lt;element name="root" type="object"/>
+  </pre>
+
+  <pre class="c++">
+using namespace xercesc;
+
+XMLPlatformUtils::Initialize ();
+
+{
+  // Parse XML to object model.
+  //
+  std::auto_ptr&lt;type> r = root (
+    "root.xml",
+     xml_schema::flags::keep_dom |
+     xml_schema::flags::dont_initialize);
+
+  DOMNode* n = root->_node ();
+  assert (n->getNodeType () != DOMNode::ELEMENT_NODE);
+  DOMElement* re = static_cast&lt;DOMElement*> (n);
+
+  // Get the 'a' element. Note that it is not necessarily the
+  // first child node of 'root' since there could be whitespace
+  // nodes before it.
+  //
+  DOMElement* ae;
+
+  for (n = re->getFirstChild (); n != 0; n = n->getNextSibling ())
+  {
+    if (n->getNodeType () == DOMNode::ELEMENT_NODE)
+    {
+      ae = static_cast&lt;DOMElement*> (n);
+      break;
+    }
+  }
+
+  // Get from the 'a' DOM element to xml_schema::string object model
+  // node.
+  //
+  xml_schema::type&amp; t (
+    *reinterpret_cast&lt;xml_schema::type*> (
+       ae->getUserData (xml_schema::dom::tree_node_key)));
+
+  xml_schema::string&amp; a (dynamic_cast&lt;xml_schema::string&amp;> (t));
+}
+
+XMLPlatformUtils::Terminate ();
+  </pre>
+
+  <p>The 'mixed' example which can be found in the XSD distribution
+     shows how to handle the mixed content using DOM association.</p>
+
+  <h2><a name="5.2">5.2 Binary Serialization</a></h2>
+
+  <p>Besides reading from and writing to XML, the C++/Tree mapping
+     also allows you to save the object model to and load it from a
+     number of predefined as well as custom data representation
+     formats. The predefined binary formats are CDR (Common Data
+     Representation) and XDR (eXternal Data Representation). A
+     custom format can easily be supported by providing
+     insertion and extraction operators for basic types.</p>
+
+  <p>Binary serialization saves only the data without any meta
+     information or markup. As a result, saving to and loading
+     from a binary representation can be an order of magnitude
+     faster than parsing and serializing the same data in XML.
+     Furthermore, the resulting representation is normally several
+     times smaller than the equivalent XML representation. These
+     properties make binary serialization ideal for internal data
+     exchange and storage. A typical application that uses this
+     facility stores the data and communicates within the
+     system using a binary format and reads/writes the data
+     in XML when communicating with the outside world.</p>
+
+  <p>In order to request the generation of insertion operators and
+     extraction constructors for a specific predefined or custom
+     data representation stream, you will need to use the
+     <code>--generate-insertion</code> and <code>--generate-extraction</code>
+     compiler options. See the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a> for more information.</p>
+
+  <p>Once the insertion operators and extraction constructors are
+     generated, you can use the <code>xml_schema::istream</code>
+     and <code>xml_schema::ostream</code> wrapper stream templates
+     to save the object model to and load it from a specific format.
+     The following code fragment shows how to do this using ACE
+     (Adaptive Communication Environment) CDR streams as an example:</p>
+
+  <pre class="xml">
+&lt;complexType name="object">
+  &lt;sequence>
+    &lt;element name="a" type="string"/>
+    &lt;element name="b" type="int"/>
+  &lt;/sequence>
+&lt;/complexType>
+
+&lt;element name="root" type="object"/>
+  </pre>
+
+  <pre class="c++">
+// Parse XML to object model.
+//
+std::auto_ptr&lt;type> r = root ("root.xml");
+
+// Save to a CDR stream.
+//
+ACE_OutputCDR ace_ocdr;
+xml_schema::ostream&lt;ACE_OutputCDR> ocdr (ace_ocdr);
+
+ocdr &lt;&lt; *r;
+
+// Load from a CDR stream.
+//
+ACE_InputCDR ace_icdr (buf, size);
+xml_schema::istream&lt;ACE_InputCDR> icdr (ace_icdr);
+
+std::auto_ptr&lt;object> copy (new object (icdr));
+
+// Serialize to XML.
+//
+root (std::cout, *copy);
+  </pre>
+
+  <p>The XSD distribution contains a number of examples that
+     show how to save the object model to and load it from
+     CDR, XDR, and a custom format.</p>
+
+  <!--  Appendix A -->
+
+
+  <h1><a name="A">Appendix A &mdash; Default and Fixed Values</a></h1>
+
+  <p>The following table summarizes the effect of default and fixed
+     values (specified with the <code>default</code> and <code>fixed</code>
+     attributes, respectively) on attribute and element values. The
+     <code>default</code> and <code>fixed</code> attributes are mutually
+     exclusive. It is also worthwhile to note that the fixed value semantics
+     is a superset of the default value semantics.
+  </p>
+
+  <!-- border="1" is necessary for html2ps -->
+  <table id="default-fixed" border="1">
+    <tr>
+      <th></th>
+      <th></th>
+      <th colspan="2">default</th>
+      <th colspan="2">fixed</th>
+    </tr>
+
+    <!-- element -->
+
+    <tr>
+      <th rowspan="4">element</th>
+      <th rowspan="2">not present</th>
+      <th>optional</th>
+      <th>required</th>
+      <th>optional</th>
+      <th>required</th>
+    </tr>
+    <tr>
+      <td>not present</td>
+      <td>invalid instance</td>
+      <td>not present</td>
+      <td>invalid instance</td>
+    </tr>
+
+
+    <tr>
+      <th>empty</th>
+      <td colspan="2">default value is used</td>
+      <td colspan="2">fixed value is used</td>
+    </tr>
+
+    <tr>
+      <th>value</th>
+      <td colspan="2">value is used</td>
+      <td colspan="2">value is used provided it's the same as fixed</td>
+    </tr>
+
+    <!-- attribute -->
+
+    <!-- element -->
+
+    <tr>
+      <th rowspan="4">attribute</th>
+      <th rowspan="2">not present</th>
+      <th>optional</th>
+      <th>required</th>
+      <th>optional</th>
+      <th>required</th>
+    </tr>
+    <tr>
+      <td>default value is used</td>
+      <td>invalid schema</td>
+      <td>fixed value is used</td>
+      <td>invalid instance</td>
+    </tr>
+
+
+    <tr>
+      <th>empty</th>
+      <td colspan="2">empty value is used</td>
+      <td colspan="2">empty value is used provided it's the same as fixed</td>
+    </tr>
+
+    <tr>
+      <th>value</th>
+      <td colspan="2">value is used</td>
+      <td colspan="2">value is used provided it's the same as fixed</td>
+    </tr>
+
+  </table>
+
+  </div>
+</div>
+
+
+</body>
+</html>

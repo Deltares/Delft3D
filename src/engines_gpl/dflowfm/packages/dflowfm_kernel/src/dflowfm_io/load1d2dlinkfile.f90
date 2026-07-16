@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,29 @@
 !
 !
 
+module m_load1d2dlinkfile
+
+   implicit none
+
+contains
+
    !> Reads custom parameters for 1D2D links from a *.ini file,
    !! and assigns them to the correct flow links.
    subroutine load1D2DLinkFile(filename)
+      use precision, only: dp
       use string_module, only: strcmpi
       use m_flowgeom, only: lnx1d, kcu, wu1D2D, hh1D2D, lnx, lnx1D
       use m_inquire_flowgeom
       use properties
-      use unstruc_messages
+      use messagehandling, only: msgbuf, warn_flush, IDLEN, err_flush, msg_flush
       use timespace
       use unstruc_model, only: File1D2DLinkMajorVersion, File1D2DLinkMinorVersion
+      use m_inquire_link_type
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
 
       implicit none
 
       character(len=*), intent(in) :: filename !< Name of *.ini file containing 1D2D link parameters.
-
-      integer, external :: linkTypeToInt
 
       type(tree_data), pointer :: md_ptr
       type(tree_data), pointer :: node_ptr
@@ -53,21 +60,21 @@
       integer :: numblocks
       integer :: i
 
-      character(len=IdLen) :: contactId
-      character(len=IdLen) :: contactType
+      character(len=IDLEN) :: contactId
+      character(len=IDLEN) :: contactType
       integer :: icontactType
 
       logical :: success
       integer :: major, minor, ierr
       integer :: numcoordinates
-      double precision, allocatable :: xcoordinates(:), ycoordinates(:)
+      real(kind=dp), allocatable :: xcoordinates(:), ycoordinates(:)
       integer :: loc_spec_type
 
       integer :: numcontactblocks, numok
       integer, allocatable :: ke1d2dprops(:)
       integer :: num1d2dprops
       integer :: LL, Lf
-      double precision :: wu1D2Dread, hh1D2Dread
+      real(kind=dp) :: wu1D2Dread, hh1D2Dread
 
       call tree_create(trim(filename), md_ptr)
       call prop_file('ini', trim(filename), md_ptr, istat)
@@ -146,7 +153,7 @@
 
             if (loc_spec_type == LOCTP_CONTACTID .and. num1d2dprops == 1) then
                Lf = ke1d2dprops(1)
-               if (icontactType /= IFLTP_ALL .and. icontactType /= kcu(Lf)) then
+               if (icontactType /= LINK_ALL .and. icontactType /= kcu(Lf)) then
                   write (msgbuf, '(a,i0,a,i0,a)') 'Error Reading mesh contact parameters from block #', numcontactblocks, ' in file '''// &
                      trim(filename)//'''. Given contactType='//trim(contactType)// &
                      ' does not match the flow link type ', kcu(Lf), '.'
@@ -159,7 +166,7 @@
             end if
 
             select case (icontactType)
-            case (IFLTP_1D2D_STREET)
+            case (LINK_1D2D_STREETINLET)
                call prop_get(node_ptr, '', 'openingWidth', wu1D2Dread, success)
                if (.not. success) then
                   write (msgbuf, '(a,i0,a)') 'Error Reading mesh contact parameters from block #', numcontactblocks, ' in file '''// &
@@ -194,3 +201,5 @@
       call tree_destroy(md_ptr)
 
    end subroutine load1D2DLinkFile
+
+end module m_load1d2dlinkfile

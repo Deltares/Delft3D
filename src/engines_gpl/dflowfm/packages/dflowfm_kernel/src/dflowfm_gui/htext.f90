@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,22 +33,24 @@ module m_htext
    implicit none
 contains
    subroutine HTEXT(VAL, X, Y)
-      use m_colnow
+      use precision, only: dp
+      use m_colnow, only: ncolnow
+      use m_draw_text, only: drawtext
 
-      double precision :: val
-      double precision :: x
-      double precision :: y
+      real(kind=dp) :: val
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 !     getal value op grafisch scherm in current color
       character TEXT * 6, TEXT2 * 10
 
       if (NCOLNOW >= 0) then
-         if (-1.000d0 < VAL .and. VAL < 10.000d0) then
+         if (-1.000_dp < VAL .and. VAL < 10.000_dp) then
             write (TEXT(1:6), '(F6.3)') VAL
             call DRAWTEXT(real(X), real(Y), TEXT)
-         else if (-10.000d0 < VAL .and. VAL < 100.000d0) then
+         else if (-10.000_dp < VAL .and. VAL < 100.000_dp) then
             write (TEXT(1:6), '(F6.2)') VAL
             call DRAWTEXT(real(X), real(Y), TEXT)
-         else if (-100.000d0 < VAL .and. VAL < 1000.000d0) then
+         else if (-100.000_dp < VAL .and. VAL < 1000.000_dp) then
             write (TEXT(1:6), '(F6.1)') VAL
             call DRAWTEXT(real(X), real(Y), TEXT)
          else

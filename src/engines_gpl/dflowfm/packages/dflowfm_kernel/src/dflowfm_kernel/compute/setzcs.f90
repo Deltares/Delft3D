@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,32 +30,45 @@
 !
 !
 
- subroutine setzcs()
-    use m_flow
-    use m_flowgeom
-    use m_get_kbot_ktop
-    implicit none
+module m_setzcs
 
-    integer :: kk, k, kb, kt, nlayb, nrlay
+   implicit none
 
-    if (.not. allocated(zcs)) then
-       call realloc(zcs, Ndkx)
-    end if
+   private
 
-    do kk = 1, Ndx
-       call getkbotktop(kk, kb, kt)
-       do k = kb, kt
-          zcs(k) = 0.5d0 * (zws(k) + zws(k - 1))
-       end do
-       if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. jabaroczlaybed == 1) then
-          call getzlayerindices(kk, nlayb, nrlay)
-          zcs(kb) = 0.5d0 * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
-          if (kt > kb .and. keepzlayeringatbed == 2) then ! only 2
-             zcs(kb + 1) = 0.5d0 * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
-          end if
-       end if
+   public :: setzcs
 
-    end do
+contains
 
-    return
- end subroutine setzcs
+   !> Sets array zsc (z levels at layer mid-points, only for nudging)
+   subroutine setzcs()
+      use m_flow, only: zcs, ndkx, zws, layertype, LAYTP_Z, keepzlayeringatbed, zslay
+      use m_flowgeom, only: ndx
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_zlayer_indices, only: getzlayerindices
+      use m_alloc, only: realloc
+      use precision, only: dp
+      use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+
+      integer :: kk, k, kb, kt, nlayb, nrlay
+
+      if (.not. allocated(zcs)) then
+         call realloc(zcs, ndkx)
+      end if
+
+      do kk = 1, Ndx
+         call getkbotktop(kk, kb, kt)
+         do k = kb, kt
+            zcs(k) = 0.5_dp * (zws(k) + zws(k - 1))
+         end do
+         if (layertype == LAYTP_Z .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
+            call getzlayerindices(kk, nlayb, nrlay)
+            zcs(kb) = 0.5_dp * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
+            if (kt > kb .and. keepzlayeringatbed == 2) then
+               zcs(kb + 1) = 0.5_dp * (zslay(nlayb + 1, 1) + zslay(nlayb, 1))
+            end if
+         end if
+      end do
+   end subroutine setzcs
+
+end module m_setzcs

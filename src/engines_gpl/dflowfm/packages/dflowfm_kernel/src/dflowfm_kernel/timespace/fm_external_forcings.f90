@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,32 +28,52 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
-   use precision_basics, only: hp
-   use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-   implicit none
+   use m_make_mirrorcells, only: make_mirrorcells
+   use m_count_links, only: count_links
+   use m_add_bndtracer, only: add_bndtracer
+   use m_addopenbndsection, only: addopenbndsection
+   use m_setwindstress, only: setwindstress
+   use m_setsigmabnds, only: setsigmabnds
+   use precision_basics, only: hp, dp
+   use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
+   use m_waveconst
+
+   implicit none(type, external)
 
    private
 
-   public set_external_forcings_boundaries, allocatewindarrays, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
 
-   integer, parameter :: max_registered_item_id = 128
+   integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
    character(len=max_registered_item_id), allocatable :: registered_items(:)
    integer :: num_registered_items = 0
 
    interface
       module subroutine set_external_forcings_boundaries(time, iresult)
-         double precision, intent(in) :: time !< current simulation time (s)
+         real(kind=dp), intent(in) :: time !< current simulation time (s)
          integer, intent(out) :: iresult !< Integer error status
       end subroutine set_external_forcings_boundaries
    end interface
 
    interface
       module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
-         double precision, intent(in) :: time_in_seconds !< Time in seconds
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
          logical, intent(in) :: initialization !< initialization phase
          integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
       end subroutine set_external_forcings
+   end interface
+
+   interface
+      module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+      end subroutine prepare_air_pressure_temperature_dew_point_temperature
+   end interface
+
+   interface
+      module subroutine compute_air_water_interaction_most_fluxes(initialization)
+         logical, intent(in) :: initialization !< initialization phase
+      end subroutine compute_air_water_interaction_most_fluxes
    end interface
 
    interface
@@ -61,6 +81,17 @@ module fm_external_forcings
          character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
          integer, intent(inout) :: iresult
       end subroutine init_new
+   end interface
+
+   interface
+      module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+         use tree_structures, only: tree_data
+         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
+         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
+         character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
+         logical :: res
+      end function init_spatial_fields
    end interface
 
    interface
@@ -82,8 +113,30 @@ module fm_external_forcings
       end subroutine
    end interface
 
+   interface
+      module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
+         use tree_data_types, only: tree_data
+
+         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+         character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+         real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+         real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+         real(kind=dp), dimension(2), intent(out) :: z_range_source
+         real(kind=dp), dimension(2), intent(out) :: z_range_sink
+
+         logical :: is_successful
+      end function sourcesink_parse_coordinates
+   end interface
+
    public :: set_external_forcings
    public :: calculate_wind_stresses
+   public :: prepare_wind
+   public :: prepare_air_pressure_temperature_dew_point_temperature
+   public :: compute_air_water_interaction_most_fluxes
+   public :: sourcesink_parse_coordinates
 
    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
 
@@ -91,42 +144,42 @@ contains
 
 !> print_error_message
    subroutine print_error_message(time_in_seconds)
-      use m_ec_message, only: dumpECMessageStack
-      use MessageHandling, only: LEVEL_WARN, mess
+      use m_ec_message, only: dump_ec_message_stack
       use unstruc_messages, only: callback_msg
+      use messagehandling, only: LEVEL_WARN, mess
 
-      double precision, intent(in) :: time_in_seconds !< Current time when doing this action
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
 
       character(len=255) :: tmpstr
 
       write (tmpstr, '(f22.11)') time_in_seconds
       call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time='//trim(tmpstr))
-      tmpstr = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
    end subroutine print_error_message
 
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flowWithoutWaves
+      use m_flowparameters, only: jawave, flow_without_waves, EPS10
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
       use precision_basics
-      use m_flowparameters, only: eps10
+      use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
+      use m_tauwavefetch, only: tauwavefetch
 
-      double precision, intent(in) :: time_in_seconds !< Current time when setting wind data
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
 
-      double precision, parameter :: SEA_LEVEL_PRESSURE = 101325d0
       integer :: ec_item_id, first, last, link, i, k
       logical :: first_time_wind
 
-      wx = 0.d0
-      wy = 0.d0
-      wdsu_x = 0.d0
-      wdsu_y = 0.d0
-      wcharnock = 0.d0
+      wx = 0.0_dp
+      wy = 0.0_dp
+      wdsu_x = 0.0_dp
+      wdsu_y = 0.0_dp
+      wcharnock = 0.0_dp
       call initialize_array_with_zero(ec_pwxwy_x)
       call initialize_array_with_zero(ec_pwxwy_y)
 
@@ -171,6 +224,12 @@ contains
             ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
          else if (ec_item_id == item_atmosphericpressure) then
             call get_timespace_value_by_item(item_atmosphericpressure)
+            ! Retrieve value for ext-file quantity 'pseudo_air_pressure'.
+         else if (ec_item_id == item_pseudo_air_pressure) then
+            call get_timespace_value_by_item(item_pseudo_air_pressure)
+            ! Retrieve value for ext-file quantity 'water_level_correction'.
+         else if (ec_item_id == item_water_level_correction) then
+            call get_timespace_value_by_item(item_water_level_correction)
          else
             cycle ! avoid updating id_first_wind and id_last_wind
          end if
@@ -203,13 +262,13 @@ contains
          end if
          if (allocated(ec_pwxwy_c)) then
             do link = 1, lnx
-               wcharnock(link) = wcharnock(link) + 0.5d0 * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
+               wcharnock(link) = wcharnock(link) + 0.5_dp * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
             end do
          end if
       end if
       if (allocated(ec_charnock)) then
          do link = 1, lnx
-            wcharnock(link) = wcharnock(link) + 0.5d0 * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
+            wcharnock(link) = wcharnock(link) + 0.5_dp * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
          end do
       end if
 
@@ -224,13 +283,13 @@ contains
 
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
-            if (comparereal(patm(k), dmiss, eps10) == 0) then
-               patm(k) = SEA_LEVEL_PRESSURE
+            if (comparereal(air_pressure(k), dmiss, EPS10) == 0) then
+               air_pressure(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do
       end if
 
-      if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flow_without_waves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -266,7 +325,7 @@ contains
          use m_flowtimes, only: irefdate, tzone, tunit
 
          integer, intent(in) :: item !< Input item
-         double precision, intent(inout) :: array(:) !< Array that stores the obatained values
+         real(kind=dp), intent(inout) :: array(:) !< Array that stores the obatained values
 
          success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
@@ -275,12 +334,12 @@ contains
 !> perform_additional_spatial_interpolation, the size of array_x and array_y is lnx.
       subroutine perform_additional_spatial_interpolation(array_x, array_y)
 
-         double precision, intent(inout) :: array_x(:) !< Array of X-components for interpolation
-         double precision, intent(inout) :: array_y(:) !< Array of Y-components for interpolation
+         real(kind=dp), intent(inout) :: array_x(:) !< Array of X-components for interpolation
+         real(kind=dp), intent(inout) :: array_y(:) !< Array of Y-components for interpolation
 
          do link = 1, lnx
-            array_x(link) = array_x(link) + 0.5d0 * (ec_pwxwy_x(ln(1, link)) + ec_pwxwy_x(ln(2, link)))
-            array_y(link) = array_y(link) + 0.5d0 * (ec_pwxwy_y(ln(1, link)) + ec_pwxwy_y(ln(2, link)))
+            array_x(link) = array_x(link) + 0.5_dp * (ec_pwxwy_x(ln(1, link)) + ec_pwxwy_x(ln(2, link)))
+            array_y(link) = array_y(link) + 0.5_dp * (ec_pwxwy_y(ln(1, link)) + ec_pwxwy_y(ln(2, link)))
          end do
 
       end subroutine perform_additional_spatial_interpolation
@@ -297,29 +356,39 @@ contains
 !> initialize_array_with_zero
       subroutine initialize_array_with_zero(array)
 
-         double precision, allocatable, intent(inout) :: array(:) !< Array that will be initialized
+         real(kind=dp), allocatable, intent(inout) :: array(:) !< Array that will be initialized
 
          if (allocated(array)) then
-            array(:) = 0.d0
+            array(:) = 0.0_dp
          end if
 
       end subroutine initialize_array_with_zero
 
    end subroutine prepare_wind_model_data
 
-!> Gets windstress (and air pressure) from input files, and sets the windstress
-   subroutine calculate_wind_stresses(time_in_seconds, iresult)
-      use m_wind, only: jawind, japatm
+!> Prepare wind data if jawind=1 and air_pressure_available
+   subroutine prepare_wind(time_in_seconds, iresult)
+      use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
 
-      double precision, intent(in) :: time_in_seconds !< Current time when getting and applying winds
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
-      if (jawind == 1 .or. japatm > 0) then
+
+      if (jawind == 1 .or. air_pressure_available) then
          call prepare_wind_model_data(time_in_seconds, iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
       end if
+      iresult = DFM_NOERR
+   end subroutine prepare_wind
+
+!> Gets windstress (and air pressure) from input files, and sets the windstress
+   subroutine calculate_wind_stresses(iresult)
+      use m_wind, only: jawind
+      use dfm_error, only: DFM_NOERR
+
+      integer, intent(out) :: iresult !< Error indicator
 
       if (jawind > 0) then
          call setwindstress()
@@ -385,7 +454,7 @@ contains
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
 
-      if (jawave == 7 .and. waveforcing == 2) then
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
          do link = 1, number_of_links
             kb = link2cell(1, link)
             ki = link2cell(2, link)
@@ -415,7 +484,6 @@ contains
       use timespace ! not on the flow admin.
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_ship
       use properties
       use m_transport
@@ -425,8 +493,8 @@ contains
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
       use m_qnerror
-
-      implicit none
+      use m_filez, only: oldfil, doclose
+      use messagehandling, only: msgbuf, msg_flush, err_flush
 
       character(len=256) :: filename
       integer :: filetype
@@ -436,7 +504,7 @@ contains
       integer :: ja_ext_force
       logical :: ext_force_bnd_used
       integer :: ierr, method
-      double precision :: return_time
+      real(kind=dp) :: return_time
       integer :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
       integer :: nx
       integer :: ierror
@@ -472,40 +540,27 @@ contains
          if (jawel) then
             ext_force_bnd_used = .true.
          else
-            call qnerror('Boundary external forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(md_extfile_new), ''' not found.'
+            call qnerror('External forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
+            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile_new), ''' not found.'
             call err_flush()
          end if
       end if
 
-! if (ja_ext_force == 0 .and. .not. ext_force_bnd_used) then
-!    return
-! endif
-
-      if (allocated(xe)) deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
-
-      !mx1Dend = 0                                        ! count MAX nr of 1D endpoints
-      !do L = 1,numl1D
-      !   if ( kn(3,L) == 1) then                         ! zeker weten
-      !      k1 = kn(1,L) ; k2 = kn(2,L)
-      !      if (nmk(k1) == 1 .and. nmk(k2) == 2 .and. lne(1,L) < 0 .or. &
-      !          nmk(k2) == 1 .and. nmk(k1) == 2 .and. lne(2,L) < 0 ) then
-      !          mx1Dend = mx1Dend + 1
-      !      endif
-      !   endif
-      !enddo
-      !
-      !
-      !nx = numl + mx1Dend
+      if (allocated(xe)) then
+         deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
+      end if
 
       ! count number of 2D links and 1D endpoints
       call count_links(mx1Dend, Nx)
 
-      allocate (xe(nx), stat=ierr); xe = 0 ! used in findexternalboundarypoints
+      allocate (xe(nx), stat=ierr)
+      xe = 0 ! used in findexternalboundarypoints
       call aerr('xe (nx)', ierr, nx)
-      allocate (ye(nx), stat=ierr); ye = 0
+      allocate (ye(nx), stat=ierr)
+      ye = 0
       call aerr('ye (nx)', ierr, nx)
-      allocate (xyen(2, nx), stat=ierr); xyen = 0d0
+      allocate (xyen(2, nx), stat=ierr)
+      xyen = 0.0_dp
       call aerr('xyen(2, nx)', ierr, nx)
 
       ! some temp arrays
@@ -519,35 +574,70 @@ contains
       end if
       allocate (kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), itpenu(nx), kew(nx), ftpet(nx), stat=ierr)
       call aerr('kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx) , itpenu(nx), kew(nx), ftpet(nx)', ierr, 17 * nx)
-      kce = 0; ke = 0; kez = 0; keu = 0; kes = 0; ketm = 0; kesd = 0; keuxy = 0; ket = 0; ken = 0; ke1d2d = 0; keg = 0; ked = 0; kep = 0; kedb = 0; keklep = 0; kevalv = 0; kegen = 0; itpez = 0; itpenz = 0; itpeu = 0; itpenu = 0; kew = 0; ftpet = 1d6
+      kce = 0
+      ke = 0
+      kez = 0
+      keu = 0
+      kes = 0
+      ketm = 0
+      kesd = 0
+      keuxy = 0
+      ket = 0
+      ken = 0
+      ke1d2d = 0
+      keg = 0
+      ked = 0
+      kep = 0
+      kedb = 0
+      keklep = 0
+      kevalv = 0
+      kegen = 0
+      itpez = 0
+      itpenz = 0
+      itpeu = 0
+      itpenu = 0
+      kew = 0
+      ftpet = 1e6_dp
 
-      if (allocated(ketr)) deallocate (ketr)
+      if (allocated(ketr)) then
+         deallocate (ketr)
+      end if
       allocate (ketr(nx, 1), stat=ierr)
       call aerr('ketr(nx,1)', ierr, nx)
       ketr = 0
 
-      if (allocated(nbndtr)) deallocate (nbndtr)
+      if (allocated(nbndtr)) then
+         deallocate (nbndtr)
+      end if
       allocate (nbndtr(1), stat=ierr)
       call aerr('nbndtr(1)', ierr, 1)
       nbndtr = 0
 
-      if (allocated(trnames)) deallocate (trnames)
+      if (allocated(trnames)) then
+         deallocate (trnames)
+      end if
       allocate (trnames(1), stat=ierr)
       call aerr('trnames(1)', ierr, 1)
       trnames(1) = ''
       numtracers = 0
 
-      if (allocated(kesf)) deallocate (kesf)
+      if (allocated(kesf)) then
+         deallocate (kesf)
+      end if
       allocate (kesf(1, nx), stat=ierr) ! would have been nice to have stmpar%lsedsus,
       call aerr('kesf(1,nx)', ierr, nx) ! but no can do, jammer de bammer...
       kesf = 0
 
-      if (allocated(nbndsf)) deallocate (nbndsf)
+      if (allocated(nbndsf)) then
+         deallocate (nbndsf)
+      end if
       allocate (nbndsf(1), stat=ierr)
       call aerr('nbndsf(1)', ierr, 1)
       nbndsf = 0
 
-      if (allocated(sfnames)) deallocate (sfnames)
+      if (allocated(sfnames)) then
+         deallocate (sfnames)
+      end if
       allocate (sfnames(1), stat=ierr)
       call aerr('sfnames(1)', ierr, 1)
       sfnames = ''
@@ -583,12 +673,18 @@ contains
 
       num_bc_ini_blocks = 0
       if (ext_force_bnd_used) then
-         ! first read the bc file (new file format for boundary conditions)
+         ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
-                                                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+
+         call read_initialtracer_properties(trim(md_extfile_new), nx)
       end if
 
-      do while (ja_ext_force == 1) ! read *.ext file
+      if (len(trim(md_inifieldfile)) > 0) then
+         call read_initialtracer_properties(trim(md_inifieldfile), nx)
+      end if
+
+      do while (ja_ext_force == 1) ! read legacy format *.ext file
 
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja_ext_force, varname)
          call resolvePath(filename, md_extfile_dir)
@@ -604,7 +700,7 @@ contains
 
             jatimespace = 1 ! module is to be used
 
-            call processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, 1d0, transformcoef)
+            call processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, 1.0_dp, transformcoef)
 
          end if
 
@@ -620,15 +716,112 @@ contains
 
    end subroutine findexternalboundarypoints
 
-   subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
-                                                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+   !> Read tracer properties from extforce and inifield file, needed for correctly initializing numtracers.
+   subroutine read_initialtracer_properties(filename, nx)
       use properties
-      use timespace
       use tree_data_types
       use tree_structures
-      use messageHandling
+      use fm_external_forcings_data, only: transformcoef, ketr, numtracers, namtraclen
+      use fm_external_forcings_utils, only: read_tracer_properties
+      use system_utils
+      use unstruc_files, only: resolvePath
+      use m_alloc
+      use string_module, only: strcmpi
+      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
+      use unstruc_inifields, only: resolve_initial_3d_target
+      use m_qnerror
+      use messagehandling, only: msgbuf, err_flush
+
+      character(len=*), intent(in) :: filename !< Name of the inifield file to read
+      integer, intent(in) :: nx !< Number of boundary points (size of kce)
+
+      type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data), pointer :: node_ptr !
+      integer :: istat !
+      integer, parameter :: ini_key_len = 32 !
+      integer, parameter :: ini_value_len = 256 !
+      character(len=ini_key_len) :: groupname !
+      character(len=ini_value_len) :: quantity !
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: itrac, janew
+
+      integer :: i
+      integer :: num_items_in_file
+      logical :: file_ok
+      logical :: property_ok
+      character(len=256) :: basedir, fnam
+      integer :: major, minor
+
+      call tree_create(trim(filename), bnd_ptr)
+      call prop_file('ini', trim(filename), bnd_ptr, istat)
+      if (istat /= 0) then
+         call qnerror('Extforce or initial field file ', trim(filename), ' could not be read')
+         return
+      end if
+
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
+      minor = 0
+      call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in extforce or initial field file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new extforce or initial field file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
+         call err_flush()
+         return
+      end if
+
+      call split_filename(filename, basedir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
+
+      num_items_in_file = 0
+      if (associated(bnd_ptr%child_nodes)) then
+         num_items_in_file = size(bnd_ptr%child_nodes)
+      end if
+
+      do i = 1, num_items_in_file
+         node_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         groupname = tree_get_name(bnd_ptr%child_nodes(i)%node_ptr)
+         if (strcmpi(groupname, 'Initial') .or. strcmpi(groupname, 'Spatial')) then
+            quantity = ''
+
+            call prop_get(node_ptr, '', 'quantity', quantity, property_ok)
+            if (.not. property_ok) then
+               call qnerror('Expected property', 'quantity', 'for initial field definition')
+            end if
+
+            ! When initialtracer is found, get tracername and add tracer boundary.
+            if (quantity(1:13) == 'initialtracer') then
+               call read_tracer_properties(node_ptr, transformcoef)
+
+               call get_tracername(quantity, tracnam, qidnam)
+               tracunit = " "
+               call add_bndtracer(tracnam, tracunit, itrac, janew)
+
+               if (janew == 1) then
+                  ! realloc ketr
+                  call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
+               end if
+
+            end if
+         end if
+      end do
+
+      call tree_destroy(bnd_ptr)
+
+   end subroutine read_initialtracer_properties
+
+   subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+      use properties
+      use timespace, only: NODE_ID, POLY_TIM
+      use tree_data_types
+      use tree_structures
       use m_flowgeom, only: rrtol
       use fm_external_forcings_data, only: transformcoef
+      use fm_external_forcings_utils, only: read_tracer_properties
       use system_utils
       use unstruc_files, only: resolvePath
       use m_alloc
@@ -636,8 +829,7 @@ contains
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_missing, only: dmiss
       use m_qnerror
-
-      implicit none
+      use messagehandling, only: msgbuf, err_flush
 
       character(len=*), intent(in) :: filename
       integer, intent(in) :: nx
@@ -655,12 +847,10 @@ contains
       character(len=ini_value_len) :: quantity !
       character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
       character(len=ini_value_len) :: forcing_file !
-      double precision :: return_time !
-      double precision :: tr_ws ! Tracer fall velocity
-      double precision :: tr_decay_time ! Tracer decay time
-      double precision :: rrtolb ! Local, optional boundary tolerance value.
-      double precision :: width1D ! Local, optional custom 1D boundary width
-      double precision :: blDepth ! Local, optional custom boundary bed level depth below initial water level
+      real(kind=dp) :: return_time !
+      real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
+      real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
+      real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
 
       integer :: i
       integer :: num_items_in_file
@@ -673,16 +863,20 @@ contains
       call tree_create(trim(filename), bnd_ptr)
       call prop_file('ini', trim(filename), bnd_ptr, istat)
       if (istat /= 0) then
-         call qnerror('Boundary external forcing file ', trim(filename), ' could not be read')
+         call qnerror('External forcing file ', trim(filename), ' could not be read.')
          return
       end if
 
-      ! check FileVersion
-      major = 1
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
          call err_flush()
          return
       end if
@@ -709,23 +903,23 @@ contains
             ! todo: read multiple quantities
             call prop_get(node_ptr, '', 'quantity', quantity, property_ok)
             if (.not. property_ok) then
-               call qnerror('Expected property', 'quantity', ' for boundary definition')
+               call qnerror('Expected property', 'quantity', 'for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
 
             call prop_get(node_ptr, '', 'nodeId', location_file, property_ok)
             if (property_ok) then
-               filetype = node_id
+               filetype = NODE_ID
             else
                call prop_get(node_ptr, '', 'locationFile', location_file, property_ok)
-               filetype = poly_tim
+               filetype = POLY_TIM
             end if
 
             if (property_ok) then
                call resolvePath(location_file, basedir)
             else
-               call qnerror('Expected property', 'locationFile', ' for boundary definition')
+               call qnerror('Expected property', 'locationFile', 'for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
@@ -734,7 +928,7 @@ contains
             if (property_ok) then
                call resolvePath(forcing_file, basedir)
             else
-               call qnerror('Expected property', 'forcingFile', ' for boundary definition')
+               call qnerror('Expected property', 'forcingFile', 'for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
@@ -742,15 +936,9 @@ contains
             call prop_get(node_ptr, '', 'returnTime', return_time)
             call prop_get(node_ptr, '', 'return_time', return_time) ! UNST-2386: Backwards compatibility reading.
 
-            tr_ws = 0d0
-            call prop_get(node_ptr, '', 'tracerFallVelocity', tr_ws)
-            transformcoef(4) = tr_ws
+            call read_tracer_properties(node_ptr, transformcoef)
 
-            tr_decay_time = 0d0
-            call prop_get(node_ptr, '', 'tracerDecayTime', tr_decay_time)
-            transformcoef(5) = tr_decay_time
-
-            rrtolb = 0d0
+            rrtolb = 0.0_dp
             call prop_get(node_ptr, '', 'openBoundaryTolerance', rrtolb)
 
             width1D = dmiss
@@ -760,16 +948,15 @@ contains
             call prop_get(node_ptr, '', 'bndBlDepth', blDepth)
 
             if (group_ok) then
-               if (rrtolb > 0d0) then
+               if (rrtolb > 0.0_dp) then
                   call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=(1 + 2 * rrtolb) / (1 + 2 * rrtol), tfc=transformcoef, width1D=width1D, blDepth=blDepth)
                else
-                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1d0, tfc=transformcoef, width1D=width1D, blDepth=blDepth)
+                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, width1D=width1D, blDepth=blDepth)
                end if
                num_bc_ini_blocks = num_bc_ini_blocks + 1
             end if
 
             file_ok = file_ok .and. group_ok
-
          else
             ! warning: unknown group
          end if
@@ -789,7 +976,7 @@ contains
 
       character(len=256), intent(in) :: qidfm ! constituent index
       integer, intent(in) :: nbnd ! boundary cell index
-      double precision, intent(in) :: rettime ! return time (h)
+      real(kind=dp), intent(in) :: rettime ! return time (h)
       integer :: thrtlen ! temp array length
 
       if (allocated(thrtt)) then
@@ -804,7 +991,7 @@ contains
       call realloc(thrtn, thrtlen, keepExisting=.true., fill=0)
       thrtn(thrtlen) = nbnd
 
-      call realloc(thrtt, thrtlen, keepExisting=.true., fill=0d0)
+      call realloc(thrtt, thrtlen, keepExisting=.true., fill=0.0_dp)
       thrtt(thrtlen) = rettime
    end subroutine appendrettime
 
@@ -824,7 +1011,6 @@ contains
       use timespace
       use m_sferic
       use m_alloc
-      use unstruc_messages
       use m_ship
       use properties
       use m_transport
@@ -835,29 +1021,32 @@ contains
       use m_strucs, only: NUMGENERALKEYWRD
       use m_missing, only: dmiss
       use m_qnerror
-
-      implicit none
+      use m_find_name, only: find_name
+      use messagehandling, only: msgbuf, msg_flush, err_flush
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
+                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD
 
       character(len=256), intent(in) :: qid !
       character(len=256), intent(in) :: filename !
       integer, intent(in) :: filetype
       integer, intent(in) :: nx !
       integer, dimension(nx), intent(inout) :: kce !
-      double precision, intent(in) :: return_time
-      integer, intent(inout) :: numz, numu, nums, numtm, numsd, & !
-                                numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf !
-      double precision, intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
+      real(kind=dp), intent(in) :: return_time
+      integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
+                             numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+      integer, intent(inout) :: numqh
+      real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
-      double precision, dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
-      double precision, optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
-      double precision, optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
+      real(kind=dp), dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
+      real(kind=dp), optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
+      real(kind=dp), optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
 
       character(len=256) :: qidfm !
       integer :: itpbn
       character(len=NAMTRACLEN) :: tracnam, sfnam, qidnam
       character(len=20) :: tracunit
       integer :: itrac, isf
-      integer, external :: findname
       integer :: janew
       character(len=:), allocatable :: pliname
 
@@ -865,42 +1054,57 @@ contains
       qidfm = qid
       if (qidfm == 'waterlevelbnd' .or. qidfm == 'neumannbnd' .or. qidfm == 'riemannbnd' .or. qidfm == 'outflowbnd' .or. qidfm == 'qhbnd') then
 
-         if (allocated(pliname)) deallocate (pliname)
+         if (allocated(pliname)) then
+            deallocate (pliname)
+         end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kez(nbndz + 1:nx), numz, usemask=.true., pliname=pliname) !numz=number cells found, plname=pliname
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'
+         call msg_flush()
          nzbnd = nzbnd + 1
 
-         if (qidfm == 'waterlevelbnd') itpbn = 1
-         if (qidfm == 'neumannbnd') itpbn = 2
+         if (qidfm == 'waterlevelbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL
+         end if
+         if (qidfm == 'neumannbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_NEUMANN
+         end if
          if (qidfm == 'riemannbnd') then
-            itpbn = 5
+            itpbn = BOUNDARY_VELOCITY_RIEMANN
             if (present(tfc)) then
                ftpet(nbndz + 1:nbndz + numz) = tfc(7) ! relaxation time riemann from ext file
             end if
          end if
-         if (qidfm == 'outflowbnd') itpbn = 6
+         if (qidfm == 'outflowbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_OUTFLOW
+         end if
 
          if (qidfm == 'qhbnd') then
-            itpbn = 7
+            itpbn = BOUNDARY_DISCHARGE_HEAD
             nqhbnd = nqhbnd + 1
             numqh = numz
             if (filetype == poly_tim) then
-               call realloc(qhpliname, nqhbnd); qhpliname(nqhbnd) = pliname
+               call realloc(qhpliname, nqhbnd)
+               qhpliname(nqhbnd) = pliname
             end if
 
-            call realloc(L1qhbnd, nqhbnd); L1qhbnd(nqhbnd) = nbndz + 1
-            call realloc(L2qhbnd, nqhbnd); L2qhbnd(nqhbnd) = nbndz + numz
-            call realloc(atqh_all, nqhbnd); atqh_all(nqhbnd) = 0d0
-            call realloc(atqh_sum, nqhbnd); atqh_sum(nqhbnd) = 0d0
-            call realloc(qhbndz, nqhbnd); qhbndz(nqhbnd) = 0d0
+            call realloc(L1qhbnd, nqhbnd)
+            L1qhbnd(nqhbnd) = nbndz + 1
+            call realloc(L2qhbnd, nqhbnd)
+            L2qhbnd(nqhbnd) = nbndz + numz
+            call realloc(atqh_all, nqhbnd)
+            atqh_all(nqhbnd) = 0.0_dp
+            call realloc(atqh_sum, nqhbnd)
+            atqh_sum(nqhbnd) = 0.0_dp
+            call realloc(qhbndz, nqhbnd)
+            qhbndz(nqhbnd) = 0.0_dp
             call realloc(qh_gamma, nqhbnd)
-            qh_gamma = 0d0
+            qh_gamma = 0.0_dp
             call realloc(qhbndz_min, nqhbnd)
-            qhbndz_min = 0d0
+            qhbndz_min = 0.0_dp
             call realloc(qhbndz_plus, nqhbnd)
-            qhbndz_plus = 0d0
+            qhbndz_plus = 0.0_dp
             call realloc(q_org, nqhbnd)
-            q_org = 0d0
+            q_org = 0.0_dp
          end if
          itpez(nbndz + 1:nbndz + numz) = itpbn
 
@@ -924,7 +1128,8 @@ contains
       else if (qidfm == 'velocitybnd' .or. qidfm == 'dischargebnd' .or. qidfm == 'qhubnd' .or. &
                qidfm == 'criticaloutflowbnd' .or. qidfm == 'weiroutflowbnd' .or. qidfm == 'absgenbnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, keu(nbndu + 1:nx), numu, usemask=.true., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numu, ' nr of open bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numu, ' nr of open bndcells'
+         call msg_flush()
          nubnd = nubnd + 1
 
          if (qidfm == 'velocitybnd') then
@@ -932,15 +1137,20 @@ contains
          else if (qidfm == 'dischargebnd') then
             itpbn = 4
             nqbnd = nqbnd + 1
-            call realloc(L1qbnd, nqbnd); L1qbnd(nqbnd) = nbndu + 1
-            call realloc(L2qbnd, nqbnd); L2qbnd(nqbnd) = nbndu + numu
-            call realloc(at_all, nqbnd); at_all(nqbnd) = 0d0
-            call realloc(at_sum, nqbnd); at_sum(nqbnd) = 0d0
-            call realloc(wwssav_all, (/2, nqbnd/), keepExisting=.true., fill=0d0)
-            call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0d0)
-            call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0d0
+            call realloc(L1qbnd, nqbnd)
+            L1qbnd(nqbnd) = nbndu + 1
+            call realloc(L2qbnd, nqbnd)
+            L2qbnd(nqbnd) = nbndu + numu
+            call realloc(at_all, nqbnd)
+            at_all(nqbnd) = 0.0_dp
+            call realloc(at_sum, nqbnd)
+            at_sum(nqbnd) = 0.0_dp
+            call realloc(wwssav_all, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_sum, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
+            call realloc(huqbnd, L2qbnd(nqbnd))
+            huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
-            if (.not. (jawave == 4)) then ! Safety to avoid allocation errors later on
+            if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
                call qnerror('Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.', '  ', ' ')
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
@@ -970,7 +1180,8 @@ contains
 
       else if (qidfm == 'salinitybnd' .and. jasal > 0) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kes(nbnds + 1:nx), nums, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells'
+         call msg_flush()
          if (nums > 0) then
             call appendrettime(qidfm, nbnds + 1, return_time)
             nbnds = nbnds + nums
@@ -978,19 +1189,23 @@ contains
 
       else if (qidfm == 'waveenergybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kew(nbndw + 1:nx), numw, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells'
+         call msg_flush()
          nwbnd = nwbnd + 1
 
-         call realloc(L1wbnd, nwbnd); L1wbnd(nwbnd) = nbndw + 1
-         call realloc(L2wbnd, nwbnd); L2wbnd(nwbnd) = nbndw + numw
+         call realloc(L1wbnd, nwbnd)
+         L1wbnd(nwbnd) = nbndw + 1
+         call realloc(L2wbnd, nwbnd)
+         L2wbnd(nwbnd) = nbndw + numw
 
          nbndw = nbndw + numw
          call realloc(fnamwbnd, nwbnd, fill='')
          fnamwbnd(nwbnd) = trim(filename)
 
-      else if (qidfm == 'temperaturebnd' .and. jatem > 0) then
+      else if (qidfm == 'temperaturebnd' .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm + 1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'
+         call msg_flush()
          if (numtm > 0) then
             call appendrettime(qidfm, nbndtm + 1, return_time)
             nbndtm = nbndtm + numtm
@@ -998,7 +1213,8 @@ contains
 
       else if (qidfm == 'sedimentbnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesd(nbndsd + 1:nx), numsd, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells'
+         call msg_flush()
          if (numsd > 0) then
             call appendrettime(qidfm, nbndsd + 1, return_time)
             nbndsd = nbndsd + numsd
@@ -1010,46 +1226,44 @@ contains
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-!       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'
+         call msg_flush()
          if (numtr > 0) then
             call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
 
-      else if (qid(1:13) == 'initialtracer') then
+      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-!       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
          call get_sedfracname(qidfm, sfnam, qidnam)
-         isf = findname(numfracs, sfnames, sfnam)
+         isf = find_name(sfnames, sfnam)
 
          if (isf == 0) then ! add
 
             numfracs = numfracs + 1
-!       realloc
-            call realloc(kesf, (/Nx, numfracs/), keepExisting=.true., fill=0)
+            call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
 
             sfnames(numfracs) = trim(sfnam)
             isf = numfracs
-
          end if
 
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesf(nbndsf(isf) + 1:, isf), numsf, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(3a,i8,a)') trim(qid), ' ', trim(filename), numsf, ' nr of sedfrac bndcells'; call msg_flush()
+         write (msgbuf, '(3a,i8,a)') trim(qid), ' ', trim(filename), numsf, ' nr of sedfrac bndcells'
+         call msg_flush()
          if (numsf > 0) then
             call appendrettime(qidfm, nbndsf(isf) + 1, return_time)
             nbndsf(isf) = nbndsf(isf) + numsf
@@ -1058,25 +1272,29 @@ contains
 
       else if (qidfm == 'tangentialvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ket(nbndt + 1:nx), numt, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numt, ' nr of tangentialvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numt, ' nr of tangentialvelocity bndcells'
+         call msg_flush()
 
          nbndt = nbndt + numt
 
       else if (qidfm == 'uxuyadvectionvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, keuxy(nbnduxy + 1:nx), numuxy, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numuxy, ' nr of uxuyadvectionvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numuxy, ' nr of uxuyadvectionvelocity bndcells'
+         call msg_flush()
 
          nbnduxy = nbnduxy + numuxy
 
       else if (qidfm == 'normalvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ken(nbndn + 1:nx), numn, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numn, ' nr of normalvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numn, ' nr of normalvelocity bndcells'
+         call msg_flush()
 
          nbndn = nbndn + numn
 
       else if (qidfm == '1d2dbnd') then ! SOBEK1D-FM2D
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ke1d2d(nbnd1d2d + 1:nx), num1d2d, usemask=.true., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), num1d2d, ' nr of SOBEK1D-FM2D bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), num1d2d, ' nr of SOBEK1D-FM2D bndcells'
+         call msg_flush()
 
          call addopenbndsection(num1d2d, ke1d2d(nbnd1d2d + 1:nbnd1d2d + num1d2d), filename, IBNDTP_1D2D)
          nbnd1d2d = nbnd1d2d + num1d2d
@@ -1100,22 +1318,21 @@ contains
       use m_flowparameters, only: jawave
       use m_flowtimes, only: dt_nodal
       use m_qnerror
-
-      implicit none
+      use m_find_name, only: find_name
+      use messagehandling, only: LEVEL_WARN, mess
 
       character(len=*), intent(inout) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: filename !< Name of data file for current quantity.
       integer, intent(in) :: filetype !< File type of current quantity.
       integer, intent(in) :: method !< Time-interpolation method for current quantity.
-      character(len=1), intent(in) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(in) :: operand !< Operand w.r.t. previous data
       character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
       logical :: success
       character(len=256) :: tracnam, sfnam, qidnam
       integer :: itrac, isf
-      integer, external :: findname
-      double precision, dimension(:), pointer :: pzmin, pzmax
+      real(kind=dp), dimension(:), pointer :: pzmin, pzmax
 
       success = .true. ! initialization
 
@@ -1170,7 +1387,7 @@ contains
       else if (numtracers > 0 .and. (qid(1:9) == 'tracerbnd')) then
          ! get tracer boundary condition number
          call get_tracername(qid, tracnam, qidnam)
-         itrac = findname(numtracers, trnames, tracnam)
+         itrac = find_name(trnames, tracnam)
 
 ! for parallel runs, we always need to add the tracer, even if this subdomain has no tracer boundary conditions defined
 !      call add_tracer(tracnam, iconst)
@@ -1188,7 +1405,7 @@ contains
       else if (numfracs > 0 .and. (qid(1:10) == 'sedfracbnd') .and. stm_included) then
 
          call get_sedfracname(qid, sfnam, qidnam)
-         isf = findname(numfracs, sfnames, sfnam)
+         isf = find_name(sfnames, sfnam)
 
          if (isf > 0) then
             if (nbndsf(isf) > 0) then
@@ -1213,6 +1430,7 @@ contains
          pzmax => zminmaxuxy(nbnduxy + 1:2 * nbnduxy)
          success = ec_addtimespacerelation(qid, xbnduxy, ybnduxy, kduxy, kx, filename, filetype, method, operand, xy2bnduxy, &
                                            z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file)
+         success = success .and. check_keyword_zerozbndinflowadvection()
 
       else if (nbndn > 0 .and. (qid == 'normalvelocitybnd')) then
          success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcing_file, targetindex=targetindex)
@@ -1251,11 +1469,11 @@ contains
    function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_transportdata, only: NAMLEN
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
-      use unstruc_messages
-
-      implicit none
+      use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
@@ -1266,21 +1484,24 @@ contains
       integer, intent(in) :: targetindex !< Target index in target value array (typically, the current count of this object type, e.g. numlatsg).
       integer, intent(in) :: vectormax !< The number of values per object ('kx'), typically 1.
       logical :: success !< Return value. Whether relation was added successfully.
-      double precision, intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
+      real(kind=dp), intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
 
-      character(len=256) :: valuestring, fnam
-      double precision :: valuedble
-      double precision :: xdum(1), ydum(1)
+      character(len=256) :: valuestring, fnam, qid_base
+      character(len=NAMLEN) :: const_name
+      real(kind=dp) :: valuedble
+      real(kind=dp) :: xdum(1), ydum(1)
       integer :: kdum(1)
       integer :: ierr, L
-      double precision, pointer :: targetarrayptr(:)
-      double precision, pointer :: dbleptr(:)
+      real(kind=dp), pointer :: targetarrayptr(:)
+      real(kind=dp), pointer :: dbleptr(:)
       integer :: tgtitem
       integer, pointer :: intptr, multuniptr
       logical :: file_exists
 
       success = .true. ! initialization
-      xdum = 1d0; ydum = 1d0; kdum = 1
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
 
       if (len_trim(paramvalue) > 0) then
          valuestring = paramvalue
@@ -1294,12 +1515,14 @@ contains
             valuestring = location_file(1:L)//'.tim'
             inquire (file=valuestring, exist=file_exists)
             if (.not. file_exists) then
-               call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
+               call mess(LEVEL_ERROR, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
+               success = .false.
+               return
             end if
          end if
 
       else
-         ! TODO: AvD: error msg?
+         call mess(LEVEL_ERROR, trim(objtype)//' '''//trim(objid)//''', '//paramname//' could not be read.')
          success = .false.
       end if
 
@@ -1315,23 +1538,31 @@ contains
             write (msgbuf, '(a,a,a,a,a)') 'Control for ', trim(objtype), ''''//trim(objid)//''', ', paramname, ' set to REALTIME.'
             call dbg_flush()
          else
-            if (fm_ext_force_name_to_ec_item('', '', '', qid, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
+            qid_base = qid
+            call get_constituent_name(qid, const_name, qid_base)
+            if (fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
                success = .true.
             else
                success = .false.
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(qid)//'''.'
-               call warn_flush()
+               call err_flush()
                return
             end if
 
             fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
             ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
             if (index(trim(fnam)//'|', '.tim|') > 0) then
                ! uniform=single time series vectormax = 1
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
                                                  filetype=uniform, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -1342,7 +1573,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
                                                  filetype=bcascii, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -1379,7 +1610,9 @@ contains
       num_registered_items = 0
 
       max_ext_bnd_items = 64 ! Default start size.
-      if (allocated(registered_items)) deallocate (registered_items)
+      if (allocated(registered_items)) then
+         deallocate (registered_items)
+      end if
       allocate (registered_items(max_ext_bnd_items))
 
       registered_items(1:max_ext_bnd_items) = ''
@@ -1414,14 +1647,12 @@ contains
       use fm_external_forcings_data
       use m_transport
       use m_sediment, only: stm_included
-      use unstruc_messages
       use m_missing
-
-      implicit none
+      use m_find_name, only: find_name
+      use messagehandling, only: msgbuf, err_flush
 
       integer :: thrtlen, i, j, nseg, itrac, ifrac, iconst, n, ierr
       character(len=256) :: qidfm, tracnam, sedfracnam, qidnam
-      integer, external :: findname
 
       ! deallocation of TH arrays
       if (allocated(threttim)) then
@@ -1442,25 +1673,34 @@ contains
          qidfm = thrtq(i)
          if (qidfm == 'salinitybnd' .and. allocated(kbnds)) then
             nseg = kbnds(5, thrtn(i))
-            if (nseg /= i) cycle
+            if (nseg /= i) then
+               cycle
+            end if
             if (nseg == 0 .or. nseg > nopenbndsect) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' salinity boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' salinity boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
             threttim(ISALT, nseg) = thrtt(i)
          else if (qidfm == 'temperaturebnd' .and. allocated(kbndtm)) then
             nseg = kbndtm(5, thrtn(i))
-            if (nseg /= i) cycle
+            if (nseg /= i) then
+               cycle
+            end if
             if (nseg == 0 .or. nseg > nopenbndsect) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' temperature boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' temperature boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
             threttim(ITEMP, nseg) = thrtt(i)
          else if (qidfm == 'sedimentbnd' .and. allocated(kbndsd) .and. .not. stm_included) then
             nseg = kbndsd(5, thrtn(i))
-            if (nseg /= i) cycle
+            if (nseg /= i) then
+               cycle
+            end if
             if (nseg == 0 .or. nseg > nopenbndsect) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' sediment boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' sediment boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
             do j = ISED1, ISEDN
@@ -1468,12 +1708,15 @@ contains
             end do
          else if (qidfm(1:9) == 'tracerbnd') then
             call get_tracername(qidfm, tracnam, qidnam)
-            itrac = findname(numtracers, trnames, tracnam)
+            itrac = find_name(trnames, tracnam)
             if (allocated(bndtr) .and. thrtn(i) <= nbndtr(itrac)) then
                nseg = bndtr(itrac)%k(5, thrtn(i))
-               if (nseg /= i) cycle
+               if (nseg /= i) then
+                  cycle
+               end if
                if (nseg == 0 .or. nseg > nopenbndsect) then
-                  write (msgbuf, '(i8,a)') thrtn(i), ' tracer boundary point is assigned to incorrect boundary segment'; call err_flush()
+                  write (msgbuf, '(i8,a)') thrtn(i), ' tracer boundary point is assigned to incorrect boundary segment'
+                  call err_flush()
                   cycle
                end if
                iconst = itrac2const(itrac)
@@ -1482,7 +1725,7 @@ contains
          else if (qidfm(1:10) == 'sedfracbnd') then
             ierr = 0
             call get_sedfracname(qidfm, sedfracnam, qidnam)
-            ifrac = findname(numfracs, sfnames, sedfracnam)
+            ifrac = find_name(sfnames, sedfracnam)
             if (allocated(bndsf) .and. thrtn(i) <= nbndsf(ifrac)) then ! i      = no of TH boundaries (i.e. 1 per fraction bnd)
                ! thrtn  = no of boundaries per fraction
                ! nbndsf = total no of bnd links per fractions
@@ -1492,24 +1735,39 @@ contains
                   ierr = 1
                end if
                iconst = ifrac2const(ifrac)
-               if (iconst == 0) cycle
+               if (iconst == 0) then
+                  cycle
+               end if
                threttim(iconst, nseg) = thrtt(i)
             else
                ierr = 1
             end if
             if (ierr /= 0) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' sedfrac boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' sedfrac boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
          end if
       end do
 
-      if (allocated(thtbnds)) deallocate (thtbnds)
-      if (allocated(thzbnds)) deallocate (thzbnds)
-      if (allocated(thtbndtm)) deallocate (thtbndtm)
-      if (allocated(thzbndtm)) deallocate (thzbndtm)
-      if (allocated(thtbndsd)) deallocate (thtbndsd)
-      if (allocated(thzbndsd)) deallocate (thzbndsd)
+      if (allocated(thtbnds)) then
+         deallocate (thtbnds)
+      end if
+      if (allocated(thzbnds)) then
+         deallocate (thzbnds)
+      end if
+      if (allocated(thtbndtm)) then
+         deallocate (thtbndtm)
+      end if
+      if (allocated(thzbndtm)) then
+         deallocate (thzbndtm)
+      end if
+      if (allocated(thtbndsd)) then
+         deallocate (thtbndsd)
+      end if
+      if (allocated(thzbndsd)) then
+         deallocate (thzbndsd)
+      end if
 
       allocate (thtbnds(nbnds), thzbnds(nbnds * kmxd), thtbndtm(nbndtm), thzbndtm(nbndtm * kmxd), thtbndsd(nbndsd), thzbndsd(nbndsd * kmxd), stat=ierr)
       call aerr('thtbnds(nbnds), thzbnds(nbnds*kmxd), thtbndtm(nbndtm), thzbndtm(nbndtm*kmxd), thtbndsd(nbndsd), thzbndsd(nbndsd*kmxd)', ierr, (kmxd + 1) * (nbnds + nbndtm + nbndsd))
@@ -1531,8 +1789,12 @@ contains
          do itrac = 1, numtracers
             iconst = itrac2const(itrac)
 
-            if (allocated(bndtr(itrac)%tht)) deallocate (bndtr(itrac)%tht)
-            if (allocated(bndtr(itrac)%thz)) deallocate (bndtr(itrac)%thz)
+            if (allocated(bndtr(itrac)%tht)) then
+               deallocate (bndtr(itrac)%tht)
+            end if
+            if (allocated(bndtr(itrac)%thz)) then
+               deallocate (bndtr(itrac)%thz)
+            end if
 
             n = nbndtr(itrac)
 
@@ -1548,8 +1810,12 @@ contains
 
       if (allocated(bndsf)) then
          do ifrac = 1, numfracs
-            if (allocated(bndsf(ifrac)%tht)) deallocate (bndsf(ifrac)%tht)
-            if (allocated(bndsf(ifrac)%thz)) deallocate (bndsf(ifrac)%thz)
+            if (allocated(bndsf(ifrac)%tht)) then
+               deallocate (bndsf(ifrac)%tht)
+            end if
+            if (allocated(bndsf(ifrac)%thz)) then
+               deallocate (bndsf(ifrac)%thz)
+            end if
 
             n = nbndsf(ifrac)
 
@@ -1560,7 +1826,7 @@ contains
             ! mapping to constituents, just in case fracs do not map sequentially to ised1 and so on
             iconst = ifrac2const(ifrac)
             if (iconst == 0) then
-               bndsf(ifrac)%tht = 0d0
+               bndsf(ifrac)%tht = 0.0_dp
             else
                do i = 1, n
                   bndsf(ifrac)%tht(i) = threttim(iconst, bndsf(ifrac)%k(5, i))
@@ -1571,35 +1837,18 @@ contains
 
    end subroutine init_threttimes
 
-   subroutine allocatewindarrays()
-      use m_wind
-      use m_flow
-      use m_flowgeom
-
-      implicit none
-
-      integer :: ierr
-
-      if (.not. allocated(wx)) then
-         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
-         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
-         wx = 0d0
-         wy = 0d0
-         wdsu = 0d0
-         wdsu_x = 0d0
-         wdsu_y = 0d0
-      end if
-
-   end subroutine allocatewindarrays
-
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new
+      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
+
       integer :: iresult
 
       call setup(iresult)
+      if (iresult == DFM_NOERR) then
+         call init_new(md_inifieldfile, iresult)
+      end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
@@ -1618,11 +1867,10 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, btempforcingtypl, ja_friction_coefficient_time_dependent
-      use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
+      use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
-      use unstruc_model, only: md_inifieldfile
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
       use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
@@ -1630,23 +1878,22 @@ contains
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
-      use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
+      use m_flow_init_structurecontrol, only: flow_init_structurecontrol
+      use m_setzminmax, only: setzminmax
+      use m_bnd, only: alloc_bnd, dealloc_bndarr
+      use messagehandling, only: msgbuf, LEVEL_WARN, mess
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer, intent(out) :: iresult
 
       integer :: ierr
-      logical :: exist
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
-      logical, external :: flow_init_structurecontrol
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
 
       iresult = DFM_NOERR
-
-      tair_available = .false.
-      dewpoint_available = .false.
 
       if (.not. allocated(const_names)) then
          allocate (const_names(0))
@@ -1661,14 +1908,8 @@ contains
          allocate (mbaname(0))
       end if
 
-      ! (re-)initialize flags/counters related to temperature forcings
+      ! (re-)initialize flags/counters
       itempforcingtyp = 0
-      btempforcingtypA = .false.
-      btempforcingtypC = .false.
-      btempforcingtypH = .false.
-      btempforcingtypS = .false.
-      btempforcingtypL = .false.
-
       ja_friction_coefficient_time_dependent = 0
 
       if (.not. allocated(sah)) then
@@ -1682,42 +1923,31 @@ contains
       inivelx = 0
       inively = 0
 
-      call initialize_ec_module()
-
       ! First initialize new-style StructureFile quantities.
       if (.not. flow_init_structurecontrol()) then
          iresult = DFM_EXTFORCERROR
          return
       end if
 
-      ! First initialize new-style IniFieldFile quantities.
-      if (len_trim(md_inifieldfile) > 0) then
-         call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
-         inquire (file=trim(md_inifieldfile), exist=exist)
-         if (exist) then
-            iresult = initialize_initial_fields(md_inifieldfile)
-            if (iresult /= DFM_NOERR) then
-               call timstop(handle_extra(49)) ! initialize_initial_fields
-               return
-            end if
-         else
-            call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
-            call warn_flush()
-            iresult = DFM_EXTFORCERROR
-            call timstop(handle_extra(49)) ! initialize_initial_fields
-            return
-         end if
-         call timstop(handle_extra(49)) ! initialize_initial_fields
+      if (jatimespace == 0) then
+         return ! Just cleanup and close ext file.
       end if
 
-      if (jatimespace == 0) return ! Just cleanup and close ext file.
-
-      if (allocated(ec_pwxwy_x)) deallocate (ec_pwxwy_x)
-      if (allocated(ec_pwxwy_y)) deallocate (ec_pwxwy_y)
-      if (allocated(patm)) deallocate (patm)
-      if (allocated(kbndz)) deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
-      if (allocated(zkbndz)) deallocate (zkbndz)
+      if (allocated(ec_pwxwy_x)) then
+         deallocate (ec_pwxwy_x)
+      end if
+      if (allocated(ec_pwxwy_y)) then
+         deallocate (ec_pwxwy_y)
+      end if
+      if (allocated(air_pressure)) then
+         deallocate (air_pressure)
+      end if
+      if (allocated(kbndz)) then
+         deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
+      end if
+      if (allocated(zkbndz)) then
+         deallocate (zkbndz)
+      end if
       id_first_wind = huge(id_first_wind)
       id_last_wind = -huge(id_last_wind)
 
@@ -1727,7 +1957,9 @@ contains
          allocate (xbndz(nbndz), ybndz(nbndz), xy2bndz(2, nbndz), zbndz(nbndz), kbndz(N4, nbndz), zbndz0(nbndz), kdz(nbndz), stat=ierr)
          call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(N4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz * 10)
          if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
-            if (allocated(zkbndz)) deallocate (zkbndz, kbanz)
+            if (allocated(zkbndz)) then
+               deallocate (zkbndz, kbanz)
+            end if
             allocate (zkbndz(2, nbndz), stat=ierr)
             call aerr('zkbndz(2,nbndz)', ierr, 2 * nbndz)
             allocate (kbanz(2, nbndz), stat=ierr)
@@ -1735,7 +1967,8 @@ contains
             kbanz = 0
          end if
 
-         kbndz = 0; kdz = 1
+         kbndz = 0
+         kdz = 1
 
          do k = 1, nbndz
             L = kez(k)
@@ -1746,6 +1979,7 @@ contains
             xbndz(k) = xe(L) ! xz(kb)
             ybndz(k) = ye(L) ! yz(kb)
             zbndz0(k) = dmiss
+            zbndz(k) = dmiss
             xy2bndz(:, k) = xyen(:, L)
 
             kbndz(1, k) = kb
@@ -1761,10 +1995,10 @@ contains
 
             do n = 1, nd(kbi)%lnx
                L = abs(nd(kbi)%ln(n))
-               teta(L) = 1d0
+               teta(L) = 1.0_dp
             end do
 
-            if (iadvec /= 0 .and. kcu(L) == -1) then
+            if (iadvec /= 0 .and. kcu(L) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -1784,7 +2018,7 @@ contains
          do k = 1, nbndz
             kbi = kbndz(2, k)
             Lf = kbndz(3, k)
-            if (iadvec /= 0 .and. kcu(Lf) == -1) then
+            if (iadvec /= 0 .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -1803,18 +2037,30 @@ contains
          end do
       end if
 
-      if (allocated(kbndu)) deallocate (xbndu, ybndu, xy2bndu, zbndu, kbndu, zbndu0)
-      if (allocated(zkbndu)) deallocate (zkbndu)
-      if (allocated(zbndq)) deallocate (zbndq)
-      if (allocated(sigmabndu)) deallocate (sigmabndu)
-      if (allocated(zminmaxu)) deallocate (zminmaxu)
+      if (allocated(kbndu)) then
+         deallocate (xbndu, ybndu, xy2bndu, zbndu, kbndu, zbndu0)
+      end if
+      if (allocated(zkbndu)) then
+         deallocate (zkbndu)
+      end if
+      if (allocated(zbndq)) then
+         deallocate (zbndq)
+      end if
+      if (allocated(sigmabndu)) then
+         deallocate (sigmabndu)
+      end if
+      if (allocated(zminmaxu)) then
+         deallocate (zminmaxu)
+      end if
 
       ! allocate the following even if not needed (for debugging purposes)
       tmp_nbndu = max(nbndu, 1)
       allocate (xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2, tmp_nbndu), kbndu(N4, tmp_nbndu), kdu(tmp_nbndu), stat=ierr)
       call aerr('xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2,tmp_nbndu), kbndu(N4,tmp_nbndu), kdu(tmp_nbndu)', ierr, tmp_nbndu * (N4 + 5))
       if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
-         if (allocated(zkbndu)) deallocate (zkbndu, kbanu)
+         if (allocated(zkbndu)) then
+            deallocate (zkbndu, kbanu)
+         end if
          allocate (zkbndu(2, tmp_nbndu), stat=ierr)
          call aerr('zkbndu(2,tmp_nbndu)', ierr, 2 * tmp_nbndu)
          allocate (kbanu(2, tmp_nbndu), stat=ierr)
@@ -1838,7 +2084,8 @@ contains
       end if
 
       if (nbndu > 0) then ! similar for u bnd's
-         kbndu = 0; kdu = 1
+         kbndu = 0
+         kdu = 1
          do k = 1, nbndu
             L = keu(k)
             Lf = lne2ln(L)
@@ -1859,7 +2106,7 @@ contains
 
             do n = 1, nd(kbi)%lnx
                L = abs(nd(kbi)%ln(n))
-               teta(L) = 1d0
+               teta(L) = 1.0_dp
             end do
 
             iadv(Lf) = -1 ! switch off adv at open u-bnd's
@@ -1872,10 +2119,16 @@ contains
          end do
       end if
 
-      if (allocated(kbnds)) deallocate (xbnds, ybnds, xy2bnds, zbnds, kbnds)
+      if (allocated(kbnds)) then
+         deallocate (xbnds, ybnds, xy2bnds, zbnds, kbnds)
+      end if
       if (jasal > 0) then
-         if (allocated(sigmabnds)) deallocate (sigmabnds)
-         if (allocated(zminmaxs)) deallocate (zminmaxs)
+         if (allocated(sigmabnds)) then
+            deallocate (sigmabnds)
+         end if
+         if (allocated(zminmaxs)) then
+            deallocate (zminmaxs)
+         end if
          if (nbnds > 0) then ! salinity as for waterlevel bnds, but no kcs = -1
             numnos = 0
             allocate (xbnds(nbnds), ybnds(nbnds), xy2bnds(2, nbnds), zbnds(kmxd * nbnds), kbnds(5, nbnds), kds(nbnds), stat=ierr)
@@ -1886,7 +2139,9 @@ contains
             allocate (zminmaxs(2 * nbnds))
             call aerr('zminmaxs (2*nbnds)', ierr, 2 * nbnds)
 
-            zbnds = DMISS; kbnds = 0; kds = 1
+            zbnds = DMISS
+            kbnds = 0
+            kds = 1
             do k = 1, nbnds
                L = kes(k)
                Lf = lne2ln(L)
@@ -1918,9 +2173,13 @@ contains
       end if
 
       if (allocated(kbndTM)) deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
-      if (jatem > 0) then
-         if (allocated(sigmabndTM)) deallocate (sigmabndTM)
-         if (allocated(zminmaxTM)) deallocate (zminmaxTM)
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+         if (allocated(sigmabndTM)) then
+            deallocate (sigmabndTM)
+         end if
+         if (allocated(zminmaxTM)) then
+            deallocate (zminmaxTM)
+         end if
          if (nbndTM > 0) then ! salinity as for waterlevel bnds, but no kcs = -1
             numnos = 0
             allocate (xbndTM(nbndTM), ybndTM(nbndTM), xy2bndTM(2, nbndTM), zbndTM(kmxd * nbndTM), kbndTM(5, nbndTM), kdTM(nbndTM), stat=ierr)
@@ -1930,7 +2189,9 @@ contains
             call aerr('sigmabndTM(kmxd*nbndTM)', ierr, kmxd * nbndTM)
             allocate (zminmaxTM(2 * nbndTM), stat=ierr)
             call aerr('zminmaxTM(2*nbndTM)', ierr, 2 * nbndTM)
-            zbndTM = DMISS; kbndTM = 0; kdTM = 1
+            zbndTM = DMISS
+            kbndTM = 0
+            kdTM = 1
             do k = 1, nbndTM
                L = keTM(k)
                Lf = lne2ln(L)
@@ -1966,17 +2227,20 @@ contains
       call init_1d2d()
 
       ! JRE ================================================================
-      if (nbndw > 0 .and. .not. (jawave == 4)) then
+      if (nbndw > 0 .and. .not. (jawave == WAVE_SURFBEAT)) then
          call qnerror('Wave energy boundary defined without setting correct wavemodelnr.', ' ', ' ')
          iresult = DFM_WRONGINPUT
       end if
       if (nbndw > 0) then
          numnos = 0
          call mess(LEVEL_INFO, 'Enabled wave forcing while reading external forcings.')
-         if (allocated(kbndw)) deallocate (xbndw, ybndw, xy2bndw, zbndw, kbndw)
+         if (allocated(kbndw)) then
+            deallocate (xbndw, ybndw, xy2bndw, zbndw, kbndw)
+         end if
          allocate (xbndw(nbndw), ybndw(nbndw), xy2bndw(2, nbndw), zbndw(ntheta, nbndw), kbndw(4, nbndw), kdw(nbndw), stat=ierr)
          call aerr('xbndw(nbndw), ybndw(nbndw), xy2bndw(2,nbndw), zbndw(ntheta,nbndw), kbndw(4,nbndw), kdw(nbndw)', ierr, nbndw * (9 + ntheta))
-         kbndw = 0; kdw = 1
+         kbndw = 0
+         kdw = 1
          do k = 1, nbndw
             L = kew(k)
             Lf = lne2ln(L)
@@ -2006,9 +2270,15 @@ contains
       end if
 ! ========================
 
-      if (allocated(kbndsd)) deallocate (xbndsd, ybndsd, xy2bndsd, zbndsd, kbndsd)
-      if (allocated(sigmabndsd)) deallocate (sigmabndsd)
-      if (allocated(zminmaxsd)) deallocate (zminmaxsd)
+      if (allocated(kbndsd)) then
+         deallocate (xbndsd, ybndsd, xy2bndsd, zbndsd, kbndsd)
+      end if
+      if (allocated(sigmabndsd)) then
+         deallocate (sigmabndsd)
+      end if
+      if (allocated(zminmaxsd)) then
+         deallocate (zminmaxsd)
+      end if
       if (nbndsd > 0) then ! sediment bnds as for waterlevel bnds, but no kcs = -1
          numnos = 0
          allocate (xbndsd(nbndsd), ybndsd(nbndsd), xy2bndsd(2, nbndsd), zbndsd(nbndsd), kbndsd(5, nbndsd), kdsd(nbndsd), stat=ierr)
@@ -2019,7 +2289,8 @@ contains
          allocate (zminmaxsd(2 * nbndsd), stat=ierr)
          call aerr('zminmaxsd(2*nbndsd)', ierr, 2 * nbndsd)
 
-         kbndsd = 0; kdsd = 1
+         kbndsd = 0
+         kdsd = 1
 
          do k = 1, nbndsd
             L = kesd(k)
@@ -2087,9 +2358,9 @@ contains
                end if
             end do
             ! also allocate 3D-sigma bnd distribution for EC
-            call realloc(bndtr(itrac)%sigma, kmxd * nbndtr(itrac), stat=ierr, fill=0d0)
+            call realloc(bndtr(itrac)%sigma, kmxd * nbndtr(itrac), stat=ierr, fill=0.0_dp)
             call aerr('sigma(kmxd*nbndtr(itrac))', ierr, kmxd * nbndtr(itrac))
-            call realloc(bndtr(itrac)%zminmax, 2 * nbndtr(itrac), stat=ierr, fill=0d0)
+            call realloc(bndtr(itrac)%zminmax, 2 * nbndtr(itrac), stat=ierr, fill=0.0_dp)
             call aerr('bndtr(itrac)%zminmax(2*nbndtr(itrac))', ierr, 2 * nbndtr(itrac))
          end do ! itrac
       end if
@@ -2131,15 +2402,17 @@ contains
                   end if
                end do ! nbndsf(isf)
                ! also allocate 3D-sigma bnd distribution for EC
-               call realloc(bndsf(isf)%sigma, kmxd * nbndsf(isf), stat=ierr, fill=0d0)
+               call realloc(bndsf(isf)%sigma, kmxd * nbndsf(isf), stat=ierr, fill=0.0_dp)
                call aerr('sigma(kmxd*nbndsf(isf))', ierr, kmxd * nbndsf(isf))
-               call realloc(bndsf(isf)%zminmax, 2 * nbndsf(isf), stat=ierr, fill=0d0)
+               call realloc(bndsf(isf)%zminmax, 2 * nbndsf(isf), stat=ierr, fill=0.0_dp)
                call aerr('bndsf(isf)%zminmax(2*nbndsf(isf))', ierr, 2 * nbndsf(isf))
             end do ! ised
          end if
       end if
 
-      if (allocated(kbndt)) deallocate (xbndt, ybndt, xy2bndt, zbndt, kbndt)
+      if (allocated(kbndt)) then
+         deallocate (xbndt, ybndt, xy2bndt, zbndt, kbndt)
+      end if
       ! allocate the following even if not needed (for debugging purposes)
       tmp_nbndt = max(nbndt, 1)
       allocate (xbndt(tmp_nbndt), ybndt(tmp_nbndt), xy2bndt(2, tmp_nbndt), zbndt(tmp_nbndt), kbndt(4, tmp_nbndt), kdt(tmp_nbndt), stat=ierr)
@@ -2147,7 +2420,8 @@ contains
 
       if (nbndt > 0) then ! Tangential velocity boundaries as u bnds
          numnos = 0
-         kbndt = 0; kdt = 1
+         kbndt = 0
+         kdt = 1
          do k = 1, nbndt
             L = ket(k)
             Lf = lne2ln(L)
@@ -2175,9 +2449,15 @@ contains
          end if
       end if
 
-      if (allocated(kbnduxy)) deallocate (xbnduxy, ybnduxy, xy2bnduxy, zbnduxy, kbnduxy)
-      if (allocated(sigmabnduxy)) deallocate (sigmabnduxy)
-      if (allocated(zminmaxuxy)) deallocate (zminmaxuxy)
+      if (allocated(kbnduxy)) then
+         deallocate (xbnduxy, ybnduxy, xy2bnduxy, zbnduxy, kbnduxy)
+      end if
+      if (allocated(sigmabnduxy)) then
+         deallocate (sigmabnduxy)
+      end if
+      if (allocated(zminmaxuxy)) then
+         deallocate (zminmaxuxy)
+      end if
       if (nbnduxy > 0) then ! Tangential velocity boundaries as u bnds
          numnos = 0
          allocate (xbnduxy(nbnduxy), ybnduxy(nbnduxy), xy2bnduxy(2, nbnduxy), zbnduxy(2 * kmxd * nbnduxy), kbnduxy(4, nbnduxy), kduxy(nbnduxy), stat=ierr)
@@ -2218,14 +2498,17 @@ contains
          end if
       end if
 
-      if (allocated(kbndn)) deallocate (xbndn, ybndn, xy2bndn, zbndn, kbndn)
+      if (allocated(kbndn)) then
+         deallocate (xbndn, ybndn, xy2bndn, zbndn, kbndn)
+      end if
       ! allocate the following even if not needed (for debugging purposes)
       tmp_nbndn = max(nbndn, 1)
       allocate (xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2, tmp_nbndn), zbndn(tmp_nbndn), kbndn(4, tmp_nbndn), kdn(tmp_nbndn), stat=ierr)
       call aerr('xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2,tmp_nbndn), zbndn(tmp_nbndn), kbndn(4,tmp_nbndn), kdn(tmp_nbndn)', ierr, tmp_nbndn * 10)
       if (nbndn > 0) then ! Normal velocity boundaries as z bnds
          numnos = 0
-         kbndn = 0; kdn = 1
+         kbndn = 0
+         kdn = 1
          do k = 1, nbndn
             L = ken(k)
             Lf = lne2ln(L)
@@ -2259,10 +2542,16 @@ contains
       end if
 
       if (nshiptxy > 0) then
-         if (allocated(shx)) deallocate (xyship, shx, shy, shu, shv, shi, sho)
+         if (allocated(shx)) then
+            deallocate (xyship, shx, shy, shu, shv, shi, sho)
+         end if
          allocate (xyship(2 * nshiptxy), shx(nshiptxy), shy(nshiptxy), shu(nshiptxy), shv(nshiptxy), shi(nshiptxy), sho(nshiptxy), stat=ierr)
          call aerr('xyship(2*nshiptxy), shx(nshiptxy), shy(nshiptxy), shu(nshiptxy), shv(nshiptxy), shi(nshiptxy), sho(nshiptxy)', ierr, 4 * nshiptxy)
-         iniship = 0; nshiptxy = 0; shx = 0d0; shy = 0d0; xyship = dmiss
+         iniship = 0
+         nshiptxy = 0
+         shx = 0.0_dp
+         shy = 0.0_dp
+         xyship = dmiss
       end if
 
       if (jased > 0) then
@@ -2274,7 +2563,8 @@ contains
          mxgr = 0 ! jre dangerous...
       end if
 
-      call setzminmax(); call setsigmabnds() ! our side of preparation for 3D ec module
+      call setzminmax()
+      call setsigmabnds() ! our side of preparation for 3D ec module
 
       ! initialise mass balance areas - always allocate these arrays
       call realloc(mbadef, Ndkx, keepExisting=.false., fill=-999)
@@ -2282,7 +2572,9 @@ contains
 
       if (kmx > 0) then
          if (jastructurelayersactive > 0) then
-            if (allocated(ff3)) deallocate (ff3)
+            if (allocated(ff3)) then
+               deallocate (ff3)
+            end if
             allocate (ff3(3, 0:kmxd)) ! and wait till similar lines appear in the %environment
          end if
       end if
@@ -2295,6 +2587,60 @@ contains
 
    end subroutine setup
 
+   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read.
+   !> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
+   !> filling the geometry of the source/sinks and bubblescreens. (used for output)
+   subroutine finalize_source_sinks()
+      use m_source_sink, only: source_sinks
+      use fm_external_forcings_data, only: bubblescreens
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
+
+      use m_structures, only: fill_geometry_source_sinks
+
+      integer :: i, j, sidx
+      integer :: flownode_nr !< Flow node number
+      logical, dimension(:), allocatable :: is_source_sink_bubblescreen
+
+      if (source_sinks%num_total == 0) then
+         return ! No source/sinks, nothing to do
+      end if
+      ! actually compute is_source_sink_bubble and then negate it
+      call realloc(is_source_sink_bubblescreen, source_sinks%num_total, fill=.false.)
+
+      do i = 1, size(bubblescreens)
+         associate (bubblescreen => bubblescreens(i))
+            do j = 1, bubblescreen%num_flowcells
+               sidx = bubblescreen%source_sink_indices(j)
+               if (jampi == 1 .and. allocated(idomain)) then
+                  flownode_nr = bubblescreen%flowcell_indices(j)
+                  if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
+                     is_source_sink_bubblescreen(sidx) = .true.
+                  end if
+               else
+                  is_source_sink_bubblescreen(sidx) = .true.
+               end if
+            end do
+         end associate
+      end do
+
+      if (jampi == 1) then
+         call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
+      end if
+
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble).
+      ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
+      ! capacity, while is_source_sink_bubblescreen is sized to num_total.
+      if (allocated(source_sinks%is_normal)) then
+          source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+          source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+          source_sinks%num_normal = count(source_sinks%is_normal)
+      end if
+
+      call fill_geometry_source_sinks()
+
+   end subroutine finalize_source_sinks
+
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
    subroutine finalize()
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
@@ -2305,18 +2651,33 @@ contains
       use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
       use m_transport, only: numconst_mdu, numconst
       use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
-      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum
+      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum, set_japartqbnd
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
       use m_laterals, only: initialize_lateraldata
       use m_get_kbot_ktop
+      use m_get_prof_1D
+      use mathconsts, only: pi
+      use m_filez, only: doclose
+      use m_physcoef, only: dicoww
+      use m_array_or_scalar, only: realloc
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use unstruc_inifields, only: finalize_1dfield_global_values
+      use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
       logical :: hyst_dummy(2)
-      double precision :: area, width, hdx
+      real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
+
+      call finalize_source_sinks()
+      if (allocated(thrtt)) then
+         call init_threttimes()
+      end if
+
+      call finalize_1dfield_global_values()
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
@@ -2331,25 +2692,59 @@ contains
          call doclose(mext) ! close ext file
       end if
 
-      if (allocated(kdz)) deallocate (kdz)
-      if (allocated(kdu)) deallocate (kdu)
-      if (allocated(kds)) deallocate (kds)
-      if (allocated(kdTM)) deallocate (kdTM)
-      if (allocated(kdw)) deallocate (kdw)
-      if (allocated(kdsd)) deallocate (kdsd)
-      if (allocated(kdt)) deallocate (kdt)
-      if (allocated(kduxy)) deallocate (kduxy)
-      if (allocated(kdn)) deallocate (kdn)
-      if (allocated(kdg)) deallocate (kdg)
-      if (allocated(kdd)) deallocate (kdd)
-      if (allocated(kdgen)) deallocate (kdgen)
-      if (allocated(kdp)) deallocate (kdp)
+      if (allocated(kdz)) then
+         deallocate (kdz)
+      end if
+      if (allocated(kdu)) then
+         deallocate (kdu)
+      end if
+      if (allocated(kds)) then
+         deallocate (kds)
+      end if
+      if (allocated(kdTM)) then
+         deallocate (kdTM)
+      end if
+      if (allocated(kdw)) then
+         deallocate (kdw)
+      end if
+      if (allocated(kdsd)) then
+         deallocate (kdsd)
+      end if
+      if (allocated(kdt)) then
+         deallocate (kdt)
+      end if
+      if (allocated(kduxy)) then
+         deallocate (kduxy)
+      end if
+      if (allocated(kdn)) then
+         deallocate (kdn)
+      end if
+      if (allocated(kdg)) then
+         deallocate (kdg)
+      end if
+      if (allocated(kdd)) then
+         deallocate (kdd)
+      end if
+      if (allocated(kdgen)) then
+         deallocate (kdgen)
+      end if
+      if (allocated(kdp)) then
+         deallocate (kdp)
+      end if
 
-      if (allocated(xy2gate)) deallocate (xy2gate)
-      if (allocated(xy2cdam)) deallocate (xy2cdam)
-      if (allocated(xy2cgen)) deallocate (xy2cgen)
+      if (allocated(xy2gate)) then
+         deallocate (xy2gate)
+      end if
+      if (allocated(xy2cdam)) then
+         deallocate (xy2cdam)
+      end if
+      if (allocated(xy2cgen)) then
+         deallocate (xy2cgen)
+      end if
 
-      if (allocated(xy2pump)) deallocate (xy2pump)
+      if (allocated(xy2pump)) then
+         deallocate (xy2pump)
+      end if
 
       if (mxgr > 0 .and. .not. stm_included) then
          do j = 1, mxgr
@@ -2369,29 +2764,35 @@ contains
       end if
 
       if (jawind == 0) then
-         if (jawave > 0 .and. jawave < 3) then
+         if (jawave > NO_WAVES .and. jawave < 3) then
             jawave = 0 ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if
-         if (jatem > 1) then
-            jatem = 1 ! no wind, no heat model temperature
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            temperature_model = TEMPERATURE_MODEL_TRANSPORT ! no wind, no heat model temperature
             call mess(LEVEL_INFO, 'No wind ?? => no heat model !')
          end if
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
-            call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
+         if ((item_apwxwy_p == ec_undef_int) .and. (item_atmosphericpressure == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity airpressure must be provided in the .ext file.')
+         end if
+         if ((item_hac_air_temperature == ec_undef_int) .and. (item_hacs_air_temperature == ec_undef_int) .and. &
+             (item_dac_air_temperature == ec_undef_int) .and. (item_dacs_air_temperature == ec_undef_int) .and. &
+             (item_air_temperature == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity airtemperature must be provided in the .ext file.')
+         end if
+         if ((item_dac_dew_point_temperature == ec_undef_int) .and. (item_dacs_dew_point_temperature == ec_undef_int) .and. &
+             (item_dew_point_temperature == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity dewpoint must be provided in the .ext file.')
+         end if
+         if (ja_airdensity == 1) then
+            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword "computedAirdensity = 1" in mdu-file.')
          else
-            if (ja_airdensity == 1) then
-               call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')
-            elseif (jaroro > 1) then
-               call mess(LEVEL_ERROR, 'Keyword RhoairRhowater > 1 is not allowed in combination with keyword computedAirdensity = 1 in mdu-file.')
-            else
-               allocate (airdensity(ndx), stat=ierr)
-               call aerr('airdensity(ndx)', ierr, ndx)
-               airdensity = 0d0
-            end if
+            allocate (air_density(ndx), stat=ierr)
+            call aerr('air_density(ndx)', ierr, ndx)
+            air_density(:) = 0.0_dp
          end if
       end if
 
@@ -2411,10 +2812,10 @@ contains
          end do
       end if
 
-      if (jaSecchisp > 0) then
+      if (secchi_depth_is_spatially_varying) then
          do n = 1, ndx
-            if (Secchisp(n) == dmiss) then
-               Secchisp(n) = Secchidepth
+            if (spatial_secchi_depth(n) == dmiss) then
+               spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
       end if
@@ -2444,94 +2845,112 @@ contains
          end do
       end if
 
-      if (allocated(uxini)) deallocate (uxini)
-      if (allocated(uyini)) deallocate (uyini)
+      if (allocated(uxini)) then
+         deallocate (uxini)
+      end if
+      if (allocated(uyini)) then
+         deallocate (uyini)
+      end if
 
       if (javeg > 0) then
-         call realloc(rnveg, Ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(rnveg, Ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr(' rnveg (Ndkx)', ierr, Ndkx)
-         call realloc(diaveg, Ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(diaveg, Ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr('diaveg (Ndkx)', ierr, Ndkx)
 
          if (jaCdvegsp > 0) then
-            call realloc(Cdvegsp, Ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(Cdvegsp, Ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr('Cdvegsp (Ndkx)', ierr, Ndkx)
          end if
 
          javeg = 1
          if (.not. allocated(stemheight)) then
-            call realloc(stemheight, Ndkx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(stemheight, Ndkx, keepExisting=.false., fill=0.0_dp, stat=ierr)
             call aerr(' stemheight (Ndkx)', ierr, Ndkx)
          end if
 
          if (allocated(stemdiam) .and. allocated(stemdens)) then
             do k = 1, ndx
-               if (stemdens(k) > 0d0) then
+               if (stemdens(k) > 0.0_dp) then
+                  if ((pi * (stemdiam(k) / 2)**2 * stemdens(k)) > 1.0_dp) then
+                     call mess(LEVEL_ERROR, 'The area covered by a plant or pile (based on the quantity "stemdiameter") is larger than the typical area of it (calculated as the reciprocal of the quantity "stemdensity").')
+                  end if
                   rnveg(k) = stemdens(k)
                   diaveg(k) = stemdiam(k)
                end if
-               if (stemheight(k) == dmiss) stemheight(k) = 0d0
+               if (stemheight(k) == dmiss) then
+                  stemheight(k) = 0.0_dp
+               end if
             end do
             deallocate (stemdiam, stemdens)
          end if
 
          if (kmx == 0) then
             if (jabaptist >= 3) then
-               call realloc(alfaveg, Lnx, keepExisting=.false., fill=0d0, stat=ierr)
+               call realloc(alfaveg, Lnx, keepExisting=.false., fill=0.0_dp, stat=ierr)
                call aerr(' alfaveg (Lnx)', ierr, Lnx)
-               call realloc(cfuveg, Lnx, keepExisting=.false., fill=0d0, stat=ierr)
+               call realloc(cfuveg, Lnx, keepExisting=.false., fill=0.0_dp, stat=ierr)
                call aerr(' cfuveg  (Lnx)', ierr, Lnx)
             end if
             if (jabaptist >= 2) then
-               call realloc(alfav, Lnx, keepExisting=.false., fill=0d0, stat=ierr)
+               call realloc(alfav, Lnx, keepExisting=.false., fill=0.0_dp, stat=ierr)
                call aerr(' alfav (Lnx)', ierr, Lnx)
             end if
          end if
 
          if (rhoveg /= dmiss) then
-            call realloc(phiv, Ndx, keepExisting=.false., fill=0d0, stat=ierr)
-            call realloc(phivt, Ndx, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(phiv, Ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+            call realloc(phivt, Ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          end if
       end if
 
       if ((jatrt > 0) .and. trachy_resistance) then
-         call realloc(alfav, Lnx, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(alfav, Lnx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call aerr(' alfav (Lnx)', ierr, Lnx)
       end if
 
       if (jagrounLay == 1) then
-         if (allocated(wigr)) deallocate (wigr, argr, pergr)
-         allocate (argr(lnx1D), stat=ierr); argr = 0d0
+         if (allocated(wigr)) then
+            deallocate (wigr, argr, pergr)
+         end if
+         allocate (argr(lnx1D), stat=ierr)
+         argr = 0.0_dp
          call aerr('argr(lnx1D)', ierr, Lnx1D)
-         allocate (wigr(lnx1D), stat=ierr); wigr = 0d0
+         allocate (wigr(lnx1D), stat=ierr)
+         wigr = 0.0_dp
          call aerr('wigr(lnx1D)', ierr, Lnx1D)
-         allocate (pergr(lnx1D), stat=ierr); pergr = 0d0
+         allocate (pergr(lnx1D), stat=ierr)
+         pergr = 0.0_dp
          call aerr('pergr(lnx1D)', ierr, Lnx1D)
          do L = 1, lnx1D
             if (grounlay(L) == dmiss) then
                if (grounlayuni > 0) then
                   grounlay(L) = grounlayuni
                else
-                  grounlay(L) = 0d0
+                  grounlay(L) = 0.0_dp
                end if
             end if
          end do
          jagrounlay = 0
          do L = 1, lnx1D
             itp = prof1D(3, L)
-            if (grounlay(L) > 0d0 .and. abs(itp) <= 3) then
+            if (grounlay(L) > 0.0_dp .and. abs(itp) <= 3) then
                call getprof_1D(L, grounlay(L), argr(L), wigr(L), 1, 1, pergr(L))
             end if
          end do
          jagrounlay = 1
       else
-         if (allocated(grounlay)) deallocate (grounlay)
+         if (allocated(grounlay)) then
+            deallocate (grounlay)
+         end if
       end if
 
       if (jampi == 1) then
          ! see if one or more discharge boundaries are partioned
          call set_japartqbnd()
-         if (japartqbnd /= 0) call mess(LEVEL_WARN, 'One or more discharge boundaries are partitioned.')
+         if (japartqbnd /= 0) then
+            call mess(LEVEL_WARN, 'One or more discharge boundaries are partitioned.')
+         end if
       else
          japartqbnd = 0
       end if
@@ -2571,27 +2990,33 @@ contains
       if (jaevap == 0 .and. jarain == 0) then
          a1ini = sum(ba(1:ndxi))
       else
-         if (allocated(bare)) deallocate (bare)
+         if (allocated(bare)) then
+            deallocate (bare)
+         end if
          allocate (bare(ndxi), stat=ierr) ! base area for rainfall / evaporation
-         call aerr('bare(ndxi)', ierr, ndx); 
+         call aerr('bare(ndxi)', ierr, ndx)
          bare(1:ndxi) = ba(1:ndxi)
 
          if (network%loaded) then
-            bare(ndx2D + 1:ndxi) = 0d0
+            bare(ndx2D + 1:ndxi) = 0.0_dp
             do L = 1, lnx1D ! for all links, set link width
                k1 = ln(1, L)
                k2 = ln(2, L)
-               if (kcu(L) == 1) then
+               if (kcu(L) == LINK_1D) then
                   ! Calculate maximal total area by using a water depth of 1000 m. FOR BARE we need the maximal possible catchment area.
                   ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                   ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.
 
                   hyst_dummy = .false.
-                  call GetCSParsTotal(network%adm%line2cross(L, 2), network%crs%cross, 1d3, area, width, CS_TYPE_NORMAL, hyst_dummy)
+                  call GetCSParsTotal(network%adm%line2cross(L, 2), network%crs%cross, 1e3_dp, area, width, CS_TYPE_NORMAL, hyst_dummy)
 
-                  hdx = 0.5d0 * dx(L)
-                  if (k1 > ndx2d) bare(k1) = bare(k1) + hdx * width
-                  if (k2 > ndx2d) bare(k2) = bare(k2) + hdx * width
+                  hdx = 0.5_dp * dx(L)
+                  if (k1 > ndx2d) then
+                     bare(k1) = bare(k1) + hdx * width
+                  end if
+                  if (k2 > ndx2d) then
+                     bare(k2) = bare(k2) + hdx * width
+                  end if
                end if
             end do
          end if
@@ -2603,19 +3028,23 @@ contains
                k1 = stors(i)%grid_point
                if (k1 > 0) then
                   ! Add storage area to BARE by using a water depth of 1000 m
-                  bare(k1) = bare(k1) + get_surface(stors(i), bl(k1) + 1d3)
+                  bare(k1) = bare(k1) + get_surface(stors(i), bl(k1) + 1e3_dp)
                end if
             end do
          end if
-
+         call init_cell_geom_as_polylines()
+         !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
-            if (kcs(n) == 1) then
-               call IN2Dflowcell(Xz(n), Yz(n), ja)
+            if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
+               ja = point_find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
-                  bare(n) = 0d0
+                  bare(n) = 0.0_dp
                end if
             end if
          end do
+         !$OMP END PARALLEL DO
+         call cleanup_cell_geom_polylines()
+
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)
@@ -2655,7 +3084,9 @@ contains
          do kk = 1, Ndxi
             if (jampi == 1) then
                ! do not include ghost cells
-               if (idomain(kk) /= my_rank) cycle
+               if (idomain(kk) /= my_rank) then
+                  cycle
+               end if
             end if
             mbadefdomain(kk) = mbadef(kk)
             call getkbotktop(kk, kb, kt)
@@ -2676,22 +3107,43 @@ contains
 
    end subroutine finalize
 
-   !> Allocate and initialized atmosperic pressure variable(s)
-   function allocate_patm(default_value) result(status)
-      use m_wind, only: patm
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr
-      use precision_basics, only: hp
+   function check_keyword_zerozbndinflowadvection() result(success)
+      use m_flowparameters, only: jaZerozbndinflowadvection
+      use messagehandling, only: LEVEL_ERROR, msgbuf, mess
 
-      real(kind=hp), intent(in) :: default_value !< default atmospheric pressure value
-      integer :: status
+      logical :: success
 
-      status = 0
-      if (.not. allocated(patm)) then
-         allocate (patm(ndx), stat=status, source=default_value)
-         call aerr('patm(ndx)', status, ndx)
+      success = .true.
+
+      if (jaZerozbndinflowadvection > 0) then
+         write (msgbuf, '(a,i0,a)') &
+            'The combination of prescribing advection velocities via [Boundary]-quantity "uxuyadvectionvelocitybnd" and "Zerozbndinflowadvection" = ', &
+            jaZerozbndinflowadvection, ' is inconsistent and not allowed.'
+         call mess(LEVEL_ERROR, msgbuf)
+         success = .false.
+      end if
+   end function check_keyword_zerozbndinflowadvection
+
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx
+      use m_alloc, only: realloc, aerr
+
+      implicit none
+
+      integer :: ierr
+
+      if (.not. allocated(wx)) then
+         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
+         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+         wx = 0.0_dp
+         wy = 0.0_dp
+         wdsu = 0.0_dp
+         wdsu_x = 0.0_dp
+         wdsu_y = 0.0_dp
       end if
 
-   end function allocate_patm
+   end subroutine allocatewindarrays
 
 end module fm_external_forcings

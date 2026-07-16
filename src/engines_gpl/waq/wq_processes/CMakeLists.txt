@@ -18,9 +18,7 @@ set(oss_dependencies waq_definition
         waq_utils_f)
 
 # Link libraries
-target_link_libraries(${library_name} ${oss_dependencies})
-
-oss_include_libraries(${library_name} oss_dependencies)
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE ${waq_default_flags})

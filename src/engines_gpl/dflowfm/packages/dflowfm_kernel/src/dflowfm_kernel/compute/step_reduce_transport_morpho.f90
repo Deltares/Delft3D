@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,115 +30,148 @@
 !
 !
 
- subroutine step_reduce_transport_morpho()
-    use m_flow
-    use m_flowgeom
-    use m_sediment, only: stm_included
-    use Timers
-    use m_flowtimes
-    use m_sferic
-    use m_wind
-    use m_reduce
-    use m_ship
-    use m_partitioninfo
-    use m_timer
-    use m_xbeach_data
-    use MessageHandling
-    use m_sobekdfm
-    use unstruc_display
-    use m_waves
-    use m_subsidence, only: jasubsupl
-    use m_fm_bott3d, only: fm_bott3d
-    use m_fm_erosed, only: ti_sedtrans
-    use m_curvature, only: get_curvature
-    use m_xbeach_netcdf, only: xbeach_mombalance
-    use mass_balance_areas_routines, only: comp_bedload_fluxmba
+module m_step_reduce_transport_morpho
 
-    implicit none
+   use m_subsupl_update_s1, only: subsupl_update_s1
+   use m_setucxucy_mor, only: setucxucy_mor
+   use m_fm_flocculate, only: fm_flocculate
+   use m_fm_fallve, only: fm_fallve
+   use m_apply_subsupl, only: apply_subsupl
+   use m_update_s_explicit, only: update_s_explicit
+   use m_u1q1, only: u1q1
+   use m_transport_sub, only: transport
 
-    numnodneg = 0
-    if (wrwaqon .and. allocated(qsrcwaq)) then
-       qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
-    end if
+   use precision, only: dp
+   implicit none
 
-!-----------------------------------------------------------------------------------------------
-! TODO: AvD: consider moving everything below to flow_finalize single_timestep?
-    call setkbotktop(0) ! bottom and top layer indices and new sigma distribution
+   private
 
-    if (flow_solver == FLOW_SOLVER_FM) then
-       call u1q1() ! the vertical flux qw depends on new sigma => after setkbotktop
-       call compute_q_total_1d2d()
-    end if
+   public :: step_reduce_transport_morpho
 
-    !if ( jacheckmonitor.eq.1 ) then
-    !   call comp_checkmonitor()
-    !end if
+contains
 
-    if (itstep == 4) then ! explicit time-step
-       call update_s_explicit()
-    end if
-    hs = s1 - bl
-    hs = max(hs, 0d0)
+   subroutine step_reduce_transport_morpho()
+      use m_equili_spiralintensity
+      use m_flow
+      use m_laterals, only: qlatwaq, qlatwaq0
+      use m_flowgeom
+      use m_sediment, only: stm_included
+      use Timers
+      use m_flowtimes
+      use m_sferic
+      use m_wind
+      use m_reduce
+      use m_ship
+      use m_partitioninfo
+      use m_timer
+      use m_xbeach_data
+      use MessageHandling
+      use m_sobekdfm
+      use unstruc_display
+      use m_waves
+      use m_subsidence, only: jasubsupl
+      use m_fm_bott3d, only: fm_bott3d
+      use m_fm_erosed, only: ti_sedtrans
+      use m_curvature, only: get_curvature
+      use m_xbeach_netcdf, only: xbeach_mombalance
+      use mass_balance_areas_routines, only: comp_bedload_fluxmba
+      use m_set_kbot_ktop
+      use m_volsur
+      use m_set_bobs
+      use m_fm_erosed_sub, only: fm_erosed
+      use m_source_sink, only: source_sinks
 
-    if (jased > 0 .and. stm_included) then
-       if (time1 >= tstart_user + ti_sedtrans * tfac) then
-          if (jatimer == 1) call starttimer(IEROSED)
-          !
-          call setucxucy_mor(u1)
-          call fm_flocculate() ! fraction transitions due to flocculation
+      numnodneg = 0
+      if (wrwaqon) then
+         ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
+         if (allocated(source_sinks%cumulative_discharge_waq)) then
+            source_sinks%cumulative_discharge_waq_previous = source_sinks%cumulative_discharge_waq
+         end if
+         if (allocated(qlatwaq)) then
+            qlatwaq0 = qlatwaq
+         end if
+      end if
 
-          call timstrt('Settling velocity   ', handle_extra(87))
-          call fm_fallve() ! update fall velocities
-          call timstop(handle_extra(87))
+      !-----------------------------------------------------------------------------------------------
+      ! TODO: AvD: consider moving everything below to flow_finalize single_timestep?
+      call set_kbot_ktop(jazws0=0) ! bottom and top layer indices and new sigma distribution
 
-          call timstrt('Erosed_call         ', handle_extra(88))
-          call fm_erosed() ! source/sink, bedload/total load
-          call timstop(handle_extra(88))
+      if (flow_solver == FLOW_SOLVER_FM) then
+         call u1q1() ! the vertical flux qw depends on new sigma => after set_kbot_ktop
+         call compute_q_total_1d2d()
+      end if
 
-          call comp_bedload_fluxmba()
-          if (jatimer == 1) call stoptimer(IEROSED)
-       end if
-    end if
+      !if ( jacheckmonitor.eq.1 ) then
+      !   call comp_checkmonitor()
+      !end if
 
-    ! secondary flow
-    if (jasecflow > 0 .and. kmx == 0) then
-       call get_curvature()
-       if (jaequili > 0) then
-          call equili_spiralintensity()
-       end if
-    end if
+      if (itstep == 4) then ! explicit time-step
+         call update_s_explicit()
+      end if
+      hs = s1 - bl
+      hs = max(hs, 0.0_dp)
 
-    !SPvdP: timestep is now based on u0, q0
-    !       transport is with u1,q1 with timestep based on u0,q0
-    if (jatimer == 1) call starttimer(ITRANSPORT)
-    call transport()
-    if (jatimer == 1) call stoptimer(ITRANSPORT)
+      if (jased > 0 .and. stm_included) then
+         if (time1 >= tstart_user + ti_sedtrans * tfac) then
+            if (jatimer == 1) then
+               call starttimer(IEROSED)
+            end if
+            !
+            call setucxucy_mor(u1)
+            call fm_flocculate() ! fraction transitions due to flocculation
 
-    if (jased > 0 .and. stm_included) then
-       call fm_bott3d() ! bottom update
-    end if
+            call timstrt('Settling velocity   ', handle_extra(87))
+            call fm_fallve() ! update fall velocities
+            call timstop(handle_extra(87))
 
-    if (jasubsupl > 0) then
-       call apply_subsupl()
-    end if
+            call timstrt('Erosed_call         ', handle_extra(88))
+            call fm_erosed() ! source/sink, bedload/total load
+            call timstop(handle_extra(88))
 
-    if ((jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
-       call setbobs() ! adjust administration - This option only works for ibedlevtyp = 1, otherwise original bed level [bl] is overwritten to original value
-       if (jasubsupl > 0) then
-          call subsupl_update_s1()
-       end if
-       call volsur() ! update volumes 2d
-       if (kmx > 0) then
-          call setkbotktop(0) ! and 3D for cell volumes
-       end if
-    end if
+            call comp_bedload_fluxmba()
+            if (jatimer == 1) then
+               call stoptimer(IEROSED)
+            end if
+         end if
+      end if
 
-    ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
+      ! secondary flow
+      if (jasecflow > 0 .and. kmx == 0) then
+         call get_curvature()
+         if (jaequili > 0) then
+            call equili_spiralintensity()
+         end if
+      end if
 
-    if (layertype > 1 .and. kmx > 0) then
+      !SPvdP: timestep is now based on u0, q0
+      !       transport is with u1,q1 with timestep based on u0,q0
+      if (jatimer == 1) then
+         call starttimer(ITRANSPORT)
+      end if
+      call transport()
+      if (jatimer == 1) then
+         call stoptimer(ITRANSPORT)
+      end if
 
-       ! ln = ln0 ! was ok.
+      if (jased > 0 .and. stm_included) then
+         call fm_bott3d() ! bottom update
+      end if
 
-    end if
+      if (jasubsupl > 0) then
+         call apply_subsupl()
+      end if
 
- end subroutine step_reduce_transport_morpho
+      if ((jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
+         call setbobs() ! adjust administration - This option only works for ibedlevtyp = 1, otherwise original bed level [bl] is overwritten to original value
+         if (jasubsupl > 0) then
+            call subsupl_update_s1()
+         end if
+         call volsur() ! update volumes 2d
+         if (kmx > 0) then
+            call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
+         end if
+      end if
+
+   end subroutine step_reduce_transport_morpho
+
+end module m_step_reduce_transport_morpho

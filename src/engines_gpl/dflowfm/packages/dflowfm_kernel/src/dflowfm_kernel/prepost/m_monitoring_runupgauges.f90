@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,6 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module m_monitoring_runupgauges
+   use precision, only: dp
    use m_crspath
    use m_missing
    use MessageHandling, only: IdLen
@@ -37,9 +38,9 @@ module m_monitoring_runupgauges
    type t_runup_gauge
       character(len=IdLen) :: name !< Name
       type(tcrspath) :: path !< Polyline+crossed flow links that defines this runup gauge.
-      double precision :: max_x !< flow node xz of max runup
-      double precision :: max_y !< flow node xy of max runup
-      double precision :: max_rug_height !< Runup water level
+      real(kind=dp) :: max_x !< flow node xz of max runup
+      real(kind=dp) :: max_y !< flow node xy of max runup
+      real(kind=dp) :: max_rug_height !< Runup water level
    end type t_runup_gauge
 
    type(t_runup_gauge), allocatable, target :: rug(:)
@@ -112,7 +113,9 @@ contains
 
       integer :: i
 
-      if (.not. allocated(rug)) return
+      if (.not. allocated(rug)) then
+         return
+      end if
 
       do i = 1, size(rug)
          call deallocCrossSectionPath(rug(i)%path)
@@ -122,14 +125,16 @@ contains
 
 !> Copies array of runup gauges into another array of runup gauges.
    subroutine copy_runup_gauges(source_rug, target_rug)
-      use m_alloc
+
       type(t_runup_gauge), intent(inout) :: source_rug(:) !> array with runup gauges that need to be copied to target
       type(t_runup_gauge), intent(inout) :: target_rug(:) !> target array runup gauges need to be copied to
 
       integer :: i, size_source_rug
 
       size_source_rug = size(source_rug)
-      if (size_source_rug > size(target_rug) .or. size_source_rug == 0) return
+      if (size_source_rug > size(target_rug) .or. size_source_rug == 0) then
+         return
+      end if
 
       do i = 1, size_source_rug
          target_rug(i) = source_rug(i)
@@ -140,9 +145,10 @@ contains
 !! The input arrays have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
    subroutine polyline_to_runupgauges(pl_x, pl_y, pl_n, names)
-      use m_missing
+      use precision, only: dp
+      use m_missing, only: dmiss
 
-      double precision, intent(in) :: pl_x(:), pl_y(:) !< Long array with one or more polylines, separated by dmiss
+      real(kind=dp), intent(in) :: pl_x(:), pl_y(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: pl_n !< Total number of polyline points
       character(len=*), optional, intent(in) :: names(:) !< Optional names for run up gauges
 
@@ -187,7 +193,7 @@ contains
 
 !> Reads observation rug and adds them to the normal rug adm
    subroutine load_runup_gauges(file_name, append)
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, mess
 
       implicit none
       character(len=*), intent(in) :: file_name !< File containing the observation rug. Either a *_rug.pli.
@@ -213,9 +219,10 @@ contains
 
 !> Reads rugs from an *.pli file.
    subroutine load_runup_gauges_from_pli(file_name)
-      use messageHandling
-      use dfm_error
-      use m_polygon
+      use m_polygon, only: xpl, ypl, npl
+      use m_reapol_nampli, only: reapol_nampli
+      use m_filez, only: oldfil, doclose
+
       implicit none
       character(len=*), intent(in) :: file_name !< name of polyline file to load runup gauges from
 
@@ -231,8 +238,9 @@ contains
 
 !> adds runup gauge with name and polyline coordinates
    subroutine add_runup_gauges(name, pl_x, pl_y)
+      use precision, only: dp
       character(len=*), intent(in) :: name !> name of the new runup gauge
-      double precision, intent(in) :: pl_x(:), pl_y(:) !> x- and y coordinates of polyline
+      real(kind=dp), intent(in) :: pl_x(:), pl_y(:) !> x- and y coordinates of polyline
 
       integer :: name_length
       character(len=1) :: runup_gauge_digits
@@ -250,15 +258,15 @@ contains
          rug(num_rugs)%name = ' '
          rug(num_rugs)%name(1:name_length) = name(1:name_length)
       else ! No name given, generate one.
-         write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(dble(runup_gauge_id)) + 1)))
+         write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(real(runup_gauge_id, kind=dp)) + 1)))
          write (rug(num_rugs)%name, '(a,i'//runup_gauge_digits//'.'//runup_gauge_digits//')') trim(defaultName_), runup_gauge_id
          runup_gauge_id = runup_gauge_id + 1
       end if
 
       ! Set default values
-      rug(num_rugs)%max_x = 0d0
-      rug(num_rugs)%max_y = 0d0
-      rug(num_rugs)%max_rug_height = -huge(0d0)
+      rug(num_rugs)%max_x = 0.0_dp
+      rug(num_rugs)%max_y = 0.0_dp
+      rug(num_rugs)%max_rug_height = -huge(0.0_dp)
 
    end subroutine add_runup_gauges
 
@@ -266,9 +274,9 @@ contains
       integer :: i
       ! Reset data for next iteration
       do i = 1, num_rugs
-         rug(i)%max_rug_height = -huge(0d0)
-         rug(i)%max_x = 0d0
-         rug(i)%max_y = 0d0
+         rug(i)%max_rug_height = -huge(0.0_dp)
+         rug(i)%max_x = 0.0_dp
+         rug(i)%max_y = 0.0_dp
       end do
    end subroutine
 

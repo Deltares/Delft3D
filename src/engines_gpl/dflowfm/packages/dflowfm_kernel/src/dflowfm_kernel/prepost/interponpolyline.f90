@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,26 +30,37 @@
 !
 !
 
-      !> Performs linear interpolation between two values along a polyline.
-      !! The interpolation is done along a polyline at the distances
-      !! measured along the consecutive polyline segments.
-      subroutine interpOnPolyline(DPL, DXS, NPL, DXS1, DXS2)
-         implicit none
-         integer :: npl
-         double precision, intent(in) :: DPL(NPL) !< Accumulated distance at each point.
-         double precision, intent(out) :: DXS(NPL) !< Interpolated values of dxs1--dxs2 on polyline points.
-         double precision, intent(in) :: dxs1 !< Value at first polyline point.
-         double precision, intent(in) :: dxs2 !< Value at last polyline point.
+module m_interponpolyline
+   implicit none
+   private
+   public :: interponpolyline
 
-         double precision :: f
-         double precision :: f1
-         integer :: n
+contains
 
-         if (NPL <= 1) return
+   !> Performs linear interpolation between two values along a polyline.
+   !! The interpolation is done along a polyline at the distances
+   !! measured along the consecutive polyline segments.
+   subroutine interpOnPolyline(dpl, dxs, npl, dxs1, dxs2)
+      use precision, only: dp
 
-         do N = 1, NPL
-            F = DPL(N) / DPL(NPL); F1 = 1 - F
-            DXS(N) = F1 * DXS1 + F * DXS2
-         end do
+      real(kind=dp), intent(in) :: dpl(npl) !< Accumulated distance at each point.
+      real(kind=dp), intent(out) :: dxs(npl) !< Interpolated values of dxs1--dxs2 on polyline points.
+      integer, intent(in) :: npl
+      real(kind=dp), intent(in) :: dxs1 !< Value at first polyline point.
+      real(kind=dp), intent(in) :: dxs2 !< Value at last polyline point.
 
-      end subroutine interpOnPolyline
+      real(kind=dp) :: f
+      real(kind=dp) :: f1
+      integer :: n
+
+      if (npl <= 1) then
+         return
+      end if
+
+      do n = 1, npl
+         f = dpl(n) / dpl(npl)
+         f1 = 1 - f
+         dxs(n) = f1 * dxs1 + f * dxs2
+      end do
+   end subroutine interpOnPolyline
+end module m_interponpolyline

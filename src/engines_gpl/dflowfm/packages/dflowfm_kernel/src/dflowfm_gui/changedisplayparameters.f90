@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,34 @@
 !
 !
 
+module m_changedisplayparameters
+
+   use m_settextsize
+
+   use precision, only: dp
+   implicit none
+
+contains
+
    subroutine CHANGEDISPLAYPARAMETERS()
-      use M_RAAITEK
-      use M_MISSING
-      use unstruc_display
-      use m_sediment
+      use M_RAAITEK, only: zminrai, zmaxrai, jtextflow
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck, cr
+      use unstruc_display_data, only: npos, ntek, plottofile, numzoomshift, jahighlight, nhlnetnode, nhlnetlink, nhlflownode, nhlflowlink, wetplot, yfac
+      use m_sediment, only: jgrtek, mxgr
+      use m_screenarea, only: xleft, ybot, jaxis
+      use m_helpnow, only: nlevel, wrdkey
+      use m_textsize, only: tsize
+      use m_hardcopy, only: numhcopts, ihcopts, nhcdev
+      use m_vfac, only: vfac, nvec, vfacforce
+      use m_drawthis, only: ndraw
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
+      use m_missing, only: dmiss
       use m_flow, only: kplotfrombedorsurface, kplotordepthaveraged
 
       use dflowfm_version_module, only: company, product_name
       use unstruc_opengl, only: jaOpenGL
-      use m_depmax
-      use m_screenarea
-      use m_helpnow
-      use m_textsize
-      use m_hardcopy
-      use m_scalepos
-      use m_vfac
-      use m_drawthis
-      
+
       implicit none
       integer :: i
       integer :: ifexit
@@ -71,42 +81,74 @@
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
 
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       NLEVEL = 3
-      OPTION(1) = 'HARDCOPY DRIVER NUMBER                  '; IT(2 * 1) = 2
-      OPTION(2) = 'ENCAPSULATED POSTSCRIPT                 '; IT(2 * 2) = 2
-      OPTION(3) = 'LANDSCAPE                               '; IT(2 * 3) = 2
-      OPTION(4) = 'SIZE OF DOTS                            '; IT(2 * 4) = 6
-      OPTION(5) = 'SIZE OF NUMBERS                         '; IT(2 * 5) = 6
-      OPTION(6) = 'DEFAULT VALUE                           '; IT(2 * 6) = 6
-      OPTION(7) = 'LEFT SCREEN MARGIN                      '; IT(2 * 7) = 6
-      OPTION(8) = 'BOTTOM SCREEN MARGIN                    '; IT(2 * 8) = 6
-      OPTION(9) = 'PLOTTING AXIS YES/NO                    '; IT(2 * 9) = 2
-      OPTION(10) = 'SCALEFACTOR FOR VECTORS                 '; IT(2 * 10) = 6
-      OPTION(11) = 'VECTOR   INTERVAL                       '; IT(2 * 11) = 2
-      OPTION(12) = 'PLOTTING INTERVAL NTEK                  '; IT(2 * 12) = 2
-      OPTION(13) = 'PLOT TO FILE YES/NO                     '; IT(2 * 13) = 2
-      OPTION(14) = 'MINIMUM ZLEVEL RAAITEK                  '; IT(2 * 14) = 6
-      OPTION(15) = 'MAXIMUM ZLEVEL RAAITEK                  '; IT(2 * 15) = 6
-      OPTION(16) = 'PLOT TOP ROWS INFORMATION TEXT          '; IT(2 * 16) = 2
-      OPTION(17) = 'Number of zoomshift intervals, press ;  '; IT(2 * 17) = 2
-      OPTION(18) = 'Enable/disable minmax highlighting      '; IT(2 * 18) = 2
-      OPTION(19) = 'Highlight specific net node number      '; IT(2 * 19) = 2
-      OPTION(20) = 'Highlight specific net link number      '; IT(2 * 20) = 2
-      OPTION(21) = 'Highlight specific flow node number     '; IT(2 * 21) = 2
-      OPTION(22) = 'Highlight specific flow link number     '; IT(2 * 22) = 2
-      OPTION(23) = 'Node waterdepth plotting threshold      '; IT(2 * 23) = 6
-      OPTION(24) = 'Plot sideview in cheap perspective 1/0  '; IT(2 * 24) = 6
-      OPTION(25) = 'Grain size fraction nr to plot          '; IT(2 * 25) = 2
-      OPTION(26) = 'Show vertical reference profiles 1/0    '; IT(2 * 26) = 2
-      OPTION(27) = 'display flownodes minus plotlin: 1      '; IT(2 * 27) = 2
-      OPTION(28) = '                                        '; IT(2 * 28) = 2
-      OPTION(29) = 'use OpenGL (0:no, 1:yes)                '; IT(2 * 29) = 2
-      OPTION(30) = 'show bedlevels (0:no, 1:yes)            '; IT(2 * 30) = 2
-      OPTION(31) = 'show waterbal. on screen (0:no, 1:yes)  '; IT(2 * 31) = 2
-      OPTION(32) = 'kplotfrombedorsurface (1:bed, 2:surf)   '; IT(2 * 32) = 2
-      OPTION(33) = 'kplotordepthaveraged  (1:kplot, 2:averg)'; IT(2 * 33) = 2
+      OPTION(1) = 'HARDCOPY DRIVER NUMBER                  '
+      IT(2 * 1) = 2
+      OPTION(2) = 'ENCAPSULATED POSTSCRIPT                 '
+      IT(2 * 2) = 2
+      OPTION(3) = 'LANDSCAPE                               '
+      IT(2 * 3) = 2
+      OPTION(4) = 'SIZE OF DOTS                            '
+      IT(2 * 4) = 6
+      OPTION(5) = 'SIZE OF NUMBERS                         '
+      IT(2 * 5) = 6
+      OPTION(6) = 'DEFAULT VALUE                           '
+      IT(2 * 6) = 6
+      OPTION(7) = 'LEFT SCREEN MARGIN                      '
+      IT(2 * 7) = 6
+      OPTION(8) = 'BOTTOM SCREEN MARGIN                    '
+      IT(2 * 8) = 6
+      OPTION(9) = 'PLOTTING AXIS YES/NO                    '
+      IT(2 * 9) = 2
+      OPTION(10) = 'SCALEFACTOR FOR VECTORS                 '
+      IT(2 * 10) = 6
+      OPTION(11) = 'VECTOR   INTERVAL                       '
+      IT(2 * 11) = 2
+      OPTION(12) = 'PLOTTING INTERVAL NTEK                  '
+      IT(2 * 12) = 2
+      OPTION(13) = 'PLOT TO FILE YES/NO                     '
+      IT(2 * 13) = 2
+      OPTION(14) = 'MINIMUM ZLEVEL RAAITEK                  '
+      IT(2 * 14) = 6
+      OPTION(15) = 'MAXIMUM ZLEVEL RAAITEK                  '
+      IT(2 * 15) = 6
+      OPTION(16) = 'PLOT TOP ROWS INFORMATION TEXT          '
+      IT(2 * 16) = 2
+      OPTION(17) = 'Number of zoomshift intervals, press ;  '
+      IT(2 * 17) = 2
+      OPTION(18) = 'Enable/disable minmax highlighting      '
+      IT(2 * 18) = 2
+      OPTION(19) = 'Highlight specific net node number      '
+      IT(2 * 19) = 2
+      OPTION(20) = 'Highlight specific net link number      '
+      IT(2 * 20) = 2
+      OPTION(21) = 'Highlight specific flow node number     '
+      IT(2 * 21) = 2
+      OPTION(22) = 'Highlight specific flow link number     '
+      IT(2 * 22) = 2
+      OPTION(23) = 'Node waterdepth plotting threshold      '
+      IT(2 * 23) = 6
+      OPTION(24) = 'Plot sideview in cheap perspective 1/0  '
+      IT(2 * 24) = 6
+      OPTION(25) = 'Grain size fraction nr to plot          '
+      IT(2 * 25) = 2
+      OPTION(26) = 'Show vertical reference profiles 1/0    '
+      IT(2 * 26) = 2
+      OPTION(27) = 'display flownodes minus plotlin: 1      '
+      IT(2 * 27) = 2
+      OPTION(28) = '                                        '
+      IT(2 * 28) = 2
+      OPTION(29) = 'use OpenGL (0:no, 1:yes)                '
+      IT(2 * 29) = 2
+      OPTION(30) = 'show bedlevels (0:no, 1:yes)            '
+      IT(2 * 30) = 2
+      OPTION(31) = 'show waterbal. on screen (0:no, 1:yes)  '
+      IT(2 * 31) = 2
+      OPTION(32) = 'kplotfrombedorsurface (1:bed, 2:surf)   '
+      IT(2 * 32) = 2
+      OPTION(33) = 'kplotordepthaveraged  (1:kplot, 2:averg)'
+      IT(2 * 33) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -211,8 +253,12 @@
       end do
 
       do I = 1, NUMHCOPTs
-         if (IHCOPTS(1, I) == 22) JAEPS = IHCOPTS(2, I)
-         if (IHCOPTS(1, I) == 5) JALAND = IHCOPTS(2, I)
+         if (IHCOPTS(1, I) == 22) then
+            JAEPS = IHCOPTS(2, I)
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            JALAND = IHCOPTS(2, I)
+         end if
       end do
 
       call IFORMPUTINTEGER(2 * 1, NHCDEV)
@@ -318,19 +364,27 @@
             call IFORMGETINTEGER(2 * 32, kplotfrombedorsurface)
             call IFORMGETINTEGER(2 * 33, kplotordepthaveraged)
 
-            VFAC = max(0d0, VFAC)
-            VFACFORCE = max(0d0, VFACFORCE)
-            XLEFT = max(0d0, (min(XLEFT, 0.25d0)))
-            YBOT = max(0d0, (min(YBOT, 0.25d0)))
+            VFAC = max(0.0_dp, VFAC)
+            VFACFORCE = max(0.0_dp, VFACFORCE)
+            XLEFT = max(0.0_dp, (min(XLEFT, 0.25_dp)))
+            YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
             JAXIS = min(1, (max(JAXIS, 0)))
             if (JAXIS == 1) then
-               if (XLEFT == 0) XLEFT = .15
-               if (YBOT == 0) YBOT = .10
+               if (XLEFT == 0) then
+                  XLEFT = .15
+               end if
+               if (YBOT == 0) then
+                  YBOT = .10
+               end if
             end if
             ! call WEAREL()
             do I = 1, NUMHCOPTS
-               if (IHCOPTS(1, I) == 22) IHCOPTS(2, I) = JAEPS
-               if (IHCOPTS(1, I) == 5) IHCOPTS(2, I) = JALAND
+               if (IHCOPTS(1, I) == 22) then
+                  IHCOPTS(2, I) = JAEPS
+               end if
+               if (IHCOPTS(1, I) == 5) then
+                  IHCOPTS(2, I) = JALAND
+               end if
             end do
             call SETTEXTSIZE()
             if (plottofile == 1) then
@@ -350,3 +404,5 @@
       goto 30
 
    end subroutine CHANGEDISPLAYPARAMETERS
+
+end module m_changedisplayparameters

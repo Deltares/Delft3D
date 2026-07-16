@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,11 +30,18 @@
 !
 !
 
+module m_dview
+
+   implicit none
+
+contains
+
    subroutine DVIEW(XD, YD, ZD, X, Y, Z)
-      use m_missing
-      use m_viewmat
-      implicit none
-      double precision :: ce
+      use precision, only: dp
+      use m_missing, only: dmiss
+      use m_viewmat, only: vs, x0s, y0s
+
+      real(kind=dp) :: ce
       integer :: i
       ! GEEF perspectievische COORDINATEN
       ! xD,yD,zD                             :coordinaten te tekenen punt
@@ -42,7 +49,7 @@
       ! X,Y,Z                                :scherm coordinaten
       ! Vs                                   :viewing matrix na viema
 
-      double precision XD, YD, ZD, X, Y, Z
+      real(kind=dp) XD, YD, ZD, X, Y, Z
       dimension CE(4)
       ! use z as zd temporarily (zet to zero when zd==dmiss)
       if (zd == dmiss) then
@@ -61,3 +68,5 @@
          Y = CE(2) / Z + Y0S
       end if
    end subroutine DVIEW
+
+end module m_dview

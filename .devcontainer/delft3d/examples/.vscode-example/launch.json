@@ -1,0 +1,76 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // Launch DIMR for the test case e02_f002_c100_longculvert.
+    // This only works if you have downloaded the e02_f002_c100 test case, and
+    // you have built fm-suite and installed it in `/workspaces/delft3d/build_fm-suite_debug/install`
+    // with the 'Debug' configuration (to enable debugging symbols).
+    // This launch configuration is specific for debugging with the Intel OneAPI version of gdb.
+    // See: https://www.intel.com/content/www/us/en/docs/oneapi/user-guide-vs-code/2025-2/developing-a-visual-studio-code-project-in-a.html
+    {
+      "name": "Debug e02_f002_c100_longculvert",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build_fm-suite_debug/install/bin/dimr",
+      "args": [
+        "dimr.xml"
+      ],
+      "cwd": "${workspaceFolder}/test/deltares_testbench/data/cases/e02_f002_c100_longculvert",
+      "environment": [
+        {
+          "name": "OMP_NUM_THREADS",
+          "value": "1"
+        }
+      ],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb-oneapi",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Disable target async",
+          "text": "set target-async off",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set language to Fortran",
+          "text": "set language fortran",
+          "ignoreFailures": false
+        }
+      ]
+    },
+    // The launch configuration that the CMake VSCode extension uses to run a test in the debugger.
+    // This launch configuration is specific for debugging with the Intel OneAPI version of gdb.
+    // See: https://github.com/microsoft/vscode-cmake-tools/blob/main/docs/debug-launch.md#debugging-tests
+    {
+      "name": "ctest",  // Must be the same as "cmake.ctest.debugLaunchTarget" in settings.json
+      "type": "cppdbg",
+      "request": "launch",
+      "cwd": "${cmake.testWorkingDirectory}",
+      "program": "${cmake.testProgram}",
+      "args": [ "${cmake.testArgs}" ],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb-oneapi",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Disable target async",
+          "text": "set target-async off",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set language to Fortran",
+          "text": "set language fortran",
+          "ignoreFailures": false
+        }
+      ]
+    }
+  ]
+}

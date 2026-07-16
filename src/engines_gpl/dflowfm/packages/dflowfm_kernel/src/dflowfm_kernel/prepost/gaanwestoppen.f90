@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,33 +30,49 @@
 !
 !
 
-  subroutine GAANWESTOPPEN(K, KN316, JASTOP) !SET JASTOP = 1 ALS WE GAAN STOPPEN
-     use M_NETW
-     implicit none
-     integer :: KN316, JASTOP, N1, N6, KK, L, K
+module m_gaanwestoppen
 
-     JASTOP = 0; N1 = 0; N6 = 0
+   implicit none
 
-     if (NMK0(K) == 1) then
-        JASTOP = 1; return
-     end if
+   private
 
-     do KK = 1, NMK(K)
-        L = NOD(K)%LIN(KK)
-        if (KN(3, L) == 1) then
-           N1 = N1 + 1
-        else if (KN(3, L) == 6) then
-           N6 = N6 + 1
-        end if
-     end do
-     if (KN316 == 1) then
-        if (N1 + N6 /= 2) then ! altijd stoppen bij niet doorgaande node
-           JASTOP = 1
-        end if
-     else if (KN316 == 6) then ! alleen stoppen bij aantal 6 jes ongelijk 2
-        if (N6 /= 2) then
-           JASTOP = 1
-        end if
-     end if
+   public :: gaanwestoppen
 
-  end subroutine GAANWESTOPPEN
+contains
+
+   subroutine GAANWESTOPPEN(K, KN316, JASTOP) !SET JASTOP = 1 ALS WE GAAN STOPPEN
+      use M_NETW
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
+
+      integer :: KN316, JASTOP, N1, N6, KK, L, K
+
+      JASTOP = 0
+      N1 = 0
+      N6 = 0
+
+      if (NMK0(K) == 1) then
+         JASTOP = 1
+         return
+      end if
+
+      do KK = 1, NMK(K)
+         L = NOD(K)%LIN(KK)
+         if (KN(3, L) == LINK_1D) then
+            N1 = N1 + 1
+         else if (KN(3, L) == LINK_1D_MAINBRANCH) then
+            N6 = N6 + 1
+         end if
+      end do
+      if (KN316 == 1) then
+         if (N1 + N6 /= 2) then ! altijd stoppen bij niet doorgaande node
+            JASTOP = 1
+         end if
+      else if (KN316 == 6) then ! alleen stoppen bij aantal 6 jes ongelijk 2
+         if (N6 /= 2) then
+            JASTOP = 1
+         end if
+      end if
+
+   end subroutine GAANWESTOPPEN
+
+end module m_gaanwestoppen

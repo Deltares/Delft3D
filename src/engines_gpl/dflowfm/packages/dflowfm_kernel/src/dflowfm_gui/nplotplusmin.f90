@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,27 +29,36 @@
 
 !
 !
+module m_n_plot_plus_min
+   use m_textflow
 
-     subroutine nPLOTPLUSMIN(IPM)
-        use M_FLOW
-        use M_flowgeom
-        implicit none
-        integer :: IPM, NRLAY
+   implicit none
+contains
+   subroutine nPLOTPLUSMIN(IPM)
+      use M_FLOW, only: nplot, kmx, ktop, kbot, kplot
+      use m_cell_geometry, only: ndx
 
-        if (IPM == 1) then
+      integer :: IPM, NRLAY
+
+      if (IPM == 1) then
 !         nPLOT = MIN(nPLOT+1,ndx)
-           nplot = nplot + 1
-           if (nplot > Ndx) nplot = nplot - Ndx
-        else if (ipm == -1) then
+         nplot = nplot + 1
+         if (nplot > Ndx) then
+            nplot = nplot - Ndx
+         end if
+      else if (ipm == -1) then
 !         nPLOT = MAX(nPLOT-1,1)
-           nplot = nplot - 1
-           if (nplot < 1) nplot = nplot + Ndx
-        else
-           nplot = ipm
-        end if
-        if (kmx > 0) then
-           NRLAY = KTOP(NPLOT) - KBOT(NPLOT) + 1
-           KPLOT = max(1, min(KPLOT, NRLAY))
-        end if
-        call TEXTFLOW()
-     end subroutine nPLOTPLUSMIN
+         nplot = nplot - 1
+         if (nplot < 1) then
+            nplot = nplot + Ndx
+         end if
+      else
+         nplot = ipm
+      end if
+      if (kmx > 0) then
+         NRLAY = KTOP(NPLOT) - KBOT(NPLOT) + 1
+         KPLOT = max(1, min(KPLOT, NRLAY))
+      end if
+      call TEXTFLOW()
+   end subroutine nPLOTPLUSMIN
+end module m_n_plot_plus_min

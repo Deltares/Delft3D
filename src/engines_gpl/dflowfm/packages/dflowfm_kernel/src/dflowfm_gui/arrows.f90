@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,39 +30,52 @@
 !
 !
 
-      subroutine ARROWS(X0, Y0, UR, VR, PSI0, VFAC)
-         implicit none
-         double precision :: alfa
-         double precision :: csa
-         integer :: i
-         double precision :: psi0
-         double precision :: sna
-         double precision :: ur
-         double precision :: vfac
-         double precision :: vr
-         double precision :: x0
-         double precision :: xlen
-         double precision :: y0
-         double precision :: X(3), Y(3), XR(3), YR(3)
-         data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &
-            Y(1)/-0.1d0/, Y(2)/0d0/, Y(3)/0.1d0/
+module m_arrows
 
-         if (UR == 0 .and. VR == 0) return
-         ALFA = atan2(VR, UR) + PSI0
-         CSA = cos(ALFA)
-         SNA = sin(ALFA)
-         XLEN = sqrt(UR * UR + VR * VR)
+   implicit none
 
-         do I = 1, 3
-            XR(I) = X0 + VFAC * XLEN * (X(I) * CSA - Y(I) * SNA)
-            YR(I) = Y0 + VFAC * XLEN * (Y(I) * CSA + X(I) * SNA)
-         end do
+contains
 
-         call MOVABS(X0, Y0)
-         call LNABS(XR(2), YR(2))
-         call LNABS(XR(1), YR(1))
+   subroutine ARROWS(X0, Y0, UR, VR, PSI0, VFAC)
+      use precision, only: dp
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      real(kind=dp) :: alfa
+      real(kind=dp) :: csa
+      integer :: i
+      real(kind=dp) :: psi0
+      real(kind=dp) :: sna
+      real(kind=dp) :: ur
+      real(kind=dp) :: vfac
+      real(kind=dp) :: vr
+      real(kind=dp) :: x0
+      real(kind=dp) :: xlen
+      real(kind=dp) :: y0
+      real(kind=dp) :: X(3), Y(3), XR(3), YR(3)
+      data X(1)/0.8_dp/, X(2)/1.0_dp/, X(3)/0.8_dp/, &
+         Y(1)/-0.1_dp/, Y(2)/0.0_dp/, Y(3)/0.1_dp/
 
-         call MOVABS(XR(2), YR(2))
-         call LNABS(XR(3), YR(3))
+      if (UR == 0 .and. VR == 0) then
          return
-      end
+      end if
+      ALFA = atan2(VR, UR) + PSI0
+      CSA = cos(ALFA)
+      SNA = sin(ALFA)
+      XLEN = sqrt(UR * UR + VR * VR)
+
+      do I = 1, 3
+         XR(I) = X0 + VFAC * XLEN * (X(I) * CSA - Y(I) * SNA)
+         YR(I) = Y0 + VFAC * XLEN * (Y(I) * CSA + X(I) * SNA)
+      end do
+
+      call MOVABS(X0, Y0)
+      call LNABS(XR(2), YR(2))
+      call LNABS(XR(1), YR(1))
+
+      call MOVABS(XR(2), YR(2))
+      call LNABS(XR(3), YR(3))
+      return
+   end
+
+end module m_arrows

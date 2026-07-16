@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,33 +30,49 @@
 !
 !
 
-      subroutine write_flowdiff()
-         use m_flow
-         use m_samples
-         implicit none
+module m_write_flowdiff
+   use m_in_flowcell, only: in_flowcell
 
-         integer mdiag
-         double precision :: avdiffm, avdifwq, fm, wq
-         integer :: k, kk, num
-         double precision, external :: znod
+   implicit none
 
-         avdiffm = 0d0; avdifwq = 0d0; num = 0
-         do k = 1, ns
-            call in_flowcell(xs(k), ys(k), KK)
-            if (kk > 0) then
-               fm = znod(kk)
-               wq = plotlin(kk)
-               if (fm > 0d0 .and. wq > 0d0) then
-                  write (mdiag, *) zs(k), fm, wq
-                  avdiffm = avdiffm + abs(fm - zs(k))
-                  avdifwq = avdifwq + abs(wq - zs(k))
-                  num = num + 1
-               end if
+   private
+
+   public :: write_flowdiff
+
+contains
+
+   subroutine write_flowdiff()
+      use precision, only: dp
+      use m_flow
+      use m_samples
+      use m_znod
+      implicit none
+
+      integer mdiag
+      real(kind=dp) :: avdiffm, avdifwq, fm, wq
+      integer :: k, kk, num
+
+      avdiffm = 0.0_dp
+      avdifwq = 0.0_dp
+      num = 0
+      do k = 1, ns
+         call in_flowcell(xs(k), ys(k), KK)
+         if (kk > 0) then
+            fm = znod(kk)
+            wq = plotlin(kk)
+            if (fm > 0.0_dp .and. wq > 0.0_dp) then
+               write (mdiag, *) zs(k), fm, wq
+               avdiffm = avdiffm + abs(fm - zs(k))
+               avdifwq = avdifwq + abs(wq - zs(k))
+               num = num + 1
             end if
-         end do
-         if (num > 0) then
-            avdiffm = avdiffm / num
-            avdifwq = avdifwq / num
          end if
-         write (mdiag, *) ' avdiffm, avdifwq,num ', avdiffm, avdifwq, num
-      end subroutine write_flowdiff
+      end do
+      if (num > 0) then
+         avdiffm = avdiffm / num
+         avdifwq = avdifwq / num
+      end if
+      write (mdiag, *) ' avdiffm, avdifwq,num ', avdiffm, avdifwq, num
+   end subroutine write_flowdiff
+
+end module m_write_flowdiff

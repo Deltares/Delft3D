@@ -4,7 +4,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                    & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -69,8 +69,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     integer                         , pointer :: celidt
     type (datagroup)                , pointer :: group6
     type (datagroup)                , pointer :: group7
-    real(fp)      , dimension(:)    , pointer :: rhosol
-    real(fp)      , dimension(:)    , pointer :: cdryb
     integer                         , pointer :: nmaxgl
     integer                         , pointer :: mmaxgl
     integer                         , pointer :: io_prec
@@ -112,7 +110,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     integer, external                             :: open_datdef
     integer, external                             :: neferr
     real(fp)   , dimension(:,:,:)  , allocatable  :: rbuff3
-    character(10)                                 :: transpunit
     character(16)                                 :: grnam6
     character(16)                                 :: grnam7
     character(256)                                :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 
@@ -149,8 +146,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     sus                 => gdp%gdmorpar%sus
     bed                 => gdp%gdmorpar%bed
     moroutput           => gdp%gdmorpar%moroutput
-    rhosol              => gdp%gdsedpar%rhosol
-    cdryb               => gdp%gdsedpar%cdryb
     mmaxgl              => gdp%gdparall%mmaxgl
     nmaxgl              => gdp%gdparall%nmaxgl
     io_prec             => gdp%gdpostpr%io_prec
@@ -180,25 +175,22 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
        if (filetype == FTYPE_NEFIS) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'ITAVGS', ' ', IO_INT4, 0, longname='timestep number (ITAVG*DT*TUNIT := time in sec from ITDATE)')
        endif
+       
+       if (moroutput%morfac) then
+          call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MORAVG', ' ', io_prec , 0, longname='average MORFAC used during averaging period')
+       end if
        call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MFTAVG', ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
-       call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MORAVG', ' ', io_prec , 0, longname='average MORFAC used during averaging period')
        !
        ! map-avg-series
        !
-       select case(moroutput%transptype)
-       case (0)
-          transpunit = 'kg/(s m)'
-       case (1)
-          transpunit = 'm3/(s m)'
-       case (2)
-          transpunit = 'm3/(s m)'
-       end select
-       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBUUA', ' ', io_prec    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Average bed-load transport u-direction (u point)', unit=transpunit, acl='u')
-       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBVVA', ' ', io_prec    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Average bed-load transport v-direction (v point)', unit=transpunit, acl='v')
-       if (lsed > 0) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSUUA', ' ', io_prec , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Average suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSVVA', ' ', io_prec , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Average suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
-       endif
+       if (moroutput%sxyavg) then
+          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBUUA', ' ', io_prec    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Average bed-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBVVA', ' ', io_prec    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Average bed-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
+          if (lsed > 0) then
+             call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSUUA', ' ', io_prec , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Average suspended-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+             call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSVVA', ' ', io_prec , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Average suspended-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
+          endif
+       end if
        !
        group6%grp_dim = iddim_group
        group7%grp_dim = iddim_group
@@ -217,10 +209,12 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           if (ierror/=0) goto 9999
        endif
        !
+
+       !
        ! element 'MFTAVG'
        !
        call wrtvar(fds, filename, filetype, grnam6, celidt, &
-                 & gdp, ierror, lundia, morft, 'MFTAVG')
+               & gdp, ierror, lundia, morft, 'MFTAVG')
        if (ierror/=0) goto 9999
        !
        dmorft = morft - morft0
@@ -228,93 +222,29 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
        !
        ! element 'MORAVG'
        !
-       if (hydrt > hydrt0) then
-          moravg = dmorft/(hydrt - hydrt0)
-       else
-          moravg = 0.0_hp
-       endif
-       call wrtvar(fds, filename, filetype, grnam6, celidt, &
-                 & gdp, ierror, lundia, moravg, 'MORAVG')
-       if (ierror/=0) goto 9999
+       if (moroutput%morfac) then
+          if (hydrt > hydrt0) then
+             moravg = dmorft/(hydrt - hydrt0)
+          else
+             moravg = 0.0_hp
+          endif
+          call wrtvar(fds, filename, filetype, grnam6, celidt, &
+                    & gdp, ierror, lundia, moravg, 'MORAVG')
+          if (ierror/=0) goto 9999
+       end if
        !
-       ! element 'SBUUA'
-       !
-       allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsedtot) )
-       if ( dmorft > 0.0_hp ) then
-          rbuff3(:, :, :) = -999.0_fp
-          do l = 1, lsedtot
-             select case(moroutput%transptype)
-             case (0)
-                rhodt = dmorfs
-             case (1)
-                rhodt = cdryb(l)*dmorfs
-             case (2)
-                rhodt = rhosol(l)*dmorfs
-             end select
-             do m = 1, mmax
-                do n = 1, nmaxus
-                   call n_and_m_to_nm(n, m, nm, gdp)
-                   rbuff3(n, m, l) = sbuuc(nm, l)/rhodt
-                enddo
-             enddo
-          enddo
-       else
-          rbuff3(:,:,:) = 0.0_fp
-       endif
-       call wrtarray_nml(fds, filename, filetype, grnam7, celidt, &
-                     & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
-                     & ierror, lundia, rbuff3, 'SBUUA')
-       if (ierror/= 0) goto 9999
-       !
-       ! element 'SBVVA'
-       !
-       if ( dmorft > 0.0_hp ) then
-          rbuff3(:, :, :) = -999.0_fp
-          do l = 1, lsedtot
-             select case(moroutput%transptype)
-             case (0)
-                rhodt = dmorfs
-             case (1)
-                rhodt = cdryb(l)*dmorfs
-             case (2)
-                rhodt = rhosol(l)*dmorfs
-             end select
-             do m = 1, mmax
-                do n = 1, nmaxus
-                   call n_and_m_to_nm(n, m, nm, gdp)
-                   rbuff3(n, m, l) = sbvvc(nm, l)/rhodt
-                enddo
-             enddo
-          enddo
-       else
-          rbuff3(:,:,:) = 0.0_fp
-       endif
-       call wrtarray_nml(fds, filename, filetype, grnam7, celidt, &
-                     & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
-                     & ierror, lundia, rbuff3, 'SBVVA')
-       deallocate(rbuff3)
-       if (ierror/= 0) goto 9999
-       !
-       if (lsed > 0) then
+       if (moroutput%sxyavg) then
           !
-          ! element 'SSUUA'
+          ! element 'SBUUA'
           !
-          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsed) )
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsedtot) )
           if ( dmorft > 0.0_hp ) then
              rbuff3(:, :, :) = -999.0_fp
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhodt = dmorfs
-                case (1)
-                   rhodt = cdryb(l)*dmorfs
-                case (2)
-                   rhodt = rhosol(l)*dmorfs
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = ssuuc(nm, l)/rhodt
+                      rbuff3(n, m, l) = sbuuc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                    enddo
                 enddo
              enddo
@@ -323,26 +253,18 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           endif
           call wrtarray_nml(fds, filename, filetype, grnam7, celidt, &
                         & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
-                        & ierror, lundia, rbuff3, 'SSUUA')
+                        & ierror, lundia, rbuff3, 'SBUUA')
           if (ierror/= 0) goto 9999
           !
-          ! element 'SSVVA'
+          ! element 'SBVVA'
           !
           if ( dmorft > 0.0_hp ) then
              rbuff3(:, :, :) = -999.0_fp
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhodt = dmorfs
-                case (1)
-                   rhodt = cdryb(l)*dmorfs
-                case (2)
-                   rhodt = rhosol(l)*dmorfs
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = ssvvc(nm, l)/rhodt
+                      rbuff3(n, m, l) = sbvvc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                    enddo
                 enddo
              enddo
@@ -351,10 +273,55 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           endif
           call wrtarray_nml(fds, filename, filetype, grnam7, celidt, &
                         & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
-                        & ierror, lundia, rbuff3, 'SSVVA')
+                        & ierror, lundia, rbuff3, 'SBVVA')
           deallocate(rbuff3)
           if (ierror/= 0) goto 9999
-       endif
+          !
+          if (lsed > 0) then
+             !
+             ! element 'SSUUA'
+             !
+             allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsed) )
+             if ( dmorft > 0.0_hp ) then
+                rbuff3(:, :, :) = -999.0_fp
+                do l = 1, lsedtot
+                   do m = 1, mmax
+                      do n = 1, nmaxus
+                         call n_and_m_to_nm(n, m, nm, gdp)
+                         rbuff3(n, m, l) = ssuuc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                      enddo
+                   enddo
+                enddo
+             else
+                rbuff3(:,:,:) = 0.0_fp
+             endif
+             call wrtarray_nml(fds, filename, filetype, grnam7, celidt, &
+                           & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
+                           & ierror, lundia, rbuff3, 'SSUUA')
+             if (ierror/= 0) goto 9999
+             !
+             ! element 'SSVVA'
+             !
+             if ( dmorft > 0.0_hp ) then
+                rbuff3(:, :, :) = -999.0_fp
+                do l = 1, lsedtot
+                   do m = 1, mmax
+                      do n = 1, nmaxus
+                         call n_and_m_to_nm(n, m, nm, gdp)
+                         rbuff3(n, m, l) = ssvvc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                      enddo
+                   enddo
+                enddo
+             else
+                rbuff3(:,:,:) = 0.0_fp
+             endif
+             call wrtarray_nml(fds, filename, filetype, grnam7, celidt, &
+                           & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
+                           & ierror, lundia, rbuff3, 'SSVVA')
+             deallocate(rbuff3)
+             if (ierror/= 0) goto 9999
+          endif
+       end if
        !
     end select
     !

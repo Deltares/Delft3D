@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,33 @@
 !
 !
 
-      subroutine AXES()
-         use unstruc_colors
-         use m_screenarea
-         implicit none
+module m_axes
+   use m_smallscreen
 
-         if (JAXIS == 1) then
-            call SETCOL(KLAXS)
-            call viewport(0.0, 0.0, 1.0, 1.0)
-            call IPGBORDER()
-            call IPGXTICKPOS(Y1, Y2)
-            call IPGXSCALE('TN')
-            call IPGXSCALETOP('TN')
-            call IPGYTICKPOS(X1, X2)
-            call IPGYSCALELEFT('TN')
-            call IPGYSCALERIGHT('TN')
-            call SMALLSCREEN()
-         end if
-         return
-      end
+   implicit none
+
+contains
+
+   subroutine AXES()
+      use unstruc_colors, only: klaxs, y1, y2, x1, x2
+      use m_screenarea, only: jaxis
+      use m_set_col, only: setcol
+      use m_view_port, only: viewport
+      implicit none
+
+      if (JAXIS == 1) then
+         call SETCOL(KLAXS)
+         call viewport(0.0, 0.0, 1.0, 1.0)
+         call IPGBORDER()
+         call IPGXTICKPOS(Y1, Y2)
+         call IPGXSCALE('TN')
+         call IPGXSCALETOP('TN')
+         call IPGYTICKPOS(X1, X2)
+         call IPGYSCALELEFT('TN')
+         call IPGYSCALERIGHT('TN')
+         call SMALLSCREEN()
+      end if
+      return
+   end
+
+end module m_axes

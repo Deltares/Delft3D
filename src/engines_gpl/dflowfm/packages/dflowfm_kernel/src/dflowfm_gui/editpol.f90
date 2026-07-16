@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,51 @@
 !
 !
 
+module m_editpol
+   use m_stopint, only: stopint
+   use m_pol2curvi_tri, only: pol2curvi_tri
+   use m_pol2curvi, only: pol2curvi
+   use m_dropzout, only: dropzout
+   use m_dropwater, only: dropwater
+   use m_dropk, only: dropk
+   use m_copypol, only: copypol
+   use m_flow_spatietimestep, only: flow_spatietimestep
+   use m_refinepolygonpart, only: refinepolygonpart
+   use m_poltonet, only: poltonet
+   use m_poltolines, only: poltolines
+   use m_poltoland, only: poltoland
+   use m_modln2, only: modln2
+   use m_mergepoly, only: mergepoly
+   use m_makepanelxy, only: makepanelxy
+   use m_ispoi1, only: ispoi1
+   use m_flippo, only: flippo
+   use m_droptracer, only: droptracer
+   use m_wearel
+   use m_viewcycle
+   use m_typevalue
+   use m_selecteditmode
+   use m_plotnu
+   use m_kcir
+
+   implicit none
+
+contains
+
    subroutine EDITPOL(MODE, KEY, NETFLOW)
-      use m_sferic
-      use M_POLYGON
+      use precision, only: dp
+      use m_confrm
+      use m_cir
+      use m_choices
+      use m_sferic, only: jsfertek
+      use m_polygon
       use network_data, only: netstat, NETSTAT_CELLS_DIRTY
-      use M_MISSING
-      use m_partitioninfo
-      use unstruc_colors
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: jampi, my_rank
       use unstruc_model
-      use unstruc_display
+      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx, zoomshift
       use m_flow, only: kmx, jasal, iturbulencemodel
       use unstruc_api
       use dfm_error
-      use unstruc_messages
       use m_helpnow
       use m_qnrgf
       use m_settings
@@ -52,7 +84,17 @@
       use m_halt2
       use m_delpol
       use m_wripol
-      implicit none
+      use m_n_plot_plus_min
+      use m_k_plot_plus_min
+      use m_draw_nu
+      use m_disp2c
+      use m_set_col
+      use m_hlcir
+      use m_dropland
+      use m_movabs
+      use m_ispolystartend, only: ispolystartend
+      use m_filez, only: newnewfil
+
       integer :: jaquit, jazoomshift, nshift
       integer :: k
       integer :: l1
@@ -65,10 +107,9 @@
 
       integer :: MODE, KEY, NETFLOW
       integer :: newmode, mout
-      double precision :: xp, yp, RD
+      real(kind=dp) :: xp, yp, RD
       integer :: iresult
       integer :: ja4
-      logical, external :: ispolystartend
       character TEX * 26, fnam * 255
 
       if (jampi == 1) then
@@ -94,7 +135,9 @@
       call KTEXT(TEX, 1, 2, 15)
       call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
 
-      if (KEY /= 81 .and. KEY /= 81 + 32) JAQUIT = 0
+      if (KEY /= 81 .and. KEY /= 81 + 32) then
+         JAQUIT = 0
+      end if
 
       if (NUM /= 0) then
 !        ER IS EEN KEUZE
@@ -147,7 +190,7 @@
             call SETCOL(0)
             call MOVABS(XP, YP)
             if (MP == 1) then
-               call CIR(1.4d0 * RCIR)
+               call CIR(1.4_dp * RCIR)
             else
                call CIR(RCIR)
             end if
@@ -412,7 +455,9 @@
          MP = NPL
       else if (KEY == 81 .or. KEY == 81 + 32) then
          !  JAQUIT = JAQUIT + 1
-         if (JAQUIT == 2) call STOPINT()
+         if (JAQUIT == 2) then
+            call STOPINT()
+         end if
       else if (KEY == 86 .or. KEY == 86 + 32) then
          call VIEWCYCLE(KEY)
       else if (KEY == 43 .or. KEY == 140) then ! -
@@ -467,10 +512,10 @@
          key = 3
 
       else if (KEY == 84 + 32) then ! t add (to) tracer
-         call droptracer(xp, yp, 1d0)
+         call droptracer(xp, yp, 1.0_dp)
 !         call add_particles(1,xp,yp,0)
       else if (KEY == 84) then ! T t  substract from tracer
-         call droptracer(xp, yp, -1d0)
+         call droptracer(xp, yp, -1.0_dp)
 
       else if (KEY == 32) then
          call flow_spatietimestep()
@@ -540,3 +585,5 @@
       goto 10
 !
    end subroutine EDITPOL
+
+end module m_editpol

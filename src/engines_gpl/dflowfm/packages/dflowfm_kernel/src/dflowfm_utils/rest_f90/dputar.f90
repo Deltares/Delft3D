@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,27 @@
 !
 !
 
-      subroutine DPUTAR(XR, X, MMAX)
-         implicit none
-         integer :: i
-         integer :: mmax
+module m_dputar
+
+   implicit none
+
+   private
+
+   public :: dputar
+
+contains
+
+   subroutine DPUTAR(XR, X, MMAX)
+      use precision, only: dp
+
+      integer :: i
+      integer, intent(in) :: mmax
 !     DE EERSTE IN DE TWEEDE
-         double precision XR(MMAX), X(MMAX)
-         do I = 1, MMAX
-            X(I) = XR(I)
-         end do
-         return
-      end
+      real(kind=dp) XR(MMAX), X(MMAX)
+      do I = 1, MMAX
+         X(I) = XR(I)
+      end do
+      return
+   end
+
+end module m_dputar

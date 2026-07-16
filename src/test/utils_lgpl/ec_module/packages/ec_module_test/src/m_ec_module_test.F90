@@ -95,6 +95,13 @@ private
 
 contains
 
+    subroutine callback_msg(lvl,msg)
+       implicit none
+       integer, intent(in)              :: lvl
+       character(len=*), intent(in)     :: msg
+       write(lvl,'(A)') trim(msg)       ! intentionally using lvl as a file handle !!
+    end subroutine callback_msg
+
     subroutine do_test(verbose, jacompare, janewref, config_ptr, testname, stop_on_differ)
        implicit none
        logical, intent(in)                 :: verbose, jacompare, janewref
@@ -241,7 +248,7 @@ contains
                                                        xyen=xyen)
              endif
              if (.not.success) then
-                call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+                call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
                 call ec_test_exception
                 return
              endif
@@ -315,7 +322,7 @@ contains
                                                              xyen=xyen)
                    endif
                    if (.not.success) then
-                      call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+                      call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
                       call ec_test_exception
                       return
                    endif
@@ -425,7 +432,7 @@ contains
              success = ec_gettimespacevalue_by_itemID(ecInstancePtr, itemIDs(1), tst%tgt_refdate, tst%tgt_tzone, tst%tgt_tunit, tst%t(it), targetArray)
           endif
           if (.not.success) then
-             call TCMessage(testname,'Error getting value for target item','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+             call TCMessage(testname,'Error getting value for target item','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
              call ec_test_exception
              return
              cycle
@@ -498,12 +505,6 @@ contains
        success = ecInstanceFree(ecInstancePtr)
 
        contains
-          subroutine callback_msg(lvl,msg)
-             implicit none
-             integer, intent(in)              :: lvl
-             character(len=*), intent(in)     :: msg
-             write(lvl,'(A)') trim(msg)       ! intentionally using lvl as a file handle !!
-          end subroutine callback_msg
 
           function getTestInput(config_ptr, config, testname) result (success)
              implicit none
@@ -786,15 +787,15 @@ contains
           call str_lower(sOperandName)
           select case (trim(sOperandName))
           case ('undefined')
-             OperandNumber = operand_undefined
+             OperandNumber = EC_OPERAND_UNDEFINED
           case ('add')
-             OperandNumber = operand_add
+             OperandNumber = EC_OPERAND_ADD
           case ('replace')
-             OperandNumber = operand_replace
+             OperandNumber = EC_OPERAND_REPLACE
           case ('replace_element')
-             OperandNumber = operand_replace_element
+             OperandNumber = EC_OPERAND_REPLACE_ELEMENT
           case ('add_element')
-             OperandNumber = operand_add_element
+             OperandNumber = EC_OPERAND_ADD_ELEMENT
           case default
              OperandNumber = ec_undef_int
              call TCMessage(testname,'Unknown operand '//trim(OperandName),'testFailed')

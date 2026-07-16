@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,6 +41,7 @@ module m_fm_wq_processes
    use processet
    use results, only: OutputPointers
    implicit none
+   private :: dp
 
    character(20), allocatable :: syunit_sub(:) !< substance unit from substance file
    character(20), allocatable :: coname_sub(:) !< constant names from substance file
@@ -68,9 +69,8 @@ module m_fm_wq_processes
 
    integer, parameter :: NAMWAQLEN = 128
    integer :: jawaqproc = 0 !< switch for water quality processes (1 = substances initiated, 2 = processes activated too)
-   real(hp) :: waq_vol_dry_thr = 1.0d-3 !< minimum volume for processes to be active
-   real(hp) :: waq_dep_dry_thr = 1.0d-3 !< minimum depth for processes to be active
-   integer :: flux_int !< flux integration by WAQ (1) or by FM (2, not implemented)
+   real(hp) :: waq_vol_dry_thr = 1.0e-3_dp !< minimum volume for processes to be active
+   real(hp) :: waq_dep_dry_thr = 1.0e-3_dp !< minimum depth for processes to be active
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 
@@ -112,7 +112,7 @@ module m_fm_wq_processes
    character(len=NAMWAQLEN), dimension(:), allocatable :: wqbotunits !< water quality bottom variable units
    integer, allocatable, dimension(:, :) :: id_wqb !< wqbot id's in map-file
    integer, allocatable, dimension(:, :) :: id_wqb3d !< 3d wqbot id's in map-file
-   real(hp), allocatable, dimension(:, :) :: wqbot !< water quality bottom variable values in double precision
+   real(hp), allocatable, dimension(:, :), target :: wqbot !< water quality bottom variable values in real(kind=dp)
 
    type(OutputPointers) :: outputs !< output structure
    integer, allocatable, dimension(:, :) :: id_waq !< waq output id's in map-file
@@ -121,6 +121,7 @@ module m_fm_wq_processes
    real(hp), allocatable, dimension(:, :) :: waqoutputs !< waq outputs, dim(noout,Ndkx)
 
    integer :: isfsurf !< pointer to surface         segment function
+   integer :: isflatitude !< pointer to latitude         segment function
    integer :: isftau !< pointer to tau             segment function
    integer :: isfvel !< pointer to velocity        segment function
    integer :: isfsal !< pointer to Salinity        segment function
@@ -145,8 +146,4 @@ module m_fm_wq_processes
    real(hp), allocatable, dimension(:, :, :), target :: flxdmp !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :) :: flxdmpreduce !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :), target :: flxdmptot !< Total fluxes at dump segments
-
-   integer :: nomon !< number of mass balance areas
-   character(len=NAMWAQLEN), allocatable :: monname(:) !< parameter names
-   integer, allocatable :: mondef(:, :) !< monitoring area definition
 end module m_fm_wq_processes

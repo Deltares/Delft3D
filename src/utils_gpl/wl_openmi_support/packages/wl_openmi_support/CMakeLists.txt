@@ -19,17 +19,9 @@ add_library(${library_name} ${source_files})
 
 # Specify dependencies
 set(oss_dependencies delftio)
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
-# # Define prebuild events
-# prebuild_version_number(${library_name} ${fortran_version_file} 
-                                        # ${checkout_src_root}
-                                        # ${ini_version_file}
-                                        # ON)
 
 set_source_files_properties(
                    src/wlopenmi_version.F90
@@ -46,7 +38,7 @@ if(UNIX)
 endif(UNIX)
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_bounds_flag}>")
+target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_bounds_flag}>")
 
 # Create the folder structure in vfproj
 if (WIN32)

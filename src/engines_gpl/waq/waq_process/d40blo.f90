@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,11 +23,13 @@
 module m_d40blo
     use m_waq_precision
     use m_set_effi
+    use chemical_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: d40blo
 
 contains
-
 
     subroutine d40blo (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
@@ -85,7 +87,7 @@ contains
         !     BLSTEP  R*4   1             Time step Bloom (days)
         !     CHLORO  R     1             Total chlorophyl in algae (mg/m3)
         !     CGROUP  R     NGRO          Algae species group biomass (gC/m3)
-        !     CL      R     1             Chlorinity (gCl/m3)
+        !     SAL     R     1             Salinity (g/kg) - item
         !     DEPTHW  R     1             Depth (m)
         !     DAYLEN  R     1             Day length (h)
         !     DELTAT  R     1             Time step DELWAQ (d)
@@ -128,7 +130,6 @@ contains
         !     RADIAT  R     1             Irradiation (W/m2)
         !     SILICA  R     1             Silicate (gSi/m3)
         !     SWCLIM  I     1             Carbon limitation switch (0 inactive, 1 active)
-        !     TIMMUL  R     1             Time step multiplyer Bloom call (-)
         !     TEMPER  R     1             Temperature (degrees C)
         !     TOTNUT  R     4             C, N, P, Si in algae (gX/m3)
         !     NUTCON  I*4   8             Nutrients involved in active nutrient constraints
@@ -153,7 +154,7 @@ contains
         logical  lmixo, lfixn, lcarb
         integer(kind = int_wp) :: ntyp_a, ngro_a, &
                 nset, id
-        real(kind = real_wp) :: timmul, temper, radiat, depthw, depth, daylen, &
+        real(kind = real_wp) :: temper, radiat, depthw, depth, daylen, &
                 ammoni, nitrat, phosph, silica, deltat, blstep, &
                 exttot, deat4, nuptak, frammo, fbod5, extalg, &
                 chloro, totnut(4), algdm, &
@@ -208,9 +209,8 @@ contains
             call get_log_unit_number(lunrep)
             call blfile(lunrep)
 
-            timmul = process_space_real(ipoint(1))
+            blstep = process_space_real(ipoint(1))
             deltat = process_space_real(ipoint(19))
-            blstep = timmul * deltat
             rdcnt = - blstep
             id = 0
             swclim = nint(process_space_real(ipoint(28)))
@@ -469,9 +469,8 @@ contains
         ENDIF
         ! END3DL
 
-        TIMMUL = process_space_real(IP1)
+        BLSTEP = process_space_real(IP1)
         DELTAT = process_space_real(IP19)
-        BLSTEP = TIMMUL * DELTAT
         RDCNT = RDCNT + BLSTEP
         IF ((AINT(RDCNT / 7.) + 1)/=ID) THEN
             ID = AINT(RDCNT / 7.) + 1
@@ -505,7 +504,7 @@ contains
                     DAYLEN = process_space_real(IP8) * 24.
                     DEPTHW = DEPTH
                     IF (BLDEP>0.) DEPTHW = BLDEP
-                    CL = process_space_real(IP22)
+                    CL = chlorinity_from_saL( process_space_real(IP22), temper )
 
                     DO IALG = 1, NTYP_A
 
@@ -601,7 +600,6 @@ contains
                 ENDIF
                 ! END3DL
                 !
-                TIMMUL = process_space_real(IP1)
                 EXTTOT = process_space_real(IP2)
                 EXTALG = process_space_real(IP3)
                 TEMPER = process_space_real(IP4)
@@ -639,7 +637,7 @@ contains
                 DELTAT = process_space_real(IP19)
                 SWBLOOMOUT = NINT(process_space_real(IP20))
                 CALL BLOUTC(SWBLOOMOUT)
-                CL = process_space_real(IP22)
+                CL = chlorinity_from_saL( process_space_real(IP22), temper )
                 VOLUME = process_space_real(IP23)
                 TIC = MAX(0.0, process_space_real(IP25))
                 CO2 = MAX(0.0, process_space_real(IP26))

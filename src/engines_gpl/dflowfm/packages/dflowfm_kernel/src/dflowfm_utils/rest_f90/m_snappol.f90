@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,34 +32,40 @@
 
 !---------------------------------------------------------------
 module m_snappol ! intentionally a module (for assumed size)
+   use m_mirrorcell, only: mirrorcell
+   use m_merge_polylines, only: merge_polylines
+   use m_make_mirrorcells, only: make_mirrorcells
+   use m_count_links, only: count_links
    use kdtree2Factory
    implicit none
 contains
 
 !> snap polygon to mesh
    subroutine snappol(Nin, Xin, Yin, dsep, itype, Nout, Xout, Yout, ipoLout, ierror)
+      use precision, only: dp
       use m_polygon
       use m_missing
       use m_alloc
       use m_flowgeom
       use network_data, only: xk, yk, kn
       use stdlib_sorting, only: sort_index
+      use m_find_crossed_links_kdtree2
       implicit none
 
       integer, intent(in) :: Nin !< thin-dyke polyline size
-      double precision, dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
-      double precision, intent(in) :: dsep !< separator
+      real(kind=dp), dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
+      real(kind=dp), intent(in) :: dsep !< separator
       integer, intent(in) :: itype !< netlinks (1: cross with dual link, 3: cross with netlink itself) or flowlinks(2)
 
       integer, intent(out) :: Nout !< output polygon size
-      double precision, dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
       integer, dimension(:), allocatable, intent(out) :: ipoLout !< reference to input polyline (>0), seperator w.r.t. input polyline (0), dim(Nout)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       integer :: NumLinks, NDIM
 
-      double precision, dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink, ipol
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links, polygon_nodes
       integer, dimension(:), allocatable :: ipolnr, indx
 
       integer :: i, ii, ipL, ipolsec, k1, k2, L, numpols
@@ -72,12 +78,12 @@ contains
       call savepol()
 
 !    allocate
-      allocate (iLink(Lnx))
-      iLink = 0
-      allocate (ipol(Lnx))
-      ipol = 0
-      allocate (dSL(Lnx))
-      dSL = 0d0
+      allocate (crossed_links(Lnx))
+      crossed_links = 0
+      allocate (polygon_nodes(Lnx))
+      polygon_nodes = 0
+      allocate (polygon_segment_weights(Lnx))
+      polygon_segment_weights = 0.0_dp
       allocate (ipolnr(Nin))
       ipolnr = 999
 
@@ -89,22 +95,30 @@ contains
          do while ((xin(i) == dsep .or. yin(i) == dsep))
             ipolnr(i) = 0
             i = i + 1
-            if (i > Nin) exit
+            if (i > Nin) then
+               exit
+            end if
          end do
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
 
 !       mark this segment
          numpols = numpols + 1
          do while (xin(i) /= dsep .and. yin(i) /= dsep)
             ipolnr(i) = numpols
             i = i + 1
-            if (i > Nin) exit
+            if (i > Nin) then
+               exit
+            end if
          end do
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
       end do
 
 !!    BEGIN DEBUG
@@ -129,24 +143,26 @@ contains
       end do
 
 !    snap polygon (note: xout and yout are temporary arrays)
-      call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, 1, NumLinks, iLink, iPol, dSL, ierror)
-      if (ierror /= 0 .or. NumLinks == 0) goto 1234
+      call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, BOUNDARY_ALL, NumLinks, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+      if (ierror /= 0 .or. NumLinks == 0) then
+         goto 1234
+      end if
 
 !    sort crossed flowlinks in increasing polyline order
       allocate (indx(numLinks))
-      call sort_index(iPol(1:numLinks), indx)
+      call sort_index(polygon_nodes(1:numLinks), indx)
 
 !    increase polygon array
       call increasepol(3 * NumLinks, 0)
 
-      ii = 1 ! pointer in indx array, sorted in increasing polygon number (iPol)
+      ii = 1 ! pointer in indx array, sorted in increasing polygon number (polygon_nodes)
 
       do ipL = 1, numpols
 !       fill polygon with sections
          i = 0
 
 !       advance pointer
-         do while (ipolnr(iPol(ii)) < ipL)
+         do while (ipolnr(polygon_nodes(ii)) < ipL)
             ii = ii + 1
          end do
 
@@ -154,10 +170,10 @@ contains
             exit
          end if
 
-         do while (ipolnr(iPol(ii)) == ipL)
-            L = iLink(indx(ii))
+         do while (ipolnr(polygon_nodes(ii)) == ipL)
+            L = crossed_links(indx(ii))
 !          check for matching polygon section
-            ipolsec = iPol(ii)
+            ipolsec = polygon_nodes(ii)
             if (ipolsec < 1 .or. ipolsec >= Nin) then ! should not happen
                continue
                exit
@@ -188,14 +204,18 @@ contains
 
             ii = ii + 1
 
-            if (ii > Numlinks) exit ! done
+            if (ii > Numlinks) then
+               exit ! done
+            end if
          end do
          NPL = i
 
 !       merge polyline section parts
          call merge_polylines()
 
-         if (NPL < 2) cycle ! no polyline section found
+         if (NPL < 2) then
+            cycle ! no polyline section found
+         end if
 
 !       copy to output
          NDIM = Nout + NPL + 1 ! add one for seperator
@@ -216,16 +236,26 @@ contains
          Yout(Nout) = dsep
          ipoLout(Nout) = 0
 
-         if (ii > NumLinks) exit ! done
+         if (ii > NumLinks) then
+            exit ! done
+         end if
       end do
 
       ierror = 0
 1234  continue
 
-      if (allocated(ipolnr)) deallocate (ipolnr)
-      if (allocated(iLink)) deallocate (iLink)
-      if (allocated(iPol)) deallocate (iPol)
-      if (allocated(dSL)) deallocate (dSL)
+      if (allocated(ipolnr)) then
+         deallocate (ipolnr)
+      end if
+      if (allocated(crossed_links)) then
+         deallocate (crossed_links)
+      end if
+      if (allocated(polygon_nodes)) then
+         deallocate (polygon_nodes)
+      end if
+      if (allocated(polygon_segment_weights)) then
+         deallocate (polygon_segment_weights)
+      end if
 
       call restorepol()
 
@@ -234,6 +264,7 @@ contains
 
 !> snap point to flow node
    subroutine snappnt(Nin, xin, yin, dsep, Nout, xout, yout, ipoLout, ierror, kout)
+      use precision, only: dp
       use m_alloc
       use m_flowgeom, only: xz, yz
       use m_GlobalParameters, only: INDTP_ALL
@@ -243,12 +274,12 @@ contains
       implicit none
 
       integer, intent(in) :: Nin !< thin-dyke polyline size
-      double precision, dimension(Nin) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
+      real(kind=dp), dimension(Nin) :: Xin, Yin !< dsep-separated thin-dyke polyline coordinates
 
-      double precision, intent(in) :: dsep !< missing value
+      real(kind=dp), intent(in) :: dsep !< missing value
 
       integer, intent(out) :: Nout !< output polygon size
-      double precision, dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
       integer, dimension(:), allocatable, intent(out) :: ipoLout !< reference to input points (>0), no flownode found (0), dim(Nout)
       integer, intent(out) :: ierror !< error (1) or not (0)
       integer, optional, dimension(:), allocatable, intent(out) :: kout !< flownode numbers found by snapping (0=not flownode found)
@@ -263,7 +294,9 @@ contains
       ierror = 1
       Nout = 0
 
-      if (Nin < 1) goto 1234
+      if (Nin < 1) then
+         goto 1234
+      end if
 
 !    allocate
       allocate (namobs(Nin))
@@ -305,8 +338,12 @@ contains
 1234  continue
 
 !    deallocate
-      if (allocated(namobs)) deallocate (namobs)
-      if (allocated(kobs)) deallocate (kobs)
+      if (allocated(namobs)) then
+         deallocate (namobs)
+      end if
+      if (allocated(kobs)) then
+         deallocate (kobs)
+      end if
 
       return
    end subroutine snappnt
@@ -314,6 +351,7 @@ contains
 !> snap polyline to mesh boundary
 !>   2D only
    subroutine snapbnd(bndtype, Nin, Xin, Yin, dsep, Nout, Xout, Yout, ipoLout, ierror)
+      use precision, only: dp
       use timespace_triangle
       use m_polygon
       use m_missing
@@ -325,26 +363,26 @@ contains
       character(len=*), intent(in) :: bndtype !< boundary condition type
 
       integer, intent(in) :: Nin !< polyline size
-      double precision, dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated polyline coordinates
-      double precision, intent(in) :: dsep !< separator
+      real(kind=dp), dimension(Nin), intent(in) :: Xin, Yin !< dsep-separated polyline coordinates
+      real(kind=dp), intent(in) :: dsep !< separator
 
       integer, intent(out) :: Nout !< output polygon size
-      double precision, dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: Xout, Yout !< output polygon coordinates, dim(Nout)
       integer, dimension(:), allocatable, intent(out) :: ipoLout !< reference to input polyline (>0), seperator w.r.t. input polyline (0), dim(Nout)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      double precision, dimension(:), allocatable :: xe, ye
-      double precision, dimension(:, :), allocatable :: xyen
-      double precision, dimension(:), allocatable :: xdum, ydum
+      real(kind=dp), dimension(:), allocatable :: xe, ye
+      real(kind=dp), dimension(:, :), allocatable :: xyen
+      real(kind=dp), dimension(:), allocatable :: xdum, ydum
 
       integer, dimension(:), allocatable :: kce, ke, ki, kcs
       integer, dimension(:), allocatable :: idx
 
-      double precision :: wL, wR
-      double precision :: xm, ym, crpm, distanceStartPolygon
+      real(kind=dp) :: wL, wR
+      real(kind=dp) :: xm, ym, crpm, distanceStartPolygon
 
-      double precision, dimension(4) :: xx, yy
-      double precision :: xzz, yzz, xci, yci, xce2, yce2
+      real(kind=dp), dimension(4) :: xx, yy
+      real(kind=dp) :: xzz, yzz, xci, yci, xce2, yce2
 
       integer :: mx1Dend, Nx, numpols, jamiss
       integer :: i, iend, k1, k2, k3, k4, kL, kR, L, m, num, NDIM
@@ -375,15 +413,33 @@ contains
       call count_links(mx1Dend, Nx)
 
 !    allocate
-      if (allocated(xe)) deallocate (xe, stat=ierror)
-      if (allocated(ye)) deallocate (ye, stat=ierror)
-      if (allocated(xyen)) deallocate (xyen, stat=ierror)
-      if (allocated(kce)) deallocate (kce, stat=ierror)
-      if (allocated(ke)) deallocate (ke, stat=ierror)
-      if (allocated(ki)) deallocate (ki, stat=ierror)
-      if (allocated(kcs)) deallocate (kcs, stat=ierror)
-      if (allocated(xdum)) deallocate (xdum, stat=ierror)
-      if (allocated(ydum)) deallocate (ydum, stat=ierror)
+      if (allocated(xe)) then
+         deallocate (xe, stat=ierror)
+      end if
+      if (allocated(ye)) then
+         deallocate (ye, stat=ierror)
+      end if
+      if (allocated(xyen)) then
+         deallocate (xyen, stat=ierror)
+      end if
+      if (allocated(kce)) then
+         deallocate (kce, stat=ierror)
+      end if
+      if (allocated(ke)) then
+         deallocate (ke, stat=ierror)
+      end if
+      if (allocated(ki)) then
+         deallocate (ki, stat=ierror)
+      end if
+      if (allocated(kcs)) then
+         deallocate (kcs, stat=ierror)
+      end if
+      if (allocated(xdum)) then
+         deallocate (xdum, stat=ierror)
+      end if
+      if (allocated(ydum)) then
+         deallocate (ydum, stat=ierror)
+      end if
 
       allocate (xe(Nx), stat=ierror)
       allocate (ye(Nx), stat=ierror)
@@ -422,18 +478,24 @@ contains
 !       advance pointer to start of segment
          do while ((xin(i) == dsep .or. yin(i) == dsep))
             i = i + 1
-            if (i > Nin) exit
+            if (i > Nin) then
+               exit
+            end if
          end do
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
 
 !       find end pointer of this polyline
          numpols = numpols + 1
          iend = i
          do while (xin(iend) /= dsep .and. yin(iend) /= dsep)
             iend = iend + 1
-            if (iend > Nin) exit
+            if (iend > Nin) then
+               exit
+            end if
          end do
          iend = iend - 1
 
@@ -537,8 +599,8 @@ contains
                   k2 = kn(2, L)
                   if (k1 > 0 .and. k2 > 0) then
                      num = num + 1
-                     Xout(Nout + num) = 0.5d0 * (xk(k1) + xk(k2))
-                     Yout(Nout + num) = 0.5d0 * (yk(k1) + yk(k2))
+                     Xout(Nout + num) = 0.5_dp * (xk(k1) + xk(k2))
+                     Yout(Nout + num) = 0.5_dp * (yk(k1) + yk(k2))
                      ipoLout(Nout + num) = numpols
                   end if
                else
@@ -566,14 +628,15 @@ contains
                      jamiss = 1
                      L = m
                      k2 = abs(lne(1, L))
-                     k3 = kn(1, L); k4 = kn(2, L)
+                     k3 = kn(1, L)
+                     k4 = kn(2, L)
 
                      call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xzz, yzz, xce2, yce2, xx, yy)
                      if (izbndpos == 0) then ! as in D3DFLOW
 
                      else if (izbndpos == 1) then ! on network boundary
-                        xzz = 0.5d0 * (xk(k3) + xk(k4))
-                        yzz = 0.5d0 * (yk(k3) + yk(k4))
+                        xzz = 0.5_dp * (xk(k3) + xk(k4))
+                        yzz = 0.5_dp * (yk(k3) + yk(k4))
                      else if (izbndpos == 2) then ! on specified boundary polyline
 
                      end if
@@ -600,7 +663,9 @@ contains
          if (NPL > 0) then
             do while (Xout(Nout + NPL) == DMISS .and. YOUT(Nout + NPL) == DMISS .and. NPL > 0)
                NPL = NPL - 1
-               if (NPL < 1) exit
+               if (NPL < 1) then
+                  exit
+               end if
             end do
          end if
 
@@ -615,7 +680,9 @@ contains
          i = iend + 1
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
       end do
 
 !    replace DMISS with seperator, if necessary
@@ -637,16 +704,36 @@ contains
 1234  continue
 
 !    deallocate
-      if (allocated(xe)) deallocate (xe)
-      if (allocated(ye)) deallocate (ye)
-      if (allocated(xyen)) deallocate (xyen)
-      if (allocated(kce)) deallocate (kce)
-      if (allocated(ke)) deallocate (ke)
-      if (allocated(ki)) deallocate (ki)
-      if (allocated(kcs)) deallocate (kcs)
-      if (allocated(xdum)) deallocate (xdum)
-      if (allocated(ydum)) deallocate (ydum)
-      if (allocated(idx)) deallocate (idx)
+      if (allocated(xe)) then
+         deallocate (xe)
+      end if
+      if (allocated(ye)) then
+         deallocate (ye)
+      end if
+      if (allocated(xyen)) then
+         deallocate (xyen)
+      end if
+      if (allocated(kce)) then
+         deallocate (kce)
+      end if
+      if (allocated(ke)) then
+         deallocate (ke)
+      end if
+      if (allocated(ki)) then
+         deallocate (ki)
+      end if
+      if (allocated(kcs)) then
+         deallocate (kcs)
+      end if
+      if (allocated(xdum)) then
+         deallocate (xdum)
+      end if
+      if (allocated(ydum)) then
+         deallocate (ydum)
+      end if
+      if (allocated(idx)) then
+         deallocate (idx)
+      end if
 
       call restorepol()
 

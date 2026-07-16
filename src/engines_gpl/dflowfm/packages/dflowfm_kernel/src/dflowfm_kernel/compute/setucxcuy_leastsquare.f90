@@ -1,6 +1,7 @@
 module m_setucxcuy_leastsquare
+   use precision, only: dp
 
-   double precision, dimension(:, :, :), allocatable :: AtWAiAtW ! Matrix for each flow node
+   real(kind=dp), dimension(:, :, :), allocatable :: AtWAiAtW ! Matrix for each flow node
    integer, dimension(:), allocatable :: ireconstu
    integer, dimension(:), allocatable :: ireconstz
 
@@ -9,6 +10,7 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine reconst2ndini()
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_netw
@@ -16,44 +18,61 @@ contains
       implicit none
       integer :: i, j, k1, k2, kk, L, L1, L2, L3, m, mm, n1, n2, ierr
       integer :: L1a, L2a, L3a, k3, nmax
-      double precision :: cof0, xwall, ywall, scale, cs, sn, Deltxu, Deltyu
+      real(kind=dp) :: cof0, xwall, ywall, scale, cs, sn, Deltxu, Deltyu
       integer, parameter :: mmax = 64
-      double precision, dimension(9, 9) :: AtWA, AtWAi
-      double precision, dimension(9, mmax) :: AtW
-      double precision, dimension(mmax, 9) :: Amat
-      double precision, dimension(mmax) :: Wmat
-      double precision, dimension(9) :: svec
-      integer, dimension(lnx) :: LDone
-      integer, dimension(mxwalls) :: LwDone
+      real(kind=dp), dimension(9, 9) :: AtWA, AtWAi
+      real(kind=dp), dimension(9, mmax) :: AtW
+      real(kind=dp), dimension(mmax, 9) :: Amat
+      real(kind=dp), dimension(mmax) :: Wmat
+      real(kind=dp), dimension(9) :: svec
+      integer, dimension(:), allocatable :: LDone
+      integer, dimension(:), allocatable :: LwDone
 
-      if (allocated(AtWAiAtW)) deallocate (AtWAiAtW)
-      allocate (AtWAiAtW(9, mmax, lnx), stat=ierr); AtWAiAtW = 0d0
-      if (allocated(ireconstu)) deallocate (ireconstu)
-      allocate (ireconstu(lnx)); ireconstu = 0
-      if (allocated(ireconstz)) deallocate (ireconstz)
-      allocate (ireconstz(ndx)); ireconstz = 0
+      allocate (LDone(lnx))
+      allocate (LwDone(mxwalls))
 
-      scale = 1d0
+      if (allocated(AtWAiAtW)) then
+         deallocate (AtWAiAtW)
+      end if
+      allocate (AtWAiAtW(9, mmax, lnx), stat=ierr)
+      AtWAiAtW = 0.0_dp
+      if (allocated(ireconstu)) then
+         deallocate (ireconstu)
+      end if
+      allocate (ireconstu(lnx))
+      ireconstu = 0
+      if (allocated(ireconstz)) then
+         deallocate (ireconstz)
+      end if
+      allocate (ireconstz(ndx))
+      ireconstz = 0
+
+      scale = 1.0_dp
       ireconstu = 0
       ireconstz = 0
 
       do L = 1, lnxi
          m = 0
-         AtWA = 0d0; AtWAi = 0d0; AtW = 0d0
-         Amat = 0d0
-         Wmat = 0d0
+         AtWA = 0.0_dp
+         AtWAi = 0.0_dp
+         AtW = 0.0_dp
+         Amat = 0.0_dp
+         Wmat = 0.0_dp
          LDone = 0
          LwDone = 0
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
          do L1 = 1, nd(k1)%nwx
             L1a = abs(nd(k1)%nw(L1))
-            if (LwDone(L1a) == 1) cycle
+            if (LwDone(L1a) == 1) then
+               cycle
+            end if
             m = m + 1
             n1 = walls(2, L1a)
             n2 = walls(3, L1a)
-            xwall = (xk(n1) + xk(n2)) * 0.5d0
-            ywall = (yk(n1) + yk(n2)) * 0.5d0
+            xwall = (xk(n1) + xk(n2)) * 0.5_dp
+            ywall = (yk(n1) + yk(n2)) * 0.5_dp
             Deltxu = xwall - xu(L)
             Deltyu = ywall - yu(L)
             cs = -walls(8, L1a)
@@ -67,22 +86,24 @@ contains
             Amat(m, 7) = cs * Deltxu * Deltyu
             Amat(m, 8) = sn * Deltxu * Deltyu
             cof0 = sqrt(Deltxu**2 + Deltyu**2)
-            if (cof0 > 1d-10) then
-               Wmat(m) = 1d0 / cof0
+            if (cof0 > 1.0e-10_dp) then
+               Wmat(m) = 1.0_dp / cof0
             else
-               Wmat(m) = 1d0
+               Wmat(m) = 1.0_dp
             end if
             LwDone(L1a) = 1
          end do
 
          do L2 = 1, nd(k2)%nwx
             L2a = abs(nd(k2)%nw(L2))
-            if (LwDone(L2a) == 1) cycle
+            if (LwDone(L2a) == 1) then
+               cycle
+            end if
             m = m + 1
             n1 = walls(2, L2a)
             n2 = walls(3, L2a)
-            xwall = (xk(n1) + xk(n2)) * 0.5d0
-            ywall = (yk(n1) + yk(n2)) * 0.5d0
+            xwall = (xk(n1) + xk(n2)) * 0.5_dp
+            ywall = (yk(n1) + yk(n2)) * 0.5_dp
             Deltxu = xwall - xu(L)
             Deltyu = ywall - yu(L)
             cs = -walls(8, L2a)
@@ -96,21 +117,25 @@ contains
             Amat(m, 7) = cs * Deltxu * Deltyu
             Amat(m, 8) = sn * Deltxu * Deltyu
             cof0 = sqrt(Deltxu**2 + Deltyu**2)
-            if (cof0 > 1d-10) then
-               Wmat(m) = 1d0 / cof0
+            if (cof0 > 1.0e-10_dp) then
+               Wmat(m) = 1.0_dp / cof0
             else
-               Wmat(m) = 1d0
+               Wmat(m) = 1.0_dp
             end if
             LwDone(L2a) = 1
          end do
 
          do L1 = 1, nd(k1)%lnx
             L1a = abs(nd(k1)%ln(L1))
-            if (L1a == L) cycle
+            if (L1a == L) then
+               cycle
+            end if
             k3 = ln(1, L1a) + ln(2, L1a) - k1
             do L3 = 1, nd(k3)%lnx
                L3a = abs(nd(k3)%ln(L3))
-               if (LDone(L3a) == 1) cycle
+               if (LDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                cs = csu(L3a)
                sn = snu(L3a)
@@ -125,21 +150,23 @@ contains
                Amat(m, 7) = cs * Deltxu * Deltyu
                Amat(m, 8) = sn * Deltxu * Deltyu
                cof0 = sqrt(Deltxu**2 + Deltyu**2)
-               if (cof0 > 1.0d-10) then
-                  Wmat(m) = 1d0 / cof0
+               if (cof0 > 1.0e-10_dp) then
+                  Wmat(m) = 1.0_dp / cof0
                else
-                  Wmat(m) = 1d0
+                  Wmat(m) = 1.0_dp
                end if
                LDone(L3a) = 1
             end do
             do L3 = 1, nd(k3)%nwx
                L3a = abs(nd(k3)%nw(L3))
-               if (LwDone(L3a) == 1) cycle
+               if (LwDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                n1 = walls(2, L3a)
                n2 = walls(3, L3a)
-               xwall = (xk(n1) + xk(n2)) * 0.5d0
-               ywall = (yk(n1) + yk(n2)) * 0.5d0
+               xwall = (xk(n1) + xk(n2)) * 0.5_dp
+               ywall = (yk(n1) + yk(n2)) * 0.5_dp
                Deltxu = xwall - xu(L)
                Deltyu = ywall - yu(L)
                cs = -walls(8, L3a)
@@ -153,10 +180,10 @@ contains
                Amat(m, 7) = cs * Deltxu * Deltyu
                Amat(m, 8) = sn * Deltxu * Deltyu
                cof0 = sqrt(Deltxu**2 + Deltyu**2)
-               if (cof0 > 1d-10) then
-                  Wmat(m) = 1d0 / cof0
+               if (cof0 > 1.0e-10_dp) then
+                  Wmat(m) = 1.0_dp / cof0
                else
-                  Wmat(m) = 1d0
+                  Wmat(m) = 1.0_dp
                end if
                LwDone(L3a) = 1
             end do
@@ -164,11 +191,15 @@ contains
 
          do L2 = 1, nd(k2)%lnx
             L2a = abs(nd(k2)%ln(L2))
-            if (L2a == L) cycle
+            if (L2a == L) then
+               cycle
+            end if
             k3 = ln(1, L2a) + ln(2, L2a) - k2
             do L3 = 1, nd(k3)%lnx
                L3a = abs(nd(k3)%ln(L3))
-               if (LDone(L3a) == 1) cycle
+               if (LDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                cs = csu(L3a)
                sn = snu(L3a)
@@ -183,21 +214,23 @@ contains
                Amat(m, 7) = cs * Deltxu * Deltyu
                Amat(m, 8) = sn * Deltxu * Deltyu
                cof0 = sqrt(Deltxu**2 + Deltyu**2)
-               if (cof0 > 1d-10) then
-                  Wmat(m) = 1d0 / cof0
+               if (cof0 > 1.0e-10_dp) then
+                  Wmat(m) = 1.0_dp / cof0
                else
-                  Wmat(m) = 1d0
+                  Wmat(m) = 1.0_dp
                end if
                LDone(L3a) = 1
             end do
             do L3 = 1, nd(k3)%nwx
                L3a = abs(nd(k3)%nw(L3))
-               if (LwDone(L3a) == 1) cycle
+               if (LwDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                n1 = walls(2, L3a)
                n2 = walls(3, L3a)
-               xwall = (xk(n1) + xk(n2)) * 0.5d0
-               ywall = (yk(n1) + yk(n2)) * 0.5d0
+               xwall = (xk(n1) + xk(n2)) * 0.5_dp
+               ywall = (yk(n1) + yk(n2)) * 0.5_dp
                Deltxu = xwall - xu(L)
                Deltyu = ywall - yu(L)
                cs = -walls(8, L3a)
@@ -211,10 +244,10 @@ contains
                Amat(m, 7) = cs * Deltxu * Deltyu
                Amat(m, 8) = sn * Deltxu * Deltyu
                cof0 = sqrt(Deltxu**2 + Deltyu**2)
-               if (cof0 > 1d-10) then
-                  Wmat(m) = 1d0 / cof0
+               if (cof0 > 1.0e-10_dp) then
+                  Wmat(m) = 1.0_dp / cof0
                else
-                  Wmat(m) = 1d0
+                  Wmat(m) = 1.0_dp
                end if
                LwDone(L3a) = 1
             end do
@@ -239,7 +272,7 @@ contains
          end do
          do j = 1, nmax
             do i = 1, nmax
-               AtWA(i, j) = 0d0
+               AtWA(i, j) = 0.0_dp
                do mm = 1, m
                   AtWA(i, j) = AtWA(i, j) + AtW(i, mm) * Amat(mm, j)
                end do
@@ -249,19 +282,19 @@ contains
          ! === Lagrangian multiplier
          !
          nmax = nmax + 1
-         AtWA(nmax, :) = 0d0
-         AtWA(:, nmax) = 0d0
+         AtWA(nmax, :) = 0.0_dp
+         AtWA(:, nmax) = 0.0_dp
          AtWA(nmax, 1) = csu(L)
          AtWA(nmax, 2) = snu(L)
          AtWA(1, nmax) = csu(L)
          AtWA(2, nmax) = snu(L)
          m = m + 1
-         AtW(nmax, :) = 0d0
-         Atw(:, m) = 0d0
-         Atw(nmax, m) = 1d0
+         AtW(nmax, :) = 0.0_dp
+         Atw(:, m) = 0.0_dp
+         Atw(nmax, m) = 1.0_dp
 
          AtWAi = AtWA
-         svec = 0d0 ! dummy vector
+         svec = 0.0_dp ! dummy vector
          call gaussj1(AtWAi, nmax, nmax, svec, 1, 1, ierr)
          if (ierr /= 0) then
             ireconstu(L) = 1
@@ -270,7 +303,7 @@ contains
 
          do j = 1, m
             do i = 1, nmax
-               AtWAiAtW(i, j, L) = 0d0
+               AtWAiAtW(i, j, L) = 0.0_dp
                do kk = 1, nmax
                   AtWAiAtW(i, j, L) = AtWAiAtW(i, j, L) + AtWAi(i, kk) * AtW(kk, j)
                end do
@@ -283,99 +316,122 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine reconst2nd()
+      use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_netw
+      use m_get_Lbot_Ltop
+      use m_links_to_centers, only: links_to_centers
 
       implicit none
       integer :: i, j, k1, k2, L, L1, L2, L3, m
       integer :: L1a, L2a, L3a, L3b, L3t, k3, nmax, LL, Lb, Lt, kk1, kk2
       integer, parameter :: mmax = 64
-      double precision, dimension(mmax) :: bvec
-      double precision, dimension(9) :: xvec
+      real(kind=dp), dimension(mmax) :: bvec
+      real(kind=dp), dimension(9) :: xvec
       integer, dimension(lnx) :: LDone
       integer, dimension(mxwalls) :: LwDone
-      double precision, dimension(:), allocatable :: uxu, uyu
+      real(kind=dp), dimension(:), allocatable :: uxu, uyu
 
       if (.not. allocated(uxu)) then
-         allocate (uxu(lnkx), uyu(lnkx)); uxu = 0d0; uyu = 0d0
+         allocate (uxu(lnkx), uyu(lnkx))
+         uxu = 0.0_dp
+         uyu = 0.0_dp
       end if
 
-      ucx = 0d0; ucy = 0d0
+      ucx = 0.0_dp
+      ucy = 0.0_dp
 
       if (kmx == 0) then !2D
          do L = 1, lnxi
             if (hu(L) < epshu) then
-               v(L) = 0d0
+               v(L) = 0.0_dp
                cycle
             end if
 
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (ireconstu(L) == 1) then
                call perotnode2d(k1)
                call perotnode2d(k2)
-               v(L) = (1d0 - acl(L)) * (-snu(L) * ucx(k1) + csu(L) * ucy(k1)) + acl(L) * (-snu(L) * ucx(k2) + csu(L) * ucy(k2))
+               v(L) = (1.0_dp - acl(L)) * (-snu(L) * ucx(k1) + csu(L) * ucy(k1)) + acl(L) * (-snu(L) * ucx(k2) + csu(L) * ucy(k2))
                ireconstz(k1) = 1
                ireconstz(k2) = 1
                cycle
             end if
             m = 0
-            bvec = 0d0
+            bvec = 0.0_dp
             LDone = 0
             LwDone = 0
 
             do L1 = 1, nd(k1)%nwx
                L1a = abs(nd(k1)%nw(L1))
-               if (LwDone(L1a) == 1) cycle
+               if (LwDone(L1a) == 1) then
+                  cycle
+               end if
                m = m + 1
-               bvec(m) = 0d0
+               bvec(m) = 0.0_dp
                LwDone(L1a) = 1
             end do
 
             do L2 = 1, nd(k2)%nwx
                L2a = abs(nd(k2)%nw(L2))
-               if (LwDone(L2a) == 1) cycle
+               if (LwDone(L2a) == 1) then
+                  cycle
+               end if
                m = m + 1
-               bvec(m) = 0d0
+               bvec(m) = 0.0_dp
                LwDone(L2a) = 1
             end do
 
             do L1 = 1, nd(k1)%lnx
                L1a = abs(nd(k1)%ln(L1))
-               if (L1a == L) cycle
+               if (L1a == L) then
+                  cycle
+               end if
                k3 = ln(1, L1a) + ln(2, L1a) - k1
                do L3 = 1, nd(k3)%lnx
                   L3a = abs(nd(k3)%ln(L3))
-                  if (LDone(L3a) == 1) cycle
+                  if (LDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = u1(L3a)
                   LDone(L3a) = 1
                end do
                do L3 = 1, nd(k3)%nwx
                   L3a = abs(nd(k3)%nw(L3))
-                  if (LwDone(L3a) == 1) cycle
+                  if (LwDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
-                  bvec(m) = 0d0
+                  bvec(m) = 0.0_dp
                   LwDone(L3a) = 1
                end do
             end do
 
             do L2 = 1, nd(k2)%lnx
                L2a = abs(nd(k2)%ln(L2))
-               if (L2a == L) cycle
+               if (L2a == L) then
+                  cycle
+               end if
                k3 = ln(1, L2a) + ln(2, L2a) - k2
                do L3 = 1, nd(k3)%lnx
                   L3a = abs(nd(k3)%ln(L3))
-                  if (LDone(L3a) == 1) cycle
+                  if (LDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = u1(L3a)
                   LDone(L3a) = 1
                end do
                do L3 = 1, nd(k3)%nwx
                   L3a = abs(nd(k3)%nw(L3))
-                  if (LwDone(L3a) == 1) cycle
+                  if (LwDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
-                  bvec(m) = 0d0
+                  bvec(m) = 0.0_dp
                   LwDone(L3a) = 1
                end do
             end do
@@ -392,7 +448,7 @@ contains
             bvec(m) = u1(L)
 
             do i = 1, 2 !nmax
-               xvec(i) = 0d0
+               xvec(i) = 0.0_dp
                do j = 1, m
                   xvec(i) = xvec(i) + AtWAiAtW(i, j, L) * bvec(j)
                end do
@@ -410,45 +466,55 @@ contains
 
          do L = 1, lnxi
             call getLbotLtop(L, Lb, Lt)
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             do LL = Lb, Lt
                if (ireconstu(L) == 1) then
-                  kk1 = ln(1, LL); kk2 = ln(2, LL)
+                  kk1 = ln(1, LL)
+                  kk2 = ln(2, LL)
                   call perotnode3d(k1, kk1)
                   call perotnode3d(k2, kk2)
-                  v(LL) = (1d0 - acl(L)) * (-snu(L) * ucx(kk1) + csu(L) * ucy(kk1)) + acl(L) * (-snu(L) * ucx(kk2) + csu(L) * ucy(kk2))
+                  v(LL) = (1.0_dp - acl(L)) * (-snu(L) * ucx(kk1) + csu(L) * ucy(kk1)) + acl(L) * (-snu(L) * ucx(kk2) + csu(L) * ucy(kk2))
                   ireconstz(k1) = 1
                   ireconstz(k2) = 1
                   cycle
                end if
                m = 0
-               bvec = 0d0
+               bvec = 0.0_dp
                LDone = 0
                LwDone = 0
 
                do L1 = 1, nd(k1)%nwx
                   L1a = abs(nd(k1)%nw(L1))
-                  if (LwDone(L1a) == 1) cycle
+                  if (LwDone(L1a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
-                  bvec(m) = 0d0
+                  bvec(m) = 0.0_dp
                   LwDone(L1a) = 1
                end do
 
                do L2 = 1, nd(k2)%nwx
                   L2a = abs(nd(k2)%nw(L2))
-                  if (LwDone(L2a) == 1) cycle
+                  if (LwDone(L2a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
-                  bvec(m) = 0d0
+                  bvec(m) = 0.0_dp
                   LwDone(L2a) = 1
                end do
 
                do L1 = 1, nd(k1)%lnx
                   L1a = abs(nd(k1)%ln(L1))
-                  if (L1a == L) cycle
+                  if (L1a == L) then
+                     cycle
+                  end if
                   k3 = ln(1, L1a) + ln(2, L1a) - k1
                   do L3 = 1, nd(k3)%lnx
                      L3a = abs(nd(k3)%ln(L3))
-                     if (LDone(L3a) == 1) cycle
+                     if (LDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
                      call getLbotLtop(L3a, L3b, L3t)
                      bvec(m) = u1(L3b + LL - Lb)
@@ -456,20 +522,26 @@ contains
                   end do
                   do L3 = 1, nd(k3)%nwx
                      L3a = abs(nd(k3)%nw(L3))
-                     if (LwDone(L3a) == 1) cycle
+                     if (LwDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
-                     bvec(m) = 0d0
+                     bvec(m) = 0.0_dp
                      LwDone(L3a) = 1
                   end do
                end do
 
                do L2 = 1, nd(k2)%lnx
                   L2a = abs(nd(k2)%ln(L2))
-                  if (L2a == L) cycle
+                  if (L2a == L) then
+                     cycle
+                  end if
                   k3 = ln(1, L2a) + ln(2, L2a) - k2
                   do L3 = 1, nd(k3)%lnx
                      L3a = abs(nd(k3)%ln(L3))
-                     if (LDone(L3a) == 1) cycle
+                     if (LDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
                      call getLbotLtop(L3a, L3b, L3t)
                      bvec(m) = u1(L3b + LL - Lb)
@@ -477,9 +549,11 @@ contains
                   end do
                   do L3 = 1, nd(k3)%nwx
                      L3a = abs(nd(k3)%nw(L3))
-                     if (LwDone(L3a) == 1) cycle
+                     if (LwDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
-                     bvec(m) = 0d0
+                     bvec(m) = 0.0_dp
                      LwDone(L3a) = 1
                   end do
                end do
@@ -496,7 +570,7 @@ contains
                bvec(m) = u1(LL)
 
                do i = 1, 2 !nmax
-                  xvec(i) = 0d0
+                  xvec(i) = 0.0_dp
                   do j = 1, m
                      xvec(i) = xvec(i) + AtWAiAtW(i, j, L) * bvec(j)
                   end do
@@ -515,21 +589,22 @@ contains
          end do
       end if
 
-      ucx = 0d0
-      ucy = 0d0
-      call linkstocenterstwodoubles(ucx, uxu)
-      call linkstocenterstwodoubles(ucy, uyu)
+      ucx = 0.0_dp
+      ucy = 0.0_dp
+      call links_to_centers(ucx, uxu)
+      call links_to_centers(ucy, uyu)
 
       do L = 1, lnxi
          if (hu(L) < epshu) then
-            v(L) = 0d0
+            v(L) = 0.0_dp
             cycle
          end if
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          if (ireconstu(L) == 1) then
             call perotnode2d(k1)
             call perotnode2d(k2)
-            v(L) = acl(L) * (-snu(L) * ucx(k1) + csu(L) * ucy(k1)) + (1d0 - acl(L)) * (-snu(L) * ucx(k2) + csu(L) * ucy(k2))
+            v(L) = acl(L) * (-snu(L) * ucx(k1) + csu(L) * ucy(k1)) + (1.0_dp - acl(L)) * (-snu(L) * ucx(k2) + csu(L) * ucy(k2))
             ireconstz(k1) = 1
             ireconstz(k2) = 1
             cycle
@@ -547,10 +622,11 @@ contains
       implicit none
       integer :: k, L, L1, La
 
-      ucx(k) = 0d0
-      ucy(k) = 0d0
+      ucx(k) = 0.0_dp
+      ucy(k) = 0.0_dp
       do L1 = 1, nd(k)%lnx
-         L = nd(k)%ln(L1); La = abs(L)
+         L = nd(k)%ln(L1)
+         La = abs(L)
          if (L < 0) then
             ucx(k) = ucx(k) + wcx1(La) * u1(La)
             ucy(k) = ucy(k) + wcy1(La) * u1(La)
@@ -568,14 +644,15 @@ contains
       use m_flow
       use m_flowgeom
       use m_get_kbot_ktop
+      use m_get_Lbot_Ltop
 
       implicit none
       integer, intent(in) :: kk, k
       integer :: kb, kt, L, L1, La, Lb, Lt, LL
 
       call getkbotktop(kk, kb, kt)
-      ucx(k) = 0d0
-      ucy(k) = 0d0
+      ucx(k) = 0.0_dp
+      ucy(k) = 0.0_dp
       do L1 = 1, nd(kk)%lnx
          L = nd(kk)%ln(L1)
          La = abs(L)
@@ -595,21 +672,22 @@ contains
    ! ==============================================================================================
    ! ==============================================================================================
    subroutine gaussj1(a, n, np, b, m, mp, ierr)
+      use precision, only: dp
 
       implicit none
       integer :: m, mp, n, np, ierr
       integer :: i, icol, irow, j, k, l, ll
       integer, dimension(np) :: indxc, indxr, ipiv
-      double precision :: big, dum, pivinv
-      double precision, dimension(np, np) :: a
-      double precision, dimension(np, mp) :: b
+      real(kind=dp) :: big, dum, pivinv
+      real(kind=dp), dimension(np, np) :: a
+      real(kind=dp), dimension(np, mp) :: b
 
       ierr = 0
       do j = 1, n
          ipiv(j) = 0
       end do
       do i = 1, n
-         big = 0d0
+         big = 0.0_dp
          do j = 1, n
             if (ipiv(j) /= 1) then
                do k = 1, n
@@ -642,13 +720,13 @@ contains
          end if
          indxr(i) = irow
          indxc(i) = icol
-         if (abs(a(icol, icol)) < 1d-10) then
+         if (abs(a(icol, icol)) < 1.0e-10_dp) then
             !print*, 'singular matrix in gaussj'
             ierr = 1
             return
          end if
-         pivinv = 1d0 / a(icol, icol)
-         a(icol, icol) = 1d0
+         pivinv = 1.0_dp / a(icol, icol)
+         a(icol, icol) = 1.0_dp
          do l = 1, n
             a(icol, l) = a(icol, l) * pivinv
          end do
@@ -658,7 +736,7 @@ contains
          do ll = 1, n
             if (ll /= icol) then
                dum = a(ll, icol)
-               a(ll, icol) = 0d0
+               a(ll, icol) = 0.0_dp
                do l = 1, n
                   a(ll, l) = a(ll, l) - a(icol, l) * dum
                end do
@@ -679,56 +757,5 @@ contains
       end do
 
    end subroutine gaussj1
-
-   ! ==============================================================================================
-   ! ==============================================================================================
-   subroutine qrdcmp(a, n, np, c, d, sing)
-
-      implicit none
-      integer :: n, np
-      integer :: i, j, k
-      double precision :: scale, sigma, sum, tau
-      double precision, dimension(np, np) :: a
-      double precision, dimension(n) :: c, d
-      logical sing
-
-      sing = .false.
-      do k = 1, n - 1
-         scale = 0d0
-         do i = k, n
-            scale = max(scale, abs(a(i, k)))
-         end do
-         if (scale == 0d0) then
-            sing = .true.
-            c(k) = 0d0
-            d(k) = 0d0
-         else
-            do i = k, n
-               a(i, k) = a(i, k) / scale
-            end do
-            sum = 0d0
-            do i = k, n
-               sum = sum + a(i, k)**2
-            end do
-            sigma = sign(sqrt(sum), a(k, k))
-            a(k, k) = a(k, k) + sigma
-            c(k) = sigma * a(k, k)
-            d(k) = -scale * sigma
-            do j = k + 1, n
-               sum = 0d0
-               do i = k, n
-                  sum = sum + a(i, k) * a(i, j)
-               end do
-               tau = sum / c(k)
-               do i = k, n
-                  a(i, j) = a(i, j) - tau * a(i, k)
-               end do
-            end do
-         end if
-      end do
-      d(n) = a(n, n)
-      if (d(n) == 0d0) sing = .true.
-
-   end subroutine qrdcmp
 
 end module m_setucxcuy_leastsquare

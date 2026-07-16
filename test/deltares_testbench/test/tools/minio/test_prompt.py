@@ -1,30 +1,31 @@
 import io
 
 import pytest
+from pytest_mock import MockerFixture
 
-from tools.minio.prompt import DefaultPrompt, InteractivePrompt
+from tools.minio.prompt import Answer, DefaultParser, DefaultPrompt, InputParser, InteractivePrompt
 
 
 class TestInteractivePrompt:
-    @pytest.mark.parametrize("option", ["foo", "bar", "baz"])
-    def test_choose__choose_option__get_correct_answer(self, option) -> None:
+    @pytest.mark.parametrize("index", [1, 2, 3])
+    def test_choose__choose_option__get_correct_answer(self, index: int) -> None:
         # Arrange
         options = ["foo", "bar", "baz"]
-        in_stream = io.StringIO("".join(option + "\n" for option in options))
+        in_stream = io.StringIO(f"{index}\n")
         out_stream = io.StringIO()
         prompt = InteractivePrompt(in_stream, out_stream)
-        message = f"Expecting {option}"
+        message = f"Expecting {index}"
 
         # Act
-        choice = prompt.choose(message, option)
+        choice = prompt.choose(message, options)
 
         # Assert
-        assert choice == option
+        assert choice == options[index - 1]
         out_stream.seek(0)
         output = out_stream.read()
         assert message in output
 
-    @pytest.mark.parametrize("index", range(3))
+    @pytest.mark.parametrize("index", [0, 1, 2])
     def test_choose__user_hits_enter__get_default_choice(self, index: int) -> None:
         # Arrange
         options = ["foo", "bar", "baz"]
@@ -51,9 +52,17 @@ class TestInteractivePrompt:
         # Assert
         assert choice == "foo"
 
-    def test_choose__choose_non_existent_option__try_again(self) -> None:
+    @pytest.mark.parametrize(
+        "input_",
+        [
+            pytest.param("-1\n", id="negative"),
+            pytest.param("4\n", id="out_of_range"),
+            pytest.param("spam\n", id="not_a_number"),
+        ],
+    )
+    def test_choose__choose_non_existent_option__try_again(self, input_: str) -> None:
         # Arrange
-        in_stream = io.StringIO("qux\nfoo\n")
+        in_stream = io.StringIO(input_)
         out_stream = io.StringIO()
         prompt = InteractivePrompt(in_stream, out_stream)
 
@@ -61,11 +70,10 @@ class TestInteractivePrompt:
         choice = prompt.choose("Choose!", ["foo", "bar", "baz"])
 
         # Assert
-        assert choice == "foo"
+        assert choice is None
         out_stream.seek(0)
         output = out_stream.read()
-        assert "Invalid option" in output
-        assert "qux" in output
+        assert "Please enter a number" in output
 
     def test_choose__in_stream_ends__return_none(self) -> None:
         # Arrange
@@ -94,35 +102,34 @@ class TestInteractivePrompt:
         with pytest.raises(ValueError, match="out of range"):
             prompt.choose("Choose!", ["foo", "bar", "baz"], default_idx=index)
 
-    @pytest.mark.parametrize(("option", "expected_result"), [("yes", True), ("no", False)])
-    def test_yes_no__select_right_option__get_correct_bool_value(self, option: str, expected_result: bool) -> None:
+    @pytest.mark.parametrize("answer", [Answer.YES, Answer.NO])
+    def test_yes_no__select_right_option__get_correct_bool_value(self, answer: Answer) -> None:
         # Arrange
         out_stream = io.StringIO()
-        prompt = InteractivePrompt(io.StringIO(option + "\n"), out_stream)
-        message = f"Expecting {option}"
+        prompt = InteractivePrompt(io.StringIO(answer.value + "\n"), out_stream)
+        message = f"Expecting {answer.value}"
 
         # Act
         result = prompt.yes_no(message)
 
         # Assert
-        assert isinstance(result, bool)
-        assert result == expected_result
+        assert result == answer
         out_stream.seek(0)
         output = out_stream.read()
         assert message in output
 
-    @pytest.mark.parametrize("default_yes", [True, False])
-    def test_yes_no__user_hits_enter__get_default_choice(self, default_yes: bool) -> None:
+    @pytest.mark.parametrize("default", Answer)
+    def test_yes_no__user_hits_enter__get_default_choice(self, default: Answer) -> None:
         # Arrange
         in_stream = io.StringIO("\n")
         out_stream = io.StringIO()
         prompt = InteractivePrompt(in_stream, out_stream)
 
         # Act
-        choice = prompt.yes_no("Choose!", default_yes=default_yes)
+        choice = prompt.yes_no("Choose!", default=default)
 
         # Assert
-        assert choice == default_yes
+        assert choice == default
 
     def test_yes_no__neither_yes_or_no__try_again(self) -> None:
         # Arrange
@@ -134,12 +141,12 @@ class TestInteractivePrompt:
         choice = prompt.yes_no("Choose!")
 
         # Assert
-        assert choice
+        assert choice == Answer.YES
         out_stream.seek(0)
         output = out_stream.read()
-        assert all(s in output for s in ("maybe", "Invalid option"))
+        assert "Please enter 'yes' or 'no'" in output
 
-    def test_yes_no__no_input__return_none(self) -> None:
+    def test_yes_no__no_newline__return_cancel(self) -> None:
         # Arrange
         prompt = InteractivePrompt(io.StringIO("..."), io.StringIO())
 
@@ -147,7 +154,61 @@ class TestInteractivePrompt:
         choice = prompt.yes_no("Choose!")
 
         # Assert
-        assert choice is None
+        assert choice == Answer.CANCEL
+
+    @pytest.mark.parametrize(
+        ("input_", "expected"),
+        [
+            pytest.param("I'm hitting enter\n", "I'm hitting enter", id="ends-in-newline"),
+            pytest.param("I'm hitting CTRL-Z", None, id="end-of-file"),
+        ],
+    )
+    def test_input__without_parser__use_default_parser(self, input_: str, expected: str | None) -> None:
+        # Arrange
+        in_stream = io.StringIO(input_)
+        out_stream = io.StringIO()
+        prompt = InteractivePrompt(in_stream, out_stream)
+
+        # Act
+        result = prompt.input("Type something and hit enter")
+
+        # Assert
+        assert result == expected
+
+    def test_input__with_parser(self, mocker: MockerFixture) -> None:
+        # Arrange
+        input_helper = mocker.Mock(spec=InputParser[int])
+        in_stream = io.StringIO(42 * "🏆")
+        out_stream = io.StringIO()
+        prompt = InteractivePrompt(in_stream, out_stream)
+
+        input_helper.parse.side_effect = len
+        input_helper.complete.return_value = iter([])  # Skip installing autocompleter.
+
+        # Act
+        result = prompt.input("Type something and hit enter", input_helper)
+
+        # Assert
+        assert result == 42
+
+    def test_input__parser_raises_value_error__warn_user_try_again(self, mocker: MockerFixture) -> None:
+        # Arrange
+        input_helper = mocker.Mock(spec=InputParser[None])
+        in_stream = io.StringIO("🍞")
+        out_stream = io.StringIO()
+        prompt = InteractivePrompt(in_stream, out_stream)
+
+        input_helper.parse.side_effect = [ValueError("Quack!"), None]
+        input_helper.complete.return_value = iter([])  # Skip installing autocompleter.
+
+        # Act
+        result = prompt.input("🦆: Feed me!", input_helper)
+
+        # Assert
+        out_stream.seek(0)
+        output = out_stream.read()
+        assert result is None
+        assert "Invalid input: 🍞" in output
 
 
 class TestDefaultPrompt:
@@ -174,24 +235,57 @@ class TestDefaultPrompt:
         # Assert
         assert choice == options[0]
 
-    @pytest.mark.parametrize("default_yes", [True, False])
-    def test_yes_no__choose_default(self, default_yes: bool) -> None:
+    @pytest.mark.parametrize("default", Answer)
+    def test_yes_no__choose_default(self, default: Answer) -> None:
         # Arrange
         prompt = DefaultPrompt()
 
         # Act
-        choice = prompt.yes_no("Choose!", default_yes)
+        choice = prompt.yes_no("Choose!", default)
 
         # Assert
-        assert choice == default_yes
+        assert choice == default
 
-    @pytest.mark.parametrize("default_yes", [True, False])
-    def test_yes_no__force_yes__yes_even_if_default_is_no(self, default_yes: bool) -> None:
+    @pytest.mark.parametrize("default", Answer)
+    def test_yes_no__force_yes__yes_even_if_default_is_no(self, default: Answer) -> None:
         # Arrange
         prompt = DefaultPrompt(force_yes=True)
 
         # Act
-        choice = prompt.yes_no("Choose!", default_yes=default_yes)
+        choice = prompt.yes_no("Choose!", default=default)
 
         # Assert
-        assert choice
+        assert choice == Answer.YES
+
+    def test_input__parse_empty_line(self, mocker: MockerFixture) -> None:
+        # Arrange
+        prompt = DefaultPrompt()
+        parser = mocker.Mock(spec=InputParser)
+
+        def side_effect(line: str) -> None:
+            # Assert
+            assert line == "\n"
+
+        parser.parse.side_effect = side_effect
+
+        # Act
+        prompt.input("Type something", parser)
+
+
+class TestDefaultInputHelper:
+    @pytest.mark.parametrize(
+        ("input_", "expected"),
+        [
+            pytest.param("   I hit enter   \n", "I hit enter", id="strip-input-line"),
+            pytest.param("I hit CTRL-Z to end the input", None, id="end-of-file"),
+        ],
+    )
+    def test_default_input_helper(self, input_: str, expected: str | None) -> None:
+        # Arrange
+        helper = DefaultParser()
+
+        # Act
+        result = helper.parse(input_)
+
+        # Assert
+        assert result == expected

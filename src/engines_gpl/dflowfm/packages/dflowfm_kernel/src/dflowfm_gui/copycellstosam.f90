@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,10 +36,10 @@ subroutine copycellstosam()
    use m_missing
    use m_polygon, only: NPL, xpl, ypl, zpl
    use geometry_module, only: dbpinpol
+   use m_znetcell
 
    implicit none
    integer :: in, k, c
-   double precision, external :: znetcell
    in = -1
    k = ns
 
@@ -62,7 +62,9 @@ subroutine copycellstosam()
    do c = 1, nump
       if (LC(c) == 1) then
          k = k + 1
-         xs(k) = xzw(c); ys(k) = yzw(c); zs(k) = znetcell(k)
+         xs(k) = xzw(c)
+         ys(k) = yzw(c)
+         zs(k) = znetcell(k)
       end if
    end do
    ns = k

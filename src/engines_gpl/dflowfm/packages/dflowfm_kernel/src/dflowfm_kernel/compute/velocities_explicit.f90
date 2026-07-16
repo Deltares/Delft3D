@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,48 +30,66 @@
 !
 !
 
- subroutine velocities_explicit()
-    use m_flowgeom
-    use m_flow
-    use m_flowtimes
-    implicit none
-    integer :: n, L, LL, k1, k2
+module m_velocities_explicit
 
-    if (itstep == 1) then
-       u1 = (u0 - dts * adve) / (1d0 + dts * advi)
-       do n = 1, nbndu !       boundaries at u points
-          L = kbndu(3, n)
-          u1(L) = zbndu(n)
-       end do
-    end if
-    q1 = u1 * au
+   use precision, only: dp
+   implicit none
 
-    squ = 0d0; sqi = 0d0
-    if (kmx == 0) then
-       do L = 1, lnx
-          if (q1(L) > 0) then
-             k1 = ln(1, L); k2 = ln(2, L)
-             squ(k1) = squ(k1) + q1(L)
-             sqi(k2) = sqi(k2) + q1(L)
-          else if (q1(L) < 0) then
-             k1 = ln(1, L); k2 = ln(2, L)
-             squ(k2) = squ(k2) - q1(L)
-             sqi(k1) = sqi(k1) - q1(L)
-          end if
-       end do
-    else
-       do LL = 1, lnx
-          do L = Lbot(LL), Ltop(LL)
-             if (q1(L) > 0) then
-                k1 = ln(1, L); k2 = ln(2, L)
-                squ(k1) = squ(k1) + q1(L)
-                sqi(k2) = sqi(k2) + q1(L)
-             else if (q1(L) < 0) then
-                k1 = ln(1, L); k2 = ln(2, L)
-                squ(k2) = squ(k2) - q1(L)
-                sqi(k1) = sqi(k1) - q1(L)
-             end if
-          end do
-       end do
-    end if
- end subroutine velocities_explicit
+   private
+
+   public :: velocities_explicit
+
+contains
+
+   subroutine velocities_explicit()
+      use m_flowgeom, only: lnx, ln
+      use m_flow, only: itstep, u1, u0, adve, advi, nbndu, kbndu, zbndu, q1, au, squ, sqi, kmx, lbot, ltop
+      use m_flowtimes, only: dts
+      implicit none
+      integer :: n, L, LL, k1, k2
+
+      if (itstep == 1) then
+         u1 = (u0 - dts * adve) / (1.0_dp + dts * advi)
+         do n = 1, nbndu !       boundaries at u points
+            L = kbndu(3, n)
+            u1(L) = zbndu(n)
+         end do
+      end if
+      q1 = u1 * au
+
+      squ = 0.0_dp
+      sqi = 0.0_dp
+      if (kmx == 0) then
+         do L = 1, lnx
+            if (q1(L) > 0) then
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               squ(k1) = squ(k1) + q1(L)
+               sqi(k2) = sqi(k2) + q1(L)
+            else if (q1(L) < 0) then
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               squ(k2) = squ(k2) - q1(L)
+               sqi(k1) = sqi(k1) - q1(L)
+            end if
+         end do
+      else
+         do LL = 1, lnx
+            do L = Lbot(LL), Ltop(LL)
+               if (q1(L) > 0) then
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  squ(k1) = squ(k1) + q1(L)
+                  sqi(k2) = sqi(k2) + q1(L)
+               else if (q1(L) < 0) then
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  squ(k2) = squ(k2) - q1(L)
+                  sqi(k1) = sqi(k1) - q1(L)
+               end if
+            end do
+         end do
+      end if
+   end subroutine velocities_explicit
+
+end module m_velocities_explicit

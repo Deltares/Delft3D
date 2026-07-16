@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,44 +29,48 @@
 
 !
 !
+module m_dispos
 
-      subroutine DISPOS()
-         use m_devices
-         use m_sferic
-         use m_locatora
-         use m_disfor
-         use m_howtoview
-         use m_ktext
-         
-         implicit none
-         integer :: ixmax, ixmin, ixy, ndec, nxy
-         character POSITI * 25
+   use precision, only: dp
+   implicit none
+contains
+   subroutine DISPOS()
+      use m_devices, only: iws
+      use m_sferic, only: jsferic
+      use m_locatora, only: xlc, ylc
+      use m_disfor, only: xyform, disform
+      use m_howtoview, only: jview
+      use m_ktext, only: ktext
 
-         POSITI = 'X,Y:         ,         '
-         if (JVIEW == 2) then
-            POSITI = 'Z,Y:         ,         '
-         else if (JVIEW == 3) then
-            POSITI = 'X-Z:         ,         '
+      integer :: ixmax, ixmin, ixy, ndec, nxy
+      character POSITI * 25
+
+      POSITI = 'X,Y:         ,         '
+      if (JVIEW == 2) then
+         POSITI = 'Z,Y:         ,         '
+      else if (JVIEW == 3) then
+         POSITI = 'X-Z:         ,         '
+      end if
+
+      if (jsferic == 1) then ! nou ja, laat maar even staan
+         IXMIN = int(log10(max(1.0e-6_dp, min(abs(xlc), abs(ylc)))))
+         IXMax = int(log10(max(1.0e-6_dp, max(abs(xlc), abs(ylc)))))
+
+         Ixy = abs(max(ixmin, ixmax))
+         NXY = IXY + 3
+         NDEC = 9 - NXY
+         if (NDEC >= 1) then
+            XYFORM = '(F10.1)'
+            write (XYFORM(6:6), '(I1)') NDEC
+         else
+            disFORM = '(E10.3)'
          end if
+      end if
 
-         if (jsferic == 1) then ! nou ja, laat maar even staan
-            IXMIN = int(log10(max(1d-6, min(abs(xlc), abs(ylc)))))
-            IXMax = int(log10(max(1d-6, max(abs(xlc), abs(ylc)))))
+      write (POSITI(5:14), xyform) XLC
+      write (POSITI(16:25), xyform) YLC
+      call KTEXT(POSITI, IWS - 24, 2, 15)
 
-            Ixy = abs(max(ixmin, ixmax))
-            NXY = IXY + 3
-            NDEC = 9 - NXY
-            if (NDEC >= 1) then
-               XYFORM = '(F10.1)'
-               write (XYFORM(6:6), '(I1)') NDEC
-            else
-               disFORM = '(E10.3)'
-            end if
-         end if
-
-         write (POSITI(5:14), xyform) XLC
-         write (POSITI(16:25), xyform) YLC
-         call KTEXT(POSITI, IWS - 24, 2, 15)
-
-         return
-      end
+      return
+   end
+end module m_dispos

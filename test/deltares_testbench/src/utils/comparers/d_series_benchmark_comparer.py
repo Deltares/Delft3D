@@ -10,6 +10,7 @@ import src.utils.comparers.d_series_comparer as DSeriesComparer
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.tree_comparer import TreeException
 from src.utils.logging.i_logger import ILogger
 
@@ -71,7 +72,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
 
         local_error = False
         if (varList is not None) and (varList > []):
-            paramResults_file = os.path.join(right_path, f'param_results_{filename.split(".")[0]}.csv')
+            paramResults_file = os.path.join(right_path, f"param_results_{filename.split('.')[0]}.csv")
             fparamResults = open(paramResults_file, "w")
             fparamResults.write(
                 "%4s, %12s, %12s, %12s, %12s, %12s, %12s\n"
@@ -97,7 +98,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
 
                 # These values are part of the final result summary
                 end_result = ComparisonResult(error=local_error)
-                end_result.result = param_result["valueOK"]
+                end_result.result = EndResult.from_string(param_result["valueOK"])
                 end_result.max_abs_diff = param_result["absolute difference"]
                 end_result.max_rel_diff = param_result["relative difference"]
 

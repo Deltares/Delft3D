@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,32 @@
 !
 !
 
-  subroutine ISNODEDB(KP, XP, YP)
-     use m_netw
-     implicit none
-     integer :: KP
-     double precision :: XP, YP, eps = 1d-6
+module m_isnodedb
 
-     integer :: K
-     KP = 0
-     do K = NUMK, 1, -1
-        if (abs(XP - XK(K)) < eps .and. abs(YP - YK(K)) < eps) then
-           KP = K
-           return
-        end if
-     end do
-     return
-  end subroutine ISNODEDB
+   implicit none
+
+   private
+
+   public :: isnodedb
+
+contains
+
+   subroutine ISNODEDB(KP, XP, YP)
+      use precision, only: dp
+      use m_netw
+
+      integer :: KP
+      real(kind=dp) :: XP, YP, eps = 1.0e-6_dp
+
+      integer :: K
+      KP = 0
+      do K = NUMK, 1, -1
+         if (abs(XP - XK(K)) < eps .and. abs(YP - YK(K)) < eps) then
+            KP = K
+            return
+         end if
+      end do
+      return
+   end subroutine ISNODEDB
+
+end module m_isnodedb

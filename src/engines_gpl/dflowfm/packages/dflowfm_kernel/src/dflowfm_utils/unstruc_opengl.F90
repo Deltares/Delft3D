@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -234,23 +234,23 @@ contains
       call fglMatrixMode(GL_PROJECTION)
       call fglLoadIdentity()
 
-      call fglOrtho(X1, X2, Y1, Y2, 0, 1) ! world coordinates extent
+      call fglOrtho(real(X1, dp), real(X2, dp), real(Y1, dp), real(Y2, dp), real(0, dp), real(1, dp)) ! world coordinates extent
       call fglMatrixMode(GL_MODELVIEW)
 
       ! clear the screen
       ! CALL fglClearColor(.4, .4, .4, 0) ! gray background
 
       if (ndraw(10) == 0) then
-         r = nreds / 255d0
-         g = ngreens / 255d0
-         b = nblues / 255d0
+         r = nreds / 255.0_dp
+         g = ngreens / 255.0_dp
+         b = nblues / 255.0_dp
       else
-         r = nredp / 255d0
-         g = ngreenp / 255d0
-         b = nbluep / 255d0
+         r = nredp / 255.0_dp
+         g = ngreenp / 255.0_dp
+         b = nbluep / 255.0_dp
       end if
 
-      call fglClearColor(r, g, b, 0) ! screen background
+      call fglClearColor(real(r, sp), real(g, sp), real(b, sp), real(0, sp)) ! screen background
 
       call fglClear(GL_COLOR_BUFFER_BIT)
 
@@ -264,7 +264,7 @@ contains
       use M_DEVICES
       use user32
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
 
       if (jaOpenGL == 0) then
          return
@@ -286,7 +286,7 @@ contains
       use M_DEVICES
       implicit none
       integer(HANDLE) :: ptr_bytes
-      integer(1) :: res 
+      integer(1) :: res
 
       type(T_BITMAPINFO) bmi
 
@@ -330,7 +330,7 @@ contains
 #ifdef HAVE_OPENGL
       use IFWINA ! renamed symbols to avoid conflicts
       implicit none
-      integer(1) :: res 
+      integer(1) :: res
       integer :: pixelFormat, error_code
       type(T_PixelFormatDescriptor) pfd
 
@@ -370,46 +370,36 @@ contains
 #ifdef HAVE_OPENGL
       use IFWINA ! renamed symbols to avoid conflicts
 #endif
+      use, intrinsic :: ieee_exceptions
+
       implicit none
 
       integer, intent(in) :: height
 
 #ifdef HAVE_OPENGL
       integer(HANDLE) :: font
-      integer(1) :: res 
+      integer(1) :: res
 
       ! prepare the font to render text in
       font = CreateFont(height, 0, 0, 0, & ! font size
                         FW_NORMAL, & ! bold
-                        .false., & ! italic
-                        .false., & ! underline
-                        .false., & ! strikout
+                        0, & ! italic
+                        0, & ! underline
+                        0, & ! strikout
                         ANSI_CHARSET, &
                         OUT_TT_PRECIS, &
                         CLIP_DEFAULT_PRECIS, &
                         ANTIALIASED_QUALITY, &
                         ior(FF_DONTCARE, DEFAULT_PITCH), &
                         'Arial') !font name
-
-!    prevFont = SelectObject (hdc, font)
+      ! Disable invalid operation exceptions temporarily
+      call ieee_set_halting_mode(ieee_invalid, .false.)
+      
+      ! This call generates FP invalid exceptions in opengl32.dll
       res = fwglUseFontBitmaps(hdc, 0, 255, 0) ! create the bitmap display lists, we're making images of glyphs 0 thru 254
-!    res = SelectObject(hdc, prevFont) ! select old font again
-      res = DeleteObject(font) ! delete temporary font
 
-#endif
-   end subroutine
+res = DeleteObject(font) ! delete temporary font
 
-   subroutine DeInitializeOpenGl
-#ifdef HAVE_OPENGL
-      use IFWINA
-      implicit none
-      integer(1) :: res 
-
-      res = DeleteObject(hbitmap)
-      res = fwglMakeCurrent(NULL, NULL)
-      res = fwglDeleteContext(HRC)
-      res = DeleteDC(memDC)
-      res = ReleaseDC(HWND, HDC)
 #endif
    end subroutine
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,6 +35,6 @@ module m_hardcopy
 
    integer :: NHCDEV
    integer :: NUMHCOPTS
-   integer, dimension(2,20) :: IHCOPTS
+   integer, dimension(2, 20) :: IHCOPTS
 
 end module m_hardcopy

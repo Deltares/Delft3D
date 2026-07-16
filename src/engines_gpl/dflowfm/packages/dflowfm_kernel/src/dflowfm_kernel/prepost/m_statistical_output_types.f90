@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,7 +43,8 @@ module m_statistical_output_types
       !!       if %source_input must point to newly allocated memory, that is the time to do it once,
       !!       and should never be reallocated after that.
       subroutine process_data_interface_double(data_pointer)
-         double precision, pointer, dimension(:), intent(inout) :: data_pointer !< pointer to function in-output data
+         use precision, only: dp
+         real(kind=dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to function in-output data
       end subroutine process_data_interface_double
    end interface
 
@@ -51,13 +52,14 @@ module m_statistical_output_types
 
    !> Derived type for the statistical output items.
    type, public :: t_output_variable_item
-      type(t_output_quantity_config), pointer :: output_config !< Pointer to output configuration item.
+      type(t_output_quantity_config), allocatable :: output_config !< Output configuration item.
       integer :: operation_type !< Specifies the kind of operation to perform on the output variable.
       integer :: id_var !< NetCDF variable ID, to be set and used by actual writing functions.
       real(dp), pointer, dimension(:) :: stat_output !< Array that is to be written to the Netcdf file. In case the current values are
-                                                                                         !! required this variable points to the basic variable (e.g. s1).
-                                                                                         !! Otherwise during the simulation the intermediate results are stored.
+                                                     !! required this variable points to the basic variable (e.g. s1).
+                                                     !! Otherwise during the simulation the intermediate results are stored.
       real(dp), pointer, dimension(:) :: source_input !< The (possibly transformed) data over which statistics are gathered
+      logical, dimension(:), allocatable :: missing !< logical array, set to true if value in stat_output was missing at any point in the current output interval.
       procedure(process_data_interface_double), nopass, pointer :: source_input_function_pointer => null() !< Function pointer for operation that needs to be performed to produce source_input
       real(dp) :: time_step_sum !< Sum of time steps since the last output interval, used for average calculation
       type(t_moving_average_data), allocatable :: moving_average_data !< Data stored for keeping track of a moving average

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,37 +30,47 @@
 !
 !
 
-subroutine updateValuesOnSourceSinks(tim1)
-   use fm_external_forcings_data, only: qsrc, qsrcavg, vsrccum, vsrccum_pre, numsrc
-   use m_missing
-   use m_flowtimes, only: ti_his, time_his
-   use precision
-   use m_flowparameters, only: eps10
-   use m_alloc
+module m_updatevaluesonsourcesinks
+
    implicit none
-   double precision, intent(in) :: tim1 !< Current (new) time
 
-   double precision, save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
-   double precision :: timstep
-   integer :: i
+   private
 
-   if (timprev < 0d0) then
-      ! This realloc should not be needed
-      call reallocsrc(numsrc)
-   else
-      timstep = tim1 - timprev
-      ! cumulative volume from Tstart
-      do i = 1, numsrc
-         vsrccum(i) = vsrccum(i) + timstep * qsrc(i)
-      end do
+   public :: updatevaluesonsourcesinks
 
-      if (comparereal(tim1, time_his, eps10) == 0) then
-         do i = 1, numsrc
-            qsrcavg(i) = (vsrccum(i) - vsrccum_pre(i)) / ti_his ! average discharge in the past His-interval
-            vsrccum_pre(i) = vsrccum(i)
+contains
+
+   subroutine updateValuesOnSourceSinks(tim1)
+      use m_source_sink, only: source_sinks
+      use precision, only: dp, comparereal
+      use m_flowtimes, only: ti_his, time_his
+      use m_flowparameters, only: EPS10
+
+      real(kind=dp), intent(in) :: tim1 !< Current (new) time
+
+      real(kind=dp), save :: timprev = -1.0_dp ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
+      real(kind=dp) :: timstep
+      integer :: i
+
+      if (timprev < 0.0_dp) then
+         ! This realloc should not be needed
+         call source_sinks%resize(source_sinks%num_total)
+      else
+         timstep = tim1 - timprev
+         ! cumulative volume from Tstart
+         do i = 1, source_sinks%num_total
+            source_sinks%cumulative_volume(i) = source_sinks%cumulative_volume(i) + timstep * source_sinks%discharge(i)
          end do
-      end if
-   end if
 
-   timprev = tim1
-end subroutine updateValuesOnSourceSinks
+         if (comparereal(tim1, time_his, EPS10) == 0) then
+            do i = 1, source_sinks%num_total
+               source_sinks%average_discharge_previous(i) = (source_sinks%cumulative_volume(i) - source_sinks%cumulative_volume_previous(i)) / ti_his ! average discharge in the past His-interval
+               source_sinks%cumulative_volume_previous(i) = source_sinks%cumulative_volume(i)
+            end do
+         end if
+      end if
+
+      timprev = tim1
+   end subroutine updateValuesOnSourceSinks
+
+end module m_updatevaluesonsourcesinks

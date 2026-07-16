@@ -12,6 +12,7 @@ from src.suite.test_set_runner import TestSetRunner
 from src.utils.common import get_default_logging_folder_path, log_header, log_separator, log_table
 from src.utils.comparers.comparer_factory import ComparerFactory
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.composite_logger import CompositeLogger
 from src.utils.logging.file_logger import FileLogger
@@ -71,8 +72,8 @@ class ComparisonRunner(TestSetRunner):
         log_file = os.path.join(get_default_logging_folder_path(), test_case_config.name, "result.txt")
         logger.info(f"Detailed comparison results will be written to: {log_file}")
 
-        logger_list = [FileLogger(self.settings.log_level, test_case_config.name, log_file)]
-        if self.settings.teamcity:
+        logger_list = [FileLogger(self.settings.command_line_settings.log_level, test_case_config.name, log_file)]
+        if self.settings.command_line_settings.teamcity:
             logger_list.append(logger)
 
         composite_logger = CompositeLogger(logger_list)
@@ -99,8 +100,8 @@ class ComparisonRunner(TestSetRunner):
             table["Parameter"].append(str(parameter.name))
             table["Location"].append(str(parameter.location))
 
-            if compare_result.result != "ERROR":
-                table["Result"].append(compare_result.result)
+            if compare_result.result != EndResult.ERROR:
+                table["Result"].append(compare_result.result.value)
                 table["MaxAbsDiff"].append(compare_result.max_abs_diff)
                 table["MaxRelDiff"].append(compare_result.max_rel_diff)
             else:
@@ -110,15 +111,15 @@ class ComparisonRunner(TestSetRunner):
                 error = True
                 error_variables.append(str(parameter.name))
 
-            if compare_result.result == "NOK":
+            if compare_result.result == EndResult.NOK:
                 failed = True
 
         log_table(table, composite_logger)
 
-        if self.settings.teamcity and error:
+        if self.settings.command_line_settings.teamcity and error:
             logger.test_Result(TestResultType.Error, ", ".join(error_variables))
 
-        elif self.settings.teamcity and failed:
+        elif self.settings.command_line_settings.teamcity and failed:
             logger.test_Result(TestResultType.Differences)
 
         run_data.end_time = datetime.now()
@@ -151,14 +152,14 @@ class ComparisonRunner(TestSetRunner):
         result = ComparisonResult()
 
         if file_check.presence == PresenceType.ABSENT:
-            result.result = "NOK" if file_exists else "OK"
+            result.result = EndResult.NOK if file_exists else EndResult.OK
 
         if file_check.presence == PresenceType.PRESENT:
-            result.result = "OK" if file_exists else "NOK"
+            result.result = EndResult.OK if file_exists else EndResult.NOK
 
         return [(test_case_config.name, file_check, parameter, result)]
 
-    def __raise_error_when_missing(self, all_result_files, file_check) -> None:
+    def __raise_error_when_missing(self, all_result_files: list[str], file_check: FileCheck) -> None:
         in_results = Paths().rebuildToLocalPath(file_check.name) in all_result_files
         if (
             not in_results
@@ -227,46 +228,18 @@ class ComparisonRunner(TestSetRunner):
 
         for result in results:
             test_case_config = result.config
-            tc_results = result.results
+            test_case_results = result.results
 
-            # For this test case, find the 'worst' result. This has to take into
-            # account that a lower maxAbsDiff for a NOK is worse than a higher
-            # maxAbsDiff for an OK.
-            # That is: the result always has priority over the maxAbsDiff.
-            # We make use here of the fact that 'ERROR' < 'NOK' < 'OK',
-            #  lexicographically.
-
-            maxAbsDiff_worst = 0.0
-            result_worst = "OK"
-            i_worst = -1
-            for i, (_, _, _, comparison_result) in enumerate(tc_results):
-                if comparison_result.result < result_worst or (
-                    comparison_result.result == result_worst and comparison_result.max_abs_diff > maxAbsDiff_worst
-                ):
-                    maxAbsDiff_worst = comparison_result.max_abs_diff
-                    result_worst = comparison_result.result
-                    i_worst = i
-
-            if i_worst == -1 and tc_results and len(tc_results) > 0:
-                i_worst = len(tc_results) - 1
-
-            # Local variables now contain the 'worst' scores for that test case. This one will be written in the summary
-            worst_result = tc_results[i_worst]
-            _, w_filename, w_parameter, w_cr = worst_result
-
-            table["Test case name"].append(test_case_config.name)
-            table["Result"].append(w_cr.result)
-            table["File name"].append(w_filename.name)
-            table["Parameter name"].append(w_parameter.name)
-
-            is_ignored = w_cr.result == "IGNORED"
-            table["Runtime"].append(test_case_config.run_time if not is_ignored else "---")
-            table["Ratio"].append(
-                test_case_config.run_time / test_case_config.ref_run_time if not is_ignored else "---"
-            )
-            table["MaxAbsDiff"].append(w_cr.max_abs_diff if not is_ignored else "---")
-            table["MaxRelDiff"].append(w_cr.max_rel_diff if not is_ignored else "---")
-            table["Information"].append("at coordinates" + str(w_cr.max_abs_diff_coordinates) if not is_ignored else "---")
+            for _, filename, parameter, comparison in test_case_results:
+                table["Test case name"].append(test_case_config.name)
+                table["Result"].append(comparison.result.value)
+                table["File name"].append(filename.name)
+                table["Parameter name"].append(parameter.name)
+                table["Runtime"].append(test_case_config.run_time)
+                table["Ratio"].append(test_case_config.run_time / test_case_config.ref_run_time)
+                table["MaxAbsDiff"].append(comparison.max_abs_diff)
+                table["MaxRelDiff"].append(comparison.max_rel_diff)
+                table["Information"].append("at coordinates" + str(comparison.max_abs_diff_coordinates))
 
         log_table(table, logger)
         log_separator(logger)
@@ -277,7 +250,7 @@ class ComparisonRunner(TestSetRunner):
         comparison_result.max_rel_diff = 0.0
         comparison_result.passed = False
         comparison_result.error = True
-        comparison_result.result = "ERROR"
+        comparison_result.result = EndResult.ERROR
         result = TestCaseResult(test_case_config, run_data)
         result.results.append((test_case_config.name, FileCheck(), Parameter(), comparison_result))
 

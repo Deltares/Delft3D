@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,30 +30,44 @@
 !
 !
 
+module m_rearst
+
+   implicit none
+
+   private
+
+   public :: rearst
+
+contains
+
    !> Reads raw restart data from a formatted restart file by wrirst.
    !! Water levels and velocities are directly stored into the flow arrays.
    subroutine REARST(Mrst, JA)
+      use precision, only: dp
       use unstruc_model
-      use UNSTRUC_MESSAGES
+      use messagehandling, only: msgbuf, msg_flush
       use M_FLOWTIMES
       use M_FLOW
       use M_FLOWGEOM
       use m_qnerror
-      implicit none
+      use m_qn_eof_error
+      use m_filez, only: doclose
+
       integer, intent(inout) :: Mrst !< Input file pointer (should already be open)
       integer, intent(out) :: ja !< Return status (0 = success)
 
       integer :: k
       integer :: l
       integer :: NDXR, LNXR ! alleen binnen deze subroutine
-      double precision :: DUM
+      real(kind=dp) :: DUM
 
       ja = 0
       ! READ(Mrst,*)  REFDATLOC, TSTART_USERLOC, NDXR, LNXR
       read (Mrst, *) DUM, DUM, NDXR, LNXR
 
       if (NDXR /= NDX .or. LNXR /= LNX) then
-         write (MSGBUF, '(A)') 'DIMENSIONS ON RESTART FILE NOT EQUAL TO CURRENT MODEL DIMENSIONS'; call MSG_FLUSH()
+         write (MSGBUF, '(A)') 'DIMENSIONS ON RESTART FILE NOT EQUAL TO CURRENT MODEL DIMENSIONS'
+         call MSG_FLUSH()
          call QNERROR('DIMENSIONS ON RESTART FILE NOT EQUAL TO CURRENT MODEL DIMENSIONS', ' ', ' ')
          ja = 1
       end if
@@ -82,3 +96,5 @@
       ja = 1
 
    end subroutine reaRST
+
+end module m_rearst

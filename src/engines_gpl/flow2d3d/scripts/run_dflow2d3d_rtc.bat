@@ -8,7 +8,7 @@ title run_flow2d3d_rtc
     rem Leave this script where it is.
     rem Call this script from within the working directory:
     rem path\to\delft3d\installation\x64\dflow2d3d\scripts\run_dflow2d3d_rtc.bat
-    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
+    rem More examples: check run scripts in https://github.com/Deltares/Delft3D/tree/main/examples/*
 
 setlocal enabledelayedexpansion
 
@@ -62,7 +62,6 @@ set dflow2d3ddir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
 set rtcexedir=%D3D_HOME%\bin
 set rtcdefaultdir=%sharedir%\rtc\
-set libdir=%D3D_HOME%\lib
 
 
 if  %debugLevel% EQU 0 (
@@ -83,7 +82,7 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW
-set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
+set PATH=%dflow2d3ddir%;%sharedir%
 echo executing in separate window: "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
               start "Delft3D-FLOW" "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 

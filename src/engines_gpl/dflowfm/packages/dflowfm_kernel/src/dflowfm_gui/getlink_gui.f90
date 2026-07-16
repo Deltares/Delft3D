@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,16 +31,28 @@
 !
 
 !> select link for directional refinement in GUI
+module m_getlink_gui
+
+   implicit none
+
+contains
+
    subroutine getlink_GUI(xp, yp, L)
+      use precision, only: dp
       use m_qnerror
       use m_ktext
       use m_putget_un
+      use m_n_plot_plus_min
+      use m_k_plot_plus_min
+      use m_tek_link
+      use m_is_link
+      use m_draw_nu
       implicit none
 
-      double precision, intent(out) :: xp, yp !< coordinates of clicked point
+      real(kind=dp), intent(out) :: xp, yp !< coordinates of clicked point
       integer, intent(out) :: L !< clicked link number
 
-      double precision :: zp
+      real(kind=dp) :: zp
 
       integer :: num, nwhat, nput, numb, key
 
@@ -88,3 +100,5 @@
 
       return
    end subroutine
+
+end module m_getlink_gui

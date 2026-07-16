@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,11 +63,25 @@
 !> initialize matrix for first-order upwind discretization of advection
 !>   Cartesian cell-centered vector components are numbered as
 !>      ( ucx_1, ucy_1, ucx_2, ucy_2, ..., ...)
+module m_inisolver_advec
+
+   use m_solversettings, only: solversettings
+
+   use precision, only: dp
+   implicit none
+
+   private
+
+   public :: inisolver_advec
+
+contains
+
    subroutine inisolver_advec(ierror)
-      use m_flowgeom
-      use m_alloc
-      use m_solver
-      use m_advec
+      use m_flowgeom, only: lnx, ln, acl, csu, snu, ndxi, nd, ndx, wcx1, wcy1, wcx2, wcy2
+      use m_alloc, only: realloc
+      use m_advec_data, only: ii, ji, ai, ir, jr, ar, ic, jc, ac, dfluxfac, iwork, iw, jw, aw, solver_advec, jaoutput
+      use m_writematrix, only: writematrix
+      use m_saadf, only: amub
       implicit none
 
       integer, intent(inout) :: ierror
@@ -83,7 +97,7 @@
       numnonzeros = 4 * Lnx
       call realloc(iI, Lnx + 1, keepExisting=.false., fill=0)
       call realloc(jI, numnonzeros, keepExisting=.false., fill=0)
-      call realloc(aI, numnonzeros, keepExisting=.false., fill=0d0)
+      call realloc(aI, numnonzeros, keepExisting=.false., fill=0.0_dp)
 
       ipoint = 0
       irow = 0
@@ -107,12 +121,12 @@
 !        x-component second flownode
          ipoint = ipoint + 1
          jI(ipoint) = (k2 - 1) * 2 + 1
-         aI(ipoint) = (1d0 - acL(LL)) * csu(LL)
+         aI(ipoint) = (1.0_dp - acL(LL)) * csu(LL)
 
 !        y-component second flownode
          ipoint = ipoint + 1
          jI(ipoint) = (k2 - 1) * 2 + 2
-         aI(ipoint) = (1d0 - acL(LL)) * snu(LL)
+         aI(ipoint) = (1.0_dp - acL(LL)) * snu(LL)
       end do
       iI(irow + 1) = ipoint + 1
 
@@ -132,7 +146,7 @@
 !     allocate
       call realloc(iR, 2 * Ndx + 1, keepExisting=.false., fill=0)
       call realloc(jR, numnonzeros, keepExisting=.false., fill=0)
-      call realloc(aR, numnonzeros, keepExisting=.false., fill=0d0)
+      call realloc(aR, numnonzeros, keepExisting=.false., fill=0.0_dp)
 
 !     fill entries
       ipoint = 0
@@ -189,8 +203,8 @@
 !     allocate
       call realloc(iC, 2 * Ndx + 1, keepExisting=.false., fill=0)
       call realloc(jC, numnonzeros, keepExisting=.false., fill=0)
-      call realloc(aC, numnonzeros, keepExisting=.false., fill=0d0)
-      call realloc(dfluxfac, (/2, Lnx/), keepExisting=.false., fill=0d0)
+      call realloc(aC, numnonzeros, keepExisting=.false., fill=0.0_dp)
+      call realloc(dfluxfac, [2, Lnx], keepExisting=.false., fill=0.0_dp)
 
 !     fill entries
       ipoint = 0
@@ -209,11 +223,11 @@
          ipoint = ipoint + 1
          icolumn = irow
          jC(ipoint) = icolumn
-         ac(ipoint) = 1d0 ! some non-zero dummy value
+         ac(ipoint) = 1.0_dp ! some non-zero dummy value
 
 !        diagonal entry y-component
          jc(ipoint + ishift) = irow + 1
-         ac(ipoint + ishift) = 2d0 ! some non-zero dummy value
+         ac(ipoint + ishift) = 2.0_dp ! some non-zero dummy value
 
 !        off-diagonals
          do i = 1, nd(kk)%lnx
@@ -224,11 +238,11 @@
 
 !           x-component
             jc(ipoint) = icolumn
-            ac(ipoint) = 3d0 ! some non-zero dummy value
+            ac(ipoint) = 3.0_dp ! some non-zero dummy value
 
 !           y-component
             jc(ipoint + ishift) = icolumn + 1
-            ac(ipoint + ishift) = 4d0 ! some non-zero dummy value
+            ac(ipoint + ishift) = 4.0_dp ! some non-zero dummy value
          end do
 
 !        shift to y-component
@@ -273,11 +287,13 @@
 !     allocate
       call realloc(iW, 2 * Ndx, keepExisting=.false., fill=0)
       call realloc(jW, numnonzeros, keepExisting=.false., fill=0)
-      call realloc(aW, numnonzeros, keepExisting=.false., fill=0d0)
+      call realloc(aW, numnonzeros, keepExisting=.false., fill=0.0_dp)
 
 !     get sparsity pattern
       call amub(2 * Ndx, Lnx, 0, aC, jC, iC, aR, jR, iR, aW, jW, iW, numnonzeros, iwork, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
 !     compute sparsity pattern of whole matrix A = I W (= I C R)
 
@@ -295,13 +311,15 @@
 
 !     get sparsity pattern
       call amub(Lnx, 2 * Ndx, 0, aI, jI, iI, aW, jW, iW, solver_advec%a, solver_advec%ja, solver_advec%ia, solver_advec%numnonzeros, iwork, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       if (jaoutput == 1) then
          call writematrix('Imat.m', Lnx, iI, jI, aI, 'I', 0)
          call writematrix('Rmat.m', 2 * Ndx, iR, jR, aR, 'R', 0)
          call writematrix('Cmat.m', 2 * Ndx, iC, jC, aC, 'C', 0)
-         solver_advec%a = 1d0
+         solver_advec%a = 1.0_dp
          call writematrix('Amat.m', Lnx, solver_advec%ia, solver_advec%ja, solver_advec%a, 'A', 0)
       end if
 
@@ -310,3 +328,5 @@
 
       return
    end subroutine inisolver_advec
+
+end module m_inisolver_advec

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,17 +33,18 @@
 !> Module for maintaining (time-integral) statistics on flow quantities.
 !! NOTE: could be the successor of Fourier analysis. Just maintain some first max/avg quantities for now.
 module m_integralstats
+   use precision, only: dp
 
    integer :: is_numndvals !< Number of variables on flow nodes for which statistics are recorded.
    integer, parameter :: IDX_TAUS = 1 !< Index for mean bed shear stress
    integer, parameter :: IDX_UCM = 2 !< Index for avg cell center velocity magnitude
    integer, parameter :: IDX_HS = 3 !< Index for avg water depth
 
-   double precision, allocatable, target :: is_sumvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
-   double precision, allocatable, target :: is_maxvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
+   real(kind=dp), allocatable, target :: is_sumvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
+   real(kind=dp), allocatable, target :: is_maxvalsnd(:, :) !< [-] Integral values on flow nodes. {"location": "face", "shape": ["is_numndvals", "ndx"]}
 
    character(len=1024), allocatable, target :: is_valnamesnd(:) !NOBMI [-] Names of the variables for which statistics are maintained {"shape": ["is_numndvals"]}
-   double precision, target :: is_dtint !< [s] total time interval since last statistics reset.  {"rank": 0}
+   real(kind=dp), target :: is_dtint !< [s] total time interval since last statistics reset.  {"rank": 0}
 
 contains
 
@@ -61,23 +62,23 @@ contains
 !! Upon loading of new model/MDU, call default_integralstats() instead.
    subroutine reset_integralstats()
 ! node related
-      is_sumvalsnd(1:is_numndvals, :) = 0d0
-      is_maxvalsnd(1:is_numndvals, :) = -huge(1d0)
+      is_sumvalsnd(1:is_numndvals, :) = 0.0_dp
+      is_maxvalsnd(1:is_numndvals, :) = -huge(1.0_dp)
       is_valnamesnd(:) = ''
       is_valnamesnd(1) = 'taus'
       is_valnamesnd(2) = 'ucm'
       is_valnamesnd(3) = 'hs'
 
-      is_dtint = 0d0
+      is_dtint = 0.0_dp
    end subroutine reset_integralstats
 
 !> Update the (time-)integral statistics for all flow nodes, typically after each time step.
    subroutine update_integralstats()
-      use m_flowtimes
-      use m_flow
-      use m_flowgeom
-      use m_gettaus
-      use m_gettauswave
+      use m_flowtimes, only: dts
+      use m_flow, only: jawave, flow_without_waves, jawaveswartdelwaq, taus, ucx, ucy, hs
+      use m_flowgeom, only: ndxi
+      use m_gettaus, only: gettaus
+      use m_gettauswave, only: gettauswave
 
       integer :: k
 
@@ -85,7 +86,7 @@ contains
          return
       end if
 
-      if (jawave == 0 .or. flowWithoutWaves) then
+      if (jawave == 0 .or. flow_without_waves) then
          call gettaus(1, 1)
       else
          call gettauswave(jawaveswartdelwaq)

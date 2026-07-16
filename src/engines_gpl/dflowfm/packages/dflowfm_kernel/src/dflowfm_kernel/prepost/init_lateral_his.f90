@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,19 +31,32 @@
 !
 
 !> Initializes all administration necessary for writing lateral discharge output to his-files.
-subroutine init_lateral_his()
-   use m_laterals, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
-   use m_flowparameters, only: jahislateral
-   use m_alloc
+module m_init_lateral_his
+
+   use precision, only: dp
    implicit none
-   ! At the starting time of history output, initialize variables
-   if (jahislateral > 0 .and. numlatsg > 0) then
-      call realloc(qplatCum, numlatsg, keepExisting=.false., fill=0d0)
-      call realloc(qplatCumPre, numlatsg, keepExisting=.false., fill=0d0)
-      call realloc(qplatAve, numlatsg, keepExisting=.false., fill=0d0)
-      call realloc(qLatReal, numlatsg, keepExisting=.false., fill=0d0)
-      call realloc(qLatRealCum, numlatsg, keepExisting=.false., fill=0d0)
-      call realloc(qLatRealCumPre, numlatsg, keepExisting=.false., fill=0d0)
-      call realloc(qLatRealAve, numlatsg, keepExisting=.false., fill=0d0)
-   end if
-end subroutine init_lateral_his
+
+   private
+
+   public :: init_lateral_his
+
+contains
+
+   subroutine init_lateral_his()
+      use m_laterals, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
+      use m_flowparameters, only: his_write_settings
+      use m_alloc, only: realloc
+
+      ! At the starting time of history output, initialize variables
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0) then
+         call realloc(qplatCum, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplatCumPre, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplatAve, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatReal, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatRealCum, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatRealCumPre, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatRealAve, numlatsg, keepExisting=.false., fill=0.0_dp)
+      end if
+   end subroutine init_lateral_his
+
+end module m_init_lateral_his

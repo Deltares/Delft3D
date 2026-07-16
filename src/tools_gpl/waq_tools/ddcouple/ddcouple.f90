@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,7 +32,7 @@ program ddcouple
     use m_string_manipulation, only: upper_case
     use merge_step_mod
     use ddcouple_version_module, only: getfullversionstring_ddcouple
-    use m_date_time_utils_external, only: write_date_time
+    use m_date_time_utils_external, only: fill_in_date_time
     use m_file_path_utils, only: extract_file_extension
     use m_cli_utils, only: get_argument_by_index
 
@@ -174,7 +174,7 @@ program ddcouple
 
     interactive = .false.
     call getfullversionstring_ddcouple(version)
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
 
     ! some init
 
@@ -1250,6 +1250,7 @@ program ddcouple
         if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
         if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
         if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
+        if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
 
         hyd%area = 0.0
         hyd%flow = 0.0
@@ -1258,6 +1259,7 @@ program ddcouple
         if (hyd%tem_present) hyd%tem = 0.0
         if (hyd%tau_present) hyd%tau = 0.0
         if (hyd%vdf_present) hyd%vdf = 0.0
+        if (hyd%vel_present) hyd%vel = 0.0
 
         ! time loop
 
@@ -1305,7 +1307,7 @@ program ddcouple
 
     ! finished
 
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(a)') ' Normal end of execution'
     write (lunrep, '(2a)') ' Execution stop : ', rundat

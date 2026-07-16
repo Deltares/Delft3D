@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,11 +30,21 @@
 !
 !
 
- subroutine smovabs(n, sx1, sy1)
-    use m_shipcoor
-    implicit none
-    integer :: n
-    double precision :: sx1, sx2, sy1, sy2
-    call shipcoor(n, sx1, sy1, sx2, sy2)
-    call movabs(sx2, sy2)
- end subroutine smovabs
+module m_smovabs
+
+   implicit none
+
+contains
+
+   subroutine smovabs(n, sx1, sy1)
+      use precision, only: dp
+      use m_shipcoor, only: shipcoor
+      use m_movabs, only: movabs
+      implicit none
+      integer :: n
+      real(kind=dp) :: sx1, sx2, sy1, sy2
+      call shipcoor(n, sx1, sy1, sx2, sy2)
+      call movabs(sx2, sy2)
+   end subroutine smovabs
+
+end module m_smovabs

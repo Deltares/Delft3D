@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,6 +35,7 @@
 !! cross the polyline (both 1D and 2D).
 !! Used for cross sections, and thin dams and dykes.
 module m_crspath
+   use precision, only: dp
    implicit none
 
 !> Data type for storing the the polyline path and set of crossed flow
@@ -45,17 +46,17 @@ module m_crspath
       integer, allocatable :: ln(:) !< Flow links (size=len) (sign defines orientation)
       integer, allocatable :: indexp(:) !< Index of segment in xp by which each link is crossed.
                                                    !! (between xp(i) and xp(i+1))
-      double precision, allocatable :: wfp(:) !< Weightfactor of first point in crossed segment
+      real(kind=dp), allocatable :: wfp(:) !< Weightfactor of first point in crossed segment
                                                    !! as indicated in indexp (between 0 and 1).
-      double precision, allocatable :: xp(:), yp(:), &
-         zp(:) !< Polyline points that define the crs (size=np)
-      double precision, allocatable :: xk(:, :), yk(:, :) !< For plotting only (size=2,lnx).
+      real(kind=dp), allocatable :: xp(:), yp(:), &
+                                    zp(:) !< Polyline points that define the crs (size=np)
+      real(kind=dp), allocatable :: xk(:, :), yk(:, :) !< For plotting only (size=2,lnx).
                                                    !! for all 'lnx' flow links, store both start
                                                    !! and end point because segments will not be ordered
                                                    !! nor connected.
       integer, allocatable :: iperm(:) !! permutation array of crossed flow links in increasing arc length order along cross section polyline
-      double precision, allocatable :: sp(:) !! polygon arclength of flow link, dim()
-      double precision, allocatable :: wfk1k2(:) !! per-flowlink interpolation weight factor between k1 (1) and k2 (0), dim(lnx)
+      real(kind=dp), allocatable :: sp(:) !! polygon arclength of flow link, dim()
+      real(kind=dp), allocatable :: wfk1k2(:) !! per-flowlink interpolation weight factor between k1 (1) and k2 (0), dim(lnx)
    end type tcrspath
 
 contains
@@ -63,7 +64,7 @@ contains
 !> Allocates the internal data for one crs path.
 !! Based on polyline length and flow links upper limit.
    subroutine increaseCrossSectionPath(path, maxnp, maxlnx)
-      use m_alloc
+      use m_alloc, only: realloc
       type(tcrspath), intent(inout) :: path !< The path structure of a cross section.
       integer, intent(in) :: maxnp !< Max number of polyline points. If 0, nothing is done.
       integer, intent(in) :: maxlnx !< Max number of crossed flow links. If 0, nothing is done.
@@ -76,7 +77,7 @@ contains
       end if
 
       if (maxnp > 0 .and. maxnp > mcur) then
-         m = max(2, int(1.5d0 * maxnp))
+         m = max(2, int(1.5_dp * maxnp))
          call realloc(path%xp, m)
          call realloc(path%yp, m)
          call realloc(path%zp, m)
@@ -88,13 +89,13 @@ contains
       end if
 
       if (maxlnx > 0 .and. maxlnx > mcur) then
-         m = max(5, int(1.5d0 * maxlnx))
+         m = max(5, int(1.5_dp * maxlnx))
          call realloc(path%ln, m)
 
 ! GD: memory problems with realloc
          if (allocated(path%xk)) then
-            call realloc(path%xk, (/2, m/))
-            call realloc(path%yk, (/2, m/))
+            call realloc(path%xk, [2, m])
+            call realloc(path%yk, [2, m])
          else
             allocate (path%xk(2, m))
             allocate (path%yk(2, m))
@@ -144,14 +145,17 @@ contains
 
 !> Sets the cross section definition path to specified polyline coordinates.
    subroutine setCrossSectionPathPolyline(path, xp, yp, zp)
+      use precision, only: dp
       type(tcrspath), intent(inout) :: path !< The crs path to be updated.
-      double precision, intent(in) :: xp(:), yp(:) !< Polyline coordinates to define the crs path.
-      double precision, optional, intent(in) :: zp(:) !< Optional z-values at xp/yp coordinates.
+      real(kind=dp), intent(in) :: xp(:), yp(:) !< Polyline coordinates to define the crs path.
+      real(kind=dp), optional, intent(in) :: zp(:) !< Optional z-values at xp/yp coordinates.
 
       integer :: i, n
 
       n = size(xp)
-      if (n <= 0) return
+      if (n <= 0) then
+         return
+      end if
 
       call increaseCrossSectionPath(path, n, 0)
       do i = 1, n
@@ -245,6 +249,7 @@ contains
 !! This routine can be used with 'network geometry' (e.g. for thin dams)
 !! and 'flow geometry' (e.g. for cross sections and fixed weirs).
    subroutine crspath_on_singlelink(path, linknr, xk3, yk3, xk4, yk4, xza, yza, xzb, yzb, zork)
+      use precision, only: dp
 
       use geometry_module, only: crossinbox
       use m_sferic, only: jsferic
@@ -254,27 +259,27 @@ contains
       type(tcrspath), intent(inout) :: path !< Path that is checked for link crossing, will be updated with link info.
       integer, intent(in) :: linknr !< Number of link that is being checked, will be stored in path%ln
       integer, intent(in) :: zork !< Crossing checked using xz or xk
-      double precision, intent(in) :: xk3, yk3, xk4, yk4 !< Net node coordinates of this link (or fictious coords for a 1D link)
-      double precision, intent(in) :: xza, yza, xzb, yzb !< cell circum. coordinates of this link.
+      real(kind=dp), intent(in) :: xk3, yk3, xk4, yk4 !< Net node coordinates of this link (or fictious coords for a 1D link)
+      real(kind=dp), intent(in) :: xza, yza, xzb, yzb !< cell circum. coordinates of this link.
 
       integer :: ip, jacros
-      double precision :: SL, SM, XCR, YCR, CRP
+      real(kind=dp) :: SL, SM, XCR, YCR, CRP
 
 !   Check whether flow link intersects with a polyline segment of this cross section path.
       do ip = 1, path%np - 1
-         crp = 0d0
+         crp = 0.0_dp
          if (zork == 1) then
             call CROSSinbox(path%XP(ip), path%YP(ip), path%XP(ip + 1), path%YP(ip + 1), xza, yza, xzb, yzb, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
          else
             call CROSSinbox(path%XP(ip), path%YP(ip), path%XP(ip + 1), path%YP(ip + 1), xk3, yk3, xk4, yk4, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
          end if
          if (jacros == 1) then
-            if (SM == 1d0) then
-               if (crp > 0d0) then
+            if (SM == 1.0_dp) then
+               if (crp > 0.0_dp) then
                   cycle
                end if
-            else if (SM == 0d0) then
-               if (crp < 0d0) then
+            else if (SM == 0.0_dp) then
+               if (crp < 0.0_dp) then
                   cycle
                end if
             end if
@@ -283,10 +288,10 @@ contains
             path%lnx = path%lnx + 1
 
             path%indexp(path%lnx) = ip
-            path%wfp(path%lnx) = 1d0 - SL ! SL=rel.pos on segment. Weight of left points is 1-SL
-            path%wfk1k2(path%lnx) = 1d0 - SM ! SM=rel.pos on flow link       of left points is 1-SM
+            path%wfp(path%lnx) = 1.0_dp - SL ! SL=rel.pos on segment. Weight of left points is 1-SL
+            path%wfk1k2(path%lnx) = 1.0_dp - SM ! SM=rel.pos on flow link       of left points is 1-SM
 
-            if (crp < 0d0) then
+            if (crp < 0.0_dp) then
                path%ln(path%lnx) = linknr
                path%xk(1, path%lnx) = xk3
                path%yk(1, path%lnx) = yk3
@@ -309,9 +314,10 @@ contains
 !! The input arrays (xpl, ypl, zpl) have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
    subroutine pol_to_flowlinks(xpl, ypl, zpl, npl, ns, paths)
-      use m_missing
+      use precision, only: dp
+      use m_missing, only: dmiss
 
-      double precision, intent(in) :: xpl(:), ypl(:), zpl(:) !< Long array with one or more polylines, separated by dmiss
+      real(kind=dp), intent(in) :: xpl(:), ypl(:), zpl(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: npl !< Total number of polyline points
       type(tcrspath), allocatable :: paths(:)
       integer, intent(out) :: ns

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,48 +30,61 @@
 !
 !
 
-  subroutine DISPNODEVALS(KP)
-     use m_netw
-     use M_DEVICES
-     use m_ktext
-     implicit none
-     integer :: KP
+module m_dispnodevals
+   use m_drcirc
 
-     integer :: l
-     integer :: n
-     character TEX * 23
-     if (KP == 0) return
-     call DRCIRC(XK(KP), YK(KP), ZK(KP))
+   implicit none
 
-     TEX = 'NODE NR    :           '
-     write (TEX(14:), '(I10)') KP
-     call KTEXT(TEX, IWS - 22, 4, 15)
+contains
 
-     TEX = 'X COORD    :           '
-     write (TEX(14:), '(E10.3)') XK(KP)
-     call KTEXT(TEX, IWS - 22, 13, 15)
+   subroutine DISPNODEVALS(KP)
+      use m_netw
+      use m_devices, only: iws
+      use m_ktext
 
-     TEX = 'Y COORD    :           '
-     write (TEX(14:), '(E10.3)') YK(KP)
-     call KTEXT(TEX, IWS - 22, 14, 15)
+      integer :: KP
 
-     TEX = 'Z COORD    :           '
-     write (TEX(14:), '(E10.3)') ZK(KP)
-     call KTEXT(TEX, IWS - 22, 15, 15)
+      integer :: l
+      integer :: n
+      character TEX * 23
+      if (KP == 0) then
+         return
+      end if
+      call DRCIRC(XK(KP), YK(KP), ZK(KP))
 
-     TEX = 'ELEM       :           '
-     do N = 1, NMK(KP)
-        L = NOD(KP)%LIN(N)
-        write (TEX(6:11), '(I6 )') N
-        write (TEX(14:23), '(I10)') L
-        call KTEXT(TEX, IWS - 22, 15 + N, 15)
-     end do
+      TEX = 'NODE NR    :           '
+      write (TEX(14:), '(I10)') KP
+      call KTEXT(TEX, IWS - 22, 4, 15)
 
-     if (netflow == 2) return
+      TEX = 'X COORD    :           '
+      write (TEX(14:), '(E10.3)') XK(KP)
+      call KTEXT(TEX, IWS - 22, 13, 15)
 
-     TEX = 'NR OF ELEMS:           '
-     write (TEX(14:), '(I10)') NMK(KP)
-     call KTEXT(TEX, IWS - 22, 6, 15)
+      TEX = 'Y COORD    :           '
+      write (TEX(14:), '(E10.3)') YK(KP)
+      call KTEXT(TEX, IWS - 22, 14, 15)
 
-     return
-  end subroutine DISPNODEVALS
+      TEX = 'Z COORD    :           '
+      write (TEX(14:), '(E10.3)') ZK(KP)
+      call KTEXT(TEX, IWS - 22, 15, 15)
+
+      TEX = 'ELEM       :           '
+      do N = 1, NMK(KP)
+         L = NOD(KP)%LIN(N)
+         write (TEX(6:11), '(I6 )') N
+         write (TEX(14:23), '(I10)') L
+         call KTEXT(TEX, IWS - 22, 15 + N, 15)
+      end do
+
+      if (netflow == 2) then
+         return
+      end if
+
+      TEX = 'NR OF ELEMS:           '
+      write (TEX(14:), '(I10)') NMK(KP)
+      call KTEXT(TEX, IWS - 22, 6, 15)
+
+      return
+   end subroutine DISPNODEVALS
+
+end module m_dispnodevals

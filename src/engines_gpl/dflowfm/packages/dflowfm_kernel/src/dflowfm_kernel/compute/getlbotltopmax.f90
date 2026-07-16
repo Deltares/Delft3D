@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,17 +29,20 @@
 
 !
 !
-
- subroutine getLbotLtopmax(LL, Lb, Ltx)
+module m_get_Lbot_Ltop_max
+   implicit none
+contains
+   subroutine getLbotLtopmax(LL, Lb, Ltx)
 ! Variation on getLbotLtop. Always returns the maximum possible layer range in stead of the actual range, even for dry links.
-    use m_flow
-    use m_flowgeom
-    implicit none
-    integer :: LL, Lb, Ltx
-    if (kmx == 0) then
-       Lb = LL
-       Ltx = LL
-    else
-       Lb = Lbot(LL); Ltx = Lbot(LL) + kmxL(LL) - 1
-    end if
- end subroutine getLbotLtopmax
+      use m_flow, only: kmx, kmxl, lbot
+
+      integer :: LL, Lb, Ltx
+      if (kmx == 0) then
+         Lb = LL
+         Ltx = LL
+      else
+         Lb = Lbot(LL)
+         Ltx = Lbot(LL) + kmxL(LL) - 1
+      end if
+   end subroutine getLbotLtopmax
+end module m_get_Lbot_Ltop_max

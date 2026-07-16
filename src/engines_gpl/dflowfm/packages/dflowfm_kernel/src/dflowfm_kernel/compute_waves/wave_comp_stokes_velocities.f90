@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,33 +30,44 @@
 !
 !
 
+module m_wave_comp_stokes_velocities
+
+   implicit none
+
+   private
+
+   public :: wave_comp_stokes_velocities
+
+contains
+
    subroutine wave_comp_stokes_velocities()
-      use m_flowparameters
-      use m_flowgeom
+      use precision, only: dp
+      use m_flowparameters, only: jawavestokes, no_stokes_drift, epshu
+      use m_flowgeom, only: ndx, lnxi, ln, acl, csu, snu, lnx
+      use m_waves, only: ustokes, vstokes, gammax, mxwav, mywav, hwav
+      use m_partitioninfo, only: jampi, update_ghosts, itype_sall, itype_u
       use m_flow, only: hu, hs
       use m_physcoef, only: sag
-      use m_waves
-      use m_sferic
-      use m_partitioninfo
+
       implicit none
 
-      double precision :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
-      double precision :: gammal, hwavL, hstokes, huL, deltahmin
-      double precision, allocatable :: mx(:), my(:)
+      real(kind=dp) :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
+      real(kind=dp) :: gammal, hwavL, hstokes, huL, deltahmin
+      real(kind=dp), allocatable :: mx(:), my(:)
 
       integer :: k1, k2, L, k
       integer :: ierror ! error (1) or not (0)
 
-      double precision :: ac1, ac2
+      real(kind=dp) :: ac1, ac2
 
       ierror = 1
 
       !
-      ustokes = 0d0
-      vstokes = 0d0
+      ustokes = 0.0_dp
+      vstokes = 0.0_dp
 
       ! switch off stokes drifts
-      if (jawavestokes == 0) then
+      if (jawavestokes == NO_STOKES_DRIFT) then
          return
       end if
 
@@ -64,10 +75,10 @@
          allocate (mx(1:ndx), my(1:ndx), stat=ierror)
       end if
 
-      deltahmin = 0.1d0 ! should be a parameter
+      deltahmin = 0.1_dp ! should be a parameter
       !
       do k = 1, ndx
-         massflux_max = 1d0 / 8d0 * sag * (hs(k)**1.5) * (gammax**2)
+         massflux_max = 1.0_dp / 8.0_dp * sag * (hs(k)**1.5) * (gammax**2)
          mnorm = min(sqrt(mxwav(k)**2 + mywav(k)**2), massflux_max)
          mangle = atan2(mywav(k), mxwav(k))
          mx(k) = mnorm * cos(mangle)
@@ -82,15 +93,17 @@
       do L = 1, Lnxi
          if (hu(L) > epshu) then
             !
-            k1 = ln(1, L); k2 = ln(2, L)
-            ac1 = acl(L); ac2 = 1d0 - ac1
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            ac1 = acl(L)
+            ac2 = 1.0_dp - ac1
             !
             ! civilized behaviour in shallow surf zone
-            huL = max(hs(k1), hs(k2))
-            hwavL = 0.5d0 * (hwav(k1) + hwav(k2))
+            huL = max(hs(k1), hs(k2), epshu)
+            hwavL = 0.5_dp * (hwav(k1) + hwav(k2))
             gammal = hwavL / huL
-            if (gammal > 1.d0) then
-               hstokes = deltahmin * (gammal - 1.d0) * hwavL + huL
+            if (gammal > 1.0_dp) then
+               hstokes = deltahmin * (gammal - 1.0_dp) * hwavL + huL
             else
                hstokes = huL
             end if
@@ -104,8 +117,8 @@
             ustokes(L) = Mu / hstokes
             vstokes(L) = Mv / hstokes
          else
-            ustokes(L) = 0d0
-            vstokes(L) = 0d0
+            ustokes(L) = 0.0_dp
+            vstokes(L) = 0.0_dp
          end if
       end do
 
@@ -115,15 +128,16 @@
             k1 = ln(1, L) ! buiten
             k2 = ln(2, L) ! binnen
             !
-            huL = hs(k2)
+            huL = hu(L) ! despite hu(L)>epshu, hs(k2) can still be 0.0 on inflow bnd
             hwavL = hwav(k2)
             gammal = hwavL / huL
-            if (gammal > 1.d0) then
-               hstokes = deltahmin * (gammal - 1.d0) * hwavL + huL
+            if (gammal > 1.0_dp) then
+               hstokes = deltahmin * (gammal - 1.0_dp) * hwavL + huL
             else
                hstokes = huL
             end if
-            Mx(k1) = Mx(k2); My(k1) = My(k2)
+            Mx(k1) = Mx(k2)
+            My(k1) = My(k2)
             !
             Mu = ac1 * (csu(L) * (Mx(k1)) + snu(L) * (My(k1))) + &
                  ac2 * (csu(L) * (Mx(k2)) + snu(L) * (My(k2)))
@@ -134,8 +148,8 @@
             ustokes(L) = Mu / hstokes
             vstokes(L) = Mv / hstokes
          else
-            ustokes(L) = 0d0
-            vstokes(L) = 0d0
+            ustokes(L) = 0.0_dp
+            vstokes(L) = 0.0_dp
          end if
       end do
 
@@ -150,3 +164,5 @@
 1234  continue
       return
    end subroutine wave_comp_stokes_velocities
+
+end module m_wave_comp_stokes_velocities

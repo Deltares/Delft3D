@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,14 +31,25 @@
 !
 
 !  copy samples to dots
+module m_copy_sam2dots
+
+   implicit none
+
+   private
+
+   public :: copy_sam2dots
+
+contains
+
    subroutine copy_sam2dots()
-      use m_samples
-      use m_plotdots
-      implicit none
+      use m_samples, only: ns, xs, ys, zs
+      use m_plotdots, only: adddot
 
       integer :: i
 
-      if (NS < 1) return
+      if (NS < 1) then
+         return
+      end if
 
       do i = 1, Ns
          call adddot(xs(i), ys(i), zs(i))
@@ -49,3 +60,5 @@
 
       return
    end subroutine copy_sam2dots
+
+end module m_copy_sam2dots

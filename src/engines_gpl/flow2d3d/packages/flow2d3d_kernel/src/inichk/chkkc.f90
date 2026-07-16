@@ -3,7 +3,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
                & kcu       ,kcv       ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -101,7 +101,6 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
     integer             :: nstav  ! First N-index of V-points
     integer             :: n1     ! Help var. 
     integer             :: n2     ! Help var. 
-    integer             :: newlun
     integer             :: nf     ! First N-index of the active point in the current computational COLUMN 
     integer             :: nl     ! Last N-index of the active point in the current computational COLUMN 
     integer             :: nld    ! One to last N-index of the active point in the current computational COLUMN 
@@ -222,7 +221,8 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        enddo
     enddo
     !
-    ! set counterpart of mask arrays kcu and kcv to -1 in halo area
+    ! set kcu and kcv to -1 in halo area only if the water level point that it
+    ! connects to is (also) active (kcs /= 0)
     !
     do i = 1, norow
        n   = irocol(1, i)
@@ -231,7 +231,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        mld = ml - 1
        mlu = ml + 1
        do m = mf, mlu
-          if ( (kcs(n,m)==-1) ) then
+          if ( (kcs(n,m) == -1) .and. (kcs(n+1,m) /= 0) ) then
              kcv(n,m) = -1
           endif
        enddo
@@ -244,7 +244,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        nld = nl - 1
        nlu = nl + 1
        do n = nf, nlu
-          if ( (kcs(n,m) == -1) ) then
+          if ( (kcs(n,m) == -1) .and. (kcs(n,m+1) /= 0) ) then
              kcu(n,m) = -1
           endif
        enddo

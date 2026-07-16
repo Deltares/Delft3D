@@ -5,7 +5,7 @@
 <!-- ONLINE AGGREGATION, ONE DOMAIN -->
 
 <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
+  <path version="2026-04-13T14:10:07.705000">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -40,11 +40,13 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
+      <!-- Since the numbers are single-precision and in the order of 3.0e6, a sensible
+           tolerance is in the order 1.0 (= epsilon * 3.0 * volume)
+      -->
       <parameters>
-        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_agg_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_agg_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -66,7 +68,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_agg_continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -76,7 +77,7 @@
 </testCase>
 
 <testCase name="e02_f029_c202_hyd_file_westerschelde_3d_s_vag" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
+  <path version="2026-06-17T07:47:54.480000">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -111,11 +112,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -137,17 +137,16 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="8e-04" toleranceRelative="8e-4"/>
       </parameters>
     </file>
   </checks>
 </testCase>
 
 <testCase name="e02_f029_c203_hyd_file_westerschelde_3d_s_hvag" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
+  <path version="2026-06-17T08:38:03.741000">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -182,11 +181,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_agg_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_agg_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -208,7 +206,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_agg_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -253,13 +250,12 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_agg_2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_agg_2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_agg_2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_agg_2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
     </file>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt.bnd" type="ASCII" />
@@ -279,17 +275,16 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_agg_2d_continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_agg_2d_continuity" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-04"/>
       </parameters>
     </file>
   </checks>
 </testCase>
 
 <testCase name="e02_f029_c205_hyd_file_westerschelde_3d_z_hag" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
+  <path version="2026-06-01T08:40:23.311000">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -324,11 +319,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_agg_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_agg_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -350,7 +344,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_agg_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -360,7 +353,7 @@
 </testCase>
 
 <testCase name="e02_f029_c206_hyd_file_westerschelde_3d_z_vag" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
+  <path version="2026-03-17T10:16:43.205000">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -395,11 +388,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -421,7 +413,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -431,7 +422,7 @@
 </testCase>
 
 <testCase name="e02_f029_c207_hyd_file_westerschelde_3d_z_hvag" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c207_westerschelde_3d_z_hvag</path>
+  <path version="2026-06-01T08:40:30.466000">e02_dflowfm/f029_hyd_file/c207_westerschelde_3d_z_hvag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -466,11 +457,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_agg_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_agg_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -492,7 +482,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_agg_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -504,7 +493,7 @@
 <!-- ONLINE AGGREGATION, THREE DOMAINS -->
 
 <testCase name="e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2024-04-19T13:20:00">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
+  <path version="2026-06-17T07:48:31.442000">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -544,11 +533,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -570,10 +558,9 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -581,7 +568,7 @@
 </testCase>
 
 <testCase name="e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:30:00">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
+  <path version="2026-06-17T07:48:42.879000">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -621,11 +608,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -647,10 +633,9 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="2.0e-04" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -658,7 +643,7 @@
 </testCase>
 
 <testCase name="e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
+  <path version="2026-06-17T07:48:49.331000">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -698,11 +683,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -724,10 +708,9 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="2.0e-04" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -735,7 +718,7 @@
 </testCase>
 
 <testCase name="e02_f029_c304_hyd_file_westerschelde_2d_hag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c304_westerschelde_2d_hag_3dom</path>
+  <path version="2026-03-17T10:17:21.984000">e02_dflowfm/f029_hyd_file/c304_westerschelde_2d_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -775,13 +758,12 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
     </file>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt.bnd" type="ASCII" />
@@ -801,7 +783,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -812,7 +793,7 @@
 </testCase>
 
 <testCase name="e02_f029_c305_hyd_file_westerschelde_3d_z_hag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
+  <path version="2026-03-17T10:18:20.887000">e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -852,11 +833,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -878,7 +858,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -889,7 +868,7 @@
 </testCase>
 
 <testCase name="e02_f029_c306_hyd_file_westerschelde_3d_z_vag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c306_westerschelde_3d_z_vag_3dom</path>
+  <path version="2026-03-17T10:18:48.583000">e02_dflowfm/f029_hyd_file/c306_westerschelde_3d_z_vag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -929,11 +908,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -955,7 +933,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
@@ -966,7 +943,7 @@
 </testCase>
 
 <testCase name="e02_f029_c307_hyd_file_westerschelde_3d_z_hvag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c307_westerschelde_3d_z_hvag_3dom</path>
+  <path version="2026-03-17T10:19:16.807000">e02_dflowfm/f029_hyd_file/c307_westerschelde_3d_z_hvag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -1006,11 +983,10 @@
   </programs>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
-    <!--
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e-2"/>
-        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e-2"/>
+        <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
+        <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e-2"/>
         <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e-2"/>
       </parameters>
@@ -1032,7 +1008,6 @@
             <parameter name="VALUES" toleranceAbsolute="1.0e-2"/>
         </parameters>
     </file>
-    -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>

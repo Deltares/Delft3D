@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,64 +29,70 @@
 
 !
 !
+module m_del_elem
+   implicit none
+contains
+   subroutine DELELEM(K1, K2, LNU)
+      use m_netw
 
-    subroutine DELELEM(K1, K2, LNU)
-       use m_netw
-       use m_cconstants
-       implicit none
-       integer :: K1, K2, LNU
-       integer :: l1
-       integer :: l2
-       integer :: nm1
-       integer :: nm2
+      integer :: K1, K2, LNU
+      integer :: l1
+      integer :: l2
+      integer :: nm1
+      integer :: nm2
 
-       LNU = 0
-       do L1 = 1, NMK(K1)
-          do L2 = 1, NMK(K2)
-             if (LNU == 0 .and. NOD(K1)%LIN(L1) == NOD(K2)%LIN(L2)) then
-                LNU = NOD(K1)%LIN(L1)
-                NOD(K1)%LIN(L1) = 0
-                NOD(K2)%LIN(L2) = 0
-             end if
-          end do
-       end do
-       if (LNU == 0) then
+      LNU = 0
+      do L1 = 1, NMK(K1)
+         do L2 = 1, NMK(K2)
+            if (LNU == 0 .and. NOD(K1)%LIN(L1) == NOD(K2)%LIN(L2)) then
+               LNU = NOD(K1)%LIN(L1)
+               NOD(K1)%LIN(L1) = 0
+               NOD(K2)%LIN(L2) = 0
+            end if
+         end do
+      end do
+      if (LNU == 0) then
 !       KN(1,LNU) = 0
 !       KN(2,LNU) = 0
-          return
-       end if
+         return
+      end if
 
-       do L1 = 1, NMK(K1)
-          if (NOD(K1)%LIN(L1) == 0) then
-             NMK(K1) = NMK(K1) - 1
-             do NM1 = L1, NMK(K1)
-                NOD(K1)%LIN(NM1) = NOD(K1)%LIN(NM1 + 1)
-             end do
-             exit
-          end if
-       end do
-       if (NMK(K1) == 0) KC(K1) = 0
+      do L1 = 1, NMK(K1)
+         if (NOD(K1)%LIN(L1) == 0) then
+            NMK(K1) = NMK(K1) - 1
+            do NM1 = L1, NMK(K1)
+               NOD(K1)%LIN(NM1) = NOD(K1)%LIN(NM1 + 1)
+            end do
+            exit
+         end if
+      end do
+      if (NMK(K1) == 0) then
+         KC(K1) = 0
+      end if
 
-       do L2 = 1, NMK(K2)
-          if (NOD(K2)%LIN(L2) == 0) then
-             NMK(K2) = NMK(K2) - 1
-             do NM2 = L2, NMK(K2)
-                NOD(K2)%LIN(NM2) = NOD(K2)%LIN(NM2 + 1)
-             end do
-             exit
-          end if
-       end do
-       if (NMK(K2) == 0) KC(K2) = 0
+      do L2 = 1, NMK(K2)
+         if (NOD(K2)%LIN(L2) == 0) then
+            NMK(K2) = NMK(K2) - 1
+            do NM2 = L2, NMK(K2)
+               NOD(K2)%LIN(NM2) = NOD(K2)%LIN(NM2 + 1)
+            end do
+            exit
+         end if
+      end do
+      if (NMK(K2) == 0) then
+         KC(K2) = 0
+      end if
 
-       KN(1, LNU) = 0
-       KN(2, LNU) = 0
+      KN(1, LNU) = 0
+      KN(2, LNU) = 0
 
-       ! RMAS      = RHO*RL(LNU)*EA(LNU)*1D-6
-       ! RM(K1)    = RM(K1) - RMAS/2
-       ! RM(K2)    = RM(K2) - RMAS/2
+      ! RMAS      = RHO*RL(LNU)*EA(LNU)*1D-6
+      ! RM(K1)    = RM(K1) - RMAS/2
+      ! RM(K2)    = RM(K2) - RMAS/2
 
-       ! EA(LNU)   = 0
-       ! RL(LNU)   = 0
+      ! EA(LNU)   = 0
+      ! RL(LNU)   = 0
 
-       return
-    end subroutine DELELEM
+      return
+   end subroutine DELELEM
+end module m_del_elem

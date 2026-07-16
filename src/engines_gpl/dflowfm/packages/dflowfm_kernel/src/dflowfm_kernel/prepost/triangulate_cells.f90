@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,24 +31,35 @@
 !
 
 !> convert quadrilaterals, pentagons and hexagons to triangles
-subroutine triangulate_cells()
-   use m_netw
-   use m_inverse_map
-   use unstruc_colors
+module m_triangulate_cells
 
    implicit none
 
-   integer :: k, k0, k1, kk, Lnew, N
+   private
 
-   do k = 1, nump ! loop over the cells
-      N = netcell(k)%n
-      if (N < 4) cycle
+   public :: triangulate_cells
+
+contains
+
+   subroutine triangulate_cells()
+      use m_netw
+      use m_new_link
+
+      integer :: k, k0, k1, kk, Lnew, N
+
+      do k = 1, nump ! loop over the cells
+         N = netcell(k)%n
+         if (N < 4) then
+            cycle
+         end if
 !     make the triangles by connecting the 3rd, 4th, etc. node to the first one
-      k0 = netcell(k)%nod(1)
-      do kk = 3, N - 1
-         k1 = netcell(k)%nod(kk)
-         call newlink(k0, k1, Lnew)
+         k0 = netcell(k)%nod(1)
+         do kk = 3, N - 1
+            k1 = netcell(k)%nod(kk)
+            call newlink(k0, k1, Lnew)
+         end do
       end do
-   end do
 
-end subroutine triangulate_cells
+   end subroutine triangulate_cells
+
+end module m_triangulate_cells

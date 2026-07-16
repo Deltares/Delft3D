@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,26 @@
 !
 !
 
-      subroutine RESTOREB(NPUT)
-         use m_grid_block
-         implicit none
-         integer :: nput
+module m_restoreb
 
-         MB = MB2
-         NB = NB2
-         NPT = NPT2
-         NPUT = NPUTO
-         return
-      end subroutine restoreb
+   implicit none
+
+   private
+
+   public :: restoreb
+
+contains
+
+   subroutine RESTOREB(NPUT)
+      use m_grid_block, only: mb, mb2, nb, nb2, npt, npt2, nputo
+
+      integer :: nput
+
+      MB = MB2
+      NB = NB2
+      NPT = NPT2
+      NPUT = NPUTO
+      return
+   end subroutine restoreb
+
+end module m_restoreb

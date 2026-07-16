@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,112 +30,132 @@
 !
 !
 
-      ! NOTE: japes is disabled [AvD]
-      subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
-         use m_missing
-         use unstruc_colors
-         use m_locatora
-         use m_helpnow
+module m_shwxyz
+   use m_clospt, only: clospt
+   use m_tekgpt
 
-         implicit none
+   implicit none
 
-         integer :: mmax, nmax, mc, nc, japers, key, m, n
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), RD1(MMAX, NMAX)
-         character(len=40) :: OLDKEY
+contains
 
-         integer :: jadraw, jonce, jplus, nlevo
-         double precision :: XL, YL, RDOL, FAC
+   ! NOTE: japes is disabled [AvD]
+   subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
+      use precision, only: dp
+      use m_setxor, only: setxor
+      use m_orglocator, only: orglocator
+      use m_dispos2, only: dispos2
+      use m_disdep, only: disdep
+      use m_cir, only: cir
+      use m_missing, only: xymis, dmiss
+      use unstruc_colors, only: x1, x2, y1, y2, ncoltx, rcir
+      use m_locatora, only: xlc, ylc
+      use m_helpnow, only: wrdkey, nlevel
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_help, only: help
 
-         if (MC == 0) return
-         OLDKEY = WRDKEY
-         NLEVO = NLEVEL
-         WRDKEY = 'TAB = DCURSOR;'
-         call IMOUSECURSORHIDE()
-         call SETXOR(1)
-         JADRAW = 1
-         JONCE = 0
-         JPLUS = 0
+      implicit none
 
-         if (JAPERS == 1) then
-            XL = (X1 + X2) / 2
-            YL = (Y1 + Y2) / 2
-         else
-            XL = XLC
-            YL = YLC
-         end if
+      integer :: mmax, nmax, mc, nc, japers, key, m, n
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), RD1(MMAX, NMAX)
+      character(len=40) :: OLDKEY
 
-         call CLOSPT(X, Y, mmax, nmax, MC, NC, &
-                     XL, YL, M, N)
-         RDOL = RD1(M, N)
+      integer :: jadraw, jonce, jplus, nlevo
+      real(kind=dp) :: XL, YL, RDOL, FAC
 
-20       continue
+      if (MC == 0) then
+         return
+      end if
+      OLDKEY = WRDKEY
+      NLEVO = NLEVEL
+      WRDKEY = 'TAB = DCURSOR;'
+      call IMOUSECURSORHIDE()
+      call SETXOR(1)
+      JADRAW = 1
+      JONCE = 0
+      JPLUS = 0
 
-         call DISPOS2(X(M, N), Y(M, N))
-         call DISDEP(M, N, RD1(M, N))
-         if (JADRAW == 1) then
-            call TEKGPT(X, Y, mmax, nmax, MMAX, NMAX, &
-                        M, N, NCOLTX, RD1)
-            JADRAW = 0
-         end if
-         call INKEYEVENT(KEY)
-         if (KEY /= 27) JONCE = 0
-         if (KEY /= 45 .and. KEY /= 160 .and. &
-             KEY /= 43 .and. KEY /= 162) JPLUS = 0
+      if (JAPERS == 1) then
+         XL = (X1 + X2) / 2
+         YL = (Y1 + Y2) / 2
+      else
+         XL = XLC
+         YL = YLC
+      end if
 
-         call DISPOS2(X(M, N), Y(M, N))
-         call DISDEP(M, N, RD1(M, N))
+      call CLOSPT(X, Y, mmax, nmax, MC, NC, &
+                  XL, YL, M, N)
+      RDOL = RD1(M, N)
+
+20    continue
+
+      call DISPOS2(X(M, N), Y(M, N))
+      call DISDEP(M, N, RD1(M, N))
+      if (JADRAW == 1) then
          call TEKGPT(X, Y, mmax, nmax, MMAX, NMAX, &
                      M, N, NCOLTX, RD1)
-         JADRAW = 1
-         if (KEY == 131) then
-            M = max(1, M - 1)
-            RDOL = RD1(M, N)
-         else if (KEY == 130) then
-            M = min(MC, M + 1)
-            RDOL = RD1(M, N)
-         else if (KEY == 128) then
-            N = min(NC, N + 1)
-            RDOL = RD1(M, N)
-         else if (KEY == 129) then
-            N = max(1, N - 1)
-            RDOL = RD1(M, N)
-         else if (KEY == 171) then
-            call HELP(WRDKEY, 3)
-         else if (KEY == 45 .or. KEY == 160) then
-            if (X(M, N) /= XYMIS) then
-               if (JPLUS /= -1) FAC = 1.0
-               if (RD1(M, N) == DMISS) RD1(M, N) = 6.9
-               RD1(M, N) = RD1(M, N) - .01 * FAC
-               FAC = FAC * 1.05
-               JPLUS = -1
+         JADRAW = 0
+      end if
+      call INKEYEVENT(KEY)
+      if (KEY /= 27) then
+         JONCE = 0
+      end if
+      if (KEY /= 45 .and. KEY /= 160 .and. KEY /= 43 .and. KEY /= 162) then
+         JPLUS = 0
+      end if
+
+      call DISPOS2(X(M, N), Y(M, N))
+      call DISDEP(M, N, RD1(M, N))
+      call TEKGPT(X, Y, mmax, nmax, MMAX, NMAX, &
+                  M, N, NCOLTX, RD1)
+      JADRAW = 1
+      if (KEY == 131) then
+         M = max(1, M - 1)
+         RDOL = RD1(M, N)
+      else if (KEY == 130) then
+         M = min(MC, M + 1)
+         RDOL = RD1(M, N)
+      else if (KEY == 128) then
+         N = min(NC, N + 1)
+         RDOL = RD1(M, N)
+      else if (KEY == 129) then
+         N = max(1, N - 1)
+         RDOL = RD1(M, N)
+      else if (KEY == 171) then
+         call HELP(WRDKEY, 3)
+      else if (KEY == 45 .or. KEY == 160) then
+         if (X(M, N) /= XYMIS) then
+            if (JPLUS /= -1) then
+               FAC = 1.0
             end if
-         else if (KEY == 43 .or. KEY == 162) then
-            if (X(M, N) /= XYMIS) then
-               if (JPLUS /= 1) FAC = 1.0
-               if (RD1(M, N) == DMISS) RD1(M, N) = 6.9
-               RD1(M, N) = RD1(M, N) + .01 * FAC
-               FAC = FAC * 1.05
-               JPLUS = 1
+            if (RD1(M, N) == DMISS) then
+               RD1(M, N) = 6.9
             end if
-         else if (KEY == 68 .or. KEY == 68 + 32) then
-            RD1(M, N) = DMISS
-            call SETCOL(0)
-            call MOVABS(X(M, N), Y(M, N))
-            call CIR(RCIR)
-            call DISDEP(M, N, RD1(M, N))
-         else if (KEY == 27) then
-            JONCE = JONCE + 1
-            if (JONCE >= 2) then
-               call ORGLOCATOR(X(M, N), Y(M, N))
-               call IMOUSECURSORSHOW()
-               call SETXOR(0)
-               NLEVEL = NLEVO
-               WRDKEY = OLDKEY
-               return
+            RD1(M, N) = RD1(M, N) - .01 * FAC
+            FAC = FAC * 1.05
+            JPLUS = -1
+         end if
+      else if (KEY == 43 .or. KEY == 162) then
+         if (X(M, N) /= XYMIS) then
+            if (JPLUS /= 1) then
+               FAC = 1.0
             end if
-            RD1(M, N) = RDOL
-            call DISDEP(M, N, RD1(M, N))
-         else
+            if (RD1(M, N) == DMISS) then
+               RD1(M, N) = 6.9
+            end if
+            RD1(M, N) = RD1(M, N) + .01 * FAC
+            FAC = FAC * 1.05
+            JPLUS = 1
+         end if
+      else if (KEY == 68 .or. KEY == 68 + 32) then
+         RD1(M, N) = DMISS
+         call SETCOL(0)
+         call MOVABS(X(M, N), Y(M, N))
+         call CIR(RCIR)
+         call DISDEP(M, N, RD1(M, N))
+      else if (KEY == 27) then
+         JONCE = JONCE + 1
+         if (JONCE >= 2) then
             call ORGLOCATOR(X(M, N), Y(M, N))
             call IMOUSECURSORSHOW()
             call SETXOR(0)
@@ -143,5 +163,17 @@
             WRDKEY = OLDKEY
             return
          end if
-         goto 20
-      end subroutine shwxyz
+         RD1(M, N) = RDOL
+         call DISDEP(M, N, RD1(M, N))
+      else
+         call ORGLOCATOR(X(M, N), Y(M, N))
+         call IMOUSECURSORSHOW()
+         call SETXOR(0)
+         NLEVEL = NLEVO
+         WRDKEY = OLDKEY
+         return
+      end if
+      goto 20
+   end subroutine shwxyz
+
+end module m_shwxyz

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,55 +30,86 @@
 !
 !
 
-   subroutine CHANGENUMERICALPARAMETERS()
-      use m_netw
-      use M_FLOW
-      use m_flowgeom
-      use m_sferic
-      use m_wind
-      use unstruc_display
-      use m_reduce
-      use dflowfm_version_module, only: company, product_name
-      use unstruc_messages
-      use m_fixedweirs
-      use m_helpnow
-      implicit none
+module m_changenumericalparameters
 
-      integer :: numpar, numfld, numparactual, numfldactual
-      parameter(NUMPAR=24, NUMFLD=2 * NUMPAR)
-      integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
+   use m_iadvecini, only: iadvecini
+   use m_confrm
+
+   use precision, only: dp
+   implicit none
+
+contains
+
+   subroutine CHANGENUMERICALPARAMETERS()
+      use m_flow, only: iadvec, cflmx, iadvec1d, limtypsa, limtyphu, limtypmom, itstep, teta0, icgsolver, jasal, &
+                        temperature_model, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, jaexplicitsinks, corioadamsbashfordfac, newcorio, &
+                        epshs
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
+      use m_reduce, only: epscg
+      use dflowfm_version_module, only: company, product_name
+      use m_fixedweirs, only: nfxw
+
+      integer, parameter :: NUMPAR = 22
+      integer, parameter :: NUMFLD = 2 * NUMPAR
+      integer :: numparactual, numfldactual
+      integer :: IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
+      character :: OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ja, niadvec
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'COURANT NR                           ( )'; it(2 * 1) = 6
-      OPTION(2) = 'IADVEC                                  '; it(2 * 2) = 2
-      OPTION(3) = 'IADVEC1D                                '; it(2 * 3) = 2
-      OPTION(4) = 'Limtyp scalar   transport               '; it(2 * 4) = 2
-      OPTION(5) = 'Limtyp hu                               '; it(2 * 5) = 2
-      OPTION(6) = 'Limtyp momentum transport               '; it(2 * 6) = 2
-      OPTION(7) = 'itstep                                  '; it(2 * 7) = 2
-      OPTION(8) = 'teta                                ( ) '; it(2 * 8) = 6
-      OPTION(9) = 'icgsolver                           ( ) '; it(2 * 9) = 2
-      OPTION(10) = 'Transport Method                    ( ) '; it(2 * 10) = 2
-      OPTION(11) = 'Salinity included 0/1               ( ) '; it(2 * 11) = 2
-      OPTION(12) = 'Temperature model nr, 0=no, 5=heatflx() '; it(2 * 12) = 2
-      OPTION(13) = 'Anti creep                          ( ) '; it(2 * 13) = 2
-      OPTION(14) = '                                    ( ) '; it(2 * 14) = 6
-      OPTION(15) = 'irov 0,1,2,3                        ( ) '; it(2 * 15) = 2
-      OPTION(16) = 'icorio, 0, 5=org def., even=2D weigh( ) '; it(2 * 16) = 2
-      OPTION(17) = 'jatidep tidal potential forcing 0/1 ( ) '; it(2 * 17) = 2
-      OPTION(18) = 'EpsCG, CG solver stop criterion     ( ) '; it(2 * 18) = 6
-      OPTION(19) = 'Epshu, flooding criterion           (m) '; it(2 * 19) = 6
-      OPTION(20) = 'JaExplicitsinks                     ( ) '; it(2 * 20) = 2
-      OPTION(21) = 'Corioadamsbashfordfac               ( ) '; it(2 * 21) = 6
-      OPTION(22) = 'Newcorio                            ( ) '; it(2 * 22) = 2
-      OPTION(23) = 'Barocterm                           ( ) '; it(2 * 23) = 2
-      OPTION(24) = 'Barocadamsbashfordfac               ( ) '; it(2 * 24) = 6
+      OPTION(1) = 'COURANT NR                           ( )'
+      it(2 * 1) = 6
+      OPTION(2) = 'IADVEC                                  '
+      it(2 * 2) = 2
+      OPTION(3) = 'IADVEC1D                                '
+      it(2 * 3) = 2
+      OPTION(4) = 'Limtyp scalar   transport               '
+      it(2 * 4) = 2
+      OPTION(5) = 'Limtyp hu                               '
+      it(2 * 5) = 2
+      OPTION(6) = 'Limtyp momentum transport               '
+      it(2 * 6) = 2
+      OPTION(7) = 'itstep                                  '
+      it(2 * 7) = 2
+      OPTION(8) = 'teta                                ( ) '
+      it(2 * 8) = 6
+      OPTION(9) = 'icgsolver                           ( ) '
+      it(2 * 9) = 2
+      OPTION(10) = 'Transport Method                    ( ) '
+      it(2 * 10) = 2
+      OPTION(11) = 'Salinity included 0/1               ( ) '
+      it(2 * 11) = 2
+      OPTION(12) = 'Temperature model nr, 0=no, 5=heatflx() '
+      it(2 * 12) = 2
+      OPTION(13) = 'Anti creep                          ( ) '
+      it(2 * 13) = 2
+      OPTION(14) = '                                    ( ) '
+      it(2 * 14) = 6
+      OPTION(15) = 'irov 0,1,2,3                        ( ) '
+      it(2 * 15) = 2
+      OPTION(16) = 'icorio, 0, 5=org def., even=2D weigh( ) '
+      it(2 * 16) = 2
+      OPTION(17) = 'jatidep tidal potential forcing 0/1 ( ) '
+      it(2 * 17) = 2
+      OPTION(18) = 'EpsCG, CG solver stop criterion     ( ) '
+      it(2 * 18) = 6
+      OPTION(19) = 'Epshu, flooding criterion           (m) '
+      it(2 * 19) = 6
+      OPTION(20) = 'JaExplicitsinks                     ( ) '
+      it(2 * 20) = 2
+      OPTION(21) = 'Corioadamsbashfordfac               ( ) '
+      it(2 * 21) = 6
+      OPTION(22) = 'Newcorio                            ( ) '
+      it(2 * 22) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -105,8 +136,6 @@
       HELPM(20) = '1=expl, 0 = impl                                            '
       HELPM(21) = '>0 = Adams Bashford, standard= 0.5, only for Newcorio=1     '
       HELPM(22) = '0=prior to 27-11-2019, 1=no normal forcing on open bnds, 12#'
-      HELPM(23) = '3=default, 4=new                                            '
-      HELPM(24) = '>0 = Adams Bashford, standard= 0.5, only for Baroctimeint=4 '
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR
@@ -185,7 +214,7 @@
       call IFormPutDouble(2 * 8, teta0, '(F10.3)')
       call IFORMPUTinteger(2 * 9, icgsolver)
       call IFORMPUTinteger(2 * 11, jasal)
-      call IFORMPUTinteger(2 * 12, jatem)
+      call IFORMPUTinteger(2 * 12, temperature_model)
       call IFORMPUTinteger(2 * 13, jacreep)
       call IFORMPUTdouble(2 * 14, epsmaxlev, '(e10.5)')
       call IFORMPUTinteger(2 * 15, irov)
@@ -196,8 +225,6 @@
       call IFORMPUTinteger(2 * 20, jaexplicitsinks)
       call IFormputDouble(2 * 21, Corioadamsbashfordfac, '(e10.5)')
       call IFormputinteger(2 * 22, Newcorio)
-      call IFormputinteger(2 * 23, Jabarocterm)
-      call IFormputDouble(2 * 24, Barocadamsbashfordfac, '(e10.5)')
 
       !  Display the form with numeric fields left justified
       !  and set the initial field to number 2
@@ -239,14 +266,17 @@
             call IFormgetDouble(2 * 1, CFLmx)
             call IFORMgeTINTEGER(2 * 2, NIADVEC)
             call IFORMgeTINTEGER(2 * 3, IADVEC1D)
-            call IFORMgeTINTEGER(2 * 4, Limtypsa); limtypsa = max(0, min(limtypsa, 30))
-            call IFORMgeTINTEGER(2 * 5, Limtyphu); limtyphu = max(0, min(limtyphu, 30))
-            call IFORMgeTINTEGER(2 * 6, Limtypmom); limtypmom = max(0, min(limtypmom, 30))
+            call IFORMgeTINTEGER(2 * 4, Limtypsa)
+            limtypsa = max(0, min(limtypsa, 30))
+            call IFORMgeTINTEGER(2 * 5, Limtyphu)
+            limtyphu = max(0, min(limtyphu, 30))
+            call IFORMgeTINTEGER(2 * 6, Limtypmom)
+            limtypmom = max(0, min(limtypmom, 30))
             call IFORMgeTINTEGER(2 * 7, itstep)
             call IFormgetDouble(2 * 8, teta0)
             call IFORMgeTinteger(2 * 9, icgsolver)
             call IFORMgeTinteger(2 * 11, jasal)
-            call IFORMgeTinteger(2 * 12, jatem)
+            call IFORMgeTinteger(2 * 12, temperature_model)
             call IFORMgeTinteger(2 * 13, jacreep)
             call IFORMgeTdouble(2 * 14, epsmaxlev)
             call IFORMgeTinteger(2 * 15, irov)
@@ -257,10 +287,8 @@
             call IFORMgeTinteger(2 * 20, jaexplicitsinks)
             call IFormgetDouble(2 * 21, Corioadamsbashfordfac)
             call IFormgetinteger(2 * 22, Newcorio)
-            call IFormgetinteger(2 * 23, Jabarocterm)
-            call IFormgetDouble(2 * 24, Barocadamsbashfordfac)
 
-            epshs = 0.2d0 * epshu ! minimum waterdepth for setting cfu
+            epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu
             if (niadvec /= iadvec) then
                if (nfxw > 0) then
                   call confrm('If Fixedweirs present, please reinitialise the model', ja)
@@ -284,3 +312,5 @@
       goto 30
 
    end subroutine CHANGENUMERICALPARAMETERS
+
+end module m_changenumericalparameters

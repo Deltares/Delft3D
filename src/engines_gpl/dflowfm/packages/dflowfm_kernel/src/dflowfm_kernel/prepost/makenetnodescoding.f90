@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_makenetnodescoding
+   implicit none
+contains
    !> Make a coding of all net nodes for later use in net orthogonalisation,
    !! net coupling and 'poltoland' functionality.
    !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
@@ -40,30 +42,36 @@
       use m_missing, only: dxymis
       use geometry_module, only: dcosphi
       use gridoperations
-
-      implicit none
+      use network_data, only: LINK_CLOSED, LINK_2D
 
       integer :: k
       integer :: k1
       integer :: k2
       integer :: L, LL
 
-      if (allocated(NB)) deallocate (NB)
-      allocate (NB(NUMK)); NB = 0
+      if (allocated(NB)) then
+         deallocate (NB)
+      end if
+      allocate (NB(NUMK))
+      NB = 0
 
       do L = 1, NUML ! NODE BOUNDARY ADMINISTRATION
-         K1 = KN(1, L); K2 = KN(2, L)
-         if (k1 < 1 .or. k2 < 1) cycle ! SPvdP: safety
-         if (KN(3, L) == 2 .or. KN(3, L) == 0) then
+         K1 = KN(1, L)
+         K2 = KN(2, L)
+         if (k1 < 1 .or. k2 < 1) then
+            cycle ! SPvdP: safety
+         end if
+         if (KN(3, L) == LINK_2D .or. KN(3, L) == LINK_CLOSED) then
             if (NB(K1) /= -1 .and. NB(K2) /= -1) then
                if (LNN(L) == 0) then ! LINK ZONDER BUURCELLEN
-                  NB(K1) = -1; NB(K2) = -1
+                  NB(K1) = -1
+                  NB(K2) = -1
                else if (LNN(L) == 1) then ! LINK MET 1 BUURCEL
                   NB(K1) = NB(K1) + 1
                   NB(K2) = NB(K2) + 1
                end if
             end if
-         else ! (kn(3,l) == 1 .or. kn(3,l) == 3 .or. kn(3,L) == 4) then ! 1D-links sowieso niet meenemen.
+         else ! (kn(3,l) == LINK_1D .or. kn(3,l) == LINK_1D2D_INTERNAL .or. kn(3,L) == LINK_1D2D_LONGITUDINAL) then ! 1D-links sowieso niet meenemen.
             nb(k1) = -1
             nb(k2) = -1
          end if
@@ -77,7 +85,8 @@
                   NB(K) = 3 ! HOEKPUNT 'bolle hoek'
                else
                   ! NMK(K) > 2: find the two edge links (and connected neighbour nodes K1 and K2)
-                  K1 = 0; K2 = 0
+                  K1 = 0
+                  K2 = 0
                   do L = 1, NMK(K)
                      LL = nod(K)%lin(L)
                      if (LNN(LL) == 1) then
@@ -110,6 +119,9 @@
       end do
       do k = 1, numk
 !      if (kc(k) == 0) nb(k) = 0
-         if (nmk(k) < 2) nb(k) = -1 ! hanging node
+         if (nmk(k) < 2) then
+            nb(k) = -1 ! hanging node
+         end if
       end do
    end subroutine MAKENETNODESCODING
+end module m_makenetnodescoding

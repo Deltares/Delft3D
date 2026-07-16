@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,6 +43,9 @@ contains
         !! This routine reads the initial conditions
         !!      - MASS/M2 is an allowed keyword to indicate that ASCII input
         !!          of passive substances is expressed in mass/m2
+        !!      - INITIAL_MASS is an allowed keyword to indicate that ASCII input
+        !!          for all (!) substances is expressed in mass per segment instead of
+        !!          concentrations
         !!       - ASCII with defaults and overridings is the same since 1988
         !!       - ASCII without defaults requires 1 keyword and values for
         !!          all volumes per substance, so 12345*2.27 ; substance 1 etc.
@@ -107,6 +110,7 @@ contains
         integer(kind = int_wp) :: i          ! loop variable and dummy integer
         integer(kind = int_wp) :: isys, iseg ! substances and volumes loop variables
         logical         masspm2            ! is it mass per m2 ?
+        logical         initial_mass       ! do the data concern masses instead of concentretions?
         logical         transp             ! input with a transposed matrix (per substance) ?
         logical         old_input          ! old or new input
         integer(kind = int_wp) :: itime      ! time in map file
@@ -121,6 +125,7 @@ contains
         ierr2 = 0
         masspm2 = .false.
         transp = .false.
+        initial_mass = .false.
 
         !        Let's see what comes, file option or a token
 
@@ -130,6 +135,11 @@ contains
                     cdummy == 'MASS/M2') then
                 masspm2 = .true.
                 write (file_unit, 2030)
+                if (gettoken(cdummy, icopt1, itype, ierr2) > 0) goto 10
+            elseif (cdummy == 'initial_mass' .or. &
+                    cdummy == 'INITIAL_MASS') then
+                initial_mass = .true.
+                write (file_unit, 2031)
                 if (gettoken(cdummy, icopt1, itype, ierr2) > 0) goto 10
             elseif (cdummy /= 'INITIALS') then
                 write (file_unit, 2040) trim(cdummy)
@@ -178,7 +188,10 @@ contains
                 if (cdummy(114:120) == 'mass/m2' .or. &
                         cdummy(114:120) == 'MASS/M2') then            !  at end of third line ...
                     write (file_unit, 2070)
-                else if (masspm2) then
+                else if (cdummy(109:120) == 'initial_mass' .or. &
+                        cdummy(109:120) == 'INITIAL_MASS') then            !  at end of third line ...
+                    write (file_unit, 2071)
+                else if (masspm2 .or. initial_mass) then
                     write (file_unit, 2080)
                     call status%increase_error_count()
                 else
@@ -212,6 +225,11 @@ contains
             cdummy(1:40) = 'Initial conditions file                 '
             cdummy(41:80) = 'inactive substances are in mass/m2      '
             cdummy(81:120) = 'this is the deciding keyword ==> mass/m2'
+            cdummy(121:160) = 'there is no time string in this file    '
+        elseif (initial_mass) then
+            cdummy(1:40) = 'Initial conditions file                 '
+            cdummy(41:80) = 'For all substances initial mass per cell'
+            cdummy(81:120) = 'this is the keyword:        initial_mass'
             cdummy(121:160) = 'there is no time string in this file    '
         else
             cdummy(1:40) = 'Initial conditions file                 '
@@ -295,10 +313,12 @@ contains
         2010 format (' Second option for initials      :', I4)
         2020 format (/, ' ERROR, option not implemented')
         2030 format (/, ' Initials for passive substances are in mass/m2')
+        2031 format (/, ' Initials for all substances are interpreted as mass/gridcell, not as concentration')
         2040 format (/, ' ERROR, keyword not supported: ', A)
         2050 format (' ERROR reading input!')
         2060 format (/, ' Block of input data is ordered per substance')
         2070 format (/, ' Binary initials file is .map file with bed substances in mass/m2!')
+        2071 format (/, ' Binary initials file is .map file with initial masses instead of concentrations!')
         2080 format (/, ' ERROR: initials file is .map file with bed substances in mass/gridcell rather than mass/m2!')
         2090 format (/, ' WARNING: Binary initials file is .map file with bed substances in mass/gridcell!')
         2100 format (/, ' ERROR: Binary initials file is assumed to have bed substances in mass/gridcell rather than mass/m2!')

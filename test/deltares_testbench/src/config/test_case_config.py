@@ -1,6 +1,6 @@
 """Test Config Data Class.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 # Test case configuration

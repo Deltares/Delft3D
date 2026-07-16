@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,9 +51,11 @@ contains
         use MessageHandling
         use partmem
         use m_part_mesh
-        use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart
+        use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart, laypart => kpart
+        use spec_feat_par, only: abmmodel
         use part10fm_mod
         use fm_oildsp_mod
+        use fm_abm_mod
         use fm_vert_disp_mod
         use m_partfm_decay
         use alloc_mod
@@ -67,6 +69,7 @@ contains
         use physicalconsts, only: earth_radius
         use mathconsts, only: raddeg_hp, pi
         use random_generator
+        use m_part_flow, only: kmx
 
         implicit none
 
@@ -79,6 +82,8 @@ contains
         integer(4) ithndl              ! handle to time this subroutine
         logical :: mapfil  ! true if map file extension
         logical :: trkfil   ! true if track file extension
+        logical :: error
+        character(len=200) :: msg
         data ithndl / 0 /
         if (timon) call timstrt("partfm", ithndl)
 
@@ -87,8 +92,8 @@ contains
         call init_alloc(lunmem, lunpr)
 
         if (hyd%num_layers /= 1) then
-            write (lunpr, *) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
-            write (*, *) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
+            write (lunpr, *) ' 3D hydrodynamics on unstructured grids is applied!'  
+            write (*, *) ' 3D hydrodynamics on unstructured grids is applied!'
         endif
         !dts   = real(hyd%cnv_step_sec, 8)  !idelt in seconds taken from the hyd file (conversion timestep)
         tzone = 0.0_dp
@@ -99,7 +104,11 @@ contains
         ! For a model based on z-layers we need extra administration
         ! but that is not part of the current implementation yet
         !
-        allocate(laytop(0, 0), laytopp(0, 0))
+        if ( zmodel ) then
+            allocate(laytop(1, hyd%nosegl), laytopp(1, hyd%nosegl))
+        else
+            allocate(laytop(0, 0), laytopp(0, 0))
+        endif
 
         !
         ! Read the grid information and the actual input file
@@ -123,6 +132,7 @@ contains
 
         !  calculate dump-sites in the grids
 
+
         call part06fm (lun(2), nodye, nocont, xwaste, &
                 ywaste, zwaste, nwaste, mwaste)
 
@@ -132,6 +142,14 @@ contains
         filebase = ' '
         filebase = fname(1)(1:Ldot)
 
+        !
+        ! For oil: the deflection angle
+        !
+        if (oil .and. hyd%num_layers > 1) then
+            defang = const(noconsp)
+        else
+            defang = 0.0
+        end if
 
         !! AM NpartTot = npmax
         !! AM Nrpart = npmax !npmax is the number of particles released due to the instantaneous and continuous discharges
@@ -147,7 +165,12 @@ contains
         ptref = 0.0D0
 
         if (notrak > 0) call unc_init_trk()
-        call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, noslay)
+        call unc_init_map(hyd, noslay, error, msg)
+        if ( error ) then
+            write (lunpr, *) trim(msg)
+            write (*    , *) trim(msg)
+            error stop
+        endif
 
         time0 = tstart_user
         time1 = time0
@@ -164,6 +187,7 @@ contains
             goto 1234
         end if
 
+
         do while (istat == 0)
             !     determine if map and track files must be produced
 
@@ -175,7 +199,12 @@ contains
             if (itime - idelt              >=  icwsto) mapfil = .false.
             if (mod(itime - icwsta, icwste)  >=  idelt) mapfil = .false.
 
-            if (trkfil .and. mod(itime, notrak * idelt) >= idelt) trkfil = .false.
+            if (trkfil) then
+                if (mod(itime, notrak * idelt) >= idelt) then
+                    trkfil = .false.
+                endif
+            endif
+
             if (trkfil) call unc_write_trk()
             if (mapfil) call unc_write_map()
 
@@ -199,10 +228,26 @@ contains
             !     transport (advection, dispersion, winddrag)
             !      jsfer_old = jsferic
             !      jsferic = 0 ! everything in part10fm is in meters
+
             call update_part(itime)
             call part10fm()
             !      jsferic = jsfer_old ! back to what it should be
-            call oildspfm(itime)
+            if (oil) then
+                call oildspfm(itime)
+            end if
+
+! AM: not yet, as support within unstructured grids is incomplete
+!            if (abmmodel) then
+!                call fm_abm(lunpr, itime, nmaxp, mmaxp, &
+!                layt, ndx/kmx, kmx, mnmaxk, lgrid, &
+!                lgrid2, lgrid3, nopart, npwndw, nosubs, &
+!                mpart, wpart, iptime, wsettl, locdep, &
+!                noconsp, const, concp, xa, ya, &
+!                flow, depth, &
+!                vdiff1, salin1, temper1, v_swim, d_swim, &
+!                itstrtp, vel1, vel2, zmodel, laybot, laytop)
+!            endif
+
             call fm_vert_disp(lun(2), itime)
             !     interpolation for wind speed/direction in the wind table
         end do

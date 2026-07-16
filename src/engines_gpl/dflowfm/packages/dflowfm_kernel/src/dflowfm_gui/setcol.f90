@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,17 +29,20 @@
 
 !
 !
+module m_set_col
+   implicit none
+contains
+   subroutine SETCOL(NCOL)
+      use unstruc_opengl, only: setcolorfromcolornr
+      use m_colnow, only: ncolnow
 
-      subroutine SETCOL(NCOL)
-         use unstruc_opengl
-         use m_colnow
-         implicit none
-         integer :: ncol
+      integer :: ncol
 
-         if (NCOL /= NCOLNOW) then
-            call IGRCOLOURN(NCOL)
-            call SetColorFromColorNr(NCOL)
-         end if
-         NCOLNOW = NCOL
-         return
-      end
+      if (NCOL /= NCOLNOW) then
+         call IGRCOLOURN(NCOL)
+         call SetColorFromColorNr(NCOL)
+      end if
+      NCOLNOW = NCOL
+      return
+   end
+end module m_set_col

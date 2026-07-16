@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,32 @@
 !
 !
 
+module m_settaubxu_nowave
+
+   implicit none
+
+   private
+
+   public :: settaubxu_nowave
+
+contains
+
    subroutine settaubxu_nowave(use_u1)
-      use m_flowgeom
-      use m_flow
-      use m_physcoef
+      use precision, only: dp
+      use m_flowgeom, only: lnx
+      use m_flow, only: taubxu, u1, u0, hu, epshu, frcu, v, ifrcutp, z0urou, vonkar, sag, rhomean
+      use m_get_Lbot_Ltop, only: getlbotltop
+      use m_get_chezy, only: get_chezy
+      use mathconsts, only: ee
       implicit none
 
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
 
       integer :: L, Lb, Lt
-      double precision :: cz, cwall, rz, umod2
-      double precision, pointer :: velocity_pointer(:)
+      real(kind=dp) :: cz, cwall, rz, umod2
+      real(kind=dp), pointer :: velocity_pointer(:)
 
-      taubxu = 0d0
+      taubxu = 0.0_dp
 
       if (use_u1) then
          velocity_pointer => u1
@@ -52,14 +65,16 @@
 
       do L = 1, lnx
          call getLbotLtop(L, Lb, Lt)
-         if (Lt < Lb) cycle
+         if (Lt < Lb) then
+            cycle
+         end if
          if (hu(L) > epshu) then
-            if (frcu(L) > 0d0) then ! input, or result from trachytopes
-               call getcz(hu(L), frcu(L), ifrcutp(L), cz, L)
-               z0urou(L) = max(1d-200, hu(L) * exp(-1d0 - vonkar * cz / sag)) ! getczz0
+            if (frcu(L) > 0.0_dp) then ! input, or result from trachytopes
+               cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+               z0urou(L) = max(1.0e-200_dp, hu(L) * exp(-1.0_dp - vonkar * cz / sag)) ! getczz0
                rz = max(hu(Lb), epshu) / ee / z0urou(L) ! cz/sag, jaustarint=1, compatible with getustbcfuhi
                cz = log(rz) / vonkar
-               cwall = 1d0 / (cz**2)
+               cwall = 1.0_dp / (cz**2)
                umod2 = velocity_pointer(LB) * velocity_pointer(LB) + v(Lb) * v(Lb)
                taubxu(L) = rhomean * cwall * umod2 ! Note that taubxu for 3D without waves is based on bottom layer velocity, whereas
                ! comment HK: dit blijft een merkwaardig verhaal, zowel in 2D als in 3D
@@ -69,3 +84,5 @@
       end do
 
    end subroutine
+
+end module m_settaubxu_nowave

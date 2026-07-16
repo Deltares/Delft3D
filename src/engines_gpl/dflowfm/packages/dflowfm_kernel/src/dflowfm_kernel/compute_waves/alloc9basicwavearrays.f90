@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,9 +30,20 @@
 !
 !
 
+module m_alloc9basicwavearrays
+
+   use precision, only: dp
+   implicit none
+
+   private
+
+   public :: alloc9basicwavearrays
+
+contains
+
    !----- AGPL --------------------------------------------------------------------
    !
-   !  Copyright (C)  Stichting Deltares, 2017-2024.
+   !  Copyright (C)  Stichting Deltares, 2017-2026.
    !
    !  This file is part of Delft3D (D-Flow Flexible Mesh component).
    !
@@ -61,9 +72,9 @@
    !
    !
    subroutine alloc9basicwavearrays()
-      use m_flow
-      use m_flowgeom
-      use m_waves
+      use m_flow, only: realloc, aerr, flow_without_waves, lnkx, modind, kmx
+      use m_flowgeom, only: ndx, lnx
+      use m_waves, only: hwav, hwavuni, twav, twavuni, phiwav, phiwavuni, rlabda, uorb, ustokes, vstokes, wblt, cfwavhi, cfhi_vanrijn
       implicit none
       integer :: ierr
 
@@ -74,20 +85,24 @@
       call aerr('twav    (ndx)', ierr, ndx)
       call realloc(phiwav, ndx, stat=ierr, keepExisting=.false., fill=phiwavuni)
       call aerr('phiwav  (ndx)', ierr, ndx)
-      call realloc(rlabda, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(rlabda, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('rlabda  (ndx)', ierr, ndx)
-      call realloc(uorb, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(uorb, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('uorb    (ndx)', ierr, ndx)
-      call realloc(ustokes, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('ustokes(lnkx)', ierr, lnkx)
-      call realloc(vstokes, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('vstokes(lnkx)', ierr, lnkx)
-      call realloc(wblt, lnx, stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('wblt(lnx)', ierr, lnx)
-      call realloc(cfwavhi, lnx, stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('cfwavhi(lnx)', ierr, lnx)
-      if (modind == 9 .and. kmx == 0) then
-         call realloc(cfhi_vanrijn, lnx, stat=ierr, keepExisting=.false., fill=0d0)
-         call aerr('cfhi_vanrijn(lnx)', ierr, lnx)
+      if (.not. flow_without_waves) then
+         call realloc(ustokes, lnkx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+         call aerr('ustokes(lnkx)', ierr, lnkx)
+         call realloc(vstokes, lnkx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+         call aerr('vstokes(lnkx)', ierr, lnkx)
+         call realloc(wblt, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+         call aerr('wblt(lnx)', ierr, lnx)
+         call realloc(cfwavhi, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+         call aerr('cfwavhi(lnx)', ierr, lnx)
+         if (modind == 9 .and. kmx == 0) then
+            call realloc(cfhi_vanrijn, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+            call aerr('cfhi_vanrijn(lnx)', ierr, lnx)
+         end if
       end if
    end subroutine alloc9basicwavearrays
+
+end module m_alloc9basicwavearrays

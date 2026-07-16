@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,11 +30,18 @@
 !
 !
 
+module m_typevalue
+
+   implicit none
+
+contains
+
    subroutine TYPEVALUE(RD, KEY)
-      use M_DEVICES
+      use precision, only: dp
+      use M_DEVICES, only: iws, ihs
       implicit none
-      double precision :: rdin
-      double precision :: RD
+      real(kind=dp) :: rdin
+      real(kind=dp) :: RD
       integer :: KEY
       integer :: infoinput
 
@@ -49,3 +56,5 @@
       call INPOPUP('OFF')
       return
    end subroutine TYPEVALUE
+
+end module m_typevalue

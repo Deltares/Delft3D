@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,35 @@
 !
 !
 
- subroutine alloc_jacobi(ndx, lnx)
-    use m_jacobi
-    use m_alloc
-    integer :: ndx, lnx, ierr
+module m_alloc_jacobi
 
-    if (ndx == ndxjac .and. lnx == lnxjac) return
+   implicit none
 
-    if (allocated(bbi)) then
-       deallocate (bbi, db, rr)
-    end if
+contains
 
-    allocate (bbi(ndx), stat=ierr)
-    call aerr('bbi  (ndx)', ierr, ndx); bbi = 0
-    allocate (db(ndx), stat=ierr)
-    call aerr('db   (ndx)', ierr, ndx); db = 0
-    allocate (rr(ndx), stat=ierr)
-    call aerr('rr   (ndx)', ierr, ndx); rr = 0
+   subroutine alloc_jacobi(ndx, lnx)
+      use m_jacobi, only: ndxjac, lnxjac, bbi, db, rr
+      use m_alloc, only: aerr
+      integer :: ndx, lnx, ierr
 
- end subroutine alloc_jacobi
+      if (ndx == ndxjac .and. lnx == lnxjac) then
+         return
+      end if
+
+      if (allocated(bbi)) then
+         deallocate (bbi, db, rr)
+      end if
+
+      allocate (bbi(ndx), stat=ierr)
+      call aerr('bbi  (ndx)', ierr, ndx)
+      bbi = 0
+      allocate (db(ndx), stat=ierr)
+      call aerr('db   (ndx)', ierr, ndx)
+      db = 0
+      allocate (rr(ndx), stat=ierr)
+      call aerr('rr   (ndx)', ierr, ndx)
+      rr = 0
+
+   end subroutine alloc_jacobi
+
+end module m_alloc_jacobi

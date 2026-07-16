@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,31 +30,36 @@
 !
 !
 module m_dlimitercentral
-    implicit none
+   implicit none
 contains
 
-   double precision function dlimitercentral(dc, d2, limtyp) ! as dlimiter, now for central gradient instead of slope
+   real(kind=dp) function dlimitercentral(dc, d2, limtyp) ! as dlimiter, now for central gradient instead of slope
+      use precision, only: dp
 
-      double precision, intent(in) :: dc, d2 !< central and right slopes
+      real(kind=dp), intent(in) :: dc, d2 !< central and right slopes
       integer, intent(in) :: limtyp !< first order upwind (0) or MC (>0)
 
-      double precision :: r, d1
-      double precision, parameter :: dtol = 1d-16
+      real(kind=dp) :: r, d1
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
-      dlimitercentral = 0d0
-      if (limtyp == 0) return
+      dlimitercentral = 0.0_dp
+      if (limtyp == 0) then
+         return
+      end if
 !   if ( d1*d2.lt.dtol ) return
 !
 !   r = d1/d2    ! d1/d2
 !   r = 2d0*r - 1d0
 
 !  compute left slope (assume uniform mesh)
-      d1 = 2d0 * dc - d2
+      d1 = 2.0_dp * dc - d2
 
-      if (d1 * d2 < dtol) return
+      if (d1 * d2 < dtol) then
+         return
+      end if
 
       r = d1 / d2 ! d1/d2
 
-      dlimitercentral = d2 * max(0d0, min(2d0 * r, 0.5d0 * (1d0 + r), 2d0)) !  Monotonized Central
+      dlimitercentral = d2 * max(0.0_dp, min(2.0_dp * r, 0.5_dp * (1.0_dp + r), 2.0_dp)) !  Monotonized Central
    end function dlimitercentral
 end module m_dlimitercentral

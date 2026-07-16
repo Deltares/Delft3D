@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -81,7 +81,7 @@ module m_ec_instance
          success = .false.
          !
          if (associated(ptr)) then
-            call setECMessage("ERROR: ec_instance::ecInstanceCreate: Dummy argument ptr is already associated.")
+            call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Dummy argument ptr is already associated.")
          else
             allocate(ptr, STAT = istat)
             if (istat == 0) then
@@ -89,61 +89,61 @@ module m_ec_instance
                ! Allocate arrays with a default size of 10.
                allocate(ptr%ecConnectionsPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecConnectionsPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecConnectionsPtr array.")
                   success = .false.
                end if
                ptr%nConnections = 0
                allocate(ptr%ecConvertersPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecConvertersPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecConvertersPtr array.")
                   success = .false.
                end if
                ptr%nConverters = 0
                allocate(ptr%ecElementSetsPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecElementSetsPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecElementSetsPtr array.")
                   success = .false.
                end if
                ptr%nElementSets = 0
                allocate(ptr%ecFieldsPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecFieldsPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecFieldsPtr array.")
                   success = .false.
                end if
                ptr%nFields = 0
                allocate(ptr%ecFileReadersPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecFileReadersPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecFileReadersPtr array.")
                   success = .false.
                end if
                ptr%nFileReaders = 0
                allocate(ptr%ecBCBlocksPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecBCBlocksPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecBCBlocksPtr array.")
                   success = .false.
                end if
                ptr%nNetCDFs = 0
                allocate(ptr%ecNetCDFsPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecNetCDFsPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecNetCDFsPtr array.")
                   success = .false.
                end if
                ptr%nBCFiles = 0
                allocate(ptr%ecBCFilesPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecBCFilesPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecBCFilesPtr array.")
                   success = .false.
                end if
                ptr%nBCBlocks = 0
                allocate(ptr%ecItemsPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecItemsPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecItemsPtr array.")
                   success = .false.
                end if
                ptr%nItems = 0
                allocate(ptr%ecQuantitiesPtr(10), STAT = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecQuantitiesPtr array.")
+                  call set_ec_message("ERROR: ec_instance::ecInstanceCreate: Unable to allocate memory for ecQuantitiesPtr array.")
                   success = .false.
                end if
                ptr%nQuantities = 0
@@ -170,7 +170,7 @@ module m_ec_instance
          success = .false.
          !
          if (.not. associated(ptr)) then
-            call setECMessage("INFO: ec_instance::ecInstanceFree: Dummy argument ptr is already disassociated.")
+            call set_ec_message("INFO: ec_instance::ecInstanceFree: Dummy argument ptr is already disassociated.")
          else
             ! Delegate Free-and-deallocate call to all constituent data types.
             if (.not.ecConnectionFree1dArray(ptr%ecConnectionsPtr, ptr%nConnections)) then
@@ -514,7 +514,7 @@ module m_ec_instance
          type(tEcItem),       pointer :: sourceItemPtr
          type(tEcFileReader), pointer :: FileReaderPtr
          type(tEcBCBlock),    pointer :: BCBlockPtr
-         character(len=maxMessageLen) :: line
+         character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: line
     
          call messenger(lvl, '.')
          call messenger(lvl, 'EC MODULE ITEMS:')
@@ -528,10 +528,6 @@ module m_ec_instance
                   write(line,'(a,i5.5)') 'Target Item ', targetItemPtr%id
                endif
                call messenger(lvl, line)
-               if (associated(targetItemPtr%elementSetPtr)) then
-                  write(line,'(a,i5.5,a,i1,a)') 'Element Set ', targetItemPtr%elementSetPtr%id
-                  call messenger(lvl, line)
-               end if
                if (targetItemPtr%nConnections==0) then
                   write(line,'(a,i5.5,a)') '   TARGET ITEM ',targetItemPtr%id,' HAS NO CONNECTIONS !!!'
                   call messenger(lvl, line)
@@ -601,7 +597,7 @@ module m_ec_instance
       if (ret < max_open_files) then
          maxFileUnits = ret
          write(message, '(a,i0,a)') "ERROR: ec_instance::ecIncreaseMaxOpenFiles: Increasing the max number of open files to ", max_open_files, " failed."
-         call setECMessage(message)
+         call set_ec_message(message)
       else
          success = .true.
       end if

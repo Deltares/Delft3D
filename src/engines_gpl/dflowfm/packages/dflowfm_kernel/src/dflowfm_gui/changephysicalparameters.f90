@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,45 +30,68 @@
 !
 !
 
+module m_changephysicalparameters
+   use m_setuniformwind, only: setuniformwind
+
+   implicit none
+
+contains
+
    subroutine CHANGEPHYSICALPARAMETERS()
-      use m_netw
-      use M_FLOW
-      use m_flowgeom
-      use M_FLOWTIMES
-      use m_sferic
-      use m_wind
-      use unstruc_display
+      use precision, only: dp
+      use m_flow
+      use m_flowgeom, only: ndx
+      use unstruc_colors
+      use unstruc_display_data
       use dflowfm_version_module, only: company, product_name
       use m_helpnow
-      implicit none
+      use m_save_keys
+      use m_restore_keys
+      use m_help
+      use m_highlight_form_line
+      use m_wind, only: jarain, jaqin, rain, rainuni, windsp, winddir
 
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=15, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ierr
       integer :: nbut, imp, inp
-      double precision :: frcuniorg
+      real(kind=dp) :: frcuniorg
 
       NLEVEL = 4
-      OPTION(1) = 'frcuni                                  '; it(2 * 1) = 6
-      OPTION(2) = 'ifrctypuni Friction formulation         '; it(2 * 2) = 2
-      OPTION(3) = 'Windspeed     (m/s)                     '; it(2 * 3) = 6
-      OPTION(4) = 'Winddirection ( ) 90= to East 0=to North'; it(2 * 4) = 6
-      OPTION(5) = 'vicouv                           (m2/s) '; it(2 * 5) = 6
-      OPTION(6) = 'Vicoww                           (m2/s) '; it(2 * 6) = 6
-      OPTION(7) = 'Dicouv                           ( )    '; it(2 * 7) = 6
-      OPTION(8) = 'Dicoww                           ( )    '; it(2 * 8) = 6
-      OPTION(9) = 'Verticall Wall Nikuradse         (m)    '; it(2 * 9) = 6
-      OPTION(10) = 'Smagorinsky                      ( )    '; it(2 * 10) = 6
-      OPTION(11) = 'Elder                            ( )    '; it(2 * 11) = 6
-      OPTION(12) = 'uniform friction coefficient 1D         '; it(2 * 12) = 6
-      OPTION(13) = 'uniform friction coefficient 1D2D intern'; it(2 * 13) = 6
-      OPTION(14) = 'uniform friction coefficient 1D groundly'; it(2 * 14) = 6
-      OPTION(15) = 'uniform rainfall              (mm/hr)   '; it(2 * 15) = 6
+      OPTION(1) = 'frcuni                                  '
+      it(2 * 1) = 6
+      OPTION(2) = 'ifrctypuni Friction formulation         '
+      it(2 * 2) = 2
+      OPTION(3) = 'Windspeed     (m/s)                     '
+      it(2 * 3) = 6
+      OPTION(4) = 'Winddirection ( ) 90= to East 0=to North'
+      it(2 * 4) = 6
+      OPTION(5) = 'vicouv                           (m2/s) '
+      it(2 * 5) = 6
+      OPTION(6) = 'Vicoww                           (m2/s) '
+      it(2 * 6) = 6
+      OPTION(7) = 'Dicouv                           ( )    '
+      it(2 * 7) = 6
+      OPTION(8) = 'Dicoww                           ( )    '
+      it(2 * 8) = 6
+      OPTION(9) = 'Verticall Wall Nikuradse         (m)    '
+      it(2 * 9) = 6
+      OPTION(10) = 'Smagorinsky                      ( )    '
+      it(2 * 10) = 6
+      OPTION(11) = 'Elder                            ( )    '
+      it(2 * 11) = 6
+      OPTION(12) = 'uniform friction coefficient 1D         '
+      it(2 * 12) = 6
+      OPTION(13) = 'uniform friction coefficient 1D2D intern'
+      it(2 * 13) = 6
+      OPTION(14) = 'uniform friction coefficient 1D groundly'
+      it(2 * 14) = 6
+      OPTION(15) = 'uniform rainfall              (mm/hr)   '
+      it(2 * 15) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -162,9 +185,9 @@
       call IFormPutDouble(2 * 3, windsp, '(F8.3)')
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
       call IFormPutDouble(2 * 5, vicouv, '(e9.2)')
-      call IFormPutDouble(2 * 6, vicoww, '(e8.3)')
+      call IFormPutDouble(2 * 6, vicoww%scalar, '(e8.3)')
       call IFORMPUTdouble(2 * 7, dicouv, '(e8.3)')
-      call IFORMPUTdouble(2 * 8, dicoww, '(e8.3)')
+      call IFORMPUTdouble(2 * 8, dicoww%scalar, '(e8.3)')
       call IFormPutDouble(2 * 9, wall_ks, '(F8.3)')
       call IFormPutDouble(2 * 10, Smagorinsky, '(F8.3)')
       call IFormPutDouble(2 * 11, Elder, '(F8.3)')
@@ -215,9 +238,9 @@
             call IFormGetDouble(2 * 3, windsp)
             call IFormGetDouble(2 * 4, winddir)
             call IFormGetDouble(2 * 5, vicouv)
-            call IFormGetDouble(2 * 6, vicoww)
+            call IFormGetDouble(2 * 6, vicoww%scalar)
             call IFORMGetdouble(2 * 7, dicouv)
-            call IFORMGetdouble(2 * 8, dicoww)
+            call IFORMGetdouble(2 * 8, dicoww%scalar)
             call IFormGetDouble(2 * 9, wall_ks)
             call IFormGetDouble(2 * 10, Smagorinsky)
             call IFormGetDouble(2 * 11, Elder)
@@ -230,16 +253,18 @@
                frcu = frcuni
             end if
 
-            if (rainuni > 0d0) then
+            if (rainuni > 0.0_dp) then
                if (.not. allocated(rain)) then
-                  allocate (rain(ndx), stat=ierr); rain = 0d0
+                  allocate (rain(ndx), stat=ierr)
+                  rain = 0.0_dp
                   call aerr('rain(ndx)', ierr, ndx)
                end if
-               jarain = 1; jaqin = 1
+               jarain = 1
+               jaqin = 1
             end if
 
-            wall_z0 = wall_ks / 30d0
-            if (windsp /= 0d0) then
+            wall_z0 = wall_ks / 30.0_dp
+            if (windsp /= 0.0_dp) then
                call setuniformwind()
             end if
 
@@ -258,3 +283,5 @@
       goto 30
 
    end subroutine CHANGEPHYSICALPARAMETERS
+
+end module m_changephysicalparameters

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,16 +29,20 @@
 
 !
 !
+module m_ptabs
+   implicit none
+contains
+   subroutine PTABS(X, Y)
+      use precision, only: dp
+      use unstruc_opengl, only: InOpenGLRendering, DrawPoint
+      use m_dproject, only: dproject
 
-      subroutine PTABS(X, Y)
-         use unstruc_opengl
-         use m_dproject
-         implicit none
-         double precision :: x, y, xx, yy
-         call DPROJECT(X, Y, XX, YY, 1)
-         if (InOpenGLRendering) then
-            call DrawPoint(real(Xx), real(Yy))
-         else
-            call IGRPOINT(real(XX), real(YY))
-         end if
-      end
+      real(kind=dp) :: x, y, xx, yy
+      call DPROJECT(X, Y, XX, YY, 1)
+      if (InOpenGLRendering) then
+         call DrawPoint(real(Xx), real(Yy))
+      else
+         call IGRPOINT(real(XX), real(YY))
+      end if
+   end subroutine PTABS
+end module m_ptabs

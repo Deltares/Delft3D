@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,28 @@
 
 !> Copy the original polygons that define the current fixed weirs
 !! to the active polygons in xpl,...
-subroutine copyFixedWeirsToPol()
-   use m_fixedweirs
-   use m_polygon
+module m_copyfixedweirstopol
+
    implicit none
-   integer :: i
 
-   npl = 0
-   do i = 1, nfxw
-      call appendCRSPathToPol(fxw(i))
-   end do
+   private
 
-end subroutine copyFixedWeirsToPol
+   public :: copyfixedweirstopol
+
+contains
+
+   subroutine copyFixedWeirsToPol()
+      use m_fixedweirs, only: nfxw, fxw
+      use m_polygon, only: npl
+      use m_append_crspath_to_pol, only: appendcrspathtopol
+
+      integer :: i
+
+      npl = 0
+      do i = 1, nfxw
+         call appendCRSPathToPol(fxw(i))
+      end do
+
+   end subroutine copyFixedWeirsToPol
+
+end module m_copyfixedweirstopol

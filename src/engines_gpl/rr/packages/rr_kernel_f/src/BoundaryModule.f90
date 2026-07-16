@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -44,8 +44,13 @@ module Boundary
   use ReadLib
   use m_ec_module
   use globals
+  use time_class, only: c_time
 
   ! variables
+
+  implicit none
+
+  type(c_time)    :: EcTimeRR  !  Time in EC-module
 
   ! *** BNDPAR (, 1) = actual level
   ! *** BNDPAR (, 2) = optie fixed level (default) or variable level
@@ -80,7 +85,6 @@ module Boundary
     !   real flowAvgDay
     ! end type Boundary
 
-   implicit none
 
    type(tEcInstance), pointer :: ec => NULL()
 
@@ -93,11 +97,11 @@ module Boundary
    integer, pointer, dimension(:,:)                 :: ec_bnd_2_ec_index
 
    public ec_target_items_ids, ec_loc_names, ec_quant_names, ec_item_has_been_set_externally
-   public readBoundaryConditionsInto_ec, getBoundaryValue, closeBoundaryConditionFiles
+   public readBoundaryConditionsInto_ec, getBoundaryValue, getBoundaryValue2, CloseBoundaryConditionFiles
 
   INTEGER, Pointer, SAVE :: BNDNAM (:)
 ! logical om aan te geven of knoop RR-CF connection is
-  Logical, Pointer, SAVE :: RRCFConnect (:)
+  Logical, Pointer, SAVE :: RRCFConnect (:), BND_BMIAdjusted(:)
 
   INTEGER INSBK, INSHIS, typeBoundaryLevel
 
@@ -166,6 +170,7 @@ contains
     Success = success .and. Dh_AllocInit (Nbnd, BndNam, 0)
     Success = success .and. Dh_AllocInit (Nbnd, SltBnd, 0E0)
     Success = success .and. Dh_AllocInit (NNod, RRCFConnect, .false.)
+    Success = success .and. Dh_AllocInit (NNod, BND_BMIAdjusted, .false.)
     Success = success .and. Dh_AllocInit (NBnd, BndRefTable, 0)
     if (.not. success) call ErrMsgStandard (981, 0,' Error allocating arrays in subroutine ', ' Boundary_ConfAr1')
 
@@ -242,12 +247,16 @@ contains
     Integer         teller, index,  iNod
     Integer         ncBoun, ncNode, NrColumns, TableNr  !, FindString
     Real            iniSalt
-    integer         bltyp, iboun
+    integer         bltyp, iboun, lenstring, ipos
     real            blval
-    Character(CharIdLength), Pointer :: TBLDEF(:)
+    Character(len=CharIdLength), Pointer :: TBLDEF(:)
+    Character(len=1000000) KeepBufString   ! buffer 1 million char
+
     Logical       , Pointer :: AlreadyRead(:)
     Logical Success
 
+    Character(Len=CharIdLength)  FileName
+    Integer                      IoUnit
 
     ncBoun = Network_get_nrBoun()
     ncNode = Network_get_nrNodes()
@@ -272,8 +281,20 @@ contains
     allow = .false.
     found = .false.
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input RR-boundaries
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(56)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !bound3b.3b_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning bound3b.3b for RR-boundary input to file:', FileName)
+   endif
 
+! *********************************************************************
 ! read bound3b.3b
+! *********************************************************************
+
    call SetMessage(LEVEL_DEBUG, 'Read Bound3B.3b file')
    Endfil = .false.
    teller = 0
@@ -295,6 +316,9 @@ contains
          if (alreadyRead(index)) then
            call SetMessage(LEVEL_ERROR, 'Data for Boundary node '//cdum(1)(1:Len_trim(cdum(1)))//' double in datafile Bound3B.3B')
          else
+! cleaning RR files
+          If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
           AlreadyRead(index) = .true.
           teller = teller + 1
           RetVal = RetVal + GetVAR2 (STRING,' bl ',3,' Boundary_readAscii',' bound3b.3b file',IOUT1, &
@@ -366,15 +390,36 @@ contains
                            ' Some boundaries from schematisation not present in Bound3B.3B file')
    Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for bound3b.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(57)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !bound3b.tbl_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning bound3b.tbl for RR-boundary input to file:', FileName)
+   endif
+! *********************************************************************
 ! read Bound3b.tbl
+! *********************************************************************
 ! de tabellen met boundary levels en salt concentrations
 ! BN_T records, alleen als BndTable = .true.
      endfil = .not. BndTable
      if (.not. endfil) call SetMessage(LEVEL_DEBUG, 'Read Bound3B.Tbl file')
-     Call SKPCOM (Infile2, ENDFIL,'ODS')
+     if (.not. Endfil) Call SKPCOM (Infile2, ENDFIL,'ODS')
      Do while (.not. endfil)
         Success = GetRecord(Infile2, 'BN_T', Endfil, idebug, Iout1)  ! get record van keyword BN_T tot bn_t, zet in buffer
         IF (ENDFIL .or. .not. Success) GOTO 3111
+        Success = GetStringFromBuffer (KeepBufString)
+        IF (.not. Success .and. CleanRRFiles)   then
+!           Write(*,*) 'local buffer BoundaryModule to small'
+!           Write(iout1,*) 'local buffer BoundaryModule to small'
+           Call ErrMsgStandard (999, 3, ' Local buffer Boundarymodule BN_T record too small', ' Input skipped')
+           GOTO 3111
+        Endif
         Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
         IF (.not. Success) GOTO 3111
         If (TabYesNo .and. TableName .ne. '') Then
@@ -386,6 +431,7 @@ contains
            if (Iboun .gt. 0) then
               if ( BndRefTable(iboun) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Boundary level Table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Bound3B.Tbl')
+                 NrColumns = 0  ! om verdere verwerking te stoppen
               endif
            endif
 !          Verwerken boundary definitie
@@ -393,6 +439,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
               Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
               IF (.not. Success) GOTO 3111
+! clean RR files
+              If (CleanRRFiles) then
+                 ! use KeepBufString to write to file
+                 ! first till TBLE
+                 ! then till < characters
+                 ! then till the end of the buffer string
+                 lenstring = len_trim(KeepBufString)
+                 ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                 if (ipos .gt. 0) then
+                    write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                    KeepBufString(1:) = KeepBufString(ipos+5:)
+                 else
+                    ! error: no TBLE found
+                      call SetMessage(LEVEL_ERROR, 'Boundary level Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                 endif
+ 1041            continue
+                 lenstring = len_trim(KeepBufString)
+                 ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                 if (ipos .gt. 0) then
+                    write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                    KeepBufString(1:) = KeepBufString(ipos+3:)
+                    goto 1041
+                 else
+                    ! write remaining part
+                    write(Iounit,'(A)') KeepBufString (1:lenstring)
+                 endif
+              Endif
 ! Set references
               Do iboun = 1, ncboun
                 if (StringComp (TblDef(Iboun), TableName, CaseSensitive) )  BndRefTable(iboun) = TableNr
@@ -402,8 +475,12 @@ contains
         Call SKPCOM (Infile2, ENDFIL,'ODS')
      Enddo
 3111 Continue
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
 ! Check of alle referenties naar tabellen opgelost
+! *********************************************************************
     Err969 = .false.
     Do iboun = 1, ncboun
        if (BndRefTable(iboun) .eq. 0 .and. TblDEF (iboun) .ne. '')  then
@@ -439,6 +516,180 @@ contains
   Return
   end subroutine Boundary_readAsciiInput
 
+
+
+
+
+  subroutine CleanBoundaryConditionsbcFile(Infile1)
+
+    Integer :: RetVal
+
+    Integer(4)      Infile1
+    Integer         iecode, iout1,idebug
+    Character(len=1000) string
+    Integer         Nhlp
+    Parameter      (NHLP=32)
+    Integer         IDUM(NHLP)
+    REAL            RDUM(NHLP)
+    Character(CharIdLength)   CDUM(NHLP), TableName, NodeId
+
+    Logical         Endfil
+    Integer         teller, teller2, index
+    Integer         ncBoun, ncNode, NrTables
+    integer         iboun, lenstring, ipos
+
+    Character(len=CharIdLength)  Key, id
+    Character(len=CharIdLength), Pointer :: Names(:),Quantities(:)
+    Character(len=1000000) KeepBufString   ! buffer 1 million char
+
+    Logical       , Pointer :: AlreadyRead(:)
+    Logical Success
+
+    Character(Len=CharIdLength)  FileName
+    Integer                      IoUnit
+
+    iOut1 = ConfFil_get_iOut1()
+    iDebug = ConfFil_get_iDebug()
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input RR-boundaries
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(122)
+        if (FileName == ' ') FileName = 'BoundaryConditions.bc'
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !BoundaryConditions.bc_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning BoundaryCondition.bc for RR-boundary input to file:', FileName)
+   endif
+
+! *********************************************************************
+! Scan boundary_conditions bc file, how many sections [Boundary]
+! *********************************************************************
+    call SetMessage(LEVEL_DEBUG, 'Read BoundaryConditions.bc file')
+    Endfil = .false.
+    teller = 0
+    RetVal = 0
+    CALL SKPCOM (Infile1, ENDFIL,'ODS')
+    do while (.not. endfil)
+       READ(infile1,'(A1000)',END=21,ERR=21,IOSTAT=IECODE) STRING
+! Skip regel als hij niet begin met juist keyword ([Boundary]
+       IF (STRING(1:10) .eq. '[Boundary]')  teller = teller +1
+    Enddo
+21  continue
+
+    NrTables = teller
+
+! allocate arrays
+
+    Success = Dh_AllocInit (NrTables, Names, ' ')
+    Success = success .and. Dh_AllocInit (NrTables, Quantities, ' ')
+    Success = success .and. Dh_AllocInit (NrTables, AlreadyRead, .false.)
+
+! *********************************************************************
+! Read bc file, name (location) and quantity and determine if unique
+! *********************************************************************
+
+    Rewind(infile1)
+
+    Endfil = .false.
+    teller = 0
+    CALL SKPCOM (Infile1, ENDFIL,'ODS')
+
+    do while (.not. endfil)
+30     continue
+       READ(infile1,'(A1000)',END=31,ERR=31,IOSTAT=IECODE) STRING
+! Skip regel als hij niet begin met juist keyword ([Boundary]
+       IF (STRING(1:10) .eq. '[Boundary]') then
+          teller = teller + 1
+301    continue
+          READ(infile1,'(A1000)',END=31,ERR=31,IOSTAT=IECODE) STRING
+          Call ProcessString (String, Key, id)
+          if (Key(1:4) == 'name') then
+             Names (teller) = id
+          elseif (Key(1:8) == 'quantity') then
+             Quantities (teller) = id
+          elseif (STRING(1:10) .eq. '[Boundary]') then
+             Backspace(infile1)
+             goto 30
+          endif
+          goto 301
+       Endif
+    Enddo
+31  continue
+
+    Do teller = 1, NrTables
+       Do teller2 = 1, teller-1
+          if (Names(teller) .eq. Names(teller2) .and. Quantities(teller) .eq. Quantities(teller2)) AlreadyRead(teller) = .true.
+       Enddo
+    Enddo
+
+! *********************************************************************
+! Read bc file again and write cleaned file
+! *********************************************************************
+
+    Rewind(infile1)
+
+    Endfil = .false.
+    teller = 0
+    CALL SKPCOM (Infile1, ENDFIL,'ODS')
+
+    do while (.not. endfil)
+40     continue
+       READ(infile1,'(A1000)',END=41,ERR=41,IOSTAT=IECODE) STRING
+       if (teller .eq. 0 .and. String(1:10) .ne. '[Boundary]')  then
+           ! zorg dat [General] sectie helemaal gekopieerd wordt
+           write(Iounit,'(A)') String (1:len_trim(String))
+           goto 40
+       endif
+! Skip regel als hij niet begin met juist keyword ([Boundary]
+       IF (STRING(1:10) .eq. '[Boundary]') then
+          teller = teller + 1
+          if (AlreadyRead(teller) .eq. .false.) write(Iounit,'(A)') String (1:len_trim(String))
+401    continue
+          READ(infile1,'(A1000)',END=41,ERR=41,IOSTAT=IECODE) STRING
+          if (STRING(1:10) .eq. '[Boundary]') then
+             Backspace(infile1)
+             goto 40
+          endif
+          if (AlreadyRead(teller) .eq. .false.) write(Iounit,'(A)') String (1:len_trim(String))
+          goto 401
+       Endif
+    Enddo
+41  continue
+
+    Call CloseGP(iounit)
+
+return
+end subroutine CleanBoundaryConditionsbcFile
+
+
+subroutine ProcessString (String, Key, id)
+
+    character (len=1000)  String
+    character (len=CharIdLength)  Key, id
+
+    character (len=1)  IsTeken
+    integer    ipos, lenstring
+
+    IsTeken = '='
+    Key = ''
+    id = ''
+
+    lenstring = len_trim(String)
+    ipos  = FndFrst (IsTeken,String(1:lenstring),.false.)
+
+    if (ipos .gt. 2) then
+       Key = String (1:ipos-1)
+       id  = String (ipos+1:)
+       Call LowerC (Key)
+       Call Ltrim (Key)
+       Call Ltrim (id)
+    endif
+
+return
+end subroutine ProcessString
+
+
 subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
 
    use m_ec_bccollect
@@ -447,7 +698,7 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    implicit none
 
    character(len=*), intent(in)    :: boundaryConditionsFile  ! file containing the lateral conditions
-   logical                         :: success
+   logical                         :: success, LTemp
 
    integer              :: istat          ! status after function call
    integer              :: i  ! loop counter
@@ -575,6 +826,13 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
       enddo
    endif
 
+! addition 27 Nov2024, to initialize on values from EC module
+
+   LTemp = RunSimultaneous
+   RunSimultaneous = .false.
+   Call RdSbk
+   RunSimultaneous = LTemp
+
 end subroutine readBoundaryConditionsInto_ec
 
 function getBoundaryValue(ec_target_item, timeAsMJD) result(value_from_ec)
@@ -582,6 +840,10 @@ function getBoundaryValue(ec_target_item, timeAsMJD) result(value_from_ec)
    integer         , intent(in)   :: ec_target_item
    double precision, intent(in)   :: timeAsMJD
    double precision, dimension(1) :: array_values_from_ec
+
+   Integer iDebug
+   iDebug = ConfFil_get_iDebug()
+   IF (IDEBUG .ne. 0)  WRITE(IDEBUG,*) 'GetBoundaryValue', ec_target_item, timeAsMJD
 
    value_from_ec = 0.0
    if (.not. ecGetValues(ec, ec_target_item, timeAsMJD, array_values_from_ec) ) then
@@ -591,6 +853,30 @@ function getBoundaryValue(ec_target_item, timeAsMJD) result(value_from_ec)
    endif
 
 end function getBoundaryValue
+
+function getBoundaryValue2(ec_target_item) result(value_from_ec)
+
+
+   double precision               :: value_from_ec
+   integer         , intent(in)   :: ec_target_item
+   double precision, dimension(1) :: array_values_from_ec
+
+   double precision :: TimeAsMJD, TimeInSeconds
+   Integer iDebug
+   iDebug = ConfFil_get_iDebug()
+
+   TimeAsMJD = EcTimeRR%mjd()
+   TimeInSeconds = EcTimeRR%seconds()
+   IF (IDEBUG .ne. 0)  WRITE(IDEBUG,*) 'GetBoundaryValue2', ec_target_item, TimeAsMJD, TimeInSeconds
+
+   value_from_ec = 0.0
+   if (.not. ecGetValues(ec, ec_target_item, EcTimeRR, array_values_from_ec) ) then
+      ! call SetMessage(LEVEL_FATAL, 'Error ec_target_item value from EC file')
+   else
+      value_from_ec = array_values_from_ec(1)
+   endif
+
+end function getBoundaryValue2
 
 subroutine closeBoundaryConditionFiles()
    logical :: success
@@ -686,13 +972,14 @@ end subroutine closeBoundaryConditionFiles
 
     use ParallelData, only: JulianTimestep
     use timers
+    use time_class, only: c_time
 
     Integer                    :: teller, teller1, rowNr, iDebug, IOut1, TabelNr
     type (Time)                :: currentTime
     type (Date)                :: currentDate
     logical                    :: DateTimeOutsideTable
     double precision           :: value_from_ec
-    double precision           :: current_time
+    double precision           :: current_time, TimeInSeconds
     double Precision, external :: modified_julian_fromJulian
 
     integer, save :: timerRRRdSobek    = 0
@@ -759,26 +1046,38 @@ end subroutine closeBoundaryConditionFiles
 
       enddo
 
-   elseif (dll_mode .and. .not. RunSimultaneous) then
+   elseif (dll_mode) then  !.and. .not. RunSimultaneous) then
       ! extra check, in dll-mode alleen EC module lezen als vlag RunSimultaneous niet aanstaat (in dat geval wordt nl. in rr_dll_bmi direct ingeprikt)
 
       call timstrt('RdSobek', timerRRRdSobek)
 
       ! Data from EC-Module
       current_time = julStart + JulianTimestep * dble(timeSettings%CurrentTimeStep - 1)
+      timeInSeconds = 86400.D0 * (JulianTimestep * dble(timeSettings%CurrentTimeStep - 1))
+      if (timeSettings%CurrentTimestep .gt. 1) then
+          call EcTimeRR%set4(timeInSeconds, StartDateAsInteger, 0D0, 1D0)
+      elseif (JulStart .gt. 0) then
+          call EcTimeRR%set(julStart)
+      endif
 
       ! water level
       do teller = 1, ncBoun
-         value_from_ec = getBoundaryValue(ec_target_items_ids(teller), current_time)
+         If (BND_BMIAdjusted(teller) .eq. .false.) then
+            if (timeSettings%CurrentTimestep .le. 1) then
+               value_from_ec = getBoundaryValue(ec_target_items_ids(teller), current_time)
+            else
+               value_from_ec = getBoundaryValue2(ec_target_items_ids(teller))
+            endif
 
-         BndPar(teller,1) = value_from_ec
-         if (timeSettings%CurrentTimeStep <= 1) then
-            BndPar(teller,4) = BndPar(teller,1)
-         endif
+            BndPar(teller,1) = value_from_ec
+            if (timeSettings%CurrentTimeStep <= 1) then
+               BndPar(teller,4) = BndPar(teller,1)
+            endif
 
-         SbkLvl(teller) = BndPar(teller,1)
-         SltBnd(teller) = 0.0
+            SbkLvl(teller) = BndPar(teller,1)
+            SltBnd(teller) = 0.0
 
+         Endif
       enddo
 
       ! chloride concentration
@@ -954,7 +1253,7 @@ end subroutine closeBoundaryConditionFiles
   Subroutine Boundary_DeAllocateArrays
 
     if (Allocated(QinBnd)) DeAllocate(QinBnd)
- 	
+
   Return
   End subroutine Boundary_DeallocateArrays
 

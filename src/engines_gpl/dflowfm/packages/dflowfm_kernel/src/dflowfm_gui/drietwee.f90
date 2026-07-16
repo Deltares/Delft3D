@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,11 +29,16 @@
 
 !
 !
+module m_three_two
+   use m_dview
 
+   implicit none
+contains
    subroutine DRIETWEE(XD, YD, ZD, X, Y, Z)
-      use m_howtoview
-      implicit none
-      double precision XD, YD, ZD, X, Y, Z
+      use precision, only: dp
+      use m_howtoview, only: jview
+
+      real(kind=dp) XD, YD, ZD, X, Y, Z
 
       if (JVIEW == 1) then ! NORMAL
          X = XD
@@ -57,3 +62,4 @@
       end if
       return
    end subroutine DRIETWEE
+end module m_three_two

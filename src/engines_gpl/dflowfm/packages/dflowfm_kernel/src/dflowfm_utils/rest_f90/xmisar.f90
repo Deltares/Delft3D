@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,28 @@
 !
 !
 
-      subroutine XMISAR(X, MMAX)
-         use M_MISSING
-         implicit none
-         integer :: i
-         integer :: mmax
-         double precision :: x
-         dimension X(MMAX)
-         do I = 1, MMAX
-            X(I) = XYMIS
-         end do
-         return
-      end
+module m_xmisar
+
+   implicit none
+
+   private
+
+   public :: xmisar
+
+contains
+
+   subroutine XMISAR(X, MMAX)
+      use precision, only: dp
+      use M_MISSING, only: xymis
+
+      integer :: i
+      integer, intent(in) :: mmax
+      real(kind=dp) :: x
+      dimension X(MMAX)
+      do I = 1, MMAX
+         X(I) = XYMIS
+      end do
+      return
+   end
+
+end module m_xmisar

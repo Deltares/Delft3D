@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,17 +30,29 @@
 !
 !
 
- subroutine wribl(mout) ! write bottom level
-    use M_FLOWGEOM
-    implicit none
+module m_wribl
 
-    integer :: mout, k
+   implicit none
 
-    write (mout, '(A,I12)') 'NR of internal FLOWCELLS = ', ndxi
+   private
 
-    do k = 1, ndxi
-       write (mout, *) xz(k), yz(k), bl(k)
-    end do
-    call doclose(mout)
+   public :: wribl
 
- end subroutine wribl
+contains
+
+   subroutine wribl(mout) ! write bottom level
+      use M_FLOWGEOM, only: ndxi, xz, yz, bl
+      use m_filez, only: doclose
+
+      integer :: mout, k
+
+      write (mout, '(A,I12)') 'NR of internal FLOWCELLS = ', ndxi
+
+      do k = 1, ndxi
+         write (mout, *) xz(k), yz(k), bl(k)
+      end do
+      call doclose(mout)
+
+   end subroutine wribl
+
+end module m_wribl

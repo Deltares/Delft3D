@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,24 +31,28 @@
 !
 
 !>    gives link length
-      double precision function dLinklength(L)
+submodule(m_dlinklength) m_dlinklength_
+   use precision, only: dp
+   implicit none
 
-         use m_netw
-         use m_missing, only: dmiss
-         use m_polygon, only: NPL, xpl, ypl, zpl
-         use m_sferic, only: jsferic, jasfer3D
-         use geometry_module, only: dbpinpol, dbdistance
-         use gridoperations
+contains
 
-         implicit none
+   real(kind=dp) module function dLinklength(L)
 
-         integer, intent(in) :: L !< link number
-         integer :: La, k1, k2
+      use network_data, only: xk, yk, kn
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dbdistance
 
-         La = abs(L)
-         k1 = kn(1, La)
-         k2 = kn(2, La)
+      integer, intent(in) :: L !< link number
+      integer :: La, k1, k2
 
-         dLinklength = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+      La = abs(L)
+      k1 = kn(1, La)
+      k2 = kn(2, La)
 
-      end function dLinklength
+      dLinklength = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+
+   end function dLinklength
+
+end submodule m_dlinklength_

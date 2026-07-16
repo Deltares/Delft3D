@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,21 +29,53 @@
 
 !
 !
+module m_draw_nu
+   use m_txtlines
+   use m_textflow
+   use m_teksorsin
+   use m_teksam
+   use m_tekrai
+   use m_tekprofs
+   use m_tekpolygon
+   use m_teknetstuff
+   use m_teknet
+   use m_teklan
+   use m_tekflowstuff
+   use m_smallscreen
+   use m_showbitmap
+   use m_plot
+   use m_netnodevals
+   use m_netlinkvals
+   use m_minmxnetnods
+   use m_minmxnetlins
+   use m_isoscale2
+   use m_isoscale
+   use m_highlight_nodesnlinks
+   use m_fullscreen
+   use m_cls1
+   use m_axes
+   use m_anchorcls
 
+   implicit none
+contains
    subroutine DRAWNU(KEY)
-      use m_netw
-      use M_SAMPLES
+      use M_SAMPLES, only: ns
       use m_arcinfo
       use unstruc_display
       use unstruc_opengl
       use m_drawthis
-      implicit none
+      use m_dispos
+      use m_plot_dots
+      use m_disln
+      use m_tek_grid
 
       integer :: metdraw
       integer :: KEY, nsiz
 
 !
-      if (KEY /= 3) return
+      if (KEY /= 3) then
+         return
+      end if
 
       METDRAW = NDRAW(9)
 
@@ -54,10 +86,18 @@
       end if
 
       if (jaOpengl == 0) then
-         if (METDRAW == 1) call FULLSCREEN()
-         if (NDRAW(1) == 1 .and. jaOpenGL == 0) call CLS1()
-         if (NDRAW(26) == 1) call SHOWBITMAP(0)
-         if (METDRAW == 1) call SMALLSCREEN()
+         if (METDRAW == 1) then
+            call FULLSCREEN()
+         end if
+         if (NDRAW(1) == 1 .and. jaOpenGL == 0) then
+            call CLS1()
+         end if
+         if (NDRAW(26) == 1) then
+            call SHOWBITMAP(0)
+         end if
+         if (METDRAW == 1) then
+            call SMALLSCREEN()
+         end if
       else
          call BEGINRENDER()
       end if
@@ -66,7 +106,9 @@
       ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
       ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
 
-      if (ndraw(3) > 4) call TEKLAN(NCOLLN)
+      if (ndraw(3) > 4) then
+         call TEKLAN(NCOLLN)
+      end if
 
       if (NDRAW(7) >= 2) then
          call NETLINKVALS(NDRAW(7))
@@ -102,7 +144,9 @@
             call TEKNET(key) ! network on top
          end if
 
-         if (ndraw(3) <= 4) call TEKLAN(NCOLLN)
+         if (ndraw(3) <= 4) then
+            call TEKLAN(NCOLLN)
+         end if
 
          call plotObservations()
 
@@ -145,13 +189,19 @@
 
       call ENDRENDER()
 
-      if (METDRAW == 1) call FULLSCREEN()
+      if (METDRAW == 1) then
+         call FULLSCREEN()
+      end if
       call ISOSCALE()
       call ISOSCALE2()
       call TXTLINES()
 
-      if (METDRAW == 1) call SMALLSCREEN()
-      if (METDRAW == 1) call AXES()
+      if (METDRAW == 1) then
+         call SMALLSCREEN()
+      end if
+      if (METDRAW == 1) then
+         call AXES()
+      end if
       call ANCHORCLS()
       call DISPOS()
 
@@ -169,3 +219,4 @@
 
       return
    end subroutine DRAWNU
+end module m_draw_nu

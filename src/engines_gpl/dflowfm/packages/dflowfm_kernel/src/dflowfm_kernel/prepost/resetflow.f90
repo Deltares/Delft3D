@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,74 +30,95 @@
 !
 !
 
- !> Resets the current flow- and time-state, but keeps al active parameter settings.
+module m_resetflow
+   use m_reset_movobs, only: reset_movobs
+   use m_waveconst
+
+   implicit none
+
+   private
+
+   public :: resetflow
+
+contains
+
+ !> Resets the current flow- and time-state, but keeps all active parameter settings.
  !! To be called upon flow_modelinit().
  !! Upon program startup and loading of new model/MDU, call resetFullFlowModel() instead.
- subroutine resetFlow()
-    use m_wind
-    use m_flow
-    use fm_external_forcings_data
-    use m_flowparameters
-    use m_statistics
-    use m_flowgeom
-    use m_modelbounds
-    use m_flowtimes
-    use waq
-    use m_waves
-    use m_hydrology_data
-    use m_sobekdfm
-    use m_save_ugrid_state, only: reset_save_ugrid_state
-    use m_longculverts, only: reset_longculverts
-    use m_sedtrails_data
-    use m_nearfield, only: reset_nearfieldData
-    use m_laterals, only: reset_lateral
-    implicit none
+   subroutine resetFlow()
+      use m_xbeachwaves, only: xbeach_reset
+      use m_reset_sedtra, only: reset_sedtra
+      use m_wind
+      use m_flow
+      use fm_external_forcings_data
+      use m_flowparameters
+      use m_statistics
+      use m_flowgeom
+      use m_modelbounds
+      use m_flowtimes
+      use m_fm_icecover, only: reset_fm_icecover
+      use waq
+      use m_waves
+      use m_hydrology_data
+      use m_sobekdfm
+      use m_save_ugrid_state, only: reset_save_ugrid_state
+      use m_longculverts, only: reset_longculverts
+      use m_sedtrails_data
+      use m_nearfield, only: reset_nearfieldData
+      use m_laterals, only: reset_lateral
+      use m_flow_validatestate, only: reset_flow_validatestate
 
-    ! Only reset counters and other scalars, allocatables should be
-    ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
+      implicit none
 
-    call reset_wind()
+      ! Only reset counters and other scalars, allocatables should be
+      ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
 
-    call reset_lateral
+      call reset_wind()
 
-    call reset_waves()
+      call reset_lateral
 
-    call reset_sobekdfm()
+      call reset_waves()
 
-    ! Reset some flow (rest is done in flow_geominit())
-    call reset_flowgeom()
+      call reset_sobekdfm()
 
-    ! Sedtrails
-    call sedtrails_resetdata()
+      ! Reset some flow (rest is done in flow_geominit())
+      call reset_flowgeom()
 
-    call reset_modelbounds()
+      ! Sedtrails
+      call sedtrails_resetdata()
 
-    call reset_flowexternalforcings()
+      call reset_modelbounds()
 
-    call reset_longculverts()
+      call reset_flowexternalforcings()
 
-    call reset_flowtimes()
+      call reset_longculverts()
 
-    ! call reset_flowparameters()
+      call reset_flowtimes()
 
-    call reset_flow()
+      ! call reset_flowparameters()
 
-    call reset_waq()
+      call reset_flow()
 
-    call reset_movobs()
+      call reset_fm_icecover()
 
-    call reset_statistics()
+      call reset_waq()
 
-    if (jawave == 4) then
-       call xbeach_reset()
-    end if
+      call reset_movobs()
 
-    call reset_save_ugrid_state()
+      call reset_statistics()
 
-    call reset_sedtra()
+      if (jawave == WAVE_SURFBEAT) then
+         call xbeach_reset()
+      end if
 
-    call reset_hydrology_data()
+      call reset_save_ugrid_state()
 
-    call reset_nearfieldData()
+      call reset_sedtra()
 
- end subroutine resetFlow
+      call reset_nearfieldData()
+
+      call reset_flow_validatestate()
+
+   end subroutine resetFlow
+
+end module m_resetflow

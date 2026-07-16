@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
       use m_hydmod
       use system_utils
       use m_hyd_keys  ! keywords in hydfile
-      use m_date_time_utils_external, only : write_date_time
+      use m_date_time_utils_external, only : fill_in_date_time
 
       implicit none
 
@@ -65,6 +65,7 @@
       character,parameter :: cq = ''''              ! quote
       character(len=2),parameter :: cqs = ''' '     ! quote with space
       character(len=2),parameter :: csq = ' '''     ! space with quote
+      character(len=10)   :: layer_type
 
 
       call get_log_unit_number(lunrep)
@@ -74,18 +75,20 @@
 
       write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_full)
 
-      call write_date_time(rundat)
+      call fill_in_date_time(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 
       write(lunhyd,'(a,'' '',a)') task, full_coupling
-      if ( hyd%geometry .eq. HYD_GEOM_CURVI ) then
-         write(lunhyd,'(a,'' '',a)') geometry, curvilinear_grid
-      elseif ( hyd%geometry .eq. HYD_GEOM_UNSTRUC ) then
-         write(lunhyd,'(a,'' '',a)') geometry, unstructured
-      else
-         write(lunhyd,'(a,'' '',a)') geometry, 'unknown'
-      endif
+      layer_type = merge( "z-layers", "        ", hyd%layer_type == HYD_LAYERS_Z )
+      select case ( hyd%geometry )
+         case( HYD_GEOM_CURVI )
+            write(lunhyd,'(a,'' '',a, '' '',a)') geometry, curvilinear_grid, layer_type
+         case( HYD_GEOM_UNSTRUC )
+            write(lunhyd,'(a,'' '',a, '' '',a)') geometry, unstructured, layer_type
+         case default
+            write(lunhyd,'(a,'' '',a)') geometry, 'unknown'
+      end select
       write(lunhyd,'(a,'' '',a)') horizontal_aggregation, "automatic"
       write(lunhyd,'(a,'' '',a)') minimum_vert_diffusion_used, "no"
       write(lunhyd,'(a,'' '',a)') vertical_diffusion, calculated
@@ -139,6 +142,11 @@
          call remove_path(hyd%file_vdf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') vert_diffusion_file, trim(filename)
       else
          write(lunhyd,'(a,''     '',a)') vert_diffusion_file, 'none'
+      endif
+      if ( hyd%vel_present ) then
+         call remove_path(hyd%file_vel%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, trim(filename)
+      else
+         write(lunhyd,'(a,''     '',a)') velocities_file, 'none'
       endif
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          call remove_path(hyd%file_srf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') surfaces_file, trim(filename)

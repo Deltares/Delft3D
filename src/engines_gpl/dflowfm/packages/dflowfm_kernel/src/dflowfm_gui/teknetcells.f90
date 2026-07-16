@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,33 +30,54 @@
 !
 !
 
+module m_teknetcells
+   use m_orthonet_compute_orientation, only: orthonet_compute_orientation
+
+   implicit none
+
+contains
+
    subroutine teknetcells(netwhat, jahalt, jacol)
+      use precision, only: dp
+      use m_minmxnetcells
+      use m_isosmoothnet
+      use m_isocol
+      use m_copynetcellstonetnodes
+      use m_drcirc
+      use m_dhtext
+      use m_dhitext
+      use m_arrowsxy
       use m_netw
       use m_flowgeom
       use unstruc_display
       use m_missing
       use m_partitioninfo
       use m_alloc
-      use unstruc_model, only: md_netfile
-      use unstruc_messages
+      use messagehandling, only: LEVEL_WARN, mess
       use m_sferic, only: jsferic, dg2rd
       use gridoperations
       use m_vfac
       use m_drawthis
       use m_halt2
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_pfiller
+      use m_set_col
+      use m_inview
+      use m_znetcell
+      use m_coarsening_info, only: coarsening_info
 
       implicit none
 
       integer, intent(in) :: netwhat, jahalt, jacol
-      double precision :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
-      double precision :: xfac
+      real(kind=dp) :: xx(6), yy(6), aspect, uu1, vv1, uu2, vv2
+      real(kind=dp) :: xfac
       integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
-      double precision, external :: znetcell
-      double precision, external :: coarsening_info
-      logical inview
 
-      if (netwhat <= 1) return
+      if (netwhat <= 1) then
+         return
+      end if
 
       nodemode = NDRAW(19)
 
@@ -93,7 +114,9 @@
       end if
 
       numcellstoplot = nump
-      if (netwhat == 2 .or. netwhat >= 15 .and. netwhat <= 19) numcellstoplot = nump1d2d ! only for cell or domain numbers
+      if (netwhat == 2 .or. netwhat >= 15 .and. netwhat <= 19) then
+         numcellstoplot = nump1d2d ! only for cell or domain numbers
+      end if
 
       if (numcellstoplot > size(rlin)) then
          call realloc(rlin, numcellstoplot)
@@ -120,11 +143,11 @@
             if (size(idomain) >= numcellstoplot) then
                if (netwhat == 15) then
                   do k = 1, numcellstoplot
-                     rlin(k) = dble(idomain(k))
+                     rlin(k) = real(idomain(k), kind=dp)
                   end do
                else if (netwhat == 16 .and. allocated(numndx)) then ! partitioning info
                   do k = 1, numcellstoplot
-                     rlin(k) = dble(numndx(idomain(k)))
+                     rlin(k) = real(numndx(idomain(k)), kind=dp)
                   end do
                end if
             end if
@@ -133,11 +156,11 @@
                if (size(ighostlev) >= numcellstoplot) then
                   do k = 1, numcellstoplot
                      if (netwhat == 17) then
-                        rlin(k) = dble(ighostlev(k))
+                        rlin(k) = real(ighostlev(k), kind=dp)
                      else if (netwhat == 18) then
-                        rlin(k) = dble(ighostlev_cellbased(k))
+                        rlin(k) = real(ighostlev_cellbased(k), kind=dp)
                      else
-                        rlin(k) = dble(ighostlev_nodebased(k))
+                        rlin(k) = real(ighostlev_nodebased(k), kind=dp)
                      end if
                   end do
                end if
@@ -146,7 +169,7 @@
             if (allocated(iglobal_s)) then
                if (size(iglobal_s) >= numcellstoplot) then
                   do k = 1, numcellstoplot
-                     rlin(k) = dble(iglobal_s(k))
+                     rlin(k) = real(iglobal_s(k), kind=dp)
                   end do
                end if
             end if
@@ -160,8 +183,12 @@
 
          do k = 1, numcellstoplot
             if (mod(k, 200) == 0) then
-               if (jahalt /= -1234) call halt2(ja)
-               if (ja == 1) return
+               if (jahalt /= -1234) then
+                  call halt2(ja)
+               end if
+               if (ja == 1) then
+                  return
+               end if
             end if
 
             if (inview(xzw(k), yzw(k)) .and. rlin(k) /= DMISS) then
@@ -171,13 +198,13 @@
                   if (netwhat == 2 .or. netwhat == 15) then ! cell numbers or domain numbers
                      call dhitext(int(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR)
                   else
-                     call dhtext(dble(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR, yzw(k))
+                     call dhtext(real(rlin(k), kind=dp), xzw(k) + RCIR, yzw(k) - RCIR, yzw(k))
                   end if
                end if
                if (nodemode == 3 .or. nodemode == 6) then ! isolines within cell
                   call ISOSMOOTHnet(k)
                else if (nodemode == 4 .or. nodemode == 7) then ! isofil= cellfill
-                  call isocol(dble(rlin(k)), ncol)
+                  call isocol(real(rlin(k), kind=dp), ncol)
                   nn = netcell(k)%n
                   do kk = 1, nn
                      xx(kk) = xk(netcell(k)%nod(kk))
@@ -185,8 +212,8 @@
                   end do
                   call PFILLER(xx, yy, nn, NCol, NCol)
                else if (nodemode == 5 .or. nodemode == 8) then
-                  call isocol(dble(rlin(k)), ncol)
-                  call drcirc(xz(k), yz(k), dble(rlin(k)))
+                  call isocol(real(rlin(k), kind=dp), ncol)
+                  call drcirc(xz(k), yz(k), real(rlin(k), kind=dp))
                end if
             end if
          end do
@@ -196,35 +223,51 @@
       if (netwhat == 4 .or. netwhat == 5) then
          do k = 1, numcellstoplot
             if (mod(k, 200) == 0) then
-               if (jahalt /= -1234) call halt2(ja)
-               if (ja == 1) return
+               if (jahalt /= -1234) then
+                  call halt2(ja)
+               end if
+               if (ja == 1) then
+                  return
+               end if
             end if
 
             if (inview(xzw(k), yzw(k))) then
                call orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, k)
-               if (jacol == 1) call setcol(3)
+               if (jacol == 1) then
+                  call setcol(3)
+               end if
 
                if (jsferic == 1) then
-                  xfac = 1d0 / cos(yzw(k) * dg2rd)
+                  xfac = 1.0_dp / cos(yzw(k) * dg2rd)
                else
-                  xfac = 1d0
+                  xfac = 1.0_dp
                end if
 
                if (uu1**2 + vv1**2 < uu2**2 + vv2**2) then
-                  if (jacol == 1) call setcol(3)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5d0 * VFAC)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5d0 * VFAC)
-                  if (jacol == 1) call setcol(221)
+                  if (jacol == 1) then
+                     call setcol(3)
+                  end if
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5_dp * VFAC)
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5_dp * VFAC)
+                  if (jacol == 1) then
+                     call setcol(221)
+                  end if
                else
-                  if (jacol == 1) call setcol(221)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5d0 * VFAC)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5d0 * VFAC)
-                  if (jacol == 1) call setcol(3)
+                  if (jacol == 1) then
+                     call setcol(221)
+                  end if
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5_dp * VFAC)
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5_dp * VFAC)
+                  if (jacol == 1) then
+                     call setcol(3)
+                  end if
                end if
-               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, 0.5d0 * VFAC)
-               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, -0.5d0 * VFAC)
+               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, 0.5_dp * VFAC)
+               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, -0.5_dp * VFAC)
             end if
          end do
       end if
 
    end subroutine TEKNETCELLS
+
+end module m_teknetcells

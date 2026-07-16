@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,6 @@
 !!  rights reserved.
 module m_wq_processes_proces
     use m_waq_precision
-    use m_wq_processes_velocities
 
     implicit none
 
@@ -39,11 +38,11 @@ contains
             iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
             num_exchanges_bottom_dir, area, num_dispersion_arrays_new, idpnew, dispnw, &
             num_dispersion_arrays_extra, dspx, dsto, num_velocity_arrays_new, ivpnew, &
-            velonw, num_velocity_arrays_extra, velx, vsto, isdmp, &
+            num_velocity_arrays_extra, velx, vsto, isdmp, &
             defaul, prondt, prvvar, prvtyp, vararr, &
             varidx, arrpoi, arrknd, arrdm1, arrdm2, &
             num_vars, a, num_monitoring_cells, pronam, prvpnt, &
-            num_defaults, surfac, flux_int)
+            num_defaults, surfac)
 
         !     Deltares Software Centre
 
@@ -108,7 +107,6 @@ contains
         real(kind = real_wp), intent(in) :: dsto  (num_substances_transported, num_dispersion_arrays_extra)          !< Factor for calc. dispersions
         integer(kind = int_wp), intent(in) :: num_velocity_arrays_new
         integer(kind = int_wp), intent(in) :: ivpnew(num_substances_transported)               !< Pointer to new velo array
-        real(kind = real_wp), intent(out) :: velonw(num_velocity_arrays_new, *)                    !< New velocity array
         integer(kind = int_wp), intent(in) :: num_velocity_arrays_extra          !< Nr. of calculated velocities
         real(kind = real_wp) :: velx  (num_velocity_arrays_extra, *)             !< Calculated velocities
         real(kind = real_wp), intent(in) :: vsto  (num_substances_transported, num_velocity_arrays_extra)          !< Factor for velocitie
@@ -128,7 +126,6 @@ contains
         character(10) :: pronam(num_processes_activated)               !< Name of called module
         integer(kind = int_wp), intent(in) :: prvpnt(num_processes_activated)                !< entry in process io pointers (cummulative of prvnio)
         real(kind = real_wp), intent(in) :: surfac(num_cells)                !< horizontal surface
-        integer(kind = int_wp), intent(in) :: flux_int                     !< Switch for integration of process fluxes by Delwaq (or not)
         integer(kind = int_wp) :: lunrep                       !< Logical unit number of report-file
 
         !     Local declarations
@@ -139,7 +136,8 @@ contains
         real(kind = dp) :: dtspro     ! fractional step dts
         integer(kind = int_wp) :: ipp_dts     ! pointer in default array to process specific dts
         integer(kind = int_wp) :: ipp_delt    ! pointer in default array to process specific delt
-        INTEGER(kind = int_wp) :: ISTEP, num_exchanges
+        INTEGER(kind = int_wp) :: num_exchanges
+        INTEGER(kind = int_wp), save :: ISTEP = 0
         integer(kind = int_wp) :: open_shared_library
         integer(kind = int_wp), save :: ifirst = 1
         logical :: lfound
@@ -156,12 +154,15 @@ contains
         real(kind = dp) :: ndt                              ! Help variable time step multiplier
         real(kind = dp) :: atfac                            ! Help variable
 
-        save    istep
-        data    istep  / 0 /
+        real(kind = dp), save :: time_bloom_next = -huge(time_bloom_next)
 
-        integer(4) :: ithndl =  0
-        
+        integer(4), save :: ithndl =  0
+
         if (timon) call timstrt ("wq_processes_proces", ithndl)
+
+        if ( time_bloom_next == -huge(time_bloom_next) ) then
+            time_bloom_next = time
+        endif
 
         IFRACS = 1
 
@@ -181,12 +182,18 @@ contains
             iv_idx = varidx(ivar)
             ip_arr = arrpoi(iarr)
             ipndt = ip_arr + iv_idx - 1
-            ndtblo = nint(a(ipndt))  ! This picks up TimMultBl from BLOOM (without checking the name!)
+
+            ! Calculate the "quasi-number" of time steps for BLOOM
+            ! Given BLOOM step is in days
+            ndtblo = nint( 86400.0_dp * a(ipndt) / dts )
             prondt(bloom_status_ind) = ndtblo
 
-            !        This timestep fractional step ?
+            ! This timestep fractional step ?
+            ! Enclose the time in an interval, rather than look for equality, as the time step
+            ! may be dynamic. (The half timestep is to neutralise the rounding errors)
+            if ( time >= time_bloom_next - 0.5_dp * dts ) then
+                time_bloom_next = time_bloom_next + 86400.0_dp * a(ipndt)
 
-            if (mod(istep - 1, ndtblo) == 0) then
                 flux = 0.0
 
                 !           set dts and delt, bloom itself will multiply with prondt
@@ -245,11 +252,9 @@ contains
                         deriv (iseg, :) = deriv(iseg, :) * atfac
                     enddo
 
-                    if (flux_int == 1) then
-                        !                 let WAQ integrate the process fluxes
-                        call wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
-                                num_substances_transported, num_substances_total, num_cells, surfac)
-                    endif
+                    !                 Integrate the process fluxes
+                    call wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
+                             num_substances_transported, num_substances_total, num_cells, surfac)
                 endif
             endif
         endif
@@ -287,15 +292,6 @@ contains
                 volume, deriv, stochi, flux, &
                 prondt, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
 
-        !     Calculate new velocities
-        if (flux_int == 2) then
-            if (num_velocity_arrays_new  > 0 .and. flux_int /= 1) then
-                call wq_processes_velocities (velonw, num_velocity_arrays_new, ivpnew, &
-                        velx, num_velocity_arrays_extra, vsto, num_substances_transported, &
-                        num_exchanges)
-            endif
-        endif
-
         !     Set fractional step
         if (noflux > 0 .and. ifracs == 1) then
 
@@ -312,19 +308,16 @@ contains
                     deriv (iseg, :) = deriv(iseg, :) * atfac
                 enddo
 
-                if (flux_int == 1) then
-                    !              let WAQ integrate the process fluxes
-                    if (num_velocity_arrays_new  > 0) then
-                        !                 Add effect of additional flow velocities
-                        call wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, num_exchanges, num_velocity_arrays_new, &
-                                velx, area, volume, iexpnt, iknmrk, &
-                                ivpnew, conc, dts, deriv)
-                    end if
+                if (num_velocity_arrays_new  > 0) then
+                    !                 Add effect of additional flow velocities
+                    call wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, num_exchanges, num_velocity_arrays_new, &
+                            velx, area, volume, iexpnt, iknmrk, &
+                            ivpnew, conc, dts, deriv)
+                end if
 
-                    !              Integration (derivs are zeroed)
-                    call wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
-                            num_substances_transported, num_substances_total, num_cells, surfac)
-                endif
+                !              Integration (derivs are zeroed)
+                call wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
+                        num_substances_transported, num_substances_total, num_cells, surfac)
             endif
         endif
 
@@ -370,7 +363,7 @@ contains
         integer(kind = int_wp) :: ipflux
 
         integer(4) :: ithndl =  0
-        
+
         if (timon) call timstrt ("calculate_single_process", ithndl)
 
         !     Set the variables
@@ -453,7 +446,7 @@ contains
         real(kind = dp) :: ndt                              ! Help variable time step multiplier
 
         integer(4) :: ithndl =  0
-        
+
         if (timon) call timstrt ("update_derivaties_and_dump_fluxes", ithndl)
 
         do iproc = 1, num_processes_activated

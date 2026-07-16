@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,34 +29,41 @@
 
 !
 !
-
-!> return common node of links L1 and L2
-subroutine find_common_node(L1, L2, node)
-
-   use m_netw
-   use m_missing
-
+module m_find_common_node
    implicit none
+contains
+!> return common node of links L1 and L2
+   subroutine find_common_node(L1, L2, node)
 
-   integer, intent(in) :: L1, L2 !< links
-   integer, intent(out) :: node !< common node
+      use m_netw, only: kn
+      use m_missing, only: imiss
 
-   integer, dimension(4) :: a ! dummy array with nodes of L1 and L2
+      integer, intent(in) :: L1, L2 !< links
+      integer, intent(out) :: node !< common node
+
+      integer, dimension(4) :: a ! dummy array with nodes of L1 and L2
 ! integer, parameter    :: IMISS = -999999
 
-   a(1:2) = kn(1:2, L1)
-   a(3:4) = kn(1:2, L2)
+      a(1:2) = kn(1:2, L1)
+      a(3:4) = kn(1:2, L2)
 
-   do
-      node = IMISS
+      do
+         node = IMISS
 
-      if (a(1) == a(3) .or. a(1) == a(4)) node = a(1)
-      if (a(2) == a(3) .or. a(2) == a(4)) node = a(2)
+         if (a(1) == a(3) .or. a(1) == a(4)) then
+            node = a(1)
+         end if
+         if (a(2) == a(3) .or. a(2) == a(4)) then
+            node = a(2)
+         end if
 
-      if (node /= IMISS) exit
+         if (node /= IMISS) then
+            exit
+         end if
 
-      write (6, *) 'find_common_node: no common node found'
-      exit
-   end do
+         write (6, *) 'find_common_node: no common node found'
+         exit
+      end do
 
-end subroutine find_common_node
+   end subroutine find_common_node
+end module m_find_common_node

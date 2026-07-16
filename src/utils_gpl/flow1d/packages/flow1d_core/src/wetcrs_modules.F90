@@ -2,7 +2,7 @@ module M_newcross                                                ! new type conv
                                                                  ! all data is attached to pluv u nr
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -274,7 +274,7 @@ subroutine CalcConveyanceTable(convtab, frictype, friction_value_per_segment, y,
    numlevels=levelscount_convtab
    
    do k = 1, levelscount_csdef
-      i = segmentToSectionIndex(k)
+      i = min(segmentToSectionIndex(k),size(frictionType))
       frictype(k) = frictionType(i)
       friction_value_per_segment(k) = frictionValue(i)
    enddo
@@ -508,7 +508,7 @@ subroutine regulate_yz_coordinates(y, z, bedlevel, segmentToSectionIndex, levels
          z(current+1) = dda
       endif
       if (current > levelscount) then
-         current = levelscount
+         current = levelscount 
       endif
       do k = start+1,current
          segmentToSectionIndex(k) = i-1

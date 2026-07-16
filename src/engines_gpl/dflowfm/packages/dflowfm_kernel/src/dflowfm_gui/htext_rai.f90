@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,30 +30,41 @@
 !
 !
 
- subroutine htext_rai(val, x, y, xx, zz, ihv)
-    use m_raaitek
-    use m_htext
-    implicit none
-    double precision :: val, x, y, xx, zz
-    double precision :: fx, fy, xa, ya
-    integer :: ihv
-    fx = xs2m - xs1m
-    fy = ys2m - ys1m
-    if (ihv == 1) then
-       xa = fx * (x - xx - xw1m) / (xw2m - xw1m) + xs1m
-       ya = fy * (y - yw1m) / (yw2m - yw1m) + ys1m
-       call movabs(xa, ya)
-       xa = fx * (x + xx - xw1m) / (xw2m - xw1m) + xs1m
-       call lnabs(xa, ya)
-       xa = fx * (x - 11d0 * xx - xw1m) / (xw2m - xw1m) + xs1m
-    else if (ihv == 2) then
-       xa = fx * (x - xw1m) / (xw2m - xw1m) + xs1m
-       ya = fy * (y - zz - yw1m) / (yw2m - yw1m) + ys1m
-       call movabs(xa, ya)
-       ya = fy * (y + zz - yw1m) / (yw2m - yw1m) + ys1m
-       call lnabs(xa, ya)
-       xa = fx * (x - 5d0 * xx - xw1m) / (xw2m - xw1m) + xs1m
-       ya = fy * (y - 3d0 * zz - yw1m) / (yw2m - yw1m) + ys1m
-    end if
-    call htext(val, xa, ya)
- end subroutine htext_rai
+module m_htext_rai
+
+   implicit none
+
+contains
+
+   subroutine htext_rai(val, x, y, xx, zz, ihv)
+      use precision, only: dp
+      use m_raaitek, only: xs2m, xs1m, ys2m, ys1m, xw1m, xw2m, yw1m, yw2m
+      use m_htext, only: htext
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      real(kind=dp) :: val, x, y, xx, zz
+      real(kind=dp) :: fx, fy, xa, ya
+      integer :: ihv
+      fx = xs2m - xs1m
+      fy = ys2m - ys1m
+      if (ihv == 1) then
+         xa = fx * (x - xx - xw1m) / (xw2m - xw1m) + xs1m
+         ya = fy * (y - yw1m) / (yw2m - yw1m) + ys1m
+         call movabs(xa, ya)
+         xa = fx * (x + xx - xw1m) / (xw2m - xw1m) + xs1m
+         call lnabs(xa, ya)
+         xa = fx * (x - 11.0_dp * xx - xw1m) / (xw2m - xw1m) + xs1m
+      else if (ihv == 2) then
+         xa = fx * (x - xw1m) / (xw2m - xw1m) + xs1m
+         ya = fy * (y - zz - yw1m) / (yw2m - yw1m) + ys1m
+         call movabs(xa, ya)
+         ya = fy * (y + zz - yw1m) / (yw2m - yw1m) + ys1m
+         call lnabs(xa, ya)
+         xa = fx * (x - 5.0_dp * xx - xw1m) / (xw2m - xw1m) + xs1m
+         ya = fy * (y - 3.0_dp * zz - yw1m) / (yw2m - yw1m) + ys1m
+      end if
+      call htext(val, xa, ya)
+   end subroutine htext_rai
+
+end module m_htext_rai

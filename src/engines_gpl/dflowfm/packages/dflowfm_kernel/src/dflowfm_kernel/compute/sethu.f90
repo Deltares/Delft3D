@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,6 +29,16 @@
 
 !
 module m_sethu
+   use m_getblu_from_bob, only: getblu_from_bob
+   use m_fill_onlywetlinks, only: fill_onlywetlinks
+   use precision, only: dp
+   use m_setveg, only: setveg
+   use m_sets01zbnd, only: sets01zbnd
+   use m_get_upstream_downstream_cell_numbers
+   use m_get_lkbot_set_ltop_upwind
+   use m_getucxucynoweirs
+   use m_enloss
+   use m_adjust_bobs_for_dams_and_structs, only: adjust_bobs_for_dams_and_structs
    use stdlib_kinds, only: dp
 
    private
@@ -41,12 +51,13 @@ module m_sethu
    integer :: upstream_cell_index
    integer :: link
 
-   double precision :: velocity
+   real(kind=dp) :: velocity
 
    procedure(get_upstream_water_level_any), pointer :: get_upstream_water_level
 
    abstract interface
-      double precision function get_upstream_water_level_any()
+      real(kind=dp) function get_upstream_water_level_any()
+         use precision, only: dp
       end function
    end interface
 
@@ -56,6 +67,7 @@ contains
 !
 !> Set upwind waterdepth hu and au
    subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0, set_hu)
+      use precision, only: dp
       use m_flowgeom
       use m_flow
       use m_fixedweirs
@@ -80,32 +92,32 @@ contains
       integer, parameter :: CENTRAL_FROM_BED_TIL_SECOND_OR_FIRST_ABOVE_LOCAL_BOB = 1
       integer, parameter :: ALL_CENTRAL = 2
       integer, parameter :: CENTRAL_FROM_BED_TILL_HIGHEST_LAYER_WITH_EQUAL_LEVELS = 3
-      double precision, parameter :: FOR_CUT_CELL = 0d0
-      double precision, parameter :: TWO_THIRDS = 2d0 / 3d0
+      real(kind=dp), parameter :: FOR_CUT_CELL = 0.0_dp
+      real(kind=dp), parameter :: TWO_THIRDS = 2.0_dp / 3.0_dp
 
       integer :: link_in_3d
       integer :: kb, kb0, kt, Lb
       integer :: kbd, ktd, kbd0, LLbc, kkd
       integer :: L_lowest, nq, n, L
-      double precision :: upstream_water_level
-      double precision :: bed_level_at_u_point
-      double precision :: water_height
-      double precision :: water_height_no_weir
-      double precision :: avolk
-      double precision :: sigma
-      double precision :: hub
-      double precision :: zw0u
-      double precision :: ucx_up, ucy_up, u_in, vhei, eup
-      double precision :: lowest_bob
+      real(kind=dp) :: upstream_water_level
+      real(kind=dp) :: bed_level_at_u_point
+      real(kind=dp) :: water_height
+      real(kind=dp) :: water_height_no_weir
+      real(kind=dp) :: avolk
+      real(kind=dp) :: sigma
+      real(kind=dp) :: hub
+      real(kind=dp) :: zw0u
+      real(kind=dp) :: ucx_up, ucy_up, u_in, vhei, eup
+      real(kind=dp) :: lowest_bob
       logical :: dams_or_weirs, is_already_wet
 
-      double precision, pointer :: velocity_pointer(:)
+      real(kind=dp), pointer :: velocity_pointer(:)
 
       if (set_zws0 == DONT_SET_ZWS0 .or. len_trim(md_restartfile) == EMPTY_NAME) then
          call sets01zbnd(USE_S0, DO_NOT_SET_BlDepth)
       end if
 
-      if (uniformhu > 0d0) then
+      if (uniformhu > 0.0_dp) then
          hu(:) = uniformhu
          return
       end if
@@ -131,8 +143,8 @@ contains
       do link = 1, lnx
 
          if (wu(link) == FOR_CUT_CELL) then
-            hu(link) = 0d0
-            au(link) = 0d0
+            hu(link) = 0.0_dp
+            au(link) = 0.0_dp
             cycle
          end if
 
@@ -177,8 +189,8 @@ contains
             end if
 
          else
-            hu(link) = 0d0
-            au(link) = 0d0
+            hu(link) = 0.0_dp
+            au(link) = 0.0_dp
          end if
 
          if (kmx > 0) then ! only in sub3D
@@ -210,12 +222,12 @@ contains
       end do
 
       do link = 1, lnx ! why is it here?- it is not hu
-         huvli(link) = 1d0 / max(epshs, acl(link) * hs(ln(1, link)) + (1d0 - acl(link)) * hs(ln(2, link)))
+         huvli(link) = 1.0_dp / max(epshs, acl(link) * hs(ln(1, link)) + (1.0_dp - acl(link)) * hs(ln(2, link)))
       end do
 
       if (lincontin == LINEAR_CONTINUITY) then ! is this only for 2D? why not at the beginning?
          do link = 1, lnx
-            hu(link) = -0.5d0 * (bob(1, link) + bob(2, link))
+            hu(link) = -0.5_dp * (bob(1, link) + bob(2, link))
          end do
       end if
 
@@ -245,16 +257,17 @@ contains
 !> calculate_vhei_and_eup
       subroutine calculate_vhei_and_eup()
 
-         vhei = 0.5d0 * u_in * u_in / ag
+         vhei = 0.5_dp * u_in * u_in / ag
          eup = water_height + vhei
 
       end subroutine calculate_vhei_and_eup
 
 !> use_advection_block_subgrid_and_Rajaratnam
       subroutine calculate_advection_block_subgrid_and_Rajaratnam()
+         use precision, only: dp
 
-         double precision :: hu_crest
-         double precision :: hup
+         real(kind=dp) :: hu_crest
+         real(kind=dp) :: hup
 
          hu_crest = s0(downstream_cell) - bed_level_at_u_point
          if (hu_crest < water_height) then
@@ -262,7 +275,7 @@ contains
             if (water_height < TWO_THIRDS * eup) then ! supercritical
                water_height = TWO_THIRDS * eup
                hup = hu_crest - water_height
-               if (hup < 0d0) then
+               if (hup < 0.0_dp) then
                   adve(link) = adve(link) - direction_sign * hup * ag * dxi(link)
                end if
             end if
@@ -272,16 +285,17 @@ contains
 
 !> calculate_advection_Rajaratnam
       subroutine calculate_advection_Rajaratnam()
-         double precision :: ufac
-         double precision :: efac
+         use precision, only: dp
+         real(kind=dp) :: ufac
+         real(kind=dp) :: efac
 
          call calculate_u_in_and_upstream_ucx_ucy()
          call calculate_vhei_and_eup()
          call calculate_advection_block_subgrid_and_Rajaratnam()
 
          ufac = water_height_no_weir / water_height ! compensates for undisturbed field velocity
-         efac = 1d0 - (1d0 / ufac**2)
-         advi(link) = advi(link) + 0.5d0 * dxi(link) * abs(u1(link)) * ufac * ufac * efac
+         efac = 1.0_dp - (1.0_dp / ufac**2)
+         advi(link) = advi(link) + 0.5_dp * dxi(link) * abs(u1(link)) * ufac * ufac * efac
          water_height = water_height_no_weir
 
       end subroutine calculate_advection_Rajaratnam
@@ -292,7 +306,7 @@ contains
          water_height_no_weir = max(upstream_water_level - blu(link), water_height)
          ucx_up = ucx(upstream_cell)
          ucy_up = ucy(upstream_cell)
-         u_in = abs(u1(link))
+         u_in = u1(link)
 
       end subroutine calculate_u_in_and_upstream_ucx_ucy
 
@@ -307,27 +321,30 @@ contains
 
 !> calculate_advection_block_Tabellenboek_and_Villemonte
       subroutine calculate_advection_block_Tabellenboek_and_Villemonte()
+         use precision, only: dp
          integer :: nfw
          integer :: itel
          character(len=4) :: toest
-         double precision :: wsbov
-         double precision :: wsben
-         double precision :: hkru_in
-         double precision :: d1
-         double precision :: energy_height_upstream
-         double precision :: qvolk
-         double precision :: qunit
-         double precision :: vben
-         double precision :: energy_height_downstream
-         double precision :: hov
-         double precision :: vov
-         double precision :: hvolk
-         double precision :: tol
-         double precision :: qov
-         double precision :: dte0
-         double precision :: dtefri
-         double precision :: vbov
-         double precision :: agwdxi
+         real(kind=dp) :: wsbov
+         real(kind=dp) :: wsben
+         real(kind=dp) :: hkru_in
+         real(kind=dp) :: d1
+         real(kind=dp) :: energy_height_upstream
+         real(kind=dp) :: qvolk
+         real(kind=dp) :: qunit
+         real(kind=dp) :: vben
+         real(kind=dp) :: energy_height_downstream
+         real(kind=dp) :: hov
+         real(kind=dp) :: vov
+         real(kind=dp) :: hvolk
+         real(kind=dp) :: tol
+         real(kind=dp) :: qov
+         real(kind=dp) :: dte0
+         real(kind=dp) :: dtefri
+         real(kind=dp) :: vbov
+         real(kind=dp) :: agwdxi
+         real(kind=dp) :: slope_upstream
+         real(kind=dp) :: slope_downstream
 
          nfw = nfxwL(link)
          wsbov = upstream_water_level
@@ -335,55 +352,59 @@ contains
          hkru_in = -bed_level_at_u_point
 
          ! determine sill height downstream of weir
-         if (u_in >= 0d0) then
+         if (u_in >= 0.0_dp) then
             d1 = shrxw(nfw)
+            slope_upstream = taludlxw(nfw)
+            slope_downstream = taludrxw(nfw)
          else
             d1 = shlxw(nfw)
+            slope_upstream = taludrxw(nfw)
+            slope_downstream = taludlxw(nfw)
          end if
 
-         vhei = 0.5d0 * u_in * u_in / ag
-         energy_height_upstream = max(0.000001d0, wsbov + hkru_in) + vhei
-         qvolk = avolk * energy_height_upstream**1.5d0
+         vhei = 0.5_dp * u_in * u_in / ag
+         energy_height_upstream = max(0.000001_dp, wsbov + hkru_in) + vhei
+         qvolk = avolk * energy_height_upstream**1.5_dp
          qunit = abs(u_in) * water_height_no_weir
 
-         vben = qunit / max(0.000001d0, wsben - bl(downstream_cell))
-         vhei = 0.5d0 * vben * vben / ag
-         energy_height_downstream = max(0.000001d0, wsben + hkru_in) + vhei
+         vben = qunit / max(0.000001_dp, wsben - bl(downstream_cell))
+         vhei = 0.5_dp * vben * vben / ag
+         energy_height_downstream = max(0.000001_dp, wsben + hkru_in) + vhei
          energy_height_downstream = min(energy_height_downstream, energy_height_upstream)
 
          hov = wsbov + hkru_in
          vov = qunit / hov
-         if (vov < 0.5d0) then
+         if (vov < 0.5_dp) then
             itel = 0
             hvolk = TWO_THIRDS * energy_height_upstream
-            tol = 0.001d0 * max(0.0001d0, qunit)
-            qov = 0d0
+            tol = 0.001_dp * max(0.0001_dp, qunit)
+            qov = 0.0_dp
             do while (itel < 100 .and. (abs(qunit - qov)) > tol)
                itel = itel + 1
                vov = qunit / hov
-               hov = max(hvolk, energy_height_upstream - (vov**2) / (2d0 * ag))
+               hov = max(hvolk, energy_height_upstream - (vov**2) / (2.0_dp * ag))
                qov = vov * hov
             end do
          end if
          dte0 = weirdte(nfw)
-         dtefri = 0.0d0
+         dtefri = 0.0_dp
          call enloss(ag, d1, energy_height_upstream, hkru_in, qunit, qvolk, toest, vov, &
                      energy_height_downstream, wsbov, wsben, weirdte(nfw), dtefri, iadv(link), crestlxw(nfw), &
-                     taludlxw(nfw), taludrxw(nfw), vegxw(nfw), testfixedweirs)
-         weirdte(nfw) = (1d0 - waquaweirthetaw) * weirdte(nfw) + waquaweirthetaw * dte0
+                     slope_upstream, slope_downstream, vegxw(nfw), testfixedweirs)
+         weirdte(nfw) = (1.0_dp - waquaweirthetaw) * weirdte(nfw) + waquaweirthetaw * dte0
 
          ! attention total waterdepth instead of water above crest
          vbov = abs(u_in)
          if (toest == 'volk') then
-            vbov = qvolk / max(water_height_no_weir, 1d-6)
+            vbov = qvolk / max(water_height_no_weir, 1.0e-6_dp)
          end if
-         if (vbov > 1d-8) then
+         if (vbov > 1.0e-8_dp) then
             agwdxi = ag * weirdte(nfw) * dxi(link)
             if (kmx == 0) then
                advi(link) = advi(link) + agwdxi / vbov ! 1/s
             else
                do link_in_3d = Lbot(link), Ltop(link)
-                  advi(link_in_3d) = advi(link_in_3d) + agwdxi / max(1d-4, abs(u1(link_in_3d)))
+                  advi(link_in_3d) = advi(link_in_3d) + agwdxi / max(1.0e-4_dp, abs(u1(link_in_3d)))
                end do
             end if
             map_fixed_weir_energy_loss(link) = weirdte(nfw)
@@ -407,16 +428,15 @@ contains
       subroutine calculate_hu_au_3D()
          use m_qnerror
 
-         integer, parameter :: TYPE_ALL_Z = 2
-         integer, parameter :: AVERAGE_BED_CELLING = 2
+         integer, parameter :: AVERAGE_BED_CEILING = 2
 
-         if (hu(link) <= 0d0) then
+         if (hu(link) <= 0.0_dp) then
             Ltop(link) = DRY_FLAG
          else
             call get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, Lb, kb, kt)
             kb0 = kb - 1
-            au(link) = 0d0
-            hu(Lb - 1) = 0d0
+            au(link) = 0.0_dp
+            hu(Lb - 1) = 0.0_dp
 
             if (Lb == Ltop(link)) then
                call calculate_hu_au_for_one_layer()
@@ -427,7 +447,7 @@ contains
                ! UNST-5182: The code below has only been implemented for keepzlayeringatbed == 2
                ! To be implemented for keepzlayeringatbed == 0 and 1 as well, because layer distribution is independent of value of keepzlayeringatbed?
                !
-               if (layertype == TYPE_ALL_Z .and. keepzlayeringatbed == AVERAGE_BED_CELLING) then
+               if (layertype == LAYTP_Z .and. keepzlayeringatbed == AVERAGE_BED_CEILING) then
                   call calculate_using_split_central_and_sigma_parts()
                else
                   call calculate_hu_au_using_upwind_sigma()
@@ -452,7 +472,7 @@ contains
          ktd = ktop(downstream_cell)
          kbd = min(ln0(3 - upstream_cell_index, Lb), ktd)
          kbd0 = kbd - 1
-         hub = 0d0
+         hub = 0.0_dp
          if (ktd == kbd) then
             ! downwind side one layer => default upwind sigma
             LLbc = Lb - 1
@@ -497,7 +517,7 @@ contains
          LLbc = Ltop(link)
          do link_in_3d = Ltop(link) - 1, Lb + 1, -1
             if (zws(kb + link_in_3d - Lb) > bed_level_at_u_point .and. &
-                abs(zws(kb + link_in_3d - Lb) - zws(kbd + link_in_3d - Lb)) < 1d-10) then
+                abs(zws(kb + link_in_3d - Lb) - zws(kbd + link_in_3d - Lb)) < 1.0e-10_dp) then
                LLbc = link_in_3d
                exit
             end if
@@ -524,23 +544,24 @@ contains
 
 !> calculate_hu_au_central_in_lower_part
       subroutine calculate_hu_au_central_in_lower_part()
+         use precision, only: dp
 
          integer, parameter :: option_AVERAGE = 1
          integer, parameter :: option_MAX = 2
          integer, parameter :: option_MIN = 3
          integer, parameter :: option_SIG = 4
 
-         double precision :: sigma_downstream
+         real(kind=dp) :: sigma_downstream
 
          do link_in_3d = Lb, LLbc
             if (ihuzcsig == option_SIG) then
-               sigma = dble(link_in_3d - Lb + 1) / dble(LLbc - Lb + 1) ! fifty/fifty, .33 or so
+               sigma = real(link_in_3d - Lb + 1, kind=dp) / real(LLbc - Lb + 1, kind=dp) ! fifty/fifty, .33 or so
             else
                sigma = (zws(kb + link_in_3d - Lb) - zws(kb0)) / (zws(kb + LLbc - Lb) - zws(kb0)) ! sigmaup
                if (zws(kbd + link_in_3d - Lb) > zws(kbd0) .and. zws(kbd + LLbc - Lb) > zws(kbd0)) then
                   sigma_downstream = (zws(kbd + link_in_3d - Lb) - zws(kbd0)) / (zws(kbd + LLbc - Lb) - zws(kbd0))
                   if (ihuzcsig == option_AVERAGE) then
-                     sigma = 0.5d0 * (sigma + sigma_downstream)
+                     sigma = 0.5_dp * (sigma + sigma_downstream)
                   else if (ihuzcsig == option_MAX) then
                      sigma = max(sigma, sigma_downstream)
                   else if (ihuzcsig == option_MIN) then
@@ -562,7 +583,7 @@ contains
 
       end subroutine assign_au_3D
 
-!> calculate_hu_au_upwind_in_upper_part
+      !> calculate_hu_au_upwind_in_upper_part
       subroutine calculate_hu_au_upwind_in_upper_part()
 
          hub = hu(link) - hub
@@ -574,17 +595,18 @@ contains
 
       end subroutine calculate_hu_au_upwind_in_upper_part
 
-!> default: upwind sigma oriented distribution of hu(link)
+      !> default: upwind sigma oriented distribution of hu(link)
       subroutine calculate_hu_au_using_upwind_sigma()
-
-         if (keepzlay1bedvol == 0 .or. &
+         use m_flow, only: layertype, LAYTP_Z, numtopsig, kmxn
+         use m_flowparameters, only: keepzlay1bedvol
+         if (layertype /= LAYTP_Z .or. keepzlay1bedvol == 0 .or. &
              (kmxn(upstream_cell) == kmxn(downstream_cell) .and. kmxn(upstream_cell) <= numtopsig)) then
             call calculate_hu_au_upwind_based()
          else
             ! different numbers of layers
             ktd = ktop(downstream_cell)
             kbd = min(ln0(3 - upstream_cell_index, Lb), ktd)
-            if (zws(ktd) - max(zws(kbd - 1), bl(downstream_cell)) > 0d0) then
+            if (zws(ktd) - max(zws(kbd - 1), bl(downstream_cell)) > 0.0_dp) then
                call calculate_hu_au_downwind_wet()
             else
                call calculate_hu_au_downwind_dry()
@@ -595,8 +617,9 @@ contains
 
 !> calculate_hu_au_upwind_based
       subroutine calculate_hu_au_upwind_based()
+         use precision, only: dp
 
-         double precision :: hsku
+         real(kind=dp) :: hsku
 
          hsku = zws(kt) - zws(kb0)
          do link_in_3d = Lb, Ltop(link)
@@ -616,7 +639,8 @@ contains
 
 !> calculate_hu_au_downwind_wet
       subroutine calculate_hu_au_downwind_wet()
-         double precision :: hskx
+         use precision, only: dp
+         real(kind=dp) :: hskx
 
          zw0u = max(bl(upstream_cell), bl(downstream_cell))
          hskx = max(zws(kt), zws(ktd)) - zw0u
@@ -631,7 +655,8 @@ contains
 
 !> calculate_hu_au_downwind_dry
       subroutine calculate_hu_au_downwind_dry()
-         double precision :: hsku
+         use precision, only: dp
+         real(kind=dp) :: hsku
 
          zw0u = max(zws(kb - 1), bl(upstream_cell))
          hsku = zws(kt) - zw0u
@@ -674,7 +699,8 @@ contains
    end subroutine set_upstream_water_level_getter
 
 !> get_upstream_water_level_upwind
-   double precision function get_upstream_water_level_upwind() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_upwind() result(upstream_water_level)
+      use precision, only: dp
       use m_flow, only: s0
 
       implicit none
@@ -684,39 +710,43 @@ contains
    end function get_upstream_water_level_upwind
 
 !> get_upstream_water_level_central_limiter
-   double precision function get_upstream_water_level_central_limiter() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_central_limiter() result(upstream_water_level)
+      use precision, only: dp
       use m_flow, only: s0
 
       implicit none
 
-      upstream_water_level = 0.5d0 * (s0(left_cell) + s0(right_cell))
+      upstream_water_level = 0.5_dp * (s0(left_cell) + s0(right_cell))
 
    end function get_upstream_water_level_central_limiter
 
    !> get_upstream_water_level_perot_alfa_limiter
-   double precision function get_upstream_water_level_perot_alfa_limiter() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_perot_alfa_limiter() result(upstream_water_level)
+      use precision, only: dp
       use m_flow, only: s0
       use m_flowgeom, only: acl
 
       implicit none
 
-      upstream_water_level = acl(link) * s0(left_cell) + (1d0 - acl(link)) * s0(right_cell)
+      upstream_water_level = acl(link) * s0(left_cell) + (1.0_dp - acl(link)) * s0(right_cell)
 
    end function get_upstream_water_level_perot_alfa_limiter
 
 !> get_upstream_water_level_regular_linear_interpolation
-   double precision function get_upstream_water_level_regular_linear_interpolation() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_regular_linear_interpolation() result(upstream_water_level)
+      use precision, only: dp
       use m_flow, only: s0
       use m_flowgeom, only: acl
 
       implicit none
 
-      upstream_water_level = acl(link) * s0(right_cell) + (1d0 - acl(link)) * s0(left_cell)
+      upstream_water_level = acl(link) * s0(right_cell) + (1.0_dp - acl(link)) * s0(left_cell)
 
    end function get_upstream_water_level_regular_linear_interpolation
 
 !> get_upstream_water_level_usual_limiters
-   double precision function get_upstream_water_level_usual_limiters() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_usual_limiters() result(upstream_water_level)
+      use precision, only: dp
       use m_flowparameters, only: limtyphu
       use m_flow, only: s0
       use m_flowgeom, only: klnup, slnup
@@ -728,9 +758,9 @@ contains
       integer :: klnup1
       integer :: klnup2
       integer :: ip
-      double precision :: sku
-      double precision :: ds1
-      double precision :: ds2
+      real(kind=dp) :: sku
+      real(kind=dp) :: ds1
+      real(kind=dp) :: ds2
 
       if (velocity > 0) then
          ip = 0

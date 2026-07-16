@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -61,7 +61,7 @@
         Success = DH_AllocInit(NFil, NamFil,'')
         Success = Success .and. DH_AllocInit(NFil, InxFil,0)
         If (.not. success) then
-           Call ErrMsg (911, 1, '  Error allocating arrays in InitFiles', ' ', IOUT1)
+           call write_error_message_rtc (911, 1, '  Error allocating arrays in InitFiles', ' ', IOUT1)
            RetVal = 911
         Endif
 
@@ -85,7 +85,7 @@
       Logical                         :: FNMEXT
 
       Inquire (FILE = NAME, EXIST = FNMEXT)
-      If (.NOT. FNMEXT) Call ERRMSG (911, 0, '  Openfl', NAME, IOUT1)
+      If (.NOT. FNMEXT) call write_error_message_rtc (911, 0, '  Openfl', NAME, IOUT1)
       If (IOPT .EQ. 1) Then
 !        OPEN(IN, FILE=NAME, STATUS='OLD')
 !
@@ -201,8 +201,8 @@
 ! *** Output: MaxNumber (should be initialised before calling this routine!!)
 ! **********************************************************************
 
-      use NewTables
-      use ParseToken
+      use NewTables_rtc
+      use ParseToken_rtc
 
       Integer                         :: In, IOut1, Idebug, Iopt
       CHARACTER(len=FileCharIdLength) :: FileName
@@ -214,7 +214,7 @@
       Logical								  :: FnmExt, success
 
       Integer        i, ReadValue
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive
       Type (TokenArray) RecordData
@@ -265,8 +265,8 @@
 ! *** Output: MaxNumber (should be initialised before calling this routine!!)
 ! **********************************************************************
 
-      use NewTables
-      use ParseToken
+      use NewTables_rtc
+      use ParseToken_rtc
 
       Integer                         :: In, IOut1, Idebug, Iopt
       CHARACTER(len=FileCharIdLength) :: FileName
@@ -278,7 +278,7 @@
       Logical                         :: FnmExt, success
 
       Integer        i, ReadValue
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, jStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive
       Type (TokenArray) RecordData
@@ -336,8 +336,8 @@
 ! *** If CheckArray(i)=false: find maximum number after keywordArray()
 ! **********************************************************************
 
-      use NewTables
-      use ParseToken
+      use NewTables_rtc
+      use ParseToken_rtc
 
       Integer                         :: In, IOut1, Idebug, Iopt
       CHARACTER(len=FileCharIdLength) :: FileName
@@ -350,7 +350,7 @@
       Logical                         :: FnmExt, success
 
       Integer        i, ReadValue
-! Additional variables for ParseToken
+! Additional variables for ParseToken_rtc
       Integer           ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical           ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive
       Type (TokenArray) RecordData

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -326,7 +326,7 @@ contains
         ENDIF
 
         IF (TWOFRC) THEN
-            IF (IN1==0) THEN
+            IF (IN1/=0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'

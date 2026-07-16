@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,9 +30,20 @@
 !
 !
 
+module m_fm_mor_maxtimestep
+
+   implicit none
+
+   private
+
+   public :: fm_mor_maxtimestep
+
+contains
+
    subroutine fm_mor_maxtimestep()
+      use precision, only: dp
       use m_flowtimes, only: dts
-      use m_flow, only: eps10, jamapflowanalysis, kkcflmx, limitingTimestepEstimation
+      use m_flow, only: EPS10, map_write_settings, kkcflmx, limitingTimestepEstimation
       use m_flowgeom, only: acl, ba, csu, snu, wu
       use m_sediment, only: dzbdtmax, kcsmor
       use m_fm_erosed, only: sxtot, sytot, cdryb, morfac, lsedtot
@@ -43,39 +54,41 @@
       implicit none
 
       integer :: k, k1, k2, kk, L, ised, ac1, ac2
-      double precision :: dum, sx, sy, sL, dt, dtmaxmor, kkcflmxloc, mf
+      real(kind=dp) :: dum, sx, sy, sL, dt, dtmaxmor, kkcflmxloc, mf
 
-      dtmaxmor = huge(0d0)
+      dtmaxmor = huge(0.0_dp)
       kkcflmxloc = 0
-      mf = max(morfac, 1d0)
+      mf = max(morfac, 1.0_dp)
 
       do k = 1, ndx
          if (kcsmor(k) == 0) then
             cycle
          end if
          !
-         dum = 0.d0
+         dum = 0.0_dp
          do kk = 1, nd(k)%lnx
             L = abs(nd(k)%ln(kk))
             k1 = ln(1, L)
             k2 = ln(2, L)
             ac1 = acl(L)
-            ac2 = 1d0 - ac1
+            ac2 = 1.0_dp - ac1
             do ised = 1, lsedtot
                sx = (ac1 * sxtot(k1, ised) + ac2 * sxtot(k2, ised)) / cdryb(ised) * mf
                sy = (ac1 * sytot(k1, ised) + ac2 * sytot(k2, ised)) / cdryb(ised) * mf
                sL = csu(L) * sx + snu(L) * sy
                !
-               if (k2 == k) sL = -sL
+               if (k2 == k) then
+                  sL = -sL
+               end if
                !
-               if (sL >= 0d0) then ! outgoing transport fluxes only
+               if (sL >= 0.0_dp) then ! outgoing transport fluxes only
                   dum = dum + sL * wu(L)
                end if
             end do
          end do
          !
-         if (dum > tiny(0d0)) then
-            dt = dzbdtmax * ba(k) / max(dum, eps10) ! safety
+         if (dum > tiny(0.0_dp)) then
+            dt = dzbdtmax * ba(k) / max(dum, EPS10) ! safety
             if (dt < dtmaxmor) then
                dtmaxmor = dt
                kkcflmxloc = k
@@ -87,7 +100,7 @@
          dtmaxmor = dts
       else
          kkcflmx = kkcflmxloc ! overwrite cell number for numlimdt when new smallest timestep
-         if (jamapFlowAnalysis > 0) then
+         if (map_write_settings%flow_analysis > 0) then
             limitingTimestepEstimation(kkcflmx) = limitingTimestepEstimation(kkcflmx) + 1
          end if
       end if
@@ -95,3 +108,5 @@
       dts = dtmaxmor
 
    end subroutine fm_mor_maxtimestep
+
+end module m_fm_mor_maxtimestep

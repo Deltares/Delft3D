@@ -1,11 +1,14 @@
 /logs/**
 /data/**
+!/data/**/
+!/data/**/*.dvc
 
 # python virtual environment and caches
 .venv
 __pycache__
 .mypy_cache
 .pytest_cache
+.ruff_cache
 
 # pyenv version
 .python-version

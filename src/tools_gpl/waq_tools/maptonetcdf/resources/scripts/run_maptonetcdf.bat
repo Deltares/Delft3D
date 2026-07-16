@@ -19,15 +19,14 @@ if [%3] EQU [] (
 
 rem Set the directories containing the binaries and set PATH
 set bindir=%~dp0
-set libdir=%bindir%\..\lib
-set PATH=%libdir%;%bindir%;%PATH%
+set PATH=%bindir%;%PATH%
 
 rem set the map-file, hyd-file and number of layers
 set mapfile=%1
 set ncfile=%2
 set numLayers=%3
 echo     mapFile          : %mapfile%
-echo     ncFile           : %ncfile%
+echo     waqgeomFile      : %ncfile%
 echo     numLayers        : %numLayers%
 
 rem run
@@ -40,11 +39,11 @@ echo Purpose: Sets PATH and runs maptonetcdf on Windows.
 echo.
 echo Purpose: Sets PATH and runs maptonetcdf on Windows with all given command line arguments.
 echo.
-echo Usage: run_maptonetcdf ^<mapFile.map^> ^<ncFile.nc^> ^<numLayers^> [OPTIONS]
+echo Usage: run_maptonetcdf ^<mapFile.map^> ^<waqgeomFile.nc^> ^<numLayers^>
 echo.
 echo Command line arguments:
 echo ^<mapFile.map^>       maptonetcdf .map input file (mandatory).
-echo ^<ncFile.nc^>         maptonetcdf .nc output file (mandatory).
+echo ^<waqgeomFile.nc^>    name of the waqgeom file to be used (mandatory).
 echo ^<numLayers^>         number of layers (mandatory).
 echo -h, --help, --usage print this help message and exit
 :end

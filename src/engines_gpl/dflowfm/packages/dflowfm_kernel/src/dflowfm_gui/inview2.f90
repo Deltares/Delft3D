@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,28 +30,29 @@
 !
 !
 module m_inview2
-     implicit none
+   implicit none
 contains
-  logical function INVIEW2(X, Y, XX, YY)
-     use M_MISSING
-     use m_wearelt
-     use m_dproject
-     
-     double precision :: x, y, xx, yy
+   logical function INVIEW2(X, Y, XX, YY)
+      use precision, only: dp
+      use M_MISSING, only: xymis
+      use m_wearelt, only: x1, x2, y1, y2
+      use m_dproject, only: dproject
 
-     ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD
+      real(kind=dp) :: x, y, xx, yy
 
-     INVIEW2 = .false.
-     if (X /= XYMIS) then
-        call dPROJECT(X, Y, XX, YY, 1)
-        if (XX > X1 .and. XX < X2 .and. &
-            YY > Y1 .and. YY < Y2) then
-           INVIEW2 = .true.
-        end if
-     else
-        XX = XYMIS
-        YY = XYMIS
-     end if
-     return
-  end function INVIEW2
+      ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD
+
+      INVIEW2 = .false.
+      if (X /= XYMIS) then
+         call dPROJECT(X, Y, XX, YY, 1)
+         if (XX > X1 .and. XX < X2 .and. &
+             YY > Y1 .and. YY < Y2) then
+            INVIEW2 = .true.
+         end if
+      else
+         XX = XYMIS
+         YY = XYMIS
+      end if
+      return
+   end function INVIEW2
 end module m_inview2

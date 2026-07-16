@@ -11,22 +11,20 @@ module swn_outnc
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -88,8 +86,6 @@ module swn_outnc
     logical,save                :: read_header(MAX_OUTP_REQ) = .true.
     integer,save                :: nrefcp(MAX_OUTP_REQ) = -1
 
-!PUN    logical                     :: PUNSWAN = .true.
-    logical                     :: PUNSWAN = .false.
     type spcaux_type
         real, dimension(:), allocatable          :: hs, depth, ux, uy, wndx, wndy, &
                                                     xc, yc, xp, yp, f, theta
@@ -119,22 +115,20 @@ contains
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -146,7 +140,7 @@ contains
 !  2. Purpose
 !
 !     Write action density spectrum to netcdf file when serial OR
-!     binary file when PARLL or PUNSWAN
+!     binary file when PARLL
 !
 !  3. Method
 !
@@ -216,7 +210,7 @@ contains
 !
 ! 12. Structure.
 !
-!    a. compute spectra and auxilary data (writes binary file if parll or punswan)
+!    a. compute spectra and auxilary data (writes binary file if parallel)
 !    if serial
 !      b. open / create netcdf file
 !      c. write spectra to netcdf
@@ -234,7 +228,7 @@ contains
 !
 ! b. open / create netcdf file (generic output file)
 !
-      if ( .not. (PARLL .or. PUNSWAN) ) then
+      if ( .not.PARLL ) then
 
         ! opening / creating the netcdf file. Sets module variable recordaxe(irq)
         call swn_outnc_openspecfile(OUTP_FILES(irq), spcaux, OQI, OQR)
@@ -252,9 +246,8 @@ contains
     end subroutine swn_outnc_spec
 
     subroutine swn_outnc_colspc ( RTYPE, OQI, OQR, MIP, KGRPGL )
+      use SWCOMM2, only: optg
       use SwanGriddata, only: xcugrdgl, ycugrdgl, nverts
-!PUN      USE OCPCOMM2, ONLY: LENFNM, DIRCH2
-!PUN      USE SIZES, ONLY: GLOBALDIR, LOCALDIR
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -268,22 +261,20 @@ contains
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -350,7 +341,7 @@ contains
         spcaux%mip = MIP
         allocate(spcaux%hs(MIP), spcaux%depth(MIP), spcaux%ux(MIP), spcaux%uy(MIP), &
                  spcaux%wndx(MIP), spcaux%wndy(MIP), spcaux%xc(MIP), spcaux%yc(MIP))
-        if ( LCOMPGRD .and. PUNSWAN) then
+        if ( LCOMPGRD .and. optg == 5 ) then
             allocate(spcaux%xp(nverts), spcaux%yp(nverts))
         else
             allocate(spcaux%xp(MIP), spcaux%yp(MIP))
@@ -386,14 +377,10 @@ contains
         basefile = outp_files(irq)
         ilpos  = index(basefile, '-0')
         if (ilpos.ne.0) basefile = basefile(1:ilpos-1)
-!PUN        ilpos   = len(trim(LOCALDIR))+2
-!PUN        basefile = basefile(ilpos:LENFNM)
-!PUN        ilpos   = index(LOCALDIR, '0')-1
 
         do iproc = 1, NPROC
             binnr = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+iproc
 
-!PUN              write(binfile, '(A, I4.4, A, A)') LOCALDIR(1:ilpos), iproc - 1, DIRCH2, trim(basefile)
               write(binfile, '(A,"-",I3.3)') trim(basefile), iproc
             inquire(unit=binnr, opened=lopen)
 
@@ -423,7 +410,7 @@ contains
                   return
                 end if
                 read(binnr) spcaux%yp
-                if ( PUNSWAN .and. LCOMPGRD ) then
+                if ( LCOMPGRD .and. optg == 5 ) then
                     deallocate(spcaux%xp, spcaux%yp)
                     allocate(spcaux%xp(MIP), spcaux%yp(MIP))
                     spcaux%xp = xcugrdgl
@@ -468,9 +455,6 @@ contains
         ncfile = outp_files(irq)
         ilpos  = index(ncfile, '-0')
         if (ilpos.ne.0) ncfile = ncfile(1:ilpos-1)
-!PUN         ilpos   = len(trim(LOCALDIR))+2
-!PUN         ncfile = ncfile(ilpos:LENFNM)
-!PUN         ncfile = trim(GLOBALDIR)//DIRCH2//trim(ncfile)
         if ( ncoffset(irq) == 0 ) then
             call swn_outnc_openspecfile(ncfile, spcaux, OQI, OQR)
             if (STPNOW()) return
@@ -500,7 +484,6 @@ contains
                               lspcaux)
       USE OCPCOMM2
       USE TIMECOMM, only: TINIC, TFINC, TIMCO
-!PUN      USE SIZES, ONLY: MYPROC
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -514,22 +497,20 @@ contains
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -606,11 +587,6 @@ contains
 !
 ! 11. Remarks
 !
-!     - PUNSWAN support was added later on. In punswan, PARLL is always false but the
-!       IAMMASTER is set. For most output purposes, PARLL should be considered
-!       true. Hence a logical PUNSWAN is set at the top if this module. In the structure
-!       below PARLL means if PARLL .or. PUNSWAN.
-!
 ! 12. Structure.
 !    a. decide wether relative and 2D spectra are required
 !    b. collect depth, current, xc, yc, f, theta
@@ -625,7 +601,6 @@ contains
 ! 13. Source text
 !
       iproc = INODE
-!PUN      iproc = MYPROC
       if (LTRACE) call STRACE (IENT,'swn_outnc_spcaux')
       lspcaux%mip = MIP
       allocate(lspcaux%hs(MIP), lspcaux%depth(MIP), lspcaux%ux(MIP), lspcaux%uy(MIP), &
@@ -686,9 +661,9 @@ contains
         lspcaux%theta = SPCDIR(:,1)
       end if
 !
-! c if PARLL or PUNSWAN open unformatted binary if not already opened
+! c if PARLL open unformatted binary if not already opened
 !
-      if ( PARLL .or. PUNSWAN) then
+      if ( PARLL ) then
           if ( oqi(1) == 0 ) then
               call FOR(oqi(1), OUTP_FILES(irq), 'UU', ierr)
               if ( ierr > 0 ) then
@@ -722,7 +697,7 @@ contains
       lspcaux%E = 0
 
 ! e. write time and number of output points in this subgrid to unformatted binary file
-      if ( PARLL .or. PUNSWAN) then
+      if ( PARLL ) then
         tmip = 0
         ! if part of this subgrid and an active point
         do ip = 1, MIP
@@ -763,9 +738,8 @@ contains
 
 ! for each point, compute spectra and collect remaining auxilary
       do ip = 1, MIP
-        if ( (.not. PARLL .and. .not. PUNSWAN) .or. &
+        if ( .not.PARLL .or. &
              IONOD(ip).eq.INODE ) then
-!PUN             IONOD(ip).eq.MYPROC ) then
           ! if depth > 0 and not a dummy value
           if ( lspcaux%depth(ip) > epsilon(1.) .and. abs(lspcaux%depth(ip) - OVEXCV(4)) > epsilon(1.) ) then
             call SWCMSP (otype, lspcaux%xc(ip), lspcaux%yc(ip), AC2, lspcaux%E(:, ip), SPCSIG, &
@@ -780,7 +754,7 @@ contains
             lspcaux%wndy(ip) = VOQ(ip,VOQR(26)+1)
           end if
 
-          if ( PARLL .or. PUNSWAN ) then
+          if ( PARLL ) then
             ! write to binary
             write(OQI(1)) lspcaux%xp(ip), lspcaux%yp(ip), lspcaux%E(:, ip), lspcaux%depth(ip), &
                           lspcaux%ux(ip), lspcaux%uy(ip), lspcaux%hs(ip), lspcaux%wndx(ip), &
@@ -895,22 +869,20 @@ contains
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -973,7 +945,7 @@ contains
       if (LTRACE) call STRACE (IENT,'swn_outnc_appendspc')
       irq  = oqi(2)
       ncid = oqi(1) + ncoffset(irq)
-      
+
       call swn_outnc_spcflags(oqi(4), spc_as_map, wetnode_list, spcaux, noaux=noaux)
 
 !
@@ -1272,12 +1244,7 @@ contains
             end if
 !
 ! 6.a) add global attributes
-!
-            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'project', PROJID) )
-            call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'model',   VERTXT) )
-            if ( NSTATM > 0 ) then
-                call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'run', PROJNR) )
-            end if
+!      moved to subroutine create_ncfile
 
 !
 ! 6.b) create variables
@@ -1342,7 +1309,7 @@ contains
             noaux  = .true.
             iocode = iocode - 16
         end if
-        
+
         ! MDGRID is the special keyword to store spectra (including dry points) on the
         ! full geographic grid instead of along a pointlist
         ! On the other hand, when COMPGRID is requested on any grid but unstructured,
@@ -1359,7 +1326,7 @@ contains
 
         ! catch conflicting MDGRID + COMPRESS
         iocode       = mod(iocode, 4)
-        
+
         ! Enery scaling is of creating a new variable that stores a scale per timestep and point
         ! the energy itself is then stored as int16 instead of float
         if ( present( EScale) ) then
@@ -1488,12 +1455,13 @@ contains
     end subroutine record_index
 
     subroutine swn_outnc_openblockfile(ncfile, myk, mxk, ovlnam, &
-                                       oqi, oqr, ivtyp,irq, xgrdgl, ygrdgl)
-        character(len=80),      intent(   in) :: ncfile
-        integer,                intent(   in) :: myk, mxk, irq
+                                       oqi, oqr, ivtyp,irq, idlen, id, xgrdgl, ygrdgl)
+        character*80,           intent(   in) :: ncfile
+        integer,                intent(   in) :: myk, mxk, irq, idlen
         integer, dimension(:),  intent(   in) :: oqi, ivtyp
         real*8,  dimension(:),  intent(   in) :: oqr
-        character(len=40),      intent(   in) :: ovlnam(:)
+        character*40,           intent(   in) :: ovlnam(:)
+        character(len=80),      intent(   in) :: id(idlen)
         real,    optional,      intent(   in) :: xgrdgl(mxk, myk), &
                                                  ygrdgl(mxk, myk)
 
@@ -1505,6 +1473,7 @@ contains
         type(mapgrid_type)                    :: mapgrid
         type(pntgrid_type)                    :: pntgrid
         integer, save                         :: IENT=0
+        character*80                          :: locnam
 
         if (LTRACE) call STRACE (IENT,'swn_outnc_openblockfile')
 
@@ -1548,6 +1517,9 @@ contains
                 pntgrid%npoints = mxk
                 allocate (pntgrid%longitude(mxk))
                 allocate (pntgrid%latitude(mxk))
+                if (idlen>1) then
+                   allocate (pntgrid%id(mxk))
+                endif
                 if (present(xgrdgl) .and. present(ygrdgl)) then
                    pntgrid%latitude  = ygrdgl(:,1)
                    pntgrid%longitude = xgrdgl(:,1)
@@ -1555,12 +1527,23 @@ contains
                    pntgrid%latitude  = -999.0
                    pntgrid%longitude = -999.0
                 endif
+                if (idlen>1) then
+                   do i=1, mxk
+                      if (idlen>=i) then
+                         if (len_trim(id(i)) > 0) then
+                            write(locnam,'(a)') id(i)
+                         else
+                            write(locnam,'(a,i0.6)') "station", i
+                         endif
+                      endif
+                      pntgrid%id(i)(1:) = locnam
+                   end do
+                endif
+    
                 if ( KSPHER == 0 ) pntgrid%lunit = 'meter'
 
                 ! Definition mode
                 call create_ncfile(ncfile, ncid, recordaxe(irq), pntgrid=pntgrid, nautical=BNAUT)
-                call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'project', PROJID) )
-                call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'run', PROJNR) )
                 call create_variables(ncid, ivtyp, ovlnam, .false.)
 
                 ! write mode, e.g, fill dimension variables. Note that record dimension
@@ -1622,8 +1605,6 @@ contains
                 if ( KSPHER == 0 ) mapgrid%lunit = 'meter'
 
                 call create_ncfile(ncfile, ncid, recordaxe(irq), mapgrid=mapgrid, nautical=BNAUT)
-                call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'project', PROJID) )
-                call nccheck ( nf90_put_att( ncid, NF90_GLOBAL, 'run', PROJNR) )
                 call create_variables(ncid, ivtyp, ovlnam, .true.)
 
                 ! write mode, e.g, fill dimension variables. Note that record dimension
@@ -1708,10 +1689,12 @@ contains
     end subroutine create_variables
 
     subroutine stnames_init()
+        ! The first index is dictated by array OVKEYW, defined in swanmain::SWINIT
         STNAMES(  4, 1) = 'depth'
         STNAMES(  5, 1) = 'xcur'
         STNAMES(  5, 2) = 'ycur'
         STNAMES(  6, 1) = 'ubot'
+        STNAMES(  7, 1) = 'dissip'
         STNAMES( 10, 1) = 'hs'
         STNAMES( 11, 1) = 'tm01'
         STNAMES( 12, 1) = 'tp'
@@ -1719,6 +1702,10 @@ contains
         STNAMES( 14, 1) = 'thetap'
         STNAMES( 16, 1) = 'spread'
         STNAMES( 17, 1) = 'L'
+        STNAMES( 19, 1) = 'transpx'
+        STNAMES( 19, 2) = 'transpy'
+        STNAMES( 20, 1) = 'fx'
+        STNAMES( 20, 2) = 'fy'
         STNAMES( 26, 1) = 'xwnd'
         STNAMES( 26, 2) = 'ywnd'
         STNAMES( 28, 1) = 'rtm01'
@@ -1734,6 +1721,12 @@ contains
         STNAMES( 51, 1) = 'ssh'
         STNAMES( 52, 1) = 'botl'
         STNAMES( 53, 1) = 'tps'
+        STNAMES( 54, 1) = 'disbot'
+        STNAMES( 55, 1) = 'dissurf'
+        STNAMES( 56, 1) = 'diswcap'
+        STNAMES( 57, 1) = 'disveg'
+        STNAMES( 84, 1) = 'absHswell'
+        STNAMES( 85, 1) = 'fdir'
         STNAMES(100, 1) = 'phs0'
         STNAMES(101, 1) = 'phs1'
         STNAMES(102, 1) = 'phs2'
@@ -1752,6 +1745,12 @@ contains
         STNAMES(133, 1) = 'pdir3'
         STNAMES(134, 1) = 'pdir4'
         STNAMES(135, 1) = 'pdir5'
+        STNAMES(140, 1) = 'pspr0'
+        STNAMES(141, 1) = 'pspr1'
+        STNAMES(142, 1) = 'pspr2'
+        STNAMES(143, 1) = 'pspr3'
+        STNAMES(144, 1) = 'pspr4'
+        STNAMES(145, 1) = 'pspr5'
         stnames_initialized = .true.
 
     end subroutine stnames_init

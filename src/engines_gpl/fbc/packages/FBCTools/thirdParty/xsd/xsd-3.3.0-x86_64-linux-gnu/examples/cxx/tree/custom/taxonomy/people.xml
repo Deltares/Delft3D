@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/taxonomy/people.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<ppl:catalog xmlns:ppl="http://www.codesynthesis.com/people"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.codesynthesis.com/people people.xsd">
+
+  <person>
+    <name>Joe Dirt</name>
+  </person>
+
+  <person xsi:type="ppl:superman" can-fly="false">
+    <name>James "007" Bond</name>
+  </person>
+
+  <person xsi:type="ppl:batman" can-fly="true" wing-span="10">
+    <name>Bruce Wayne</name>
+  </person>
+
+</ppl:catalog>

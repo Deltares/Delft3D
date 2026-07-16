@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,17 +31,27 @@
 !
 
 !> allocate sample Hessian data
-subroutine allocate_sampleHessian()
-   use m_samples
-   use m_samples_refine
+module m_allocate_samplehessian
+   use m_deallocate_samplehessian, only: deallocate_samplehessian
 
    implicit none
 
-   call deallocate_sampleHessian()
+   private
 
-   allocate (zss(NDIM, MXSAM, MYSAM))
+   public :: allocate_samplehessian
 
-   iHesstat = iHesstat_DIRTY
+contains
 
-   return
-end subroutine allocate_sampleHessian
+   subroutine allocate_sampleHessian()
+      use m_samples, only: mxsam, mysam
+      use m_samples_refine, only: zss, ndim, ihesstat, ihesstat_dirty
+
+      call deallocate_sampleHessian()
+
+      allocate (zss(NDIM, MXSAM, MYSAM))
+
+      iHesstat = iHesstat_DIRTY
+
+   end subroutine allocate_sampleHessian
+
+end module m_allocate_samplehessian

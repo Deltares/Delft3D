@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,6 +45,7 @@ contains
 !! This is necessary for obtaining the right `hu` for
 !! analytical cases.
    subroutine extrapolate_bedlevel_at_boundaries()
+      use precision, only: dp
 
       use m_flowgeom, only: bl, dxi, csu, snu
 
@@ -53,7 +54,7 @@ contains
       implicit none
 
       integer :: L, k1, k2, kb
-      double precision, allocatable :: dzdx(:), dzdy(:)
+      real(kind=dp), allocatable :: dzdx(:), dzdy(:)
 
       call bed_slope_at_z(dzdx, dzdy)
 
@@ -106,13 +107,18 @@ contains
       end do
 
 !deallocate
-      if (allocated(dzdx)) deallocate (dzdx)
-      if (allocated(dzdy)) deallocate (dzdy)
+      if (allocated(dzdx)) then
+         deallocate (dzdx)
+      end if
+      if (allocated(dzdy)) then
+         deallocate (dzdy)
+      end if
 
    end subroutine extrapolate_bedlevel_at_boundaries
 
 !> Compute the bed slope at cell centres.
    subroutine bed_slope_at_z(dzdx, dzdy)
+      use precision, only: dp
 
       use m_flowgeom, only: ln, bl, dxi, ndx, lnxi, csu, snu
 
@@ -121,14 +127,16 @@ contains
       integer :: istat
       integer :: L, k1, k2
 
-      double precision, allocatable, intent(out) :: dzdx(:), dzdy(:)
+      real(kind=dp), allocatable, intent(out) :: dzdx(:), dzdy(:)
 
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
 
-      dzdx = 0d0; dzdy = 0d0
+      dzdx = 0.0_dp
+      dzdy = 0.0_dp
 !only internal links because the bed level at the ghost is wrong (mirrored)
       do L = 1, lnxi
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          dzdx(k1) = dzdx(k1) - csu(L) * (bl(k2) - bl(k1)) * dxi(L)
          dzdy(k1) = dzdy(k1) - snu(L) * (bl(k2) - bl(k1)) * dxi(L)
          dzdx(k2) = dzdx(k2) - csu(L) * (bl(k2) - bl(k1)) * dxi(L)

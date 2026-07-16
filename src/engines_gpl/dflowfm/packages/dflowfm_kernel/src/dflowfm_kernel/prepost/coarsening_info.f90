@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,62 +31,77 @@
 !
 
 !> netcell-based cell-coarsening information
-double precision function coarsening_info(k)
-
-   use m_netw
-   use m_missing
-   use m_sferic, only: dtol_pole
-   use gridoperations
+module m_coarsening_info
 
    implicit none
 
-   integer :: k !< netcell number
+   private
 
-   integer, parameter :: NMAX = 100 !< maximum of directly or indirectly connected netcells
+   public :: coarsening_info
 
-   integer :: ndirect, nindirect
-   integer, dimension(NMAX) :: kdirect, kindirect
-   integer, dimension(2, nmax) :: kne
+contains
 
-   double precision :: xc, yc
-   double precision :: area, area_tot, Darea
-   double precision :: funct
+   real(kind=dp) function coarsening_info(k)
+      use precision, only: dp
+      use m_find_surrounding_cells, only: find_surrounding_cells
+      use m_netw
+      use m_missing
+      use m_sferic, only: dtol_pole
+      use gridoperations
 
-   double precision :: area_opt = 1d5
+      integer :: k !< netcell number
 
-   integer :: kk
+      integer, parameter :: NMAX = 100 !< maximum of directly or indirectly connected netcells
 
-   coarsening_info = DMISS
+      integer :: ndirect, nindirect
+      integer, dimension(NMAX) :: kdirect, kindirect
+      integer, dimension(2, nmax) :: kne
 
-   call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
+      real(kind=dp) :: xc, yc
+      real(kind=dp) :: area, area_tot, Darea
+      real(kind=dp) :: funct
 
-   if (ndirect < 1 .or. nindirect < 1) return
+      real(kind=dp) :: area_opt = 1.0e5_dp
 
-   area_tot = 0d0
-   funct = 0d0
+      integer :: kk
 
-   call getcellsurface(k, area, xc, yc)
-   area_tot = area_tot + area
-   funct = funct - (area - area_opt)**2
-   do kk = 1, ndirect
-      call getcellsurface(kdirect(kk), area, xc, yc)
+      coarsening_info = DMISS
+
+      call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
+
+      if (ndirect < 1 .or. nindirect < 1) then
+         return
+      end if
+
+      area_tot = 0.0_dp
+      funct = 0.0_dp
+
+      call getcellsurface(k, area, xc, yc)
       area_tot = area_tot + area
       funct = funct - (area - area_opt)**2
-   end do
+      do kk = 1, ndirect
+         call getcellsurface(kdirect(kk), area, xc, yc)
+         area_tot = area_tot + area
+         funct = funct - (area - area_opt)**2
+      end do
 
 !  compute the area increase of the indirectly connected cells
-   Darea = area_tot / dble(nindirect)
+      Darea = area_tot / real(nindirect, kind=dp)
 
 !  compute the change in the functional
-   do kk = 1, nindirect
-      call getcellsurface(kindirect(kk), area, xc, yc)
-      funct = funct - (area - area_opt)**2
-      area = area + Darea
-      funct = funct + (area - area_opt)**2
-   end do
+      do kk = 1, nindirect
+         call getcellsurface(kindirect(kk), area, xc, yc)
+         funct = funct - (area - area_opt)**2
+         area = area + Darea
+         funct = funct + (area - area_opt)**2
+      end do
 
-   coarsening_info = -funct
-   if (coarsening_info <= 0d0) coarsening_info = DMISS
+      coarsening_info = -funct
+      if (coarsening_info <= 0.0_dp) then
+         coarsening_info = DMISS
+      end if
 
-   return
-end function
+      return
+   end function
+
+end module m_coarsening_info

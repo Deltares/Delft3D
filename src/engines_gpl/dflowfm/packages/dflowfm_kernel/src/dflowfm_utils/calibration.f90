@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,13 +38,13 @@
 !!    - a time-dependent updating routine
 
 module m_calibration
+   use precision, only: dp
    implicit none
 
    public cldtype
    public clddata
    public read_cldfile
    public read_cllfile
-   public clr_clddata
    public update_clddata
    public calibration_backup_frcu
 
@@ -73,26 +73,26 @@ module m_calibration
 
    type cldtype
       ! definitions
-      double precision, dimension(:), allocatable :: cldtable_q !> Calibration defintion q values
-      double precision, dimension(:), allocatable :: cldtable_zs !> Calibration defintion zs values
-      double precision, dimension(:), allocatable :: rttdef !> Calibration defintion real values (non-h, non-q, and non-interpolated h and q)
+      real(kind=dp), dimension(:), allocatable :: cldtable_q !> Calibration defintion q values
+      real(kind=dp), dimension(:), allocatable :: cldtable_zs !> Calibration defintion zs values
+      real(kind=dp), dimension(:), allocatable :: rttdef !> Calibration defintion real values (non-h, non-q, and non-interpolated h and q)
       integer, dimension(:), allocatable :: ittdef !> Calibration defintion integer values (i.e. calibration definition codes)
       integer, dimension(:), allocatable :: def2icld !> Calibration defintion number to index in calibration defintion table
 
       integer, dimension(:), allocatable :: ittdef_q !> Calibration defintion integer values associated with q values (i.e. calibration definition codes)
       integer, dimension(:), allocatable :: start_q !> Start row indices for q table
       integer, dimension(:), allocatable :: end_q !> End row indices for q table
-      double precision, dimension(:), allocatable :: rttdef_q !> Calibration defintion real values associated with q values
-      double precision, dimension(:), allocatable :: slope_q !> Slope for table associated with q values
-      double precision, dimension(:), allocatable :: cross_q !> Slope for table associated with q values
+      real(kind=dp), dimension(:), allocatable :: rttdef_q !> Calibration defintion real values associated with q values
+      real(kind=dp), dimension(:), allocatable :: slope_q !> Slope for table associated with q values
+      real(kind=dp), dimension(:), allocatable :: cross_q !> Slope for table associated with q values
       integer, dimension(:), allocatable :: icld_q !> Get icld index for general definition table
 
       integer, dimension(:), allocatable :: ittdef_zs !> Calibration defintion integer values associated with zs values (i.e. calibration definition codes)
       integer, dimension(:), allocatable :: start_zs !> Start row indices for zs table
       integer, dimension(:), allocatable :: end_zs !> End row indices for zs table
-      double precision, dimension(:), allocatable :: rttdef_zs !> Calibration defintion real values associated with zs values
-      double precision, dimension(:), allocatable :: slope_zs !> Slope for table associated with zs values
-      double precision, dimension(:), allocatable :: cross_zs !> Slope for table associated with zs values
+      real(kind=dp), dimension(:), allocatable :: rttdef_zs !> Calibration defintion real values associated with zs values
+      real(kind=dp), dimension(:), allocatable :: slope_zs !> Slope for table associated with zs values
+      real(kind=dp), dimension(:), allocatable :: cross_zs !> Slope for table associated with zs values
       integer, dimension(:), allocatable :: icld_zs !> Get icld index for general definition table
 
       integer, dimension(:), allocatable :: crs !> Calibration defintion related cross-section id
@@ -100,10 +100,10 @@ module m_calibration
 
       ! areas
       integer, dimension(:, :), allocatable :: ittar !> Calibration area integer values (i.e. link, calibration definition codes)
-      double precision, dimension(:), allocatable :: rttar !> Calibration area real values (i.e. area percentage)
+      real(kind=dp), dimension(:), allocatable :: rttar !> Calibration area real values (i.e. area percentage)
 
       ! error catching
-      double precision, dimension(:), allocatable :: sumar !> Sum of calibration areas (should be <= 1)  TO DO: check if we want this way, or more like trachytope approach with blocks?.
+      real(kind=dp), dimension(:), allocatable :: sumar !> Sum of calibration areas (should be <= 1)  TO DO: check if we want this way, or more like trachytope approach with blocks?.
       integer, dimension(:), allocatable :: linar !> Line number in file for error message
 
    end type cldtype
@@ -113,12 +113,13 @@ module m_calibration
 contains
 
    subroutine read_cldfile(md_cldfile, clddata, phase)
-      use unstruc_messages
+      use precision, only: dp
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: dmiss, intmiss
       use unstruc_files, only: mdia
       use system_utils, only: exifil
       use m_monitoring_crosssections, only: crs, ncrs
-      use m_observations, only: namobs, numobs
+      use m_observations_data, only: namobs, numobs
 
       character(len=*), intent(in) :: md_cldfile
       integer, intent(in) :: phase
@@ -153,7 +154,7 @@ contains
       character(len=132) :: rec132
       logical :: error
 !    logical                          :: cld_in_arl = .true.
-      double precision, dimension(CLD_MAXFLD) :: rfield
+      real(kind=dp), dimension(CLD_MAXFLD) :: rfield
 
 !
 !! executable statements -------------------------------------------------------
@@ -173,27 +174,69 @@ contains
       i_q = 0
       i_zs = 0
       if (phase == FILL_DATA) then
-         if (istat == 0) allocate (clddata%ittdef(ncld), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef(ncld), stat=istat)
-         if (istat == 0) allocate (clddata%def2icld(CLD_MAXDEF), stat=istat)
-         if (istat == 0) allocate (clddata%crs(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%obs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%cldtable_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%cldtable_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%start_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%end_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%slope_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%cross_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%ittdef_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%icld_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%slope_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%cross_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%start_q(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%end_q(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%ittdef_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%icld_q(ncldcrs), stat=istat)
+         if (istat == 0) then
+            allocate (clddata%ittdef(ncld), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef(ncld), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%def2icld(CLD_MAXDEF), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%crs(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%obs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cldtable_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cldtable_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%start_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%end_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%slope_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cross_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%ittdef_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%icld_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%slope_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cross_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%start_q(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%end_q(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%ittdef_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%icld_q(ncldcrs), stat=istat)
+         end if
          if (istat /= 0) then
             errmsg = 'read_cldfile: memory alloc error'
             call mess(LEVEL_ERROR, errmsg)
@@ -260,7 +303,9 @@ contains
          !
          ! End-of-file ?
          !
-         if (iocond < 0) goto 199
+         if (iocond < 0) then
+            goto 199
+         end if
          !
          ! Reading error
          !
@@ -279,7 +324,7 @@ contains
             call mess(LEVEL_INFO, '    Number of other definitions               = ', ncldnrm)
             call mess(LEVEL_INFO, '    ____________________________________________________________')
             call mess(LEVEL_INFO, '    Total number of definitions               = ', ncld)
-            call mess(LEVEL_INFO, '*** Succesfully read calibration definition input ')
+            call mess(LEVEL_INFO, '*** Successfully read calibration definition input ')
          end if
 
          close (luntmp)
@@ -291,7 +336,9 @@ contains
       !
       ! Comment line
       !
-      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) goto 110
+      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
+         goto 110
+      end if
       ibeg = 1
       iend = 132
       ! Comment at end of line
@@ -467,12 +514,11 @@ contains
    end subroutine read_cldfile
 
    subroutine read_cllfile(md_cllfile, clddata, phase)
-      use unstruc_messages
+      use precision, only: dp
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: intmiss
       use unstruc_files, only: mdia
       use system_utils, only: exifil
-      use m_monitoring_crosssections, only: crs
-      use m_observations, only: namobs
       use network_data, only: lnn, numl
       use kdtree2Factory
       use m_sferic, only: jsferic
@@ -512,15 +558,15 @@ contains
 !    logical                          :: lfirst
       logical :: lokay
 !    logical                          :: lprblk
-      double precision, dimension(CLL_MAXFLD) :: rfield
+      real(kind=dp), dimension(CLL_MAXFLD) :: rfield
       character(30), dimension(CLL_MAXFLD) :: cfield
       character(132) :: rec132
       character(10) :: ltmp
 
-      double precision :: dtol_cl = 1d-4
-      double precision :: x
-      double precision :: y
-      double precision :: dist
+      real(kind=dp) :: dtol_cl = 1.0e-4_dp
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: dist
 
       istat = 0
       lundia = mdia
@@ -532,11 +578,19 @@ contains
          call mess(LEVEL_INFO, '*** Start of calibration area definition input: '//trim(md_cllfile))
       end if
       if (phase == FILL_DATA) then
-         if (istat == 0) allocate (clddata%ittar(ncll, 2), stat=istat) ! net link number, definition number
-         if (istat == 0) allocate (clddata%rttar(ncll), stat=istat) ! area fraction
-         if (istat == 0) allocate (clddata%sumar(numl), stat=istat)
-         if (istat == 0) allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
-         clddata%sumar = 0.d0
+         if (istat == 0) then
+            allocate (clddata%ittar(ncll, 2), stat=istat) ! net link number, definition number
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttar(ncll), stat=istat) ! area fraction
+         end if
+         if (istat == 0) then
+            allocate (clddata%sumar(numl), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
+         end if
+         clddata%sumar = 0.0_dp
          clddata%linar = intmiss
       end if
 !
@@ -598,7 +652,7 @@ contains
                if (icll > icll_found) then
                   call mess(LEVEL_INFO, '    of which not connected     = ', icll - icll_found)
                end if
-               call mess(LEVEL_INFO, '*** Succesfully read calibration area definition input')
+               call mess(LEVEL_INFO, '*** Successfully read calibration area definition input')
             end if
 
             goto 9999
@@ -620,7 +674,9 @@ contains
       !
       ! Comment line
       !
-      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) goto 210
+      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
+         goto 210
+      end if
       !
       ! Scan the record
       !
@@ -632,7 +688,9 @@ contains
       !
       ! When no sub-fields are found, record appears to be empty
       !
-      if (nrflds == 0) goto 210
+      if (nrflds == 0) then
+         goto 210
+      end if
       !
       ! Check the contents
       !
@@ -703,7 +761,7 @@ contains
             clddata%rttar(icll) = rfield(5)
             clddata%linar(icll) = mcurec
             clddata%sumar(L) = clddata%sumar(L) + clddata%rttar(icll)
-            if (clddata%sumar(L) > 1d0) then
+            if (clddata%sumar(L) > 1.0_dp) then
                ! check that sum of areas per link <= 1
                errmsg = 'Areal sum larger than 1 in file: '//trim(filnam)
                errmsg = trim(errmsg)//'. See line numbers: '
@@ -747,14 +805,14 @@ contains
    end subroutine read_cllfile
 
    subroutine update_clddata()
-      use unstruc_messages
+      use precision, only: dp
       use m_monitoring_crosssections
-      use m_observations, only: valobs, IPNT_S1
+      use m_observations_data, only: valobs, IPNT_S1
 
       !integer, intent(in) :: update_mode
-      double precision :: zs
-      double precision :: q
-      double precision :: f
+      real(kind=dp) :: zs
+      real(kind=dp) :: q
+      real(kind=dp) :: f
 
       integer :: icldobs
       integer :: icldcrs
@@ -790,7 +848,7 @@ contains
       integer :: L
       integer :: icld
 
-      cfclval = 0.d0
+      cfclval = 0.0_dp
       do icll = 1, ncll
          L = clddata%ittar(icll, 1)
          if (L /= CL_NOT_IN_SUBDOMAIN) then
@@ -801,7 +859,7 @@ contains
 
       ! add background calibration factor == 1 for parts missing areal definition
       do L = 1, numl
-         cfclval(L) = cfclval(L) + (1.d0 - clddata%sumar(L)) !*1.d0
+         cfclval(L) = cfclval(L) + (1.0_dp - clddata%sumar(L)) !*1.d0
       end do
 
    end subroutine update_clldata
@@ -809,18 +867,19 @@ contains
    subroutine f_from_table_of_x(xvals, fvals, idx_start, idx_end, fslope, fcross, x, f)
 ! Calibration helper function -- Determines f value from a f table which is a function of x based on a query value x
 ! TO DO: general function available? combine with trachy?
+      use precision, only: dp
 
       implicit none
 
-      double precision, dimension(:), intent(in) :: xvals
-      double precision, dimension(:), intent(in) :: fvals
+      real(kind=dp), dimension(:), intent(in) :: xvals
+      real(kind=dp), dimension(:), intent(in) :: fvals
       integer, intent(in) :: idx_start
       integer, intent(in) :: idx_end
-      double precision, dimension(:), intent(in) :: fcross
-      double precision, dimension(:), intent(in) :: fslope
-      double precision, intent(in) :: x
+      real(kind=dp), dimension(:), intent(in) :: fcross
+      real(kind=dp), dimension(:), intent(in) :: fslope
+      real(kind=dp), intent(in) :: x
 
-      double precision, intent(out) :: f
+      real(kind=dp), intent(out) :: f
 
       integer :: idx
 
@@ -856,22 +915,5 @@ contains
       frcu_bkp = frcu
 
    end subroutine calibration_backup_frcu
-
-   subroutine clr_clddata(clddata)
-      use unstruc_messages
-
-      type(cldtype), intent(inout) :: clddata
-      integer :: istat
-
-      if (allocated(clddata%cldtable_q)) deallocate (clddata%cldtable_q, STAT=istat)
-      if (allocated(clddata%cldtable_zs)) deallocate (clddata%cldtable_zs, STAT=istat)
-      ! TO DO: add others -> and where to connect deallocate in FM ?
-
-      if (istat /= 0) then
-         errmsg = 'clr_clddata: memory deallocation error'
-         call mess(LEVEL_ERROR, errmsg)
-      end if
-
-   end subroutine clr_clddata
 
 end module

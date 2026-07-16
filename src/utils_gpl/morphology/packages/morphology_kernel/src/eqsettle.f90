@@ -3,7 +3,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
                   & parloc, npar, wsloc, error)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -246,7 +246,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        !
        ! Settling velocity for macro flocs according Chassagne and Safar
        !
-       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
+       cclay  = real(dll_reals(WS_RP_CFRCB),fp) * 1000.0_fp ! convert kg/m3 to g/m3
        ag     = real(dll_reals(WS_RP_GRAV ),fp)
        tshear = real(dll_reals(WS_RP_SHTUR),fp)
        tdiss  = real(dll_reals(WS_RP_EPTUR),fp)

@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -270,6 +270,7 @@ module Unpaved
   Double precision   , pointer, save :: IrrigationMaxSupply(:)
   Double precision   , pointer, save :: IrrigationInitSupply(:)
   Double precision   , pointer, save :: IrrigationInitDuration(:)
+  Double precision   , pointer, save :: IrrigationWaitDuration(:)
   Double precision   , pointer, save :: IrrigationCriticalSMValue(:)
   Double precision   , pointer, save :: IrrigationCriticalGWValue(:)
   Double precision   , pointer, save :: IrrigationTargetSMValue(:)
@@ -279,6 +280,7 @@ module Unpaved
   Double precision   , pointer, save :: IrrigationDemand(:)
   Double precision   , pointer, save :: IrrigationSupply(:)
   Double precision   , pointer, save :: TimeSinceStartFirstIrrigation(:)
+  Double precision   , pointer, save :: TimeSinceEndPreviousIrrigation(:)
   Double precision   , pointer, save :: IrrigationSaltConcentration(:)
 
   Logical IrrigationSeason, IrrigationDailyPeriod
@@ -537,6 +539,7 @@ contains
     success = success .and. DH_allocinit (NOVH, IrrigationMaxSupply , 4.1D0)
     success = success .and. DH_allocinit (NOVH, IrrigationInitSupply, 2.6D0)
     success = success .and. DH_allocinit (NOVH, IrrigationInitDuration, 1.0D0)
+    success = success .and. DH_allocinit (NOVH, IrrigationWaitDuration, 0.0D0)
     success = success .and. DH_allocinit (NOVH, IrrigationCriticalSMValue, -999.99D0)
     success = success .and. DH_allocinit (NOVH, IrrigationCriticalGWValue, -999.99D0)
     success = success .and. DH_allocinit (NOVH, IrrigationTargetSMValue, -999.99D0)
@@ -546,6 +549,7 @@ contains
     success = success .and. DH_allocinit (NOVH, IrrigationSupply, 0.0D0)
     success = success .and. DH_allocinit (NOVH, IrrigationDemand, 0.0D0)
     success = success .and. DH_allocinit (NOVH, TimeSinceStartFirstIrrigation, 0.0D0)
+    success = success .and. DH_allocinit (NOVH, TimeSinceEndPreviousIrrigation, 999.0D0)
     success = success .and. DH_allocinit (NOVH, IrrigationSaltConcentration, 0.0D0)
 ! to be corrected / adjusted to proper defaults (for testing now some other values) !!!
 
@@ -741,6 +745,10 @@ contains
     Double precision          ScurvePercentage(999), SCurveLevel(999), bmaxoldum, binioldum
     real                      c1dum
     Character(Len=CharIdLength), pointer :: STODEF(:), ALFDEF(:), ERNSTDef(:),SEPDEF(:), INFDEF(:), INIDEF(:), SCUDEF(:), H0Def(:), SaltConcDef(:)
+
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, LenString, ipos
     Character(len=1)   Klteken
 
     Logical, pointer :: AlreadyRead(:)
@@ -829,8 +837,15 @@ contains
 ! einde reset
 
 
-
-
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(15)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !unpaved.3b_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.3b for RR-unpaved input to file', FileName)
+   endif
 ! *********************************************************************
 ! Read unpaved.3B file
 ! *********************************************************************
@@ -855,6 +870,9 @@ contains
        if (alreadyRead(iunp)) then
         call SetMessage(LEVEL_ERROR, 'Data for unpaved node '//cdum(1)(1:Len_trim(Cdum(1)))//' double in datafile Unpaved.3B')
        else
+! cleaning RR files
+        If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
         AlreadyRead(iunp) = .true.
         teller = teller + 1
         UNPNAM(iunp) = inod
@@ -1081,7 +1099,8 @@ contains
                       CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
         IF (FOUND) then
             IrrigationpFTarget(iUnp) = RDum(1)
-            If (Rdum(1) .lt. 0 .or. rDum(1) .gt. 4.2 .or. IrrigationpFTarget(iunp) .lt. IrrigationpFCrit(iunp) )  then
+            ! corrected test pfTarget should be <= pFCrit
+            If (Rdum(1) .lt. 0 .or. rDum(1) .gt. 4.2 .or. IrrigationpFTarget(iunp) .gt. IrrigationpFCrit(iunp) )  then
                call ErrMsgStandard(977, 0, ' Specified irrigation pF target input not correct; default will be used; node-id=', Id_Nod(Inod))
                IrrigationpFTarget(iUnp) = min (IrrigationpFCrit(iunp), 2.4d0)
             Endif
@@ -1117,6 +1136,17 @@ contains
             If (Rdum(1) .lt. 1)  then
                call ErrMsgStandard(977, 0, ' Specified irrigation initial duration (days) in input not correct; default will be used; node-id=', Id_Nod(Inod))
                IrrigationInitDuration(iUnp) = 5
+            Endif
+        Endif
+! irrigation wait duration  (min. nr. days after previous irrigation to start irrigating again)
+        allow = .true. ! alle irrigatie input mag ontbreken
+        Retval = Retval + GetVAR2 (STRING,' wait ',2,' UNPV-ReadAscii',' Unpaved.3B file',IOUT1, &
+                      CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
+        IF (FOUND) then
+            IrrigationWaitDuration(iUnp) = RDum(1)
+            If (Rdum(1) .lt. 0)  then
+               call ErrMsgStandard(977, 0, ' Specified irrigation initial duration (days) in input not correct; default will be used; node-id=', Id_Nod(Inod))
+               IrrigationWaitDuration(iUnp) = 0
             Endif
         Endif
 ! irrigation salt concentration
@@ -1157,7 +1187,18 @@ contains
                            ' Some unpaved nodes in netwerk schematisation are not present in Unpaved.3b file')
   Endif
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for unpaved.sto
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(16)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !unpaved.sto_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.sto for RR-unpaved input to file', FileName)
+   endif
 ! *********************************************************************
 ! Read Unpaved.Sto file
 ! *********************************************************************
@@ -1183,6 +1224,10 @@ contains
       if (IUnp .gt. 0) then
          if (ReferenceToDefinition(iunp) .gt. 0) then
            call SetMessage(LEVEL_ERROR, 'Storage Definition '//name(1:Len_trim(Name))//' double in datafile Unpaved.Sto')
+           Occurs = .false. ! om verdere verwerking te stoppen
+         else
+!          cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
          endif
       endif
 
@@ -1220,7 +1265,18 @@ contains
    If (Err969) call ErrMsgStandard (972, 0, ' Not enough Unpaved data found', &
                               ' Some storage Definitions not present in Unpaved.Sto file')
 
+! cleaning RR files
+   If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for unpaved.alf
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(21)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !unpaved.alf_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.alf for RR-unpaved input to file', FileName)
+   endif
 ! *********************************************************************
 ! ** Read Unpaved.Alf file
 ! **
@@ -1248,6 +1304,10 @@ contains
     if (IUnp .gt. 0) then
        if (ReferenceToDefinition(iunp) .gt. 0) then
           call SetMessage(LEVEL_ERROR, 'Alfa Definition '//name(1:Len_trim(Name))//' double in datafile Unpaved.Alf')
+          Occurs = .false. ! om verdere verwerking te stoppen
+       else
+           ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A1000)') String
        endif
     endif
 ! Verwerk Alfa definition
@@ -1325,6 +1385,10 @@ contains
       If (IUnp .gt. 0) then
          if (ReferenceToDefinition(iunp) .gt. 0) then
             call SetMessage(LEVEL_ERROR, 'Ernst Definition '//name(1:Len_trim(Name))//' double in datafile Unpaved.Alf')
+            Occurs = .false. ! om verdere verwerking te stoppen
+         else
+            ! cleaning RR files
+            If (CleanRRFiles) write(Iounit,'(A1000)') String
          endif
       endif
 ! Verwerk Ernst definition
@@ -1382,7 +1446,18 @@ contains
      If (Err969) call ErrMsgStandard (972, 0, ' Not enough unpaved data found', &
                                 ' Some ERNST Definitions not present in Unpaved.Alf file')
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for unpaved.inf
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(31)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !unpaved.inf_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.inf for RR-unpaved input to file', FileName)
+   endif
 ! *********************************************************************
 ! Read Unpaved.Inf file
 ! *********************************************************************
@@ -1407,7 +1482,11 @@ contains
       Occurs = (Iunp .gt. 0)
       if (IUnp .gt. 0) then
          if (ReferenceToDefinition(iunp) .gt. 0) then
-           call SetMessage(LEVEL_ERROR, 'Infiltration Definition '//name(1:Len_trim(Name))//' double in datafile Unpaved.Inf')
+            call SetMessage(LEVEL_ERROR, 'Infiltration Definition '//name(1:Len_trim(Name))//' double in datafile Unpaved.Inf')
+            Occurs = .false. ! om verdere verwerking te stoppen
+         else
+            ! cleaning RR files
+            If (CleanRRFiles) write(Iounit,'(A1000)') String
          endif
       endif
 !     Verwerken infiltratie definitie
@@ -1440,6 +1519,18 @@ contains
    If (Err969) call ErrMsgStandard (972, 0, ' Not enough unpaved data found', &
                               ' Some infiltration Definitions not present in Unpaved.Inf file')
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for unpaved.sep
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(33)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !unpaved.sep_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.sep for RR-unpaved input to file', FileName)
+   endif
 
 ! *********************************************************************
 ! Read Unpaved.Sep file
@@ -1488,6 +1579,8 @@ contains
            Retval = Retval + GetVAR2 (STRING,' sp ',2,' unPaved_readAscii',' unpaved.sep file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            dummyKwel = RDUM(1)
+           ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
         elseif (dummyCompOption .ge. 2 .and. dummyCompOption .le. 3) then
 ! 2 = variable seepage with H0 from a table
 ! 3 = variable seepage with H0 on line from Modflow
@@ -1499,9 +1592,13 @@ contains
                            CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
              DummyH0Table = CDUM(1)
              H0Defined = .true.
+             ! cleaning RR files
+             If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
            elseif (dummyCompOption .eq. 3) then
              OnLineModflowUsed = .true.
 !            write(*,*) ' OnlineModFlowUsed= ',OnLineModflowUsed
+             ! cleaning RR files
+             If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
            endif
 ! 4 = variable seepage with seepage from a time table
         elseif (dummyCompOption .eq. 4) then
@@ -1581,9 +1678,14 @@ contains
     if (idebug .ne. 0) write(idebug,*) ' Read unpaved.Sep file; SEEP co 4 records'
     if (.not. endfil) Call SKPCOM (Infile5, ENDFIL,'ODS')
     Do while (.not. endfil)
-       Success = GetRecord(Infile5, 'SEEP', Endfil, idebug, Iout1)     ! get record van keyword H0_T tot h0_t, zet in buffer
+       Success = GetRecord(Infile5, 'SEEP', Endfil, idebug, Iout1)     ! get record van keyword SEEP tot seep, zet in buffer
        IF (.not. success) GOTO 4611
        IF (ENDFIL) GOTO 4611
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule SEEP record too small', ' Input skipped')
+           GOTO 4611
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) GOTO 4611
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1597,6 +1699,7 @@ contains
                  occurs = .false.
              elseif (UnpRefSeepage_TTable(iunp) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Seepage Table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Unpaved.Tbl')
+                 NrColumns = 0     ! om verdere verwerking uit te zetten
              endif
           endif
 !         Verwerken Seepage definitie
@@ -1604,6 +1707,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             IF (.not. success) GOTO 4611
+! clean RR files
+            If (CleanRRFiles) then
+              ! use KeepBufString to write to file
+              ! first till TBLE
+              ! then till < characters
+              ! then till the end of the buffer string
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                 KeepBufString(1:) = KeepBufString(ipos+5:)
+              else
+                 ! error: no TBLE found
+                   call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+              endif
+ 1031         continue
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                 KeepBufString(1:) = KeepBufString(ipos+3:)
+                 goto 1031
+              else
+                 ! write remaining part
+                 write(Iounit,'(A)') KeepBufString (1:lenstring)
+              endif
+            Endif
 ! Set references
             Do iUnp = 1, ncOvhg
               if (StringComp(SepDef(Iunp), TableName, CaseSensitive) )  UnpRefSeepage_TTable(iUnp) = TableNr
@@ -1626,6 +1756,18 @@ contains
                                       ' Some Seepage Table Definitions not present in Unpaved.Sep file')
 
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
+
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input for unpaved.tbl
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(34)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,2)  !unpaved.tbl_cleaned
+        Call ErrMsgStandard (999, 1, ' Cleaning Unpaved.tbl for RR-unpaved input to file', FileName)
+   endif
 
 ! *********************************************************************
 ! Read Unpaved.Tbl: de tabellen met initial groundwaterlevels van onverharde gebieden (IG_T records)
@@ -1642,6 +1784,11 @@ contains
        Success = GetRecord(Infile6, 'IG_T', Endfil, idebug, Iout1)     ! get record van keyword IG_T tot ig_t, zet in buffer
        IF (.not. success) GOTO 5111
        IF (ENDFIL) GOTO 5111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, IG_T record too small', ' Input skipped')
+           GOTO 5111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) GOTO 5111
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1653,6 +1800,7 @@ contains
           if (IUnp .gt. 0) then
              if (UnpRefIg_TTable(iunp) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'Init.gwl Table Definition '//Tablename(1:Len_trim(TableName))// ' double in datafile Unpaved.Tbl')
+               NrColumns = 0     ! om verdere verwerking uit te zetten
              endif
           endif
 !         Verwerken Init gwl definitie
@@ -1660,6 +1808,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             IF (.not. success) GOTO 5111
+! clean RR files
+            If (CleanRRFiles) then
+              ! use KeepBufString to write to file
+              ! first till TBLE
+              ! then till < characters
+              ! then till the end of the buffer string
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                 KeepBufString(1:) = KeepBufString(ipos+5:)
+              else
+                 ! error: no TBLE found
+                   call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+              endif
+ 1041         continue
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                 KeepBufString(1:) = KeepBufString(ipos+3:)
+                 goto 1041
+              else
+                 ! write remaining part
+                 write(Iounit,'(A)') KeepBufString (1:lenstring)
+              endif
+            Endif
 ! Set references
             Do iUnp = 1, ncOvhg
               if (StringComp (IniDef(Iunp), TableName, CaseSensitive) ) UnpRefIG_TTable(iUnp) = TableNr
@@ -1682,6 +1857,11 @@ contains
        Success = GetRecord(Infile6, 'H0_T', Endfil, idebug, Iout1)     ! get record van keyword H0_T tot h0_t, zet in buffer
        IF (.not. success) GOTO 5611
        IF (ENDFIL) GOTO 5611
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, H0_T record too small', ' Input skipped')
+           GOTO 5611
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) GOTO 5611
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1693,6 +1873,7 @@ contains
           if (IUnp .gt. 0) then
              if (UnpRefH0_TTable(iunp) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'H0 Table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Unpaved.Tbl')
+                 NrColumns = 0  ! om verdere verwerking te stoppen
              endif
           endif
 !         Verwerken H0 definitie
@@ -1700,6 +1881,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             IF (.not. success) GOTO 5611
+! clean RR files
+            If (CleanRRFiles) then
+              ! use KeepBufString to write to file
+              ! first till TBLE
+              ! then till < characters
+              ! then till the end of the buffer string
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                 KeepBufString(1:) = KeepBufString(ipos+5:)
+              else
+                 ! error: no TBLE found
+                   call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+              endif
+ 1051         continue
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                 KeepBufString(1:) = KeepBufString(ipos+3:)
+                 goto 1051
+              else
+                 ! write remaining part
+                 write(Iounit,'(A)') KeepBufString (1:lenstring)
+              endif
+            Endif
 ! Set references
             Do iUnp = 1, ncOvhg
               if (StringComp(H0Def(Iunp), TableName, CaseSensitive) )  UnpRefH0_TTable(iUnp) = TableNr
@@ -1723,6 +1931,11 @@ contains
        Success = GetRecord(Infile6, 'SPCO', Endfil, idebug, Iout1)     ! get record van keyword SPCO tot spco, zet in buffer
        IF (.not. success) GOTO 5711
        IF (ENDFIL) GOTO 5711
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, SPCO record too small', ' Input skipped')
+           GOTO 5711
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
        IF (.not. success) GOTO 5711
        If (TabYesNo .and. TableName .ne. '') Then
@@ -1734,6 +1947,7 @@ contains
           if (IUnp .gt. 0) then
              if (UnpRefSeepageConc_TTable(iunp) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Seepage Salt concentration Table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Unpaved.Tbl')
+                 NrColumns = 0     ! om verdere verwerking uit te zetten
              endif
           endif
 !         Verwerken Salt conc definitie
@@ -1741,6 +1955,33 @@ contains
 ! Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
             Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
             IF (.not. success) GOTO 5711
+! clean RR files
+            If (CleanRRFiles) then
+              ! use KeepBufString to write to file
+              ! first till TBLE
+              ! then till < characters
+              ! then till the end of the buffer string
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                 KeepBufString(1:) = KeepBufString(ipos+5:)
+              else
+                 ! error: no TBLE found
+                   call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+              endif
+ 1061         continue
+              lenstring = len_trim(KeepBufString)
+              ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+              if (ipos .gt. 0) then
+                 write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                 KeepBufString(1:) = KeepBufString(ipos+3:)
+                 goto 1061
+              else
+                 ! write remaining part
+                 write(Iounit,'(A)') KeepBufString (1:lenstring)
+              endif
+            Endif
 ! Set references
             Do iUnp = 1, ncOvhg
               if (StringComp(SaltConcDef(Iunp), TableName, CaseSensitive) )  UnpRefSeepageConc_TTable(iUnp) = TableNr
@@ -1764,14 +2005,20 @@ contains
        Success = GetRecord(Infile6, 'SC_T', Endfil, idebug, Iout1)    ! get record van keyword INST tot inst, zet in buffer
        IF (.not. success) GOTO 6111
        IF (ENDFIL) GOTO 6111
+       Success = GetStringFromBuffer (KeepBufString)
+       IF (.not. Success .and. CleanRRFiles)   then
+           Call ErrMsgStandard (999, 3, ' Local buffer Unpavedmodule, SP_T record too small', ' Input skipped')
+           GOTO 6111
+       Endif
        Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', if table defined
        IF (.not. success) GOTO 6111
        If (TabYesNo .and. TableName .ne. '') Then
 !         Er is een tabel gedefinieerd, met een niet-lege naam
           NrColumns = 1   ! voor Scurve 1 kolom
-!         Eerst testen of H0definition wel gebruikt wordt, dan pas verwerken
+!         Eerst testen of SCdefinition wel gebruikt wordt, dan pas verwerken
           IUnp = FindString (NcOvhg, SCuDef, TableName, NcOvhg, CaseSensitive)
           Occurs = (Iunp .gt. 0)
+!         NB nog niet getest of Scurve definitie 2 keer voorkomt !!
 !         Verwerken Scurve definitie
           if (occurs) then
 ! Get SCurve Table
@@ -1811,6 +2058,33 @@ contains
                 Endif
              enddo
 ! end ARS 14203
+! clean RR files
+             If (CleanRRFiles) then
+               ! use KeepBufString to write to file
+               ! first till TBLE
+               ! then till < characters
+               ! then till the end of the buffer string
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                  KeepBufString(1:) = KeepBufString(ipos+5:)
+               else
+                  ! error: no TBLE found
+                    call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+               endif
+ 1071          continue
+               lenstring = len_trim(KeepBufString)
+               ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+               if (ipos .gt. 0) then
+                  write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                  KeepBufString(1:) = KeepBufString(ipos+3:)
+                  goto 1071
+               else
+                  ! write remaining part
+                  write(Iounit,'(A)') KeepBufString (1:lenstring)
+               endif
+             Endif
              if (idebug .ne. 0) then
                do ipoint=1,NrScurvePoints
                   write(idebug,*) ' ScurvePoints % and lvl', SCurvePercentage(ipoint),ScurveLevel(ipoint)
@@ -1871,6 +2145,9 @@ contains
         Call SKPCOM (Infile6, ENDFIL,'ODS')
      Enddo
  6111 Continue
+
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
 ! *********************************************************************
 ! Check of alle referenties naar tabellen opgelost
@@ -2274,7 +2551,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' gwvolume ',2, ' UNPV-ReadAscii',' OPENDA file',IOUT1, &
                                               CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found unpaved id and gwvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                  write(*,*) ' found unpaved id and gwvolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    V_In = Rdum(1) - BOBD (iovh)
                    BOBD (iovh)   = Rdum(1)
                    BINIBD (iovh) = Rdum(1)
@@ -2307,7 +2584,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' onvzonevolume ',2,' UNPV-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found .and. UnsatZoneOption .ge. 1) then  ! found and CapsimUsed, so variable is relevant
-                   write(*,*) ' found unpaved id and onvzonevolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found unpaved id and onvzonevolume ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    VOnvZoneOld = OnvZone(iovh)%Actual_Volume
                    OnvZone(iovh)%Actual_Volume = Rdum(1)
                    OnvZone(IOVH)%Actual_mm     = OnvZone(IOVH)%Actual_Volume / AREAOH(IOVH) / mm2m
@@ -2334,7 +2611,7 @@ contains
                 Retval = Retval + GetVAR2 (STRING,' bergingland ',2,' UNPV-ReadAscii',' OPENDA file',IOUT1, &
                                              CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 if (found) then
-                   write(*,*) ' found unpaved id and bergingland ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
+!                   write(*,*) ' found unpaved id and bergingland ', Id_nod(inod)(1:len_trim(id_nod(inod))), rdum(1)
                    BOLND(iovh)   = Rdum(1)
                    BINIOL(iovh) = Rdum(1)
                    RSLMAP2_OVH(13,iovh,1) = BOLND(iovh) / AreaOH(iovh) * 1000.
@@ -2465,46 +2742,69 @@ contains
 
     IrrigationSupply(iovh) = 0
     if (IrrigationSource(iovh) .gt. 0) then
-       If (UnsatZoneOption .ge. 1) then
-          ! Capsim (1) or own Capsim+ (2)
-          Call FindSoilMoistureAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationCriticalSMValue(iovh))
-          Call FindSoilMoistureAtCriticalpFValue (IrrigationpFTarget(iovh), TargetSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationTargetSMValue(iovh))
-          if (OnvZone(IOVH)%Init_mm .le. CriticalSoilMoistureValue .or. IrrigationOngoing(iovh)) then
-             if (IrrigationSeason .and. IrrigationDailyPeriod) then
-               if (FirstIrrigationInYear(iovh)) then
-                   IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
-               else
-                   IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
-               endif
+       if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = TimeSinceEndPreviousIrrigation(iovh) + TimeSettings%TimestepSize
+       if (TimeSinceEndPreviousIrrigation(iovh) .lt. 86400.* IrrigationWaitDuration(iovh) ) then
+           IrrigationOngoing(iovh) = .false.
+           IrrigationSupply(iovh) = 0.0
+       else
+          If (UnsatZoneOption .ge. 1) then
+             ! Capsim (1) or own Capsim+ (2)
+             Call FindSoilMoistureAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationCriticalSMValue(iovh))
+             Call FindSoilMoistureAtCriticalpFValue (IrrigationpFTarget(iovh), TargetSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationTargetSMValue(iovh))
+             if (OnvZone(IOVH)%Init_mm .le. CriticalSoilMoistureValue .or. IrrigationOngoing(iovh)) then
+                if (IrrigationSeason .and. IrrigationDailyPeriod) then
+                  if (FirstIrrigationInYear(iovh)) then
+                      IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
+                  else
+                      IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
+                  endif
+                endif
+                if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
              endif
-             if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
-          endif
-          if ( IrrigationOngoing(iovh) .and. (OnvZone(iovh)%Init_mm .gt. TargetSoilMoistureValue)) then
-             if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
-                IrrigationOngoing(iovh) = .false.
-                FirstIrrigationInYear(iovh) = .false.
-                IrrigationSupply(iovh) = 0.0
-             endif
-          endif
-       elseIf (UnsatZoneOption .eq. 0) then
-          ! No Capsim
-          Call FindGWLevelAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalGWLevel, IrrigationCriticalGWValue(iovh))
-          Call FindGWLevelAtCriticalpFValue (IrrigationpFTarget(iovh), TargetGWLevel, IrrigationTargetGWValue(iovh))
-          if (GWL0(iovh) .le. CriticalGWLevel .or. IrrigationOngoing(iovh)) then
-             if (IrrigationSeason .and. IrrigationDailyPeriod) then
-                if (FirstIrrigationInYear(iovh)) then
-                    IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
-                else
-                    IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
+             if ( IrrigationOngoing(iovh) .and. (OnvZone(iovh)%Init_mm .gt. TargetSoilMoistureValue)) then
+                if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+                   IrrigationOngoing(iovh) = .false.
+                   FirstIrrigationInYear(iovh) = .false.
+                   IrrigationSupply(iovh) = 0.0
+                   if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
                 endif
              endif
-             if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
-          endif
-          if ( IrrigationOngoing(iovh) .and. (GWL0(iovh) .gt. TargetGWLevel) ) then
-             if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+             if (FirstIrrigationInYear(iovh) .eq. .true. .and. IrrigationOngoing(iovh) .eq. .true. .and. TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
                 IrrigationOngoing(iovh) = .false.
                 FirstIrrigationInYear(iovh) = .false.
                 IrrigationSupply(iovh) = 0.0
+                if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
+             endif
+          elseIf (UnsatZoneOption .eq. 0) then
+             ! No Capsim
+             Call FindGWLevelAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalGWLevel, IrrigationCriticalGWValue(iovh))
+             Call FindGWLevelAtCriticalpFValue (IrrigationpFTarget(iovh), TargetGWLevel, IrrigationTargetGWValue(iovh))
+             ! relative to surface level
+             CriticalGWLevel = Lvloh(iovh) - CriticalGWLevel
+             TargetGWLevel = Lvloh(iovh) - TargetGWLevel
+             if (GWL0(iovh) .le. CriticalGWLevel .or. IrrigationOngoing(iovh)) then
+                if (IrrigationSeason .and. IrrigationDailyPeriod) then
+                   if (FirstIrrigationInYear(iovh)) then
+                       IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
+                   else
+                       IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
+                   endif
+                endif
+                if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
+             endif
+             if ( IrrigationOngoing(iovh) .and. (GWL0(iovh) .gt. TargetGWLevel) ) then
+                if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+                   IrrigationOngoing(iovh) = .false.
+                   FirstIrrigationInYear(iovh) = .false.
+                   IrrigationSupply(iovh) = 0.0
+                   if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
+                endif
+             endif
+             if (FirstIrrigationInYear(iovh) .eq. .true. .and. IrrigationOngoing(iovh) .eq. .true. .and. TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+                IrrigationOngoing(iovh) = .false.
+                FirstIrrigationInYear(iovh) = .false.
+                IrrigationSupply(iovh) = 0.0
+                if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
              endif
           endif
        endif
@@ -2513,11 +2813,16 @@ contains
     IrrigationSupply(iovh) = IrrigationSupply(iovh) * TmIrri * AreaOh(iovh) / 86400. / 1000.
     IrrigationDemand(iovh) = IrrigationSupply(iovh) * IrrigationEfficiencyFactor(iovh)
     IrrigationOngoing(iovh) = (IrrigationSupply(iovh) .gt. 0)
-    if (Idebug .gt. 0 .and. IrrigationSource(iovh) .gt. 0 .and. UnsatZoneOption .ge. 1 ) then
+    if (Idebug .ne. 0 .and. IrrigationSource(iovh) .gt. 0 .and. IrrigationOngoing(iovh))  then
        WRITE(IDEBUG,*) ' Computed irrigation'
-       WRITE(IDEBUG,*) ' CriticalpFValue - CriticalSoilMoistureValue:',IrrigationpFCrit(iovh), CriticalSoilMoistureValue
-       WRITE(IDEBUG,*) ' TargetpFValue - TargetSoilMoistureValue:',IrrigationpFTarget(iovh), TargetSoilMoistureValue
-       WRITE(IDEBUG,*) ' Init_mm ',OnvZone(iovh)%Init_mm
+       If (UnSatZoneOption .ge. 1) then
+          WRITE(IDEBUG,*) ' CriticalpFValue - CriticalSoilMoistureValue:',IrrigationpFCrit(iovh), CriticalSoilMoistureValue
+          WRITE(IDEBUG,*) ' TargetpFValue - TargetSoilMoistureValue:',IrrigationpFTarget(iovh), TargetSoilMoistureValue
+          WRITE(IDEBUG,*) ' Init_mm ',OnvZone(iovh)%Init_mm
+       elseIf (UnSatZoneOption .eq. 0) then
+          WRITE(IDEBUG,*) ' CriticalpFValue - CriticalGWLevel:',IrrigationpFCrit(iovh), IrrigationCriticalGWValue(iovh),CriticalGWLevel
+          WRITE(IDEBUG,*) ' TargetpFValue - TargetGWLevel:',IrrigationpFTarget(iovh), IrrigationTargetGWValue(iovh),TargetGWLevel
+       endif
        WRITE(IDEBUG,*) ' Initsupply, MaxSupply',IrrigationInitSupply(iovh), IrrigationMaxSupply(iovh)
        WRITE(IDEBUG,*) ' Irrigation supply m3/s, m3 :',IrrigationSupply(iovh), IrrigationSupply(iovh) * timeSettings%timestepSize
        WRITE(IDEBUG,*) ' Irrigation demand m3/s, m3 :',IrrigationDemand(iovh), IrrigationDemand(iovh) * timeSettings%timestepSize
@@ -4265,6 +4570,7 @@ contains
 !**********************************************************************
 
 
+ use m_capsim, only : readunsa, readroot
   IMPLICIT NONE
 
   Integer       IStatus
@@ -4272,6 +4578,7 @@ contains
   Integer       IdebugCapsimFromTimestep, IdebugCapsimToTimestep
   Integer       Allocation_Error
 
+  
 !
   Character(132) CapsimFileName
 
@@ -4306,7 +4613,7 @@ contains
 !         open (Debug_unit,file=CapsimDbgFile,status='unknown')
          Call CloseGP (Message_unit)
          Call CloseGP (Debug_unit)
-         write(*,*) ' Simulation using Capsim'
+         Call ErrMsgStandard (999, 1, ' Simulation using Capsim', '')
 !         write(*,*) ' CapsimMsgFile =', CapsimMsgFile(1:132)
 !         write(*,*) ' CapsimDbgFile =', CapsimDbgFile(1:132)
          IStatus = 0
@@ -4322,7 +4629,7 @@ contains
          call ReadRoot (File_unit, CapSimFileName, message_unit,CapSimMsgFile, &
                         debug_unit,CapSimDbgFile, IStatus,&
                         nxspun, nxte,  dprz, frev)
-         if (IStatus .ne. 0) call ErrMsgStandard (969, 0, ' Sobek_RR', ' Error in Alterra-routine ReadRoot')
+         if (IStatus .ne. 0) call ErrMsgStandard (969, IStatus, ' Sobek_RR', ' Error in Alterra-routine ReadRoot')
          IStatus = 0
          CapSimFileName = ConfFil_get_NAMFIL(94)
          Call OpenFl (File_Unit, CapsimFileName, 1,2)
@@ -4333,8 +4640,7 @@ contains
                         dpgwun, dprzun,  nudpun)
          Debug_unit = 0
          if (IStatus .ne. 0) then
-            Write(*,*) ' IStatus returned from ReadUnsa=', IStatus
-            call ErrMsgStandard (969, 0, ' Sobek_RR', ' Error in Alterra-routine ReadUnsa')
+            call ErrMsgStandard (969, IStatus, ' Sobek_RR', ' Error in Alterra-routine ReadUnsa')
          endif
 !
 ! Set Actual maxima for Internal use
@@ -4373,8 +4679,7 @@ contains
              Call OpenFl (File_Unit, CapsimFileName, 1,2)
              Call ReadUnsa2 (File_unit, iStatus)
              if (IStatus .ne. 0) then
-                Write(*,*) ' IStatus returned from ReadUnsa=', IStatus
-                call ErrMsgStandard (969, 0, ' Sobek_RR', ' Error in routine ReadUnsa2')
+                call ErrMsgStandard (969, IStatus, ' Sobek_RR', ' Error in routine ReadUnsa2')
              endif
          endif
 
@@ -4539,6 +4844,7 @@ contains
 
 
    Subroutine ComputeCapsim (iovh, Idebug, NodeName)
+   use m_capsim, only: simgro_ovz
 
 ! *********************************************************************
 ! Subroutine berekent onverzadigde zone voor onverhard gebied met index Iovh
@@ -4610,7 +4916,8 @@ contains
          VmRzIn = OnvZone(Iovh)%Init_mm * mm2m
 
        ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)  ! nearest integer
+!        IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc. tot 100  (=index 10)
          UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.   ! maximum root zone content unsat zone (mm)
          FmPeMax  = -1. * KSatCapsim(Ns) / 1000.  ! maximum capris/perc in m/day   NB FmPeMax is negatief (percolatie)
          if (idebug .ne. 0) then
@@ -4684,7 +4991,8 @@ contains
          VBo (iovh) = 0.0
          QinB(iovh) = 0.0
          ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)   ! nearest integer
+!        IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
          UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.   ! maximum root zone content unsat zone (mm)
          FmPeMax  = -1. * KSatCapsim(Ns) / 1000.  ! maximum capris/perc in m/day   NB FmPeMax is negatief (percolatie)
          if (idebug .ne. 0) then
@@ -4792,7 +5100,8 @@ contains
          ! Initial unsat. soil moisture content in m
          VmRzIn = CropOnvZone(Iovh,icrop)%Init_mm * mm2m
          ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)  ! nearest integer
+!         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
          if (irootz > 0) then
             UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.  ! maximum root zone content unsat zone (mm)
          else
@@ -4871,7 +5180,8 @@ contains
          VBoCrop(iovh,icrop) = 0.0
          QinBCrop(iovh,icrop) = 0.0
          ! max. root zone content and max. percolation
-         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
+         IRootz = NInt( DpRootz * 10)  ! nearest integer
+!         IRootz = Int( DpRootz * 10)   ! assuming root zone depths in table 10, 20, 30, 40, 50, 60, 70, 80, 90 with index 1,2,3 etc.
          if (irootz > 0) then
             UnsatMax = SRRZ (Ns, Irootz, 1) * 1000.0d0   ! maximum root zone content unsat zone (mm)
          else
@@ -5059,7 +5369,7 @@ contains
        ! Set DpIn=initial groundwater level in meters below surface
          DpIn   = LVLOH(iovh) - GWL0 (iovh)
        ! Initial unsat. soil moisture content in m
-         VmRzIn  = OnvZone(Iovh)%Init_mm * mm2m
+         VmRzIn = OnvZone(Iovh)%Init_mm * mm2m
        ! DpIn1 and VmRzIn1 already defined above
        ! call WL-SobekCapsim routine
          if (Idebug .gt.0) call DebugWL_Capsim (Idebug, Nt, Ns, DpIn, DpRootZ, Dt, Pn, VmRzIn, FmEvPt)
@@ -6970,6 +7280,7 @@ contains
     ! ***    Stuk uit sub Init1: initialisie van onverhard gebied per tijdstap
     ! *********************************************************************
 
+    use m_capsim, only : simgro_ovz
     Implicit none
 
     Integer iDebug, iout1, IEvent, IMaand
@@ -7075,7 +7386,11 @@ contains
 
 !          OnvZone(IOVH)%Max_mm  = 240
 !          OnvZone(IOVH)%Min_mm  = 50
-           If (UnSatZoneOption .eq. 3) then   ! try out simple option, before option=2
+!           UnSatZoneOption = 0 no unsaturated zone, no Capsim (UnSatZone MaxVolume=MinVolume)
+!           UnSatZoneOption = 1 Capsim
+!           UnSatZoneOption = 2 Capsim+  (not in GUI/doc; with additional check on Ksat and not including flag LikeSobek213))
+!           UnSatZoneOption = 3 only for programmers testing (not in GUI/doc)
+           If (UnSatZoneOption .eq. 3) then   ! try out simple option, before option=2; this UnsatZoneOption=3 is only for programmers testing and not available in GUI nor documentation, so write(*,*) is not an issue
               write(*,*) ' Set data for IOVH:',IOVH
               write(*,*) ' Set Max. Volume Unsaturated Zone in mm:'
               read (*,*)  rdum
@@ -8178,7 +8493,7 @@ contains
 
   if (IrrCriticalGWLevel .le. -999.) then
      ! find from pF - gw level relation
-     CriticalGWLevel = 0.01 * (10 ** (-1.*pFCrit))
+     CriticalGWLevel = 0.01 * (10 ** (pFCrit))
      IrrCriticalGWLevel = CriticalGWLevel
   else
      ! already computed

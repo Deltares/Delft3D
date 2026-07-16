@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,56 +32,71 @@ contains
 !
 !
 
-      subroutine READARCINFOHEADER(MINP, MMAX, NMAX, X0, Y0, DX, DY, RMIS)
-         double precision :: dx, dy
-         integer :: jacornerx
-         integer :: jacornery
-         integer :: minp
-         integer :: mmax
-         integer :: nmax
-         double precision :: rmis
-         double precision :: x0
-         double precision :: y0
-         double precision :: DumX, DumY
-         character REC * 132
+   subroutine READARCINFOHEADER(MINP, MMAX, NMAX, X0, Y0, DX, DY, RMIS)
+      use precision, only: dp
+      use m_filez, only: readerror, eoferror
 
-         DumY = -1d10
+      real(kind=dp) :: dx, dy
+      integer :: jacornerx
+      integer :: jacornery
+      integer :: minp
+      integer :: mmax
+      integer :: nmax
+      real(kind=dp) :: rmis
+      real(kind=dp) :: x0
+      real(kind=dp) :: y0
+      real(kind=dp) :: DumX, DumY
+      character(len=132) :: rec
 
-10       continue
-         read (minp, *, end=100) rec, mmax
-         call ilowercase(rec)
-         if (index(REC, 'ncol') < 1) goto 101 ! wrong format
-         read (minp, *, end=100, err=102) rec, nmax
-         read (minp, *, end=100, err=103) rec, x0
-         call ilowercase(rec)
-         JACORNERX = 0
-         if (index(REC, 'cor') >= 1) JACORNERX = 1
-         read (minp, *, end=100, err=104) rec, y0
-         call ilowercase(rec)
-         JACORNERY = 0
-         if (index(REC, 'cor') >= 1) JACORNERY = 1
-         read (minp, '(A)', end=100) rec
-         read (REC(10:), *, ERR=105) DX
-         DY = DX
-         read (REC(10:), *, end=107) DumX, DumY
-         if (DumY > 0) DY = DumY
+      DumY = -1.0e10_dp
 
-107      continue
+10    continue
+      read (minp, *, end=100) rec, mmax
+      call ilowercase(rec)
+      if (index(REC, 'ncol') < 1) then
+         goto 101 ! wrong format
+      end if
+      read (minp, *, end=100, err=102) rec, nmax
+      read (minp, *, end=100, err=103) rec, x0
+      call ilowercase(rec)
+      JACORNERX = 0
+      if (index(REC, 'cor') >= 1) then
+         JACORNERX = 1
+      end if
+      read (minp, *, end=100, err=104) rec, y0
+      call ilowercase(rec)
+      JACORNERY = 0
+      if (index(REC, 'cor') >= 1) then
+         JACORNERY = 1
+      end if
+      read (minp, '(A)', end=100) rec
+      read (REC(10:), *, ERR=105) DX
+      DY = DX
+      read (REC(10:), *, end=107) DumX, DumY
+      if (DumY > 0) then
+         DY = DumY
+      end if
 
-         !READ(MINP,'(A)',END = 100) REC
-         !READ(REC(13:),*,ERR = 106) RMIS
-         read (minp, *, end=100, err=106) rec, rmis
-         if (JACORNERX == 1) X0 = X0 + DX / 2
-         if (JACORNERy == 1) Y0 = Y0 + DX / 2
-         return
-100      continue
-         call EOFERROR(MINP)
+107   continue
 
-101      call READERROR('LOOKING FOR NCOLS (ARC-INFO), BUT GETTING', REC, MINP)
-102      call READERROR('LOOKING FOR NROWS (ARC-INFO), BUT GETTING', REC, MINP)
-103      call READERROR('LOOKING FOR XLLCORNER (ARC-INFO), BUT GETTING', REC, MINP)
-104      call READERROR('LOOKING FOR YLLCORNER (ARCINFO), BUT GETTING', REC, MINP)
-105      call READERROR('LOOKING FOR CELLSIZE (ARCINFO), BUT GETTING', REC, MINP)
-106      call READERROR('LOOKING FOR MISSING VALUE (ARCINFO), BUT GETTING', REC, MINP)
-      end
+      !READ(MINP,'(A)',END = 100) REC
+      !READ(REC(13:),*,ERR = 106) RMIS
+      read (minp, *, end=100, err=106) rec, rmis
+      if (JACORNERX == 1) then
+         X0 = X0 + DX / 2
+      end if
+      if (JACORNERy == 1) then
+         Y0 = Y0 + DX / 2
+      end if
+      return
+100   continue
+      call EOFERROR(MINP)
+
+101   call READERROR('LOOKING FOR NCOLS (ARC-INFO), BUT GETTING', REC, MINP)
+102   call READERROR('LOOKING FOR NROWS (ARC-INFO), BUT GETTING', REC, MINP)
+103   call READERROR('LOOKING FOR XLLCORNER (ARC-INFO), BUT GETTING', REC, MINP)
+104   call READERROR('LOOKING FOR YLLCORNER (ARCINFO), BUT GETTING', REC, MINP)
+105   call READERROR('LOOKING FOR CELLSIZE (ARCINFO), BUT GETTING', REC, MINP)
+106   call READERROR('LOOKING FOR MISSING VALUE (ARCINFO), BUT GETTING', REC, MINP)
+   end
 end module m_readarcinfoheader

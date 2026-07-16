@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,13 +29,17 @@
 
 !
 !
+module m_get_link1
+   implicit none
+contains
+   subroutine getlink1(k, LL)
+      use m_flowgeom, only: nd
 
-subroutine getlink1(k, LL)
-   use m_flowgeom
-   integer :: k, LL
-   if (nd(k)%lnx == 0) then
-      LL = 1
-   else
-      LL = abs(nd(k)%ln(1))
-   end if
-end subroutine
+      integer :: k, LL
+      if (nd(k)%lnx == 0) then
+         LL = 1
+      else
+         LL = abs(nd(k)%ln(1))
+      end if
+   end subroutine
+end module m_get_link1

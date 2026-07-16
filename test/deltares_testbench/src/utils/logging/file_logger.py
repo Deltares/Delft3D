@@ -1,6 +1,6 @@
 """Logger for logging to file.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import logging
@@ -31,13 +31,13 @@ class FileLogger(ILogger):
 
     def error(self, message: str, exc_info: bool = False) -> None:
         self.__logger.error(message, exc_info=exc_info)
-        sys.stderr.write(message + "\n")
+        sys.stderr.write(str(message) + "\n")
         if exc_info:
             sys.stderr.write(traceback.format_exc())
 
     def exception(self, message: str) -> None:
         self.__logger.exception(message)
-        sys.stderr.write(message + "\n")
+        sys.stderr.write(str(message) + "\n")
         sys.stderr.write(traceback.format_exc())
 
     def warning(self, message: str) -> None:
@@ -63,10 +63,10 @@ class FileLogger(ILogger):
         os.makedirs(log_folder, exist_ok=True)
 
         if os.path.isfile(self.__path):
-            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10, encoding="utf-8")
             handler.doRollover()
         else:
-            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10, encoding="utf-8")
 
         handler.setLevel(log_level)
         format_str = "%(asctime)s [%(levelname)-7s] : %(message)s"

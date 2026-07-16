@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,25 +30,34 @@
 !
 !
 
-      subroutine ORGLOCATOR(XL, YL)
-         use m_devices
-         use m_locatora
+module m_orglocator
+   use m_towor
 
-         implicit none
-         integer :: ml
-         integer :: nl
-         double precision :: xl
-         double precision :: yl
+   implicit none
 
-         if (XL == 0 .and. YL == 0) then
-            ML = NPX / 2
-            NL = NPY / 2
-            call TOWOR(ML, NL, XLC, YLC)
-         else
-            XLC = XL
-            YLC = YL
-         end if
+contains
 
-         call IMOUSECURSORXYG(real(XLC), real(YLC))
-         return
-      end
+   subroutine ORGLOCATOR(XL, YL)
+      use precision, only: dp
+      use m_devices, only: npx, npy
+      use m_locatora, only: xlc, ylc
+
+      integer :: ml
+      integer :: nl
+      real(kind=dp) :: xl
+      real(kind=dp) :: yl
+
+      if (XL == 0 .and. YL == 0) then
+         ML = NPX / 2
+         NL = NPY / 2
+         call TOWOR(ML, NL, XLC, YLC)
+      else
+         XLC = XL
+         YLC = YL
+      end if
+
+      call IMOUSECURSORXYG(real(XLC), real(YLC))
+      return
+   end
+
+end module m_orglocator

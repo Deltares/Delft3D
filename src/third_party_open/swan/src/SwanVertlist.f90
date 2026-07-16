@@ -11,22 +11,20 @@ subroutine SwanVertlist ( compda )
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -59,10 +57,10 @@ subroutine SwanVertlist ( compda )
     use swcomm2, only: COSWC, SINWC, VARWI
     use swcomm3, only: MCMVAR, JWX2, JWY2, JWX3, JWY3
     use m_genarr
+    use m_parall
     use SwanGriddata
     use SwanGridobjects
     use SwanCompdata
-!PUN    use SIZES, only: MNPROC
 !
     implicit none
 !
@@ -122,8 +120,8 @@ subroutine SwanVertlist ( compda )
           k     = 0
           wdsum = 0.
           do j = 1, nverts
-!            internal vertices and ghost vertices only
-             if ( vmark(j) == 0 .or. vmark(j) == 999 ) then
+!            internal vertices, exception vertices and ghost vertices only
+             if ( vmark(j) == 0 .or. vmark(j) >= excmark ) then
                 wx = compda(j,JWX2)
                 wy = compda(j,JWY2)
                 if ( wx /= 0. .or. wy /= 0. ) then
@@ -133,8 +131,8 @@ subroutine SwanVertlist ( compda )
              endif
           enddo
           asort = wdsum / real(k)
-!PUN          call SwanSumOverNodes ( asort )
-!PUN          asort = asort / real(MNPROC)
+          call SWREDUCE( asort, 1, SWREAL, SWSUM )
+          asort = asort / real(NPROC)
        else
 !         final attempt: set sweep direction to zero
           asort = 0.

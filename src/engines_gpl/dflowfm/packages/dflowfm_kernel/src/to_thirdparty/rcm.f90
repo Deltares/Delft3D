@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,6 +35,7 @@
 !! of the unstructured flow solver.
 !<
 module m_rcm
+   use precision, only: dp
    implicit none
 contains
    function adj_bandwidth(node_num, adj_num, adj_row, adj)
@@ -81,12 +82,12 @@ contains
 !    Output, integer   ADJ_BANDWIDTH, the bandwidth of the adjacency
 !    matrix.
 !
-      integer adj_num
-      integer node_num
+      integer, intent(in) :: adj_num
+      integer, intent(in) :: node_num
 
-      integer adj(adj_num)
+      integer, intent(in) :: adj(adj_num)
       integer adj_bandwidth
-      integer adj_row(node_num + 1)
+      integer, intent(in) :: adj_row(node_num + 1)
       integer band_hi
       integer band_lo
       integer col
@@ -343,19 +344,19 @@ contains
 !
       implicit none
 
-      integer adj_num
-      integer node_num
+      integer, intent(in) :: adj_num
+      integer, intent(in) :: node_num
 
-      integer adj(adj_num)
+      integer, intent(in) :: adj(adj_num)
       integer adj_perm_bandwidth
-      integer adj_row(node_num + 1)
+      integer, intent(in) :: adj_row(node_num + 1)
       integer band_hi
       integer band_lo
       integer col
       integer i
       integer j
-      integer perm(node_num)
-      integer perm_inv(node_num)
+      integer, intent(in) :: perm(node_num)
+      integer, intent(in) :: perm_inv(node_num)
 
       band_lo = 0
       band_hi = 0
@@ -1195,7 +1196,7 @@ contains
       integer adj(adj_num)
       integer adj_row(node_num + 1)
 
-      adj(1:adj_num) = (/ &
+      adj(1:adj_num) = [ &
                        4, 6, &
                        3, 5, 7, 10, &
                        2, 4, 5, &
@@ -1205,9 +1206,9 @@ contains
                        2, 5, 6, 8, &
                        6, 7, &
                        4, &
-                       2/)
+                       2]
 
-      adj_row(1:node_num + 1) = (/1, 3, 7, 10, 14, 17, 21, 25, 27, 28, 29/)
+      adj_row(1:node_num + 1) = [1, 3, 7, 10, 14, 17, 21, 25, 27, 28, 29]
 
       return
    end
@@ -1244,8 +1245,8 @@ contains
 !
       implicit none
 
-      integer adj_num
-      integer node_num
+      integer, intent(inout) :: adj_num
+      integer, intent(inout) :: node_num
 
       node_num = 10
       adj_num = 28
@@ -1277,8 +1278,8 @@ contains
 !
       implicit none
 
-      integer i
-      integer j
+      integer, intent(inout) :: i
+      integer, intent(inout) :: j
       integer k
 
       k = i
@@ -2040,9 +2041,9 @@ contains
 !
       implicit none
 
-      integer n
+      integer, intent(in) :: n
 
-      integer a(n)
+      integer, intent(inout) :: a(n)
       integer i
 
       do i = 1, n
@@ -2552,11 +2553,11 @@ contains
 !
       implicit none
 
-      integer n
+      integer, intent(in) :: n
 
       integer i
-      integer perm(n)
-      integer perm_inv(n)
+      integer, intent(in) :: perm(n)
+      integer, intent(inout) :: perm_inv(n)
 
       do i = 1, n
          perm_inv(perm(i)) = i
@@ -2667,7 +2668,7 @@ contains
 !
 !    Input, integer   N, the number of objects.
 !
-!    Input/output, DOUBLE PRECISION ::   A(2,N), the array to be permuted.
+!    Input/output, real(kind=dp) ::   A(2,N), the array to be permuted.
 !
 !    Input, integer   P(N), the permutation.  P(I) = J means
 !    that the I-th element of the output array should be the J-th
@@ -2680,8 +2681,8 @@ contains
       integer n
       integer, parameter :: ndim = 2
 
-      double precision :: a(ndim, n)
-      double precision :: a_temp(ndim)
+      real(kind=dp) :: a(ndim, n)
+      real(kind=dp) :: a_temp(ndim)
       integer ierror
       integer iget
       integer iput
@@ -2775,7 +2776,7 @@ contains
 !
 !    Input, integer   M, N, the number of rows and columns.
 !
-!    Input, DOUBLE PRECISION ::   A(M,N), an M by N matrix to be printed.
+!    Input, real(kind=dp) ::   A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer   ILO, JLO, the first row and column to print.
 !
@@ -2789,7 +2790,7 @@ contains
       integer m
       integer n
 
-      double precision :: a(m, n)
+      real(kind=dp) :: a(m, n)
       character(len=14) ctemp(incx)
       integer i
       integer i2hi
@@ -2874,7 +2875,7 @@ contains
 !
 !    Input, integer   M, N, the number of rows and columns.
 !
-!    Input, DOUBLE PRECISION ::   A(M,N), an M by N matrix to be printed.
+!    Input, real(kind=dp) ::   A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer   ILO, JLO, the first row and column to print.
 !
@@ -2888,7 +2889,7 @@ contains
       integer m
       integer n
 
-      double precision :: a(m, n)
+      real(kind=dp) :: a(m, n)
       character(len=14) ctemp(incx)
       integer i
       integer i2
@@ -3559,10 +3560,10 @@ contains
       integer h
       integer m
       integer mm
-      character(len=9), parameter, dimension(12) :: month = (/ &
+      character(len=9), parameter, dimension(12) :: month = [ &
                                                     'January  ', 'February ', 'March    ', 'April    ', &
                                                     'May      ', 'June     ', 'July     ', 'August   ', &
-                                                    'September', 'October  ', 'November ', 'December '/)
+                                                    'September', 'October  ', 'November ', 'December ']
       integer n
       integer s
       integer values(8)
@@ -3747,21 +3748,21 @@ contains
          k = triangle_node(3, tri)
 
          if (i < j) then
-            col(1:4, 3 * (tri - 1) + 1) = (/i, j, 3, tri/)
+            col(1:4, 3 * (tri - 1) + 1) = [i, j, 3, tri]
          else
-            col(1:4, 3 * (tri - 1) + 1) = (/j, i, 3, tri/)
+            col(1:4, 3 * (tri - 1) + 1) = [j, i, 3, tri]
          end if
 
          if (j < k) then
-            col(1:4, 3 * (tri - 1) + 2) = (/j, k, 1, tri/)
+            col(1:4, 3 * (tri - 1) + 2) = [j, k, 1, tri]
          else
-            col(1:4, 3 * (tri - 1) + 2) = (/k, j, 1, tri/)
+            col(1:4, 3 * (tri - 1) + 2) = [k, j, 1, tri]
          end if
 
          if (k < i) then
-            col(1:4, 3 * (tri - 1) + 3) = (/k, i, 2, tri/)
+            col(1:4, 3 * (tri - 1) + 3) = [k, i, 2, tri]
          else
-            col(1:4, 3 * (tri - 1) + 3) = (/i, k, 2, tri/)
+            col(1:4, 3 * (tri - 1) + 3) = [i, k, 2, tri]
          end if
 
       end do
@@ -4273,7 +4274,7 @@ contains
 !
 !    Input, integer   TRIANGLE_NUM, the number of triangles.
 !
-!    Output, DOUBLE PRECISION ::   NODE_XY(2,NODE_NUM), the coordinates of the
+!    Output, real(kind=dp) ::   NODE_XY(2,NODE_NUM), the coordinates of the
 !    nodes.
 !
 !    Output, integer   TRIANGLE_NODE(3,TRIANGLE_NUM), lists the
@@ -4290,39 +4291,39 @@ contains
       integer triangle_num
       integer, parameter :: triangle_order = 3
 
-      double precision :: node_xy(dim_num, node_num)
+      real(kind=dp) :: node_xy(dim_num, node_num)
       integer triangle_neighbor(3, triangle_num)
       integer triangle_node(triangle_order, triangle_num)
 
-      node_xy = reshape((/ &
-                        0.0d+00, 0.0d+00, &
-                        1.0d+00, 0.0d+00, &
-                        2.0d+00, 0.0d+00, &
-                        3.0d+00, 0.0d+00, &
-                        4.0d+00, 0.0d+00, &
-                        0.0d+00, 1.0d+00, &
-                        1.0d+00, 1.0d+00, &
-                        2.0d+00, 1.0d+00, &
-                        3.0d+00, 1.0d+00, &
-                        4.0d+00, 1.0d+00, &
-                        0.0d+00, 2.0d+00, &
-                        1.0d+00, 2.0d+00, &
-                        2.0d+00, 2.0d+00, &
-                        3.0d+00, 2.0d+00, &
-                        4.0d+00, 2.0d+00, &
-                        0.0d+00, 3.0d+00, &
-                        1.0d+00, 3.0d+00, &
-                        2.0d+00, 3.0d+00, &
-                        3.0d+00, 3.0d+00, &
-                        4.0d+00, 3.0d+00, &
-                        0.0d+00, 4.0d+00, &
-                        1.0d+00, 4.0d+00, &
-                        2.0d+00, 4.0d+00, &
-                        3.0d+00, 4.0d+00, &
-                        4.0d+00, 4.0d+00 &
-                        /), (/dim_num, node_num/))
+      node_xy = reshape([ &
+                        0.0e+00_dp, 0.0e+00_dp, &
+                        1.0e+00_dp, 0.0e+00_dp, &
+                        2.0e+00_dp, 0.0e+00_dp, &
+                        3.0e+00_dp, 0.0e+00_dp, &
+                        4.0e+00_dp, 0.0e+00_dp, &
+                        0.0e+00_dp, 1.0e+00_dp, &
+                        1.0e+00_dp, 1.0e+00_dp, &
+                        2.0e+00_dp, 1.0e+00_dp, &
+                        3.0e+00_dp, 1.0e+00_dp, &
+                        4.0e+00_dp, 1.0e+00_dp, &
+                        0.0e+00_dp, 2.0e+00_dp, &
+                        1.0e+00_dp, 2.0e+00_dp, &
+                        2.0e+00_dp, 2.0e+00_dp, &
+                        3.0e+00_dp, 2.0e+00_dp, &
+                        4.0e+00_dp, 2.0e+00_dp, &
+                        0.0e+00_dp, 3.0e+00_dp, &
+                        1.0e+00_dp, 3.0e+00_dp, &
+                        2.0e+00_dp, 3.0e+00_dp, &
+                        3.0e+00_dp, 3.0e+00_dp, &
+                        4.0e+00_dp, 3.0e+00_dp, &
+                        0.0e+00_dp, 4.0e+00_dp, &
+                        1.0e+00_dp, 4.0e+00_dp, &
+                        2.0e+00_dp, 4.0e+00_dp, &
+                        3.0e+00_dp, 4.0e+00_dp, &
+                        4.0e+00_dp, 4.0e+00_dp &
+                        ], [dim_num, node_num])
 
-      triangle_node(1:triangle_order, 1:triangle_num) = reshape((/ &
+      triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
                                                                 1, 2, 6, &
                                                                 7, 6, 2, &
                                                                 2, 3, 7, &
@@ -4354,9 +4355,9 @@ contains
                                                                 18, 19, 23, &
                                                                 24, 23, 19, &
                                                                 19, 20, 24, &
-                                                                25, 24, 20/), (/triangle_order, triangle_num/))
+                                                                25, 24, 20], [triangle_order, triangle_num])
 
-      triangle_neighbor(1:3, 1:triangle_num) = reshape((/ &
+      triangle_neighbor(1:3, 1:triangle_num) = reshape([ &
                                                        -1, 2, -1, &
                                                        9, 1, 3, &
                                                        -1, 4, 2, &
@@ -4388,7 +4389,7 @@ contains
                                                        22, 30, 28, &
                                                        -1, 29, 31, &
                                                        24, 32, 30, &
-                                                       -1, 31, -1/), (/3, triangle_num/))
+                                                       -1, 31, -1], [3, triangle_num])
 
       return
    end
@@ -4437,9 +4438,9 @@ contains
 !
       implicit none
 
-      integer hole_num
-      integer node_num
-      integer triangle_num
+      integer, intent(inout) :: hole_num
+      integer, intent(inout) :: node_num
+      integer, intent(inout) :: triangle_num
 
       node_num = 25
       triangle_num = 32
@@ -5102,7 +5103,7 @@ contains
 !
 !    Input, integer   TRIANGLE_NUM, the number of triangles.
 !
-!    Output, DOUBLE PRECISION ::   NODE_XY(2,NODE_NUM), the coordinates of
+!    Output, real(kind=dp) ::   NODE_XY(2,NODE_NUM), the coordinates of
 !    the nodes.
 !
 !    Output, integer   TRIANGLE_NODE(6,TRIANGLE_NUM), lists the
@@ -5122,39 +5123,39 @@ contains
       integer triangle_num
       integer, parameter :: triangle_order = 6
 
-      double precision :: node_xy(dim_num, node_num)
+      real(kind=dp) :: node_xy(dim_num, node_num)
       integer triangle_neighbor(3, triangle_num)
       integer triangle_node(triangle_order, triangle_num)
 
-      node_xy = reshape((/ &
-                        0.0d+00, 0.0d+00, &
-                        1.0d+00, 0.0d+00, &
-                        2.0d+00, 0.0d+00, &
-                        3.0d+00, 0.0d+00, &
-                        4.0d+00, 0.0d+00, &
-                        0.0d+00, 1.0d+00, &
-                        1.0d+00, 1.0d+00, &
-                        2.0d+00, 1.0d+00, &
-                        3.0d+00, 1.0d+00, &
-                        4.0d+00, 1.0d+00, &
-                        0.0d+00, 2.0d+00, &
-                        1.0d+00, 2.0d+00, &
-                        2.0d+00, 2.0d+00, &
-                        3.0d+00, 2.0d+00, &
-                        4.0d+00, 2.0d+00, &
-                        0.0d+00, 3.0d+00, &
-                        1.0d+00, 3.0d+00, &
-                        2.0d+00, 3.0d+00, &
-                        3.0d+00, 3.0d+00, &
-                        4.0d+00, 3.0d+00, &
-                        0.0d+00, 4.0d+00, &
-                        1.0d+00, 4.0d+00, &
-                        2.0d+00, 4.0d+00, &
-                        3.0d+00, 4.0d+00, &
-                        4.0d+00, 4.0d+00 &
-                        /), (/dim_num, node_num/))
+      node_xy = reshape([ &
+                        0.0e+00_dp, 0.0e+00_dp, &
+                        1.0e+00_dp, 0.0e+00_dp, &
+                        2.0e+00_dp, 0.0e+00_dp, &
+                        3.0e+00_dp, 0.0e+00_dp, &
+                        4.0e+00_dp, 0.0e+00_dp, &
+                        0.0e+00_dp, 1.0e+00_dp, &
+                        1.0e+00_dp, 1.0e+00_dp, &
+                        2.0e+00_dp, 1.0e+00_dp, &
+                        3.0e+00_dp, 1.0e+00_dp, &
+                        4.0e+00_dp, 1.0e+00_dp, &
+                        0.0e+00_dp, 2.0e+00_dp, &
+                        1.0e+00_dp, 2.0e+00_dp, &
+                        2.0e+00_dp, 2.0e+00_dp, &
+                        3.0e+00_dp, 2.0e+00_dp, &
+                        4.0e+00_dp, 2.0e+00_dp, &
+                        0.0e+00_dp, 3.0e+00_dp, &
+                        1.0e+00_dp, 3.0e+00_dp, &
+                        2.0e+00_dp, 3.0e+00_dp, &
+                        3.0e+00_dp, 3.0e+00_dp, &
+                        4.0e+00_dp, 3.0e+00_dp, &
+                        0.0e+00_dp, 4.0e+00_dp, &
+                        1.0e+00_dp, 4.0e+00_dp, &
+                        2.0e+00_dp, 4.0e+00_dp, &
+                        3.0e+00_dp, 4.0e+00_dp, &
+                        4.0e+00_dp, 4.0e+00_dp &
+                        ], [dim_num, node_num])
 
-      triangle_node(1:triangle_order, 1:triangle_num) = reshape((/ &
+      triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
                                                                 1, 3, 11, 2, 7, 6, &
                                                                 13, 11, 3, 12, 7, 8, &
                                                                 3, 5, 13, 4, 9, 8, &
@@ -5162,9 +5163,9 @@ contains
                                                                 11, 13, 21, 12, 17, 16, &
                                                                 23, 21, 13, 22, 17, 18, &
                                                                 13, 15, 23, 14, 19, 18, &
-                                                                25, 23, 15, 24, 19, 20/), (/triangle_order, triangle_num/))
+                                                                25, 23, 15, 24, 19, 20], [triangle_order, triangle_num])
 
-      triangle_neighbor(1:3, 1:triangle_num) = reshape((/ &
+      triangle_neighbor(1:3, 1:triangle_num) = reshape([ &
                                                        -1, 2, -1, &
                                                        5, 1, 3, &
                                                        -1, 4, 2, &
@@ -5172,7 +5173,7 @@ contains
                                                        2, 6, -1, &
                                                        -1, 5, 7, &
                                                        4, 8, 6, &
-                                                       -1, 7, -1/), (/3, triangle_num/))
+                                                       -1, 7, -1], [3, triangle_num])
 
       return
    end
@@ -5221,9 +5222,9 @@ contains
 !
       implicit none
 
-      integer hole_num
-      integer node_num
-      integer triangle_num
+      integer, intent(inout) :: hole_num
+      integer, intent(inout) :: node_num
+      integer, intent(inout) :: triangle_num
 
       node_num = 25
       triangle_num = 8
@@ -5234,6 +5235,7 @@ contains
 end module m_rcm
 
 module Solve_Real_Poly
+   use precision, only: dp
 ! CACM Algorithm 493 by Jenkins & Traub
 
 ! Compliments of netlib   Sat Jul 26 11:57:43 EDT 1986
@@ -5242,29 +5244,29 @@ module Solve_Real_Poly
 ! Date: 2003-06-02  Time: 10:42:22
 
    implicit none
-   integer, parameter :: dp = selected_real_kind(14, 60)
+   integer, parameter :: dp_14_60 = selected_real_kind(14, 60)
 
 ! COMMON /global/ p, qp, k, qk, svk, sr, si, u, v, a, b, c, d, a1,  &
 !    a2, a3, a6, a7, e, f, g, h, szr, szi, lzr, lzi, eta, are, mre, n, nn
 
-   double precision, allocatable, save :: p(:), qp(:), k(:), qk(:), svk(:)
-   double precision, save :: sr, si, u, v, a, b, c, d, a1, a2, a3, a6, &
-      a7, e, f, g, h, szr, szi, lzr, lzi
+   real(kind=dp), allocatable, save :: p(:), qp(:), k(:), qk(:), svk(:)
+   real(kind=dp), save :: sr, si, u, v, a, b, c, d, a1, a2, a3, a6, &
+                          a7, e, f, g, h, szr, szi, lzr, lzi
    real, save :: eta, are, mre
    integer, save :: n, nn
 
    private
-   public :: dp, rpoly
+   public :: dp_14_60, rpoly
 
 contains
 
    subroutine rpoly(op, degree, zeror, zeroi, fail)
 
 ! Finds the zeros of a real polynomial
-! op  - double precision vector of coefficients in order of
+! op  - real(kind=dp) vector of coefficients in order of
 !       decreasing powers.
 ! degree   - integer degree of polynomial.
-! zeror, zeroi - output double precision vectors of real and imaginary parts
+! zeror, zeroi - output real(kind=dp) vectors of real and imaginary parts
 !                of the zeros.
 ! fail  - output logical parameter, true only if leading coefficient is zero
 !         or if rpoly has found fewer than degree zeros.
@@ -5274,17 +5276,17 @@ contains
 ! of the arrays in the common area and in the following declarations.
 ! The subroutine uses single precision calculations for scaling, bounds and
 ! error calculations.  All calculations for the iterations are done in
-! double precision.
+! real(kind=dp).
 
-      double precision, intent(IN) :: op(:)
+      real(kind=dp), intent(IN) :: op(:)
       integer, intent(IN OUT) :: degree
-      double precision, intent(OUT) :: zeror(:), zeroi(:)
+      real(kind=dp), intent(OUT) :: zeror(:), zeroi(:)
       logical, intent(OUT) :: fail
 
-      double precision, allocatable :: temp(:)
+      real(kind=dp), allocatable :: temp(:)
       real, allocatable :: pt(:)
 
-      double precision :: t, aa, bb, cc, factor
+      real(kind=dp) :: t, aa, bb, cc, factor
       real :: lo, MAX, MIN, xx, yy, cosr, sinr, xxx, x, sc, bnd, &
               xm, ff, df, dx, infin, smalno, base
       integer :: cnt, nz, i, j, jj, l, nm1
@@ -5297,7 +5299,7 @@ contains
 !         1.d0+eta is greater than 1.
 ! infiny  the largest floating-point number.
 ! smalno  the smallest positive floating-point number if the exponent range
-!         differs in single and double precision then smalno and infin should
+!         differs in single and real(kind=dp) then smalno and infin should
 !         indicate the smaller range.
 ! base    the base of the floating-point number system used.
 
@@ -5322,17 +5324,17 @@ contains
       nn = n + 1
 
 ! Algorithm fails if the leading coefficient is zero.
-      if (op(1) == 0.d0) then
+      if (op(1) == 0.0_dp) then
          fail = .true.
          degree = 0
          return
       end if
 
 ! Remove the zeros at the origin if any
-10    if (op(nn) == 0.0d0) then
+10    if (op(nn) == 0.0_dp) then
          j = degree - n + 1
-         zeror(j) = 0.d0
-         zeroi(j) = 0.d0
+         zeror(j) = 0.0_dp
+         zeroi(j) = 0.0_dp
          nn = nn - 1
          n = n - 1
          GO TO 10
@@ -5340,7 +5342,9 @@ contains
 
 ! Allocate various arrays
 
-      if (allocated(p)) deallocate (p, qp, k, qk, svk)
+      if (allocated(p)) then
+         deallocate (p, qp, k, qk, svk)
+      end if
       allocate (p(nn), qp(nn), k(nn), qk(nn), svk(nn), temp(nn), pt(nn))
 
 ! Make a copy of the coefficients
@@ -5348,12 +5352,14 @@ contains
 
 ! Start the algorithm for one zero
 30    if (n <= 2) then
-         if (n < 1) return
+         if (n < 1) then
+            return
+         end if
 
 ! calculate the final zero or pair of zeros
          if (n /= 2) then
             zeror(degree) = -p(2) / p(1)
-            zeroi(degree) = 0.0d0
+            zeroi(degree) = 0.0_dp
             return
          end if
          call quad(p(1), p(2), p(3), zeror(degree - 1), zeroi(degree - 1), &
@@ -5366,8 +5372,12 @@ contains
       MIN = infin
       do i = 1, nn
          x = abs(real(p(i)))
-         if (x > MAX) MAX = x
-         if (x /= 0. .and. x < MIN) MIN = x
+         if (x > MAX) then
+            MAX = x
+         end if
+         if (x /= 0. .and. x < MIN) then
+            MIN = x
+         end if
       end do
 
 ! Scale if there are large or very small coefficients computes a scale
@@ -5377,14 +5387,20 @@ contains
 ! The factor is a power of the base
       sc = lo / MIN
       if (sc <= 1.0) then
-         if (MAX < 10.) GO TO 60
-         if (sc == 0.) sc = smalno
+         if (MAX < 10.) then
+            GO TO 60
+         end if
+         if (sc == 0.) then
+            sc = smalno
+         end if
       else
-         if (infin / sc < MAX) GO TO 60
+         if (infin / sc < MAX) then
+            GO TO 60
+         end if
       end if
       l = log(sc) / log(base) + .5
-      factor = (base * 1.0d0)**l
-      if (factor /= 1.d0) then
+      factor = (base * 1.0_dp)**l
+      if (factor /= 1.0_dp) then
          p(1:nn) = factor * p(1:nn)
       end if
 
@@ -5397,7 +5413,9 @@ contains
       if (pt(n) /= 0.) then
 ! if newton step at the origin is better, use it.
          xm = -pt(nn) / pt(n)
-         if (xm < x) x = xm
+         if (xm < x) then
+            x = xm
+         end if
       end if
 
 ! chop the interval (0,x) until ff .le. 0
@@ -5436,7 +5454,7 @@ contains
       k(1) = p(1)
       aa = p(nn)
       bb = p(n)
-      zerok = k(n) == 0.d0
+      zerok = k(n) == 0.0_dp
       do jj = 1, 5
          cc = k(n)
          if (.not. zerok) then
@@ -5454,8 +5472,8 @@ contains
                j = nn - i
                k(j) = k(j - 1)
             end do
-            k(1) = 0.d0
-            zerok = k(n) == 0.d0
+            k(1) = 0.0_dp
+            zerok = k(n) == 0.0_dp
          end if
       end do
 
@@ -5473,7 +5491,7 @@ contains
          xx = xxx
          sr = bnd * xx
          si = bnd * yy
-         u = -2.0d0 * sr
+         u = -2.0_dp * sr
          v = bnd
 
 ! second stage calculation, fixed quadratic
@@ -5490,7 +5508,9 @@ contains
             nn = nn - nz
             n = nn - 1
             p(1:nn) = qp(1:nn)
-            if (nz == 1) GO TO 30
+            if (nz == 1) then
+               GO TO 30
+            end if
             zeror(j + 1) = lzr
             zeroi(j + 1) = lzi
             GO TO 30
@@ -5518,7 +5538,7 @@ contains
       integer, intent(IN) :: l2
       integer, intent(OUT) :: nz
 
-      double precision :: svu, svv, ui, vi, s
+      real(kind=dp) :: svu, svv, ui, vi, s
       real :: betas, betav, oss, ovv, ss, vv, ts, tv, ots, otv, tvv, tss
       integer :: type, j, iflag
       logical :: vpass, spass, vtry, stry
@@ -5541,19 +5561,29 @@ contains
 
 ! Estimate s
          ss = 0.
-         if (k(n) /= 0.d0) ss = -p(nn) / k(n)
+         if (k(n) /= 0.0_dp) then
+            ss = -p(nn) / k(n)
+         end if
          tv = 1.
          ts = 1.
          if (j /= 1 .and. type /= 3) then
 ! Compute relative measures of convergence of s and v sequences
-            if (vv /= 0.) tv = abs((vv - ovv) / vv)
-            if (ss /= 0.) ts = abs((ss - oss) / ss)
+            if (vv /= 0.) then
+               tv = abs((vv - ovv) / vv)
+            end if
+            if (ss /= 0.) then
+               ts = abs((ss - oss) / ss)
+            end if
 
 ! If decreasing, multiply two most recent convergence measures
             tvv = 1.
-            if (tv < otv) tvv = tv * otv
+            if (tv < otv) then
+               tvv = tv * otv
+            end if
             tss = 1.
-            if (ts < ots) tss = ts * ots
+            if (ts < ots) then
+               tss = ts * ots
+            end if
 
 ! Compare with convergence criteria
             vpass = tvv < betav
@@ -5570,9 +5600,13 @@ contains
 ! Choose iteration according to the fastest converging sequence
                vtry = .false.
                stry = .false.
-               if (spass .and. ((.not. vpass) .or. tss < tvv)) GO TO 40
+               if (spass .and. ((.not. vpass) .or. tss < tvv)) then
+                  GO TO 40
+               end if
 20             call quadit(ui, vi, nz)
-               if (nz > 0) return
+               if (nz > 0) then
+                  return
+               end if
 
 ! Quadratic iteration has failed. flag that it has
 ! been tried and decrease the convergence criterion.
@@ -5581,10 +5615,14 @@ contains
 
 ! Try linear iteration if it has not been tried and
 ! the s sequence is converging
-               if (stry .or. (.not. spass)) GO TO 50
+               if (stry .or. (.not. spass)) then
+                  GO TO 50
+               end if
                k(1:n) = svk(1:n)
 40             call realit(s, nz, iflag)
-               if (nz > 0) return
+               if (nz > 0) then
+                  return
+               end if
 
 ! Linear iteration has failed.  Flag that it has been
 ! tried and decrease the convergence criterion
@@ -5606,7 +5644,9 @@ contains
 
 ! Try quadratic iteration if it has not been tried
 ! and the v sequence is converging
-               if (vpass .and. (.not. vtry)) GO TO 20
+               if (vpass .and. (.not. vtry)) then
+                  GO TO 20
+               end if
 
 ! Recompute qp and scalar values to continue the second stage
                call quadsd(nn, u, v, p, qp, a, b)
@@ -5628,11 +5668,11 @@ contains
 ! uu,vv - coefficients of starting quadratic
 ! nz - number of zero found
 
-      double precision, intent(IN) :: uu
-      double precision, intent(IN) :: vv
+      real(kind=dp), intent(IN) :: uu
+      real(kind=dp), intent(IN) :: vv
       integer, intent(OUT) :: nz
 
-      double precision :: ui, vi
+      real(kind=dp) :: ui, vi
       real :: mp, omp, ee, relstp, t, zm
       integer :: type, i, j
       logical :: tried
@@ -5644,11 +5684,13 @@ contains
       j = 0
 
 ! Main loop
-10    call quad(1.d0, u, v, szr, szi, lzr, lzi)
+10    call quad(1.0_dp, u, v, szr, szi, lzr, lzi)
 
 ! Return if roots of the quadratic are real and not
 ! close to multiple or nearly equal and  of opposite sign.
-      if (abs(abs(szr) - abs(lzr)) > .01d0 * abs(lzr)) return
+      if (abs(abs(szr) - abs(lzr)) > 0.01_dp * abs(lzr)) then
+         return
+      end if
 
 ! Evaluate polynomial by quadratic synthetic division
       call quadsd(nn, u, v, p, qp, a, b)
@@ -5667,20 +5709,24 @@ contains
 
 ! Iteration has converged sufficiently if the
 ! polynomial value is less than 20 times this bound
-      if (mp <= 20.d0 * ee) then
+      if (mp <= 20.0_dp * ee) then
          nz = 2
          return
       end if
       j = j + 1
 
 ! Stop iteration after 20 steps
-      if (j > 20) return
+      if (j > 20) then
+         return
+      end if
       if (j >= 2) then
          if (.not. (relstp > .01 .or. mp < omp .or. tried)) then
 
 ! A cluster appears to be stalling the convergence.
 ! five fixed shift steps are taken with a u,v close to the cluster
-            if (relstp < eta) relstp = eta
+            if (relstp < eta) then
+               relstp = eta
+            end if
             relstp = sqrt(relstp)
             u = u - u * relstp
             v = v + v * relstp
@@ -5702,7 +5748,9 @@ contains
       call newest(type, ui, vi)
 
 ! If vi is zero the iteration is not converging
-      if (vi == 0.d0) return
+      if (vi == 0.0_dp) then
+         return
+      end if
       relstp = abs((vi - v) / vi)
       u = ui
       v = vi
@@ -5717,10 +5765,10 @@ contains
 ! nz    - number of zero found
 ! iflag - flag to indicate a pair of zeros near real axis.
 
-      double precision, intent(IN OUT) :: sss
+      real(kind=dp), intent(IN OUT) :: sss
       integer, intent(OUT) :: nz, iflag
 
-      double precision :: pv, kv, t, s
+      real(kind=dp) :: pv, kv, t, s
       real :: ms, mp, omp, ee
       integer :: i, j
 
@@ -5749,18 +5797,20 @@ contains
 
 ! Iteration has converged sufficiently if the
 ! polynomial value is less than 20 times this bound
-      if (mp <= 20.d0 * ((are + mre) * ee - mre * mp)) then
+      if (mp <= 20.0_dp * ((are + mre) * ee - mre * mp)) then
          nz = 1
          szr = s
-         szi = 0.d0
+         szi = 0.0_dp
          return
       end if
       j = j + 1
 
 ! Stop iteration after 10 steps
-      if (j > 10) return
+      if (j > 10) then
+         return
+      end if
       if (j >= 2) then
-         if (abs(t) <= .001d0 * abs(s - t) .and. mp > omp) then
+         if (abs(t) <= 0.001_dp * abs(s - t) .and. mp > omp) then
 ! A cluster of zeros near the real axis has been encountered,
 ! return with iflag set to initiate a quadratic iteration
             iflag = 1
@@ -5788,7 +5838,7 @@ contains
          end do
       else
 ! Use unscaled form
-         k(1) = 0.0d0
+         k(1) = 0.0_dp
          do i = 2, n
             k(i) = qk(i - 1)
          end do
@@ -5797,8 +5847,10 @@ contains
       do i = 2, n
          kv = kv * s + k(i)
       end do
-      t = 0.d0
-      if (abs(kv) > abs(k(n)) * 10.*eta) t = -pv / kv
+      t = 0.0_dp
+      if (abs(kv) > abs(k(n)) * 10.*eta) then
+         t = -pv / kv
+      end if
       s = s + t
       GO TO 10
    end subroutine realit
@@ -5853,15 +5905,17 @@ contains
 
       integer, intent(IN) :: type
 
-      double precision :: temp
+      real(kind=dp) :: temp
       integer :: i
 
       if (type /= 3) then
          temp = a
-         if (type == 1) temp = b
+         if (type == 1) then
+            temp = b
+         end if
          if (abs(a1) <= abs(temp) * eta * 10.) then
 ! If a1 is nearly zero then use a special form of the recurrence
-            k(1) = 0.d0
+            k(1) = 0.0_dp
             k(2) = -a7 * qp(1)
             do i = 3, n
                k(i) = a3 * qk(i - 2) - a7 * qp(i - 1)
@@ -5881,8 +5935,8 @@ contains
       end if
 
 ! Use unscaled form of the recurrence if type is 3
-      k(1) = 0.d0
-      k(2) = 0.d0
+      k(1) = 0.0_dp
+      k(2) = 0.0_dp
       do i = 3, n
          k(i) = qk(i - 2)
       end do
@@ -5895,10 +5949,10 @@ contains
 ! using the scalars computed in calcsc.
 
       integer, intent(IN) :: type
-      double precision, intent(OUT) :: uu
-      double precision, intent(OUT) :: vv
+      real(kind=dp), intent(OUT) :: uu
+      real(kind=dp), intent(OUT) :: vv
 
-      double precision :: a4, a5, b1, b2, c1, c2, c3, c4, temp
+      real(kind=dp) :: a4, a5, b1, b2, c1, c2, c3, c4, temp
 
 ! Use formulas appropriate to setting of type.
       if (type /= 3) then
@@ -5918,7 +5972,7 @@ contains
          c3 = b1 * b1 * a3
          c4 = c1 - c2 - c3
          temp = a5 + b1 * a4 - c4
-         if (temp /= 0.d0) then
+         if (temp /= 0.0_dp) then
             uu = u - (u * (c3 + c2) + v * (b1 * a1 + b2 * a7)) / temp
             vv = v * (1.+c4 / temp)
             return
@@ -5926,8 +5980,8 @@ contains
       end if
 
 ! If type=3 the quadratic is zeroed
-      uu = 0.d0
-      vv = 0.d0
+      uu = 0.0_dp
+      vv = 0.0_dp
       return
    end subroutine newest
 
@@ -5937,10 +5991,10 @@ contains
 ! quotient in q and the remainder in a,b.
 
       integer, intent(IN) :: nn
-      double precision, intent(IN) :: u, v, p(nn)
-      double precision, intent(OUT) :: q(nn), a, b
+      real(kind=dp), intent(IN) :: u, v, p(nn)
+      real(kind=dp), intent(OUT) :: q(nn), a, b
 
-      double precision :: c
+      real(kind=dp) :: c
       integer :: i
 
       b = p(1)
@@ -5963,43 +6017,53 @@ contains
 ! larger zero if the zeros are real and both zeros are complex.
 ! The smaller real zero is found directly from the product of the zeros c/a.
 
-      double precision, intent(IN) :: a, b1, c
-      double precision, intent(OUT) :: sr, si, lr, li
+      real(kind=dp), intent(IN) :: a, b1, c
+      real(kind=dp), intent(OUT) :: sr, si, lr, li
 
-      double precision :: b, d, e
+      real(kind=dp) :: b, d, e
 
-      if (a /= 0.d0) GO TO 20
-      sr = 0.d0
-      if (b1 /= 0.d0) sr = -c / b1
-      lr = 0.d0
-10    si = 0.d0
-      li = 0.d0
+      if (a /= 0.0_dp) then
+         GO TO 20
+      end if
+      sr = 0.0_dp
+      if (b1 /= 0.0_dp) then
+         sr = -c / b1
+      end if
+      lr = 0.0_dp
+10    si = 0.0_dp
+      li = 0.0_dp
       return
 
-20    if (c == 0.d0) then
-         sr = 0.d0
+20    if (c == 0.0_dp) then
+         sr = 0.0_dp
          lr = -b1 / a
          GO TO 10
       end if
 
 ! Compute discriminant avoiding overflow
-      b = b1 / 2.d0
+      b = b1 / 2.0_dp
       if (abs(b) >= abs(c)) then
-         e = 1.d0 - (a / b) * (c / b)
+         e = 1.0_dp - (a / b) * (c / b)
          d = sqrt(abs(e)) * abs(b)
       else
          e = a
-         if (c < 0.d0) e = -a
+         if (c < 0.0_dp) then
+            e = -a
+         end if
          e = b * (b / abs(c)) - e
          d = sqrt(abs(e)) * sqrt(abs(c))
       end if
-      if (e >= 0.d0) then
+      if (e >= 0.0_dp) then
 
 ! Real zeros
-         if (b >= 0.d0) d = -d
+         if (b >= 0.0_dp) then
+            d = -d
+         end if
          lr = (-b + d) / a
-         sr = 0.d0
-         if (lr /= 0.d0) sr = (c / lr) / a
+         sr = 0.0_dp
+         if (lr /= 0.0_dp) then
+            sr = (c / lr) / a
+         end if
          GO TO 10
       end if
 ! complex conjugate zeros

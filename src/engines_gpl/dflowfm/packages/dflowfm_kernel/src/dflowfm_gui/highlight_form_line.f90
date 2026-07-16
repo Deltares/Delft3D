@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,24 +34,31 @@
 !! Input fields are highlighted automatically, but the string label isn't.
 !! This assumes that string field number is always input field number minus 1.
 !! Only use this subroutine as the FMUSER argument to IFormEditUser(.., .., FMUSER).
-subroutine highlight_form_line(ifield)
+module m_highlight_form_line
+
    implicit none
-   integer, intent(in) :: ifield !< Form field number that lost focus (infoform(3) contains 'next' field).
-   !integer, intent(in) :: iexitk !< 'Exit' key that was used to leave this form field. not used any longer
 
-   integer :: ifieldnext
-   integer, external :: InfoForm
+contains
 
-   ifieldnext = InfoForm(3)
+   subroutine highlight_form_line(ifield)
+      integer, intent(in) :: ifield !< Form field number that lost focus (infoform(3) contains 'next' field).
+      !integer, intent(in) :: iexitk !< 'Exit' key that was used to leave this form field. not used any longer
+
+      integer :: ifieldnext
+      integer, external :: InfoForm
+
+      ifieldnext = InfoForm(3)
 
 ! Reset the 'current' field back to defaults (no highlights)
-   if (ifield > 1) then
-      call iformattributen(ifield - 1, 0, -1, -1)
-      call iformshowfield(ifield - 1)
-   end if
-   if (ifieldnext > 1) then
-      call iformattribute(ifieldnext - 1, 'UB', ' ', ' ')
-      call iformshowfield(ifieldnext - 1)
-   end if
+      if (ifield > 1) then
+         call iformattributen(ifield - 1, 0, -1, -1)
+         call iformshowfield(ifield - 1)
+      end if
+      if (ifieldnext > 1) then
+         call iformattribute(ifieldnext - 1, 'UB', ' ', ' ')
+         call iformshowfield(ifieldnext - 1)
+      end if
 
-end subroutine highlight_form_line
+   end subroutine highlight_form_line
+
+end module m_highlight_form_line

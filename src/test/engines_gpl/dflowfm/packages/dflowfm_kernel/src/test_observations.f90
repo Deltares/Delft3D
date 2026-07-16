@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -104,11 +104,9 @@ subroutine test_read_snapped_obs_points
     use m_observations
     use unstruc_model
     use m_partitioninfo, only: jampi
-    !use chdir_mod
     use ifport
-    !
-    ! Externals
-    integer, external :: flow_modelinit
+    use m_flow_modelinit, only: flow_modelinit
+    use m_resetfullflowmodel, only: resetfullflowmodel
     !
     ! Locals
     integer, parameter                           :: N_OBS_POINTS = 4

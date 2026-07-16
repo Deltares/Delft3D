@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,27 @@
 !
 !
 
-      subroutine curvilinearGRIDfromsplines()
-         use M_SPLINES
-         use m_qnerror
-         implicit none
-         if (MCS == 0) then
-            call QNERROR('First Create or Open Splines', ' ', ' ')
-            !NUM = 0
-            return
-         end if
-         call SPLRGFR()
-      end subroutine curvilinearGRIDfromsplines
+module m_curvilineargridfromsplines
+   use m_splrgfr, only: splrgfr
+
+   implicit none
+
+   private
+
+   public :: curvilineargridfromsplines
+
+contains
+
+   subroutine curvilinearGRIDfromsplines()
+      use M_SPLINES
+      use m_qnerror
+
+      if (MCS == 0) then
+         call QNERROR('First Create or Open Splines', ' ', ' ')
+         !NUM = 0
+         return
+      end if
+      call SPLRGFR()
+   end subroutine curvilinearGRIDfromsplines
+
+end module m_curvilineargridfromsplines

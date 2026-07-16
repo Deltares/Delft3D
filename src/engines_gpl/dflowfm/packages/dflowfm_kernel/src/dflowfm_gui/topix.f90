@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,16 +30,17 @@
 !
 !
 module m_topix
-    contains
-    
-      subroutine TOPIX(X, Y, NX, NY)
-         implicit none
-         integer :: nx
-         integer :: ny
-         double precision :: x
-         double precision :: y
+contains
+
+   subroutine TOPIX(X, Y, NX, NY)
+      use precision, only: dp
+      implicit none
+      integer :: nx
+      integer :: ny
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 !     GIVE SCREEN COORDINATES OF WORLDCOORDINATES
-         call IGRUNITSTOPIXELS(real(X), real(Y), NX, NY)
-         return
-      end
+      call IGRUNITSTOPIXELS(real(X), real(Y), NX, NY)
+      return
+   end
 end module m_topix

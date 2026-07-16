@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,51 +30,71 @@
 !
 !
 
-subroutine heatu(timhr)
-   use m_flow
-   use m_flowgeom
-   use m_sferic
-   use m_get_kbot_ktop
+module m_heatu
+
    implicit none
 
-   double precision :: timhr
+contains
 
-   double precision :: qsnom
-   integer :: n, kb, kt
+   !> Update the heatfluxes
+   subroutine heatu(time_in_hours)
+      use precision, only: dp
+      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, his_write_settings, map_write_settings, &
+                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep, &
+                        air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowgeom, only: ndxi, nd
+      use m_sferic, only: anglon, anglat
+      use m_wind, only: heatsrc0, sensible_heat_flux, latent_heat_flux
+      use m_qsun_nominal, only: calculate_nominal_solar_radiation
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_heatun, only: heatun
+      use m_atmospheric_stability, only: get_sensible_heat_flux, get_latent_heat_flux
 
-   heatsrc0 = 0d0 ! array of heat sources zero
+      real(kind=dp), intent(in) :: time_in_hours !< Current model time in hours
 
-   if (jamapheatflux > 0 .or. jahisheatflux > 0) then ! map output zero
-      if (jatem == 3) then
-         Qtotmap = 0d0
-      else if (jatem == 5) then
-         Qtotmap = 0d0
-         Qsunmap = 0d0
-         Qevamap = 0d0
-         Qconmap = 0d0
-         Qlongmap = 0d0
-         Qfrevamap = 0d0
-         Qfrconmap = 0d0
+      real(kind=dp) :: nominal_solar_radiation
+      integer :: n, kb, kt
+
+      heatsrc0(:) = 0.0_dp ! 2D or 3D heat source per cell, only set at timeuser (Km3/s)
+
+      if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
+            qtotmap(:) = 0.0_dp
+         else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            qtotmap(:) = 0.0_dp
+            qsunmap(:) = 0.0_dp
+            qevamap(:) = 0.0_dp
+            qconmap(:) = 0.0_dp
+            qlongmap(:) = 0.0_dp
+            qfrevamap(:) = 0.0_dp
+            qfrconmap(:) = 0.0_dp
+         end if
       end if
-   end if
 
-   call qsun_nominal(anglon, anglat, timhr, qsnom) ! for models not in spherical coordinates do this just once
-
-!epshstem     = 0.001d0
-!chktempdep   = 0.0d0
-!Soiltempthick = 0.2d0
-
-!$OMP PARALLEL DO   &
-!$OMP PRIVATE(n,kb,kt)
-   do n = 1, ndxi
-      if (nd(n)%lnx == 0) cycle ! The need for this statement makes Santa Claus unhappy
-      if (hs(n) < epshstem) cycle
-      call heatun(n, timhr, qsnom)
-      if (hs(n) < chktempdep) then
-         call getkbotktop(n, kb, kt)
-         heatsrc0(kb:kt) = heatsrc0(kb:kt) * hs(n) / chktempdep
+      nominal_solar_radiation = calculate_nominal_solar_radiation(anglon, anglat, time_in_hours) ! for models not in spherical coordinates do this just once
+      
+      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         call get_sensible_heat_flux(sensible_heat_flux)
+         call get_latent_heat_flux(latent_heat_flux)
       end if
-   end do
-!$OMP END PARALLEL DO
 
-end subroutine heatu
+      !$OMP PARALLEL DO   &
+      !$OMP PRIVATE(n,kb,kt)
+      do n = 1, ndxi
+         if (nd(n)%lnx == 0) then
+            cycle
+         end if
+         if (hs(n) < epshstem) then
+            cycle
+         end if
+         call heatun(n, time_in_hours, nominal_solar_radiation)
+         if (hs(n) < chktempdep) then
+            call getkbotktop(n, kb, kt)
+            heatsrc0(kb:kt) = heatsrc0(kb:kt) * hs(n) / chktempdep
+         end if
+      end do
+      !$OMP END PARALLEL DO
+
+   end subroutine heatu
+
+end module m_heatu

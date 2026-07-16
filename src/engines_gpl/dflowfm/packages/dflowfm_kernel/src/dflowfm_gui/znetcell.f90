@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,7 +30,17 @@
 !
 !
 
-   double precision function znetcell(k)
+module m_znetcell
+   use m_checktrianglenetcell, only: checktrianglenetcell
+   use m_getwavenr, only: getwavenr
+   use m_orthonet_compute_orientation, only: orthonet_compute_orientation
+
+   implicit none
+
+contains
+
+   real(kind=dp) function znetcell(k)
+      use precision, only: dp
 
       use unstruc_display
       use m_netw
@@ -43,9 +53,9 @@
       implicit none
 
       integer :: k, k1, k2, k3, ja
-      double precision :: uu1, vv1, uu2, vv2 ! not used here
-      double precision :: phimin, phimax
-      double precision :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
+      real(kind=dp) :: uu1, vv1, uu2, vv2 ! not used here
+      real(kind=dp) :: phimin, phimax
+      real(kind=dp) :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
 
       znetcell = DMISS
 
@@ -54,14 +64,16 @@
       else if (ndraw(33) == 6) then ! cell area
          znetcell = ba(k)
       else if (ndraw(33) == 2) then ! cell numbers
-         if (netcell(k)%N > 0) znetcell = dble(k)
+         if (netcell(k)%N > 0) then
+            znetcell = real(k, kind=dp)
+         end if
       else if (ndraw(33) == 8) then ! cell tri, 4, 5etc
-         znetcell = dble(netcell(k)%n)
+         znetcell = real(netcell(k)%n, kind=dp)
       else if (ndraw(33) == 9) then ! cell normalised centre of gravity - circumcentre distance
          if (ba(k) > 0) then
             znetcell = dbdistance(xz(k), yz(k), xzw(k), yzw(k), jsferic, jasfer3D, dmiss) / sqrt(ba(k))
          else
-            znetcell = 0d0
+            znetcell = 0.0_dp
          end if
       else if (ndraw(33) == 10 .or. ndraw(33) == 11) then ! slope
          k1 = netcell(k)%nod(1)
@@ -89,7 +101,7 @@
                if (ndraw(33) == 11) then
                   DEPTH = -(ZK(K1) + ZK(K2) + ZK(K3)) / 3
                   if (DEPTH >= .01) then
-                     TSIG = 5d0
+                     TSIG = 5.0_dp
                      call getwavenr(depth, tsig, rk)
                      znetcell = SLOPE / (DEPTH * RK)
                   else
@@ -109,3 +121,5 @@
       end if
 
    end function znetcell
+
+end module m_znetcell

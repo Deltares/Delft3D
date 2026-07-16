@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -326,12 +326,12 @@ contains
         9999 if (timon) call timstop (ithandl)
         return
 
-        2000 FORMAT (/, A20, ' UNIT: ', I3, ', READING: ', A, / &
+        2000 FORMAT (/, A24, ' UNIT: ', I3, ', READING: ', A, / &
                 ' AT SIMULATION TIME:', I10)
-        2010 FORMAT (/, A20, ' UNIT: ', I3, ', READING: ', A, / &
+        2010 FORMAT (/, A24, ' UNIT: ', I3, ', READING: ', A, / &
                 ' AT SIMULATION TIME:', I5, 'D ', I2, 'H ', I2, 'M ', I2, 'S !', / &
                 ' TIME IN FILE:      ', I5, 'D ', I2, 'H ', I2, 'M ', I2, 'S !')
-        2020 FORMAT (/, A20, ' UNIT:', I10, ', READING: ', A, / &
+        2020 FORMAT (/, A24, ' UNIT:', I10, ', READING: ', A, / &
                 ' SIMULATION TIME :', I2, 'Y ', I3, 'D ', I2, 'H ', I2, 'M ', I2, 'S .', / &
                 ' TIME IN FILE    :', I2, 'Y ', I3, 'D ', I2, 'H ', I2, 'M ', I2, 'S .')
 

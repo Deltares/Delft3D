@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,9 +30,28 @@
 !
 !
 
+module m_ndisplay
+
+   use m_zoom3, only: zoom3
+   use m_setcoltabfile, only: setcoltabfile
+   use m_checknetwork, only: checknetwork
+   use m_add_tracer, only: add_tracer
+   use m_textparameters
+   use m_setwy
+   use m_waveconst
+
+   use precision, only: dp
+   implicit none
+
+contains
+
    subroutine NDISPLAY(NWHAT, KEY)
-      use M_FLOW
-      use M_FLOWGEOM
+      use m_menuv3
+      use m_filemenu
+      use m_changeisoparameters
+      use m_changedisplayparameters
+      use m_flow
+      use m_flowgeom, only: lnx1d, xz
       use unstruc_display
       use unstruc_model, only: md_ident
       use unstruc_startup, only: initgui
@@ -41,12 +60,15 @@
       use m_plotdots
       use m_transport
       use m_waves, only: waveparopt, numoptwav
-      !use m_xbeach_data,   only: windmodel
       use gridoperations
       use m_drawthis
       use m_qnerror
+      use m_paramtext
+      use m_tek_num_netcells
+      use m_set_branch_lc
+      use m_filez, only: oldfil, doclose, message
+      use m_wind, only: jawind
 
-      implicit none
       integer :: ium
       integer :: maxopt
       integer :: nputz
@@ -59,13 +81,11 @@
       integer :: ierror
       integer :: numopt
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP)
 
 1234  continue
 
       if (NWHAT == 1) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'DISPLAY PRESETS                         '
          OPTION(1) = 'Network topology (nrs)                  '
          OPTION(2) = 'Network orthogonality                   '
          OPTION(3) = 'Flow display                            '
@@ -137,13 +157,12 @@
                call MESSAGE('YOU SAVED ', filnam, ' ')
             end if
          else if (NWHAT2 == 6) then
-            call load_displaysettings('unstruc.cfg'); key = 3
+            call load_displaysettings('unstruc.cfg')
+            key = 3
          else if (NWHAT2 == 7) then
             call save_displaysettings('unstruc.cfg')
          end if
       elseif (NWHAT == 2) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE NETWORK              '
          OPTION(1) = 'NO NETWORK                              '
          OPTION(2) = 'NETWORK SOLID LINES                     '
          OPTION(3) = 'NETWORK SOLID LINES + OUTLINE           '
@@ -156,7 +175,9 @@
          NWHAT2 = NDRAW(2) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(2)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(2)) then
+               KEY = 3
+            end if
             NDRAW(2) = NWHAT2 - 1
             if (NDRAW(2) >= 2 .and. NDRAW(2) <= 4) then
                call findcells(0)
@@ -166,8 +187,6 @@
             end if
          end if
       else if (NWHAT == 3) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE PREVIOUS NETWOK      '
          OPTION(1) = 'NO NETWORK                              '
          OPTION(2) = 'NETWORK SOLID LINES                     '
          OPTION(3) = 'OTHER                                   '
@@ -178,12 +197,12 @@
          NWHAT2 = NDRAW(16) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(16)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(16)) then
+               KEY = 3
+            end if
             NDRAW(16) = NWHAT2 - 1
          end if
       else if (NWHAT == 4) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE SPLINES              '
          OPTION(1) = 'No Splines                              '
          OPTION(2) = 'Splines with Dots                       '
          OPTION(3) = 'Splines                                 '
@@ -191,12 +210,12 @@
          NWHAT2 = NDRAW(15) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(15)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(15)) then
+               KEY = 3
+            end if
             NDRAW(15) = NWHAT2 - 1
          end if
       else if (NWHAT == 5) then
-         exp(1) = 'MENU 10                                 '
-         exp(2) = 'HOW TO DISPLAY THE land boundary        '
          OPTION(1) = 'NO land boundary                        '
          OPTION(2) = 'LINES                                   '
          OPTION(3) = 'LINES + DOTS                            '
@@ -211,12 +230,12 @@
          NWHAT2 = NDRAW(3) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(3)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(3)) then
+               KEY = 3
+            end if
             NDRAW(3) = NWHAT2 - 1
          end if
       else if (NWHAT == 6) then
-         exp(1) = 'MENU 8                                  '
-         exp(2) = 'HOW TO DISPLAY NODE VALUES              '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'NUMBERS                                 '
          OPTION(3) = 'ISOFIL SMOOTH                           '
@@ -230,11 +249,11 @@
          MAXOPT = 10
          NWHAT2 = NDRAW(19)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(19)) KEY = 3
+         if (NWHAT2 /= NDRAW(19)) then
+            KEY = 3
+         end if
          NDRAW(19) = NWHAT2
       else if (NWHAT == 7) then
-         exp(1) = 'MENU 8                                  '
-         exp(2) = 'HOW TO DISPLAY LINK VALUES              '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'NUMBERS                                 '
          OPTION(3) = 'ISOfil SMOOTH                           '
@@ -248,11 +267,11 @@
          MAXOPT = 10
          NWHAT2 = NDRAW(11)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(11)) KEY = 3
+         if (NWHAT2 /= NDRAW(11)) then
+            KEY = 3
+         end if
          NDRAW(11) = NWHAT2
       else if (NWHAT == 8) then
-         exp(1) = 'MENU 11                                 '
-         exp(2) = 'SHOW NODE ADMINISTRATION                '
          OPTION(1) = 'NO NODE VALUES                          '
          OPTION(2) = 'NODE NUMBERS                            '
          OPTION(3) = 'NUMBER OF LINKS ATTACHED TO NODE        '
@@ -267,7 +286,9 @@
          MAXOPT = 11
          NWHAT2 = NDRAW(8)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(8)) KEY = 3
+         if (NWHAT2 /= NDRAW(8)) then
+            KEY = 3
+         end if
          NDRAW(8) = NWHAT2
          ! Set default display mode to numbers for nodenums/codes, etc.
          if (nwhat2 == 2 .or. nwhat2 == 3 .or. nwhat2 == 4 .or. nwhat2 == 5 .or. nwhat2 == 7) then
@@ -279,8 +300,6 @@
             call PARAMTEXT(OPTION(NWHAT2), 1)
          end if
       else if (NWHAT == 9) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE ELEMENT ADMIN        '
          OPTION(1) = 'NO LINK VALUES                    ( )   '
          OPTION(2) = 'LINK NUMBERS                      ( )   '
          OPTION(3) = 'NODE NUMBERS BASED ON LINKS       ( )   '
@@ -315,7 +334,9 @@
          end if
          NWHAT2 = NDRAW(7)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(7)) KEY = 3
+         if (NWHAT2 /= NDRAW(7)) then
+            KEY = 3
+         end if
          NDRAW(7) = NWHAT2
          ! Prepare data
          if (nwhat2 == 4 .or. nwhat2 == 15) then
@@ -332,10 +353,10 @@
          if (NWHAT2 /= 0) then
             call PARAMTEXT(OPTION(NWHAT2), 2)
          end if
-         if (NWHAT2 == 6 .or. NWHAT2 == 7) call SETBRANCH_LC(ium)
+         if (NWHAT2 == 6 .or. NWHAT2 == 7) then
+            call SETBRANCH_LC(ium)
+         end if
       else if (NWHAT == 10) then ! flow nodes
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow nodes                         '
          option = ' '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'Waterlevel                          (m )' ! options for nodes , znod, ndraw(28)
@@ -381,7 +402,7 @@
          OPTION(35) = 'Rho                              (kg/m3)'
          OPTION(36) = 'cflmx*vol1(k)/squ(k)               (   )'
 
-         if (soiltempthick == 0d0) then
+         if (soiltempthick == 0.0_dp) then
             OPTION(37) = 'salmase                            (   )'
          else
             OPTION(37) = 'soiltemp                           ( C )'
@@ -411,7 +432,7 @@
 
          if (nonlin >= 2) then
             OPTION(48) = 'a1m                                 (m2)'
-         else if (lnx1D > 0d0) then
+         else if (lnx1D > 0.0_dp) then
             OPTION(48) = 'uc1d                               (m/s)'
          else if (kmx > 0) then
             OPTION(48) = 'max nr of layers                   (   )'
@@ -429,7 +450,7 @@
          numoptwav = -999
          numoptsf = -999
          numoptsed = -999
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             numopt = numopt + 1
             numoptwav = numopt
             OPTION(numoptwav) = 'Wave parameters                         '
@@ -452,9 +473,15 @@
          NWHAT2 = NDRAW(28)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          ! Set default display mode to numbers for nodenums/codes, etc.
-         if (nwhat2 == 11 .and. isalt > 0) iconst_cur = isalt
-         if (nwhat2 == 12 .and. itemp > 0) iconst_cur = itemp
-         if (nwhat2 == 13 .and. ised1 > 0) iconst_cur = ised1
+         if (nwhat2 == 11 .and. isalt > 0) then
+            iconst_cur = isalt
+         end if
+         if (nwhat2 == 12 .and. itemp > 0) then
+            iconst_cur = itemp
+         end if
+         if (nwhat2 == 13 .and. ised1 > 0) then
+            iconst_cur = ised1
+         end if
 
          if (ndraw(19) == 1) then
             if (nwhat2 == 15 .or. nwhat2 == 16) then
@@ -467,7 +494,9 @@
             call PARAMTEXT(OPTION(NWHAT2), 1)
          end if
 
-         if (NWHAT2 /= NDRAW(28)) KEY = 3
+         if (NWHAT2 /= NDRAW(28)) then
+            KEY = 3
+         end if
          NDRAW(28) = NWHAT2
 
          if (ndraw(28) == 24 .and. jaceneqtr == 2) then ! transfer to net node drawing
@@ -493,7 +522,7 @@
             end if
 
          else if (ndraw(28) == numoptwav) then
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                ndraw(28) = 1
                nwhat = 42 ! WAVE submenu
                goto 1234
@@ -519,8 +548,6 @@
          end if
 
       else if (NWHAT == 11) then ! flow links
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow links                         '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'abs(u1)                            (m/s)' ! options for links, zlin, ndraw(29)
          OPTION(3) = 'q1-specific                       (m2/s)'
@@ -582,7 +609,7 @@
          else
             OPTION(47) = 'Coriolis parameter fcorio        (1/s  )'
          end if
-         if (jawave > 2 .and. jawave < 5) then
+         if (jawave > WAVE_FETCH_YOUNG .and. jawave < WAVE_UNIFORM) then
             OPTION(48) = 'Wave forcing term at u            (m/s2)'
          else
             OPTION(48) = '                                        '
@@ -602,7 +629,9 @@
          MAXOPT = numopt
          NWHAT2 = NDRAW(29)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(29)) KEY = 3
+         if (NWHAT2 /= NDRAW(29)) then
+            KEY = 3
+         end if
          ! Set default display mode to numbers for linknums, etc.
          if (nwhat2 == 29) then
             ndraw(11) = 2
@@ -621,8 +650,6 @@
             end if
          end if
       else if (NWHAT == 12) then ! show values at net cell
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW net cells                          '
          OPTION(1) = 'Do not show values at net cells         '
          OPTION(2) = 'Cell numbers                            '
          OPTION(3) = 'Show aspect ratio, <=1 by definition    '
@@ -648,7 +675,9 @@
          MAXOPT = 20
          NWHAT2 = NDRAW(33)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(33)) KEY = 3
+         if (NWHAT2 /= NDRAW(33)) then
+            KEY = 3
+         end if
          NDRAW(33) = NWHAT2
          if (NWHAT2 > 1) then
             call PARAMTEXT(OPTION(NWHAT2), 1)
@@ -663,8 +692,6 @@
             ndraw(19) = 5
          end if
       else if (NWHAT == 13) then ! show values at cell corners
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow links                         '
          OPTION(1) = 'Do NOt show values at flow cell corners '
          OPTION(2) = 'Show x velocity comp                    '
          OPTION(3) = 'Show y velocity comp                    '
@@ -673,11 +700,11 @@
          MAXOPT = 5
          NWHAT2 = NDRAW(31)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(31)) KEY = 3
+         if (NWHAT2 /= NDRAW(31)) then
+            KEY = 3
+         end if
          NDRAW(31) = NWHAT2
       else if (NWHAT == 14) then ! show all flow white line
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow links                         '
          OPTION(1) = 'Do NOt show flow links                  '
          OPTION(2) = 'Show All flow links                     '
          OPTION(3) = 'Show All flow link directions           '
@@ -686,11 +713,11 @@
          MAXOPT = 5
          NWHAT2 = NDRAW(30)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(30)) KEY = 3
+         if (NWHAT2 /= NDRAW(30)) then
+            KEY = 3
+         end if
          NDRAW(30) = NWHAT2
       else if (NWHAT == 15) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW vectors YES/NO                     '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'Velocity                                '
          OPTION(3) = 'Discharge                               '
@@ -708,8 +735,6 @@
          end if
          key = 3
       else if (NWHAT == 16) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW observation stations               '
          OPTION(1) = 'NO observation stations                 '
          OPTION(2) = 'Cross                                   '
          OPTION(3) = 'Cross + name                            '
@@ -726,12 +751,12 @@
          NWHAT2 = NDRAWobs
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 /= NDRAWobs) KEY = 3
+            if (NWHAT2 /= NDRAWobs) then
+               KEY = 3
+            end if
             NDRAWobs = NWHAT2
          end if
       else if (NWHAT == 17) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW CROSS SECTIONS                     '
          OPTION(1) = 'NO cross sections                       '
          OPTION(2) = 'Line only                               '
          OPTION(3) = 'Line dir                                '
@@ -745,17 +770,21 @@
          OPTION(11) = 'Line dir integrated transport 2(c*m3/sm)'
 
          MAXOPT = 9
-         if (numconst >= 1) MAXOPT = 10
-         if (numconst >= 2) MAXOPT = 11
+         if (numconst >= 1) then
+            MAXOPT = 10
+         end if
+         if (numconst >= 2) then
+            MAXOPT = 11
+         end if
          NWHAT2 = ndrawcrosssections
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 /= NDRAWcrosssections) KEY = 3
+            if (NWHAT2 /= NDRAWcrosssections) then
+               KEY = 3
+            end if
             NDRAWcrosssections = NWHAT2
          end if
       else if (NWHAT == 18) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW THIN DAMS YES/NO                   '
          OPTION(1) = 'NO thin dams                            '
          OPTION(2) = 'Thin dam polylines                      '
          OPTION(3) = 'Thin dam net links                      '
@@ -765,8 +794,6 @@
          ndrawThinDams = NWHAT2 - 1
          KEY = 3
       else if (NWHAT == 19) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW FIXED WEIRS YES/NO                 '
          OPTION(1) = 'NO fixed weirs                           '
          OPTION(2) = 'Fixed weir flow links                    '
          OPTION(3) = 'Fixed weir flow links + heights          '
@@ -781,8 +808,6 @@
       else if (NWHAT == 20) then
 !     Lege regel
       else if (NWHAT == 21) then
-         exp(1) = 'MENU 12                                 '
-         exp(2) = 'ISOSCALE YES OR NO                      '
          OPTION(1) = 'ISOSCALE  NODES ON                      '
          OPTION(2) = 'ISOSCALE  LINKS ON                      '
          OPTION(3) = 'ISOSCALES NODES AND LINKS ON            '
@@ -791,7 +816,9 @@
          NWHAT2 = NDRAW(12)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 /= NDRAW(12)) KEY = 3
+            if (NWHAT2 /= NDRAW(12)) then
+               KEY = 3
+            end if
             NDRAW(12) = NWHAT2
          end if
       else if (NWHAT == 22) then
@@ -829,8 +856,6 @@
          NDRAW(10) = 1
          KEY = 3
       else if (NWHAT == 30) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'NO rai                                  '
          OPTION(2) = 'small rai                               '
          OPTION(3) = 'somewhat larger rai                     '
@@ -845,8 +870,6 @@
          NDRAW(9) = 2
          KEY = 3
       else if (NWHAT == 32) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY SAMPLE POINTS            '
          OPTION(1) = 'NO SAMPLE POINTS                        '
          OPTION(2) = 'COLOURED DOTS                           '
          OPTION(3) = 'COLOURED DOTS AND CIRCLES               '
@@ -860,12 +883,12 @@
          NWHAT2 = max(0, NDRAW(32)) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(32)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(32)) then
+               KEY = 3
+            end if
             NDRAW(32) = NWHAT2 - 1
          end if
       else if (NWHAT == 33) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'YO BITMAP                               '
          OPTION(2) = 'NO BITMAP                               '
          MAXOPT = 2
@@ -874,8 +897,6 @@
          NDRAW(26) = NWHAT2
          KEY = 3
       else if (NWHAT == 34) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'No Banf                                 '
          OPTION(2) = 'Equilibrium concentration               '
          OPTION(3) = 'Banf flux (ceq - c)                     '
@@ -889,8 +910,6 @@
          NDRAW(34) = NWHAT2
          KEY = 3
       else if (NWHAT == 35) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'No Polygon                              '
          OPTION(2) = 'Polygon red + white dots                '
          OPTION(3) = 'Polygon no dots                         '
@@ -910,8 +929,6 @@
          NDRAWPOL = NWHAT2
          KEY = 3
       else if (NWHAT == 36) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'No curvilinear grid                     '
          OPTION(2) = 'Lines                                   '
          OPTION(3) = '                                        '
@@ -927,8 +944,6 @@
          KEY = 3
 
       else if (NWHAT == 37) then ! constituents
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW CONSTITUENTS YES/NO                '
          OPTION(1) = 'NEW TRACER                              '
 
          do i = 1, NUMCONST
@@ -952,8 +967,6 @@
          end if
 
       else if (NWHAT == 38) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW sorsin                             '
          OPTION(1) = 'No Sources & Sinks                      '
          OPTION(2) = 'black (sin) + white (sor) dots          '
          OPTION(3) = 'idem + Names                            '
@@ -966,8 +979,6 @@
          KEY = 3
 
       else if (NWHAT == 39) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW DOTS YES/NO                        '
          OPTION(1) = 'DO NOT SHOW DOTS                        '
          OPTION(2) = 'SHOW DOTS                               '
          OPTION(3) = 'CLEAR DOTS                              '
@@ -981,8 +992,6 @@
          end if
          KEY = 3
       else if (NWHAT == 40) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW STRUCTURES YES/NO                '
          OPTION(1) = 'DO NOT SHOW STRUCTURES                '
          OPTION(2) = 'SHOW STRUCTURES SYMBOLS ONLY          '
          OPTION(3) = 'SHOW STRUCTURES SYMBOLS AND IDS       '
@@ -993,8 +1002,6 @@
          KEY = 3
 
       else if (NWHAT == 41) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW PARTICLES YES/NO                   '
          OPTION(1) = 'DO NOT SHOW PARTICLES                   '
          OPTION(2) = 'SHOW PARTICLES                          '
          MAXOPT = 2
@@ -1003,10 +1010,8 @@
          NDRAWPART = NWHAT2
          KEY = 3
       else if (NWHAT == 42) then ! wave stuff
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW WAVEPARS YES/NO                    '
 
-         if (jawave == 1 .or. jawave == 2) then
+         if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             OPTION(1) = 'RMS wave height  (~ 0.7*Hsig)        (m)'
             OPTION(2) = 'Wave length                          (m)'
             OPTION(3) = 'Peak wave period                     (s)'
@@ -1067,8 +1072,6 @@
          NDRAW(28) = numoptwav
 
       else if (NWHAT == 43) then ! Spiral flow parameters
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Spiral Flow Parameters YES/NO      '
          OPTION(1) = 'Streamlines curvature              (1/m)'
          OPTION(2) = 'Spiral flow intensity              (m/s)'
          OPTION(3) = 'Dispersion stress by spiral flow  (m/s2)'
@@ -1086,8 +1089,6 @@
          end if
 
       else if (NWHAT == 44) then ! Sed trsp on flow links
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Mophology Parameters YES/NO        '
          OPTION(1) = 'Curr. rel. bedload transport    (kg/s/m)'
          OPTION(2) = 'Curr. rel. suspended transport  (kg/s/m)'
          OPTION(3) = 'Wave  rel. bedload transport    (kg/s/m)'
@@ -1109,8 +1110,6 @@
          end if
 
       else if (NWHAT == 45) then ! Sed trsp on flow nodes
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Mophology Parameters YES/NO        '
          OPTION(1) = 'Bottom level change in last timestep (m)'
          OPTION(2) = 'Sediment source adv. eq.       (kg/m3/s)'
          OPTION(3) = 'Sediment sink   adv. eq.           (1/s)'
@@ -1129,8 +1128,6 @@
          end if
 
       else if (NWHAT == 46) then ! Groundwater & Hydrology submenu
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Groundwater & Hydrology Parameters '
          OPTION(1) = 'Groundwater pressure                 (m)'
          OPTION(2) = ' ' ! Reserved
          OPTION(3) = ' ' ! Reserved
@@ -1154,3 +1151,5 @@
       end if
       return
    end subroutine NDISPLAY
+
+end module m_ndisplay

@@ -6,16 +6,22 @@ rem
 setlocal enabledelayedexpansion
 
 rem show usage?
-if [%1] EQU []        goto usage
 if [%1] EQU [-h]      goto usage
 if [%1] EQU [--help]  goto usage
 if [%1] EQU [--usage] goto usage
 
 rem Set the directories containing the binaries and set PATH
 set bindir=%~dp0
-set libdir=%bindir%\..\lib
-set PATH=%libdir%;%bindir%;%PATH%
+set PATH=%bindir%;%PATH%
 
+if NOT [%1] EQU [] goto pass_arguments
+
+rem start in interactive mode
+echo executing in this window: "%bindir%\ddcouple.exe" 
+"%bindir%\ddcouple.exe"
+goto end
+
+:pass_arguments
 rem set the hyd/ddb file
 set hydddbfile=%1
 echo ddcouple hyd/ddb-file:%hydddbfile%

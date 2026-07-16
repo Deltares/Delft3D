@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,80 +30,98 @@
 !
 !
 
-subroutine teksorsin() ! teksrc
-   use fm_external_forcings_data
-   use unstruc_display
-   use m_transport, only: isalt, itemp
-   use m_drawthis
+module m_teksorsin
 
    implicit none
-   integer :: n, k, n2, ncol
-   character(len=40) :: tex
-   double precision :: xp, yp
-   logical inview
 
-   if (ndraw(41) <= 1 .or. numsrc == 0) return
+contains
 
-   call IGrCharJustify('L')
-   call settextsizefac(1.0d0)
+   subroutine teksorsin() ! teksrc
+      use precision, only: dp
+      use m_settextsizefac
+      use m_source_sink, only: source_sinks
+      use unstruc_display, only: klsrc
+      use m_transport, only: isalt, itemp
+      use m_drawthis
+      use m_cirr
+      use m_gtext
+      use m_inview
 
-   do n = 1, numsrc ! teksorsin
-      k = ksrc(1, n)
-      if (k /= 0) then
-         n2 = 1; xp = xsrc(n, n2); yp = ysrc(n, n2)
-         if (inview(xp, yp)) then
-            if (qsrc(n) > 0) then
-               ncol = 3
-            else
-               ncol = 221
-            end if
-            call cirr(xp, yp, ncol)
-            if (ndraw(41) == 3) then
-               call gtext(' '//trim(srcname(n)), xp, yp, klsrc)
-            else if (ndraw(41) == 4) then
-               write (tex, '(f10.3)') - qsrc(n)
-               call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
-            else if (ndraw(41) == 5 .and. isalt > 0) then
-               if (qsrc(n) < 0d0) then
-                  write (tex, '(f10.3)') ccsrc(isalt, n)
-                  call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
+      implicit none
+      integer :: n, k, n2, ncol
+      character(len=40) :: tex
+      real(kind=dp) :: xp, yp
+
+      if (ndraw(41) <= 1 .or. source_sinks%num_total == 0) then
+         return
+      end if
+
+      call IGrCharJustify('L')
+      call settextsizefac(1.0_dp)
+
+      do n = 1, source_sinks%num_total ! teksorsin
+         k = source_sinks%indices(n, 1)
+         if (k /= 0) then
+            n2 = 1
+            xp = source_sinks%x(n, n2)
+            yp = source_sinks%y(n, n2)
+            if (inview(xp, yp)) then
+               if (source_sinks%discharge(n) > 0) then
+                  ncol = 3
+               else
+                  ncol = 221
                end if
-            else if (ndraw(41) == 6 .and. itemp > 0) then
-               if (qsrc(n) < 0d0) then
-                  write (tex, '(f10.3)') ccsrc(itemp, n)
-                  call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
+               call cirr(xp, yp, ncol)
+               if (ndraw(41) == 3) then
+                  call gtext(' '//trim(source_sinks%name(n)), xp, yp, klsrc)
+               else if (ndraw(41) == 4) then
+                  write (tex, '(f10.3)') - source_sinks%discharge(n)
+                  call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
+               else if (ndraw(41) == 5 .and. isalt > 0) then
+                  if (source_sinks%discharge(n) < 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, isalt)
+                     call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
+                  end if
+               else if (ndraw(41) == 6 .and. itemp > 0) then
+                  if (source_sinks%discharge(n) < 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, itemp)
+                     call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
+                  end if
                end if
             end if
          end if
-      end if
-      k = ksrc(4, n)
-      if (k /= 0) then
-         n2 = nxsrc(n); xp = xsrc(n, n2); yp = ysrc(n, n2)
-         if (inview(xp, yp)) then
-            if (qsrc(n) > 0) then
-               ncol = 221
-            else
-               ncol = 3
-            end if
-            call cirr(xp, yp, ncol)
-            if (ndraw(41) == 3) then
-               call gtext(' '//trim(srcname(n)), xp, yp, klsrc)
-            else if (ndraw(41) == 4) then
-               write (tex, '(f10.3)') qsrc(n)
-               call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
-            else if (ndraw(41) == 5 .and. isalt > 0) then
-               if (qsrc(n) > 0d0) then
-                  write (tex, '(f10.3)') ccsrc(isalt, n)
-                  call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
+         k = source_sinks%indices(n, 4)
+         if (k /= 0) then
+            n2 = source_sinks%max_xy_points(n)
+            xp = source_sinks%x(n, n2)
+            yp = source_sinks%y(n, n2)
+            if (inview(xp, yp)) then
+               if (source_sinks%discharge(n) > 0) then
+                  ncol = 221
+               else
+                  ncol = 3
                end if
-            else if (ndraw(41) == 6 .and. itemp > 0) then
-               if (qsrc(n) > 0d0) then
-                  write (tex, '(f10.3)') ccsrc(itemp, n)
-                  call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
+               call cirr(xp, yp, ncol)
+               if (ndraw(41) == 3) then
+                  call gtext(' '//trim(source_sinks%name(n)), xp, yp, klsrc)
+               else if (ndraw(41) == 4) then
+                  write (tex, '(f10.3)') source_sinks%discharge(n)
+                  call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
+               else if (ndraw(41) == 5 .and. isalt > 0) then
+                  if (source_sinks%discharge(n) > 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, isalt)
+                     call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
+                  end if
+               else if (ndraw(41) == 6 .and. itemp > 0) then
+                  if (source_sinks%discharge(n) > 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, itemp)
+                     call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
+                  end if
                end if
             end if
          end if
-      end if
-   end do
+      end do
 
-end subroutine teksorsin
+   end subroutine teksorsin
+
+end module m_teksorsin

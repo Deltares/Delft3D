@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,11 +30,14 @@
 !
 !
 module m_fkeys
+   use m_histor, only: histor
+
    implicit none
 contains
    subroutine FKEYS(KEY)
-      use m_helpnow
-      use m_osc
+      use m_helpnow, only: wrdkey, nlevel
+      use m_osc, only: histor, osc
+      use m_help, only: help
 
       integer :: key
 

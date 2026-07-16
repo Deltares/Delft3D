@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,29 +30,43 @@
 !
 !
 
+module m_wave_makeplotvars
+
+   use precision, only: dp
+   implicit none
+
+   private
+
+   public :: wave_makeplotvars
+
+contains
+
    subroutine wave_makeplotvars
       use m_waves, only: ustokes, ust_mag, fwav_mag, ustx_cc, usty_cc
       use m_flowparameters, only: jawave
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: wave_surfbeat, wave_swan_online, wave_nc_offline, wavfu, wavfv, rhomean, hu, workx, worky, epshu, taubu, taus
+      use m_flowgeom, only: lnx, ln, wcx1, wcy1, wcx2, wcy2, wcl, ndx
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       implicit none
 
       integer :: ierror
       integer :: L, LL, Lb, Lt, k1, k2
 
-      ust_mag = 0d0
-      fwav_mag = 0d0
-      if (jawave /= 4) then
-         ustx_cc = 0d0
-         usty_cc = 0d0
+      ust_mag = 0.0_dp
+      fwav_mag = 0.0_dp
+      if (jawave /= WAVE_SURFBEAT) then
+         ustx_cc = 0.0_dp
+         usty_cc = 0.0_dp
       end if
 
       do L = 1, lnx ! safe for 3D
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          call getLbotLtop(L, Lb, Lt)
          do LL = Lb, Lt
-            k1 = ln(1, LL); k2 = ln(2, LL)
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
             ustx_cc(k1) = ustx_cc(k1) + wcx1(L) * ustokes(LL)
             usty_cc(k1) = usty_cc(k1) + wcy1(L) * ustokes(LL)
             ustx_cc(k2) = ustx_cc(k2) + wcx2(L) * ustokes(LL)
@@ -62,22 +76,23 @@
       end do
       ust_mag = hypot(ustx_cc, usty_cc)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 6) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_SURFBEAT .or. jawave == WAVE_NC_OFFLINE) then
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
                fwav_mag(k1) = fwav_mag(k1) + wcl(1, L) * hypot(wavfu(LL), wavfv(LL)) * rhomean * hu(L)
                fwav_mag(k2) = fwav_mag(k2) + wcl(2, L) * hypot(wavfu(LL), wavfv(LL)) * rhomean * hu(L)
             end do
          end do
       else
-         fwav_mag = 0d0
+         fwav_mag = 0.0_dp
       end if
       !
       ! bed shear stress
-      workx = 0d0
-      worky = 0d0
+      workx = 0.0_dp
+      worky = 0.0_dp
       do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
@@ -95,3 +110,5 @@
       return
 
    end subroutine wave_makeplotvars
+
+end module m_wave_makeplotvars

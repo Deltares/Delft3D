@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,12 +50,18 @@
 !
 !!--declarations----------------------------------------------------------------
 
+module m_fm_thahbc
+
+   implicit none
+
+contains
+
    subroutine fm_thahbc()
 
-      use fm_external_forcings_data
-      use m_flowparameters
+      use fm_external_forcings_data, only: nbnds, zbnds, kbnds, thtbnds, thzbnds, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd, bndtr, numtracers, nbndtr, bndsf, numfracs, nbndsf
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jased
+      use m_sediment, only: stm_included
       use m_transport, only: ISALT, ITEMP, ISED1, itrac2const, ifrac2const
-      use m_sediment
 
       implicit none
 
@@ -65,7 +71,7 @@
          call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)
       end if
 
-      if (jatem > 0 .and. nbndtm > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .and. nbndtm > 0) then
          call thconst(ITEMP, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm)
       end if
 
@@ -94,7 +100,9 @@
       if (jased > 0 .and. stm_included .and. allocated(bndsf)) then
          do i = 1, numfracs ! only valid suspended fractions
             iconst = ifrac2const(i)
-            if (iconst == 0) cycle
+            if (iconst == 0) then
+               cycle
+            end if
             if (.not. allocated(bndsf(i)%z)) then
                allocate (bndsf(i)%z(0))
             end if
@@ -114,22 +122,24 @@
    end subroutine fm_thahbc
 
    subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
+      use precision, only: dp
 
-      use m_transport
+      use m_transport, only: constituents
+      use fm_external_forcings_data, only: nopenbndsect, threttim
+      use m_missing, only: dmiss
+      use m_get_Lbot_Ltop, only: getlbotltop
       use mathconsts, only: pi_hp
       use m_flow, only: kmxd, q1
       use m_flowtimes, only: dt_user
       use m_flowgeom, only: ln
-      use fm_external_forcings_data
-      use m_missing
 
       implicit none
 
       integer, intent(in) :: iconst, nbnd
       integer, intent(in) :: kbnd(5, nbnd)
-      double precision, intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
+      real(kind=dp), intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
 
-      double precision :: thfactor, rettim, q
+      real(kind=dp) :: thfactor, rettim, q
       integer :: i, j, l, lf, m, n, lb, lt, ki
 
       if (nbnd == 0) then
@@ -144,7 +154,7 @@
 
       do i = 1, nopenbndsect !faster, in general few TH-boundary conditions
          rettim = threttim(iconst, i)
-         if (rettim <= 0d0) then
+         if (rettim <= 0.0_dp) then
             cycle
          end if
          do j = 1, nbnd
@@ -153,16 +163,16 @@
             end if
             lf = kbnd(3, j)
             q = q1(lf)
-            if (q > 0d0) then !inflow condition
-               tht(j) = max(tht(j) - dt_user, 0d0)
-               thfactor = 0.5 * (1d0 + cos((tht(j) / rettim) * pi_hp))
+            if (q > 0.0_dp) then !inflow condition
+               tht(j) = max(tht(j) - dt_user, 0.0_dp)
+               thfactor = 0.5 * (1.0_dp + cos((tht(j) / rettim) * pi_hp))
                call getLbotLtop(lf, lb, lt)
                do l = lb, lt
                   m = (j - 1) * kmxd + (l - lb + 1)
                   zbnd(m) = thz(m) + thfactor * (zbnd(m) - thz(m))
                end do
-            else if (q == 0d0) then
-               tht(j) = 0d0
+            else if (q == 0.0_dp) then
+               tht(j) = 0.0_dp
             else !outflow condition
                tht(j) = rettim
                call getLbotLtop(lf, lb, lt)
@@ -176,3 +186,4 @@
       end do
    end subroutine
 
+end module m_fm_thahbc

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,58 +30,73 @@
 !
 !
 
+module m_compute_wave_parameters
+   use m_wave_uorbrlabda, only: wave_uorbrlabda
+   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
+   use m_wave_shear_velocity, only: compute_wave_shear_velocity
+   use m_waveconst
+
+   implicit none
+
+   private
+
+   public :: compute_wave_parameters
+
+contains
+
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
-      use m_xbeach_data
-      use m_waves
-      use m_flow
-      use m_flowgeom
-      use m_sferic
-      use m_flowtimes
+      use precision, only: dp
+      use m_waves, only: hwav, gammax, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni
+      use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
+      use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flow_without_waves, epshu, ag, hs, waveforcing
+      use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
       use mathconsts, only: sqrt2_hp
-      use m_transform_wave_physics
-
-      use unstruc_display
-
-      implicit none
+      use m_transform_wave_physics, only: transform_wave_physics_hp
+      use m_wind, only: wx, wy
 
       integer :: k1, k2, k, L
       integer :: ierror
-      double precision :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
+      real(kind=dp) :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
 
       ! Fetch models
       !
-      if (jawave < 3 .and. .not. flowWithoutWaves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
+      if (jawave < WAVE_SWAN_ONLINE .and. .not. flow_without_waves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
          ! get ustokes, vstokes for 2D, else in update_verticalprofiles getustwav
-         hwav = min(hwav, gammax * max(s1 - bl, 0d0))
-         if (kmx == 0) then
+         hwav = min(hwav, gammax * max(s1 - bl, 0.0_dp))
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
-               hh = hu(L); 
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               hh = hu(L)
                if (hh <= epshu) then
-                  ustokes(L) = 0d0; vstokes(L) = 0d0
+                  ustokes(L) = 0.0_dp
+                  vstokes(L) = 0.0_dp
                else
-                  hw = 0.5d0 * (hwav(k1) + hwav(k2)); tw = .5d0 * (twav(k1) + twav(k2))
+                  hw = 0.5_dp * (hwav(k1) + hwav(k2))
+                  tw = 0.5_dp * (twav(k1) + twav(k2))
                   uwi = sqrt(wx(L) * wx(L) + wy(L) * wy(L))
-                  if (uwi > 0d0) then
+                  if (uwi > 0.0_dp) then
                      cs = wx(L) / uwi
                      sn = wy(L) / uwi
                   else
-                     cs = 1d0; sn = 0d0
+                     cs = 1.0_dp
+                     sn = 0.0_dp
                   end if
-                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  call compute_wave_shear_velocity(hw, tw, hh, uorbi, rkw, ustt)
                   ustokes(L) = ustt * (csu(L) * cs + snu(L) * sn)
                   vstokes(L) = ustt * (-snu(L) * cs + csu(L) * sn)
                end if
             end do
          end if
-         ! get uorb, rlabda
+         !
          call wave_uorbrlabda()
+
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave >= 6) .and. .not. flowWithoutWaves) then
-         if (jawave == 6 .or. jawave == 7) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -91,7 +106,8 @@
          twav = twavcom
          !
          ! Needed here, because we need wave mass fluxes to calculate stokes drift
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
+            !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
                                & distot, dsurf, dwcap, &
@@ -107,11 +123,11 @@
          end if
       end if
       !
-      if ((jawave == 3 .or. jawave >= 6) .and. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == 6 .or. jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -119,43 +135,51 @@
          end if
          hwav = min(hwav, gammax * hs)
          twav = twavcom
-         call wave_uorbrlabda() ! hwav gets depth-limited here
+         call wave_uorbrlabda()
       end if
       !
       ! Surfbeat model
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          ! pro memore
       end if
       !
       ! Uniform wave field
-      if (jawave == 5 .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flow_without_waves) then
          do k = 1, ndx
             hwav(k) = min(hwavuni, gammax * (s1(k) - bl(k)))
          end do
-         if (kmx == 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
-               hh = hu(L); 
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               hh = hu(L)
                if (hh <= epshu) then
-                  ustokes(L) = 0d0; vstokes(L) = 0d0
+                  ustokes(L) = 0.0_dp
+                  vstokes(L) = 0.0_dp
                else
-                  hw = 0.5d0 * (hwav(k1) + hwav(k2)); tw = .5d0 * (twav(k1) + twav(k2))
-                  cs = 0.5d0 * (cosd(phiwav(k1)) + cosd(phiwav(k2)))
-                  sn = 0.5d0 * (sind(phiwav(k1)) + sind(phiwav(k2)))
-                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  hw = 0.5_dp * (hwav(k1) + hwav(k2))
+                  tw = 0.5_dp * (twav(k1) + twav(k2))
+                  cs = 0.5_dp * (cosd(phiwav(k1)) + cosd(phiwav(k2)))
+                  sn = 0.5_dp * (sind(phiwav(k1)) + sind(phiwav(k2)))
+                  call compute_wave_shear_velocity(hw, tw, hh, uorbi, rkw, ustt)
                   ustokes(L) = ustt * (csu(L) * cs + snu(L) * sn)
                   vstokes(L) = ustt * (-snu(L) * cs + csu(L) * sn)
                end if
             end do
-            call wave_uorbrlabda()
          end if
+         !
+         call wave_uorbrlabda()
+         !
       end if
 
       ! shortcut to switch off stokes influence
       if (jawavestokes == 0) then
-         ustokes = 0d0; vstokes = 0d0
+         ustokes = 0.0_dp
+         vstokes = 0.0_dp
       end if
 
 1234  continue
       return
    end subroutine compute_wave_parameters
+
+end module m_compute_wave_parameters

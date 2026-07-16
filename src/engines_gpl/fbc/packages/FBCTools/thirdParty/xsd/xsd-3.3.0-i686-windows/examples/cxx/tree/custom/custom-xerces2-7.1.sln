@@ -1,0 +1,61 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "contacts", "contacts\contacts-xerces2-7.1.vcproj", "{9FB807C1-53EE-4E71-812F-89E8BE6FCB43}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "taxonomy", "taxonomy\taxonomy-xerces2-7.1.vcproj", "{B3108E70-7B4E-4DDA-8872-0DC4AFDCB2D9}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wildcard", "wildcard\wildcard-xerces2-7.1.vcproj", "{6CE6CDEC-F8DE-42D0-80F8-E71C0DD8F897}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "comments", "comments\comments-xerces2-7.1.vcproj", "{262E34D2-48D2-4657-9DB2-F01FFDCEA295}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "double", "double\double-xerces2-7.1.vcproj", "{CCE6AE91-39AC-49B6-8763-742B65FCD92E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mixed", "mixed\mixed-xerces2-7.1.vcproj", "{26CE0C08-7621-403A-88A7-206E64F32C66}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{9FB807C1-53EE-4E71-812F-89E8BE6FCB43}.Debug.ActiveCfg = Debug|Win32
+		{9FB807C1-53EE-4E71-812F-89E8BE6FCB43}.Debug.Build.0 = Debug|Win32
+		{9FB807C1-53EE-4E71-812F-89E8BE6FCB43}.Release.ActiveCfg = Release|Win32
+		{9FB807C1-53EE-4E71-812F-89E8BE6FCB43}.Release.Build.0 = Release|Win32
+		{B3108E70-7B4E-4DDA-8872-0DC4AFDCB2D9}.Debug.ActiveCfg = Debug|Win32
+		{B3108E70-7B4E-4DDA-8872-0DC4AFDCB2D9}.Debug.Build.0 = Debug|Win32
+		{B3108E70-7B4E-4DDA-8872-0DC4AFDCB2D9}.Release.ActiveCfg = Release|Win32
+		{B3108E70-7B4E-4DDA-8872-0DC4AFDCB2D9}.Release.Build.0 = Release|Win32
+		{6CE6CDEC-F8DE-42D0-80F8-E71C0DD8F897}.Debug.ActiveCfg = Debug|Win32
+		{6CE6CDEC-F8DE-42D0-80F8-E71C0DD8F897}.Debug.Build.0 = Debug|Win32
+		{6CE6CDEC-F8DE-42D0-80F8-E71C0DD8F897}.Release.ActiveCfg = Release|Win32
+		{6CE6CDEC-F8DE-42D0-80F8-E71C0DD8F897}.Release.Build.0 = Release|Win32
+		{262E34D2-48D2-4657-9DB2-F01FFDCEA295}.Debug.ActiveCfg = Debug|Win32
+		{262E34D2-48D2-4657-9DB2-F01FFDCEA295}.Debug.Build.0 = Debug|Win32
+		{262E34D2-48D2-4657-9DB2-F01FFDCEA295}.Release.ActiveCfg = Release|Win32
+		{262E34D2-48D2-4657-9DB2-F01FFDCEA295}.Release.Build.0 = Release|Win32
+		{CCE6AE91-39AC-49B6-8763-742B65FCD92E}.Debug.ActiveCfg = Debug|Win32
+		{CCE6AE91-39AC-49B6-8763-742B65FCD92E}.Debug.Build.0 = Debug|Win32
+		{CCE6AE91-39AC-49B6-8763-742B65FCD92E}.Release.ActiveCfg = Release|Win32
+		{CCE6AE91-39AC-49B6-8763-742B65FCD92E}.Release.Build.0 = Release|Win32
+		{26CE0C08-7621-403A-88A7-206E64F32C66}.Debug.ActiveCfg = Debug|Win32
+		{26CE0C08-7621-403A-88A7-206E64F32C66}.Debug.Build.0 = Debug|Win32
+		{26CE0C08-7621-403A-88A7-206E64F32C66}.Release.ActiveCfg = Release|Win32
+		{26CE0C08-7621-403A-88A7-206E64F32C66}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

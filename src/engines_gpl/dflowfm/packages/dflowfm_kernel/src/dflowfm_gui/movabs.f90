@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,18 +29,22 @@
 
 !
 !
-
+module m_movabs
+   implicit none
+contains
 !
-      subroutine MOVABS(X, Y)
-         use unstruc_opengl
-         use m_dproject
-         implicit none
-         double precision :: x, y, xx, yy
+   subroutine MOVABS(X, Y)
+      use precision, only: dp
+      use unstruc_opengl, only: InOpenGLRendering, MoveTo
+      use m_dproject, only: dproject
 
-         call DPROJECT(X, Y, XX, YY, 1)
-         if (InOpenGLRendering) then
-            call MoveTo(XX, YY)
-         else
-            call IGRMOVETO(real(XX), real(YY))
-         end if
-      end
+      real(kind=dp) :: x, y, xx, yy
+
+      call DPROJECT(X, Y, XX, YY, 1)
+      if (InOpenGLRendering) then
+         call MoveTo(XX, YY)
+      else
+         call IGRMOVETO(real(XX), real(YY))
+      end if
+   end
+end module m_movabs

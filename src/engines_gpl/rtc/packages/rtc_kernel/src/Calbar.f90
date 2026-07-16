@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -43,7 +43,7 @@
 !-----------------------------------------------------------------------
 !   Calling routines:              RTC
 !-----------------------------------------------------------------------
-!   Called  routines:              ERRMSG
+!   Called  routines:              write_error_message_rtc
 !-----------------------------------------------------------------------
 !  Formal parameters:
 !  ------------------
@@ -83,7 +83,7 @@
       Use SyncRtcFlow
       Use MeasureModule
       Use ParameterModule
-      Use Readlib
+      Use Readlib_rtc
 
       implicit none
 
@@ -131,7 +131,7 @@
 !     Check the Julian date
 !-----------------------------------------------------------------------
       if (juldt .lt. 0.0) then
-        call ERRMSG (946, 0, 'CALBAR', &
+        call write_error_message_rtc (946, 0, 'CALBAR', &
                      ' Wrong date requested from D3DFlow ', outuni)
         RetVal = 946
         Return

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,16 @@
 module m_spldist
    implicit none
 contains
-   double precision function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
-      use m_splint
-      use m_planedistance
+   real(kind=dp) function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
+      use precision, only: dp
+      use m_splint, only: splint
+      use m_planedistance, only: planedistance
 
       integer :: n
 !     AFSTAND VAN PUNT XX,YY TOT SPLINEPUNT MET PARM TV
 
-      double precision :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
-      TV = max(0d0, min(TV, N - 1d0))
+      real(kind=dp) :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
+      TV = max(0.0_dp, min(TV, N - 1.0_dp))
       call SPLINT(X, X2, N, TV, XV)
       call SPLINT(Y, Y2, N, TV, YV)
 !     CALL DISTANCE(XV,YV,XX,YY,DIST)

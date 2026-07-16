@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,11 +33,11 @@ module m_getint
    implicit none
 contains
    subroutine GETINT(TEXT, IVAL)
-      use m_devices
-      use M_MISSING
-      use m_helpnow
-      use m_timlin
-      use m_fkeys
+      use m_devices, only: iws, ihs
+      use m_missing, only: dmiss
+      use m_helpnow, only: nlevel, wrdkey
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
 
       integer :: infoattribute
       integer :: infoinput

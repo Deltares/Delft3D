@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,104 +29,111 @@
 
 !
 !
+module m_tek_num_netcells
+   use m_settextsizefac
+   use m_settextsize
+   use m_kcir
 
-      subroutine TEKnumnetcells(jatel)
-         use m_grid
-         use m_netw
-         use m_polygon
-         use m_missing
-         use unstruc_display
-         use geometry_module, only: dbpinpol
-         use gridoperations
-         use m_depmax
-         use m_htext
-         
-         implicit none
-         integer :: i, j, n, jatel, in, k, im, jm, mxnum
-         double precision :: x, y, z
+   implicit none
+contains
+   subroutine TEKnumnetcells(jatel)
+      use precision, only: dp
+      use m_grid, only: ijyes, nc, mc, xc, yc
+      use m_netw, only: nump, xzw, yzw
+      use m_polygon
+      use m_missing, only: dmiss, jins
+      use geometry_module, only: dbpinpol
+      use gridoperations, only: findcells
+      use m_depmax
+      use m_htext
+      use m_inview
 
-         logical inview
+      integer :: i, j, n, jatel, in, k, im, jm, mxnum
+      real(kind=dp) :: x, y, z
 
-         call savepol()
+      call savepol()
 
-         im = 0
-         jm = 0
-         mxnum = 0
-         if (jatel == 1) then
-            if (nump == 0) call findcells(0)
-            ijyes = 0
-         else
-            vmax = -9d9
-            vmin = -vmax
-            do j = 1, nc - 1
-               do i = 1, mc - 1
-                  if (ijyes(i, j) > 0) then
-                     x = 0.25d0 * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
-                     y = 0.25d0 * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
-                     if (inview(x, y)) then
-                        if (ijyes(i, j) > mxnum) then
-                           im = i
-                           jm = j
-                           mxnum = ijyes(i, j)
-                        end if
-                        z = ijyes(i, j)
-                        vmax = max(z, vmax)
-                        vmin = min(z, vmin)
-                     end if
-                  end if
-               end do
-            end do
-            DV = VMAX - VMIN
-            do I = 1, NV
-               VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
-            end do
+      im = 0
+      jm = 0
+      mxnum = 0
+      if (jatel == 1) then
+         if (nump == 0) then
+            call findcells(0)
          end if
-
+         ijyes = 0
+      else
+         vmax = -9.0e9_dp
+         vmin = -vmax
          do j = 1, nc - 1
             do i = 1, mc - 1
-               n = 0
-               if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
-                   xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
-                  n = n + 1
-                  xpl(n) = xc(i, j)
-                  ypl(n) = yc(i, j)
-                  n = n + 1
-                  xpl(n) = xc(i + 1, j)
-                  ypl(n) = yc(i + 1, j)
-                  n = n + 1
-                  xpl(n) = xc(i + 1, j + 1)
-                  ypl(n) = yc(i + 1, j + 1)
-                  n = n + 1
-                  xpl(n) = xc(i, j + 1)
-                  ypl(n) = yc(i, j + 1)
-                  npl = 4
-                  if (jatel == 1) then
-                     in = -1
-                     do k = 1, nump
-                        call dbpinpol(xzw(k), yzw(k), in, dmiss, JINS, NPL, xpl, ypl, zpl)
-                        ijyes(i, j) = ijyes(i, j) + in
-                     end do
-                  else
+               if (ijyes(i, j) > 0) then
+                  x = 0.25_dp * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
+                  y = 0.25_dp * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
+                  if (inview(x, y)) then
+                     if (ijyes(i, j) > mxnum) then
+                        im = i
+                        jm = j
+                        mxnum = ijyes(i, j)
+                     end if
                      z = ijyes(i, j)
-                     x = (xpl(1) + xpl(2) + xpl(3) + xpl(4)) / 4
-                     y = (ypl(1) + ypl(2) + ypl(3) + ypl(4)) / 4
-                     call kcir(x, y, z)
+                     vmax = max(z, vmax)
+                     vmin = min(z, vmin)
                   end if
                end if
             end do
          end do
+         DV = VMAX - VMIN
+         do I = 1, NV
+            VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
+         end do
+      end if
 
-         call restorepol()
+      do j = 1, nc - 1
+         do i = 1, mc - 1
+            n = 0
+            if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
+                xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
+               n = n + 1
+               xpl(n) = xc(i, j)
+               ypl(n) = yc(i, j)
+               n = n + 1
+               xpl(n) = xc(i + 1, j)
+               ypl(n) = yc(i + 1, j)
+               n = n + 1
+               xpl(n) = xc(i + 1, j + 1)
+               ypl(n) = yc(i + 1, j + 1)
+               n = n + 1
+               xpl(n) = xc(i, j + 1)
+               ypl(n) = yc(i, j + 1)
+               npl = 4
+               if (jatel == 1) then
+                  in = -1
+                  do k = 1, nump
+                     call dbpinpol(xzw(k), yzw(k), in, dmiss, JINS, NPL, xpl, ypl, zpl)
+                     ijyes(i, j) = ijyes(i, j) + in
+                  end do
+               else
+                  z = ijyes(i, j)
+                  x = (xpl(1) + xpl(2) + xpl(3) + xpl(4)) / 4
+                  y = (ypl(1) + ypl(2) + ypl(3) + ypl(4)) / 4
+                  call kcir(x, y, z)
+               end if
+            end if
+         end do
+      end do
 
-         if (im > 0) then
-            i = im
-            j = jm
-            z = ijyes(i, j)
-            x = 0.25d0 * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
-            y = 0.25d0 * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
-            call SETTEXTSIZEfac(2d0)
-            call htext(z, x, y)
-            call SETTEXTSIZE()
-         end if
+      call restorepol()
 
-      end subroutine TEKnumnetcells
+      if (im > 0) then
+         i = im
+         j = jm
+         z = ijyes(i, j)
+         x = 0.25_dp * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
+         y = 0.25_dp * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
+         call SETTEXTSIZEfac(2.0_dp)
+         call htext(z, x, y)
+         call SETTEXTSIZE()
+      end if
+
+   end subroutine TEKnumnetcells
+end module m_tek_num_netcells

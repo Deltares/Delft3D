@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,27 +29,29 @@
 
 !
 !
+module m_dispnode
+   implicit none
+contains
+   subroutine DISPNODE(MP)
+      use m_devices, only: iws
+      use m_ktext, only: ktext
 
-      subroutine DISPNODE(MP)
-         use m_devices
-         use m_netw, only: zk
-         use m_ktext
-         implicit none
-         integer :: mp
-         character TEX * 23
+      integer :: mp
+      character TEX * 23
 
-         if (MP <= 0) then
-            TEX = 'NODE NOT FOUND        '
-            call KTEXT(TEX, IWS - 22, 4, 15)
-         else
-            TEX = 'NODE NR:              '
-            write (TEX(10:), '(I10)') MP
-            call KTEXT(TEX, IWS - 22, 4, 15)
+      if (MP <= 0) then
+         TEX = 'NODE NOT FOUND        '
+         call KTEXT(TEX, IWS - 22, 4, 15)
+      else
+         TEX = 'NODE NR:              '
+         write (TEX(10:), '(I10)') MP
+         call KTEXT(TEX, IWS - 22, 4, 15)
 
 !         TEX = 'ZK Lev :           (m)'
 !         WRITE(TEX (10:18),'(F9.3)') zk(mp)
 !         CALL KTEXT(TEX,IWS-22,5,15)
-         end if
+      end if
 
-         return
-      end
+      return
+   end
+end module m_dispnode

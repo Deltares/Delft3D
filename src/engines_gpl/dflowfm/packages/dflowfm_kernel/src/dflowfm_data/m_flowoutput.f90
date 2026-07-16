@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,10 +31,11 @@
 !
 
 module m_flowoutput
+   use precision, only: dp
 
    implicit none
 
-   double precision, allocatable, target :: taus(:) !< [kg s-2 m-1] cell centre tau N/m2 {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: czs(:) !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
+   real(kind=dp), allocatable, target :: taus(:) !< [kg s-2 m-1] cell centre tau N/m2 {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable :: czs(:) !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
 
 end module m_flowoutput

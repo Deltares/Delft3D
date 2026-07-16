@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,13 +34,14 @@ contains
 
 !>    plot a statusbar in the GUI
    subroutine READYY(TEXT, AF)
-      use m_devices
-      use m_gui
-      use m_fillup
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_gui, only: jagui
+      use m_fillup, only: fillup
       implicit none
 
       character TEXT * (*), BALK * 400
-      double precision :: af
+      real(kind=dp) :: af
 
       integer, save :: ih
       integer, save :: ini = 0
@@ -49,7 +50,9 @@ contains
       integer, save :: iyp
       integer :: naf
 
-      if (jaGUI /= 1) return
+      if (jaGUI /= 1) then
+         return
+      end if
 
       if (INI == 0) then
          INI = 1
@@ -64,7 +67,7 @@ contains
          call ITEXTCOLOUR('BLACK', 'BWHITE')
          call IWinOutStringXY(2, 2, BALK(1:IW))
       else
-         NAF = max(AF * IW, 1d0)
+         NAF = max(AF * IW, 1.0_dp)
          call FILLUP(BALK, 'X', NAF)
          call IWinOutStringXY(1, 2, BALK(1:NAF))
       end if

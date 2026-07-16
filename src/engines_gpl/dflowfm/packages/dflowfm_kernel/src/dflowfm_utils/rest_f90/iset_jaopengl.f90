@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,25 @@
 !
 
 !< set jaopengl module variable
-subroutine iset_jaopengl(jaopengl_loc)
-   use unstruc_opengl, only: jaopengl
-   use unstruc_model, only: md_jaopengl
+submodule(m_iset_jaopengl) m_iset_jaopengl_
+
    implicit none
 
-   integer, intent(in) :: jaopengl_loc !< value to be set to jaopengl
+contains
 
-   if (md_jaopenGL == -1) then
-      jaopengl = jaopengl_loc
-   else
-      jaopengl = md_jaopengl
-   end if
+   module subroutine iset_jaopengl(jaopengl_loc)
+      use unstruc_opengl, only: jaopengl
+      use unstruc_model, only: md_jaopengl
 
-   return
-end subroutine iset_jaopengl
+      integer, intent(in) :: jaopengl_loc !< value to be set to jaopengl
+
+      if (md_jaopenGL == -1) then
+         jaopengl = jaopengl_loc
+      else
+         jaopengl = md_jaopengl
+      end if
+
+      return
+   end subroutine iset_jaopengl
+
+end submodule m_iset_jaopengl_

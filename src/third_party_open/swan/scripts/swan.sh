@@ -22,7 +22,7 @@ echo >>swan_sh.log
 #
 ################################################################################
 ## Example shell script for submitting Delft3D-FLOW/WAVE jobs using           ##
-## parallel SWAN on the H6 linuxcluster by means of MPICH2.                   ##
+## parallel SWAN on a linuxcluster by means of MPICH2.                        ##
 ## Note that for NHOSTS=1 the OpenMP version of SWAN will be started.         ##
 ## Menno.Genseberger@deltares.nl                                              ##
 ## Adri.Mourits@deltares.nl                                                   ##

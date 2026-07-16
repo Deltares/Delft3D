@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,13 +30,25 @@
 !
 !
 
+module m_maketekaltimes
+
+   implicit none
+
+   private
+
+   public :: maketekaltimes
+
+contains
+
    subroutine maketekaltimes()
-      use m_flowtimes
+      use precision, only: dp
+      use m_flowtimes, only: refdat
       use time_module, only: seconds_to_datetimestring
-      implicit none
+      use m_filez, only: oldfil, doclose, newfil
+
       logical :: jawel
       integer :: minp, mout, i, k
-      double precision :: tim, a(30)
+      real(kind=dp) :: tim, a(30)
 
       character(len=20) dateandtime
 
@@ -95,3 +107,5 @@
       end if
 
    end subroutine maketekaltimes
+
+end module m_maketekaltimes

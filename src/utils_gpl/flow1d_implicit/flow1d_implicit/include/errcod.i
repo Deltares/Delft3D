@@ -95,531 +95,531 @@
 !
 !     Definition of the individual errors
 !
-      integer    ok
-      integer    info
-      integer    warnng
-      integer    fatal
+integer    ok
+integer    info
+integer    warnng
+integer    fatal
 !
 !     ------------------------------------------------------
 !     Codes main module
 !     ------------------------------------------------------
 !                          Inquire first group failed
-      integer    einqfg
+integer    einqfg
 !                          Inquire next group failed
-      integer    einqng
+integer    einqng
 !                          Error closing definition file
-      integer    eclsdf
+integer    eclsdf
 !                          Error closing data file
-      integer    eclsdt
+integer    eclsdt
 !                          Inquire group failure
-      integer    einqgr
+integer    einqgr
 !                          Inquire cell failure
-      integer    einqcl
+integer    einqcl
 !                          Inquire element failure
-      integer    einqel
+integer    einqel
 !                          Get element failure
-      integer    egetel
+integer    egetel
 !                          Error opening definition file
-      integer    eopndf
+integer    eopndf
 !                          Error opening data file
-      integer    eopndt
+integer    eopndt
 !                          Error writing release no
-      integer    ewrrel
+integer    ewrrel
 !                          Unknown element type
-      integer    eelmtp
+integer    eelmtp
 !                          Maximum Froude number in cell
-      integer    efroce
+integer    efroce
 !                          Time and location of maximum Froude number
-      integer    efrotl
+integer    efrotl
 !                          Maximum Froude number in grid point
-      integer    efrogr
+integer    efrogr
 !                          No convergence-criterion left
-      integer    eflncc
+integer    eflncc
 !                          Too many iterations for bisection
-      integer    emrbis
+integer    emrbis
 !                          Variable already declared
-      integer    evrdec
+integer    evrdec
 !                          Running out of data space
-      integer    eoutds
+integer    eoutds
 !                          Running out of name space
-      integer    eoutns
+integer    eoutns
 !                          Flow not convergating
-      integer    eflncv
+integer    eflncv
 !                          Morphology not convergating
-      integer    emrncv
+integer    emrncv
 !                          Morphological time step < 1 FP
-      integer    emtsfp
+integer    emtsfp
 !                          Reducing morphological time step
-      integer    erdmst
+integer    erdmst
 !                          Too many messages
-      integer    errovf
+integer    errovf
 !
 !     ------------------------------------------------------
 !     Codes flow module
 !     ------------------------------------------------------
 !                          Water level < bottom (sedredge branch)
-      integer    eflhse
+integer    eflhse
 !                          Unexpected structure type for Qlat
-      integer    eflstr
+integer    eflstr
 !                          Flow nodal matrix singular
-      integer    eflmat
+integer    eflmat
 !                          Error creating water quality file
-      integer    ewqcre
+integer    ewqcre
 !                          Error appending water quality file
-      integer    ewqapp
+integer    ewqapp
 !                          Error writing time info to water quality file
-      integer    ewqtim
+integer    ewqtim
 !                          Error writing MAP info
-      integer    eflmap
+integer    eflmap
 !                          Error writing HIS info
-      integer    eflhis
+integer    eflhis
 !                          Error writing begin of output
-      integer    eflboo
+integer    eflboo
 !                          Error writing end of output
-      integer    efleoo
+integer    efleoo
 !                          Error writing restart data
-      integer    eflwrd
+integer    eflwrd
 !                          Error reading restart data
-      integer    eflrrd
+integer    eflrrd
 !                          Error writing begin of restart
-      integer    eflbor
+integer    eflbor
 !                          Can not find restart time step
-      integer    eflrtt
+integer    eflrtt
 !                          Water level < bottom (circel branch)
-      integer    eflhci
+integer    eflhci
 !                          Messages at time step
-      integer    eflmes
+integer    eflmes
 !                          Extra resistance undefined
-      integer    eflexr
+integer    eflexr
 !                          Water level < bottom
-      integer    eflcr0
-!                          Discharge not zero at sill      
-      integer    efllim
+integer    eflcr0
+!                          Discharge not zero at sill
+integer    efllim
 !                          Outside data base
-      integer    eflhbo
+integer    eflhbo
 !                          Negative gate opening in structure
-      integer    eflngo
+integer    eflngo
 !                          Negative crest width in structure
-      integer    eflncw
+integer    eflncw
 !                          Control parameter controlled twice
-      integer    eflcpt
+integer    eflcpt
 !                          Coordinate not in branch
-      integer    eflnib
+integer    eflnib
 !                          Froude number higher than 1. (Super-
 !                          critical flow)
-      integer    eflfro
+integer    eflfro
 !                          High Froude numbers (higher than 0.8)
-      integer    eflhfn
+integer    eflhfn
 !                          Timesteps continued without convergence
-      integer    efltwc
+integer    efltwc
 !                          Minimum number of iterations during
 !                          simulation
-      integer    eflmii
+integer    eflmii
 !                          Maximum number of iterations during
 !                          simulation
-      integer    eflmxi
+integer    eflmxi
 !                          Mean number of iterations during
 !                          simulation
-      integer    eflmni
+integer    eflmni
 !                          Roughnes or hydraulic radius out of limit
-      integer    eflcrl
+integer    eflcrl
 !                          Retention area defined at grid point
-      integer    eflqlt
+integer    eflqlt
 !                          Grain size d90 too small
-      integer    eflgrn
+integer    eflgrn
 !                          Size of buffer for discharges changed
-      integer    efllag
+integer    efllag
 !                          Area general structure > area branch
-      integer    eflgsa
+integer    eflgsa
 !                          Change of controlled parameter after restart
-      integer    eflcha
+integer    eflcha
 !                          Roughness limited in main
-      integer    eflrou
+integer    eflrou
 !                          Roughness limited in floodplains
-      integer    eflrof
+integer    eflrof
 !                          Array grhis out of bounds
-      integer    eflgrh      
+integer    eflgrh
 !                          Time Slice start time inconsistency
-      integer    efltsi
+integer    efltsi
 !     ------------------------------------------------------
 !     Codes salt module
 !     ------------------------------------------------------
 !                          Salt concentration must be > 0
-      integer    esacon
+integer    esacon
 !                          Flood vol or flood vel < 0
-      integer    esafvv
+integer    esafvv
 !                          Maximum no of filter steps executed
-      integer    esafil
+integer    esafil
 !                          Error calculating density
-      integer    esaden
+integer    esaden
 !                          Nodal matrix singular
-      integer    esamat
+integer    esamat
 !                          Salt messages at time step
-      integer    esames
+integer    esames
 !                          Error writing MAP info
-      integer    esamap
+integer    esamap
 !                          Error writing HIS info
-      integer    esahis
+integer    esahis
 !                          Error writing begin of output
-      integer    esaboo
+integer    esaboo
 !                          Error writing end of output
-      integer    esaeoo
+integer    esaeoo
 !                          Error writing restart data
-      integer    esawrd
+integer    esawrd
 !                          Error reading restart data
-      integer    esarrd
+integer    esarrd
 !                          Error writing begin of restart
-      integer    esabor
+integer    esabor
 !                          Can not find restart time step
-      integer    esartt
+integer    esartt
 !                          No mouth defined for branch
-      integer    esabrm
+integer    esabrm
 !
 !     ------------------------------------------------------
 !     Codes sediment module
 !     ------------------------------------------------------
 !                          Froude number too large
-      integer    esefro
+integer    esefro
 !                          Discharges either pos or neg
-      integer    eseqdr
+integer    eseqdr
 !                          Sediment messages at time step
-      integer    esemes
+integer    esemes
 !                          Error writing begin of output
-      integer    eseboo
+integer    eseboo
 !                          Error writing MAP info
-      integer    esemap
+integer    esemap
 !                          Error writing HIS info
-      integer    esehis
+integer    esehis
 !                          Error writing end of output
-      integer    eseeoo
+integer    eseeoo
 !                          Grain sizes too small
-      integer    esegrn
+integer    esegrn
 !                          Froude number > .8
-      integer    esefrw
+integer    esefrw
 
 !     ------------------------------------------------------
 !     Codes morphology module
 !     ------------------------------------------------------
 !                          Inflowing boundary has no condition
-      integer    emobou
+integer    emobou
 !                          Levels not in increasing order
-      integer    emolev
+integer    emolev
 !                          Water level < bottom
-      integer    emohbo
+integer    emohbo
 !                          Cross section level info
-      integer    emocrl
+integer    emocrl
 !                          Messages at time step
-      integer    emomes
+integer    emomes
 !                          Error writing MAP info
-      integer    emomap
+integer    emomap
 !                          Error writing HIS info
-      integer    emohis
+integer    emohis
 !                          Error writing begin of output
-      integer    emoboo
+integer    emoboo
 !                          Error writing end of output
-      integer    emoeoo
+integer    emoeoo
 !                          Error writing restart data
-      integer    emowrd
+integer    emowrd
 !                          Error reading restart data
-      integer    emorrd
+integer    emorrd
 !                          Error writing begin of restart
-      integer    emobor
+integer    emobor
 !                          Can not find restart time step
-      integer    emortt
+integer    emortt
 !                          Error in formula for Integral
-      integer    emofor
+integer    emofor
 !                          Message maximum courant number
-      integer    emcour
+integer    emcour
 !                          Begin coordinate not found
-      integer    embeco
+integer    embeco
 !                          End coordinate not found
-      integer    emenco
+integer    emenco
 
 !     ------------------------------------------------------
 !     Codes water quality interface module
 !     ------------------------------------------------------
 !                          Error opening definition file
-      integer    ewqodf
+integer    ewqodf
 !                          Error opening data file
-      integer    ewqodt
+integer    ewqodt
 !                          Error reading element name
-      integer    ewqelm
+integer    ewqelm
 !                          Error in segment definition
-      integer    ewqseg
+integer    ewqseg
 !                          Cannot open input file
-      integer    ewqopn
+integer    ewqopn
 !                          Cannot modify input file
-      integer    ewqmod
+integer    ewqmod
 
 !     ------------------------------------------------------
 !     Codes water graded sediment module
 !     ------------------------------------------------------
 
-!                          Downward shift of layers not allowed  
-      integer    egfixs1
+!                          Downward shift of layers not allowed
+integer    egfixs1
 !                          Downward shift info
-      integer    egfixs2
-!                          Too low top level of multi under layer 
-      integer    egsubtp
+integer    egfixs2
+!                          Too low top level of multi under layer
+integer    egsubtp
 !                          Fixeded layer specified at top of multi under layer
-      integer    egfixtp
+integer    egfixtp
 !                          Too high bottom of sublayer
-      integer    egsubbt 
-!                          Too much layers required 
-      integer    egsubtm
+integer    egsubbt
+!                          Too much layers required
+integer    egsubtm
 !                          Sum of supplied frequencies not equal 1
-      integer    egfreq
+integer    egfreq
 !                          Incorrect underlayer level or too less layers
-      integer    egunla
+integer    egunla
 !                          Transport layer is empty
-      integer    egnorm1 
+integer    egnorm1
 !                          Exchange layer is empty
-      integer    egnorm2 
+integer    egnorm2
 !                          Graded sediment restart
-      integer    egrest
+integer    egrest
 !                          Initialization error
-      integer    eginit
+integer    eginit
 !                          No sediment width
-      integer    egsedw
-!                          Too many output functions 
-      integer    egoutm 
+integer    egsedw
+!                          Too many output functions
+integer    egoutm
 !                          Can not find restart time step
-      integer    egsrtt
+integer    egsrtt
 !                          Error writing restart data
-      integer    egswrd
+integer    egswrd
 !                          Error reading restart data
-      integer    egsrrd
+integer    egsrrd
 !                          Error writing begin of restart
-      integer    egsbor
+integer    egsbor
 
 !     ------------------------------------------------------
 !     Codes cross sectional table module
 !     ------------------------------------------------------
 !                          Error creating preissmann slot
-      integer    ecsslt
+integer    ecsslt
 !                          Error Nikuradse-value is too high
 !                          due to adapting slot
-      integer    ecsnik
+integer    ecsnik
 
 !     ------------------------------------------------------
 !     Codes Kalman module
 !     ------------------------------------------------------
 !                          Nodal administration matrix singular
-      integer    ekamat
+integer    ekamat
 !                          Error writing MAP info
-      integer    ekamap
+integer    ekamap
 !                          Error writing HIS info
-      integer    ekahis
+integer    ekahis
 !                          Error writing begin of output
-      integer    ekaboo
+integer    ekaboo
 !                          Error writing end of output
-      integer    ekaeoo
+integer    ekaeoo
 !                          Error writing restart data
-      integer    ekawrd
+integer    ekawrd
 !                          Error reading restart data
-      integer    ekarrd
+integer    ekarrd
 !                          Error writing begin of restart
-      integer    ekabor
+integer    ekabor
 !                          Can not find restart time step
-      integer    ekartt
+integer    ekartt
 !                          Messages at time step
-      integer    ekames      
+integer    ekames
 
 !     ------------------------------------------------------
 !     Codes Tidel Analyses
 !     ------------------------------------------------------
-      integer    edeall                ! Deallocate error      
-      integer    ealloc                ! Allocate error 
-      integer    egales                ! Too less data 
+integer    edeall                ! Deallocate error
+integer    ealloc                ! Allocate error
+integer    egales                ! Too less data
 
 !     ------------------------------------------------------
 !     Assign a unique code for each error
 !     ------------------------------------------------------
-      parameter (ok     =     0,                                                        &
-     &           info   =     1,                                                        &
-     &           warnng =     2,                                                        &
-     &           fatal  =     3)
+parameter (ok     =     0,                                                        &
+&           info   =     1,                                                        &
+&           warnng =     2,                                                        &
+&           fatal  =     3)
 
 !     ------------------------------------------------------
 !     Codes main module
 !     ------------------------------------------------------
-      parameter (einqfg = 00001,                                                        &
-     &           einqng = 00002,                                                        &
-     &           eclsdf = 00003,                                                        &
-     &           eclsdt = 00004,                                                        &
-     &           einqgr = 00005,                                                        &
-     &           einqcl = 00006,                                                        &
-     &           einqel = 00007,                                                        &
-     &           egetel = 00008,                                                        &
-     &           eopndf = 00009,                                                        &
-     &           eopndt = 00010)
-     
-      parameter (ewrrel = 00011,                                                        &
-     &           eelmtp = 00012,                                                        &
-     &           efroce = 00013,                                                        &
-     &           efrotl = 00014,                                                        &
-     &           efrogr = 00015,                                                        &
-     &           eflncc = 00016,                                                        &
-     &           emrbis = 00017,                                                        &
-     &           evrdec = 00020,                                                        &
-     &           eoutds = 00021,                                                        &
-     &           eoutns = 00022,                                                        &
-     &           errovf = 00023,                                                        &
-     &           eflncv = 00030,                                                        &
-     &           emrncv = 00031,                                                        &
-     &           emtsfp = 00032,                                                        &
-     &           erdmst = 00033)
+parameter (einqfg = 00001,                                                        &
+&           einqng = 00002,                                                        &
+&           eclsdf = 00003,                                                        &
+&           eclsdt = 00004,                                                        &
+&           einqgr = 00005,                                                        &
+&           einqcl = 00006,                                                        &
+&           einqel = 00007,                                                        &
+&           egetel = 00008,                                                        &
+&           eopndf = 00009,                                                        &
+&           eopndt = 00010)
+
+parameter (ewrrel = 00011,                                                        &
+&           eelmtp = 00012,                                                        &
+&           efroce = 00013,                                                        &
+&           efrotl = 00014,                                                        &
+&           efrogr = 00015,                                                        &
+&           eflncc = 00016,                                                        &
+&           emrbis = 00017,                                                        &
+&           evrdec = 00020,                                                        &
+&           eoutds = 00021,                                                        &
+&           eoutns = 00022,                                                        &
+&           errovf = 00023,                                                        &
+&           eflncv = 00030,                                                        &
+&           emrncv = 00031,                                                        &
+&           emtsfp = 00032,                                                        &
+&           erdmst = 00033)
 !
 !     ------------------------------------------------------
 !     Codes flow module
 !     ------------------------------------------------------
-      parameter (eflhse = 01001,                                                        &
-     &           eflstr = 01002,                                                        &
-     &           eflmat = 01003,                                                        &
-     &           ewqcre = 01004,                                                        &
-     &           ewqapp = 01005,                                                        &
-     &           ewqtim = 01006,                                                        &
-     &           eflmap = 01007,                                                        &
-     &           eflhis = 01008,                                                        &
-     &           eflboo = 01009,                                                        &
-     &           efleoo = 01010,                                                        &
-     &           eflwrd = 01011,                                                        &
-     &           eflrrd = 01012,                                                        &
-     &           eflbor = 01013,                                                        &
-     &           eflrtt = 01014,                                                        &
-     &           eflhci = 01015,                                                        &
-     &           eflmes = 01016,                                                        &
-     &           eflexr = 01017,                                                        &
-     &           eflcr0 = 01018,                                                        &
-     &           efllim = 01019)
-     
-      parameter (eflhbo = 01025,                                                        &
-     &           eflngo = 01026,                                                        &
-     &           eflncw = 01027,                                                        &
-     &           eflcpt = 01028,                                                        &
-     &           eflnib = 01029,                                                        &
-     &           eflfro = 01030,                                                        &
-     &           eflhfn = 01031,                                                        &
-     &           efltwc = 01032,                                                        &
-     &           eflmii = 01033,                                                        &
-     &           eflmxi = 01034,                                                        &
-     &           eflmni = 01035,                                                        &
-     &           eflcrl = 01036,                                                        &
-     &           eflqlt = 01037,                                                        &
-     &           eflgrn = 01038,                                                        &
-     &           efllag = 01039,                                                        &
-     &           eflgsa = 01040,                                                        &
-     &           eflcha = 01041,                                                        &
-     &           eflrou = 01042,                                                        &
-     &           eflrof = 01043,                                                        &
-     &           eflgrh = 01044,                                                        &
-     &           efltsi = 01045)
+parameter (eflhse = 01001,                                                        &
+&           eflstr = 01002,                                                        &
+&           eflmat = 01003,                                                        &
+&           ewqcre = 01004,                                                        &
+&           ewqapp = 01005,                                                        &
+&           ewqtim = 01006,                                                        &
+&           eflmap = 01007,                                                        &
+&           eflhis = 01008,                                                        &
+&           eflboo = 01009,                                                        &
+&           efleoo = 01010,                                                        &
+&           eflwrd = 01011,                                                        &
+&           eflrrd = 01012,                                                        &
+&           eflbor = 01013,                                                        &
+&           eflrtt = 01014,                                                        &
+&           eflhci = 01015,                                                        &
+&           eflmes = 01016,                                                        &
+&           eflexr = 01017,                                                        &
+&           eflcr0 = 01018,                                                        &
+&           efllim = 01019)
+
+parameter (eflhbo = 01025,                                                        &
+&           eflngo = 01026,                                                        &
+&           eflncw = 01027,                                                        &
+&           eflcpt = 01028,                                                        &
+&           eflnib = 01029,                                                        &
+&           eflfro = 01030,                                                        &
+&           eflhfn = 01031,                                                        &
+&           efltwc = 01032,                                                        &
+&           eflmii = 01033,                                                        &
+&           eflmxi = 01034,                                                        &
+&           eflmni = 01035,                                                        &
+&           eflcrl = 01036,                                                        &
+&           eflqlt = 01037,                                                        &
+&           eflgrn = 01038,                                                        &
+&           efllag = 01039,                                                        &
+&           eflgsa = 01040,                                                        &
+&           eflcha = 01041,                                                        &
+&           eflrou = 01042,                                                        &
+&           eflrof = 01043,                                                        &
+&           eflgrh = 01044,                                                        &
+&           efltsi = 01045)
 
 !     ------------------------------------------------------
 !     Codes salt module
 !     ------------------------------------------------------
-      parameter (esacon = 02001,                                                        &
-     &           esafvv = 02002,                                                        &
-     &           esafil = 02003,                                                        &
-     &           esaden = 02004,                                                        &
-     &           esamat = 02005,                                                        &
-     &           esames = 02006,                                                        &
-     &           esamap = 02007,                                                        &
-     &           esahis = 02008,                                                        &
-     &           esaboo = 02009,                                                        &
-     &           esaeoo = 02010,                                                        &
-     &           esawrd = 02011,                                                        &
-     &           esarrd = 02012,                                                        &
-     &           esabor = 02013,                                                        &
-     &           esartt = 02014,                                                        &
-     &           esabrm = 02015)
+parameter (esacon = 02001,                                                        &
+&           esafvv = 02002,                                                        &
+&           esafil = 02003,                                                        &
+&           esaden = 02004,                                                        &
+&           esamat = 02005,                                                        &
+&           esames = 02006,                                                        &
+&           esamap = 02007,                                                        &
+&           esahis = 02008,                                                        &
+&           esaboo = 02009,                                                        &
+&           esaeoo = 02010,                                                        &
+&           esawrd = 02011,                                                        &
+&           esarrd = 02012,                                                        &
+&           esabor = 02013,                                                        &
+&           esartt = 02014,                                                        &
+&           esabrm = 02015)
 
 !     ------------------------------------------------------
 !     Codes sediment module
 !     ------------------------------------------------------
-      parameter (esefro = 03001,                                                        &
-     &           eseqdr = 03002,                                                        &
-     &           esemes = 03003,                                                        &
-     &           eseboo = 03004,                                                        &
-     &           esemap = 03005,                                                        &
-     &           esehis = 03006,                                                        &
-     &           eseeoo = 03007,                                                        &
-     &           esegrn = 03008,                                                        &
-     &           esefrw = 03009)
+parameter (esefro = 03001,                                                        &
+&           eseqdr = 03002,                                                        &
+&           esemes = 03003,                                                        &
+&           eseboo = 03004,                                                        &
+&           esemap = 03005,                                                        &
+&           esehis = 03006,                                                        &
+&           eseeoo = 03007,                                                        &
+&           esegrn = 03008,                                                        &
+&           esefrw = 03009)
 
 !     ------------------------------------------------------
 !     Codes morphology module
 !     ------------------------------------------------------
-      parameter (emobou = 04001,                                                        &
-     &           emolev = 04002,                                                        &
-     &           emohbo = 04003,                                                        &
-     &           emocrl = 04004,                                                        &
-     &           emomes = 04006,                                                        &
-     &           emomap = 04007,                                                        &
-     &           emohis = 04008,                                                        &
-     &           emoboo = 04009,                                                        &
-     &           emoeoo = 04010,                                                        &
-     &           emowrd = 04011,                                                        &
-     &           emorrd = 04012,                                                        &
-     &           emobor = 04013,                                                        &
-     &           emortt = 04014,                                                        &
-     &           emofor = 04015,                                                        &
-     &           emcour = 04016,                                                        &
-     &           embeco = 04017,                                                        &
-     &           emenco = 04018)
+parameter (emobou = 04001,                                                        &
+&           emolev = 04002,                                                        &
+&           emohbo = 04003,                                                        &
+&           emocrl = 04004,                                                        &
+&           emomes = 04006,                                                        &
+&           emomap = 04007,                                                        &
+&           emohis = 04008,                                                        &
+&           emoboo = 04009,                                                        &
+&           emoeoo = 04010,                                                        &
+&           emowrd = 04011,                                                        &
+&           emorrd = 04012,                                                        &
+&           emobor = 04013,                                                        &
+&           emortt = 04014,                                                        &
+&           emofor = 04015,                                                        &
+&           emcour = 04016,                                                        &
+&           embeco = 04017,                                                        &
+&           emenco = 04018)
 
 !     ------------------------------------------------------
 !     Codes water quality interface module
 !     ------------------------------------------------------
-      parameter (ewqodf = 05001,                                                        &
-     &           ewqodt = 05002,                                                        &
-     &           ewqelm = 05003,                                                        &
-     &           ewqseg = 05004,                                                        &
-     &           ewqopn = 05005,                                                        &
-     &           ewqmod = 05006)
+parameter (ewqodf = 05001,                                                        &
+&           ewqodt = 05002,                                                        &
+&           ewqelm = 05003,                                                        &
+&           ewqseg = 05004,                                                        &
+&           ewqopn = 05005,                                                        &
+&           ewqmod = 05006)
 !     ------------------------------------------------------
 !     Codes water graded sediment module
 !     ------------------------------------------------------
-      parameter (egfixs1 = 06001,                                                        &
-     &           egfixs2 = 06002,                                                        &
-     &           egsubtp = 06003,                                                        &
-     &           egfixtp = 06004,                                                        &
-     &           egsubbt = 06005,                                                        &
-     &           egsubtm = 06006,                                                        &
-     &           egfreq  = 06007,                                                        &
-     &           egunla  = 06008,                                                        &
-     &           egnorm1 = 06009,                                                        &
-     &           egnorm2 = 06010,                                                        &
-     &           egrest  = 06011,                                                        &
-     &           eginit  = 06012,                                                        &
-     &           egsedw  = 06013,                                                        & 
-     &           egoutm  = 06014,                                                        &
-     &           egsrtt  = 06015,                                                        &     
-     &           egswrd  = 06016,                                                        &
-     &           egsrrd  = 06017,                                                        &
-     &           egsbor  = 06018) 
+parameter (egfixs1 = 06001,                                                        &
+&           egfixs2 = 06002,                                                        &
+&           egsubtp = 06003,                                                        &
+&           egfixtp = 06004,                                                        &
+&           egsubbt = 06005,                                                        &
+&           egsubtm = 06006,                                                        &
+&           egfreq  = 06007,                                                        &
+&           egunla  = 06008,                                                        &
+&           egnorm1 = 06009,                                                        &
+&           egnorm2 = 06010,                                                        &
+&           egrest  = 06011,                                                        &
+&           eginit  = 06012,                                                        &
+&           egsedw  = 06013,                                                        &
+&           egoutm  = 06014,                                                        &
+&           egsrtt  = 06015,                                                        &
+&           egswrd  = 06016,                                                        &
+&           egsrrd  = 06017,                                                        &
+&           egsbor  = 06018)
 !     ------------------------------------------------------
 !     Codes cross sectional table module
 !     ------------------------------------------------------
-      parameter (ecsslt = 07001,                                                        &
-     &           ecsnik = 07002)
+parameter (ecsslt = 07001,                                                        &
+&           ecsnik = 07002)
 
 !     ------------------------------------------------------
 !     Codes Kalman module
 !     ------------------------------------------------------
-      parameter (ekamat = 08001,                                                        &
-     &           ekamap = 08002,                                                        &
-     &           ekahis = 08003,                                                        &
-     &           ekaboo = 08004,                                                        &
-     &           ekaeoo = 08005,                                                        &
-     &           ekawrd = 08006,                                                        &
-     &           ekarrd = 08007,                                                        &
-     &           ekabor = 08008,                                                        &
-     &           ekartt = 08009,                                                        &
-     &           ekames = 08010)
+parameter (ekamat = 08001,                                                        &
+&           ekamap = 08002,                                                        &
+&           ekahis = 08003,                                                        &
+&           ekaboo = 08004,                                                        &
+&           ekaeoo = 08005,                                                        &
+&           ekawrd = 08006,                                                        &
+&           ekarrd = 08007,                                                        &
+&           ekabor = 08008,                                                        &
+&           ekartt = 08009,                                                        &
+&           ekames = 08010)
 !     ------------------------------------------------------
 !     Codes Tidel Analyses
 !     ------------------------------------------------------
-      parameter (edeall = 09001,                                                        &
-     &           ealloc = 09002,                                                        &
-     &           egales = 09003)
+parameter (edeall = 09001,                                                        &
+&           ealloc = 09002,                                                        &
+&           egales = 09003)

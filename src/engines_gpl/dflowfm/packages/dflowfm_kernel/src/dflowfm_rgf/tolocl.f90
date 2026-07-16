@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,12 +36,13 @@ contains
 !!     WEEG TUSSEN MAX(!) VIER MOGELIJKE MEDE RICHTINGBEPALENDE OMLIGGEND
 !!     NTO = 0 IS NAAR LOKAAL, NTO = 1 IS NAAR GLOBAAL
    subroutine TOLOCL(DX0, DY0, X, Y, mmax, nmax, MP, NP, NTO)
+      use precision, only: dp
       use m_missing, only: xymis
       use m_sferic, only: dg2rd, jsferic
       integer :: mmax, nmax, mp, np, nto
-      double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
-      double precision :: x0, y0, dx0, dy0, x1t, y1t, x1p, x2p, x2t, y2t, xn1, xn2, dx, dy
+      real(kind=dp) :: x0, y0, dx0, dy0, x1t, y1t, x1p, x2p, x2t, y2t, xn1, xn2, dx, dy
 
       X0 = X(MP, NP)
       Y0 = Y(MP, NP)
@@ -66,7 +67,9 @@ contains
          end if
       end if
 
-      if (JSFERIC == 1) X1T = X1T * cos(DG2RD * Y0)
+      if (JSFERIC == 1) then
+         X1T = X1T * cos(DG2RD * Y0)
+      end if
 
       if (NP /= NMAX) then
          X2P = X(MP, NP + 1)
@@ -83,7 +86,9 @@ contains
          end if
       end if
 
-      if (JSFERIC == 1) X2T = X2T * cos(DG2RD * Y0)
+      if (JSFERIC == 1) then
+         X2T = X2T * cos(DG2RD * Y0)
+      end if
 
       XN1 = sqrt(X1T * X1T + Y1T * Y1T)
       XN2 = sqrt(X2T * X2T + Y2T * Y2T)

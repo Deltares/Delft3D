@@ -1,7 +1,5 @@
 # test dependencies
-set(dependencies delwaq_lib
-                 waq_process
-                )
+set(dependencies waq_process)
 
 create_test(
     tests_protist_mortality_salinity
@@ -28,6 +26,15 @@ create_test(
     test_list test_rear_simple test_rear_temperature_seawater test_rear_temperature_fresh_water
     labels "test_rear_simple:fast" "test_rear_temperature_seawater:fast" "test_rear_temperature_fresh_water:fast"
     test_files tests_rear.f90
+    )
+
+create_test(
+    tests_tmode
+    dependencies ${dependencies}
+    visual_studio_folder tests/unit_test/engines_gpl/waq/waq_process
+    test_list test_tmode
+    labels "test_tmode:fast"
+    test_files tests_tmode.f90
     )
 
 

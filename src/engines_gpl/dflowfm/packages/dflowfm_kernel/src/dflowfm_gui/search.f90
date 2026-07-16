@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,35 +30,49 @@
 !
 !
 
-      subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
-         use m_okay
-         implicit none
-         integer :: jofnd
-         integer :: k
-         integer :: len
-         integer :: nahead
-         integer :: nlevel
-         integer :: numchc
-         integer :: numtxt
+module m_search
+
+   implicit none
+
+contains
+
+   subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
+      use m_okay, only: okay
+      implicit none
+      integer :: jofnd
+      integer :: k
+      integer :: len
+      integer :: nahead
+      integer :: nlevel
+      integer :: numchc
+      integer :: numtxt
 !     Search at level NLEVEL
-         character HLPTXT(NUMTXT) * (*), WRDKEY * 40
+      character HLPTXT(NUMTXT) * (*), WRDKEY * 40
 
-         LEN = len_trim(WRDKEY)
-         if (LEN == 0) return
-
-         JOFND = 0
-         K = NUMCHC - NAHEAD
-
-10       continue
-         K = K + NAHEAD
-         if (K > NUMTXT .or. K < 1) then
-            if (JOFND == 0) call OKAY(0)
-            return
-         else
-            if (HLPTXT(K) (NLEVEL:NLEVEL + LEN - 1) /= WRDKEY) goto 10
-         end if
-
-         JOFND = 1
-         NUMCHC = K
+      LEN = len_trim(WRDKEY)
+      if (LEN == 0) then
          return
-      end
+      end if
+
+      JOFND = 0
+      K = NUMCHC - NAHEAD
+
+10    continue
+      K = K + NAHEAD
+      if (K > NUMTXT .or. K < 1) then
+         if (JOFND == 0) then
+            call OKAY(0)
+         end if
+         return
+      else
+         if (HLPTXT(K) (NLEVEL:NLEVEL + LEN - 1) /= WRDKEY) then
+            goto 10
+         end if
+      end if
+
+      JOFND = 1
+      NUMCHC = K
+      return
+   end
+
+end module m_search

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,29 +31,39 @@
 !
 
 !> Highlights net/flow nodes and/or links, when specified in display parameters.
-subroutine highlight_nodesnlinks()
-   use unstruc_display
-   use unstruc_colors
-   use network_data
-   use m_flowgeom
+module m_highlight_nodesnlinks
+
+   use precision, only: dp
    implicit none
 
-   if (nhlNetNode > 0 .and. nhlNetNode <= numk) then
-      call cirr(xk(nhlNetNode), yk(nhlNetNode), ncolhl)
-   end if
+contains
 
-   if (nhlNetLink > 0 .and. nhlNetLink <= numl) then
-      call cirr(.5d0 * (xk(kn(1, nhlNetLink)) + xk(kn(2, nhlNetLink))), &
-                .5d0 * (yk(kn(1, nhlNetLink)) + yk(kn(2, nhlNetLink))), ncolhl)
-      call teklink(nhlNetLink, ncolhl)
-   end if
+   subroutine highlight_nodesnlinks()
+      use unstruc_display_data
+      use unstruc_colors, only: ncolhl
+      use network_data, only: numk, numl, kn, xk, yk
+      use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu
+      use m_tek_link
+      use m_cirr
 
-   if (nhlFlowNode > 0 .and. nhlFlowNode <= ndx) then
-      call cirr(xz(nhlFlowNode), yz(nhlFlowNode), ncolhl)
-   end if
+      if (nhlNetNode > 0 .and. nhlNetNode <= numk) then
+         call cirr(xk(nhlNetNode), yk(nhlNetNode), ncolhl)
+      end if
 
-   if (nhlFlowLink > 0 .and. nhlFlowLink <= lnx) then
-      call cirr(xu(nhlFlowLink), yu(nhlFlowLink), ncolhl)
-   end if
+      if (nhlNetLink > 0 .and. nhlNetLink <= numl) then
+         call cirr(0.5_dp * (xk(kn(1, nhlNetLink)) + xk(kn(2, nhlNetLink))), &
+                   0.5_dp * (yk(kn(1, nhlNetLink)) + yk(kn(2, nhlNetLink))), ncolhl)
+         call teklink(nhlNetLink, ncolhl)
+      end if
 
-end subroutine highlight_nodesnlinks
+      if (nhlFlowNode > 0 .and. nhlFlowNode <= ndx) then
+         call cirr(xz(nhlFlowNode), yz(nhlFlowNode), ncolhl)
+      end if
+
+      if (nhlFlowLink > 0 .and. nhlFlowLink <= lnx) then
+         call cirr(xu(nhlFlowLink), yu(nhlFlowLink), ncolhl)
+      end if
+
+   end subroutine highlight_nodesnlinks
+
+end module m_highlight_nodesnlinks

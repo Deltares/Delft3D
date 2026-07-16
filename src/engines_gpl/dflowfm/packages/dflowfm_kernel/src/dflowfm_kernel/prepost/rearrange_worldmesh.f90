@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,26 +32,38 @@
 
 !> rearrange netnodes for spherical, periodic coordinates
 !>    net nodes at the left are preferred
-subroutine rearrange_worldmesh(xboundmin, xboundmax)
-   use m_sferic
-   use network_data
+module m_rearrange_worldmesh
+
    implicit none
 
-   double precision, intent(in) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
+   private
 
-   integer :: k
+   public :: rearrange_worldmesh
 
-   if (jsferic == 1 .and. xboundmax - xboundmin > 180d0) then
-      do k = 1, numk
-         if (xk(k) - 360d0 >= xboundmin) then
-            xk(k) = xk(k) - 360d0
-         end if
+contains
 
-         if (xk(k) < xboundmin) then
-            xk(k) = xk(k) + 360d0
-         end if
-      end do
-   end if
+   subroutine rearrange_worldmesh(xboundmin, xboundmax)
+      use precision, only: dp
+      use m_sferic, only: jsferic
+      use network_data, only: numk, xk
 
-   return
-end subroutine rearrange_worldmesh
+      real(kind=dp), intent(in) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
+
+      integer :: k
+
+      if (jsferic == 1 .and. xboundmax - xboundmin > 180.0_dp) then
+         do k = 1, numk
+            if (xk(k) - 360.0_dp >= xboundmin) then
+               xk(k) = xk(k) - 360.0_dp
+            end if
+
+            if (xk(k) < xboundmin) then
+               xk(k) = xk(k) + 360.0_dp
+            end if
+         end do
+      end if
+
+      return
+   end subroutine rearrange_worldmesh
+
+end module m_rearrange_worldmesh
