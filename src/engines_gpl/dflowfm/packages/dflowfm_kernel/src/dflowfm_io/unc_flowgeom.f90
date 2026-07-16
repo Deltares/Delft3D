@@ -181,7 +181,6 @@ contains
    subroutine build_flowgeom_2d(flowgeom, cell_mask)
       use m_flowgeom, only: ndx2d, nd, xz, yz
       use network_data, only: xk, yk, zk, kc, numk, numl, numl1d
-      use m_flowgeom, only: lne2ln
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
       use m_save_ugrid_state, only: mesh2dname
@@ -202,6 +201,7 @@ contains
       integer, allocatable :: inverse_face_map(:) !< full-grid face index -> output index (0 = excluded)
 
       use_mask = present(cell_mask)
+      flowgeom%remapping_active = use_mask
 
       numl2d = numl - numl1d
       if (use_mask) then
@@ -229,7 +229,7 @@ contains
       ! edge_map_2D(i)    = full-grid edge index for output edge i
       ! inverse_edge_map(l)= output edge index for full-grid edge l  (0 = excluded)
       !
-      ! In the unmasked case both maps are the identity; Phase 2 is then identical.
+      ! In the unmasked case no maps are needed because the output ordering is contiguous.
 
       if (use_mask) then
          call realloc(flowgeom%face_map_2D, numFace, keepExisting=.false., fill=0)
@@ -267,19 +267,6 @@ contains
             end if
          end do
       end if
-      ! Build output-edge -> global flow link map for data writes
-      if (use_mask) then
-         call realloc(flowgeom%edge_flowlink_map_2D, numEdge, keepExisting=.false., fill=0)
-         if (allocated(lne2ln)) then
-            do i = 1, numEdge
-               nn = lne2ln(numl1d + flowgeom%edge_map_2D(i)) ! nn holds flow link number (<= 0 for closed edges)
-               if (nn /= 0) then
-                  flowgeom%edge_flowlink_map_2D(i) = abs(nn)
-               end if
-            end do
-         end if
-      end if
-
       ! =========================================================
       ! Build geometry
       ! =========================================================
@@ -478,7 +465,7 @@ contains
 
       ! Reconstruct inverse_face_map from face_map_2D (already populated by build_flowgeom_2d).
       allocate (inverse_face_map(ndx2d))
-      if (allocated(flowgeom%face_map_2D)) then
+      if (flowgeom%remapping_active) then
          ! Masked case: face_map_2D is a sparse subset; invert it.
          inverse_face_map = 0
          do i = 1, size(flowgeom%face_map_2D)

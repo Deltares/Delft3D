@@ -19,13 +19,13 @@ module m_unstruc_netcdf_types
       type(t_ug_meshgeom) :: mesh2D !< Node/edge/face topology and coordinates for the 2D mesh.
       type(t_ug_meshgeom) :: mesh1D !< Node/edge/face topology and coordinates for the 1D mesh.
 
+      logical :: remapping_active = .false. !< True when polygon output reduction requires the mapping arrays below.
       integer, dimension(:), allocatable :: face_map_2D !< 2D: mapping from reduced output set UGRID face index to global flow cell number.
-      integer, dimension(:), allocatable :: edge_map_2D !< 2D: mapping from reduced output set UGRID node index to global flow node number.
+      integer, dimension(:), allocatable :: edge_map_2D !< 2D: mapping from reduced output set UGRID edge index to local 2D net link index.
       integer, dimension(:), allocatable :: node_map_2D !< 2D: mapping from reduced output set UGRID node index to global flow node number.
       integer, dimension(:), allocatable :: node_map_1D !< 1D: mapping from reduced output set UGRID node index to global flow node number.
 
       integer, dimension(:), allocatable :: edge_type !< Edge type array (size numl2d): encodes the flow-link relation for each 2D mesh edge.
-      integer, dimension(:), allocatable :: edge_flowlink_map_2D !< 2D: mapping from reduced output set UGRID edge index to global flow link number (0 = closed edge, no flow link). Allocated only for masked output.
       integer, dimension(:), allocatable :: edge_map_1D !< 1D: mapping from mesh1D UGRID edge index to flow link number.
       integer, dimension(:), allocatable :: contacts_map !< 1D2D: mapping from contact index to flow link number.
       integer, dimension(:, :), allocatable :: contacts !< 1D2D contact node pairs [2, n1d2dcontacts].
