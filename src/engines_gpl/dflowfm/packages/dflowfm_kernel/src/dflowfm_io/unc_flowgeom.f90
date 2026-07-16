@@ -723,18 +723,18 @@ contains
 
 !> Builds the complete flow geometry object for both 1D and 2D meshes.
 !! An optional polygon file can be provided to crop the geometry to a subset of the 1D and 2D meshes.
-   function build_flowgeom(jabndnd, polygon_file) result(flowgeom)
+   function build_flowgeom(jabndnd, polygon_files) result(flowgeom)
       use m_flowgeom, only: ndx2d
       use m_pol_to_cellmask, only: cell_mask_from_polygon_file
       implicit none
 
       type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
-      character(len=*), intent(in) :: polygon_file !< File containing output polygon (e.g., *_output.pol)
+      character(len=*), intent(in) :: polygon_files !< Space-separated output-polygon files (e.g., *_output.pol)
       integer, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells (nonzero = include); if absent, all cells are included.
 
-      if (len_trim(polygon_file) > 0) then
-         cell_mask = cell_mask_from_polygon_file(polygon_file)
+      if (len_trim(polygon_files) > 0) then
+         cell_mask = cell_mask_from_polygon_file(polygon_files)
          call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
       else

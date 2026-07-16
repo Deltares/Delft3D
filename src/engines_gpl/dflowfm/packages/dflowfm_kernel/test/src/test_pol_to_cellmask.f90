@@ -5,7 +5,7 @@ module test_pol_to_cellmask
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl, nump1d2d
    use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
    use geometry_module, only: pinpok_legacy, pinpok_raycast
-   use m_pol_to_cellmask, only: pol_to_cellmask
+   use m_pol_to_cellmask, only: pol_to_cellmask, cell_mask_from_polygon_file
 
    implicit none(external)
 
@@ -105,6 +105,62 @@ contains
       deallocate (xzw, yzw, xpl, ypl, zpl, cellmask)
 
    end subroutine test_mixed_polygon
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_cell_mask_from_multiple_polygon_files, test_cell_mask_from_multiple_polygon_files,
+   subroutine test_cell_mask_from_multiple_polygon_files() bind(C)
+      use m_flowgeom, only: ndxi, ndx2d
+      use m_sferic, only: jsferic
+      use m_missing, only: jins
+      use m_alloc, only: realloc
+
+      character(len=*), parameter :: polygon_file_a = 'test_map_mask_a.pol'
+      character(len=*), parameter :: polygon_file_b = 'test_map_mask_b.pol'
+      integer :: ierror, original_jsferic, original_jins
+      integer, allocatable :: mask(:)
+
+      ! File A contains two polygons; file B contributes a third one.
+      call write_polygon_file(polygon_file_a, [0.0_dp, 20.0_dp], ierror)
+      call f90_expect_eq(ierror, 0, 'First polygon file should be created')
+
+      call write_polygon_file(polygon_file_b, [40.0_dp], ierror)
+      call f90_expect_eq(ierror, 0, 'Second polygon file should be created')
+
+      original_jsferic = jsferic
+      original_jins = jins
+      jsferic = 0
+      jins = 1
+      npl = 0
+      nump = 4
+      ndxi = 4
+      ndx2d = 4
+      call realloc(xzw, nump, keepexisting=.false.)
+      call realloc(yzw, nump, keepexisting=.false.)
+      xzw = [5.0_dp, 15.0_dp, 25.0_dp, 45.0_dp]
+      yzw = 5.0_dp
+
+      mask = cell_mask_from_polygon_file(polygon_file_a//' '//polygon_file_b)
+
+      call f90_expect_true(allocated(mask), 'A mask should be returned for the polygon files')
+      if (allocated(mask)) then
+         call f90_expect_eq(mask(1), 1, 'Cell in the first polygon block should be masked')
+         call f90_expect_eq(mask(2), 0, 'Cell outside all polygons should not be masked')
+         call f90_expect_eq(mask(3), 1, 'Cell in the second block of the first file should be masked')
+         call f90_expect_eq(mask(4), 1, 'Cell in the second polygon file should be masked')
+         deallocate (mask)
+      end if
+
+      call delete_polygon_file(polygon_file_a)
+      call delete_polygon_file(polygon_file_b)
+      if (allocated(xzw)) deallocate (xzw)
+      if (allocated(yzw)) deallocate (yzw)
+      nump = 0
+      ndxi = 0
+      ndx2d = 0
+      jsferic = original_jsferic
+      jins = original_jins
+
+   end subroutine test_cell_mask_from_multiple_polygon_files
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_nested_drypoint_polygons, test_nested_drypoint_polygons,
@@ -991,6 +1047,39 @@ contains
 ! ============================================================================
 ! Helper subroutines for setting up test geometries
 ! ============================================================================
+
+   subroutine write_polygon_file(filename, x_origins, ierror)
+      character(len=*), intent(in) :: filename
+      real(kind=dp), intent(in) :: x_origins(:)
+      integer, intent(out) :: ierror
+
+      integer :: ipolygon, unit
+
+      open (newunit=unit, file=filename, status='replace', action='write', iostat=ierror)
+      if (ierror /= 0) return
+
+      do ipolygon = 1, size(x_origins)
+         write (unit, '(a,i0)') 'polygon_', ipolygon
+         write (unit, '(a)') '5 2'
+         write (unit, '(2f12.3)') x_origins(ipolygon), 0.0_dp
+         write (unit, '(2f12.3)') x_origins(ipolygon) + 10.0_dp, 0.0_dp
+         write (unit, '(2f12.3)') x_origins(ipolygon) + 10.0_dp, 10.0_dp
+         write (unit, '(2f12.3)') x_origins(ipolygon), 10.0_dp
+         write (unit, '(2f12.3)') x_origins(ipolygon), 0.0_dp
+      end do
+      close (unit, iostat=ierror)
+
+   end subroutine write_polygon_file
+
+   subroutine delete_polygon_file(filename)
+      character(len=*), intent(in) :: filename
+
+      integer :: ierror, unit
+
+      open (newunit=unit, file=filename, status='old', action='read', iostat=ierror)
+      if (ierror == 0) close (unit, status='delete')
+
+   end subroutine delete_polygon_file
 
    ! Helper subroutine: setup 5 cells in a row (0-10, 10-20, 20-30, 30-40, 40-50)
    subroutine setup_row_netcells()
