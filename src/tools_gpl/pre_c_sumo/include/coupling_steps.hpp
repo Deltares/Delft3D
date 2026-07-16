@@ -159,10 +159,10 @@ namespace pre_c_sumo
      * @brief Create an approximate diffuser model from NF source data.
      *
      * When diffusers are not modelled explicitly this function creates
-     * a simplified diffuser representation and converts the created source information into the format required by the
-     * farfield component.
+     * the sources for a simplified diffuser representation that cen be used
+     * to create the farfield component.
      */
-    void createDiffuserModel();
+    std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFReader& diffuser);
 
 } // namespace pre_c_sumo
 

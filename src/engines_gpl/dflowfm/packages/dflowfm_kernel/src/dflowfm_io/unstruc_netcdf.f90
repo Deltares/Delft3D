@@ -4340,12 +4340,16 @@ contains
          end if
 
          ! Heat fluxes
-         if (map_write_settings%heatflux > 0) then ! here less verbose
+         if (map_write_settings%heatflux > 0) then ! Here less verbose
             if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
+               
+               if (secchi_depth_is_time_varying) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, nc_precision, UNC_LOC_S, 'Secc', 'secchi_depth_of_sea_water', 'Secchi depth', 'm', jabndnd=jabndnd_)
+               end if
 
                if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, nc_precision, UNC_LOC_S, 'Qsun', 'surface_net_downward_shortwave_flux', 'Solar influx', 'W m-2', jabndnd=jabndnd_)
@@ -6059,6 +6063,10 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, UNC_LOC_S, air_temperature, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, UNC_LOC_S, relative_humidity, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, UNC_LOC_S, cloudiness, jabndnd=jabndnd_)
+
+            if (secchi_depth_is_time_varying) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, UNC_LOC_S, spatial_secchi_depth, jabndnd=jabndnd_)
+            end if
 
             if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, UNC_LOC_S, Qsunmap, jabndnd=jabndnd_)
@@ -9580,7 +9588,7 @@ contains
          maxbnd = ceiling(sqrt(real(numl))) ! First estimate of numbnd
          allocate (ibndlink(maxbnd))
          do L = 1, numl
-            if (lnn(L) < 2 .and. kn(3, L) == 2) then
+            if (lnn(L) < 2 .and. kn(3, L) == LINK_2D) then
                numbnd = numbnd + 1
                if (numbnd > maxbnd) then
                   maxbnd = max(NUMBND, nint(1.2 * maxbnd))
@@ -10260,7 +10268,7 @@ contains
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
          call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
-         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.true., fill='')
+         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.false., fill='')
          do i = 1, n2d2dcontacts
             L = temp_indices(i)
             n1 = abs(lne(1, L))
@@ -10447,7 +10455,7 @@ contains
                call mess(LEVEL_ERROR, 'Could not put header in net geometry file.')
                return
             end if
-         else
+         else if (num_1d_nodes > 0) then
             ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, num_1d_nodes, n1dedges, 0, 0, &
                                         edge_nodes, face_nodes, null(), null(), null(), xn, yn, xe, ye, xzw(1:1), yzw(1:1), &
                                         crs, -999, dmiss, start_index)
@@ -11007,7 +11015,7 @@ contains
          end if
 
          ! TODO: AvD: replace by read-in edge_type
-         ! NOTE: AvD: even meshgeom%dim is not entirely suitable, because if a net file was saved without cell info, then we currently write topology_dimension=1, whereas we actually intend to have kn(3,:)=2.
+         ! NOTE: AvD: even meshgeom%dim is not entirely suitable, because if a net file was saved without cell info, then we currently write topology_dimension=1, whereas we actually intend to have kn(3,:)=LINK_2D.
          kn3(:) = meshgeom%dim ! was 2, Needs to be read from file at some point
 
          ! Backwards compatibility
@@ -11397,7 +11405,7 @@ contains
       ! Repair invalid kn3 codes (e.g. 0, always set to default 2==2D, i.e., don't read in thin dam codes)
       do L = numl_keep + 1, numl_keep + numl_read
          if (kn(3, L) < 1) then
-            kn(3, L) = 2
+            kn(3, L) = LINK_2D
          end if
       end do
 
@@ -15232,7 +15240,7 @@ contains
                ierr = ionc_get_edge_nodes(ioncid, im2d, kn12, 1)
                do L = 1, numl2d_read
                   kn(1:2, numl1d + L) = numk1d + kn12(1:2, L)
-                  kn(3, numl1d + L) = 2
+                  kn(3, numl1d + L) = LINK_2D
                end do
             end if
          else
@@ -15578,7 +15586,7 @@ contains
                   numl = numl + 1
                   kn(1, numl) = pbr%grd(k)
                   kn(2, numl) = pbr%grd(k + 1)
-                  kn(3, numl) = 1
+                  kn(3, numl) = LINK_1D
                end do
 
             end do
