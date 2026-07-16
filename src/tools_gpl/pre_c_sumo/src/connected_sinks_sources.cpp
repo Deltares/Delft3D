@@ -53,8 +53,6 @@ namespace pre_c_sumo
         discharge_vector.clear();
         momentum_magnitude_vector.clear();
         momentum_direction_vector.clear();
-        momentum_sin_vector.clear();
-        momentum_cos_vector.clear();
     }
 
     /**
@@ -81,6 +79,8 @@ namespace pre_c_sumo
         participant.writeData(mesh_name, "sources_z_min", precice_ids, source_z_bottom_vector);
         participant.writeData(mesh_name, "sources_z_max", precice_ids, source_z_top_vector);
         participant.writeData(mesh_name, "sources_sinks_discharge", precice_ids, discharge_vector);
+        participant.writeData(mesh_name, "sources_momentum_magnitude", precice_ids, momentum_magnitude_vector);
+        participant.writeData(mesh_name, "sources_momentum_direction", precice_ids, momentum_direction_vector);
         // TODO: Send Momentum.
 
         // After the write, we can clear the list.
