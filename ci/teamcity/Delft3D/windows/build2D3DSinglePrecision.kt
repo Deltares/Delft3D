@@ -85,7 +85,11 @@ object WindowsBuild2D3DSP : BuildType({
                 matches("product", """^(d3d4-(suite|testbench))|(all-testbench)$""")
             }
             scriptContent = """
-                call C:/set-env.cmd
+                if exist C:\set-env.cmd (
+                    call C:\set-env.cmd
+                ) else (
+                    call C:\set-env-vs2022.cmd
+                )
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%

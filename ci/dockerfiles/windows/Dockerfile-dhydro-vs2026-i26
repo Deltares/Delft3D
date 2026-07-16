@@ -18,9 +18,17 @@ RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart 
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
 
-# Install the Intel oneAPI 2026.0 Toolkit.
+# Install the Intel C/C++ and Fortran compilers, oneMKL, and Intel MPI.
 ADD intel-oneapi-toolkit-2026.1.0.191_offline.exe C:/
-RUN Start-Process -FilePath "C:\intel-oneapi-toolkit-2026.1.0.191_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2026_INTEGRATION=1", "-s" -Wait
+RUN Start-Process -FilePath "C:\intel-oneapi-toolkit-2026.1.0.191_offline.exe" -ArgumentList \
+    "--silent", \
+    "-a", \
+    "--action", "install", \
+    "--eula=accept", \
+    "--components=intel.oneapi.win.cpp-dpcpp-common:intel.oneapi.win.ifort-compiler:intel.oneapi.win.mkl.devel:intel.oneapi.win.mpi.devel", \
+    "-p=NEED_VS2026_INTEGRATION=1", \
+    "-s" \
+    -Wait
 
 # RUN Remove intel installer executable
 RUN Remove-Item C:\*.exe
