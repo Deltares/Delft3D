@@ -133,6 +133,7 @@ contains
       use m_flowparameters, only: map_write_settings
       use m_unc_flowgeom, only: build_flowgeom
       use m_unstruc_netcdf_data, only: flowgeom
+      use m_unstruc_model_data, only: md_output_polyfile
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -594,7 +595,7 @@ contains
       call mess(LEVEL_INFO, '**')
       call timstop(handle_extra(34)) ! end writeMDUFilepointer
 
-      flowgeom = build_flowgeom(map_write_settings%bnd)
+      flowgeom = build_flowgeom(map_write_settings%bnd, md_output_polyfile)
 
       call timstrt('Flowgeom            ', handle_extra(35)) ! write flowgeom ugrid
       if (len_trim(md_flowgeomfile) > 0) then ! Save initial flow geometry to file.

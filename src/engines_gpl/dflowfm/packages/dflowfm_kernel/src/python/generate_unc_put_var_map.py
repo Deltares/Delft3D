@@ -50,7 +50,7 @@ def generate_rank1(ftype: FortranType) -> str:
    integer :: ndx2d, n1d_write
    integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
    integer :: iloc, n_open, g
-   logical :: masked_edge_2d, special_output
+   logical :: masked_edge_2d, remap_output, write_surface_output
    {T}, allocatable, save, target :: work(:)
    {T}, pointer :: output_values(:)
    {T}, allocatable, save :: work_layers(:,:), work_interfaces(:,:)
@@ -67,21 +67,31 @@ def generate_rank1(ftype: FortranType) -> str:
    n1d_write = flowgeom%mesh1D%numNode
    iloc = iloc_in
 
-   ! Keep the common write paths zero-copy. Only the niche reduced-output and
-   ! surface-from-3D modes prepare a temporary in output order.
    masked_edge_2d = allocated(flowgeom%edge_flowlink_map_2D)
    output_values => values
-   special_output = .false.
+   remap_output = .false.
+   write_surface_output = iloc == UNC_LOC_S3D .and. write_surface_data_to_map_file
 
    if (iloc == UNC_LOC_CN) then
-      special_output = allocated(flowgeom%node_map_2D)
+      remap_output = allocated(flowgeom%node_map_2D)
    else if (iloc == UNC_LOC_S) then
-      special_output = allocated(flowgeom%face_map_2D) .or. allocated(flowgeom%node_map_1D)
-   else if (iloc == UNC_LOC_S3D) then
-      special_output = write_surface_data_to_map_file
+      remap_output = allocated(flowgeom%face_map_2D) .or. allocated(flowgeom%node_map_1D)
    end if
 
-   if (special_output) then
+   if (write_surface_output) then
+      iloc = UNC_LOC_S
+      n1d_write = 0
+      call realloc(work, ndx2d, keepExisting=.false.)
+      do n = 1, ndx2d
+         if (allocated(flowgeom%face_map_2D)) then
+            g = flowgeom%face_map_2D(n)
+         else
+            g = n
+         end if
+         work(n) = values(ktop(g))
+      end do
+      output_values => work
+   else if (remap_output) then
       select case (iloc)
       case (UNC_LOC_CN)
          call realloc(work, flowgeom%mesh2d%numNode, keepExisting=.false.)
@@ -105,21 +115,6 @@ def generate_rank1(ftype: FortranType) -> str:
          else if (n1d_write > 0) then
             work(ndx2d + 1:ndx2d + n1d_write) = values(ndx2d + 1:ndx2d + n1d_write)
          end if
-
-      case (UNC_LOC_S3D)
-         ! A map-file surface is a 2D pressure-point field derived from the top
-         ! active layer. Prepare it in output-face order before the normal write.
-         iloc = UNC_LOC_S
-         n1d_write = 0
-         call realloc(work, ndx2d, keepExisting=.false.)
-         do n = 1, ndx2d
-            if (allocated(flowgeom%face_map_2D)) then
-               g = flowgeom%face_map_2D(n)
-            else
-               g = n
-            end if
-            work(n) = values(ktop(g))
-         end do
       end select
 
       output_values => work

@@ -267,15 +267,14 @@ contains
             end if
          end do
       end if
-      ! Build output-edge -> global flow link map for data writes (0 = closed edge, no flow link).
-      ! Only for masked output; the unmasked writer path uses contiguous slices instead (zero-copy).
+      ! Build output-edge -> global flow link map for data writes
       if (use_mask) then
          call realloc(flowgeom%edge_flowlink_map_2D, numEdge, keepExisting=.false., fill=0)
          if (allocated(lne2ln)) then
             do i = 1, numEdge
                nn = lne2ln(numl1d + flowgeom%edge_map_2D(i)) ! nn holds flow link number (<= 0 for closed edges)
-               if (nn > 0) then
-                  flowgeom%edge_flowlink_map_2D(i) = nn
+               if (nn /= 0) then
+                  flowgeom%edge_flowlink_map_2D(i) = abs(nn)
                end if
             end do
          end if
@@ -744,10 +743,10 @@ contains
 
       type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
-      character(len=*), intent(in), optional :: polygon_file !< File containing output polygon (e.g., *_output.pol)
+      character(len=*), intent(in) :: polygon_file !< File containing output polygon (e.g., *_output.pol)
       integer, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells (nonzero = include); if absent, all cells are included.
 
-      if (present(polygon_file)) then
+      if (len_trim(polygon_file) > 0) then
          cell_mask = cell_mask_from_polygon_file(polygon_file)
          call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
