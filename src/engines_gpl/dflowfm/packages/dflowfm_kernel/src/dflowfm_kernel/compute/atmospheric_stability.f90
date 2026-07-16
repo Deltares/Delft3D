@@ -648,8 +648,11 @@ contains
 
    !> Compute roughness lengths following an ECMWF-style parameterization.
    pure subroutine compute_roughness_lengths(u_star, charnock, z0_momentum, z0_heat, z0_humidity)
-      real(kind=dp), intent(in) :: u_star, charnock !< u* [m/s], Charnock [-].
-      real(kind=dp), intent(out) :: z0_momentum, z0_heat, z0_humidity !< Roughness [m].
+      real(kind=dp), intent(in) :: u_star !< u* [m/s]
+      real(kind=dp), intent(in) :: charnock !< Charnock [-]
+      real(kind=dp), intent(out) :: z0_momentum !< Roughness length for momentum [m]
+      real(kind=dp), intent(out) :: z0_heat !< Roughness length for heat [m]
+      real(kind=dp), intent(out) :: z0_humidity !< Roughness length for humidity [m]
       real(kind=dp), parameter :: ALPHA_M = 0.11_dp ! roughness length coefficient for momentum
       real(kind=dp), parameter :: ALPHA_H = 0.40_dp ! roughness length coefficient for heat
       real(kind=dp), parameter :: ALPHA_Q = 0.62_dp ! roughness length coefficient for humidity
@@ -667,10 +670,10 @@ contains
    pure function compute_saturation_pressure(temperature) result(vapor_pressure)
       real(kind=dp), intent(in) :: temperature !< Temperature [K].
       real(kind=dp) :: vapor_pressure !< Saturation pressure [Pa].
-      real(kind=dp), parameter :: coeff_a = 17.502_dp
-      real(kind=dp), parameter :: coeff_b = 32.19_dp
+      real(kind=dp), parameter :: COEFF_A = 17.502_dp
+      real(kind=dp), parameter :: COEFF_B = 32.19_dp
 
-      vapor_pressure = CONST_E0 * exp(coeff_a * ((temperature - CONST_TT) / (temperature - coeff_b)))
+      vapor_pressure = CONST_E0 * exp(COEFF_A * ((temperature - CONST_TT) / (temperature - COEFF_B)))
    end function compute_saturation_pressure
 
    !> Compute specific humidity based on vapor pressure and total air pressure (ECMWF_e2qv).
@@ -711,37 +714,39 @@ contains
       real(kind=dp) :: surface_virtual_temperature
       real(kind=dp) :: air_virtual_temperature
       real(kind=dp) :: virtual_temperature_difference
+      real(kind=dp) :: lower_clipped_wind_speed
 
       surface_specific_humidity = saturated_humidity_reduction_factor * compute_specific_humidity( &
                                   compute_saturation_pressure(surface_temperature), air_pressure)
       surface_virtual_temperature = surface_temperature * (1.0_dp + CONST_EST * surface_specific_humidity)
       air_virtual_temperature = air_temperature * (1.0_dp + CONST_EST * air_specific_humidity)
       virtual_temperature_difference = air_virtual_temperature - surface_virtual_temperature
+      lower_clipped_wind_speed = max(wind_speed,0.1_dp)
 
       richardson_number = CONST_GRAVITY * virtual_temperature_difference * sensor_height_wind_velocity / &
-                          max(air_virtual_temperature * wind_speed * wind_speed, 1.0e-10_dp)
+                          (air_virtual_temperature * lower_clipped_wind_speed * lower_clipped_wind_speed)
    end function compute_richardson_number
 
    !> Stability profile for heat and humidity (ECMWF_Psi).
    pure function stability_profile_heat_humidity(stability_parameter) result(stability_correction)
       real(kind=dp), intent(in) :: stability_parameter !< Stability parameter z/L [-].
       real(kind=dp) :: stability_correction !< Stability correction [-].
-      real(kind=dp), parameter :: coef_a = 1.0_dp
-      real(kind=dp), parameter :: coef_b = 2.0_dp / 3.0_dp
-      real(kind=dp), parameter :: coef_c = 5.0_dp
-      real(kind=dp), parameter :: coef_d = 0.35_dp
-      real(kind=dp), parameter :: coef_unstable = 16.0_dp
+      real(kind=dp), parameter :: COEF_A = 1.0_dp
+      real(kind=dp), parameter :: COEF_B = 2.0_dp / 3.0_dp
+      real(kind=dp), parameter :: COEF_C = 5.0_dp
+      real(kind=dp), parameter :: COEF_D = 0.35_dp
+      real(kind=dp), parameter :: COEF_UNSTABLE = 16.0_dp
       real(kind=dp) :: clipped_zeta, unstable_factor
 
       clipped_zeta = min(stability_parameter, 5.0_dp)
       if (clipped_zeta < 0.0_dp) then
          ! unstable conditions
-         unstable_factor = (1.0_dp - coef_unstable * clipped_zeta)**0.25_dp
+         unstable_factor = (1.0_dp - COEF_UNSTABLE * clipped_zeta)**0.25_dp
          stability_correction = 2.0_dp * log((1.0_dp + unstable_factor * unstable_factor) / 2.0_dp)
       else if (clipped_zeta > 0.0_dp) then
          ! stable conditions
-         stability_correction = (-coef_b * (clipped_zeta - (coef_c / coef_d)) * exp(-coef_d * clipped_zeta)) - &
-                                (1.0_dp + (2.0_dp / 3.0_dp) * coef_a * clipped_zeta)**1.5_dp - (coef_b * coef_c / coef_d) + 1.0_dp
+         stability_correction = (-COEF_B * (clipped_zeta - (COEF_C / COEF_D)) * exp(-COEF_D * clipped_zeta)) - &
+                                (1.0_dp + (2.0_dp / 3.0_dp) * COEF_A * clipped_zeta)**1.5_dp - (COEF_B * COEF_C / COEF_D) + 1.0_dp
       else
          ! neutral conditions
          stability_correction = 0.0_dp
@@ -752,24 +757,24 @@ contains
    pure function stability_profile_momentum(stability_parameter) result(stability_correction)
       real(kind=dp), intent(in) :: stability_parameter !< Stability parameter z/L [-].
       real(kind=dp) :: stability_correction !< Stability correction [-].
-      real(kind=dp), parameter :: coef_a = 1.0_dp
-      real(kind=dp), parameter :: coef_b = 2.0_dp / 3.0_dp
-      real(kind=dp), parameter :: coef_c = 5.0_dp
-      real(kind=dp), parameter :: coef_d = 0.35_dp
-      real(kind=dp), parameter :: coef_unstable = 16.0_dp
+      real(kind=dp), parameter :: COEF_A = 1.0_dp
+      real(kind=dp), parameter :: COEF_B = 2.0_dp / 3.0_dp
+      real(kind=dp), parameter :: COEF_C = 5.0_dp
+      real(kind=dp), parameter :: COEF_D = 0.35_dp
+      real(kind=dp), parameter :: COEF_UNSTABLE = 16.0_dp
       real(kind=dp) :: clipped_zeta, unstable_factor, psi_stable
 
       clipped_zeta = min(stability_parameter, 5.0_dp)
 
       if (clipped_zeta < 0.0_dp) then
          ! unstable conditions
-         unstable_factor = (1.0_dp - coef_unstable * clipped_zeta)**0.25_dp
+         unstable_factor = (1.0_dp - COEF_UNSTABLE * clipped_zeta)**0.25_dp
          stability_correction = (PI / 2.0_dp) - (2.0_dp * atan(unstable_factor)) + &
                                 log(((1.0_dp + unstable_factor)**2 * (1.0_dp + unstable_factor * unstable_factor)) / 8.0_dp)
       else if (clipped_zeta > 0.0_dp) then
          ! stable conditions
-         psi_stable = (-coef_b * (clipped_zeta - (coef_c / coef_d)) * exp(-coef_d * clipped_zeta)) - &
-                      coef_a * clipped_zeta - (coef_b * coef_c / coef_d)
+         psi_stable = (-COEF_B * (clipped_zeta - (COEF_C / COEF_D)) * exp(-COEF_D * clipped_zeta)) - &
+                      COEF_A * clipped_zeta - (COEF_B * COEF_C / COEF_D)
          stability_correction = min(psi_stable, 1.0e30_dp)
       else
          ! neutral conditions

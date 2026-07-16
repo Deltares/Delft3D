@@ -777,7 +777,7 @@ contains
                   call getlink1(k, LL)
                   wxL = wx(LL)
                   wyL = wy(LL)
-                  call compute_wind_relative_to_surface_on_link(wxL, wyL, relativewind, u1(ltop(LL)), v(ltop(LL)), csu(LL), snu(LL), wxL, wyL)
+                  call compute_wind_relative_to_surface_on_link(wx(LL), wy(LL), relativewind, u1(ltop(LL)), v(ltop(LL)), csu(LL), snu(LL), wxL, wyL)
                   valobs(i, IPNT_RWIN) = sqrt(wxL * wxL + wyL * wyL)
                   if (allocated(air_temperature)) then
                      valobs(i, IPNT_TAIR) = air_temperature(k)

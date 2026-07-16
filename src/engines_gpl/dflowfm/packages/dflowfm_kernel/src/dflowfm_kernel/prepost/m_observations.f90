@@ -160,6 +160,7 @@ contains
       IVAL_SEDDIFN = 0
       IVAL_TAIR = 0
       IVAL_WIND = 0
+      IVAL_RWIN = 0
       IVAL_RHUM = 0
       IVAL_CLOU = 0
       IVAL_AIRDENSITY = 0
