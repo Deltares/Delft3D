@@ -381,8 +381,7 @@ contains
       vmax = 1
 
      do ivar = 1, ncptr%nVars
-         ltl = len_trim(quantity)
-         if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) then
+         if (strcmpi(ncptr%variable_names(ivar), quantity)) then
             exit
          end if
      end do 
