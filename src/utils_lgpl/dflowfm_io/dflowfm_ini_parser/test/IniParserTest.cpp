@@ -84,9 +84,8 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserSpecialCharactersSectionNameTest,
-                             ::testing::Values("section#1", "section-1", "section²", "section\\subsection",
-                                               "section~subsection", "section*subsection", "section \" xyz",
-                                               "#section#", "s][e[c]t][i[]on[", "https://example.com/page",
+                             ::testing::Values("section-1", "section²", "section\\subsection", "section~subsection",
+                                               "section*subsection", "section \" xyz", "https://example.com/page",
                                                "{C3BA7795-F319-4CC0-B091-783DDEBCCDF1}"));
 
     class IniParserInvalidSectionFormatTest : public ::testing::TestWithParam<std::string>
@@ -113,7 +112,8 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserInvalidSectionFormatTest,
-                             ::testing::Values("[section", "[section[", "]section[", "a[section]"));
+                             ::testing::Values("[section", "[section[", "]section[", "a[section]", "[section]a",
+                                               "[[section]", "[section]]"));
 
     class IniParserEmptySectionNameTest : public ::testing::TestWithParam<std::string>
     {
@@ -200,6 +200,25 @@ namespace ini::test
     // -------------------------------------------------------------------------
     // Parse - section comments
     // -------------------------------------------------------------------------
+
+    class IniParserSectionWithCommentFormatTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniParserSectionWithCommentFormatTest, Parse_SectionWithCommentFormat_IniDataHasSection)
+    {
+        IniParser parser = CreateParser();
+
+        const IniData iniData = parser.Parse(GetParam());
+
+        EXPECT_TRUE(iniData.HasSection("section"));
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserSectionWithCommentFormatTest,
+                             ::testing::Values("[section] # inline comment", "[section]# inline comment",
+                                               "[section] #inline comment", "[section]\t#\tinline comment",
+                                               "[section] #[old_name]", "[section] # [a] [b]",
+                                               "# block comment\n[section]", "# [old_name]\n[section]"));
 
     class IniParserInvalidCommentDelimiterTest : public ::testing::TestWithParam<char>
     {
@@ -295,25 +314,6 @@ namespace ini::test
     // Parse - properties
     // -------------------------------------------------------------------------
 
-    TEST(IniParserTest, Parse_PropertyWithoutSection_ThrowsFormatError)
-    {
-        IniParser parser = CreateParser();
-
-        EXPECT_THROW(
-            {
-                try
-                {
-                    parser.Parse("property = value");
-                }
-                catch (const std::format_error& ex)
-                {
-                    EXPECT_STREQ(ex.what(), "Error on line 1: properties must be defined within a section.");
-                    throw;
-                }
-            },
-            std::format_error);
-    }
-
     class IniParserValidPropertyFormatTest : public ::testing::TestWithParam<std::string>
     {
     };
@@ -374,6 +374,52 @@ namespace ini::test
 
         EXPECT_EQ(property.GetValue(), "value");
     }
+
+    TEST(IniParserTest, Parse_PropertyWithoutSection_ThrowsFormatError)
+    {
+        IniParser parser = CreateParser();
+
+        EXPECT_THROW(
+            {
+                try
+                {
+                    parser.Parse("property = value");
+                }
+                catch (const std::format_error& ex)
+                {
+                    EXPECT_STREQ(ex.what(), "Error on line 1: properties must be defined within a section.");
+                    throw;
+                }
+            },
+            std::format_error);
+    }
+
+    class IniParserInvalidPropertyFormatTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniParserInvalidPropertyFormatTest, Parse_InvalidPropertyFormat_ThrowsFormatError)
+    {
+        IniParser parser = CreateParser();
+        const std::string ini = "[section]\n" + GetParam();
+
+        EXPECT_THROW(
+            {
+                try
+                {
+                    parser.Parse(ini);
+                }
+                catch (const std::format_error& ex)
+                {
+                    EXPECT_STREQ(ex.what(), "Error on line 2: invalid INI-formatted text.");
+                    throw;
+                }
+            },
+            std::format_error);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserInvalidPropertyFormatTest,
+                             ::testing::Values("property == value", "property = value = value"));
 
     class IniParserPropertyWithoutKeyTest : public ::testing::TestWithParam<std::string>
     {
@@ -561,6 +607,29 @@ namespace ini::test
     // Parse - property comments
     // -------------------------------------------------------------------------
 
+    class IniParserPropertyWithCommentFormatTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniParserPropertyWithCommentFormatTest, Parse_PropertyWithCommentFormat_SectionHasProperty)
+    {
+        IniParser parser = CreateParser();
+        const std::string ini = "[section]\n" + GetParam();
+
+        const IniData iniData = parser.Parse(ini);
+        const IniSection section = iniData.GetSection("section");
+
+        ASSERT_TRUE(section.HasProperty("property"));
+        const IniProperty property = section.GetProperty("property");
+
+        EXPECT_EQ(property.GetValue(), "value");
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserPropertyWithCommentFormatTest,
+                             ::testing::Values("property=value # inline comment", "property=value\t#\tinline comment",
+                                               "property=value # a = b", "# block comment\nproperty=value",
+                                               "# a = b\nproperty=value"));
+
     TEST(IniParserTest, Parse_PropertyWithCommentLines_CommentLinesAreIgnored)
     {
         IniParser parser = CreateParser();
@@ -692,7 +761,7 @@ namespace ini::test
         options.allowMultiLineValues = true;
 
         IniScheme& scheme = parser.GetScheme();
-        scheme.multiLineValueDelimiter = '\0';
+        scheme.multiLineValueDelimiter = std::nullopt;
 
         const std::string ini = "[section]\nproperty=value1\nvalue2\nvalue3";
 
@@ -701,6 +770,30 @@ namespace ini::test
         const IniProperty property = section.GetProperty("property");
 
         EXPECT_EQ(property.GetValue(), "value1\nvalue2\nvalue3");
+    }
+
+    TEST(IniParserTest, Parse_PropertyMultiLineValueWithoutDelimiterAndDelimiterConfigured_ThrowsFormatError)
+    {
+        IniParser parser = CreateParser();
+
+        IniParserOptions& options = parser.GetOptions();
+        options.allowMultiLineValues = true;
+
+        const std::string ini = "[section]\nproperty=value1\nvalue2";
+
+        EXPECT_THROW(
+            {
+                try
+                {
+                    parser.Parse(ini);
+                }
+                catch (const std::format_error& ex)
+                {
+                    EXPECT_STREQ(ex.what(), "Error on line 3: invalid INI-formatted text.");
+                    throw;
+                }
+            },
+            std::format_error);
     }
 
     TEST(IniParserTest, Parse_MultiLineValueWithoutProperty_ThrowsFormatError)

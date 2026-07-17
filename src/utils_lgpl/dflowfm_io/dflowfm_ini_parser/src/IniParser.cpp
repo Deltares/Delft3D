@@ -45,6 +45,7 @@ namespace ini
         currentProperty = nullptr;
         currentLine.clear();
         lineNumber = 0;
+        multiLineContinuation = false;
     }
 
     void IniParser::SetInvalidChars()
@@ -103,7 +104,7 @@ namespace ini
             FinalizeCurrentProperty();
             ParsePropertyLine();
         }
-        else if (IsMultiLineValueLine())
+        else if (IsMultiLineContinuation())
         {
             ParseMultiLineValueLine();
         }
@@ -113,19 +114,24 @@ namespace ini
         }
     }
 
-    bool IniParser::IsEmptyLine() const { return currentLine.empty(); }
+    bool IniParser::IsEmptyLine() const
+    {
+        return currentLine.empty(); 
+    }
 
     bool IniParser::IsValidLine() const
     {
-        return currentLine.empty() || invalidChars.find(currentLine[0]) == invalidChars.end();
+        return invalidChars.find(currentLine[0]) == invalidChars.end();
     }
 
-    bool IniParser::IsCommentLine() const { return !currentLine.empty() && currentLine[0] == scheme.commentDelimiter; }
+    bool IniParser::IsCommentLine() const
+    {
+        return currentLine[0] == scheme.commentDelimiter;
+    }
 
     bool IniParser::IsSectionLine() const
     {
-        return !currentLine.empty() && currentLine[0] == scheme.sectionStartDelimiter &&
-               currentLine.find(scheme.sectionEndDelimiter) != std::string::npos;
+        return currentLine[0] == scheme.sectionStartDelimiter;
     }
 
     bool IniParser::IsPropertyLine() const
@@ -133,9 +139,9 @@ namespace ini
         return currentLine.find(scheme.propertyAssignmentDelimiter) != std::string::npos;
     }
 
-    bool IniParser::IsMultiLineValueLine() const
+    bool IniParser::IsMultiLineContinuation() const
     {
-        return currentProperty != nullptr && currentLine.find(scheme.propertyAssignmentDelimiter) == std::string::npos;
+        return multiLineContinuation;
     }
 
     void IniParser::HandleInvalidLineFormat() const
@@ -158,9 +164,21 @@ namespace ini
 
     void IniParser::ParseSectionLine()
     {
-        const std::size_t startIndex = currentLine.find(scheme.sectionStartDelimiter);
-        const std::size_t endIndex = currentLine.rfind(scheme.sectionEndDelimiter);
-        const std::string sectionName = trim(currentLine.substr(startIndex + 1, endIndex - startIndex - 1));
+        const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter);
+        const std::string sectionPart =
+            commentIndex != std::string::npos ? trim(currentLine.substr(0, commentIndex)) : currentLine;
+
+        const std::size_t endIndex = sectionPart.rfind(scheme.sectionEndDelimiter);
+
+        if (endIndex == std::string::npos ||
+            sectionPart.back() != scheme.sectionEndDelimiter ||
+            sectionPart.find(scheme.sectionStartDelimiter, 1) != std::string::npos ||
+            sectionPart.find(scheme.sectionEndDelimiter) != endIndex)
+        {
+            HandleInvalidLineFormat();
+        }
+
+        const std::string sectionName = trim(sectionPart.substr(1, endIndex - 1));
 
         ValidateSectionName(sectionName);
         AddNewSection(sectionName);
@@ -211,11 +229,18 @@ namespace ini
 
         const std::size_t valueStartIndex = assignmentIndex + 1;
         const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter, valueStartIndex);
+        
+        const std::size_t searchEnd = commentIndex != std::string::npos ? commentIndex : currentLine.size();
+        if (currentLine.find(scheme.propertyAssignmentDelimiter, valueStartIndex) < searchEnd)
+        {
+            HandleInvalidLineFormat();
+        }
 
         std::string value = commentIndex != std::string::npos
                                 ? trim(currentLine.substr(valueStartIndex, commentIndex - valueStartIndex))
                                 : trim(currentLine.substr(valueStartIndex));
         ValidatePropertyValue(value);
+        multiLineContinuation = HasMultiLineContinuation(value);
         value = CleanupMultiLineValue(std::move(value));
 
         const std::string comment = (commentIndex != std::string::npos && options.parseComments)
@@ -246,7 +271,8 @@ namespace ini
 
     void IniParser::ValidatePropertyValue(const std::string& value)
     {
-        if (!options.allowMultiLineValues && !value.empty() && value.back() == scheme.multiLineValueDelimiter)
+        if (!options.allowMultiLineValues && scheme.multiLineValueDelimiter.has_value() && 
+            !value.empty() && value.back() == *scheme.multiLineValueDelimiter)
         {
             throw std::format_error(std::format("Error on line {}: multi-line values are not allowed.", lineNumber));
         }
@@ -267,8 +293,10 @@ namespace ini
     {
         const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter);
 
-        std::string value =
-            commentIndex != std::string::npos ? trim(currentLine.substr(0, commentIndex)) : trim(currentLine);
+        std::string value = commentIndex != std::string::npos
+                                ? trim(currentLine.substr(0, commentIndex))
+                                : trim(currentLine);
+        multiLineContinuation = HasMultiLineContinuation(value);
         value = CleanupMultiLineValue(std::move(value));
 
         const std::string comment = (commentIndex != std::string::npos && options.parseComments)
@@ -319,9 +347,17 @@ namespace ini
         currentProperty = nullptr;
     }
 
+    bool IniParser::HasMultiLineContinuation(const std::string& value) const
+    {
+        return options.allowMultiLineValues &&
+               (!scheme.multiLineValueDelimiter.has_value() ||
+                (!value.empty() && value.back() == *scheme.multiLineValueDelimiter));
+    }
+
     std::string IniParser::CleanupMultiLineValue(std::string value) const
     {
-        value = trim_end(std::move(value), scheme.multiLineValueDelimiter);
+        if (scheme.multiLineValueDelimiter.has_value())
+            value = trim_end(std::move(value), *scheme.multiLineValueDelimiter);
         value = trim_end(std::move(value), ' ');
         return value;
     }

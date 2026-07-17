@@ -38,8 +38,9 @@ namespace ini
         /// @brief The delimiter used to separate property keys and values in INI data.
         char propertyAssignmentDelimiter = '=';
 
-        /// @brief The delimiter used to indicate continuation of multi-line property values.
-        char multiLineValueDelimiter = '\\';
+        /// @brief The delimiter marking a value continuing on the next line.
+        ///        If empty, every following non-property line continues the value.
+        std::optional<char> multiLineValueDelimiter{'\\'};
     };
 
 } // namespace ini

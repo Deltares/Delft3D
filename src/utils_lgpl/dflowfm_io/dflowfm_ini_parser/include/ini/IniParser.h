@@ -70,6 +70,7 @@ namespace ini
 
         std::string currentLine;
         int lineNumber{0};
+        bool multiLineContinuation{false};
 
         void InitializeParsingContext();
         void SetInvalidChars();
@@ -83,7 +84,7 @@ namespace ini
         bool IsCommentLine() const;
         bool IsSectionLine() const;
         bool IsPropertyLine() const;
-        bool IsMultiLineValueLine() const;
+        bool IsMultiLineContinuation() const;
 
         void HandleInvalidLineFormat() const;
 
@@ -101,6 +102,7 @@ namespace ini
         void AddValueAndComment(const std::string& value, const std::string& comment);
         void FinalizeCurrentProperty();
 
+        bool HasMultiLineContinuation(const std::string& value) const;
         std::string CleanupMultiLineValue(std::string value) const;
     };
 
