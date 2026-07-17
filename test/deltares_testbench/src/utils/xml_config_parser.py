@@ -28,6 +28,7 @@ from src.suite.command_line_settings import CommandLineSettings
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.test_result_type import TestResultType
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 
 
 class XmlConfig:
@@ -542,8 +543,6 @@ class XmlConfigParser:
         """Fill cases (including default)."""
         if "ref" not in element:
             test_case = TestCaseConfig()
-            if "maxRunTime" not in element:
-                raise XmlError("no maximum run time specified for " + test_case.name)
         else:
             test_case = copy.deepcopy(self.__get_case(str(element["ref"][0])))
             if test_case is None:
@@ -590,6 +589,9 @@ class XmlConfigParser:
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
+        else:
+            test_case.max_run_time = DEFAULT_MAX_RUNTIME_SECONDS
+
         for el in XmlConfigParser.__loop(element, "programs"):
             for program in XmlConfigParser.__loop(el, "program"):
                 program_instance = self.__fill_program(program, settings)
