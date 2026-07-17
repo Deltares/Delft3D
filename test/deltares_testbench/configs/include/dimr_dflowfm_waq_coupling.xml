@@ -241,7 +241,7 @@
     <!-- CHECK WAQGEOM FILE -->
 
     <testCase name="e02_f029_c004_hyd_file_frisianinlet_waqgeom_2D" ref="dflowfm_default">
-      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c004_frisianinlet_waqgeom_2D</path>
+      <path version="2026-07-07T15:36:28.051000">e02_dflowfm/f029_hyd_file/c004_frisianinlet_waqgeom_2D</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -257,7 +257,7 @@
     </testCase>
 
     <testCase name="e02_f029_c005_hyd_file_frisianinlet_waqgeom_3D_s" ref="dflowfm_default">
-      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c005_frisianinlet_waqgeom_3D_s</path>
+      <path version="2026-07-07T15:36:30.812000">e02_dflowfm/f029_hyd_file/c005_frisianinlet_waqgeom_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -273,7 +273,7 @@
     </testCase>
 
     <testCase name="e02_f029_c006_hyd_file_frisianinlet_waqgeom_3D_z" ref="dflowfm_default">
-      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c006_frisianinlet_waqgeom_3D_z</path>
+      <path version="2026-07-07T15:36:32.931000">e02_dflowfm/f029_hyd_file/c006_frisianinlet_waqgeom_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
