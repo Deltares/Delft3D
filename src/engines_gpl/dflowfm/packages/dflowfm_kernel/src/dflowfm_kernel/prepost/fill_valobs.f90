@@ -779,12 +779,8 @@ contains
                   wyL = wy(LL)
                   call compute_wind_relative_to_surface_on_link(wx(LL), wy(LL), relativewind, u1(ltop(LL)), v(ltop(LL)), csu(LL), snu(LL), wxL, wyL)
                   valobs(i, IPNT_RWIN) = sqrt(wxL * wxL + wyL * wyL)
-                  if (allocated(air_temperature)) then
-                     valobs(i, IPNT_TAIR) = air_temperature(k)
-                  end if
-                  if (allocated(relative_humidity)) then
-                     valobs(i, IPNT_RHUM) = relative_humidity(k)
-                  end if
+                  valobs(i, IPNT_TAIR) = air_temperature(k)
+                  valobs(i, IPNT_RHUM) = relative_humidity(k)
                else if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   call getlink1(k, LL)
                   if (jawind > 0) then

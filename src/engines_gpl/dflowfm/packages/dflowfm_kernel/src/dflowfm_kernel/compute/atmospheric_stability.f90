@@ -715,13 +715,14 @@ contains
       real(kind=dp) :: air_virtual_temperature
       real(kind=dp) :: virtual_temperature_difference
       real(kind=dp) :: lower_clipped_wind_speed
+      real(kind=dp), parameter :: MINIMUM_WIND_SPEED = 0.10_dp
 
       surface_specific_humidity = saturated_humidity_reduction_factor * compute_specific_humidity( &
                                   compute_saturation_pressure(surface_temperature), air_pressure)
       surface_virtual_temperature = surface_temperature * (1.0_dp + CONST_EST * surface_specific_humidity)
       air_virtual_temperature = air_temperature * (1.0_dp + CONST_EST * air_specific_humidity)
       virtual_temperature_difference = air_virtual_temperature - surface_virtual_temperature
-      lower_clipped_wind_speed = max(wind_speed,0.1_dp)
+      lower_clipped_wind_speed = max(wind_speed,MINIMUM_WIND_SPEED)
 
       richardson_number = CONST_GRAVITY * virtual_temperature_difference * sensor_height_wind_velocity / &
                           (air_virtual_temperature * lower_clipped_wind_speed * lower_clipped_wind_speed)
