@@ -520,7 +520,7 @@ contains
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
       use unstruc_messages, only: callback_msg
-      use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush
+      use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush, err_flush
 
       logical, intent(in) :: initialization !< initialization phase
 
@@ -571,10 +571,10 @@ contains
          ! Now do the check on success for non-com file situations, and error when variable is missing
          !
          if (.not. success) then
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             write (msgbuf, '(a,i0,a)') 'set_external_forcings:: Offline wave coupling with waveforcing=', waveforcing, '. &
                & Error reading data from nc file.'
-            call warn_flush() ! ECMessage stack is not very informative
-            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+            call err_flush() ! ECMessage stack is not very informative
          end if
 
          if (jawave == WAVE_NC_OFFLINE) then
