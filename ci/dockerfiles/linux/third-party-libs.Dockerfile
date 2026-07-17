@@ -158,42 +158,6 @@ make install
 popd
 EOF-xerces-c
 
-FROM base AS petsc
-
-ARG INTEL_ONEAPI_VERSION
-ARG INTEL_FORTRAN_COMPILER
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF-petsc"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.24.5.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
-[[ ${INTEL_ONEAPI_VERSION} = "2024" ]] && [[ ${INTEL_FORTRAN_COMPILER} = "ifort" ]] \
-    && FFLAGS="-diag-disable=10448" || FFLAGS=""
-[[ $DEBUG = "0" ]] && FLAGS="-O3" || FLAGS="-g -O0"
-
-pushd "/var/cache/src/${BASEDIR}"
-./configure \
-    --prefix=/usr/local \
-    --with-cc=mpiicx --with-cxx=mpiicpx --with-fc=$MPIFC \
-    --with-debugging=0 --COPTFLAGS="$FLAGS" --CXXOPTFLAGS="$FLAGS" --FOPTFLAGS="$FLAGS" \
-    --FFLAGS+="$FFLAGS"
-make
-make install
-popd
-EOF-petsc
-
 FROM base AS hdf5
 
 ARG INTEL_FORTRAN_COMPILER
@@ -666,7 +630,6 @@ EOT
 COPY --from=uuid --link /usr/local /usr/local/
 COPY --from=metis --link /usr/local /usr/local/
 COPY --from=xerces-c --link /usr/local /usr/local/
-COPY --from=petsc --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
