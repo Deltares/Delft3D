@@ -1,5 +1,6 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
+        <!-- UNST-9538: Move to daily run. Took ~51 minutes on Windows.
         <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
             <path version="2025-07-29T12:51:53.132000">e04_wave/f09-SWANDCSM/c01</path>
             <maxRunTime>1800.0</maxRunTime>
@@ -12,7 +13,7 @@
                     </parameters>
                 </file>
             </checks>
-        </testCase>
+        </testCase> -->
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c01_wave_boundary" ref="dimr_trunk">
             <path version="2025-07-29T12:51:55.833000">e04_wave/f01-wave_boundary/c01</path>
@@ -365,6 +366,7 @@
         <!-- ======================================================================== -->
         <!-- f06: D-Flow FM + D-Waves coupling, moved to e100                         -->
         <!-- ======================================================================== -->
+        <!-- UNST-9538: Move to daily run. Took ~21 minutes on Windows.
         <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_trunk">
             <path version="2025-07-29T12:53:10.423000">e04_wave/f09-SWANDCSM/c02</path>
             <maxRunTime>300.0</maxRunTime>
@@ -377,8 +379,9 @@
                     </parameters>
                 </file>
             </checks>
-        </testCase>
+        </testCase> -->
         <!-- ======================================================================== -->
+        <!-- UNST-9538: Move to daily run. Took ~14 minutes on Windows.
         <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
             <path version="2025-07-29T12:53:17.117000">e04_wave/f09-SWANDCSM/c03</path>
             <maxRunTime>600.0</maxRunTime>
@@ -391,8 +394,9 @@
                     </parameters>
                 </file>
             </checks>
-        </testCase>
+        </testCase> -->
         <!-- ======================================================================== -->
+        <!-- UNST-9538: Move to daily run. Took ~22 minutes on Windows.
         <testCase name="e04_f09_c04_SWANDCSM" ref="dimr_trunk">
             <path version="2025-07-29T12:53:23.514000">e04_wave/f09-SWANDCSM/c04</path>
             <maxRunTime>600.0</maxRunTime>
@@ -405,8 +409,9 @@
                     </parameters>
                 </file>
             </checks>
-        </testCase>
+        </testCase> -->
         <!-- ======================================================================== -->
+        <!-- UNST-9538: Move to daily run. Took ~16 minutes on Windows.
         <testCase name="e04_f09_c05_SWANDCSM" ref="dimr_trunk">
             <path version="2025-07-29T12:53:28.793000">e04_wave/f09-SWANDCSM/c05</path>
             <maxRunTime>60.0</maxRunTime>
@@ -419,7 +424,7 @@
                     </parameters>
                 </file>
             </checks>
-        </testCase>
+        </testCase> -->
         <!-- ======================================================================== -->
         <testCase name="e04_f11_c01_timevar" ref="dimr_trunk">
             <path version="2026-03-13T12:53:32.158000">e04_wave/f11-wave_dir_interpolation/c01_timevar</path>

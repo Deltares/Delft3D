@@ -57,7 +57,8 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e105_f06_c072__generalstructure_lowering_open_door_3Dsigma" ref="dimr_trunk">
+	<!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
+    <testCase name="e105_f06_c072__generalstructure_lowering_open_door_3Dsigma" ref="dimr_trunk">
       <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f06_3D_RTC/c072_generalstructure_lowering_open_door_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -75,8 +76,9 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
-	<testCase name="e105_f06_c075__generalstructure_lowering_open_door_3Dz" ref="dimr_trunk">
+    </testCase> -->
+	<!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
+    <testCase name="e105_f06_c075__generalstructure_lowering_open_door_3Dz" ref="dimr_trunk">
       <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f06_3D_RTC/c075_generalstructure_lowering_open_door_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -94,8 +96,9 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
-	<testCase name="e105_f06_c078__generalstructure_lowering_open_door_3Dz_sigma" ref="dimr_trunk">
+    </testCase> -->
+	<!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
+    <testCase name="e105_f06_c078__generalstructure_lowering_open_door_3Dz_sigma" ref="dimr_trunk">
       <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f06_3D_RTC/c078_generalstructure_lowering_open_door_3Dz_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -113,8 +116,9 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
-	 <testCase name="e105_f06_c073_generalstructure_lowering_closed_door_3Dsigma" ref="dimr_trunk">
+    </testCase> -->
+	 <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
+    <testCase name="e105_f06_c073_generalstructure_lowering_closed_door_3Dsigma" ref="dimr_trunk">
       <path version="2026-03-16T12:48:16.641000">e105_dflowfm-drtc/f06_3D_RTC/c073_generalstructure_lowering_closed_door_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -132,8 +136,9 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
-	 <testCase name="e105_f06_c076_generalstructure_lowering_closed_door_3Dz" ref="dimr_trunk">
+    </testCase> -->
+	 <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
+    <testCase name="e105_f06_c076_generalstructure_lowering_closed_door_3Dz" ref="dimr_trunk">
       <path version="2026-03-16T12:48:36.591000">e105_dflowfm-drtc/f06_3D_RTC/c076_generalstructure_lowering_closed_door_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -151,7 +156,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
+    </testCase> -->
 	 <testCase name="e105_f06_c079_generalstructure_lowering_closed_door_3Dz_sigma" ref="dimr_trunk">
       <path version="2026-03-16T12:49:02.058000">e105_dflowfm-drtc/f06_3D_RTC/c079_generalstructure_lowering_closed_door_3Dz_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>

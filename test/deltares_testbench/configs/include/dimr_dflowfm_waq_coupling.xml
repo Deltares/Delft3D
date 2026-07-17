@@ -376,6 +376,7 @@
       <processCount>3</processCount>
     </testCase>
 
+    <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
     <testCase name="e02_f029_c102_westerschelde_3d_s_three_domains" ref="dflowfm_default">
       <path version="2025-10-16T07:14:02.245000">e02_dflowfm/f029_hyd_file/c102_westerschelde_3d_s_3dom</path>
       <programs>
@@ -434,11 +435,11 @@
           </parameters>
         </file>
         <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01.hyd" type="ASCII">
-          <!--
+          <!-
           <parameters>
             <parameter name="contents" toleranceAbsolute="0.0001" toleranceRelative="1.0e+2"/>
           </parameters>
-          -->
+          ->
           <skipline>file-created-by</skipline>
           <skipline>file-creation-date</skipline>
         </file>
@@ -459,8 +460,9 @@
         </file>
       </checks>
       <processCount>3</processCount>
-    </testCase>
+    </testCase> -->
 
+    <!-- UNST-9538: Move to daily run. Took ~11 minutes on Windows.
     <testCase name="e02_f029_c103_westerschelde_3d_z_three_domains" ref="dflowfm_default">
       <path version="2025-10-16T07:14:13.247000">e02_dflowfm/f029_hyd_file/c103_westerschelde_3d_z_3dom</path>
       <programs>
@@ -519,11 +521,11 @@
           </parameters>
         </file>
         <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01.hyd" type="ASCII">
-          <!--
+          <!-
           <parameters>
             <parameter name="contents" toleranceAbsolute="0.0001" toleranceRelative="1.0e+2"/>
           </parameters>
-          -->
+          ->
           <skipline>file-created-by</skipline>
           <skipline>file-creation-date</skipline>
         </file>
@@ -544,6 +546,6 @@
         </file>
       </checks>
       <processCount>3</processCount>
-    </testCase>
+    </testCase> -->
     <!-- END OF LIST OF TEST CASES -->
   </testCases>

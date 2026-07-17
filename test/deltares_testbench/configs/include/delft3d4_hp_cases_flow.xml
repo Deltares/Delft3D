@@ -3973,6 +3973,7 @@
 				</file>
 			</checks>
 		</testCase>
+		<!-- UNST-9538: Move to daily run. Took ~29 minutes on Windows.
 		<testCase name="e01_f27_c25-z_upper_pierce_slope_limiter" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c25-z_upper_pierce_slope_limiter</path>
 			<maxRunTime>2930.01800013</maxRunTime>
@@ -3994,7 +3995,7 @@
 					</parameters>
 				</file>
 			</checks>
-		</testCase>
+		</testCase> -->
 		<testCase name="e01_f27_c26-turb_bound_sigma" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c26-turb_bound_sigma</path>
 			<maxRunTime>117.886999846</maxRunTime>
