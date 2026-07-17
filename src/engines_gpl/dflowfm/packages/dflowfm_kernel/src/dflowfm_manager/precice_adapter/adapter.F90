@@ -476,10 +476,10 @@ contains
       do i = 1, self%mesh_sources_sinks_size
          sink_cell = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
          source_cell = point_find_netcell(self%sources_x(i), self%sources_y(i))
-         if (sink_cell == 0 .and. source_cell == 0) then
-            write(*,*) "Warning: Both source and sink for vertex ", self%vertex_ids_sources_sinks(i), " are outside the domain. Skipping this source/sink."
-            cycle ! Skip this source/sink if both the source and sink location are outside the domain.
-         end if
+         ! sink_cell=0 and source_cell=0: 
+         !    Both source and sink location are outside this domain
+         !    Still this source_sink needs to be added to avoid hampering the MPI communication in D-Flow FM (see subroutine reduce_srsn)
+         !    D-Flow FM will handle it correctly
          source_sinks%num_total = source_sinks%num_total + 1
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
          call source_sinks%resize(source_sinks%num_total)
