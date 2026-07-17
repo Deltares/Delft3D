@@ -1,43 +1,39 @@
 ---
 name: run-testbench
-description: 'Run the Deltares Testbench (`TestBench.py`) on one or more test cases.'
+description: 'Run the Deltares Testbench (`TestBench.py`) on one or more test cases and inspect results.'
 argument-hint: '[config-path] [testcase-filter1, testcase-filter2, ...]'
 ---
 
 # Run Deltares Testbench
+
+## When to Use
+
+- "Run the testbench on config X"
+- "Run the testbench on testcase(s) X [, Y, Z, ...]"
 
 ## What this skill does
 
 Runs `test/deltares_testbench/TestBench.py` to verify that the output of a testcase model is still
 within tolerance of the _reference output_.
 
-## When to Use
+The testcase data of the test cases is stored in our `minio` bucket. This data, which includes the 
+_test case input_ and the _reference output_, will be downloaded by `TestBench.py` before running a test case.
 
-- "Run the testbench" / "run a testbench case"
-- "Run config X" / "run testcase Y"
-
-The testbench `config-path` is mandatory and it should be a path to an `.xml` file. They are stored
-somewhere in `/test/deltares_testbench/configs/` (usually in `/test/deltares_testbench/configs/dimr/`). 
-The config files are not platform agnostic. There are separate files for Windows and Linux. The filename
-of the config usually mentions `win64` or `lnx64` which indicates the platform. In addition, these configs
-usually have _include_ tags, to include config snippets from other files. The config snippets are
-usually stored in `/test/deltares_testbench/configs/include/`. By far the most common use case for this
-is to let two separate configs (one for Windows, one for Linux) share the same set of test cases. The
-included file contains the full list of test cases in this case.
-
-If the user only specifies a test case name, and not a config-path, then please try to figure out which
-config file the test case is in. Usually the test case name is somewhere in a config snippet in the
-_include_ directory. And the config snippet is included in one of the configs in `configs/dimr`. Use
-caution to use the right platform. And if there are multiple configs containing the test case, give the
-user the option to select one.
-
-If there is no `testcase-filter` specified, then `TestBench.py` will run all of the test cases in the
-config file. Each test case has a corresponding `<testcase>` tag with a `name` attribute. To run only a 
-subset of the test cases (or a single test case) you can specify a `testcase-filter`. You can specify
-multiple testcase filters. The filtered test case names will be unioned together.
-
-The testcase data is stored in our `minio` bucket. This data, including the test case input and
-the reference output, will be downloaded as needed by `TestBench.py`.
+A `TestBench.py` comparison run performs roughly follows these steps for each test case:
+1. Download the _test case input_ and stores it in `/test/deltares_testbench/data/cases/<test-case-name>`.
+2. Download the _test case references_ and stores them in
+   `/test/deltares_testbench/data/{reference_results,reference}/{win64,lnx64}/<test-case-name>`.
+   It is one of the four combinations, depending on what's configured in the XML config.
+   Most test cases only use one set of reference data for both platforms. But there are test cases
+   that have a separate set for Windows and Linux.
+3. Make a copy of the input data to `/test/deltares_testbench/data/cases/<test-case-name>_work`
+   and runs the test case's list of _programs_ on the input data. This produces output files in the
+   work directory.
+4. Run the _checks_ for this test case. The checks are comparisons between the files in the _work
+   directory_ and the files in the _references_. Based on file type, `TestBench.py` supports many
+   types of comparisons. But the most common comparisons are between _NetCDF_ files. Most notably
+   the _his_ and _map_ files that "DflowFM" produces as output. The results are most often numerical,
+   and the results can differ up to a specified absolute or relative tolerance.
 
 ## Preconditions
 
@@ -61,7 +57,7 @@ the reference output, will be downloaded as needed by `TestBench.py`.
    After the build finishes the _install directory_ will be here:
    - Windows: `/install_fm-suite`
    - Linux: `/build_fm-suite_release/install`
-   If it doesn't already exist: Create a symbolic link from the _engines directory_ to the _install directory_. 
+   If it doesn't already exist: Create a sym-link from the _engines directory_ to the _install directory_. 
    Notice that the name of the sym-link is `x64` on Windows and `lnx64` on Linux. Prefer absolute paths when
    creating the link. On Windows creating a sym-link requires elevated privileges, so users need to run the 
    command as administrator.
@@ -71,10 +67,23 @@ the reference output, will be downloaded as needed by `TestBench.py`.
 ## Command anatomy
 
 ```bash
-python TestBench.py --compare --config <config-file> [--filter testcase=<testcase-filter1,testcase-filter2>] [--parallel] [--skip-download {cases,references,dependency,all}]
+python TestBench.py --compare --config <config-path> [--filter testcase=<testcase-filter1,testcase-filter2>] [--parallel]
 ```
 
-When running more then one test case, use the `--parallel` flag. It is not necessary when running
-a single test case.
+The user may not actually supply a `config-path`, which is a required argument. In this case, use the 
+`find-testbench-testcase` skill to find a suitable config. `find-testbench-testcase` may return multiple
+configs. Let the user select one to use. If there are multiple testcases to run, simply separate their names
+by commas and use the `--filter testcase=<comma-sep-list>` argument. Use the `--parallel` flag when running 
+more then one testcase in a single config.
 
+## Interpreting `TestBench.py` results.
+The _result table_ of the most recent `TestBench.py` run is stored in `/test/deltares_testbench/logs/testbench.log`.
+Users are most interested in the test cases that contain `NOK` results, or `ERROR` results. `ERROR` results usually
+indicate a crash, or some problem with the model input or config. Look in the _logs_ directory for that test case to
+see if you can find any errors or stacktraces.
 
+`NOK` results signify that the comparison failed. The _result table_ will tell you which check failed. In case it's
+a _NetCDF_ file (with `.nc` extension), it's usually a difference above tolerance in a certain variable. In Linux you
+can use `ncdump` to inspect the values (the `-v` flag is useful for this). `TestBench.py` also has `NetCDF4`, `numpy`
+and `matplotlib` installed. So, if requested, you may write a script to plot results, provided you run it in the 
+activated venv.
