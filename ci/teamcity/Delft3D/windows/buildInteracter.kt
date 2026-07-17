@@ -62,6 +62,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
         script {
             name = "Build"
             scriptContent = """
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
                 if exist C:\set-env.cmd (
                     call C:\set-env.cmd
                 ) else (

@@ -85,6 +85,7 @@ object WindowsBuild2D3DSP : BuildType({
                 matches("product", """^(d3d4-(suite|testbench))|(all-testbench)$""")
             }
             scriptContent = """
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
                 if exist C:\set-env.cmd (
                     call C:\set-env.cmd
                 ) else (

@@ -118,6 +118,7 @@ object WindowsBuildEnvironment : BuildType({
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2026-i26
                 +:ci/dockerfiles/windows/set-env.cmd
+                +:ci/dockerfiles/windows/set-env-vs2022.cmd
                 +:ci/teamcity/Delft3D/windows/buildEnvironment.kt
                 +:ci/teamcity/Delft3D/windows/scripts/buildEnvironmentSetParams.ps1
             """.trimIndent()

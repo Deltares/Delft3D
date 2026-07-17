@@ -43,6 +43,7 @@ object WindowsConanPackages : BuildType({
         script {
             name = "Build and upload all packages"
             scriptContent = """
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
                 if exist C:\set-env.cmd (
                     call C:\set-env.cmd
                 ) else (

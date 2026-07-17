@@ -90,6 +90,7 @@ RUN setx /M PATH ($Env:PATH + ';C:\cygwin64\bin')
 
 # Copy the setup script into the container
 COPY set-env.cmd C:\\set-env.cmd
+COPY set-env-vs2022.cmd C:\\set-env-vs2022.cmd
 
 # Set the default command to run the setup script
 CMD ["cmd", "/S", "/K", "C:\\set-env.cmd"]
