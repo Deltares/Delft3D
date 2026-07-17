@@ -61,7 +61,12 @@ namespace ini
             std::istringstream iss(value);
             if (iss >> std::chrono::parse(fmt, result))
             {
-                return result;
+                // Ensure the entire string was consumed (no trailing characters)
+                char remaining;
+                if (!(iss >> remaining))
+                {
+                    return result;
+                }
             }
         }
 

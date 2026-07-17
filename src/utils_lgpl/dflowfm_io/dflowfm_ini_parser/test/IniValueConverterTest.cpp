@@ -375,7 +375,8 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidTimePointTest,
-                             ::testing::Values("invalid", "23.0", "true"));
+                             ::testing::Values("abcdefgh", "23.0", "true", "20010101x", "20200130120000x",
+                                               "2020-01-30x", "200201011", "20200130 12:00:00"));
 
     class IniValueConverterFromStringTimePointTest
         : public ::testing::TestWithParam<std::pair<std::string, std::chrono::system_clock::time_point>>
