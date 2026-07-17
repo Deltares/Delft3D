@@ -118,7 +118,7 @@ From the repository root:
 python run_conan.py initialize external
 ```
 This installs the same compiler profile and settings. Please check the conan profile in your local Conan
-cache under `%USERPROFILE%\.conan2\profiles\delft3d_windows_msvc_194_v2`. If you installed Cygwin in a
+cache under `%USERPROFILE%\.conan2\profiles\delft3d_windows_msvc_194_v3`. If you installed Cygwin in a
 different location than `C:\cygwin64`, then change your Conan profile to point to Cygwin's `bash.exe`
 using the `tools.microsoft.bash:path` option.
 
@@ -198,8 +198,10 @@ This is what `python run_conan.py initialize deltares` does under the hood. The 
 variant additionally removes the Nexus remotes and registers [conan/recipes](../conan/recipes)
 as a `local-recipes-index` remote. See [run_conan.py](../run_conan.py) for details.
 
-The Conan profile is `delft3d_windows_msvc_194_v2` and the lockfile [conan.lock](../conan.lock)
-pins recipe revisions for reproducibility.
+`run_conan.py` detects the active Visual Studio environment and selects
+`delft3d_windows_msvc_194_v3` for Visual Studio 2022 or `delft3d_windows_msvc_195_v1` for
+Visual Studio 2026. The lockfile [conan.lock](../conan.lock) pins recipe revisions for
+reproducibility.
 
 The Visual Studio generator is multi-config, so a single build directory hosts `Debug`, `Release`
 and `RelWithDebInfo`. The third-party packages themselves are always built/downloaded as
@@ -209,18 +211,18 @@ Run `conan install` once per configuration you want to consume:
 ```bat
 :: 1. Install dependencies for all three configurations.
 ::    The first call may build packages (or download them from Nexus). The other two reuse the cache.
-conan install . --profile:all=delft3d_windows_msvc_194_v2 ^
+conan install . --profile:all=delft3d_windows_msvc_194_v3 ^
       --settings:all build_type=Release ^
       --output-folder=build_fm-suite\conan ^
       --lockfile=conan.lock
 
-conan install . --profile:all=delft3d_windows_msvc_194_v2 ^
+conan install . --profile:all=delft3d_windows_msvc_194_v3 ^
       --settings:all build_type=Release ^
       --settings:all &:build_type=Debug ^
       --output-folder=build_fm-suite\conan ^
       --lockfile=conan.lock
 
-conan install . --profile:all=delft3d_windows_msvc_194_v2 ^
+conan install . --profile:all=delft3d_windows_msvc_194_v3 ^
       --settings:all build_type=Release ^
       --settings:all &:build_type=RelWithDebInfo ^
       --output-folder=build_fm-suite\conan ^
@@ -239,7 +241,7 @@ cmake --install build_fm-suite --config Debug
 To build missing dependencies from source (e.g. after changing a recipe), add `--build=missing` to
 the first `conan install` call:
 ```bat
-conan install . --profile:all=delft3d_windows_msvc_194_v2 ^
+conan install . --profile:all=delft3d_windows_msvc_194_v3 ^
       --settings:all build_type=Release ^
       --output-folder=build_fm-suite\conan ^
       --lockfile=conan.lock ^

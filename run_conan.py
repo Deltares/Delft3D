@@ -6,6 +6,7 @@ import enum
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -15,8 +16,15 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-WINDOWS_PROFILE = "delft3d_windows_msvc_194_v2"
-LINUX_PROFILE = "delft3d_alma8_intel_2024_v2"
+WINDOWS_CONAN_PROFILES = {
+    "18.0": "delft3d_windows_msvc_195_v1",
+    "17.0": "delft3d_windows_msvc_194_v3",
+}
+
+LINUX_CONAN_PROFILES = {
+    "2024": "delft3d_alma8_intel_2024_v3",
+    "2026": "delft3d_alma8_intel_2026_v1",
+}
 
 ROOT = Path(__file__).resolve().parent
 CONFIG_DIR = ROOT / "conan/config"
@@ -266,14 +274,45 @@ def upload_new_packages(remote: str, *, ci: bool = False) -> None:
     print(f"\nDone. Uploaded: {uploaded}, skipped: {skipped}")
 
 
-def _get_profile() -> str:
+def _detect_profile() -> str:
     os_name = platform.system()
     if os_name == "Windows":
-        return WINDOWS_PROFILE
-    elif os_name == "Linux":
-        return LINUX_PROFILE
-    else:
-        raise RuntimeError(f"Unsupported OS: {os_name}")
+        visual_studio_version = os.environ.get("VisualStudioVersion", "")
+        profile = WINDOWS_CONAN_PROFILES.get(visual_studio_version)
+        if profile:
+            return profile
+        sys.exit(
+            f"ERROR: Visual Studio {visual_studio_version or 'version could not be detected'} is not supported. "
+            f"Supported versions: {', '.join(WINDOWS_CONAN_PROFILES)}."
+        )
+
+    if os_name == "Linux":
+        try:
+            result = subprocess.run(
+                ["ifx", "--version"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+        except (FileNotFoundError, subprocess.CalledProcessError) as error:
+            sys.exit(f"ERROR: Could not determine the Intel oneAPI version from ifx: {error}")
+
+        version_output = f"{result.stdout}\n{result.stderr}"
+        match = re.search(r"\b(20\d{2})\.\d+", version_output)
+        oneapi_year = match.group(1) if match else ""
+        profile = LINUX_CONAN_PROFILES.get(oneapi_year)
+        if profile:
+            return profile
+        sys.exit(
+            f"ERROR: Intel oneAPI {oneapi_year or 'version could not be detected'} is not supported. "
+            f"Supported versions: {', '.join(LINUX_CONAN_PROFILES)}."
+        )
+
+    sys.exit(f"ERROR: Unsupported operating system: {os_name}")
+
+
+def _get_profile(profile_override: str | None) -> str:
+    return profile_override or _detect_profile()
 
 
 def _require_profile(profile: str) -> None:
@@ -347,12 +386,13 @@ def cmd_clean_cache(args: argparse.Namespace) -> None:
 
 
 def cmd_update_lockfile(args: argparse.Namespace) -> None:
-    profile = _get_profile()
+    profile = _get_profile(args.profile)
+    _require_profile(profile)
     update_lockfile(profile)
 
 
 def cmd_install(args: argparse.Namespace) -> None:
-    profile = _get_profile()
+    profile = _get_profile(args.profile)
     _require_profile(profile)
 
     if args.rebuild_packages:
@@ -409,6 +449,7 @@ def main() -> None:
         "update-lockfile",
         help="Regenerate conan.lock from the current conanfile and recipes.",
     )
+    parser_update_lockfile.add_argument("--profile", help="Override the automatically detected Conan profile.")
     parser_update_lockfile.set_defaults(func=cmd_update_lockfile)
 
     # --- install ---
@@ -416,6 +457,7 @@ def main() -> None:
         "install",
         help="Install Conan-managed dependencies.",
     )
+    parser_install.add_argument("--profile", help="Override the automatically detected Conan profile.")
     parser_install.add_argument("--ci", action="store_true", help="Non-interactive mode.")
     build_group = parser_install.add_mutually_exclusive_group()
     build_group.add_argument(
