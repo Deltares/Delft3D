@@ -941,13 +941,13 @@ contains
       end if
 
       ! - Replace fillvalue with NaN
-      if (item%quantityPtr%fillvalue /= ieee_value(0.0_dp, ieee_quiet_nan)) then
-         where (fieldPtr%arr1dPtr == item%quantityPtr%fillvalue) fieldPtr%arr1dPtr = ieee_value(0.0_dp, ieee_quiet_nan)
-      end if
+      ! if (.not. ieee_is_nan(item%quantityPtr%fillvalue)) then
+      !    where (fieldPtr%arr1dPtr == item%quantityPtr%fillvalue) fieldPtr%arr1dPtr = dmiss_nc
+      ! end if
       ! - Apply the scale factor and offset
       if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
          do i = 1, size(fieldPtr%arr1dPtr)
-            if (fieldPtr%arr1dPtr(i) /= dmiss_nc) then
+            if (fieldPtr%arr1dPtr(i) /= item%quantityPtr%fillvalue) then
                fieldPtr%arr1dPtr(i) = fieldPtr%arr1dPtr(i) * item%quantityPtr%factor + item%quantityPtr%offset
             end if
          end do

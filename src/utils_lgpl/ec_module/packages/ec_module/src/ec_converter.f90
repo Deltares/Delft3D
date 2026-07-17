@@ -3305,7 +3305,10 @@ contains
                   !
                   ! if we have wave direction, do the time interpolation here on the weighted fields
                   if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
-                     wdtemp = cyclic_interpolation(sourceT0Field%arr1d, sourceT1Field%arr1d, a0, a1)
+                     wdtemp = cyclic_interpolation( &
+                        merge(ieee_value(sourceT0Field%arr1d(1), ieee_quiet_nan), sourceT0Field%arr1d, sourceT0Field%arr1d == sourceMissing), &
+                        merge(ieee_value(sourceT1Field%arr1d(1), ieee_quiet_nan), sourceT1Field%arr1d, sourceT1Field%arr1d == sourceMissing), &
+                        a0, a1)
                      wd2d = reshape(wdtemp, (/ncol, nrow/))
                   end if
                end if
