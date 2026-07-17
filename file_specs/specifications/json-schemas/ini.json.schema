@@ -218,11 +218,12 @@
                                 }
                             },
                             "required": [
-                                "key"
+                                "key",
+                                "value_type"
                             ],
                             "allOf": [
                                 {
-                                    "$comment": "Obsolete keywords only need 'key' and 'status'; all other keywords must define 'value_type' and 'description'.",
+                                    "$comment": "Obsolete keywords only need 'key', 'value_type' and 'status'; all other keywords must additionally define 'description'.",
                                     "if": {
                                         "required": [
                                             "status"
@@ -243,16 +244,12 @@
                                     "then": true,
                                     "else": {
                                         "required": [
-                                            "value_type",
                                             "description"
                                         ]
                                     }
                                 },
                                 {
                                     "if": {
-                                        "required": [
-                                            "value_type"
-                                        ],
                                         "properties": {
                                             "value_type": {
                                                 "const": "enum"
@@ -352,9 +349,6 @@
                                 },
                                 {
                                     "if": {
-                                        "required": [
-                                            "value_type"
-                                        ],
                                         "properties": {
                                             "value_type": {
                                                 "const": "intenum"
@@ -431,9 +425,6 @@
                                 },
                                 {
                                     "if": {
-                                        "required": [
-                                            "value_type"
-                                        ],
                                         "properties": {
                                             "value_type": {
                                                 "const": "datetime"
