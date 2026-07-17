@@ -8,8 +8,8 @@ argument-hint: '[config-path] [testcase-filter1, testcase-filter2, ...]'
 
 ## What this skill does
 
-Runs `test/deltares_testbench/TestBench.py --compare` to verify that the output of a testcase model is
-still within tolerance of the _reference output_.
+Runs `test/deltares_testbench/TestBench.py` to verify that the output of a testcase model is still
+within tolerance of the _reference output_.
 
 ## When to Use
 
@@ -42,10 +42,9 @@ the reference output, will be downloaded as needed by `TestBench.py`.
 ## Preconditions
 
 1. The working directory must be `/test/deltares_testbench/`. All paths in configs are relative to it.
-2. Python must be installed. Python 3.11 and 3.12 are known to work. From Python 3.13 and up your
-   mileage may vary. There are some known issues when installing the dependencies. Warn the user about 
-   this if they run into problems installing the dependencies.
-3. Virtual environment `.venv` exists and is activated.
+2. Python 3.11 or higher must be installed. Some developers reported problems installing dependencies with
+   Python 3.13 or higher. Prefer Python 3.12.
+3. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`
 4. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
    in an activated venv. Or if `uv` is not installed: `pip install -r pip/win-requirements.txt`.
 5. The credentials for downloading the testcase data in our `minio` bucket are installed in the user's
@@ -53,19 +52,19 @@ the reference output, will be downloaded as needed by `TestBench.py`.
    the user towards the `minio` 
    [UI page where they can create access keys](https://s3-console.deltares.nl/access-keys) and suggest
    the format of the credentials file. It is a standard AWS credentials file.
-6. The binaries must be installed. `TestBench.py` uses these to run the test cases, and it expects to find
-   them in a very particular location. I'll call this the _engines directory_:
+6. The Delft3D binaries must be installed. `TestBench.py` uses these to run the test cases. It expects to
+   find them in the _engines directory_:
    - Windows: `/test/deltares_testbench/data/engines/teamcity_artifacts/x64/`
    - Linux: `/test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/`
-   The easiest way to obtain the binaries is to use the `build-delft3d` skill to build them. Unless
-   explicitly specified, build with config `fm-suite` in `Release` mode and do a full _build_ including
-   _install_. The _install directory_ will be here:
+   If the binaries are missing, use the `build-delft3d` skill to build them. Unless explicitly specified, 
+   build config `fm-suite` build-type `Release` mode and do a full _build_ including an _install_. 
+   After the build finishes the _install directory_ will be here:
    - Windows: `/install_fm-suite`
    - Linux: `/build_fm-suite_release/install`
-   Then create a symbolic link from the _engines location_ to the _install directory_. Notice that the
-   name of the symbolic link is `x64` on Windows and `lnx64` on Linux. Prefer absolute paths when creating
-   the link. Also note that creating the symbolic link requires elevated privileges on Windows, so users
-   may need to run the command as administrator.
+   If it doesn't already exist: Create a symbolic link from the _engines directory_ to the _install directory_. 
+   Notice that the name of the sym-link is `x64` on Windows and `lnx64` on Linux. Prefer absolute paths when
+   creating the link. On Windows creating a sym-link requires elevated privileges, so users need to run the 
+   command as administrator.
 7. The `config-path` must be a valid `.xml` file, and if a `testcase-filter` is specified it should match
    at least one test case in the config.
 
