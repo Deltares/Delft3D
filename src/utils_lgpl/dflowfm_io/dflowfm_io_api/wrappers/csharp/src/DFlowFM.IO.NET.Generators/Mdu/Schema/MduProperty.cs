@@ -23,11 +23,12 @@ internal sealed class MduProperty
     public string? Unit { get; set; }
 
     [JsonPropertyName("status")]
-    public MduStatus? Status { get; set; }
+    [JsonConverter(typeof(JsonValueToStringConverter))]
+    public string? Status { get; set; }
 
     [JsonPropertyName("validation")]
     public MduValidation? Validation { get; set; }
 
     [JsonPropertyName("enum_values")]
-    public Dictionary<string, string> EnumValues { get; set; } = [];
+    public Dictionary<string, MduEnumValue> EnumValues { get; set; } = [];
 }

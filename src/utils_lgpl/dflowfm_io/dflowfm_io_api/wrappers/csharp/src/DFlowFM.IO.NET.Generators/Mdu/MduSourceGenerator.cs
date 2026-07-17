@@ -78,9 +78,13 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
 
     private static void WritePropertySchema(StringBuilder sb, MduSection section, MduProperty property)
     {
+        if (IsExcludedStatus(property.Status))
+        {
+            return;
+        }
+
         string fullyQualifiedKey = ToFullyQualifiedKey(section.Name, property.Key);
         string valueType = ToMduValueType(property.ValueType);
-        string status = ToMduPropertyStatus(property.Status);
 
         sb.AppendLine("                new MduPropertySchema");
         sb.AppendLine("                {");
@@ -89,7 +93,6 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
         sb.AppendLine($"                    FullyQualifiedKey = \"{fullyQualifiedKey}\",");
         sb.AppendLine($"                    Description = \"{EscapeString(property.Description)}\",");
         sb.AppendLine($"                    ValueType = MduValueType.{valueType},");
-        sb.AppendLine($"                    Status = MduPropertyStatus.{status},");
 
         if (!string.IsNullOrEmpty(property.Unit))
         {
@@ -125,8 +128,13 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
 
             bool isIntEnum = property.ValueType == "intenum";
             int index = 0;
-            foreach (KeyValuePair<string, string> pair in property.EnumValues)
+            foreach (KeyValuePair<string, MduEnumValue> pair in property.EnumValues)
             {
+                if (IsExcludedStatus(pair.Value.Status))
+                {
+                    continue;
+                }
+
                 int intValue = isIntEnum ? int.Parse(pair.Key) : index;
                 string stringValue = isIntEnum ? pair.Key : EscapeString(pair.Key);
 
@@ -134,7 +142,7 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
                 sb.AppendLine("                        {");
                 sb.AppendLine($"                            IntValue = {intValue},");
                 sb.AppendLine($"                            StringValue = \"{stringValue}\",");
-                sb.AppendLine($"                            Description = \"{EscapeString(pair.Value)}\",");
+                sb.AppendLine($"                            Description = \"{EscapeString(pair.Value.Description)}\",");
                 sb.AppendLine("                        },");
 
                 index++;
@@ -177,14 +185,9 @@ internal sealed class MduSourceGenerator : IIncrementalGenerator
         };
     }
 
-    private static string ToMduPropertyStatus(MduStatus? status)
+    private static bool IsExcludedStatus(string? status)
     {
-        return status?.Value switch
-        {
-            "research" => "Research",
-            "deprecated" => "Deprecated",
-            _ => "Available"
-        };
+        return status is "obsolete" or "research";
     }
 
     private static string EscapeString(string text)

@@ -56,7 +56,7 @@
                     "key": "pathsRelativeToParent",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir."
+                    "description": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the top-level MDU working dir."
                 },
                 {
                     "key": "modelSpecific",
@@ -72,6 +72,16 @@
                     "description": "Use of hardcoded specific inputs, shall not be used by users.",
                     "status": {
                         "value": "research"
+                    }
+                },
+                {
+                    "key": "convertLongCulverts",
+                    "value_type": "intbool",
+                    "description": "Convert long culvert input to 1D2D long culverts.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Unconverted long culverts (convertLongCulverts=0) will be removed in a future release.",
+                        "date": "2026-06-11"
                     }
                 }
             ]
@@ -155,7 +165,9 @@
                     "value_type": "path",
                     "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Keyword was used in combination with the deprecated option `layerType` = 3.",
+                        "date": "2025-11-01"
                     }
                 },
                 {
@@ -254,14 +266,14 @@
                     "key": "blMeanBelow",
                     "value_type": "float",
                     "default_value": -999.0,
-                    "description": "If not -999.0, below this level the cell centre bedlevel is the mean of surrouding netnodes.",
+                    "description": "If not -999.0, below this level the cell centre bedlevel is the mean of surrounding netnodes.",
                     "unit": "m"
                 },
                 {
                     "key": "blMinAbove",
                     "value_type": "float",
                     "default_value": -999.0,
-                    "description": "If not -999.0, above this level the cell centre bedlevel is the min of surrouding netnodes.",
+                    "description": "If not -999.0, above this level the cell centre bedlevel is the min of surrounding netnodes.",
                     "unit": "m"
                 },
                 {
@@ -426,7 +438,9 @@
                         "allNetlinksLoop": "iterate each edge and each loop"
                     },
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Once the keyword is removed/becomes obsolete, the `allNetlinksLoop` method will be used.",
+                        "date": "2026-03-01"
                     }
                 },
                 {
@@ -436,7 +450,9 @@
                     "description": "Tolerance for convergence of circumcenter method.",
                     "unit": "m",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.",
+                        "date": "2026-03-01"
                     }
                 },
                 {
@@ -473,7 +489,23 @@
                     "description": "Vertical layer type.",
                     "enum_values": {
                         "1": "sigma-layers",
-                        "2": "z- or z-sigma-layers"
+                        "2": "z- or z-sigma-layers",
+                        "3": {
+                            "description": "mixed layering in polygon regions",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Option no longer supported.",
+                                "since_release": 2026.02
+                            }
+                        },
+                        "4": {
+                            "description": "density controlled sigma-layers",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Option no longer supported.",
+                                "since_release": 2026.02
+                            }
+                        }
                     }
                 },
                 {
@@ -489,7 +521,9 @@
                     "description": "Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed.",
                     "unit": "-",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Use `[geometry] zLayerGrowthFactor` instead.",
+                        "date": "2026-01-30"
                     }
                 },
                 {
@@ -692,7 +726,9 @@
                     "description": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers).",
                     "unit": "s",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Keyword was used in combination with the deprecated option `layerType` = 4.",
+                        "date": "2025-11-01"
                     }
                 },
                 {
@@ -810,6 +846,138 @@
                     "description": "Correct volumes when `keepZLayeringAtBed`=1.",
                     "status": {
                         "value": "research"
+                    }
+                },
+                {
+                    "key": "orgFloorLevTopLayDef",
+                    "value_type": "intbool",
+                    "description": "Backward compatibility option: floorlevtoplay is dztop below specified level.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[geometry] floorLevTopLay` instead.",
+                        "date": "2025-11-01"
+                    }
+                },
+                {
+                    "key": "bedLevMode",
+                    "value_type": "int",
+                    "description": "Bed level mode."
+                },
+                {
+                    "key": "circumcenter",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[geometry] circumcenterMethod` instead.",
+                        "since_release": 2026.02
+                    }
+                },
+                {
+                    "key": "bathymetryFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "bedLevelFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "botLevUni",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[geometry] bedLevUni` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "botLevType",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[geometry] bedLevType` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "manholeFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[geometry] storageNodeFile` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "noOptimizedPolygon",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "thinDykeFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] fixedWeirFile` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "iThinDykeScheme",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] fixedWeirScheme` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "1dNetworkFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use individual keywords such as `[geometry] structureFile`, `crossDefFile`, etc. instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "roughnessFiles",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported. Use `[geometry] frictFile` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "nodeFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported. Use `[geometry] frictFile` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "Grdang",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
                     }
                 }
             ]
@@ -1093,7 +1261,21 @@
                     "key": "qhRelax",
                     "default_value": 0.01,
                     "value_type": "float",
-                    "description": "Relaxation on Q-h open boundaries."
+                    "description": "Relaxation on Q-h open boundaries.",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Option no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "filter",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Option no longer supported.",
+                        "since_release": 2022.02
+                    }
                 },
                 {
                     "key": "cstBnd",
@@ -1108,7 +1290,8 @@
                     "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
                     "status": {
                         "value": "deprecated",
-                        "comment": "Use `maxItVerticalForester` instead."
+                        "comment": "Use `[numerics] maxItVerticalForester` instead.",
+                        "date": "2026-06-01"
                     },
                     "validation": {
                         "range": {
@@ -1134,7 +1317,8 @@
                     "description": "Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations).",
                     "status": {
                         "value": "deprecated",
-                        "comment": "Use `maxItVerticalForester` instead."
+                        "comment": "Use `[numerics] maxItVerticalForester` instead.",
+                        "date": "2026-06-01"
                     },
                     "validation": {
                         "range": {
@@ -1183,13 +1367,13 @@
                     "key": "c3eStable",
                     "default_value": 0.0,
                     "value_type": "float",
-                    "description": "c3e coefficient (for stable stratification) in k-eps turbulance model."
+                    "description": "c3e coefficient (for stable stratification) in k-eps turbulence model."
                 },
                 {
                     "key": "c3eUnstable",
                     "default_value": 1.489,
                     "value_type": "float",
-                    "description": "c3e coefficient (for unstable stratification) in k-eps turbulance model."
+                    "description": "c3e coefficient (for unstable stratification) in k-eps turbulence model."
                 },
                 {
                     "key": "antiCreep",
@@ -1278,13 +1462,13 @@
                     "key": "epsMaxLev",
                     "default_value": 1e-8,
                     "value_type": "float",
-                    "description": "Stop criterium for non linear iteration."
+                    "description": "Stop criterion for non linear iteration."
                 },
                 {
                     "key": "epsMaxLevM",
                     "default_value": 1e-8,
                     "value_type": "float",
-                    "description": "Stop criterium for Nested Newton loop in non-linear iteration."
+                    "description": "Stop criterion for Nested Newton loop in non-linear iteration."
                 },
                 {
                     "key": "flowSolver",
@@ -1342,7 +1526,7 @@
                 {
                     "key": "lateral_fixedweir_umin_method",
                     "value_type": "int",
-                    "description": "Method for minimal velocity treshold for weir losses in iterative lateral 1D2D weir coupling.",
+                    "description": "Method for minimal velocity threshold for weir losses in iterative lateral 1D2D weir coupling.",
                     "status": {
                         "value": "research"
                     }
@@ -1566,7 +1750,8 @@
                     "description": "Z-layering at bed.",
                     "status": {
                         "value": "deprecated",
-                        "comment": "Use [geometry] `keepZLayeringAtBed` instead."
+                        "comment": "Use `[geometry] keepZLayeringAtBed` instead.",
+                        "date": "2026-06-01"
                     },
                     "enum_values": {
                         "0": "original bed level",
@@ -1699,7 +1884,7 @@
                     "key": "turbulenceAdvection",
                     "default_value": 3,
                     "value_type": "intenum",
-                    "description": "Turbulance advection.",
+                    "description": "Turbulence advection.",
                     "status": {
                         "value": "research"
                     },
@@ -1755,7 +1940,9 @@
                     "default_value": 6,
                     "value_type": "intenum",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Use `[numerics] verticalAdvectionType` instead.",
+                        "date": "2025-10-01"
                     },
                     "description": "Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6.",
                     "enum_values": {
@@ -1769,7 +1956,9 @@
                     "default_value": 6,
                     "value_type": "intenum",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Use `[numerics] verticalAdvectionType` instead.",
+                        "date": "2025-10-01"
                     },
                     "description": "Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6.",
                     "enum_values": {
@@ -1923,7 +2112,7 @@
                 {
                     "key": "linkDriedMx",
                     "value_type": "int",
-                    "description": "Maximum numberr of Au growth steps after having dried.",
+                    "description": "Maximum number of Au growth steps after having dried.",
                     "status": {
                         "value": "research"
                     }
@@ -2035,6 +2224,220 @@
                     "value_type": "float",
                     "description": "Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0).",
                     "unit": "m"
+                },
+                {
+                    "key": "facLaxTurb",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] turbulenceTimeIntegrationFactor` instead.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "facLaxTurbHor",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] turbulenceTimeIntegrationMethod` instead.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "facLaxTurbVer",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "barocZLayBed",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "orgBarocKeywords",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "barocTerm",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "barocTimeInt",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "jaDrhoDz",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "epsTKE",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[physics] TKEMin` instead.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "epsEPS",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[physics] EPSMin` (k-epsilon turbulence model) or `[physics] TAUMin` (k-tau turbulence model) instead.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "transportTimeStepping",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2023.01
+                    }
+                },
+                {
+                    "key": "transportMethod",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Value 1 is the default and only available option, no further input needed. Value 2 for diagnostic transport is now under its own keyword. Use `[numerics] diagnosticTransport` keyword instead.",
+                        "since_release": 2023.01
+                    }
+                },
+                {
+                    "key": "hkad",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "iThinDykeScheme",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] fixedWeirScheme` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "thinDykeContraction",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] fixedWeirContraction` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "jaOrgSethu",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "CFLWaveFrac",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "jaEmbed1d",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                     }
+                },
+                {
+                    "key": "sobekdfm_umin",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] lateral_fixedweir_umin` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "sobekdfm_umin_method",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] lateral_fixedweir_umin_method` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "sobekdfm_minimal_1d2d_embankment",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] lateral_fixedweir_minimal_1d2d_embankment` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "wridia_viscosity_diffusivity_limit",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                  "key": "maxSSC",
+                  "value_type": "float",
+                  "default_value": 1000000.0,
+                  "description": "Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)"
+                },
+                {
+                  "key": "perotWeightUpdate",
+                  "value_type": "int",
+                  "description": "Perot weight update option."
+                },
+                {
+                  "key": "perotType",
+                  "value_type": "int",
+                  "description": "Perot discretization type."
                 }
             ]
         },
@@ -2367,7 +2770,8 @@
                     "unit": "m",
                     "status": {
                         "value": "deprecated",
-                        "comment": "Use `SecchiDepthNonPenetrative` instead."
+                        "comment": "Use `[physics] SecchiDepthNonPenetrative` instead.",
+                        "date": "2026-04-01"
                     }
                 },
                 {
@@ -2388,7 +2792,8 @@
                     "unit": "-",
                     "status": {
                         "value": "deprecated",
-                        "comment": "Use `SecchiDepthNonPenetrativeFraction` instead."
+                        "comment": "Use `[physics] SecchiDepthNonPenetrativeFraction` instead.",
+                        "date": "2026-04-01"
                     }
                 },
                 {
@@ -2608,7 +3013,9 @@
                     "default_value": 1.0,
                     "description": "Linear friction umod.",
                     "status": {
-                        "value": "research"
+                        "value": "obsolete",
+                        "since_release": 2027.01,
+                        "comment": "Keyword no longer supported."
                     }
                 },
                 {
@@ -2617,7 +3024,9 @@
                     "value_type": "intbool",
                     "description": "Only positive forced evaporation fluxes.",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Keyword will be removed in a future release.",
+                        "date": "2026-03-09"
                     }
                 },
                 {
@@ -2644,6 +3053,42 @@
                     "value_type": "intbool",
                     "default_value": 0,
                     "description": "Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius."
+                },
+                {
+                    "key": "allowCoolingBelowZero",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[physics] salinityDependentFreezingPoint` to allow cooling below zero degrees Celsius.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "rhoAirRhoWater",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[wind] rhoWaterInWindStress` instead.",
+                        "since_release": 2026.01
+                    }
+                },
+                {
+                    "key": "effectSpiral",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `Espir` contained in `MorFile` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "stericCorrection",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
                 }
             ]
         },
@@ -2715,6 +3160,143 @@
                     "status": {
                         "value": "research"
                     }
+                },
+                {
+                  "key": "dredgeFile",
+                  "value_type": "path",
+                  "description": "Dredging/dumping settings file (*.dad)"
+                },
+                {
+                  "key": "bndTreatment",
+                  "value_type": "intbool",
+                  "default_value": 0,
+                  "description": "Separate treatment boundary links in upwinding transports."
+                },
+                {
+                  "key": "sourSink",
+                  "value_type": "intenum",
+                  "default_value": 1,
+                  "description": "Switch off source or sink terms for sed advection.",
+                  "enum_values": {
+                        "0": "off",
+                        "1": "source+sink",
+                        "2": "source",
+                        "3": "sink for sediment"
+                    }
+                },
+                {
+                  "key": "cRefCav",
+                  "value_type": "float",
+                  "default_value": 20.0,
+                  "description": "Calibration par only in jased==3, default=20.0 ( ) "
+                },
+                {
+                  "key": "d50",
+                  "value_type": "float",
+                  "description": "Mean Sandgrain diameter (m), e.g. 0.0001"
+                },
+                {
+                  "key": "morFac",
+                  "value_type": "float",
+                  "description": "Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc"
+                },
+                {
+                  "key": "rhoSed",
+                  "value_type": "float",
+                  "description": "Mean Sandgrain rho (kg/m3) , e.g. 2650"
+                },
+                {
+                  "key": "numIntVerticalEinstein",
+                  "value_type": "int",
+                  "description": "Number of vertical intervals in Einstein integrals ( ) "
+                },
+                {
+                  "key": "alfaBed",
+                  "value_type": "float",
+                  "description": "Calibration par bed      load, default=1.0 ( ) "
+                },
+                {
+                  "key": "tMorfSpinup",
+                  "value_type": "float",
+                  "description": "Spin up time for morphological adaptations (s)"
+                },
+                {
+                  "key": "initialSedimentConcentration",
+                  "value_type": "float",
+                  "description": "Initial Sediment Concentration in jased==3 (kg/m3)  "
+                },
+                {
+                  "key": "uniformErodableThickness",
+                  "value_type": "float",
+                  "description": "Uniform erodable layer thickness (m)"
+                },
+                {
+                  "key": "alfaSus",
+                  "value_type": "float",
+                  "description": "Calibration par suspended load, default=1.0 ( ) "
+                },
+                {
+                  "key": "morCFL",
+                  "value_type": "intbool",
+                  "default_value": 1,
+                  "description": "Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)"
+                },
+                {
+                  "key": "DzbDtMax",
+                  "value_type": "float",
+                  "default_value": 0.1,
+                  "description": "Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)"
+                },
+                {
+                  "key": "masBalMinDep",
+                  "value_type": "float",
+                  "description": "Minimum depth after bottom update for SSC adaptation mass balance."
+                },
+                {
+                  "key": "morphoPol",
+                  "value_type": "path",
+                  "description": "Only apply bed updating wihtin specified polygon (*.pol)"
+                },
+                {
+                  "key": "ws",
+                  "value_type": "list[float]",
+                  "description": "Fall velocity (m/s), e.g. 0.0005 m/s"
+                },
+                {
+                  "key": "erosionPar",
+                  "value_type": "list[float]",
+                  "description": "Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s)"
+                },
+                {
+                  "key": "tauCre",
+                  "value_type": "list[float]",
+                  "description": "Critical shear stress for erosion    (N/m2), e.g. 0.3"
+                },
+                {
+                  "key": "inMorphoPol",
+                  "value_type": "intenum",
+                  "default_value": 1,
+                  "description": "Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)",
+                  "enum_values": {
+                    "0": "inside polygon no update",
+                    "1": "inside polygon yes update"
+                  }
+                },
+                {
+                  "key": "mormergeDtUser",
+                  "value_type": "intenum",
+                  "default_value": 0,
+                  "description": "Mormerge operation",
+                  "enum_values": {
+                    "0": "at dts",
+                    "1": "at dtuser timesteps"
+                  }
+                },
+                {
+                  "key": "upperLimitSSC",
+                  "value_type": "float",
+                  "default_value": 1e-6,
+                  "description": "Upper limit of cell centre SSC concentration after transport timestep."
                 }
             ]
         },
@@ -2920,6 +3502,15 @@
                         "0": "Rhomean",
                         "1": "local (surface) density of model"
                     }
+                },
+                {
+                    "key": "gapres",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
                 }
             ]
         },
@@ -2941,6 +3532,17 @@
                         "5": "uniform",
                         "7": "Offline Wave Coupling"
                     }
+                },
+                {
+                  "key": "waveforcing",
+                  "value_type": "int",
+                  "description": "Wave forcing mode (only supported for waveModelNr = 7)."
+                },
+                {
+                  "key": "3Dwavebreakerturbulence",
+                  "value_type": "intbool",
+                  "default_value": 1,
+                  "description": "Add wave-induced production terms in turbulence modelling"
                 },
                 {
                     "key": "rouWav",
@@ -3106,6 +3708,15 @@
                         "0": "hrms wave height",
                         "1": "sign wave height"
                     }
+                },
+                {
+                    "key": "waveNikuradse",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
                 }
             ]
         },
@@ -3211,7 +3822,7 @@
                     "default_value": "20010101",
                     "value_type": "datetime",
                     "description": "Reference date. By default midnight is taken (00h00m00s).",
-                    "unit": "yyyymmdd"
+                    "format": "yyyymmdd"
                 },
                 {
                     "key": "tZone",
@@ -3278,13 +3889,13 @@
                     "key": "startDateTime",
                     "value_type": "datetime",
                     "description": "Computation start datetime, when specified, overrides `tStart`.",
-                    "unit": "yyyymmddhhmmss"
+                    "format": "yyyymmddhhmmss"
                 },
                 {
                     "key": "stopDateTime",
                     "value_type": "datetime",
                     "description": "Computation stop datetime, when specified, overrides `tStop`.",
-                    "unit": "yyyymmddhhmmss"
+                    "format": "yyyymmddhhmmss"
                 },
                 {
                     "key": "updateRoughnessInterval",
@@ -3304,7 +3915,7 @@
                     "key": "startDateTimeTlfsmo",
                     "value_type": "datetime",
                     "description": "Computation start datetime w.r.t. `refDate` of Fourier smoothing time on water level boundaries, when specified, overrides `tStartTlfsmo`.",
-                    "unit": "yyyymmddhhmmss"
+                    "format": "yyyymmddhhmmss"
                 },
                 {
                     "key": "autoTimestep",
@@ -3353,6 +3964,15 @@
                     "status": {
                         "value": "research"
                     }
+                },
+                {
+                    "key": "autoTimeStepDiff",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[time] autoTimeStepVisc` instead.",
+                        "since_release": 2022.02
+                    }
                 }
             ]
         },
@@ -3370,7 +3990,7 @@
                     "key": "restartDateTime",
                     "value_type": "datetime",
                     "description": "Restart time, only relevant but obligatory in case of restart from *_map.nc.",
-                    "unit": "yyyymmddhhmmss"
+                    "format": "yyyymmddhhmmss"
                 },
                 {
                     "key": "rstIgnoreBl",
@@ -3490,6 +4110,15 @@
                     "status": {
                         "value": "research"
                     }
+                },
+                {
+                    "key": "trtdt",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[trachytopes] dtTrt` instead.",
+                        "since_release": 2022.02
+                    }
                 }
             ]
         },
@@ -3520,7 +4149,12 @@
                     "key": "wrishp_enc",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Writing enclosures to shape file."
+                    "description": "Writing enclosures to shape file.",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
                 },
                 {
                     "key": "wrishp_emb",
@@ -3705,6 +4339,20 @@
                     "description": "Map file format.",
                     "enum_values": {
                         "1": "NetCDF",
+                        "2": {
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Option no longer supported.",
+                                "since_release": 2026.01
+                            }
+                        },
+                        "3": {
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Option no longer supported.",
+                                "since_release": 2026.01
+                            }
+                        },
                         "4": "NetCDF UGRID"
                     }
                 },
@@ -4649,6 +5297,94 @@
                     "status": {
                         "value": "research"
                     }
+                },
+                {
+                    "key": "writeBalanceFile",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported. Superseded by default information included in the history file.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "s1incInterval",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[output] classMapFile` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "waqFileBase",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "snapshotdir",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "heatFluxesOnOutput",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[output] wriHis_heat_fluxes` and `wriMap_heat_fluxes` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "wrimap_input_dt",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "wrihis_heatflux",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Renamed to `[output] wriHis_heat_fluxes`.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
+                    "key": "enableDebugArrays",
+                    "value_type": "intbool",
+                    "description": "Enable debug arrays in output."
+                },
+                {
+                    "key": "wriHis_crs_flow",
+                    "value_type": "intbool",
+                    "description": "Write cross-section flow output to history file."
+                },
+                {
+                    "key": "wriHis_crs_constituents",
+                    "value_type": "intbool",
+                    "description": "Write cross-section constituents output to history file."
+                },
+                {
+                    "key": "wriHis_water_quality_output",
+                    "value_type": "intbool",
+                    "description": "Write water quality output to history file."
+                },
+                {
+                    "key": "wriHis_runupgauge",
+                    "value_type": "intbool",
+                    "description": "Write runup gauge output to history file."
                 }
             ]
         },
@@ -4728,7 +5464,9 @@
                     "description": "Theta value for vertical transport of water quality substances.",
                     "unit": "-",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Use `[numerics] verticalAdvectionType` instead.",
+                        "date": "2025-10-01"
                     }
                 },
                 {
@@ -4747,7 +5485,9 @@
                     "value_type": "intenum",
                     "description": "Process fluxes integration option.",
                     "status": {
-                        "value": "research"
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2022.02
                     },
                     "enum_values": {
                         "1": "WAQ",
@@ -4772,6 +5512,27 @@
                     "unit": "m",
                     "status": {
                         "value": "research"
+                    }
+                },
+                {
+                    "key": "wriWaqBot3dOutput",
+                    "value_type": "string",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[output] wriHis_wqBot3d` and/or `[output] wriMap_wqBot3d` instead.",
+                        "since_release": 2025.01
+                    }
+                },
+                {
+                    "key": "dtMassBalance",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Mass balance area output interval",
+                    "unit": "s",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[output] MbaInterval` instead.",
+                        "date": "2026-03-09"
                     }
                 }
             ]
@@ -4875,7 +5636,7 @@
                     "key": "rhoVeg",
                     "default_value": 0.0,
                     "value_type": "float",
-                    "description": "Stem Rho, if > 0, bouyant stick procedure.",
+                    "description": "Stem Rho, if > 0, buoyant stick procedure.",
                     "unit": "kg/m³",
                     "status": {
                         "value": "research"
@@ -4909,7 +5670,7 @@
                     "key": "densVegMinBap",
                     "default_value": 0.0,
                     "value_type": "float",
-                    "description": "Minimum vegeation density in Baptist formula. Only in 2D.",
+                    "description": "Minimum vegetation density in Baptist formula. Only in 2D.",
                     "unit": "1/m²",
                     "status": {
                         "value": "research"
@@ -4974,6 +5735,73 @@
                     "status": {
                         "value": "research"
                     }
+                }
+            ]
+        },
+        {
+            "name": "ice",
+            "is_unique": true,
+            "description": "This section contains setting for the ice module",
+            "ini_properties": [
+                {
+                    "key": "wriHis_ice_default",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Default flag for writing ice cover quantities to his-file."
+                },
+                {
+                    "key": "wriHis_ice_open_water_level",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write water level of open water to his-file."
+                },
+                {
+                    "key": "wriHis_ice_lower_surface_height",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write lower surface height of ice cover to his-file."
+                },
+                {
+                    "key": "wriHis_ice_surface_height",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write upper surface height of ice cover to his-file."
+                },
+                {
+                    "key": "wriHis_ice_area_fraction",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write area fraction covered by ice to his-file."
+                },
+                {
+                    "key": "wriHis_ice_thickness",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write ice thickness to his-file."
+                },
+                {
+                    "key": "wriHis_ice_pressure",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write ice pressure to his-file."
+                },
+                {
+                    "key": "wriHis_ice_temperature",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write ice temperature to his-file."
+                },
+                {
+                    "key": "wriHis_snow_thickness",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write snow thickness to his-file."
+                },
+                {
+                    "key": "wriHis_snow_temperature",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write snow temperature to his-file."
                 }
             ]
         }

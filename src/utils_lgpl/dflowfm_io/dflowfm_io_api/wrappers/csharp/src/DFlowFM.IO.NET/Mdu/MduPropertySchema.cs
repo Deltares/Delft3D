@@ -31,11 +31,6 @@ public sealed class MduPropertySchema
     public required MduValueType ValueType { get; init; }
 
     /// <summary>
-    /// The lifecycle status. Defaults to <see cref="MduPropertyStatus.Available" />.
-    /// </summary>
-    public required MduPropertyStatus Status { get; init; }
-
-    /// <summary>
     /// Physical unit (e.g. "m/s"), if any.
     /// </summary>
     public string? Unit { get; init; }
