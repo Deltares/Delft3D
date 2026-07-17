@@ -6,7 +6,7 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
 if (WIN32)
     add_compile_definitions(NOMINMAX)
@@ -50,6 +50,7 @@ find_package(expat CONFIG REQUIRED)
 find_package(TIFF CONFIG REQUIRED)
 find_package(PROJ CONFIG REQUIRED)
 find_package(GDAL CONFIG REQUIRED)
+find_package(PETSc CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
@@ -136,14 +137,6 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
-    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
-    message(STATUS "PETSC")
-    list(APPEND CMAKE_MESSAGE_INDENT "  ")
-    message(STATUS "path ${petsc_path}")
-    message(STATUS "library directory ${petsc_libdir}")
-    list(POP_BACK CMAKE_MESSAGE_INDENT)
-
     add_definitions(-DHAVE_MPI=1)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
@@ -158,9 +151,6 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
-
-    # Petsc
-    pkg_check_modules(PETSC REQUIRED PETSc)
 endif(UNIX)
 
 if (UNIX)

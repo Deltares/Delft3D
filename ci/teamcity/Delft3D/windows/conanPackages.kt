@@ -43,7 +43,12 @@ object WindowsConanPackages : BuildType({
         script {
             name = "Build and upload all packages"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
+                if exist C:\set-env.cmd (
+                    call C:\set-env.cmd
+                ) else (
+                    call C:\set-env-vs2022.cmd
+                )
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
@@ -56,7 +61,12 @@ object WindowsConanPackages : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "-e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
+            dockerRunParameters = """
+                --memory %teamcity.agent.hardware.memorySizeMb%m
+                --cpus %teamcity.agent.hardware.cpuCount%
+                --env CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username%
+                --env CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%
+                """.trimIndent()
             dockerPull = true
         }
     }
