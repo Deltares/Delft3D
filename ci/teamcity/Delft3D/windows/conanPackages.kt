@@ -43,7 +43,12 @@ object WindowsConanPackages : BuildType({
         script {
             name = "Build and upload all packages"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
+                if exist C:\set-env.cmd (
+                    call C:\set-env.cmd
+                ) else (
+                    call C:\set-env-vs2022.cmd
+                )
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%

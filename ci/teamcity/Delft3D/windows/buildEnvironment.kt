@@ -1,5 +1,6 @@
 package Delft3D.windows
 
+import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
@@ -8,9 +9,10 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import Delft3D.template.*
 import Delft3D.step.*
 
-object WindowsBuildEnvironmentI24 : BuildType({
+object WindowsBuildEnvironment : BuildType({
 
-    description = "Build-environment container image to build our Delf3D software in."
+    id("WindowsBuildEnvironmentI24")
+    description = "Build-environment container images used to build the Delft3D software on Windows."
 
     templates(
         TemplateMergeRequest,
@@ -20,12 +22,14 @@ object WindowsBuildEnvironmentI24 : BuildType({
         TemplateBuildConcurrency
     )
 
-    name = "Delft3D build environment intel 2024 container"
+    name = "Delft3D Windows build environment containers"
     buildNumberPattern = "%build.vcs.number%"
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024-ltsc2025")
+        param("dockerfile", "")
+        param("toolchain.share", "")
+        param("container.tag", "")
     }
 
     vcs {
@@ -35,17 +39,25 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     steps {
         powerShell {
+            name = "Initialize build parameters"
+            platform = PowerShellStep.Platform.x64
+            scriptMode = script {
+                val script = File(DslContext.baseDir, "windows/scripts/buildEnvironmentSetParams.ps1")
+                content = Util.readScript(script)
+            }
+        }
+        powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
             workingDir = "ci/dockerfiles/windows"
             scriptMode = script {
                 content = """
                     # Define the source directory
-                    ${'$'}sourceDir = "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024"
-                    
+                    ${'$'}sourceDir = "%toolchain.share%"
+
                     # Get the current working directory
                     ${'$'}destinationDir = Get-Location
-                    
+
                     # Copy the files from the source to the destination
                     Copy-Item -Path ${'$'}sourceDir\* -Destination ${'$'}destinationDir -Recurse
 
@@ -58,13 +70,13 @@ object WindowsBuildEnvironmentI24 : BuildType({
             name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24"
+                    path = "%dockerfile%"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%variant%-%build.vcs.number%
                 """.trimIndent()
                 commandArgs = "--no-cache"
             }
@@ -73,12 +85,12 @@ object WindowsBuildEnvironmentI24 : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%variant%-%build.vcs.number%
                 """.trimIndent()
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push tag"
             enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
@@ -91,11 +103,24 @@ object WindowsBuildEnvironmentI24 : BuildType({
         }
     }
 
+    features {
+        matrix {
+            param("variant", listOf(
+                value("i24", label = "Intel OneAPI 2024 / VS2022"),
+                value("i26", label = "Intel OneAPI 2026 / VS2026"),
+            ))
+        }
+    }
+
     triggers {
         vcs {
             triggerRules = """
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24
-                +:ci/teamcity/Delft3D/windows/buildEnvironment-i24.kt
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-vs2026-i26
+                +:ci/dockerfiles/windows/set-env.cmd
+                +:ci/dockerfiles/windows/set-env-vs2022.cmd
+                +:ci/teamcity/Delft3D/windows/buildEnvironment.kt
+                +:ci/teamcity/Delft3D/windows/scripts/buildEnvironmentSetParams.ps1
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
@@ -120,5 +145,4 @@ object WindowsBuildEnvironmentI24 : BuildType({
     failureConditions {
         executionTimeoutMin = 360
     }
-
 })
