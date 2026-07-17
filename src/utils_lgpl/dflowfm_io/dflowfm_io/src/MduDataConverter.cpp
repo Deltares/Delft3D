@@ -23,6 +23,37 @@ namespace dflowfm_io
         return &section.GetProperty(propertyKey);
     }
 
+    static std::string GetExpectedValueDescription(const PropertySchema& propertySchema)
+    {
+        static constexpr std::string_view prefix = "Expected value type: ";
+        switch (propertySchema.value_type)
+        {
+            case ValueType::Enum:
+            case ValueType::IntEnum:
+            {
+                std::string values;
+                for (const auto& [value, description] : propertySchema.enum_values)
+                {
+                    if (!values.empty()) values += ", ";
+                    values += propertySchema.value_type == ValueType::IntEnum
+                        ? std::format("\"{}\"", value)
+                        : std::format("\"{}\"", description);
+                }
+                return std::format("Supported values: {}", values);
+            }
+            case ValueType::String: return std::format("{}\"string\"", prefix);
+            case ValueType::Int: return std::format("{}\"integer\"", prefix);
+            case ValueType::IntBool: return std::format("{}\"integer (0 or 1)\"", prefix);
+            case ValueType::Float: return std::format("{}\"float\"", prefix);
+            case ValueType::Path: return std::format("{}\"path\"", prefix);
+            case ValueType::PathList: return std::format("{}\"list of paths (separated by whitespace)\"", prefix);
+            case ValueType::FloatList: return std::format("{}\"list of floats (separated by whitespace)\"", prefix);
+            case ValueType::StringList: return std::format("{}\"list of strings (separated by whitespace)\"", prefix);
+            case ValueType::DateTime: return std::format("{}\"datetime with format {}\"", prefix, propertySchema.format);
+            default: throw std::invalid_argument(std::format("Unhandled ValueType: {}", static_cast<int>(propertySchema.value_type)));
+        }
+    }
+
     static std::string GetCurrentTimeString()
     {
         const auto now = std::chrono::system_clock::now();
@@ -51,8 +82,9 @@ namespace dflowfm_io
                 auto converted_value = MduValueConverter::FromString(propertySchema, iniProperty->GetValue());
                 if (!converted_value.has_value())
                 {
-                    report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\".",
-                                    sectionSchema.name, propertySchema.key, iniProperty->GetValue());
+                    const std::string expected = GetExpectedValueDescription(propertySchema);
+                    report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\". {}.",
+                                    sectionSchema.name, propertySchema.key, iniProperty->GetValue(), expected);
                     continue;
                 }
 

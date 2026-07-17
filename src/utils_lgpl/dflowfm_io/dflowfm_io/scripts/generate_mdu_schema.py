@@ -103,6 +103,9 @@ def render_property(prop, indent):
             lines.append(f'{inner}    {{{key}, "{name}"}}{comma}')
         lines.append(f"{inner}}},")
 
+    if "format" in prop:
+        lines.append(field(".format", f'"{prop["format"]}",'))
+
     lines.append(field(".description", f'"{prop.get("description", "")}"'))
     lines.append(pad + "}")
     return "\n".join(lines)

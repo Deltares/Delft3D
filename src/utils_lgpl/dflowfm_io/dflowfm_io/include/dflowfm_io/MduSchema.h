@@ -59,6 +59,7 @@ namespace dflowfm_io
         ValueType value_type; ///< Expected type of the property value.
         std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
         std::map<int, std::string> enum_values; ///< Mapping from integer to name for Enum and IntEnum types.
+        std::string format; ///< Optional format string for DateTime and Float properties.
         std::string description; ///< Human-readable description of the property.
     };
 

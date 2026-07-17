@@ -122,7 +122,8 @@ namespace dflowfm_io::test
     // Convert IniData → MduData — invalid property value
     // -------------------------------------------------------------------------
 
-    class MduDataConverterInvalidValueTest : public MduDataConverterTest, public ::testing::WithParamInterface<ValueType>
+    class MduDataConverterInvalidValueTest : public MduDataConverterTest,
+                                             public ::testing::WithParamInterface<ValueType>
     {
     };
 
@@ -147,6 +148,40 @@ namespace dflowfm_io::test
                              // is a valid value for those types.
                              ::testing::Values(ValueType::Int, ValueType::Float, ValueType::IntBool, ValueType::Enum,
                                                ValueType::IntEnum, ValueType::DateTime, ValueType::FloatList));
+
+    TEST_F(MduDataConverterTest, ConvertIniData_InvalidEnumValue_ErrorMessageContainsAllEnumDescriptions)
+    {
+        const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Enum);
+
+        ini::IniData iniData = CompliantIniData();
+        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "##invalid##");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
+
+        EXPECT_TRUE(report.HasErrors());
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        for (const auto& [_, description] : targetProperty->enum_values)
+            EXPECT_NE(error->message.find(description), std::string::npos)
+                << "Expected enum name \"" << description << "\" in error message";
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_InvalidIntEnumValue_ErrorMessageContainsAllEnumValues)
+    {
+        const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::IntEnum);
+
+        ini::IniData iniData = CompliantIniData();
+        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "##invalid##");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
+
+        EXPECT_TRUE(report.HasErrors());
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        for (const auto& [value, _] : targetProperty->enum_values)
+            EXPECT_NE(error->message.find(std::to_string(value)), std::string::npos)
+                << "Expected enum key " << value << " in error message";
+    }
 
     // -------------------------------------------------------------------------
     // Convert IniData → MduData — absent property with default falls back to schema default
@@ -190,9 +225,8 @@ namespace dflowfm_io::test
         const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
-        const auto it =
-            std::find_if(targetProperty->enum_values.begin(), targetProperty->enum_values.end(),
-                         [&](const auto& pair) { return pair.second == targetProperty->default_value; });
+        const auto it = std::find_if(targetProperty->enum_values.begin(), targetProperty->enum_values.end(),
+                                     [&](const auto& pair) { return pair.second == targetProperty->default_value; });
         ASSERT_NE(it, targetProperty->enum_values.end());
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, it->first);
