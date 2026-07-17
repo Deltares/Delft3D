@@ -866,7 +866,6 @@ contains
                                  deallocate (temp_block)
                               end if
                            end if
-                           where (data_block == item%quantityPtr%fillvalue) data_block = ieee_value(0.0_dp, ieee_quiet_nan)
                         end if
                      end if
                      if (ierror /= 0) then
@@ -941,6 +940,10 @@ contains
          end if
       end if
 
+      ! - Replace fillvalue with NaN
+      if (item%quantityPtr%fillvalue /= ieee_value(0.0_dp, ieee_quiet_nan)) then
+         where (fieldPtr%arr1dPtr == item%quantityPtr%fillvalue) fieldPtr%arr1dPtr = ieee_value(0.0_dp, ieee_quiet_nan)
+      end if
       ! - Apply the scale factor and offset
       if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
          do i = 1, size(fieldPtr%arr1dPtr)
