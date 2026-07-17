@@ -1587,7 +1587,7 @@ contains
                              'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat fluxes to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RWIN, &
-                             'Wrihis_heat_fluxes', 'relativewind', 'relative wind speed', '', &
+                             'Wrihis_heat_fluxes', 'relativewind', 'relative wind speed', 'magnitude_of_air_velocity_to_sea_water', &
                              'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TAIR, &
@@ -1603,31 +1603,31 @@ contains
                              ' ', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QSUN, &
-                             'Wrihis_heat_fluxes', 'Qsun', 'net shortwave (solar) radiation', '', &
+                             'Wrihis_heat_fluxes', 'Qsun', 'surface_net_downward_shortwave_flux', 'Solar influx', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QEVA, &
-                             'Wrihis_heat_fluxes', 'Qeva', 'evaporative heat flux', '', &
+                             'Wrihis_heat_fluxes', 'Qeva', 'surface_downward_latent_heat_flux', 'Evaporative heat flux', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QCON, &
-                             'Wrihis_heat_fluxes', 'Qcon', 'sensible heat flux', '', &
+                             'Wrihis_heat_fluxes', 'Qcon', 'surface_downward_sensible_heat_flux', 'Sensible heat flux', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QLONG, &
-                             'Wrihis_heat_fluxes', 'Qlong', 'net longwave radiation', '', &
+                             'Wrihis_heat_fluxes', 'Qlong', 'surface_net_downward_longwave_flux', 'Long wave back radiation', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QFREVA, &
-                             'Wrihis_heat_fluxes', 'Qfreva', 'free convection evaporative heat flux', '', &
-                             'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'Wrihis_heat_fluxes', 'Qfreva', 'downward_latent_heat_flux_in_sea_water_due_to_convection', &
+                             'Free convection evaporative heat flux', 'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QFRCON, &
-                             'Wrihis_heat_fluxes', 'Qfrcon', 'free convection sensible heat flux', '', &
-                             'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'Wrihis_heat_fluxes', 'Qfrcon', 'surface_downward_sensible_heat_flux_due_to_convection', &
+                             'Free convection sensible heat flux', 'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QTOT, &
-                             'Wrihis_heat_fluxes', 'Qtot', 'total heat flux', '', &
+                             'Wrihis_heat_fluxes', 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
 
