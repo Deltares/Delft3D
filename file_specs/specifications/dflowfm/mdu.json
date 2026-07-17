@@ -3174,7 +3174,7 @@
                 },
                 {
                   "key": "sourSink",
-                  "value_type": "int",
+                  "value_type": "intenum",
                   "default_value": 1,
                   "description": "Switch off source or sink terms for sed advection.",
                   "enum_values": {
@@ -3274,7 +3274,7 @@
                 },
                 {
                   "key": "inMorphoPol",
-                  "value_type": "intbool",
+                  "value_type": "intenum",
                   "default_value": 1,
                   "description": "Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)",
                   "enum_values": {
@@ -3284,7 +3284,7 @@
                 },
                 {
                   "key": "mormergeDtUser",
-                  "value_type": "int",
+                  "value_type": "intenum",
                   "default_value": 0,
                   "description": "Mormerge operation",
                   "enum_values": {
