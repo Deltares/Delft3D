@@ -774,7 +774,7 @@ contains
       end if
       
       !morfac and morft
-      if (his_write_settings%sed > 0 .and. jased > 0 .and. stm_included) then
+      if (his_write_settings%sed > 0 .and. stm_included) then
          dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
          mortime = stmpar%morpar%morft * 86400.0_dp ! seconds*morfac since tstart_user
          if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
