@@ -1,9 +1,7 @@
 from conan import ConanFile
 from conan.tools.files import save
 
-
 class Delft3DRecipe(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps"
 
     def requirements(self):
