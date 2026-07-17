@@ -174,10 +174,10 @@ def generate_supported_content(ini_file_spec: IniFileSpec) -> str:
         section_md.append(section.description)
         section_md.append("")
         section_md.append(
-            "| Keyword | Description | Default | Supported values | Unit |"
+            "| Keyword | Description | Default | Supported values | Unit | Format |"
         )
         section_md.append(
-            "| ------- | ----------- | ------- | ---------------- | ---- |"
+            "| ------- | ----------- | ------- | ---------------- | ---- | ------ |"
         )
 
         for property in properties:
@@ -233,8 +233,9 @@ def get_md_row(ini_property: IniPropertySpec) -> str:
     default = get_default_value_formatted(ini_property)
     supported_values = get_supported_values_formatted(ini_property)
     unit = get_unit_formatted(ini_property)
+    format = get_format_formatted(ini_property)
 
-    return f"| {key} | {description} | {default} | {supported_values} | {unit} |"
+    return f"| {key} | {description} | {default} | {supported_values} | {unit} | {format} |"
 
 
 def get_key_formatted(ini_property: IniPropertySpec) -> str:
@@ -332,6 +333,9 @@ def get_list_item(item: str) -> str:
 def get_unit_formatted(ini_property: IniPropertySpec) -> str:
     return f"[{ini_property.unit}]" if ini_property.unit else ""
 
+
+def get_format_formatted(ini_property: IniPropertySpec) -> str:
+    return f"`{ini_property.format}`" if ini_property.format else ""
 
 def collect_items_with_status(ini_file_spec: IniFileSpec, status_value: StatusValue) -> List[DataItem]:
     """Collect keywords and keyword values with a specific status across all sections.

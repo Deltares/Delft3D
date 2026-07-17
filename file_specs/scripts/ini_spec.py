@@ -135,6 +135,7 @@ class IniPropertySpec:
     validation: Optional[Validation] = None
     enum_values: Optional[Dict[str, EnumValue]] = None
     unit: Optional[str] = None
+    format: Optional[str] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "IniPropertySpec":
@@ -158,6 +159,7 @@ class IniPropertySpec:
             if enum_values is not None
             else None,
             unit=data.get("unit"),
+            format=data.get("format"),
         )
 
 

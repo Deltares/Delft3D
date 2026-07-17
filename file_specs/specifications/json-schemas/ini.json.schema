@@ -212,6 +212,9 @@
                                 },
                                 "unit": {
                                     "type": "string"
+                                },
+                                "format": {
+                                    "type": "string"
                                 }
                             },
                             "required": [
@@ -428,14 +431,19 @@
                                 },
                                 {
                                     "if": {
+                                        "required": [
+                                            "value_type"
+                                        ],
                                         "properties": {
                                             "value_type": {
-                                                "const": "datetime",
-                                                "pattern": "^\\d{8}(\\d{6})?$"
+                                                "const": "datetime"
                                             }
                                         }
                                     },
                                     "then": {
+                                        "required": [
+                                            "format"
+                                        ],
                                         "properties": {
                                             "default_value": {
                                                 "type": "string"
