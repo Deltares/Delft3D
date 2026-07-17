@@ -9,14 +9,14 @@ argument-hint: '[config-path] [testcase-filter1, testcase-filter2, ...]'
 ## When to Use
 
 - "Run the testbench on config X"
-- "Run the testbench on testcase(s) X [, Y, Z, ...]"
+- "Run the testbench on test case(s) X [, Y, Z, ...]"
 
 ## What this skill does
 
-Runs `test/deltares_testbench/TestBench.py` to verify that the output of a testcase model is still
+Runs `test/deltares_testbench/TestBench.py` to verify that the output of a _test case model_ is still
 within tolerance of the _reference output_.
 
-The testcase data of the test cases is stored in our `minio` bucket. This data, which includes the 
+The test case data of the test cases is stored in our `minio` bucket. This data, which includes the 
 _test case input_ and the _reference output_, will be downloaded by `TestBench.py` before running a test case.
 
 A `TestBench.py` comparison run performs roughly follows these steps for each test case:
@@ -43,7 +43,7 @@ A `TestBench.py` comparison run performs roughly follows these steps for each te
 3. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`
 4. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
    in an activated venv. Or if `uv` is not installed: `pip install -r pip/win-requirements.txt`.
-5. The credentials for downloading the testcase data in our `minio` bucket are installed in the user's
+5. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
    home directory in the file `~/.aws/credentials`. If there are `minio`/`s3` auth errors please direct
    the user towards the `minio` 
    [UI page where they can create access keys](https://s3-console.deltares.nl/access-keys) and suggest
@@ -72,9 +72,9 @@ python TestBench.py --compare --config <config-path> [--filter testcase=<testcas
 
 The user may not actually supply a `config-path`, which is a required argument. In this case, use the 
 `find-testbench-testcase` skill to find a suitable config. `find-testbench-testcase` may return multiple
-configs. Let the user select one to use. If there are multiple testcases to run, simply separate their names
+configs. Let the user select one to use. If there are multiple test cases to run, simply separate their names
 by commas and use the `--filter testcase=<comma-sep-list>` argument. Use the `--parallel` flag when running 
-more then one testcase in a single config.
+more then one test case in a single config.
 
 ## Interpreting `TestBench.py` results.
 The _result table_ of the most recent `TestBench.py` run is stored in `/test/deltares_testbench/logs/testbench.log`.
