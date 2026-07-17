@@ -1401,6 +1401,10 @@ contains
                              'Wrihis_turbulence', 'vicwws', 'turbulent vertical eddy viscosity at pressure point', '', &
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_VICWWS_TOTAL, &
+                    'Wrihis_turbulence', 'vicwws_total', 'total vertical eddy viscosity at pressure point', '', &
+                    'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU, &
                              'Wrihis_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity at nearest velocity point', '', &
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
@@ -1429,6 +1433,10 @@ contains
                              'Wrihis_turbulence', 'difwws', 'turbulent vertical eddy diffusivity of salinity at pressure point', &
                              '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_DIFWWS_TOTAL, &
+                    'Wrihis_turbulence', 'difwws_total', 'total vertical eddy diffusivity of salinity at pressure point', &
+                    '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy
       call add_output_config(config_set_his, IDX_HIS_SALINITY, &
@@ -1518,6 +1526,42 @@ contains
                              'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'northward_wind', &
                              'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_WINDSTRESSX, &
+                             'Wrihis_windstress', 'windstressx', 'wind stress on flow element center, x-component', 'surface_downward_x_stress', &
+                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_WINDSTRESSX_SFERIC, &
+                             'Wrihis_windstress', 'windstressx', 'wind stress on flow element center, x-component', 'surface_downward_eastward_stress', &
+                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_WINDSTRESSY, &
+                             'Wrihis_windstress', 'windstressy', 'wind stress on flow element center, y-component', 'surface_downward_y_stress', &
+                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_WINDSTRESSY_SFERIC, &
+                             'Wrihis_windstress', 'windstressy', 'wind stress on flow element center, y-component', 'surface_downward_northward_stress', &
+                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_WSTAR, &
+                    'Wrihis_bulk_exchange_coefficients', 'w_star', 'Free convective velocity scale', '', &
+              'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_OBUKHOV_LENGTH, &
+                    'Wrihis_bulk_exchange_coefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
+              'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
+                    'Wrihis_bulk_exchange_coefficients', 'c_d', 'Bulk transfer coefficient of momentum flux', '', &
+              '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
+                    'Wrihis_bulk_exchange_coefficients', 'c_h', 'Bulk transfer coefficient of sensible heat flux', '', &
+              '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
+                    'Wrihis_bulk_exchange_coefficients', 'c_e', 'Bulk transfer coefficient of latent heat flux', '', &
+              '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
                              'Wrihis_rain', 'rain', 'precipitation depth per time unit', 'lwe_precipitation_rate', &
                              'mm day-1', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write precipitation to his-file', &
@@ -2063,6 +2107,9 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CLOU, &
                              'Wrimap_heat_fluxes', 'Clou', 'cloud_area_fraction', &
                              'Cloudiness', '1', UNC_LOC_S)
+      call add_output_config(config_set_map, IDX_MAP_SECC, &
+                             'Wrimap_heat_fluxes', 'Secc', 'secchi_depth', &
+                             'Secchi depth', 'm', UNC_LOC_S)
       call add_output_config(config_set_map, IDX_MAP_QSUN, &
                              'Wrimap_heat_fluxes', 'Qsun', 'surface_net_downward_shortwave_flux', &
                              'Solar influx', 'W m-2', UNC_LOC_S)
@@ -2306,6 +2353,7 @@ contains
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
+      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_sferic, only: jsferic
       use m_wind, only: air_pressure_available, jawind, jarain, ja_airdensity, ja_computed_airdensity, cloudiness, relative_humidity
       use m_dambreak_breach, only: n_db_signals
@@ -2656,8 +2704,12 @@ contains
                if (iturbulencemodel >= 2) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS:IPNT_VICWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS_TOTAL:IPNT_VICWWS_TOTAL + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS_TOTAL), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_DIFWWS:IPNT_DIFWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DIFWWS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_DIFWWS_TOTAL:IPNT_DIFWWS_TOTAL + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DIFWWS_TOTAL), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
                end if
@@ -2755,6 +2807,24 @@ contains
             end if
          end if
 
+         if (jawind > 0 .and. his_write_settings%windstress > 0) then
+            if (jsferic == 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDSTRESSX), valobs(:, IPNT_windstressx))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDSTRESSY), valobs(:, IPNT_windstressy))
+            else
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDSTRESSX_SFERIC), valobs(:, IPNT_windstressx))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDSTRESSY_SFERIC), valobs(:, IPNT_windstressy))
+            end if
+         end if
+         
+         if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WSTAR), valobs(:, IPNT_wstar))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBUKHOV_LENGTH), valobs(:, IPNT_obukhov_length))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TRANSFER_COEFF_MOMENTUM), valobs(:, IPNT_TRANSFER_COEFF_MOMENTUM))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT), valobs(:, IPNT_TRANSFER_COEFF_SENSIBLE_HEAT))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TRANSFER_COEFF_LATENT_HEAT), valobs(:, IPNT_TRANSFER_COEFF_LATENT_HEAT))
+         end if
+
          if (jarain > 0 .and. his_write_settings%rain > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RAIN), valobs(:, IPNT_rain))
          end if
@@ -2769,8 +2839,14 @@ contains
          end if
 
          ! Write heat flux model statistical output
-         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-            if (his_write_settings%heatflux > 0) then
+         if (his_write_settings%heatflux > 0) then
+            if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QLONG), valobs(:, IPNT_QLON))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
+            elseif (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
 
@@ -2787,7 +2863,7 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFREVA), valobs(:, IPNT_QFRE))
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
                end if
-
+               
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
             end if
          end if

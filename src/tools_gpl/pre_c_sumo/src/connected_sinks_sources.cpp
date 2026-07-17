@@ -2,6 +2,8 @@
 #include <precice/precice.hpp>
 #include <connected_sinks_sources.hpp>
 
+#include <print>
+
 namespace pre_c_sumo
 {
     /**
@@ -33,7 +35,6 @@ namespace pre_c_sumo
         discharge_vector.push_back(discharge);
         momentum_magnitude_vector.push_back(momentum_magnitude);
         momentum_direction_vector.push_back(momentum_direction);
-        // TODO: convert moment to sin/cos?
     }
 
     /**
@@ -52,8 +53,6 @@ namespace pre_c_sumo
         discharge_vector.clear();
         momentum_magnitude_vector.clear();
         momentum_direction_vector.clear();
-        momentum_sin_vector.clear();
-        momentum_cos_vector.clear();
     }
 
     /**
@@ -80,7 +79,9 @@ namespace pre_c_sumo
         participant.writeData(mesh_name, "sources_z_min", precice_ids, source_z_bottom_vector);
         participant.writeData(mesh_name, "sources_z_max", precice_ids, source_z_top_vector);
         participant.writeData(mesh_name, "sources_sinks_discharge", precice_ids, discharge_vector);
-        // TODO: Momentum.
+        participant.writeData(mesh_name, "sources_momentum_magnitude", precice_ids, momentum_magnitude_vector);
+        participant.writeData(mesh_name, "sources_momentum_direction", precice_ids, momentum_direction_vector);
+        // TODO: Send Momentum.
 
         // After the write, we can clear the list.
         clear();

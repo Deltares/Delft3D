@@ -248,6 +248,7 @@ module m_unstruc_netcdf_data
       integer :: id_air_temperature(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_relative_humidity(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_cloudiness(MAX_ID_VAR) = -1 !< Variable ID for
+      integer :: id_secchi_depth(MAX_ID_VAR) = -1 !< Variable ID for Secchi depth
       integer :: id_E(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_R(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_hwav(MAX_ID_VAR) = -1 !< Variable ID for
@@ -299,6 +300,8 @@ module m_unstruc_netcdf_data
       integer :: id_turkin1(MAX_ID_VAR) = -1 !< Variable ID for turbulent kinetic energy
       integer :: id_vicwwu(MAX_ID_VAR) = -1 !< Variable ID for turbulent vertical eddy viscosity at velocity points
       integer :: id_vicwws(MAX_ID_VAR) = -1 !< Variable ID for turbulent vertical eddy viscosity at pressure points
+      integer :: id_vicwws_total(MAX_ID_VAR) = -1 !< Variable ID for total vertical eddy viscosity at pressure points
+      integer :: id_difwws_total(MAX_ID_VAR) = -1 !< Variable ID for total vertical eddy diffusivity of salinity at pressure points
       integer :: id_tureps1(MAX_ID_VAR) = -1 !< Variable ID for turbulent kinetic energy dissipation
       integer :: id_sbcx(MAX_ID_VAR) = -1 !< Variable ID for current related bedload sediment transport at cell centre before upwinding, secondary flow and bed slope effect (x-component)
       integer :: id_sbcy(MAX_ID_VAR) = -1 !< Variable ID for current related bedload sediment transport at cell centre before upwinding, secondary flow and bed slope effect (y-component)

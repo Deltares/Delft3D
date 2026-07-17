@@ -294,7 +294,7 @@ contains
             end if
 
             call tree_create_node(block_ptr, 'frictionType', node_ptr)
-            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type),node_value), 'STRING')
+            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type), node_value), 'STRING')
 
             call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
             if (.not. success) then
@@ -821,7 +821,7 @@ contains
          do ilongc = 1, nlongculverts
             do i = 1, longculverts(ilongc)%numlinks
                Lf = abs(longculverts(ilongc)%flowlinks(i))
-               !if (kcu(lf) == 1) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
+               !if (kcu(lf) == LINK_1D) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
 
@@ -1375,6 +1375,7 @@ contains
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
 
       implicit none
 
@@ -1498,7 +1499,7 @@ contains
                      othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                      if (j <= ie) then
-                        if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
+                        if ((kcu(linkabs) == LINK_1D .or. kcu(linkabs) == LINK_1D2D_STREETINLET) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
                            longculvert%flowlinks(j) = -1 * linknum
                            exit
                         end if
@@ -1674,6 +1675,7 @@ contains
       use m_save_ugrid_state
       use m_node, only: dealloc
       use m_branch, only: dealloc
+      use m_unstruc_model_data, only: md_partugrid
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
@@ -1723,6 +1725,8 @@ contains
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+         else
+            md_partugrid = 1 ! set ugrid partitioning flag explicitly to true, so that the 2D-2D long culvert contact will be written to the partitioned ugrid file
          end if
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
