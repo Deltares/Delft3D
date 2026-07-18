@@ -13,12 +13,13 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked,id=dnf-install-${CACHE_SUFFIX} <<"EOF"
-
 PACKAGES=( \
-    sudo strace tree netcdf dos2unix jq \
+    sudo strace tree netcdf dos2unix gh jq \
     libxml2 xmlstarlet ripgrep fd-find bat \
 )
 [[ "${ENABLE_JAVA}" == "0" ]] || PACKAGES+=(java-17-openjdk java-17-openjdk-devel maven)
+
+dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
 dnf install -y "${PACKAGES[@]}"
 
 if [[ "${ENABLE_JAVA}" != "0" ]]; then

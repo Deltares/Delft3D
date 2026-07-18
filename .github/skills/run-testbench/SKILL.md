@@ -32,8 +32,13 @@ A `TestBench.py` comparison run performs roughly follows these steps for each te
 4. Run the _checks_ for this test case. The checks are comparisons between the files in the _work
    directory_ and the files in the _references_. Based on file type, `TestBench.py` supports many
    types of comparisons. But the most common comparisons are between _NetCDF_ files. Most notably
-   the _his_ and _map_ files that "DflowFM" produces as output. The results are most often numerical,
-   and the results can differ up to a specified absolute or relative tolerance.
+   the _his_ and _map_ files that "DflowFM" produces as output. The checks on `.nc` files are done
+   by taking the difference of one _variable_ present in both the _reference_ and the _case_ output.
+   The variables are (possibly multidimensional) arrays of numbers. The difference must not exceed
+   the configured maximum allowed _absolute_ or _relative_ difference.
+
+After running all the tests, `TestBench.py` prints the _result table_ with the result of all checks
+in all test cases.
 
 ## Preconditions
 
@@ -80,7 +85,7 @@ more then one test case in a single config.
 The _result table_ of the most recent `TestBench.py` run is stored in `/test/deltares_testbench/logs/testbench.log`.
 Users are most interested in the test cases that contain `NOK` results, or `ERROR` results. `ERROR` results usually
 indicate a crash, or some problem with the model input or config. Look in the _logs_ directory for that test case to
-see if you can find any errors or stacktraces.
+see if you can find any errors or stacktraces and let the user know if you find a problem there.
 
 `NOK` results signify that the comparison failed. The _result table_ will tell you which check failed. In case it's
 a _NetCDF_ file (with `.nc` extension), it's usually a difference above tolerance in a certain variable. In Linux you
