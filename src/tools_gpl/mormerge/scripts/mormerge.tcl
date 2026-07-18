@@ -1981,7 +1981,7 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       puts $scriptfile "\n    # Wait until all child processes are finished \n"
       if {$queuesys == "slurm"} {
          puts $scriptfile "launch_status=0"
-         puts $scriptfile "for slurm_step_pid in \"\${slurm_step_pids[@]}\"; do"
+         puts $scriptfile {for slurm_step_pid in "${slurm_step_pids[@]}"; do}
          puts $scriptfile "   if ! wait \"\$slurm_step_pid\"; then"
          puts $scriptfile "      launch_status=1"
          puts $scriptfile "   fi"
