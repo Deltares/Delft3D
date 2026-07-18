@@ -2,7 +2,7 @@
 
 ## Project
 
-This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines.
+This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines / kernels.
 - Public GitHub repo: https://github.com/Deltares/Delft3D
 - Source code: `/src` (Mostly Fortran and a bit of C/C++)
 - TestBench: `/test/deltares_testbench` (Python)
@@ -16,11 +16,11 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines.
 ## Toolchain
 
 - Build system: CMake 4
-- Compilers: `ifx` for Fortran, on Windows: MSVC for C/C++, on Linux: `g++` and `icx`
+- Compilers: `ifx` for Fortran, on Windows: MSVC for C/C++, on Linux: `icx` for C, `g++` for C++
 - Package management: Conan 2
 - Fortran formatter: `fprettify`
 
-## Command line tools
+## Additional tools
 
 ### Windows
 - Git

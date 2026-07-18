@@ -1,0 +1,32 @@
+{
+    "name": "DIMR: {{TESTCASE_NAME}}",
+    "type": "cppdbg",
+    "request": "launch",
+    "MIMode": "gdb",
+    "miDebuggerPath": "gdb-oneapi",
+    "program": "${workspaceFolder}/build_{{BUILD_CONFIG}}_{{BUILD_TYPE}}/install/bin/dimr",
+    "args": [
+        "{{DIMR_CONFIG_FILE}}"
+    ],
+    "cwd": "${workspaceFolder:Delft3D}/test/deltares_testbench/data/cases/{{TESTCASE_NAME}}",
+    "stopAtEntry": false,
+    "externalConsole": false,
+    "environment": [],
+    "setupCommands": [
+        {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+        },
+        {
+          "description": "Turn off target-async",
+          "text": "set target-async off",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Set language to Fortran",
+          "text": "set language fortran",
+          "ignoreFailures": false
+        }
+    ]
+}
