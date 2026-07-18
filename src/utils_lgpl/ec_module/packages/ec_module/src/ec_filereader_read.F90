@@ -679,7 +679,6 @@ contains
    !> Read the next record from a NetCDF file.
    function ecNetcdfReadNextBlock(fileReaderPtr, item, t0t1, timesndx) result(success)
       use netcdf
-      use, intrinsic :: ieee_arithmetic
 
       !
       logical :: success !< function status
@@ -940,10 +939,6 @@ contains
          end if
       end if
 
-      ! - Replace fillvalue with NaN
-      ! if (.not. ieee_is_nan(item%quantityPtr%fillvalue)) then
-      !    where (fieldPtr%arr1dPtr == item%quantityPtr%fillvalue) fieldPtr%arr1dPtr = dmiss_nc
-      ! end if
       ! - Apply the scale factor and offset
       if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
          do i = 1, size(fieldPtr%arr1dPtr)

@@ -2615,12 +2615,13 @@ contains
 
    !> Cyclic interpolation of two scalars, based on periodicity of 360 (degrees)
    !! Sort data in monotonically increasing order and rotate over smallest angle
-   elemental function cyclic_interpolation(var1, var2, weight1, weight2)
+   elemental function cyclic_interpolation(var1, var2, weight1, weight2, dmissValue)
       ! Parameters
       real(dp), intent(in) :: var1 !< First input argument for in interpolation functions using a scalar weight value
       real(dp), intent(in) :: var2 !< Second input argument for in interpolation functions using a scalar weight value
       real(dp), intent(in) :: weight1 !< Value for weighing two variables: 'weight1' holds for var1
       real(dp), intent(in) :: weight2 !< Value for weighing two variables: 'weight2' holds for var2
+      real(dp), intent(in), optional :: dmissValue !< Value to return in case of missing data
       real(dp) :: cyclic_interpolation !< Result value after linear interpolation between var1 and var2 using weightvalue weight
       
       ! Local variables
@@ -2629,9 +2630,16 @@ contains
       real(dp) :: delta
       real(dp) :: weightfac
 
-      if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
-         cyclic_interpolation = ieee_value(0.0_dp, ieee_quiet_nan)
-         return
+      if (present(dmissValue)) then
+         if (var1 == dmissValue .or. var2 == dmissValue) then
+            cyclic_interpolation = dmissValue
+            return
+         end if
+      else
+         if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
+            cyclic_interpolation = ieee_value(0.0_dp, ieee_quiet_nan)
+            return
+         end if
       end if
 
       minangle = var1
@@ -3305,10 +3313,7 @@ contains
                   !
                   ! if we have wave direction, do the time interpolation here on the weighted fields
                   if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
-                     wdtemp = cyclic_interpolation( &
-                        merge(ieee_value(sourceT0Field%arr1d(1), ieee_quiet_nan), sourceT0Field%arr1d, sourceT0Field%arr1d == sourceMissing), &
-                        merge(ieee_value(sourceT1Field%arr1d(1), ieee_quiet_nan), sourceT1Field%arr1d, sourceT1Field%arr1d == sourceMissing), &
-                        a0, a1)
+                     wdtemp = cyclic_interpolation( sourceT0Field%arr1d, sourceT1Field%arr1d, a0, a1, sourceMissing)
                      wd2d = reshape(wdtemp, (/ncol, nrow/))
                   end if
                end if
