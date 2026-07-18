@@ -1,17 +1,22 @@
 ---
 name: build-delft3d
-description: 'Run the CMake build'
+description: 'Run Delft3D builds with `build.py`'
 argument-hint: '[config] [build-type] [configure-only] [keep-build] [build-target]'
 ---
 
 # Run Delft3D builds
+
+## When to use
+- "Please build <config> with <build-type>."
+- Changes have been made to the source code and we want to know if the build still
+  works and the tests still pass.
 
 ## What this skill does
 It uses `build.py` to run the build. `build.py` uses `conan` to install dependenies, and then `cmake` to
 configure and build the software. It is a python script, which is designed to work on both Windows and 
 Linux.
 The output of `build.py` is the _build_ directory and (in most cases) the _install_ directory. 
-Unfortunately the locations of these directories depends on the platform:
+The locations of these directories depends on the platform:
 - Linux
   - build directory: `/build_<config>_<build-type>`
   - install directory: `/build_<config>_<build-type>/install`
@@ -34,9 +39,6 @@ phases. Then use the `cmake --build <build-directory> --target <build-target>` t
 If there is no such build target, or only a description is given: Use 
 `cmake --build <build-directory> --target help` to list targets and let the user select the one they want.
 
-## When to use
-- When changes have been made (and saved) to the source code and we want to know if the product still
-  builds, the unit tests still pass, or a model (a set of input files) for the product works as expected.
 
 ## Preconditions
 
@@ -51,6 +53,12 @@ If there is no such build target, or only a description is given: Use
    rights and credentials, or from the source code using the recipes. If you run into errors relating to 
    auth errors or missing profiles while running `build.py`, something is most likely misconfigured and 
    you can point people to the installation instructions mentioned above.
+   If the error message mentions that the conan _profile_ is missing, this can be fixed with the
+   `python run_conan.py initialize {deltares,external}` command. It is very important to let the
+   user choose which one of these they want. Deltares employees should have access to the artifact
+   repositories where they can get pre-compiled binaries from. Externals need to compile all of the
+   third-party libraries themselves using the Conan recipes. For Deltares employees, the `deltares`
+   option is much preferred, but *always* to ask the user.
 
 ## Command anatomy
 

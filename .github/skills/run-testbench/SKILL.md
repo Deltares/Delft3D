@@ -6,7 +6,7 @@ argument-hint: '[config-path] [testcase-filter1, testcase-filter2, ...]'
 
 # Run Deltares Testbench
 
-## When to Use
+## When to use
 
 - "Run the testbench on config X"
 - "Run the testbench on test case(s) X [, Y, Z, ...]"
@@ -42,18 +42,16 @@ in all test cases.
 
 ## Preconditions
 
-1. The working directory must be `/test/deltares_testbench/`. All paths in configs are relative to it.
-2. Python 3.11 or higher must be installed. Some developers reported problems installing dependencies with
-   Python 3.13 or higher. Prefer Python 3.12.
-3. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`
-4. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
+1. The working directory must be `/test/deltares_testbench/`. *Always* run `TestBench.py` from this directory.
+2. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`
+3. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
    in an activated venv. Or if `uv` is not installed: `pip install -r pip/win-requirements.txt`.
-5. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
+4. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
    home directory in the file `~/.aws/credentials`. If there are `minio`/`s3` auth errors please direct
    the user towards the `minio` 
    [UI page where they can create access keys](https://s3-console.deltares.nl/access-keys) and suggest
    the format of the credentials file. It is a standard AWS credentials file.
-6. The Delft3D binaries must be installed. `TestBench.py` uses these to run the test cases. It expects to
+5. The Delft3D binaries must be installed. `TestBench.py` uses these to run the test cases. It expects to
    find them in the _engines directory_:
    - Windows: `/test/deltares_testbench/data/engines/teamcity_artifacts/x64/`
    - Linux: `/test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/`
@@ -66,8 +64,6 @@ in all test cases.
    Notice that the name of the sym-link is `x64` on Windows and `lnx64` on Linux. Prefer absolute paths when
    creating the link. On Windows creating a sym-link requires elevated privileges, so users need to run the 
    command as administrator.
-7. The `config-path` must be a valid `.xml` file, and if a `testcase-filter` is specified it should match
-   at least one test case in the config.
 
 ## Command anatomy
 
@@ -75,8 +71,8 @@ in all test cases.
 python TestBench.py --compare --config <config-path> [--filter testcase=<testcase-filter1,testcase-filter2>] [--parallel]
 ```
 
-The user may not actually supply a `config-path`, which is a required argument. In this case, use the 
-`find-testbench-testcase` skill to find a suitable config. `find-testbench-testcase` may return multiple
+The user may not actually supply a `config-path`, which is a required argument of `TestBench.py`. In this case,
+use the `find-testbench-configs` skill to find a suitable config. `find-testbench-configs` may return multiple
 configs. Let the user select one to use. If there are multiple test cases to run, simply separate their names
 by commas and use the `--filter testcase=<comma-sep-list>` argument. Use the `--parallel` flag when running 
 more then one test case in a single config.

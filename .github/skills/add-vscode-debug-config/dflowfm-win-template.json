@@ -1,0 +1,13 @@
+{
+    "name": "DFlow FM: {{TESTCASE_NAME}}",
+    "type": "cppvsdbg",
+    "request": "launch",
+    "program": "${workspaceFolder}\\install_{{BUILD_CONFIG}}\\bin\\dflowfm-cli.exe",
+    "args": [
+        "{{MDU_FILE}}"
+    ],
+    "cwd": "${workspaceFolder}\\test\\deltares_testbench\\data\\cases\\{{TESTCASE_NAME}}",
+    "stopAtEntry": false,
+    "console": "integratedTerminal",
+    "environment": []
+}
