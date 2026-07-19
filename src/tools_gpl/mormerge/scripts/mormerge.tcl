@@ -7,6 +7,8 @@
 #
 # mormerge.tcl - Script to start parallel FLOW runs
 #                and a morphological merging executable
+#                Slurm DIMR steps use the dimr executable directly.
+#                Multiple condition steps may share each allocation node.
 #
 # Copyright (C)  Stichting Deltares, 2011-2026.
 #
@@ -14,13 +16,33 @@
 #
 # General information:
 #
+# Packed Slurm geometry is controlled with these .mm settings:
+#
+# nodes                       = total allocation nodes
+# slurmNodesPerCondition      = nodes used by one DIMR condition step
+# slurmTasksPerNode           = MPI ranks used by that step on each node
+# slurmCpusPerTask            = OpenMP threads or CPUs reserved per MPI rank
+# slurmConditionsPerNode      = concurrent condition slices per allocation node
+#
+# Set slurmConditionsPerNode to 0 to derive the minimum packing factor that
+# fits all concurrent conditions in the requested allocation.  For example,
+# 24 conditions on 12 nodes with 10 ranks per condition use:
+#
+# slurmNodesPerCondition = 1
+# slurmConditionsPerNode = 0
+# slurmTasksPerNode      = 10
+# slurmCpusPerTask       = 1
+# dimrargs               = -c 10 --NNODES 1 dimr_config.xml
+#
+# This generates 20 tasks per allocation node and two exclusive 10-rank DIMR
+# steps per node.  The node must have sufficient CPU and memory capacity.
 #
 # ENDDOC
 #
 #
 
 global version
-set version "2.30"
+set version "2.31"
 
 global timelimit
 set timelimit "01:00:00"
@@ -274,6 +296,7 @@ proc runcmd {command tag} {
 # --------------------------------------------------------------------
 proc getInput {channel tag} {
     global processes
+    global processfailures
 
     if { [gets $channel line] >= 0 } {
         puts "$tag : $line"
@@ -282,7 +305,12 @@ proc getInput {channel tag} {
         set processes [lreplace $processes $idx $idx]
         puts "$tag : Finished"
         if { [catch {close $channel} errmsg] } {
-            puts "\nERROR: tag=$tag : $errmsg"
+            if {[string match "merge:*" $tag] && [string match "*child process exited abnormally*" $errmsg]} {
+                puts "INFO: tag=$tag : mormerge stopped after a condition stream closed"
+            } else {
+                puts "\nERROR: tag=$tag : $errmsg"
+                lappend processfailures [list $tag $errmsg]
+            }
         }
         if { [llength $processes] == 0 } {
             set ::finished 1
@@ -412,6 +440,7 @@ proc configureSlurmGeometry { inflist } {
    set totalnodes $infillist(numnodes)
    set controlnodes $infillist(slurmcontrolnodes)
    set nodespercondition $infillist(slurmnodespercondition)
+   set conditionspernode $infillist(slurmconditionspernode)
    set numconditions $infillist(numconditions)
 
    if {$controlnodes >= $totalnodes} {
@@ -421,40 +450,195 @@ proc configureSlurmGeometry { inflist } {
 
    set availableconditionnodes [expr {$totalnodes - $controlnodes}]
    if {$nodespercondition == 0} {
-      if {$totalnodes == 1 && $controlnodes == 0} {
-         set nodespercondition 1
-         if {$numconditions > 1} {
-            puts "WARNING: All Slurm condition steps share a single-node allocation"
-            puts "         Slurm will serialize exclusive condition steps instead of oversubscribing the node"
-         }
-      } else {
-         if {$availableconditionnodes < $numconditions} {
-            puts "ERROR: Slurm allocation has $availableconditionnodes node(s) available for $numconditions condition(s)"
-            puts "       Increase nodes, reduce slurmControlNodes, or set nodes = local"
-            exit 1
-         }
-         if {[expr {$availableconditionnodes % $numconditions}] != 0} {
-            puts "ERROR: Slurm condition nodes ($availableconditionnodes) are not evenly divisible by $numconditions condition(s)"
-            puts "       Set slurmNodesPerCondition explicitly, or adjust nodes/slurmControlNodes"
-            exit 1
-         }
-         set nodespercondition [expr {$availableconditionnodes / $numconditions}]
-      }
+      set nodespercondition 1
       set infillist(slurmnodespercondition) $nodespercondition
+      puts "INFO: slurmNodesPerCondition defaults to 1 in the packed Slurm variant"
    }
 
-   set requirednodes [expr {$controlnodes + $numconditions * $nodespercondition}]
-   if {$requirednodes > $totalnodes} {
-      if {!($totalnodes == 1 && $controlnodes == 0 && $nodespercondition == 1)} {
-         puts "ERROR: Slurm geometry requires $requirednodes node(s), but nodes = $totalnodes"
-         puts "       Required = slurmControlNodes + conditions * slurmNodesPerCondition"
-         exit 1
-      }
-   } elseif {$requirednodes < $totalnodes} {
-      puts "WARNING: Slurm geometry leaves [expr {$totalnodes - $requirednodes}] allocation node(s) free for control work or other job steps"
+   if {$nodespercondition > $availableconditionnodes} {
+      puts "ERROR: A condition step requires $nodespercondition node(s), but only $availableconditionnodes node(s) are available"
+      exit 1
+   }
+
+   set requiredconditionslots [expr {$numconditions * $nodespercondition}]
+   if {$conditionspernode == 0} {
+      set conditionspernode [expr {($requiredconditionslots + $availableconditionnodes - 1) / $availableconditionnodes}]
+      set infillist(slurmconditionspernode) $conditionspernode
+      puts "INFO: Auto-selected $conditionspernode Slurm condition step(s) per allocation node"
+   }
+
+   set availableconditionslots [expr {$availableconditionnodes * $conditionspernode}]
+   if {$requiredconditionslots > $availableconditionslots} {
+      puts "ERROR: Packed Slurm geometry provides $availableconditionslots condition-node slot(s)"
+      puts "       Required = conditions * slurmNodesPerCondition = $requiredconditionslots"
+      puts "       Increase nodes or slurmConditionsPerNode, or reduce slurmNodesPerCondition"
+      exit 1
+   } elseif {$requiredconditionslots < $availableconditionslots} {
+      puts "WARNING: Packed Slurm geometry leaves [expr {$availableconditionslots - $requiredconditionslots}] condition-node slot(s) unused"
+   }
+
+   if {$conditionspernode > 1} {
+      puts "INFO: Up to $conditionspernode condition steps share each allocation node"
+      puts "      Each step keeps an exclusive Slurm CPU set"
    }
 
    set infillist(slurmtaskspercondition) [expr {$nodespercondition * $infillist(slurmtaskspernode)}]
+   set infillist(slurmconditionstepsperallocationnode) $conditionspernode
+   set infillist(slurmallocationtaskspernode) [expr {$conditionspernode * $infillist(slurmtaskspernode)}]
+   set infillist(slurmallocationcpuspernode) [expr {$infillist(slurmallocationtaskspernode) * $infillist(slurmcpuspertask)}]
+}
+
+
+ # --------------------------------------------------------------------
+ #   Procedure: shellQuote
+ #   Purpose:   Quote one value for a generated POSIX shell command
+ # --------------------------------------------------------------------
+proc shellQuote { value } {
+   set escaped [string map [list "\\" "\\\\" "\"" "\\\"" "\$" "\\\$" "`" "\\`"] $value]
+   return "\"$escaped\""
+}
+
+
+# --------------------------------------------------------------------
+#   Procedure: getSlurmDirectDimrArguments
+#   Purpose:   Translate compatible run_dimr arguments for direct DIMR
+# --------------------------------------------------------------------
+proc getSlurmDirectDimrArguments { inflist } {
+   upvar $inflist infillist
+
+   set inputargs $infillist(dimrargs)
+   if {[catch {llength $inputargs}]} {
+      puts "ERROR: dimrargs must be a Tcl list when using direct DIMR on Slurm"
+      exit 1
+   }
+
+   set directargs {}
+   set configfile ""
+   set argindex 0
+   set argcount [llength $inputargs]
+   while {$argindex < $argcount} {
+      set argument [lindex $inputargs $argindex]
+      incr argindex
+      switch -- $argument {
+         -c -
+         --corespernode {
+            if {$argindex >= $argcount} {
+               puts "ERROR: $argument requires a value in dimrargs"
+               exit 1
+            }
+            set corespernode [lindex $inputargs $argindex]
+            incr argindex
+            if {![string is integer -strict $corespernode] || $corespernode < 1} {
+               puts "ERROR: $argument must be an integer >= 1 in dimrargs"
+               exit 1
+            }
+            if {$corespernode != $infillist(slurmtaskspernode)} {
+               puts "ERROR: $argument is $corespernode, but slurmTasksPerNode is $infillist(slurmtaskspernode)"
+               exit 1
+            }
+         }
+         --NNODES {
+            if {$argindex >= $argcount} {
+               puts "ERROR: --NNODES requires a value in dimrargs"
+               exit 1
+            }
+            set dimrnodes [lindex $inputargs $argindex]
+            incr argindex
+            if {![string is integer -strict $dimrnodes] || $dimrnodes < 1} {
+               puts "ERROR: --NNODES must be an integer >= 1 in dimrargs"
+               exit 1
+            }
+            if {$dimrnodes != $infillist(slurmnodespercondition)} {
+               puts "ERROR: --NNODES is $dimrnodes, but slurmNodesPerCondition is $infillist(slurmnodespercondition)"
+               exit 1
+            }
+         }
+         --D3D_HOME {
+            if {$argindex >= $argcount} {
+               puts "ERROR: --D3D_HOME requires a value in dimrargs"
+               exit 1
+            }
+            incr argindex
+         }
+         --slurm-step {
+            # Slurm launches dimr directly in this variant.
+         }
+         -m -
+         --masterfile {
+            if {$argindex >= $argcount} {
+               puts "ERROR: $argument requires a configuration filename in dimrargs"
+               exit 1
+            }
+            if {$configfile != ""} {
+               puts "ERROR: dimrargs specifies more than one DIMR configuration filename"
+               exit 1
+            }
+            set configfile [lindex $inputargs $argindex]
+            incr argindex
+         }
+         --debug {
+            if {$argindex >= $argcount} {
+               puts "ERROR: --debug requires a value in dimrargs"
+               exit 1
+            }
+            lappend directargs "-d" [lindex $inputargs $argindex]
+            incr argindex
+         }
+         -d -
+         -l -
+         -S {
+            if {$argindex >= $argcount} {
+               puts "ERROR: $argument requires a value in dimrargs"
+               exit 1
+            }
+            lappend directargs $argument [lindex $inputargs $argindex]
+            incr argindex
+         }
+         -v -
+         -i -
+         -? {
+            lappend directargs $argument
+         }
+         --cleanup {
+            puts "ERROR: --cleanup is a run_dimr.sh option and is unsupported by direct DIMR"
+            exit 1
+         }
+         -- {
+            if {$argindex >= $argcount || $argindex + 1 != $argcount} {
+               puts "ERROR: direct DIMR accepts exactly one configuration filename after --"
+               exit 1
+            }
+            if {$configfile != ""} {
+               puts "ERROR: dimrargs specifies more than one DIMR configuration filename"
+               exit 1
+            }
+            set configfile [lindex $inputargs $argindex]
+            set argindex $argcount
+         }
+         default {
+            if {[string match "-*" $argument]} {
+               puts "ERROR: $argument is not a supported direct DIMR option"
+               exit 1
+            }
+            if {$configfile != ""} {
+               puts "ERROR: dimrargs specifies more than one DIMR configuration filename"
+               exit 1
+            }
+            set configfile $argument
+         }
+      }
+   }
+
+   if {$configfile == ""} {
+      puts "ERROR: dimrargs must specify one DIMR configuration filename"
+      exit 1
+   }
+   lappend directargs $configfile
+   set shellargs {}
+   foreach argument $directargs {
+      lappend shellargs [shellQuote $argument]
+   }
+   return [join $shellargs " "]
 }
 
 
@@ -693,7 +877,7 @@ proc readInputFile { inputfilename iflist } {
    set runscript       " "
    set runscriptargs   " "
    set dimrexedir      " "
-   set dimrexename     "run_dimr"
+   set dimrexename     "dimr"
    set dimrargs        " "
    set flowexedir      " "
    set flowexename     "d_hydro"
@@ -711,6 +895,7 @@ proc readInputFile { inputfilename iflist } {
    set numnodes        1
    set slurmcontrolnodes        0
    set slurmnodespercondition   0
+   set slurmconditionspernode   0
    set slurmtaskspernode        1
    set slurmcpuspertask         1
    set slurmmpi                 " "
@@ -805,6 +990,9 @@ proc readInputFile { inputfilename iflist } {
          }
          "slurmnodespercondition" {
             set slurmnodespercondition $value
+         }
+         "slurmconditionspernode" {
+            set slurmconditionspernode $value
          }
          "slurmtaskspernode" {
             set slurmtaskspernode $value
@@ -931,6 +1119,7 @@ proc readInputFile { inputfilename iflist } {
       foreach item [list [list nodes $numnodes 1] \
                          [list slurmControlNodes $slurmcontrolnodes 0] \
                          [list slurmNodesPerCondition $slurmnodespercondition 0] \
+                         [list slurmConditionsPerNode $slurmconditionspernode 0] \
                          [list slurmTasksPerNode $slurmtaskspernode 1] \
                          [list slurmCpusPerTask $slurmcpuspertask 1]] {
          set itemname [lindex $item 0]
@@ -1035,11 +1224,13 @@ proc readInputFile { inputfilename iflist } {
    set infillist(numnodes)       $numnodes
    set infillist(slurmcontrolnodes)      $slurmcontrolnodes
    set infillist(slurmnodespercondition) $slurmnodespercondition
+   set infillist(slurmconditionspernode) $slurmconditionspernode
    set infillist(slurmtaskspernode)      $slurmtaskspernode
    set infillist(slurmcpuspertask)       $slurmcpuspertask
    set infillist(slurmmpi)               $slurmmpi
    set infillist(slurmmodulecommand)     $slurmmodulecommand
    set infillist(slurmtaskspercondition) 0
+   set infillist(slurmallocationcpuspernode) 0
 }
 
 
@@ -1362,7 +1553,7 @@ proc waitForNodes { mergedir alist inflist } {
    if {$queuesys == "slurm"} {
       puts $scriptfile "#SBATCH --job-name=mormerge"
       puts $scriptfile "#SBATCH --nodes=$infillist(numnodes)"
-      puts $scriptfile "#SBATCH --ntasks-per-node=$infillist(slurmtaskspernode)"
+      puts $scriptfile "#SBATCH --ntasks-per-node=$infillist(slurmallocationtaskspernode)"
       puts $scriptfile "#SBATCH --cpus-per-task=$infillist(slurmcpuspertask)"
       puts $scriptfile "#SBATCH --time=$timelimit"
       puts $scriptfile "#SBATCH --partition=$queue"
@@ -1382,7 +1573,7 @@ proc waitForNodes { mergedir alist inflist } {
       puts $scriptfile "\necho \"SLURM_JOB_ID=\${SLURM_JOB_ID:-unknown}\""
       puts $scriptfile "echo \"SLURM_JOB_NODELIST=\${SLURM_JOB_NODELIST:-unknown}\""
       puts $scriptfile "echo \"SLURM_SUBMIT_DIR=\${SLURM_SUBMIT_DIR:-unknown}\""
-      puts $scriptfile "echo \"Slurm geometry: nodes=$infillist(numnodes), tasks/node=$infillist(slurmtaskspernode), CPUs/task=$infillist(slurmcpuspertask)\""
+      puts $scriptfile "echo \"Slurm allocation geometry: nodes=$infillist(numnodes), condition steps/node=$infillist(slurmconditionstepsperallocationnode), tasks/node=$infillist(slurmallocationtaskspernode), CPUs/task=$infillist(slurmcpuspertask), CPUs/node=$infillist(slurmallocationcpuspernode)\""
       puts $scriptfile "scontrol show hostnames \"\$SLURM_JOB_NODELIST\""
    } else {
       puts $scriptfile "#\$ -V"
@@ -1886,18 +2077,33 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
             set slurmMpiOption "--mpi=$infillist(slurmmpi) "
          }
          set slurmExport "ALL,OMP_NUM_THREADS=$slurmThreadCount,MKL_NUM_THREADS=$slurmThreadCount,OPENBLAS_NUM_THREADS=$slurmThreadCount,NUMEXPR_NUM_THREADS=$slurmThreadCount"
-         set slurmMultiRun "srun --exclusive --kill-on-bad-exit=1 $slurmMpiOption--nodes=$slurmNodeCount --ntasks=$slurmTaskCount --ntasks-per-node=$infillist(slurmtaskspernode) --cpus-per-task=$slurmThreadCount --export=$slurmExport"
+         set slurmMultiRun "srun --exclusive --exact --kill-on-bad-exit=1 $slurmMpiOption--nodes=$slurmNodeCount --ntasks=$slurmTaskCount --ntasks-per-node=$infillist(slurmtaskspernode) --cpus-per-task=$slurmThreadCount --export=$slurmExport"
          set slurmSerialRun "srun --nodes=1 --ntasks=1 --ntasks-per-node=1 --cpus-per-task=$slurmThreadCount --export=$slurmExport"
+         set slurmMpiProbe ""
+         if {$slurmTaskCount > 1} {
+            if {$infillist(slurmmpi) == " "} {
+               puts "ERROR: Direct DIMR MPI runs require slurmMPI to name a compatible Slurm MPI plugin"
+               exit 1
+            }
+            set slurmMpiProbeTemplate {__SLURM_MULTI_RUN__ /bin/sh -c 'if [ -z "${PMI_RANK:-}" ] && [ -z "${OMPI_COMM_WORLD_RANK:-}" ] && [ -z "${OMPI_MCA_ns_nds_vpid:-}" ] && [ -z "${MPIRUN_RANK:-}" ] && [ -z "${MV2_COMM_WORLD_RANK:-}" ] && [ -z "${MP_CHILD:-}" ]; then echo "ERROR: Slurm MPI plugin did not export an MPI-rank environment required by DIMR" >&2; exit 1; fi'}
+            set slurmMpiProbe [string map [list __SLURM_MULTI_RUN__ $slurmMultiRun] $slurmMpiProbeTemplate]
+         }
          puts $scriptfile "\n# Slurm task geometry for this condition\n"
          puts $scriptfile "slurm_step_pids=()"
          puts $scriptfile "export MORMERGE_SLURM_NODES=$slurmNodeCount"
          puts $scriptfile "export MORMERGE_SLURM_TASKS=$slurmTaskCount"
          puts $scriptfile "export MORMERGE_SLURM_TASKS_PER_NODE=$infillist(slurmtaskspernode)"
          puts $scriptfile "export MORMERGE_SLURM_CPUS_PER_TASK=$slurmThreadCount"
+         puts $scriptfile "export MORMERGE_SLURM_CONDITIONS_PER_NODE=$infillist(slurmconditionstepsperallocationnode)"
          puts $scriptfile "export OMP_NUM_THREADS=$slurmThreadCount"
          puts $scriptfile "export MKL_NUM_THREADS=\$OMP_NUM_THREADS"
          puts $scriptfile "export OPENBLAS_NUM_THREADS=\$OMP_NUM_THREADS"
          puts $scriptfile "export NUMEXPR_NUM_THREADS=\$OMP_NUM_THREADS"
+         puts $scriptfile "export D3D_HOME=$D3D_HOME"
+         puts $scriptfile "export LD_LIBRARY_PATH=$libdir:\$LD_LIBRARY_PATH"
+         puts $scriptfile "export PATH=[file join $D3D_HOME bin]:\$PATH"
+         puts $scriptfile "export PROC_DEF_DIR=[file join $D3D_HOME share delft3d]"
+         puts $scriptfile "ulimit -s unlimited"
          puts $scriptfile "echo \"Slurm condition geometry: nodes=$slurmNodeCount, tasks=$slurmTaskCount, CPUs/task=$slurmThreadCount\""
       }
       # Needed when compiled with newer Gnu compiler than the default on the calculation machine:
@@ -1931,9 +2137,16 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
          }
       }
       if { $infillist(dimrexedir) != " " } {
-         puts $scriptfile "\n# Start $infillist(dimrexename)\n"
+         puts $scriptfile "\n# Start DIMR\n"
          if {$queuesys == "slurm"} {
-            puts $scriptfile "$slurmMultiRun \"$dimrexe\" $infillist(dimrargs) >$infillist(dimrexename).scr 2>&1 &"
+            set slurmDimrArgs [getSlurmDirectDimrArguments infillist]
+            if {$slurmTaskCount > 1} {
+               puts $scriptfile "if ! $slurmMpiProbe; then"
+               puts $scriptfile "   echo \"ERROR: DIMR MPI environment preflight failed\" >&2"
+               puts $scriptfile "   exit 1"
+               puts $scriptfile "fi"
+            }
+            puts $scriptfile "$slurmMultiRun \"$dimrexe\" $slurmDimrArgs >dimr.scr 2>&1 &"
             puts $scriptfile "slurm_step_pids+=(\"\$!\")"
          } else {
             puts $scriptfile "\"$dimrexe\" $infillist(dimrargs) >$infillist(dimrexename).scr 2>&1 &"
@@ -2179,6 +2392,7 @@ global rootdir
 global syncdir
 global processes
 global processhandles
+global processfailures
 global datetime
 global processStarttime
 global jobid
@@ -2190,6 +2404,8 @@ putsDebug "Waiting 1 second before doing anything"
 after 1000
 
 setPlatform
+
+set processfailures {}
 
 if {$platform == "linux"} {
    if { $queuesys == "slurm" } {
@@ -2335,6 +2551,7 @@ putsDebug "numnodes          : $infillist(numnodes)"
 if { $queuesys == "slurm" } {
    putsDebug "slurmControlNodes        : $infillist(slurmcontrolnodes)"
    putsDebug "slurmNodesPerCondition   : $infillist(slurmnodespercondition)"
+   putsDebug "slurmConditionsPerNode   : $infillist(slurmconditionspernode)"
    putsDebug "slurmTasksPerNode        : $infillist(slurmtaskspernode)"
    putsDebug "slurmCpusPerTask         : $infillist(slurmcpuspertask)"
    putsDebug "slurmMPI                 : $infillist(slurmmpi)"
@@ -2390,6 +2607,10 @@ if { $infillist(runscript) eq " " } {
     set waveonline [checkWaveOnline $inputdir $arglist(infile) $runids infillist]
 } else {
     set waveonline 0
+}
+
+if { $queuesys == "slurm" } {
+   configureSlurmGeometry infillist
 }
 
 #
@@ -2467,9 +2688,11 @@ foreach anode $nodelist {
 }
 
 if { $queuesys == "slurm" } {
-   configureSlurmGeometry infillist
    putsDebug "slurmNodesPerCondition   : $infillist(slurmnodespercondition)"
    putsDebug "slurmTasksPerCondition   : $infillist(slurmtaskspercondition)"
+   putsDebug "slurmConditionStepsPerAllocationNode : $infillist(slurmconditionstepsperallocationnode)"
+   putsDebug "slurmAllocationTasksPerNode : $infillist(slurmallocationtaskspernode)"
+   putsDebug "slurmAllocationCpusPerNode  : $infillist(slurmallocationcpuspernode)"
    if { $infillist(dimrexedir) == " " && $infillist(runscript) == " " && $infillist(slurmtaskspercondition) > 1 } {
       puts "WARNING: Direct FLOW execution uses one Slurm task per condition."
       puts "         Use dimrexedir for multi-rank DIMR runs, or use a site-owned MPI launcher in runscript."
@@ -2493,7 +2716,11 @@ if {$platform == "linux"} {
    set mergeexe     [file nativename [file join $infillist(mormergeexedir) "mormerge"] ]
    set tdatomexe    [file nativename [file join $infillist(flowexedir) "tdatom"] ]
    if { $infillist(dimrexedir) != " " } {
-      set dimrexe      [file nativename [file join $infillist(dimrexedir) "run_dimr.sh"] ]
+      if {$queuesys == "slurm"} {
+         set dimrexe   [file nativename [file join $infillist(dimrexedir) "dimr"] ]
+      } else {
+         set dimrexe   [file nativename [file join $infillist(dimrexedir) "run_dimr.sh"] ]
+      }
    } elseif { $infillist(flowexedir) != " " } {
       if { $infillist(flowexename) in $flowNames } {
           set flowexe   [file nativename [file join $infillist(flowexedir) $infillist(flowexename)] ]
@@ -2653,6 +2880,15 @@ vwait finished
 #
 if { ! $debug } {
    removeCreatedScripts $mergedir
+}
+
+if {[llength $processfailures] > 0} {
+   puts "mormerge.tcl : Failed"
+   foreach failure $processfailures {
+      puts "ERROR: Child process [lindex $failure 0] failed: [lindex $failure 1]"
+   }
+   cd $startdir
+   exit 1
 }
 
 puts "mormerge.tcl : Finished"
