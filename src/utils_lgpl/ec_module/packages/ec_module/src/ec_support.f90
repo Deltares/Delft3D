@@ -1423,7 +1423,9 @@ contains
          ierr = nf90_get_att(ncid, ivar, 'standard_name', std_name)
          if (strcmpi(std_name, 'realization')) then
             realization_varid = ivar ! store last timeseries_id variable
-            realization_dimid = dimids(ndim)
+            if (ndim > 0) then
+               realization_dimid = dimids(ndim)
+            end if
             cycle
          end if
          units = ''
