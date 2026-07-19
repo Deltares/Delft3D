@@ -48,13 +48,11 @@ If the test case does not contain a `dimr` config, but does contain a `.mdu` fil
 Agents must replace every `{{PLACEHOLDER}}` in the chosen template before inserting the configuration
 into `launch.json`:
 
-| Placeholder            | Meaning                                                                                | Example                              |
-|------------------------|----------------------------------------------------------------------------------------|--------------------------------------|
-| `{{TESTCASE_NAME}}`    | Full test case name; must match the directory under `data/cases/`.                     | `e02_f091_c040_rws_waal`             |
-| `{{BUILD_CONFIG}}`     | `--config` value used with `build.py`.                                                 | `fm-suite`                           |
-| `{{BUILD_TYPE}}`       | `--build-type` value used with `build.py` (Linux only — Windows uses one install dir). | `Debug`                              |
-| `{{DIMR_CONFIG_FILE}}` | Name of the DIMR file inside the test case. Usually `dimr_config.xml` or `dimr.xml`.   | `dimr_config.xml`                    |
-| `{{MDU_FILE}}`         | Name of the MDU file to configure DFlow FM.                                            | `my-model.mdu`                       |
+- `{{TESTCASE_NAME}}`: Full test case name; must match the directory under `data/cases/`. (e.g. `e02_f091_c040_rws_waal`)
+- `{{BUILD_CONFIG}}`: `--config` value used with `build.py`. (e.g. `fm-suite`)
+- `{{BUILD_TYPE}}`: `--build-type` value used with `build.py`. (e.g. `Debug`)
+- `{{DIMR_CONFIG_FILE}}`: Name of the DIMR file inside the test case. Usually `dimr_config.xml` or `dimr.xml`. (e.g. `dimr_config.xml`)
+- `{{MDU_FILE}}`: Name of the DFlow FM MDU file. (e.g. `my-model.mdu`)
 
 Sanity-check that the resulting `program` path exists before writing the config, e.g.
 `build_fm-suite_debug/install/bin/dimr` on Linux or `install_fm-suite\x64\bin\dimr.exe` on Windows.
