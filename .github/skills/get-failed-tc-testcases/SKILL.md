@@ -41,5 +41,6 @@ If the `platform` is not specified, get the failed tests for both Linux and Wind
    `[<sub-build-name>]` along with the _build id_ of the sub-build.
 3. This skill includes the `get_configs_by_branch.py` python script. Use this scrip to generate a
    `JSON` object that maps the `sub-build-name` (without square brackets) to the `TestBench` config
-   XML files.
+   XML files. Use it as follows:
+   `python get_configs_by_branch.py --branch-name <branch-name> --platform {lnx64,win64}`
 4. Report the list of failing test cases along with their config files to the user.
