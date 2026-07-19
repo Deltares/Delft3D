@@ -42,7 +42,7 @@ WORKDIR /home/dev
 
 # Create mount points for bash history, MinIO credentials, and Conan in the user's home directory.
 RUN <<"EOF"
-mkdir ~/.history ~/.aws ~/.conan2
+mkdir ~/.history ~/.aws ~/.conan2 ~/.config
 touch ~/.history/.bash_history
 EOF
 
@@ -55,6 +55,9 @@ export UV_PYTHON_DOWNLOADS=never
 uv tool install fortls
 uv tool install fprettify
 EOF
+
+# Install `teamcity` command line tool.
+RUN curl -fsSL https://jb.gg/tc/install | bash -s -- v1.3.0 /home/dev/.local/bin
 
 # Configure interactive bash environment.
 RUN cat >> /home/dev/.bashrc <<EOF

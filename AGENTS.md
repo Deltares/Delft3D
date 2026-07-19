@@ -6,6 +6,7 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
 - Public GitHub repo: https://github.com/Deltares/Delft3D
 - Source code: `/src` (Mostly Fortran and a bit of C/C++)
 - TestBench: `/test/deltares_testbench` (Python)
+- TeamCity CI configuration and tools: `/ci` (Python, Dockerfile, TeamCity Kotlin DSL)
 
 ## Build and test
 
@@ -28,10 +29,11 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
 - Python: 3.12
 
 ### Linux (devcontainer)
-- Git (including GitHub command line tool `gh`)
+- Git: `git` and `gh` (GitHub CLI tool)
 - Use `rg`/`fd` over `grep`/`find`.
 - For querying / manipulating data:
   - NetCDF: `ncdump`, `nccopy`, `ncgen`
   - XML: `xmllint`, `xmlstarlet`
   - JSON: `jq`
 - Python: `uv` with Python 3.12 installed
+- CI: `teamcity` (TeamCity CLI tool)

@@ -25,6 +25,12 @@
             "source": "delft3d-conan",
             "target": "/home/dev/.conan2",
         },
+        // The `~/.config` directory hosts some configuration for the `gh` and `teamcity` commmand line tools.
+        {
+            "type": "volume",
+            "source": "delft3d-home-config",
+            "target": "/home/dev/.config",
+        }
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],
     "customizations": {
