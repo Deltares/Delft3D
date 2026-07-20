@@ -10,3 +10,19 @@ selectfield 'Temperature in flow element - mesh2d_nFaces: mean'
 quickview
 selectfield 'Tracer1 in flow element - mesh2d_nFaces: mean'
 quickview
+
+openfile 'fm\DFM_OUTPUT_FlowFM\FlowFM_his.nc'
+selectfield 'water level - time: point (points)'
+axestype 'Time-Val'
+station 'NoSinksSources'
+colour [ 0 0 1 ]
+quickview
+station 'Sink          '
+colour [ 1 0 0 ]
+addtoplot
+station 'Intake        '
+colour [ 1 0.0745098 0.65098 ]
+addtoplot
+station 'Source        '
+colour [ 0 1 0 ]
+addtoplot 

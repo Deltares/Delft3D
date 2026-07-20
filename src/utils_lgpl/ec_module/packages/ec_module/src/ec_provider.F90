@@ -197,6 +197,7 @@ contains
 
          bcBlockPtr%ftype = BC_FTYPE_NETCDF
          bcBlockPtr%vptyp = bcBlockPtr%ncptr%vptyp
+         bcBlockPtr%is_vertical_coord_time_varying = bcBlockPtr%ncptr%is_vertical_coord_time_varying
          if (allocated(bcBlockPtr%ncptr%vp)) then
             bcBlockPtr%vp => bcBlockPtr%ncptr%vp
             bcBlockPtr%numlay = bcBlockPtr%ncptr%nLayer
@@ -1525,7 +1526,8 @@ contains
       case (provFile_bc)
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
-      case default
+              
+         case default
          call set_ec_message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
       end select
@@ -1777,27 +1779,33 @@ contains
       character(len=:), allocatable :: polyline_name !< polyline name read from pli-file
       character(len=4) :: cnum !< temp integer converted to a string
       integer :: id !< dummy, catches ids which are not used
-      integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID
+      integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID, zBCBlockId, ZQuantityId
       integer :: maxLay
-      type(tEcItem), pointer :: itemPT
+      type(tEcItem), pointer :: itemPT, zItemPT
       type(tEcItem), pointer :: itemt3D
       type(tEcItem), pointer :: sourceItem
       integer, dimension(:), allocatable :: itemIDList
       integer :: vectormax
-      type(tEcBCBlock), pointer :: bcBlockPtr
+      type(tEcBCBlock), pointer :: bcBlockPtr, zBCBlockPtr
       logical :: all_points_are_corr
       logical :: has_label
       integer :: lblstart
       integer :: bctfiletype
       logical :: file_exists
       !
+      integer :: zTargetItemId
+      integer :: zFileReaderId
+      type(tEcFileReader), pointer :: zFileReaderPtr
 
 !        initialization
+      zTargetItemId = 0
+      zFileReaderId = 0
       quantityname = quantityname_in
       success = .false.
       itemPT => null()
       sourceItem => null()
       itemt3D => null()
+      zFileReaderPtr => null()
       maxlay = 0
       vectormax = 1
       !
@@ -1824,7 +1832,8 @@ contains
          return
       end if
       ! Read the support point coordinate pairs.
-      allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), plipointlbls(n_points), stat=istat)
+      allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), &
+      plipointlbls(n_points), stat=istat)
       if (istat /= 0) then
          call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
       end if
@@ -1878,6 +1887,24 @@ contains
          bctfiletype = BC_FTYPE_ASCII
       else if (index(trim(bctfilename)//'|', '.nc|') > 0) then ! NETCDF: nc-format
          bctfiletype = BC_FTYPE_NETCDF
+         ! ToDo, more generic approach to determine veriabel name from type of boundary
+         call str_lower(quantityname)
+         if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
+            ! History file
+            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
+            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
+            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
+            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+         else
+            ! Old existing nc files 
+            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevelbnd'
+            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'so'
+            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'thetao'
+            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'ux'
+            ! Old existing nc files (temporary fix for Tom, durban)
+            ! if (strcmpi(quantityname,'so'                      )) quantityname = 'salinity'
+            ! if (strcmpi(quantityname,'thetao'                  )) quantityname = 'temperature'
+         end if
       else
          call set_ec_message("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
          return
@@ -1890,6 +1917,7 @@ contains
       plipointlbl = polyline_name
       call str_upper(quantityname)
       n_signals = 0 ! Record whether at least one child provider is created for this polytim.
+
       do i = 1, n_points
          ! Process a *.tim file.
          bcBlockId = ecInstanceCreateBCBlock(InstancePtr)
@@ -1931,8 +1959,46 @@ contains
                exit
             end if
          end if
+         if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D .and. bcBlockPtr%is_vertical_coord_time_varying) then
+            zTargetItemId = ecInstanceCreateItem(instancePtr)
+
+            fieldId = ecInstanceCreateField(instancePtr)            
+            zQuantityId = ecInstanceCreateQuantity(instancePtr)
+            if (.not. (ecQuantitySet(instancePtr, zQuantityId, name='polytim_item'))) then
+               return
+            end if
+            if (.not. ecItemSetRole(instancePtr, zTargetItemId, itemPT%role)) then 
+               return
+            end if
+            if (.not. ecItemSetType(instancePtr, zTargetItemId, itemPT%accessType)) then
+               return
+            end if
+            if (.not. ecItemSetQuantity(instancePtr, zTargetItemId, zQuantityId)) then
+               return
+            end if
+            if (.not. ecItemSetElementSet(instancePtr, zTargetItemId, itemPT%elementSetPtr%id)) then
+               return
+            end if
+            if (.not. ecItemSetTargetField(instancePtr, zTargetItemId, fieldId)) then
+               return
+            end if
+
+         end if
+
+         if (zTargetItemId /= 0) then 
+            zBCBlockId = ecInstanceCreateBCBlock(InstancePtr)
+            zBCBlockPtr => ecSupportFindBCBlock(instancePtr, zBCBlockId)
+
+            if (.not. ecProviderInitializeBCBlock(InstancePtr, zBCBlockId, fileReaderPtr%tframe%k_refdate, &
+                                                fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &
+                                                zFileReaderId, bctfilename, bctfiletype, &
+                                                bcBlockPtr%ncptr%variable_names(bcBlockPtr%ncptr%vertical_coordinate_id), plipointlbl, &
+                                                istat, dtnodal=fileReaderPtr%tframe%dtnodal)) return
+         end if
+
          if (.not. ecProviderConnectSourceItemsToTargets(instancePtr, bcBlockPtr%func, id, itemId, i, &
-                                                         n_signals, maxlay, itemIDList, qname=quantityname)) then
+                                                         n_signals, maxlay, itemIDList, qname=quantityname, &
+                                                         zTargetItemId=zTargetItemId, zFileReaderId=zFileReaderId)) then
             !
             ! No sub-FileReader made.
             mask(i) = 0
@@ -1970,6 +2036,13 @@ contains
       ! Since the main FileReader's Item is a target, the TimeFrame is not set.
       ! Add successfully created source Item to the main FileReader
       if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, itemPT%id)) return
+
+      if (zTargetItemId /= 0) then
+         if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, zTargetItemId)) return
+         zItemPT => ecSupportFindItem(instancePtr, zTargetItemId)
+         zItemPT%targetFieldPtr%arr1dPtr => itemPT%elementSetPtr%z
+      end if
+      
       !
       ! close pli file
       close (fileReaderPtr%fileHandle, iostat=istat)
@@ -2055,7 +2128,8 @@ contains
 
 !==============================================================================================================
 
-   function ecProviderConnectSourceItemsToTargets(instancePtr, signaltype, fileReaderId, targetItemId, targetIndex, n_signals, maxlay, itemIDList, qname) result(itemFound)
+   function ecProviderConnectSourceItemsToTargets(instancePtr, signaltype, fileReaderId, targetItemId, targetIndex, n_signals, &
+         maxlay, itemIDList, qname, zTargetItemId, zFileReaderId) result(itemFound)
       logical :: itemFound
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer :: fileReaderId ! file reader id
@@ -2067,6 +2141,8 @@ contains
       integer :: subconverterId, magnitude, j, connectionId, nr_fourier_items, anItemId
       type(tEcItem), pointer :: itemt3D
       character(len=*), optional :: qname
+      integer, intent(in), optional :: zTargetItemId
+      integer, intent(in), optional :: zFileReaderId
 
       itemFound = .false.
 
@@ -2091,7 +2167,7 @@ contains
          end if
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2110,7 +2186,7 @@ contains
          nr_fourier_items = ecFileReaderGetNumberOfItems(instancePtr, fileReaderId)
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_fourier) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_passthrough) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2151,7 +2227,7 @@ contains
          ItemIDList(targetIndex) = magnitude
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2161,7 +2237,40 @@ contains
          if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, magnitude)) return
          if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, targetItemId)) return
          if (.not. ecItemAddConnection(instancePtr, targetItemId, connectionId)) return
+
          n_signals = n_signals + 1
+
+         block
+            integer :: zItemId
+
+            if (present(zTargetItemId) .and. present(zFileReaderId)) then
+               if (zTargetItemId /= 0) then
+                  
+                  subconverterId = ecInstanceCreateConverter(instancePtr)
+                  if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
+                           ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
+                           ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
+                           ecConverterSetElement(instancePtr, subconverterId, targetIndex))) then 
+                              return
+                  end if
+                  ! Construct a new Connection.
+                  connectionId = ecInstanceCreateConnection(instancePtr)
+                  if (.not. ecConnectionSetConverter(instancePtr, connectionId, subconverterId)) then 
+                     return
+                  end if
+                  zItemId = ecFileReaderFindItem(instancePtr, zFileReaderId, "uniform_item")
+                  if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, zItemId)) then
+                     return
+                  end if
+                  if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) then
+                     return
+                  end if
+                  if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) then
+                     return
+                  end if
+               end if
+            end if 
+         end block
          itemFound = .true.
       end select
 
@@ -2171,7 +2280,6 @@ contains
    ! =======================================================================
 
    !> Create source Items and their contained types, based on a spiderweb file's header.
-      !! meteo1.f90: reaspwheader
    function ecProviderCreateSpiderwebItems(instancePtr, fileReaderPtr) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2192,6 +2300,8 @@ contains
       type(tEcItem), pointer :: item2 !< Item containing quantity2
       type(tEcItem), pointer :: item3 !< Item containing quantity3
       character(len=maxNameLen) :: rec !< helper variable
+      character(len=maxNameLen) :: utmzone
+      character(len=maxNameLen) :: gridunit
       !
       success = .false.
       item1 => null()
@@ -2213,13 +2323,21 @@ contains
       spw_merge_frac = 0.5
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_merge_frac')
       if (len_trim(rec) > 0) read (rec, *) spw_merge_frac
+      utmzone = 'undefined'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_utm_zone_target')
+      if (len_trim(rec) > 0) read (rec, *) utmzone
+      gridunit = 'degree'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'grid_unit')
+      if (len_trim(rec) > 0) read (rec, *) gridunit
       !
       ! One common ElementSet.
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType_spw) .and. &
                  ecElementSetSetRadius(instancePtr, elementSetId, radius, spw_merge_frac, radius_unit) .and. &
-                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols))) then
+                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols) .and. &
+                 ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit))) then
          success = .false.
+         return
       end if
       !
       ! ===== quantity1: wind_speed =====
@@ -2407,7 +2525,7 @@ contains
 
       ! Initialize the new Converter.
       if (.not. (ecConverterSetType(instancePtr, converterId, convType_uniform))) return
-      if (.not. (ecConverterSetOperand(instancePtr, converterId, operand_replace_element))) return
+      if (.not. (ecConverterSetOperand(instancePtr, converterId, EC_OPERAND_REPLACE_ELEMENT))) return
       if (.not. (ecConverterSetInterpolation(instancePtr, converterId, interpolate_time_extrapolation_ok))) return
       if (.not. (ecConverterSetElement(instancePtr, converterId, targetIndex))) return
 

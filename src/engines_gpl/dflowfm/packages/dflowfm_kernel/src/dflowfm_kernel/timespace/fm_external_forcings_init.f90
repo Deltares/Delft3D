@@ -85,11 +85,6 @@ contains
          return
       end if
 
-      if (file_name(len_trim(file_name) - 3:) == '.ini') then
-         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '//trim(file_name)//' to the external forcings file.'
-         call warn_flush()
-      end if
-
       res = .true.
 
       call tree_create(file_name, bnd_ptr)
@@ -238,7 +233,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -305,7 +300,19 @@ contains
       operand = OPERAND_UNKNOWN
       call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
       if (is_successful) then
-         operand = convert_legacy_operand_string_to_integer(property_value)
+         operand = convert_operand_string_to_integer(property_value)
+
+         if (len_trim(property_value) == 1) then
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+               //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
+            call warn_flush()
+         end if
+
+         if (operand == OPERAND_UNKNOWN) then
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+               //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
+            call err_flush()
+         end if 
       end if
 
       num_items_in_block = 0
@@ -332,7 +339,8 @@ contains
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
                call resolvePath(forcing_file, base_dir)
-               if (operand /= OPERAND_OVERRIDE .and. operand /= OPERAND_ADD) then
+
+               if (operand == OPERAND_UNKNOWN) then ! If no operand value is given, use default (override, but add if quantity-pli combination already registered)
                   operand = OPERAND_OVERRIDE
                   if (quantity_pli_combination_is_registered(quantity, location_file)) then
                      operand = OPERAND_ADD
@@ -396,7 +404,7 @@ contains
       use properties, only: has_key, prop_get
       use tree_data_types, only: tree_data
       use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE
-      use m_laterals, only: ILATTP_1D
+      use fm_location_types, only: SPATIAL_LOCATION_1D
       use unstruc_files, only: resolvePath
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
@@ -450,7 +458,7 @@ contains
       if (has_node_id) then
          call prop_get(block_ptr, 'Lateral', 'nodeId', node_id)
          loc_spec_type = LOCTP_NODEID
-         ilattype = ILATTP_1D
+         ilattype = SPATIAL_LOCATION_1D
          is_success = .true.
          return
       end if
@@ -465,7 +473,7 @@ contains
          call prop_get(block_ptr, 'Lateral', 'chainage', chainage)
          if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0_dp) then
             loc_spec_type = LOCTP_BRANCHID_CHAINAGE
-            ilattype = ILATTP_1D
+            ilattype = SPATIAL_LOCATION_1D
             is_success = .true.
             return
          else
@@ -513,14 +521,16 @@ contains
       use messageHandling, only: err_flush, msgbuf, mess, LEVEL_ERROR, LEVEL_INFO
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data
-      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd, apply_transport
+      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat, nlatnd, apply_transport
       use m_flowgeom, only: ndxi, xz, yz
       use m_alloc, only: realloc, reserve_sufficient_space
       use fm_external_forcings_data, only: kx, qid
+      use fm_location_types, only: parse_spatial_location_type, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_wind, only: jaqin
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_flowgeom_mask, only: construct_mask
+      use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
@@ -549,22 +559,13 @@ contains
 
       ! locationType = optional for lateral
       ! locationType = 1d | 2d | all/1d2d
-      item_type = ' '
+      item_type = 'all'
       if (major >= 2) then
          call prop_get(block_ptr, 'Lateral', 'locationType', item_type, is_read)
       else
          call prop_get(block_ptr, 'Lateral', 'type', item_type, is_read)
       end if
-      select case (str_tolower(trim(item_type)))
-      case ('1d')
-         ilattype = ILATTP_1D
-      case ('2d')
-         ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         ilattype = ILATTP_ALL
-      case default
-         ilattype = ILATTP_ALL
-      end select
+      ilattype = parse_spatial_location_type(trim(item_type))
 
       call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
       call prop_get(block_ptr, 'Lateral', 'applyTransport', apply_transport(numlatsg + 1), is_read)
@@ -576,7 +577,7 @@ contains
 
       call ini_alloc_laterals()
 
-      call prepare_lateral_mask(kclat, ilattype)
+      call construct_mask(kclat, UNC_LOC_S, ilattype)
 
       numlatsg = numlatsg + 1
       call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
@@ -805,17 +806,15 @@ contains
       use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
       use timespace_parameters, only: WEIGHTFACTORS, FIELD1D
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
-                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
-                                 parse_location_type
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
@@ -823,8 +822,8 @@ contains
       use processes_input, only: painp
       use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_heatfluxes, only: secchi_depth_is_time_varying
-      use m_laterals, only: ilattp_all
       use timespace_parameters, only: OPERAND_OVERRIDE
+      use m_flowgeom_mask, only: construct_mask
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -913,13 +912,7 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
-         if (len_trim(input%location_type) > 0 .and. (target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
-            ! Node-based quantities: use prepare_lateral_mask to set the mask to 1D, 2D or all nodes.
-            call prepare_lateral_mask(mask, parse_location_type(input%location_type))
-         else
-            ! Not node-based, or polygon mask override: use standard mask construction. TODO: replace with single masking function.
-            call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         end if
+         call construct_mask(mask, target_location_type, parse_spatial_location_type(trim(input%location_type)), target_mask_file, invert_mask, ierr)
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
@@ -1395,8 +1388,13 @@ contains
                end if
             end if
 
-            property_name = trim(const_name_with_prefix)//'Delta'
+            ! Try `{constituent}` first, and if we can't find that property try `{constituent}Delta` instead.
+            property_name = const_name_with_prefix
             call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+            if (.not. is_read) then
+               property_name = trim(const_name_with_prefix)//'Delta'
+               call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+            end if
 
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
@@ -1677,61 +1675,6 @@ contains
          ierr = DFM_NOTIMPLEMENTED
       end select
    end subroutine get_location_target_properties
-
-   !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
-   subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-      use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, kcs
-      use timespace_parameters, only: LOCTP_POLYGON_FILE
-      use timespace, only: selectelset_internal_nodes, selectelset_internal_links
-      use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
-
-      integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
-      integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
-      character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
-      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
-      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
-
-      integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
-      integer :: number_of_selected_points, point
-
-      ierr = DFM_NOERR
-
-      allocate (mask(target_num_points), source=0)
-
-      if (len_trim(target_mask_file) > 0) then
-         ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
-         allocate (selected_points(target_num_points), source=0)
-         select case (target_location_type)
-         case (UNC_LOC_S)
-            ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
-            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
-         case (UNC_LOC_U)
-            ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
-            call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
-         case default
-            ierr = DFM_NOTIMPLEMENTED
-            return
-         end select
-
-         do point = 1, number_of_selected_points
-            mask(selected_points(point)) = 1
-         end do
-         if (invert_mask) then
-            mask = ieor(mask, 1)
-         end if
-      else
-         if (target_location_type == UNC_LOC_S) then
-            ! 100% masking: accept all flow locations that were already active in their own mask array.
-            where (kcs /= 0) mask = 1
-         else
-            mask = 1
-         end if
-      end if
-   end subroutine construct_target_mask
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)

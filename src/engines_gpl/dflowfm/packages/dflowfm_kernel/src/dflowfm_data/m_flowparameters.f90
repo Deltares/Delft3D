@@ -122,6 +122,23 @@ module m_flowparameters
    integer, parameter :: TEMPERATURE_MODEL_EXCESS = 3 !< Excess heat flux model
    integer, parameter :: TEMPERATURE_MODEL_COMPOSITE = 5 !< Composite heat flux model
 
+   integer :: air_water_interaction_model !< Air water interaction model, use one of AIR_WATER_INTERACTION_MODEL_... parameters
+   integer, parameter :: AIR_WATER_INTERACTION_MODEL_NONE = 0 !< No air water interaction model
+   integer, parameter :: AIR_WATER_INTERACTION_MODEL_MOST = 1 !< Bulk formulae for heat and momentum fluxes based on Monin-Obukhov Similarity Theory
+   
+   integer :: atmospheric_stability_function !< Atmospheric stability function, use one of ATMOSPHERIC_STABILITY_FUNCTION_... parameters
+   integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_NONE = 0 !< No atmospheric stability function
+   integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_ECMWF = 1 !< ECMWF atmospheric stability function
+
+   integer :: free_convection !< Switch for free convection, use one of FREE_CONVECTION_... parameters
+   integer, parameter :: FREE_CONVECTION_OFF = 0 !< Free convection off
+   integer, parameter :: FREE_CONVECTION_ON = 1 !< Free convection on
+   
+   real(kind=dp) :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
+   real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
+   real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
+   real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
+
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
 
@@ -463,6 +480,8 @@ module m_flowparameters
       integer :: bubblescreens = 1 !< Write bubble screen parameters to his file, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
       integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
+      integer :: windstress = 1 !< Write wind stress to his file, 0: no, 1: yes
+      integer :: bulk_exchange_coeff = 1 !< Write bulk exchange coefficients to his file, 0: no, 1: yes
       integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
       integer :: infilt = 1 !< Write infiltration rate to this file, 0: no, 1: yes
       integer :: tem = 1 !< Write temperature to his file, 0: no, 1: yes
@@ -584,6 +603,8 @@ module m_flowparameters
    integer :: jamombal !< records some gradients of primitives 0:no, 1:yes
    integer :: jarstbnd !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
+
+   logical :: write_surface_data_to_map_file
 
    ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
@@ -739,6 +760,14 @@ contains
       jasal = 0 ! Include salinity (autoset by flow_initexternalforcings())
 
       temperature_model = TEMPERATURE_MODEL_NONE ! Temperature model
+      
+      air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
+      atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
+      free_convection = FREE_CONVECTION_OFF ! Free convection model
+      salinity_reduction_factor_saturation_humidity = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
+      sensor_height_wind_velocity = 10.0_dp ! Height of prescribed wind velocity
+      sensor_height_air_temperature = 2.0_dp ! Height of prescribed air temperature
+      sensor_height_humidity = 2.0_dp ! Height of prescribed humidity
 
       janudge = 0 ! temperature and salinity nudging
       jainiwithnudge = 0 !< initialize salinity and temperature with nudge variables
@@ -955,6 +984,8 @@ contains
       jalogtransportsolverlimiting = 0
 
       write_numlimdt_file = .false.
+
+      write_surface_data_to_map_file = .false.
 
       jarstignorebl = 0
 

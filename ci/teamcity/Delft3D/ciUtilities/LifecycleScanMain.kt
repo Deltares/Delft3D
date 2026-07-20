@@ -14,7 +14,8 @@ object LifecycleScanMain : BuildType({
     }
 
     templates(
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     artifactRules = """

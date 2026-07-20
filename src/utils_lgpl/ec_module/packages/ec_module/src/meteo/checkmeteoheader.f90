@@ -33,6 +33,7 @@ function checkmeteoheader(meteoitem) result(success)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use meteo_data
+    use m_ec_utm_inverse, only: is_valid_utm_zone
     use precision
     implicit none
 !
@@ -148,8 +149,8 @@ function checkmeteoheader(meteoitem) result(success)
        ! Check units for y_wind
        !
        if (meteoitem%n_quantity == 3) then 
-          if (meteoitem%units(2) /= 'm s-1') then
-              write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for y_wind, expecting degree, but getting ', &
+          if (meteoitem%quantities(2) == 'y_wind' .and. meteoitem%units(2) /= 'm s-1') then
+              write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for y_wind, expecting m s-1, but getting ', &
                  & trim(meteoitem%units(2))
               success = .false.
               return
@@ -321,6 +322,22 @@ function checkmeteoheader(meteoitem) result(success)
        if (comparereal(meteoitem%spw_merge_frac,0.0_hp) == -1 &
          & .or. comparereal(meteoitem%spw_merge_frac,1.0_hp) == 1) then
           write(meteomessage, '(a,e10.3)') 'Meteo input: spw_merge_frac must be between 0.0 and 1.0, but getting ', meteoitem%spw_merge_frac
+          success = .false.
+          return
+       endif
+       !
+       if (trim(meteoitem%grid_unit) /= 'degree'  .and. &
+         & trim(meteoitem%spw_utm_zone_target) /= 'undefined') then
+          write(meteomessage, '(a)') "Meteo input: spw_utm_zone_target must be 'undefined' when specifying spiderweb grid coordinates in m."
+          success = .false.
+          return
+       endif
+       if (trim(meteoitem%grid_unit) == 'degree' .and. &
+         & trim(meteoitem%spw_utm_zone_target) /= 'undefined' .and. &
+         & .not. is_valid_utm_zone(meteoitem%spw_utm_zone_target)) then
+          write(meteomessage, '(3a)') 'Meteo input: Invalid spw_utm_zone_target "', &
+             & trim(meteoitem%spw_utm_zone_target), &
+             & '". Expecting UTM zone 1..60 followed by hemisphere N or S, for example 53N.'
           success = .false.
           return
        endif
