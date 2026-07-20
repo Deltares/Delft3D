@@ -231,7 +231,7 @@ This is what `python run_conan.py initialize deltares` does under the hood. The 
 variant additionally removes the Nexus remotes and registers [conan/recipes](../conan/recipes)
 as a `local-recipes-index` remote. See [run_conan.py](../run_conan.py) for details.
 
-The Conan profile is `delft3d_alma8_intel_2024` and the lockfile [conan.lock](../conan.lock) pins
+The Conan profile is `delft3d_alma8_intel_2024_v2` and the lockfile [conan.lock](../conan.lock) pins
 recipe revisions for reproducibility. On Linux we use a single-config generator (`Unix Makefiles`),
 so the build type is selected at both `conan install` and `cmake` time. The third-party packages
 themselves are always built/downloaded as `Release`, while the consumer (CMakeDeps generator) build type is selected via
@@ -240,7 +240,7 @@ themselves are always built/downloaded as `Release`, while the consumer (CMakeDe
 ```bash
 # 1. Install dependencies (generates CMakeDeps files).
 #    The first call may build packages (or download them from Nexus).
-conan install . --profile:all=delft3d_alma8_intel_2024 \
+conan install . --profile:all=delft3d_alma8_intel_2024_v2 \
       --settings:all build_type=Release \
       --settings:all &:build_type=Release \
       --output-folder=build_fm-suite_release/conan \
@@ -259,7 +259,7 @@ cmake --install build_fm-suite_release
 
 To build missing dependencies from source (e.g. after changing a recipe), add `--build=missing`:
 ```bash
-conan install . --profile:all=delft3d_alma8_intel_2024 \
+conan install . --profile:all=delft3d_alma8_intel_2024_v2 \
       --settings:all build_type=Release \
       --settings:all &:build_type=Release \
       --output-folder=build_fm-suite_release/conan \
