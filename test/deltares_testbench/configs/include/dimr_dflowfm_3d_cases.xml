@@ -1999,6 +1999,7 @@
           <parameters>
             <parameter name="potential_density" toleranceAbsolute="0.0005" />
             <parameter name="density" toleranceAbsolute="0.0005" />
+			<parameter name="Brunt_Vaisala_N2" toleranceRelative="0.001" />
           </parameters>
         </file>
         <file name="dflowfm/output/thermobaricity_map.nc" type="netCDF">
