@@ -88,28 +88,9 @@ namespace pre_c_sumo
             const auto mapping_index = static_cast<std::size_t>(index);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
 
-            //// Lambda function to obtain the value of a 2D quantity for an ambient point, given the quantity name and
-            //// the ambient point index (0-based). 3D is handled by the makePoint function, which reads the layered
-            // data / for all z-coordinates of the point.
-            // auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
-            //                              const std::string_view& name, const std::size_t& ambient_point_index) {
-            //     return quantities[name][m.first_ambient_point_index + ambient_point_index];
-            // };
-
-            //// Idem: Lambda function for the diffuser
-            // auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
-            //                               const std::string_view& name) { return quantities[name][m.diffuser_index];
-            //                               };
-
-            //// Idem: Lambda function for the intake (if present)
-            // auto get_intake_value = [&quantities = csumo_2d_mesh.quantities,
-            //                          &m = mapping](const std::string_view& name) {
-            //     return m.has_intake ? quantities[name][m.intake_index] : 0.0;
-            // };
-
             // Collect all data for the ambient points
             std::vector<FarFieldPoint2D> ambient_points{};
-            for (const auto& [position_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
+            for (std::size_t position_index = 0; position_index < diffuser.ambient_positions.size(); ++position_index)
             {
                 const std::size_t ambient_index =
                     static_cast<std::size_t>(position_index) + mapping.first_ambient_point_index;
@@ -227,9 +208,18 @@ namespace pre_c_sumo
                               sources_sinks.discharges);
     }
 
-    // TODO: Consider if we should make this a member function of ConnectedSinkSources.
-    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
-        const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
+    /**
+     * @brief Convert NF2FF output into connected source/sink entries.
+     *
+     * For each diffuser this constructs sink-source pairs based on sinks after the first
+     * sink point, and optionally intake-related pairs when intake is configured.
+     *
+     * @param csumoSettings Parsed C-SUMO settings.
+     * @param nf2ff_readers NF2FF snapshots for the current coupling time.
+     * @return Connected source/sink data ready to write via preCICE.
+     */
+    ConnectedSinkSources convertNFtoConnectedSinkSources(
+        const CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
 

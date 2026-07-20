@@ -10,17 +10,17 @@ namespace pre_c_sumo
 {
     /**
      * @brief Adds a connected sink and source entry to this instance.
-     * @param double sink_x Sink X coordinates
-     * @param double sink_y Sink Y coordninate
-     * @param double sink_z_top Sink Z extent highest point
-     * @param double sink_z_bottom Sink Z extent lowest point
-     * @param double source_x Source X coordinate
-     * @param double source_y Source Y coordinate
-     * @param double source_z_top Source Z extent highest point
-     * @param double source_z_bottom Source Z extent lowest point
-     * @param double discharge Discharge value
-     * @param double momentum_magnitude Momentum magnitude value
-     * @param double momentum_direction Momentum direction
+        * @param sink_x Sink X coordinate.
+        * @param sink_y Sink Y coordinate.
+        * @param sink_z_bottom Sink lower Z extent.
+        * @param sink_z_top Sink upper Z extent.
+        * @param source_x Source X coordinate.
+        * @param source_y Source Y coordinate.
+        * @param source_z_bottom Source lower Z extent.
+        * @param source_z_top Source upper Z extent.
+        * @param discharge Discharge value.
+        * @param momentum_magnitude Momentum magnitude value.
+        * @param momentum_direction Momentum direction.
      */
     void ConnectedSinkSources::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
@@ -88,10 +88,12 @@ namespace pre_c_sumo
                 registered_vertex_count, entry_count));
         }
 
+        const std::vector<double> zero_values(registered_vertex_count, 0.0);
+
         auto write_or_zero = [&](std::string_view data_name, const std::vector<double>& values) {
             if (values.empty())
             {
-                participant.writeData(mesh_name, data_name, precice_ids, std::vector<double>(registered_vertex_count, 0.0));
+                participant.writeData(mesh_name, data_name, precice_ids, zero_values);
                 return;
             }
 
