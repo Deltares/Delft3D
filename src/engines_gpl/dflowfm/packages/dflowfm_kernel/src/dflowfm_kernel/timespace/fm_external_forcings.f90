@@ -1168,7 +1168,7 @@ contains
          end if
 
          itpeu   (nbndu + 1:nbndu + numu) = itpbn
-         itpeu_ib(nbndu + 1:nbndu + numu) = num_bc_ini_blocks
+         if (present(num_bc_ini_blocks) ) itpeu_ib(nbndu + 1:nbndu + numu) = num_bc_ini_blocks
 
          call addopenbndsection(numu, keu(nbndu + 1:nbndu + numu), filename, IBNDTP_U)
 
@@ -2106,7 +2106,7 @@ contains
             kbndu(5, k) = itpenu(k)
             kbndu(6, k) = ftpet(k)        ! riemann relaxation time
             kbndu(7, k) = itpeu_ib(k)     ! boundary segment number
-            kbndu(8, k) = 0               ! factor for multiplification of discharge boundaries 
+            kbndu(8, k) = 1               ! factor for multiplification of discharge boundaries 
             lnxbnd(Lf - lnxi) = itpenu(k)
 
             do n = 1, nd(kbi)%lnx
@@ -3151,7 +3151,10 @@ contains
 
    end subroutine allocatewindarrays
 
-   subroutine det_sign_discharge(pliFile,facdis)
+   subroutine det_net2pli_position(pliFile,position)
+     ! Fuction: determines position of network relative to a boundary pli
+     !          position =  1: network on the right/on top of a pli
+     !          position = -1: network on the left /below  of a pli
      use m_filez,            only: oldfil, doclose
      use m_polygon
      use m_reapol,           only: reapol
@@ -3162,7 +3165,7 @@ contains
      implicit none
   
       character(len=*), intent(in) :: pliFile
-      integer         , intent(out):: facdis
+      integer         , intent(out):: position
       
       integer                        :: mpli, i_first, i_last, jakdtree ! i_bndpnt
       real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, vx,vy, wx, wy,cross ! dist, distmin,    
@@ -3194,18 +3197,6 @@ contains
       xbnd_centre = xz(kbnd_centre(1))
       ybnd_centre = yz(kbnd_centre(1))
       
-      ! distmin = sqrt((xbnd(1) - xpli_centre)**2 + (ybnd(1) - ypli_centre)**2)
-      ! xbnd_centre = xbnd(1)
-      ! ybnd_centre = ybnd(1)
-      ! do i_bndpnt = 2, size(xbnd)
-      !   dist = sqrt((xbnd(i_bndpnt) - xpli_centre)**2 + (ybnd(i_bndpnt) - ypli_centre)**2)
-      !   if (dist < distmin) then
-      !       distmin = dist 
-      !       xbnd_centre = xbnd(i_bndpnt)
-      !       ybnd_centre = ybnd(i_bndpnt)
-      !   end if
-      !end do
-      
       ! Determine cross product of pli and centre point bnd
       ! orientation vector pli
       vx = xpl(i_first + 1) - xpl(i_first)
@@ -3218,11 +3209,11 @@ contains
       
       ! cross > 0 ==> Model right of pli or obove pli
       if (cross < 0.0_dp) then
-         facdis = -1
+         position = -1
       else if (cross > 0.0_dp) then 
-         facdis = 1
+         position = 1
       end if
 
-   end subroutine det_sign_discharge
+   end subroutine det_net2pli_position
 
 end module fm_external_forcings

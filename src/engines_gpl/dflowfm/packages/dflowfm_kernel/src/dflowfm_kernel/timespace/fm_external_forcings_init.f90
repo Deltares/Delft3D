@@ -382,7 +382,7 @@ contains
                   if (quantity == 'dischargebnd') then
                      facdis = 1
                      if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then
-                        call det_sign_discharge(location_file,facdis)
+                        call det_net2pli_position(location_file,facdis)
                      end if
                      ! fill kbndu(8,:) with multiplification discharge boundaries
                      do ibndu = 1, size(kbndu,2)
