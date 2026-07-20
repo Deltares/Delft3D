@@ -82,13 +82,6 @@ if (NOT TARGET precicef)
     add_subdirectory(${checkout_src_root}/${precicef_module} precicef)
 endif()
 
-# petsc
-if(WIN32)
-    if(NOT TARGET petsc)
-        add_subdirectory(${checkout_src_root}/${petsc_module} petsc)
-    endif()
-endif(WIN32)
-
 # Dflowfm modules
 add_subdirectory(${checkout_src_root}/${dflowfm_kernel_module} dflowfm_kernel)
 add_subdirectory(${checkout_src_root}/${dflowfm_cli_exe_module} dflowfm_cli_exe)
