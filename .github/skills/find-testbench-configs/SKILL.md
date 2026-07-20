@@ -10,7 +10,7 @@ argument-hint: '[partial-testcase-name ...] [platform]'
 
 Look up one or more configs containing one or multiple test cases.
 
-## When to Use
+## When to use
 
 - "What config contains test case X?"
 - "Please find the configs for these test cases: X, Y, Z"
@@ -34,4 +34,5 @@ These XML files are not complete configs, but config snippets included with `<xi
 configs. To find the complete config file, search again in `/test/deltares_testbench/configs/dimr/` with the 
 `<include-filename>` found earlier. You will most likely find multiple configs. If the `platform` is not
 specified, choose the config with `lnx64` on Linux, and the one with `win64` on Windows. You may find more 
-than two configs, because some test cases have duplicates in different configs. Show all configs you find to.
+than two configs, because some test cases have duplicates in different configs. Show all configs you find to
+the user.
