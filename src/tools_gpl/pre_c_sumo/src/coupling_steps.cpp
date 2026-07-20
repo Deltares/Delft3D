@@ -1,7 +1,7 @@
 #include "coupling_steps.hpp"
 
 #include <precice/precice.hpp>
-#include <format>
+#include <algorithm>
 #include <print>
 #include <ranges>
 #include <string_view>
@@ -250,14 +250,11 @@ namespace pre_c_sumo
 
             // Send (created) diffuser
             double source_weight_norm = 0.0;
-            for (const auto& source : diffuser.sources())
+            for (const auto& source : sources)
             {
                 source_weight_norm += source.has_weight ? source.weight : 1.0;
             }
-            if (source_weight_norm <= 0)
-            {
-                source_weight_norm = 1.0;
-            }
+            source_weight_norm = std::max(source_weight_norm, 1.0);
 
             const auto sinks = diffuser.sinks();
             for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
@@ -267,7 +264,7 @@ namespace pre_c_sumo
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
                 double sink_z_bottom = -sink.z_coordinate - sink.half_plume_height;
 
-                for (const auto& source : diffuser.sources())
+                for (const auto& source : sources)
                 {
                     double discharge = delta_s * source.entrainment * (source.has_weight ? source.weight : 1.0);
                     double source_z_top = -source.z_coordinate;
@@ -286,7 +283,7 @@ namespace pre_c_sumo
             {
                 const auto& intake = diffuser_setting.intake.value();
                 const double intake_flow_rate = diffuser.intakeFlowRate();
-                for (const auto& source : diffuser.sources())
+                for (const auto& source : sources)
                 {
                     double discharge =
                         intake_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
@@ -323,6 +320,7 @@ namespace pre_c_sumo
         std::println("Creating diffuser model...");
         std::vector<SourceOrSinkData> new_sources;
         constexpr int num_steps = 1000;
+        new_sources.reserve(num_steps);
 
         const auto& sources = diffuser.sources();
         const auto& sinks = diffuser.sinks();

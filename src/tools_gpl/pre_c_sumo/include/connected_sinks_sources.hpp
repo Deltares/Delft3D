@@ -42,7 +42,7 @@ namespace pre_c_sumo
         /**
          * @brief Get the number of entries stored.
          */
-        std::size_t size();
+        std::size_t size() const;
 
         /**
          * @brief Writes all accrued data to preCICE as the specified participant on the specified
@@ -52,7 +52,7 @@ namespace pre_c_sumo
          * @param precice_ids Vertex ID's registered on the provided mesh.
          */
         void write_to_precice(precice::Participant& participant, std::string_view mesh_name,
-                              std::vector<int> precice_ids);
+                              const std::vector<int>& precice_ids);
 
     private:
         // attributes

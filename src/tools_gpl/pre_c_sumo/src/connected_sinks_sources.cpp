@@ -2,7 +2,9 @@
 #include <precice/precice.hpp>
 #include <connected_sinks_sources.hpp>
 
+#include <format>
 #include <print>
+#include <stdexcept>
 
 namespace pre_c_sumo
 {
@@ -58,7 +60,7 @@ namespace pre_c_sumo
     /**
      * @brief Get the number of entries stored.
      */
-    std::size_t ConnectedSinkSources::size() { return sink_x_vector.size(); }
+    std::size_t ConnectedSinkSources::size() const { return sink_x_vector.size(); }
 
     /**
      * @brief Writes all accrued data to preCICE as the specified participant on the specified
@@ -68,19 +70,45 @@ namespace pre_c_sumo
      * @param precice_ids Vertex ID's registered on the provided mesh.
      */
     void ConnectedSinkSources::write_to_precice(precice::Participant& participant, std::string_view mesh_name,
-                                                std::vector<int> precice_ids)
+                                                const std::vector<int>& precice_ids)
     {
-        participant.writeData(mesh_name, "sinks_x", precice_ids, sink_x_vector);
-        participant.writeData(mesh_name, "sinks_y", precice_ids, sink_y_vector);
-        participant.writeData(mesh_name, "sinks_z_min", precice_ids, sink_z_bottom_vector);
-        participant.writeData(mesh_name, "sinks_z_max", precice_ids, sink_z_top_vector);
-        participant.writeData(mesh_name, "sources_x", precice_ids, source_x_vector);
-        participant.writeData(mesh_name, "sources_y", precice_ids, source_y_vector);
-        participant.writeData(mesh_name, "sources_z_min", precice_ids, source_z_bottom_vector);
-        participant.writeData(mesh_name, "sources_z_max", precice_ids, source_z_top_vector);
-        participant.writeData(mesh_name, "sources_sinks_discharge", precice_ids, discharge_vector);
-        participant.writeData(mesh_name, "sources_momentum_magnitude", precice_ids, momentum_magnitude_vector);
-        participant.writeData(mesh_name, "sources_momentum_direction", precice_ids, momentum_direction_vector);
+        const std::size_t registered_vertex_count = precice_ids.size();
+        const std::size_t entry_count = size();
+
+        if (registered_vertex_count == 0)
+        {
+            throw std::runtime_error("Cannot write sources/sinks to an empty preCICE mesh.");
+        }
+
+        if (entry_count != 0 && entry_count != registered_vertex_count)
+        {
+            throw std::runtime_error(std::format(
+                "Connected source/sink count changed from the registered preCICE mesh size {} to {}. "
+                "Remeshing is not implemented.",
+                registered_vertex_count, entry_count));
+        }
+
+        auto write_or_zero = [&](std::string_view data_name, const std::vector<double>& values) {
+            if (values.empty())
+            {
+                participant.writeData(mesh_name, data_name, precice_ids, std::vector<double>(registered_vertex_count, 0.0));
+                return;
+            }
+
+            participant.writeData(mesh_name, data_name, precice_ids, values);
+        };
+
+        write_or_zero("sinks_x", sink_x_vector);
+        write_or_zero("sinks_y", sink_y_vector);
+        write_or_zero("sinks_z_min", sink_z_bottom_vector);
+        write_or_zero("sinks_z_max", sink_z_top_vector);
+        write_or_zero("sources_x", source_x_vector);
+        write_or_zero("sources_y", source_y_vector);
+        write_or_zero("sources_z_min", source_z_bottom_vector);
+        write_or_zero("sources_z_max", source_z_top_vector);
+        write_or_zero("sources_sinks_discharge", discharge_vector);
+        write_or_zero("sources_momentum_magnitude", momentum_magnitude_vector);
+        write_or_zero("sources_momentum_direction", momentum_direction_vector);
         // TODO: Send Momentum.
 
         // After the write, we can clear the list.
