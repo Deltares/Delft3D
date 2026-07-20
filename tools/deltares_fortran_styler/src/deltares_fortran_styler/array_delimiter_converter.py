@@ -25,12 +25,12 @@ class ArrayDelimiterConverter(FortranConverter):
         # Pattern to match old-style array constructors (/.../)
         # This needs to handle nested parentheses and various content
         self.old_array_pattern = re.compile(
-            r'\(\s*/\s*',  # Opening (/ with optional whitespace
-            re.VERBOSE
+            r"\(\s*/\s*",  # Opening (/ with optional whitespace
+            re.VERBOSE,
         )
 
         # Pattern to find closing /)
-        self.closing_pattern = re.compile(r'\s*/\s*\)')
+        self.closing_pattern = re.compile(r"\s*/\s*\)")
 
     def get_name(self) -> str:
         return "ArrayDelimiterConverter"
@@ -55,14 +55,14 @@ class ArrayDelimiterConverter(FortranConverter):
 
             char = text[i]
 
-            if char == '(':
+            if char == "(":
                 paren_depth += 1
                 i += 1
-            elif char == ')':
+            elif char == ")":
                 paren_depth -= 1
                 if paren_depth == 0:
                     # Found potential closing - check if preceded by /
-                    if i > 0 and text[i - 1] == '/':
+                    if i > 0 and text[i - 1] == "/":
                         return i  # Position of closing )
                     else:
                         # Just a regular closing paren, not part of /)
@@ -96,9 +96,9 @@ class ArrayDelimiterConverter(FortranConverter):
                     content = text[content_start:content_end]
 
                     # Convert to square brackets
-                    result.append('[')
+                    result.append("[")
                     result.append(content.rstrip())
-                    result.append(']')
+                    result.append("]")
 
                     conversions_made = True
                     i = closing_pos + 1
@@ -108,7 +108,7 @@ class ArrayDelimiterConverter(FortranConverter):
             result.append(text[i])
             i += 1
 
-        converted_text = ''.join(result)
+        converted_text = "".join(result)
         return converted_text, conversions_made
 
     def check_text(self, text: str) -> List[ConversionIssue]:
@@ -124,19 +124,21 @@ class ArrayDelimiterConverter(FortranConverter):
                 closing_pos = self._find_matching_closing(text, match.end())
 
                 if closing_pos != -1:
-                    line_num = text[:match.start()].count('\n') + 1
+                    line_num = text[: match.start()].count("\n") + 1
                     # Extract a snippet for display
                     snippet_end = min(match.start() + 20, closing_pos + 1)
-                    snippet = text[match.start():snippet_end]
+                    snippet = text[match.start() : snippet_end]
                     if snippet_end < closing_pos + 1:
                         snippet += "..."
 
-                    issues.append(ConversionIssue(
-                        line_number=line_num,
-                        error_code="STYLE004",
-                        message="Old-style array constructor found: should use [...] instead of (/ ... /)",
-                        original_text=snippet
-                    ))
+                    issues.append(
+                        ConversionIssue(
+                            line_number=line_num,
+                            error_code="STYLE004",
+                            message="Old-style array constructor found: should use [...] instead of (/ ... /)",
+                            original_text=snippet,
+                        )
+                    )
                     i = closing_pos + 1
                     continue
 
@@ -165,4 +167,4 @@ class ArrayDelimiterConverter(FortranConverter):
 
             i += 1
 
-        return {'array_constructors': count}
+        return {"array_constructors": count}

@@ -1,10 +1,9 @@
-
 #include "log.h"
 
 #include <assert.h>
 #include <string.h>
 
-logger_t logger;
+logger_t logger = {.name = "dsle", .fp = NULL, .level = logWARNING};
 const char *level_strings[logERROR + 1] = {"DEBUG", "INFO", "WARNING", "ERROR"};
 
 void log_init(char *name, FILE *fp) {
@@ -13,9 +12,7 @@ void log_init(char *name, FILE *fp) {
   logger.level = logWARNING;
 }
 
-void log_set_level(log_level_t lvl) {
-  logger.level = lvl;
-}
+void log_set_level(log_level_t lvl) { logger.level = lvl; }
 
 static void vlog(log_level_t lvl, char *fmt, va_list ap) {
   if (lvl >= logger.level && lvl <= logERROR) {
@@ -63,16 +60,16 @@ void log_error(char *fmt, ...) {
 // parse level_str and return the associated log_level, or the default
 // when parsing fails.
 // Valid entries are: DEBUG, INFO, WARNING, ERROR. (case is ignored)
-log_level_t log_level(char* level_str, log_level_t default_level) {
+log_level_t log_level(char *level_str, log_level_t default_level) {
   log_level_t level = default_level;
 
   for (int i = 0; i <= logERROR; i++) {
-#   ifdef _WIN32
+#ifdef _WIN32
     if (!strcmpi(level_str, level_strings[i])) {
-#   else
+#else
     if (!strcasecmp(level_str, level_strings[i])) {
-#   endif
-    level = (log_level_t)i;
+#endif
+      level = (log_level_t)i;
     }
   }
 

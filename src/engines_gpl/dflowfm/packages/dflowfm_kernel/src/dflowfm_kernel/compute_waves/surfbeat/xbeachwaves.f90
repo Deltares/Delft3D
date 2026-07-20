@@ -1484,7 +1484,7 @@ contains
          dtmaxwav = dts
       else
          kkcflmx = kkcflmxloc ! overwrite cell number for numlimdt when new smallest timestep
-         if (jamapFlowAnalysis > 0) then
+         if (map_write_settings%flow_analysis > 0) then
             limitingTimestepEstimation(kkcflmx) = limitingTimestepEstimation(kkcflmx) + 1
          end if
       end if
@@ -2393,7 +2393,7 @@ contains
       use m_sferic
       use m_physcoef
       use m_flowgeom
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_dlimiter_nonequi
       use m_dslim
 
@@ -2466,14 +2466,14 @@ contains
                   ds2 = quant(itheta, kd) - quant(itheta, k) ! ds1 = voorlopende slope, ds2 = eigen slope
                   ds1 = (quant(itheta, k) - waku) * sl3
 
-                  if (abs(ds2) > eps10 .and. abs(ds1) > eps10) then
+                  if (abs(ds2) > EPS10 .and. abs(ds1) > EPS10) then
                      ds = cf * dslim(ds1, ds2, limtypw) ! reconstructie van totale slope volgens 1 van de 4 schema's                                            ! centraal schema
                      !
                      if (limtypw == 99) then
                         ds = cf * dlimiter_nonequi(ds1, ds2, half, 1.0_dp) * ds2
                      end if
                      !
-                     if (abs(ds) > eps10) then ! als celgemiddelde niet volstaat
+                     if (abs(ds) > EPS10) then ! als celgemiddelde niet volstaat
                         qds = ds * fluxvel1 ! slope * linkse celbijdrage
                         advec(itheta, kd) = advec(itheta, kd) - qds ! downwind cel krijgt bijdrage
                         advec(itheta, k) = advec(itheta, k) + qds ! cel verliest bijdrage
@@ -3549,7 +3549,7 @@ contains
                           * (betanp1 - umean + 2.0_dp * cg0 &
                              - uin_loc * (cos(thetai) - 1.0_dp) / cos(thetai))
                   else ! assuming incoming long wave propagates at group velocity (bound wave)
-                     cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), eps10)
+                     cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), EPS10)
                      dum = uin_loc * (cgbound * cos(thetai) - cg0) / (cgbound * cos(thetai))
                      ur = cos(alpha2) / (cos(alpha2) + 1.0_dp) &
                           * (betanp1 - umean + 2.0_dp * cg0 - dum)
@@ -3907,7 +3907,7 @@ contains
 !   use m_sferic
 !   use m_physcoef
 !   use m_flowgeom
-!   use m_flowparameters, only:eps10
+!   use m_flowparameters, only:EPS10
 !
 !   implicit none
 !
@@ -4033,7 +4033,7 @@ contains
 !   use m_sferic
 !   use m_physcoef
 !   use m_flowgeom
-!   use m_flowparameters, only:eps10
+!   use m_flowparameters, only:EPS10
 !
 !   implicit none
 !
@@ -4091,10 +4091,10 @@ contains
 !                    ds2  =  quant(itheta,kd) - quant(itheta,k)        ! ds1 = voorlopende slope, ds2 = eigen slope
 !                    ds1  = (quant(itheta,k)  - waku )*sl3
 !
-!                    if (abs(ds2)  > eps10 .and. abs(ds1) > eps10) then
+!                    if (abs(ds2)  > EPS10 .and. abs(ds1) > EPS10) then
 !                        ds  =  cf*dslim(ds1, ds2, limtypw)                  ! reconstructie van totale slope volgens 1 van de 4 schema's                                            ! centraal schema
 !
-!                        if (abs(ds) > eps10) then                           ! als celgemiddelde niet volstaat
+!                        if (abs(ds) > EPS10) then                           ! als celgemiddelde niet volstaat
 !                            qds      =  ds*fluxvel1                         ! slope * linkse celbijdrage
 !                            advec(itheta,kd) =  advec(itheta,kd) - qds        ! downwind cel krijgt bijdrage
 !                            advec(itheta,k ) =  advec(itheta,k ) + qds        ! cel verliest bijdrage
@@ -5472,10 +5472,10 @@ contains
          cn2 = lncn(2, L)
          !
          ! Find internal node attached to bnd node (implicitly assumes *no* triangular borders, if so takes last one)
-         !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
-         !  (KN(3,L) == 2) 2D
+         !! network_data::NB values: 1=INTERN, 2=BORDER, 3=CORNER, 0/-1=NOT ACTIVE OR 1D
+         !
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= LINK_2D) then
                cycle ! not 2d link
             end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
@@ -5486,7 +5486,7 @@ contains
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
@@ -5507,7 +5507,7 @@ contains
          !
          ! Find internal node
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
@@ -5518,7 +5518,7 @@ contains
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
@@ -5538,7 +5538,7 @@ contains
             goto 10 ! do next node
          end if
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
@@ -5550,7 +5550,7 @@ contains
          !
 10       if (wmask(2, cn2) > 0 .or. wmask(4, cn2) > 0) cycle
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= LINK_2D) then
                cycle
             end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)

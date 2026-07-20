@@ -21,7 +21,6 @@
  * @date 2010
  */
 
-
 #ifndef LOOKUP2DTABLECONVERTER_H
 #define LOOKUP2DTABLECONVERTER_H
 
@@ -31,32 +30,36 @@ using namespace std;
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class lookup2DTableConverter
-{
-public:
-	enum interpolationOption{BLOCK, BILINEAR};
+        class lookup2DTableConverter
+        {
+        public:
+            enum interpolationOption
+            {
+                BLOCK,
+                BILINEAR
+            };
 
-private:
-	int nX;
-	int nY;
-	double *x;
-	double *y;
-	double **z;
-	interpolationOption intOpt;
+        private:
+            int nX;
+            int nY;
+            double* x;
+            double* y;
+            double** z;
+            interpolationOption intOpt;
 
-	double interpolate(double *x, double *y, double **z, double xVal, double yVal);
+            double interpolate(double* x, double* y, double** z, double xVal, double yVal);
 
-public:
-	lookup2DTableConverter(int nX, int nY, double *x, double *y, double **z, interpolationOption intOpt);
-	~lookup2DTableConverter(void);
+        public:
+            lookup2DTableConverter(int nX, int nY, double* x, double* y, double** z, interpolationOption intOpt);
+            ~lookup2DTableConverter(void);
 
-	double convert(double xVal, double yVal);
-};
+            double convert(double xVal, double yVal);
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
-#endif //LOOKUP2DTABLECONVERTER_H
+#endif // LOOKUP2DTABLECONVERTER_H

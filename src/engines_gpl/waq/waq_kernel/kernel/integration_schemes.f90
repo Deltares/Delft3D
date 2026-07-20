@@ -42,6 +42,7 @@ module integration_schemes
     use m_integration_scheme_23, only: scheme_23_time_explicit_leonards_quickest
     use m_integration_scheme_24, only: scheme_24_adaptive_time_step_flux_corrected_transport
     use m_integration_scheme_25, only: scheme_25_emission_time_explicit_space_upwind
+    use m_integration_scheme_26, only: scheme_26_adaptive_time_step_fractional_step
 
     implicit none
 
@@ -227,6 +228,9 @@ contains
 
         case (25)     ! Special for emission module
             call scheme_25_emission_time_explicit_space_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+
+        case (26)     ! Special for emission module
+            call scheme_26_adaptive_time_step_fractional_step(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case default
             goto 990

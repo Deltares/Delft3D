@@ -50,7 +50,7 @@ contains
       use fm_external_forcings_data, only: nbndz, nbndu, kbndu, kbndn, nbndt, kbndz, kbndt, kbnduxy, nbndn, zbndn, zbndt, zbnduxyval, zbnduxy
       use m_missing, only: dmiss
       use m_turbulence, only: rho
-      use m_flowparameters, only: jabarrieradvection, jasedtrails, jamapucmag, jamapucvec, Perot_type, NOT_DEFINED, changeVelocityAtStructures, jacstbnd, jaZerozbndinflowadvection, JaZlayercenterbedvel, PEROT_VOLUME_BASED, epshs, limtypmom, jarhoxu
+      use m_flowparameters, only: jabarrieradvection, jasedtrails, map_write_settings, Perot_type, NOT_DEFINED, changeVelocityAtStructures, jacstbnd, jaZerozbndinflowadvection, JaZlayercenterbedvel, PEROT_VOLUME_BASED, epshs, limtypmom, jarhoxu
       use m_sferic
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
@@ -58,6 +58,7 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
       implicit none
 
       logical :: make2dh
@@ -73,13 +74,13 @@ contains
          ucx = 0.0_dp
          ucy = 0.0_dp
 
-         make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
+         make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. map_write_settings%ucmag > 0 .or. map_write_settings%ucvec > 0))
 
          if (make2dh) then ! original 2D coding
 
             do L = 1, lnx1D
                if (u1(L) /= 0.0_dp) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
-                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+                  if ((kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else
@@ -109,7 +110,7 @@ contains
                   end if
                end if
                if (u1(L) /= 0.0_dp) then ! link flows
-                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+                  if ((kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else

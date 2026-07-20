@@ -48,10 +48,11 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
+      use m_physcoef, only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
-      use fm_external_forcings_data, only: wstracers, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_constituents
+      use fm_external_forcings_data, only: wstracers
+      use m_source_sink, only: source_sinks
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
@@ -74,6 +75,7 @@ contains
       integer :: iconst, kk, kkk, k, kb, kt, n, kk2, imba, jamba_src
       integer :: jsed ! counter for suspended sediment fractions
       integer :: jtra ! counter for tracers
+      logical :: use_vertical_molecular_diffusion
       real(kind=dp), parameter :: dtol = 1e-8_dp
       real(kind=dp) :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
 
@@ -105,13 +107,16 @@ contains
       molecular_diffusion_coeff = 0.0_dp
       sigdifi = 0.0_dp
 
+      ! if the user supplied a positive value for dicoww, then use vertical molecular diffusion for salinity and temperature
+      use_vertical_molecular_diffusion = dicoww%scalar >= 0.0_dp
+
 !  diffusion coefficients
 
       if (ISALT /= 0) then
          if (dicouv >= 0.0_dp) then
             difsedu(ISALT) = difmolsal
          end if
-         if (constant_dicoww >= 0) then
+         if (use_vertical_molecular_diffusion) then
             molecular_diffusion_coeff(ISALT) = difmolsal
             sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
          end if
@@ -121,7 +126,7 @@ contains
          if (dicouv >= 0.0_dp) then
             difsedu(ITEMP) = difmoltem
          end if
-         if (constant_dicoww >= 0) then
+         if (use_vertical_molecular_diffusion) then
             molecular_diffusion_coeff(ITEMP) = difmoltem
             sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
          end if
@@ -139,7 +144,7 @@ contains
             if (dicouv >= 0.0_dp) then
                difsedu(iconst) = 0.0_dp
             end if
-            if (constant_dicoww >= 0) then
+            if (use_vertical_molecular_diffusion) then
                molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
@@ -152,7 +157,7 @@ contains
       if (ITRA1 > 0) then
          do jtra = ITRA1, ITRAN
             difsedu(jtra) = difmoltracer
-            if (constant_dicoww >= 0) then
+            if (use_vertical_molecular_diffusion) then
                molecular_diffusion_coeff(jtra) = difmoltracer
                sigdifi(jtra) = 1.0_dp / Schmidt_number_tracer
             end if
@@ -290,10 +295,10 @@ contains
          goto 1234 ! no sources from initialise
       end if
 
-      do n = 1, num_source_sink
-         kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
-         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr TO
-         qsrckk = source_sink_water_discharge(n)
+      do n = 1, source_sinks%num_total
+         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr FROM
+         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr TO
+         qsrckk = source_sinks%discharge(n)
          qsrck = qsrckk
 
          jamba_src = jamba
@@ -314,17 +319,17 @@ contains
          end if
 
          if (kk > 0) then ! FROM Point
-            do k = source_sink_indices(2, n), source_sink_indices(3, n)
+            do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
                if (k == 0) then
                   cycle
                end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
+                  dzss = zws(source_sinks%indices(n, 3)) - zws(source_sinks%indices(n, 2) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (source_sink_indices(3, n) - source_sink_indices(2, n) + 1)
+                     qsrck = qsrckk / (source_sinks%indices(n, 3) - source_sinks%indices(n, 2) + 1)
                   end if
                end if
                if (qsrck > 0) then ! FROM k to k2
@@ -336,17 +341,17 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            do k = source_sink_indices(5, n), source_sink_indices(6, n)
+            do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
                if (k == 0) then
                   cycle
                end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
+                  dzss = zws(source_sinks%indices(n, 6)) - zws(source_sinks%indices(n, 5) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (source_sink_indices(6, n) - source_sink_indices(5, n) + 1)
+                     qsrck = qsrckk / (source_sinks%indices(n, 6) - source_sinks%indices(n, 5) + 1)
                   end if
                end if
                if (qsrck > 0) then
@@ -384,8 +389,8 @@ contains
 
          do iconst = 1, numconst
             if (i1 == i2) then ! on outflow side
-               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * source_sink_constituents(iconst, n) * dvoli
-               flux = qsrck * source_sink_constituents(iconst, n)
+               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * source_sinks%constituents(n, iconst) * dvoli
+               flux = qsrck * source_sinks%constituents(n, iconst)
             else ! on inflow side
                const_sour(iconst, k) = const_sour(iconst, k) + qsrck * constituents(iconst, k) * dvoli
                flux = qsrck * constituents(iconst, k)

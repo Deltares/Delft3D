@@ -16,7 +16,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
     allowExternalStatus = true
     artifactRules = """
@@ -29,12 +30,11 @@ object WindowsBuildDflowfmInteracter : BuildType({
     params {
         param("env..INTERACTER_DIR", """.\interacter\bin\win32\x64\""")
         text("product", "dflowfm_interacter", readOnly = true, allowEmpty = true)
-        param("container.tag", "vs2022-intel2024")
-        param("intel_fortran_compiler", "ifx")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
         param("build.vcs.number", "${DslContext.settingsRoot.paramRefs.buildVcsNumber}")
-        param("enable_code_coverage_flag", "OFF")
-        param("generator", """"Visual Studio 17 2022"""")
-        param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
+        param("env.CONAN_HOME", "C:/conan-cache")
+        param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
+        password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
         select("build_type", "Release", display = ParameterDisplay.PROMPT,
                 options = listOf("Release", "Debug"))
     }
@@ -62,18 +62,23 @@ object WindowsBuildDflowfmInteracter : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
+                if exist C:\set-env.cmd (
+                    call C:\set-env.cmd
+                ) else (
+                    call C:\set-env-vs2022.cmd
+                )
 
-                cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
+                python run_conan.py initialize deltares --ci
+                if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                cd build_%product%
-
-                cmake --build . -j --target install --config %build_type%
+                python build.py --config %product% --build --build-type %build_type% --ci --build-dir build_%product% --install-dir build_%product%/install
+                if %%errorlevel%% neq 0 exit /b %%errorlevel%%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
-            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount% --mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
         }
     }
     if (DslContext.getParameter("enable_schedule_interacter_build").lowercase() == "true") {
@@ -87,5 +92,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
                 withPendingChangesOnly = false
             }
         }
+    }
+    requirements {
+        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2022")
     }
 })

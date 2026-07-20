@@ -11,7 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(src_path src)
 
 # Gather the source files
-set(headers include/blasfm.h)
+set(headers include/blasfm.inc)
 
 # Set version file variables
 set(dflowfm_version_header_path ${dflowfm_path}/version)
@@ -66,6 +66,8 @@ get_fortran_source_files(${dflowfm_kernel_timespace_path} dflowfm_kernel_timespa
 # Gather source files
 set(dflowfm_manager_path ${src_path}/dflowfm_manager/)
 get_fortran_source_files(${dflowfm_manager_path} dflowfm_manager)
+set(dflowfm_manager_precice_adapter_path ${src_path}/dflowfm_manager/precice_adapter)
+get_fortran_source_files(${dflowfm_manager_precice_adapter_path} dflowfm_manager_precice_adapter)
 
 # Gather source files
 set(dflowfm_rgf_path ${src_path}/dflowfm_rgf/)
@@ -81,6 +83,9 @@ get_fortran_source_files(${dflowfm_utils_path}/to_deltares_common dflowfm_utils_
 list(REMOVE_ITEM dflowfm_utils ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_parms.F90)
 
 get_fortran_source_files(${src_path}/to_thirdparty to_thirdparty)
+
+# --- Generated unc_put_var_map ---
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/unc_put_var_map.cmake)
 
 # Define library
 set(library_name dflowfm_kernel)
@@ -104,13 +109,18 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_kernel_prepost}
                             ${dflowfm_kernel_timespace}
                             ${dflowfm_manager}
+                            ${dflowfm_manager_precice_adapter}
                             ${dflowfm_rgf}
                             ${dflowfm_utils}
                             ${dflowfm_utils_rest_f90}
                             ${dflowfm_utils_to_deltares_common}
-                            ${to_thirdparty})
+                            ${to_thirdparty}
+                            ${unc_put_var_map_generator}
+                            )
 
-add_library(${library_name} ${library_source_list})
+add_library(${library_name} ${library_source_list} ${unc_put_var_map_output})
+
+add_dependencies(${library_name} generate_unc_put_var_map)
 
 target_link_libraries(${library_name} PRIVATE
     mute_unwanted_compiler_warnings
@@ -145,7 +155,7 @@ target_link_libraries(${library_name} PRIVATE
                       morphology_io
                       morphology_kernel
                       morphology_plugins_c
-                      netcdff
+                      netCDF::netcdff
                       polypack
                       precicef
                       trachytopes_io
@@ -158,17 +168,12 @@ target_link_libraries(${library_name} PRIVATE
                       waq_utils_c
                       waq_utils_f
                       spherepack
+                      PETSc::PETSc
 )
 
-# Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
     target_link_libraries(${library_name} PRIVATE
                           interacter_stub
-                          PkgConfig::PETSC
                           uuid
     )
 endif(UNIX)
@@ -184,19 +189,16 @@ if (WIN32)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
            target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+           target_link_libraries(${library_name} PRIVATE interacter_utils)
         endif()
     else()
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_directories(${library_name} PUBLIC
-                                "${mpi_library_path}"
-    )
-
-    target_link_libraries(${library_name} PUBLIC
-                            "${mpi_fortran_library}"
-                            petsc
-    )
+    if(NOT TARGET impi)
+      message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
+    endif()
+    target_link_libraries(${library_name} PRIVATE impi)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -217,6 +219,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/menuv1.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/setwor.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/viewport.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/intini.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_commandline.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/write_some_final_output.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/wrwaq.F90
@@ -255,19 +258,20 @@ set_source_files_properties(${fortran_version_files}
 
 # Define preprocessor definitions
 set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+target_compile_definitions(${library_name} PRIVATE DFLOWFM_STACK_SIZE_BYTES=${DFLOWFM_STACK_SIZE_BYTES})
 if (WIN32)
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
+        target_compile_definitions(${library_name} PUBLIC "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
     else()
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
+        target_compile_definitions(${library_name} PUBLIC "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
     endif()
 
     add_warnings_as_errors_post_build_windows(${library_name})
 endif(WIN32)
 
 if (UNIX)
-    target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    target_compile_definitions(${library_name} PUBLIC "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
     find_package(OpenMP COMPONENTS Fortran)
     if(OpenMP_Fortran_FOUND)
          target_link_libraries(${library_name} PRIVATE ${OpenMP_Fortran_LIBRARIES})
@@ -275,6 +279,7 @@ if (UNIX)
 endif(UNIX)
 
 # Create the folder structure in vfproj
+source_group("src\\generated" FILES ${unc_put_var_map_output})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_source_list})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 

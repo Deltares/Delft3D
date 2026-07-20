@@ -33,6 +33,7 @@
 module m_longculverts_data
    use precision, only: dp
    use messagehandling, only: idlen
+   use network_data, only: Lperm
    implicit none
 
    private
@@ -63,25 +64,38 @@ module m_longculverts_data
       real(kind=dp) :: valve_relative_opening !< Relative valve opening: 0 = fully closed, 1 = fully open
       integer :: flownode_up = 0 !< Flow node index at upstream
       integer :: flownode_dn = 0 !< Flow node index at downstream
+   contains
+      procedure :: is_2D2D
    end type
 
    type(t_longculvert), dimension(:), allocatable, public :: longculverts !< Array containing long culvert data (size >= nlongculverts)
+   type(t_longculvert), dimension(:), allocatable, public :: longculverts0 !< backup of longculverts for partitioning
 
    integer, public :: nlongculverts !< Number of longculverts
    logical, public :: newculverts
+   logical, public :: only_longculvert_1D = .false. !< Whether all 1D and 1D2D netlinks belong to long culverts
 
 contains
+
+   !> Returns whether or not this longculvert consists of only one 2D2D link.
+   pure function is_2D2D(self) result(res)
+      class(t_longculvert), intent(in) :: self
+      logical :: res
+      res = .false.
+      if (allocated(self%netlinks)) then
+         res = size(self%netlinks) == 1
+      end if
+   end function is_2D2D
 
    !> simple routine which checks if a given flowlink L is part of a 2D-2D longculvert. Lives here to avoid cyclic dependency.
    elemental subroutine is_2D2D_longculvertlink(L, i)
       integer, intent(in) :: L !< Flowlink number
       integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
+
       do i = 1, nlongculverts
-         if (allocated(longculverts(i)%netlinks)) then
-            if (size(longculverts(i)%netlinks) == 1) then
-               if ((longculverts(i)%netlinks(1) == L)) then
-                  return
-               end if
+         if (longculverts(i)%is_2D2D()) then
+            if ((longculverts(i)%netlinks(1) == L)) then
+               return
             end if
          end if
       end do

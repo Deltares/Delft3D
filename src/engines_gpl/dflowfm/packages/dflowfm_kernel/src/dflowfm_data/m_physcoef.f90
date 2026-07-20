@@ -36,7 +36,7 @@ module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_array_or_scalar, only: t_array_or_scalar
-   implicit none
+   implicit none(type, external)
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
@@ -66,11 +66,9 @@ module m_physcoef
 
    real(kind=dp) :: Elder !< add Elder viscosity
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
-   real(kind=dp), parameter :: viuchk = 0.24_dp !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
-   real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
-   real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
-   class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
+   type(t_array_or_scalar), target :: dicoww !< background vertical eddy diffusivity (m2/s)
+   type(t_array_or_scalar), target :: vicoww !< background vertical eddy viscosity (m2/s)
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -94,10 +92,12 @@ module m_physcoef
    real(kind=dp), parameter :: BACKGROUND_AIR_TEMPERATURE = 20.0_dp !< background air temperature (degrees Celsius)
    real(kind=dp), parameter :: BACKGROUND_CLOUDINESS = 50.0_dp !< (%) cloudiness for non-specified points
    real(kind=dp), parameter :: BACKGROUND_HUMIDITY = 50.0_dp !< (%) relative humidity for non-specified points
-   real(kind=dp) :: secchidepth !< (m) secchidepth
-   real(kind=dp) :: secchidepth2 !< (m) secchidepth2
-   real(kind=dp) :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
-   real(kind=dp) :: zab(2), sfr(2) !< help variables
+
+   ! Secchi depth variables
+   real(kind=dp), dimension(2) :: secchi_depth !< [m] Constant Secchi depth; 1 = visible light and UV radiation, 2 = infrared radiation
+   real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation
+   real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient !< [m] Diffuse attenuation coefficient for radiation
+   real(kind=dp), parameter :: POOLE_ATKINS_PARAMETER = 1.7_dp !< [-] Parameter for conversion of Secchi depth to diffuse attenuation coefficient
 
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
@@ -129,6 +129,7 @@ contains
 
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
+
       ag = 9.81_dp
       frcuni = 0.023_dp
       frcuni1D = frcuni
@@ -143,14 +144,17 @@ contains
       dicouv = 0.1_dp
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp
-      vicoww = 1e-6_dp
-      constant_dicoww = 1e-6_dp
+      dicoww%scalar = 1e-6_dp
+      vicoww%scalar = 1e-6_dp
       rhomean = 1000.0_dp
       backgroundwatertemperature = 20.0_dp
       backgroundsalinity = 30.0_dp
-      secchidepth = 1.0_dp
-      secchidepth2 = 0.0_dp
-      secchidepth2fraction = 0.0_dp
+      secchi_depth(1) = 1.0_dp
+      secchi_depth(2) = 0.0_dp
+      secchi_radiation_fraction(1) = 1.0_dp
+      secchi_radiation_fraction(2) = 0.0_dp
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
+      diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
       vicwminb = 0.0_dp
       xlozmidov = 0.0_dp
       idensform = 2

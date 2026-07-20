@@ -28,13 +28,12 @@
 // $HeadURL$
 
 #ifndef _FM_INCLUDED
-#   define _FM_INCLUDED
-#   define MAX_FILE_NAME 256
+#define _FM_INCLUDED
+#define MAX_FILE_NAME 256
 
-    extern BVoid   FM_close_nefis_files        ( BVoid ) ;
-    extern BInt4   FM_open_nefis_files         ( const BText,
-                                                 const BText ) ;
-    extern BInt4   FM_get_datafile_descriptor  ( BVoid ) ;
-    extern BInt4   FM_get_deftfile_descriptor  ( BVoid ) ;
-    extern BVoid   FM_display_nefis_file_status( const BText ) ;
+extern BVoid FM_close_nefis_files(BVoid);
+extern BInt4 FM_open_nefis_files(const BText, const BText);
+extern BInt4 FM_get_datafile_descriptor(BVoid);
+extern BInt4 FM_get_deftfile_descriptor(BVoid);
+extern BVoid FM_display_nefis_file_status(const BText);
 #endif

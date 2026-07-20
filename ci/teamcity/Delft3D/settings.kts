@@ -11,7 +11,7 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.07"
+version = "2026.1"
 
 project {
 
@@ -24,10 +24,15 @@ project {
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
 
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
+
         param("nexus_username", DslContext.getParameter("nexus_username"))
         password("nexus_password", DslContext.getParameter("nexus_password"))
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
-
+        param("nexus_iq_username", DslContext.getParameter("nexus_iq_username"))
+        password("nexus_iq_password", DslContext.getParameter("nexus_iq_password"))
+        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }
@@ -44,6 +49,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
+    template(TemplateBuildConcurrency)
 
     subProject {
         id("Linux")
@@ -54,10 +60,12 @@ project {
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildType(LinuxDevContainer)
+            buildType(LinuxPython)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
+                LinuxPython,
             )
         }        
         subProject {
@@ -70,6 +78,7 @@ project {
                 LinuxReceiveH7ContainerSmokeTest,
             )
         }        
+        buildType(LinuxConanPackages)
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
@@ -78,6 +87,7 @@ project {
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
+            LinuxConanPackages,
             LinuxBuild,
             LinuxBuild2D3DSP,
             LinuxCollect,
@@ -92,8 +102,10 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsTestEnvironment)
+        buildType(WindowsCollectEnvironment)
+        buildType(WindowsConanPackages)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -101,8 +113,10 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironment,
             WindowsTestEnvironment,
+            WindowsCollectEnvironment,
+            WindowsConanPackages,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,
@@ -138,9 +152,12 @@ project {
         buildType(SigCi)
         buildType(RunBashBatonUtilities)
         buildType(DvcDiffComment)
+        buildType(LifecycleScanMain)
+        buildType(LifecycleScanTestBench)
+        buildType(LifecycleScanCiTools)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment, LifecycleScanMain, LifecycleScanTestBench, LifecycleScanCiTools
         )
     }
 
@@ -174,17 +191,6 @@ project {
             url = "https://containers.deltares.nl/"
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
-        }
-        awsConnection {
-            id = "doc_download_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
-                secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
         }
         feature {
             type = "OAuthProvider"

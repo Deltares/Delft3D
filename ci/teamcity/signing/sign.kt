@@ -69,7 +69,6 @@ object Sign : BuildType({
                 cleanDestination = true
                 artifactRules = """
                     ?:*_x64_*.zip!/x64/bin/** => to_sign/bin
-                    ?:*_x64_*.zip!/x64/lib/** => to_sign/lib
                     ?:*_x64_*.zip!/x64/share/** => to_sign/share
                 """.trimIndent()
             }
@@ -82,7 +81,7 @@ object Sign : BuildType({
             artifacts {
                 cleanDestination = true
                 artifactRules = """
-                    ?:*_x64_*.zip!/x64/lib/flow2d3d_sp.dll => to_sign/lib
+                    ?:*_x64_*.zip!/x64/bin/flow2d3d_sp.dll => to_sign/bin
                 """.trimIndent()
             }
         }
@@ -105,6 +104,7 @@ object Sign : BuildType({
                     token = "%github_deltares-service-account_access_token%"
                 }
                 filterSourceBranch = "+:*"
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
                 ignoreDrafts = true
             }
         }
