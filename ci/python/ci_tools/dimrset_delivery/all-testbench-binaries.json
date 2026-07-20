@@ -261,6 +261,10 @@
             "issuedTo": "Stichting Deltares"
         },
         {
+            "file": "bin\\dflowfm_io_api.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "bin\\dflowfm-cli.exe",
             "issuedTo": "Stichting Deltares"
         },
