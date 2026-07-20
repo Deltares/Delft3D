@@ -24,7 +24,7 @@ echo >>swan_sh.log
 #
 # Local options
 #
-debug=1
+debug=0
 OMP_NUM_THREADS_BACKUP=$OMP_NUM_THREADS
 
 # When using mpi to run FLOW in parallel, it is not possible to use mpi
@@ -42,21 +42,9 @@ else
   mpirun=0
 fi
 
-scriptdirname=$(readlink \-f "\$0")
+scriptdirname=$(readlink \-f "$0")
 scriptdir=${scriptdirname%/*}
 D3D_HOME=$scriptdir/..
-
-echo "----------------------------------" >>swan_sh.log
-echo Current folder = $PWD >>swan_sh.log
-echo Listing >>swan_sh.log
-ls -alrt >>swan_sh.log
-echo "----------------------------------" >>swan_sh.log
-echo scriptdirname=$scriptdirname >>swan_sh.log
-echo old scriptdir=`dirname $scriptdirname` >>swan_sh.log
-echo scriptdir=$scriptdir >>swan_sh.log
-echo D3D_HOME=$D3D_HOME >>swan_sh.log
-echo "----------------------------------" >>swan_sh.log
-
 
 module load intelmpi/21.2.0 &>/dev/null
 export FI_PROVIDER=tcp
