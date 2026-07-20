@@ -24,7 +24,7 @@ echo >>swan_sh.log
 #
 # Local options
 #
-debug=0
+debug=1
 OMP_NUM_THREADS_BACKUP=$OMP_NUM_THREADS
 
 # When using mpi to run FLOW in parallel, it is not possible to use mpi
@@ -46,6 +46,18 @@ scriptdirname=$(readlink \-f "\$0")
 scriptdir=${scriptdirname%/*}
 D3D_HOME=$scriptdir/..
 
+echo "----------------------------------" >>swan_sh.log
+echo Current folder = $PWD >>swan_sh.log
+echo Listing >>swan_sh.log
+ls -alrt >>swan_sh.log
+echo "----------------------------------" >>swan_sh.log
+echo scriptdirname=$scriptdirname >>swan_sh.log
+echo old scriptdir=`dirname $scriptdirname` >>swan_sh.log
+echo scriptdir=$scriptdir >>swan_sh.log
+echo D3D_HOME=$D3D_HOME >>swan_sh.log
+echo "----------------------------------" >>swan_sh.log
+
+
 module load intelmpi/21.2.0 &>/dev/null
 export FI_PROVIDER=tcp
 
@@ -55,18 +67,18 @@ export FI_PROVIDER=tcp
 MACHINE_TYPE=`uname -m`
  
 if [[ $mpirun -eq 1 ]]; then
-    SWANEXEC="$D3D_HOME/bin/swan_mpi"
+  SWANEXEC="$D3D_HOME/bin/swan_mpi"
 else
-    SWANEXEC="$D3D_HOME/bin/swan_omp"
+  SWANEXEC="$D3D_HOME/bin/swan_omp"
   #
   # swan40.72AB and newer runs parallel using OpenMP, using the total number of cores on the machine by default
   # Two ways to force the number of parallel processes:
   # 1. Define environment parameter OMP_NUM_THREADS_SWAN with the correct number of processes
   # 2. Below: replace "unset OMP_NUM_THREADS" by "export OMP_NUM_THREADS=4" (with a self choosen value, 4 is choosen as an example)
   if [[ -z $OMP_NUM_THREADS_SWAN ]]; then
-      unset OMP_NUM_THREADS
+    unset OMP_NUM_THREADS
   else
-      export OMP_NUM_THREADS=$OMP_NUM_THREADS_SWAN
+    export OMP_NUM_THREADS=$OMP_NUM_THREADS_SWAN
   fi
 fi
 
