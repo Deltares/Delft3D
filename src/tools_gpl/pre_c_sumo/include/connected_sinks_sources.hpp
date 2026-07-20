@@ -54,6 +54,21 @@ namespace pre_c_sumo
         void write_to_precice(precice::Participant& participant, std::string_view mesh_name,
                               const std::vector<int>& precice_ids);
 
+        /**
+         * @brief Read-only access to converted sink X coordinates.
+         */
+        const std::vector<double>& sink_x_values() const { return sink_x_vector; }
+
+        /**
+         * @brief Read-only access to converted source X coordinates.
+         */
+        const std::vector<double>& source_x_values() const { return source_x_vector; }
+
+        /**
+         * @brief Read-only access to converted discharge values.
+         */
+        const std::vector<double>& discharge_values() const { return discharge_vector; }
+
     private:
         // attributes
         std::vector<double> sink_x_vector;             //< X coordinates of sinks

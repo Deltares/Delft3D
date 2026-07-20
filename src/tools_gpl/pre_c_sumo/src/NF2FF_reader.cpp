@@ -234,7 +234,13 @@ namespace pre_c_sumo
 
         // Discharge
         ASSIGN_OR_RETURN(auto discharge_node, parseDischarge(root));
-        ASSIGN_OR_RETURN(const auto intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+        double intake_flow_rate = 0.0;
+        const pugi::xml_node intake_flow_node = parsing_utils::findChild(discharge_node, "Qintake");
+        if (intake_flow_node)
+        {
+            // Missing Qintake defaults to 0.0; present Qintake must be valid.
+            ASSIGN_OR_RETURN(intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+        }
         ASSIGN_OR_RETURN(const auto source_flow_rate, parseRequiredDouble(discharge_node, "Qsource"));
         ASSIGN_OR_RETURN(const auto constituents_operator, parseConstituentsOperator(discharge_node));
         ASSIGN_OR_RETURN(const auto constituents_text,

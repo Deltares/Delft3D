@@ -161,7 +161,10 @@ namespace pre_c_sumo
                 }
                 else
                 {
-                    // Error?
+                    std::println(stderr,
+                                 "Error reading NF2FF file {}: {}",
+                                 nf2ff_filepath.string(),
+                                 reader.error().message);
                 }
             }
         }
@@ -247,9 +250,11 @@ namespace pre_c_sumo
             source_weight_norm = std::max(source_weight_norm, 1.0);
 
             const auto sinks = diffuser.sinks();
-            for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
+            const std::size_t first_sink_index = sinks.size() > 1 ? 1 : 0;
+            for (std::size_t sink_index = first_sink_index; sink_index < sinks.size(); sink_index++)
             {
-                double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
+                const double previous_entrainment = sink_index > 0 ? sinks[sink_index - 1].entrainment : 0.0;
+                double delta_s = sinks[sink_index].entrainment - previous_entrainment;
                 const auto& sink = sinks[sink_index];
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
                 double sink_z_bottom = -sink.z_coordinate - sink.half_plume_height;
