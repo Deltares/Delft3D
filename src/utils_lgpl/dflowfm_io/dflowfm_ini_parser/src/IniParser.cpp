@@ -230,12 +230,6 @@ namespace ini
         const std::size_t valueStartIndex = assignmentIndex + 1;
         const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter, valueStartIndex);
         
-        const std::size_t searchEnd = commentIndex != std::string::npos ? commentIndex : currentLine.size();
-        if (currentLine.find(scheme.propertyAssignmentDelimiter, valueStartIndex) < searchEnd)
-        {
-            HandleInvalidLineFormat();
-        }
-
         std::string value = commentIndex != std::string::npos
                                 ? trim(currentLine.substr(valueStartIndex, commentIndex - valueStartIndex))
                                 : trim(currentLine.substr(valueStartIndex));

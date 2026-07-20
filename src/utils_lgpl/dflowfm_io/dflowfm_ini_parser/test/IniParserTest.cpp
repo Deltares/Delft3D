@@ -394,33 +394,6 @@ namespace ini::test
             std::format_error);
     }
 
-    class IniParserInvalidPropertyFormatTest : public ::testing::TestWithParam<std::string>
-    {
-    };
-
-    TEST_P(IniParserInvalidPropertyFormatTest, Parse_InvalidPropertyFormat_ThrowsFormatError)
-    {
-        IniParser parser = CreateParser();
-        const std::string ini = "[section]\n" + GetParam();
-
-        EXPECT_THROW(
-            {
-                try
-                {
-                    parser.Parse(ini);
-                }
-                catch (const std::format_error& ex)
-                {
-                    EXPECT_STREQ(ex.what(), "Error on line 2: invalid INI-formatted text.");
-                    throw;
-                }
-            },
-            std::format_error);
-    }
-
-    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserInvalidPropertyFormatTest,
-                             ::testing::Values("property == value", "property = value = value"));
-
     class IniParserPropertyWithoutKeyTest : public ::testing::TestWithParam<std::string>
     {
     };
