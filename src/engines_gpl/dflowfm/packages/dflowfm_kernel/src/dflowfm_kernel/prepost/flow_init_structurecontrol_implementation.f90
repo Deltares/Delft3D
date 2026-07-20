@@ -878,7 +878,7 @@ contains
                      qid = 'generalstructure'
                      fnam = trim(rec)
                      call resolvePath(fnam, md_structurefile_dir)
-                     ! Time-interpolated value will be placed in zcgen((n-1)*4+3) when calling ec_gettimespacevalue.
+                     ! Time-interpolated value will be placed in zcgen((n-1)*4+2) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if

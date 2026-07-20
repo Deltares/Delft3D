@@ -106,16 +106,22 @@ contains
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
+      ! Local variables
+      integer :: i
       integer :: i_const
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
+      real(kind=dp), dimension(:), allocatable :: zcgen_local_kx3 !< Local array for zcgen with 3 columns (width, height, crestlevel) to be passed to ec_gettimespacevalue
 
       call timstrt('External forcings', handle_ext)
 
       success = .true.
+
+      allocate(zcgen_local_kx3(ncgensg * 3))
 
       if (allocated(air_pressure)) then
          ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
@@ -190,7 +196,15 @@ contains
       end if
 
       if (ncgensg > 0) then
-         call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
+         call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen_local_kx3, time_in_seconds)
+
+         ! Copy zcgen_local_kx3 values to zcgen array
+         do i = 0, ncgensg - 1
+            zcgen(i * 4 + 1) = zcgen_local_kx3(i * 3 + 1)
+            zcgen(i * 4 + 2) = zcgen_local_kx3(i * 3 + 2)
+            zcgen(i * 4 + 4) = zcgen_local_kx3(i * 3 + 3)
+         end do
+
          call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
       end if
 
