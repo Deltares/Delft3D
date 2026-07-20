@@ -1222,7 +1222,6 @@ contains
    ! --------------------------------------------------------------------
    !
    integer function preprocINI(infilename, error, outfilename) result(outfilenumber)
-      use MessageHandling
       !
       ! Parameters
       !
