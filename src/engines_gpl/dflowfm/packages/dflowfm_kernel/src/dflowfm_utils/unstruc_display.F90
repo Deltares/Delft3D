@@ -1513,7 +1513,7 @@ contains
       call Write2Scr(linec, 'Net link number', L, '-')
       call Write2Scr(linec, 'Net link type  (kn3)', kn(3, L), '-')
 
-      if (network%loaded .and. kcu(LL) == 1) then
+      if (network%loaded .and. kcu(LL) == LINK_1D) then
          branchindex = network%adm%lin2ibr(LL)
          if (branchindex >= 1 .and. branchindex <= network%brs%Count) then
             call Write2Scr(linec, 'Branch id', network%brs%branch(branchindex)%id(1:21))
@@ -1547,7 +1547,7 @@ contains
       end if
 
 ! If this flowlink has a stucture on it, then also display related info.
-      if (network%loaded .and. kcu(LL) == 1) then
+      if (network%loaded .and. kcu(LL) == LINK_1D) then
          nstruc = network%adm%lin2str(LL) ! Assume only 1 structure on the flowlink
       else
          nstruc = 0

@@ -38,6 +38,7 @@ contains
 
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
+      use m_relative_wind, only: compute_wind_relative_to_surface_scalar
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
       use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
                             soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
@@ -103,14 +104,7 @@ contains
       net_solar_radiation_in_cell = 0.0_dp
       nominal_solar_radiation_in_cell = nominal_solar_radiation
       call getlink1(n, L)
-      if (relativewind > 0.0_dp) then
-         wxL = wx(L) - relativewind * ucx(ktop(n))
-         wyL = wy(L) - relativewind * ucy(ktop(n))
-      else
-         wxL = wx(L)
-         wyL = wy(L)
-      end if
-      wind_speed_in_cell = sqrt(wxL * wxL + wyL * wyL)
+      call compute_wind_relative_to_surface_scalar(wx(L), wy(L), relativewind, ucx(ktop(n)), ucy(ktop(n)), wxL, wyL, wind_speed_in_cell)
 
       call getkbotktop(n, k_bot, k_top)
 
@@ -344,10 +338,13 @@ contains
          end if
          
          if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
-            total_heat_flux = latent_heat_flux(n) + sensible_heat_flux(n) + longwave_radiation_flux 
-         else
-            total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
+            forced_latent_heat_flux = latent_heat_flux(n)
+            forced_sensible_heat_flux = sensible_heat_flux(n)
+            free_convective_sensible_heat_flux = 0.0_dp
+            free_convective_latent_heat_flux = 0.0_dp
          end if
+         
+         total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
          
          if (jaevap > 0) then
             evap(n) = (forced_latent_heat_flux + free_convective_latent_heat_flux) / (latent_heat_vaporization * rhomean) * ice_free_area_fraction

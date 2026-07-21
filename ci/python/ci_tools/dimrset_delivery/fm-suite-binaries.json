@@ -547,6 +547,10 @@
         {
             "file": "bin\\zlib1.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "share\\delft3d\\open_process_lib_example\\code\\decayt.dll",
+            "issuedTo": "Stichting Deltares"
         }
     ],
     "notSigned": [
