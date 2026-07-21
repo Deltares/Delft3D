@@ -122,6 +122,7 @@ contains
       success = .true.
 
       allocate(zcgen_local_kx3(ncgensg * 3))
+      zcgen_local_kx3 = -999.0_dp
 
       if (allocated(air_pressure)) then
          ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
@@ -200,9 +201,9 @@ contains
 
          ! Copy zcgen_local_kx3 values to zcgen array
          do i = 0, ncgensg - 1
-            zcgen(i * 4 + 1) = zcgen_local_kx3(i * 3 + 1)
-            zcgen(i * 4 + 2) = zcgen_local_kx3(i * 3 + 2)
-            zcgen(i * 4 + 4) = zcgen_local_kx3(i * 3 + 3)
+            zcgen(i * 4 + 1) = max(zcgen(i * 4 + 1), zcgen_local_kx3(i * 3 + 1))
+            zcgen(i * 4 + 2) = max(zcgen(i * 4 + 2), zcgen_local_kx3(i * 3 + 2))
+            zcgen(i * 4 + 4) = max(zcgen(i * 4 + 4), zcgen_local_kx3(i * 3 + 3))
          end do
 
          call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
