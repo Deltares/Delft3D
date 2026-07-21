@@ -62,7 +62,8 @@ module m_unc_write_his
               id_cmpstrudim, id_cmpstru_id, &
               id_longculvertdim, id_longculvert_id, &
               id_latdim, id_lat_id, &
-              id_rugdim, id_rugname
+              id_rugdim, id_rugname, &
+              id_morfac, id_morft
 
    ! ids for geometry variables, only use them once at the first time of history output
    integer :: &
@@ -135,6 +136,7 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
+      real(kind=dp) :: moravg, dmorft, mortime
 
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
@@ -274,6 +276,11 @@ contains
             if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr == 2) then
                call check_netcdf_error(nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
             end if
+            if (stmpar%morpar%moroutput%morfac) then
+               call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morfac, nf90_double, [id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-'))
+            end if
+         
+            call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morft, nf90_double, [id_timedim], 'morft', '', 'Current morphological time', 's'))
          end if
 
          ! Time
@@ -764,6 +771,23 @@ contains
       call check_netcdf_error(nf90_put_var(ihisfile, id_timestep, dts, [it_his]))
       if (timon) then
          call timstop(handle_extra(64))
+      end if
+      
+      !morfac and morft
+      if (his_write_settings%sed > 0 .and. stm_included) then
+         dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
+         mortime = stmpar%morpar%morft * 86400.0_dp ! seconds*morfac since tstart_user
+         if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
+            moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
+         else
+            moravg = 0.0_dp
+         end if
+      
+         if (stmpar%morpar%moroutput%morfac) then
+            call check_netcdf_error(nf90_put_var(ihisfile, id_morfac, moravg, [it_his]))
+         end if
+      
+         call check_netcdf_error(nf90_put_var(ihisfile, id_morft, mortime, [it_his]))
       end if
 
 !   Observation points (fixed+moving)
