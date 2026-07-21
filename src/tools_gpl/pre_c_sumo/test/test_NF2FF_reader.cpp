@@ -83,6 +83,25 @@ namespace
      </discharge>
   </NF2FF>)";
 
+    constexpr std::string_view invalid_xml_negative_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>-1.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+      <sinks>
+         250.000 350.087 9.700 1.000 0.000 0.000
+      </sinks>
+      <sources>
+         1050.000 350.365 5.000 5.000 5 15.000
+      </sources>
+    </NFResult>
+  </NF2FF>)";
+
     constexpr std::string_view invalid_xml_no_source_flow = R"(<?xml version="1.0" encoding="utf-8"?>
   <NF2FF>
      <fileVersion>0.3</fileVersion>
@@ -450,6 +469,13 @@ TEST(NF2FFReaderTest, ReturnsErrorOnSurplusQintake)
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_surplus_intake_flow);
     ASSERT_FALSE(result.has_value());
     EXPECT_PRED2(test_utilities::contains, result.error().message, "<Qintake> must contain exactly one numeric value");
+}
+
+TEST(NF2FFReaderTest, ReturnsErrorOnNegativeQintake)
+{
+   const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_negative_intake_flow);
+   ASSERT_FALSE(result.has_value());
+   EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qintake> should be a value >= 0.0");
 }
 
 TEST(NF2FFReaderTest, ParsesMissingQintakeAsZero)

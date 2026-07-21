@@ -90,7 +90,7 @@ namespace pre_c_sumo
 
             // Collect all data for the ambient points
             std::vector<FarFieldPoint2D> ambient_points{};
-            for (std::size_t position_index = 0; position_index < diffuser.ambient_positions.size(); ++position_index)
+            for (const auto& [position_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
             {
                 const std::size_t ambient_index =
                     static_cast<std::size_t>(position_index) + mapping.first_ambient_point_index;
@@ -161,9 +161,7 @@ namespace pre_c_sumo
                 }
                 else
                 {
-                    std::println(stderr,
-                                 "Error reading NF2FF file {}: {}",
-                                 nf2ff_filepath.string(),
+                    std::println(stderr, "Error reading NF2FF file {}: {}", nf2ff_filepath.string(),
                                  reader.error().message);
                 }
             }
@@ -221,8 +219,8 @@ namespace pre_c_sumo
      * @param nf2ff_readers NF2FF snapshots for the current coupling time.
      * @return Connected source/sink data ready to write via preCICE.
      */
-    ConnectedSinkSources convertNFtoConnectedSinkSources(
-        const CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
+    ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
+                                                         const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
 
@@ -232,6 +230,9 @@ namespace pre_c_sumo
             const auto& diffuser_setting = csumoSettings.diffusers()[diffuser_index];
             std::vector<SourceOrSinkData> sources;
 
+            // Normalize the source list once: non-modelled diffusers expand a single NF2FF source
+            // into a generated DESA track, so all downstream loops must use this converted list
+            // instead of the raw diffuser.sources() snapshot.
             if (!isDiffuserModelled(diffuser))
             {
                 sources = createDiffuserModel(diffuser);
@@ -250,11 +251,11 @@ namespace pre_c_sumo
             source_weight_norm = std::max(source_weight_norm, 1.0);
 
             const auto sinks = diffuser.sinks();
-            const std::size_t first_sink_index = sinks.size() > 1 ? 1 : 0;
-            for (std::size_t sink_index = first_sink_index; sink_index < sinks.size(); sink_index++)
+            // Match FM nearfield parity: entrainment starts at the second sink because
+            // delta_s uses the previous sink value, so a 1-sink case produces no entrainment entries.
+            for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
             {
-                const double previous_entrainment = sink_index > 0 ? sinks[sink_index - 1].entrainment : 0.0;
-                double delta_s = sinks[sink_index].entrainment - previous_entrainment;
+                double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
                 const auto& sink = sinks[sink_index];
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
                 double sink_z_bottom = -sink.z_coordinate - sink.half_plume_height;

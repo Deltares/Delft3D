@@ -319,7 +319,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So2YieldsExpectedDischarges)
     const auto connected = convert_from_synthetic_case(2u, 2u, true, 10.0);
     ASSERT_EQ(connected.size(), 5u);
 
-    const auto& discharges = connected.discharge_values();
+    const auto& discharges = connected.get_discharge_value();
     ASSERT_EQ(discharges.size(), 5u);
     EXPECT_DOUBLE_EQ(discharges[0], 20.0);
     EXPECT_DOUBLE_EQ(discharges[1], 20.0);
@@ -333,7 +333,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
     const auto connected = convert_from_synthetic_case(2u, 1u, false, 0.0);
     ASSERT_EQ(connected.size(), 2001u);
 
-    const auto& discharges = connected.discharge_values();
+    const auto& discharges = connected.get_discharge_value();
     ASSERT_EQ(discharges.size(), 2001u);
     EXPECT_NEAR(discharges[0], 0.02, 1e-12);
     EXPECT_DOUBLE_EQ(discharges[1000], 0.0);

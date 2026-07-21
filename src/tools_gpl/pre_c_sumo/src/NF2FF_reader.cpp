@@ -240,6 +240,11 @@ namespace pre_c_sumo
         {
             // Missing Qintake defaults to 0.0; present Qintake must be valid.
             ASSIGN_OR_RETURN(intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+            if (intake_flow_rate < 0.0)
+            {
+                return std::unexpected(parsing_utils::ParseError{std::format(
+                    "Element <Qintake> should be a value >= 0.0, got: {}", intake_flow_rate)});
+            }
         }
         ASSIGN_OR_RETURN(const auto source_flow_rate, parseRequiredDouble(discharge_node, "Qsource"));
         ASSIGN_OR_RETURN(const auto constituents_operator, parseConstituentsOperator(discharge_node));
