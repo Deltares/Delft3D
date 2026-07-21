@@ -153,10 +153,10 @@ contains
       if (jased > 0 .and. jased < 4) then
 
          if (nbndz > 0) then
-            call setequilibriumsedimentbnds(nbndz, 6, kbndz, kbanz, 0)
+            call setequilibriumsedimentbnds(nbndz, 8, kbndz, kbanz, 0)
          end if
          if (nbndu > 0) then
-            call setequilibriumsedimentbnds(nbndu, 6, kbndu, kbanu, 1)
+            call setequilibriumsedimentbnds(nbndu, 8, kbndu, kbanu, 1)
          end if
 
          do k = 1, nbndsd ! set prescribed sediment boundary conditions
