@@ -90,12 +90,12 @@ contains
                         qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
+      use m_turbulence, only: potential_density, in_situ_density, difwws, difwws_total, vicwwu_total, vicwws_total, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
-      use network_data, only: LINK_1D2D_STREETINLET     
+      use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -197,7 +197,7 @@ contains
          numkmax = -numkmin
          do Lf = Lnx1D + 1, Lnx ! we only need netnode nrs in 2D, todo: trim to numkmin
             L = ln2lne(Lf)
-            if (kn(3, L) == 2) then
+            if (kn(3, L) == LINK_2D) then
                numkmin = min(numkmin, kn(1, L), kn(2, L))
                numkmax = max(numkmax, kn(1, L), kn(2, L))
             end if
@@ -880,10 +880,16 @@ contains
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
+         call realloc(vicwwu_total, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwwu_total(lnkx)', ierr, lnkx)
          call realloc(vicwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwws(ndkx)', ierr, ndkx)
+         call realloc(vicwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwws_total(ndkx)', ierr, ndkx)
          call realloc(difwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('difwws(ndkx)', ierr, ndkx)
+         call realloc(difwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('difwws_total(ndkx)', ierr, ndkx)
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
@@ -1040,7 +1046,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1048,7 +1054,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1074,7 +1080,7 @@ contains
          end if
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
-            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
             end if
