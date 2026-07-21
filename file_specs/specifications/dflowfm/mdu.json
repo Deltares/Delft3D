@@ -1949,6 +1949,7 @@
                     "enum_values": {
                         "0": "none",
                         "4": "theta implicit",
+                        "5": "legacy mode for backwards compatibility",
                         "6": "higher order explicit, no Forester filter"
                     }
                 },
