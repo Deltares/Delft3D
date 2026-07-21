@@ -68,31 +68,11 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      infilt(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("infiltcap0")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     infiltcap0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("infiltcap")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      infiltcap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonMinInfCap")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     horton_infiltration_config%min_inf_cap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonMaxInfCap")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     horton_infiltration_config%max_inf_cap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonDecreaseRate")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     horton_infiltration_config%decrease_rate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonRecoveryRate")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     horton_infiltration_config%recovery_rate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonState")
+  case("horton_state")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
      horton_state(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr

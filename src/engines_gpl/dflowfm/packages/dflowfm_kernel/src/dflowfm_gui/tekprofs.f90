@@ -74,6 +74,7 @@ contains
       real(kind=dp) :: zmin, zmax
       real(kind=dp) :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
       real(kind=dp) :: tkebot, tkesur, tkewin
+      real(kind=dp) :: cewall
       real(kind=dp) :: epsbot, epssur, dzkap, sqcf, ulx, sg
       real(kind=dp) :: VMAX2, VMIN2
       integer :: is, Ls, LLs, Lbs, Lts
@@ -181,7 +182,7 @@ contains
 
             if (iturbulencemodel == 1) then
 
-               vicwref = vicoww
+               vicwref = vicoww%get(LL)
 
             else if (iturbulencemodel == 2) then
 
@@ -352,7 +353,7 @@ contains
 
          else if (frcuni > 0 .and. ndraw(35) == 1 .and. LL > 0) then
             ! if (jaref > 0) call TEKFN(5, 9, 0, teps1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'teps1'      , 0, 1 , 0d0,0)   ! interfaces
-            dijdij(1:km - 1) = (vicwwu(Lb:Lt - 1) + vicoww) * (u1(Lb + 1:Lt) - u1(Lb:Lt - 1)) * 2.0_dp / (hu(Lb + 1:Lt) + hu(Lb:Lt - 1))
+            dijdij(1:km - 1) = (vicwwu(Lb:Lt - 1) + vicoww%get(LL)) * (u1(Lb + 1:Lt) - u1(Lb:Lt - 1)) * 2.0_dp / (hu(Lb + 1:Lt) + hu(Lb:Lt - 1))
             dijdij(0) = ustb(L) * ustb(L)
             if (csu(L) * u1(Lb) < 0) then
                dijdij(0) = -dijdij(0)
@@ -415,7 +416,7 @@ contains
             call TEKFN(7, 13, 1, ucy(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'y-velocity', 0, 2, 0.0_dp, kplot)
          end if
 
-         if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then
             vmin = minval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = maxval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = max(abs(vmin), abs(vmax))

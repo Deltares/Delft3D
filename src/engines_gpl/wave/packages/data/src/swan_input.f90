@@ -128,7 +128,9 @@ module swan_input
       integer :: myb
       integer :: mxc
       integer :: myc
-      integer :: vegetation
+      integer :: vegetation !> corresponds with idrag in SWAN: 1: Suzuki, 2: Jacobsen. "true" is allowed for backwards compatibility, corresponding to idrag=1
+                            !> Behaviour is changed with introducing the separate parameter veg_from_flow for keyword VegSVNPlants:
+                            !> It used to be: vegetation=1: Suzuki, vegetation=2:VegSVNPlants
       integer :: ice = 0
       integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
@@ -137,6 +139,7 @@ module swan_input
       !    FVT_DEPTH_AVERAGED (default): use depth averaged FLOW velocity
       !    FVT_WAVE_DEPENDENT          : use FLOW velocity, averaged in a wave dependent way
       logical :: cgnum
+      logical :: veg_from_flow !> true if vegetation is read from flow and passed through to SWAN (input keyword: VegSVNPlants)
       character(256) :: botfil
       character(256) :: curlif
       character(256) :: depfil
@@ -243,7 +246,7 @@ module swan_input
       logical :: curviwind
       logical :: fshift
       logical :: hotfile
-      logical :: nautconv
+      logical :: nautical_convention
       logical :: output_points
       logical :: output_pnt_file
       logical :: output_spec1d
@@ -299,7 +302,7 @@ module swan_input
       real :: grav
       real, dimension(7) :: icecoeff
       real :: icewind
-      real :: northdir
+      real :: north_direction
       real :: percwet
       real :: rho
       real :: rhomud
@@ -554,7 +557,7 @@ contains
       real :: def_enddir
       real :: def_freqmin
       real :: def_freqmax
-      real :: tscale
+      real(hp) :: tscale
       real, dimension(2) :: xy
       character(10) :: exemode
       character(10) :: versionstring
@@ -736,9 +739,9 @@ contains
       call str_lower(parname, len(parname))
       select case (parname)
       case ('nautical')
-         sr%nautconv = .true.
+         sr%nautical_convention = .true.
       case ('cartesian')
-         sr%nautconv = .false.
+         sr%nautical_convention = .false.
       case default
          write (*, *) 'SWAN_INPUT: missing or invalid direction convention'
          call handle_errors_mdw(sr)
@@ -765,7 +768,7 @@ contains
       sr%tzone = 0.0
       call prop_get(mdw_ptr, 'General', 'TZone', sr%tzone)
       !
-      tscale = 60.0
+      tscale = 60.0_hp
       call prop_get(mdw_ptr, 'General', 'TScale', tscale)
       call settscale(wavedata%time, tscale)
       !
@@ -1044,14 +1047,14 @@ contains
       !
       sr%grav = 9.81
       sr%rho = 1025.0
-      sr%northdir = 90.0
+      sr%north_direction = 90.0
       sr%depmin = 0.05
       sr%inrhog = 1
       sr%wlevelcorr = 0.0
       sr%maxerr = 2
       call prop_get(mdw_ptr, 'Constants', 'Gravity', sr%grav)
       call prop_get(mdw_ptr, 'Constants', 'WaterDensity', sr%rho)
-      call prop_get(mdw_ptr, 'Constants', 'NorthDir', sr%northdir)
+      call prop_get(mdw_ptr, 'Constants', 'NorthDir', sr%north_direction)
       call prop_get(mdw_ptr, 'Constants', 'MinimumDepth', sr%depmin)
       call prop_get(mdw_ptr, 'Constants', 'WaterLevelCorrection', sr%wlevelcorr)
       call prop_get(mdw_ptr, 'Constants', 'MaxErrorLevel', sr%maxerr)
@@ -1564,6 +1567,13 @@ contains
          ! Read computational grid
          !
          call prop_get(tmp_ptr, '*', 'Grid', dom%curlif)
+         if (count_words(dom%curlif) > 1) then
+            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif) ,'" contains spaces which is not permitted.'
+            call replace_char(dom%curlif,32,95)  ! replace ' ' by '_'
+            call replace_char(dom%curlif,9,95)   ! replace tab by '_'
+            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif) ,'" and adjust input accordingly.'
+            call handle_errors_mdw(sr)
+         end if
          call readgriddims(dom%curlif, dom%mxc, dom%myc)
          if (dom%curlif == '') then
             write (*, *) 'SWAN_INPUT: grid not found for domain', domainnr
@@ -1599,31 +1609,40 @@ contains
             call handle_errors_mdw(sr)
          end if
          !
-         flag = .false.
-         dom%vegetation = 0
-         call prop_get(tmp_ptr, '*', 'Vegetation', flag)
-         if (flag) then
-            dom%vegetation = 1
+         dom%vegetation = -999
+         dom%veg_from_flow = .false.
+         call prop_get(tmp_ptr, '*', 'Vegetation', dom%vegetation)
+         if (dom%vegetation == -999) then
+            ! Backwards compatible: allow "Vegetation = true"
+            flag = .false.
+            call prop_get(tmp_ptr, '*', 'Vegetation', flag)
+            if (flag) then
+               dom%vegetation = 1
+            else
+               dom%vegetation = 0
+            end if
          end if
-         flag = .false.
-         call prop_get(tmp_ptr, '*', 'VegSVNPlants', flag)
-         if (flag) then
-            dom%vegetation = 2
+         call prop_get(tmp_ptr, '*', 'VegSVNPlants', dom%veg_from_flow)
+         if (dom%veg_from_flow .and. dom%vegetation<=0) then
+            ! Backwards compatibility:
+            ! If VegSVNPlants is true and Vegetation is not specified by the user, set Vegetation=1
+            dom%vegetation = 1
          end if
          if (dom%vegetation >= 1) then
             call prop_get(tmp_ptr, '*', 'VegHeight', dom%veg_height)
             call prop_get(tmp_ptr, '*', 'VegDiamtr', dom%veg_diamtr)
             call prop_get(tmp_ptr, '*', 'VegDrag', dom%veg_drag)
          end if
-         if (dom%vegetation == 1) then
+         if (.not.dom%veg_from_flow) then
+            ! When veg_from_flow is true, VegNstems will be set by flow
+            ! When veg_from_flow is false, the user has to define VegNstems or provide a related map file
             call prop_get(tmp_ptr, '*', 'VegNstems', dom%veg_nstems)
             !
             ! Read vegetation map
             !
             call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
-            if (dom%vegfil == '') then
+            if (dom%vegetation> 0 .and. dom%vegfil == '') then
                write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
-               !call handle_errors_mdw(sr)
             end if
          end if
          !
@@ -1631,6 +1650,13 @@ contains
          if (dom%vegetation > 0) then
             sr%output_veg = 1
          end if
+         select case (dom%vegetation)
+         case (1)
+            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
+         case (2)
+            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
+         case default
+         end select
          !
          ! Read directional space
          !
@@ -2776,7 +2802,7 @@ contains
       line(1:22) = 'SET   LEVEL =         '
       line(23:47) = 'NOR =           DEPMIN = '
       write (line(15:21), '(F6.2)') wlevelcorr
-      write (line(29:34), '(F6.2)') sr%northdir
+      write (line(29:34), '(F6.2)') sr%north_direction
       write (line(48:53), '(F6.2)') sr%depmin
       line(54:55) = ' _'
       write (luninp, '(1X,A)') line
@@ -2793,7 +2819,7 @@ contains
       line(54:55) = ' _'
       write (luninp, '(1X,A)') line
       line = ' '
-      if (sr%nautconv) then
+      if (sr%nautical_convention) then
          line(7:11) = 'NAUT '
       else
          line(7:11) = 'CART '
@@ -3005,8 +3031,29 @@ contains
       !
       !     Vegetation map
       !
-      if (dom%vegetation == 1) then
-         if (dom%vegfil /= '') then
+      if (dom%vegetation >= 1) then
+         if (.not.dom%veg_from_flow) then
+            if (dom%vegfil /= '') then
+               write (luninp, '(1X,A)') '$'
+               lijn = 'INPGRID _'
+               line(1:19) = 'NPLANTS CURV 0. 0. '
+               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+               write (luninp, '(1X,A)') lijn
+               write (luninp, '(1X,A)') trim(line)
+               line = ' '
+               !
+               !     File-name vegetation map (use temporary file)
+               !
+               line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
+               write (luninp, '(1X,A)') trim(line)
+            end if
+            line = ' '
+            line(1:10) = 'VEGETATION'
+            write (line(15:), '(I0,1X,F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%vegetation, dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
+            write (luninp, '(1X,A)') line
+            line = ' '
+         else
+            ! dom%veg_from_flow is true
             write (luninp, '(1X,A)') '$'
             lijn = 'INPGRID _'
             line(1:19) = 'NPLANTS CURV 0. 0. '
@@ -3019,32 +3066,12 @@ contains
             !
             line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
             write (luninp, '(1X,A)') trim(line)
+            line = ' '
+            line(1:10) = 'VEGETATION'
+            write (line(15:), '(I0,1X,F6.2,1X,F7.4,1X,A,1X,F6.2)') dom%vegetation, sr%veg_height, sr%veg_diamtr, "1", dom%veg_drag
+            write (luninp, '(1X,A)') line
+            line = ' '
          end if
-         line = ' '
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
-         write (luninp, '(1X,A)') line
-         line = ' '
-      end if
-      !
-      if (dom%vegetation == 2) then
-         write (luninp, '(1X,A)') '$'
-         lijn = 'INPGRID _'
-         line(1:19) = 'NPLANTS CURV 0. 0. '
-         write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
-         write (luninp, '(1X,A)') lijn
-         write (luninp, '(1X,A)') trim(line)
-         line = ' '
-         !
-         !     File-name vegetation map (use temporary file)
-         !
-         line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
-         write (luninp, '(1X,A)') trim(line)
-         line = ' '
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,A,1X,F6.2)') sr%veg_height, sr%veg_diamtr, "1", dom%veg_drag
-         write (luninp, '(1X,A)') line
-         line = ' '
       end if
 !-----------------------------------------------------------------------
       !
@@ -3472,12 +3499,6 @@ contains
       if (.not. sr%fshift) then
          line(1:10) = 'OFF FSHIFT'
          line(11:) = ' '
-         write (luninp, '(1X,A)') line
-         line = ' '
-      end if
-      if (dom%vegetation == 1) then
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,I4,1X,F7.4)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
          write (luninp, '(1X,A)') line
          line = ' '
       end if

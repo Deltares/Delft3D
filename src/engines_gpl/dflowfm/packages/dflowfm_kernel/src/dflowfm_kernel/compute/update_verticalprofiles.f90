@@ -45,13 +45,14 @@ contains
    subroutine update_verticalprofiles()
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
-      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flowwithoutwaves, adve, u1, qw, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
-                        eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
+      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, qw, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
-                        c1e, c1t, c2t, c9of1, eps6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, tur_time_int_factor, eps20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
+                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
+      use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
@@ -60,7 +61,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
-                              c3t_stable, c3t_unstable
+                  c3t_stable, c3t_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -113,7 +114,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -168,7 +169,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -221,7 +222,7 @@ contains
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
-            if (numsrc > 0 .and. addksources > 0.0_dp) then
+            if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
                call doaddksources()
             end if
 
@@ -275,7 +276,7 @@ contains
                   k = L - Lb + 1
                   !k1   = ln(1,L)  ; k2  = ln(2,L)
                   !dzu(k) = acl(LL)*(zws(k1)-zws(k1-1)) + (1.0_dp-acl(LL))*(zws(k2)-zws(k2-1))
-                  dzu(k) = max(eps4, hu(L) - hu(L - 1))
+                  dzu(k) = max(EPS4, hu(L) - hu(L - 1))
 
                   ! if (dzu(k) < 1d-10) then
                   !   call qnerror('dzu(k) < 1d-10',' ',' ')
@@ -319,7 +320,7 @@ contains
 
                ! Calculate turkin source from wave dissipation: preparation
                if (jawave > NO_WAVES) then
-                  if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+                  if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
                      adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                   end if
 
@@ -419,7 +420,7 @@ contains
                   ! Addition of production and of dissipation to matrix ;
                   ! observe implicit treatment by Newton linearization.
 
-                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flowWithoutWaves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
+                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flow_without_waves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
                      dijdij(k) = ((u1(Lu) - ustokes(Lu) - u1(L) + ustokes(L))**2 + (v(Lu) - vstokes(Lu) - v(L) + vstokes(L))**2) / dzw(k)**2
                   else
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
@@ -752,7 +753,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = 0.0_dp
                   if (ustb(LL) > 0) then
-                     dk(0) = vonkar * c9of1 * z00 / (max(ustb(LL), eps6) * 0.3_dp)
+                     dk(0) = vonkar * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
                   else
                      dk(0) = 0.0_dp
                   end if
@@ -853,11 +854,11 @@ contains
                      turkin1(Lb - 1) = tke * (1.0_dp - alfaT) + alfaT * turkin1(Lb - 1)
                      eps = epsbot / (hu(Lb) - hu(Lb - 1))
                      tureps1(Lb - 1) = eps * (1.0_dp - alfaT) + alfaT * tureps1(Lb - 1)
-
-                     if (jamodelspecific == 1) then
-                        call update_turkin_modelspecific(LL) ! will update turkin1 and tureps1 for all layers of flow link LL.
-                     end if
                   end if
+               end if
+
+               if (jamodelspecific == 1) then
+                  call update_turkin_modelspecific(LL) ! will update turkin1 and tureps1 for all layers of flow link LL.
                end if
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
@@ -901,7 +902,7 @@ contains
          do L = Lb, Lt - 1
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (tur_node(k1) > eps20 .and. tur_node(k2) > eps20) then
+            if (tur_node(k1) > EPS20 .and. tur_node(k2) > EPS20) then
                if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
                   dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
                end if

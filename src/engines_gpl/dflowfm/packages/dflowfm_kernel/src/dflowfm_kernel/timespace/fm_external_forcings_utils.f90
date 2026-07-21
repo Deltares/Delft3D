@@ -35,7 +35,14 @@ module fm_external_forcings_utils
 
    private
 
-   public :: split_qid, get_tracername, get_sedfracname, get_constituent_name, read_tracer_properties
+   public :: split_qid
+   public :: get_tracername
+   public :: get_sedfracname
+   public :: get_constituent_name
+   public :: read_tracer_properties
+   public :: read_bubblescreen_forcing_attributes
+
+   integer, parameter :: INI_VALUE_LEN = 256
 
 contains
 
@@ -149,7 +156,9 @@ contains
 
    !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
    !! If the original_quantity does not involve consituents, then the passed base_quantity is unchanged (and empty constituent name).
+   !! The quantity can have a postfix 'Delta', but this is optional:
    !! For example: 'sourcesink_salinityDelta' -> 'sourcesink_constituentDelta', 'salinity'.
+   !! Or:          'sourcesink_salinity' -> 'sourcesink_constituentDelta', 'salinity'.
    !!
    !! This subroutine currently only covers source sinks, because they are the only external forcings that generalize on
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
@@ -170,11 +179,18 @@ contains
       index_prefix_end = min(len_trim('sourcesink_'), quantity_length)
       index_suffix_start = max(1, quantity_length - len_trim('Delta') + 1)
 
-      if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_') &
-          .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
-         ! First, remove the 'sourcesink_' and 'Delta' parts from the original quantity.
+      ! First, remove the 'sourcesink_' and (optionally) 'Delta' parts from the original quantity.
+      if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_')) then
+         if (strcmpi(original_quantity(index_prefix_end + 1: quantity_length), 'discharge')) then
+            return  ! Discharge is not a constituent. Do nothing.
+         end if
+
          base_quantity = 'sourcesink_constituentDelta'
-         constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+         if (strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
+            constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+         else
+            constituent_name = original_quantity(index_prefix_end + 1:)
+         end if
 
          ! Then, optionally remove the special constituent group name 'tracer' or 'sedFrac' part from the constituent name.
          if (strcmpi(constituent_name(1:6), 'tracer')) then
@@ -183,8 +199,6 @@ contains
             constituent_name = constituent_name(8:)
          end if
       end if
-
-      return
    end subroutine get_constituent_name
 
    !> Read tracer properties from an ini file node.
@@ -206,5 +220,70 @@ contains
       call prop_get(node_ptr, '', 'tracerDecayTime', tracer_decay_time)
       transformcoef(25) = tracer_decay_time
    end subroutine
+!> Read bubblescreen forcing attributes from block pointer
+function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, &
+                                              id, x_coordinates, y_coordinates, z_coordinates, num_columns, &
+                                              z_level, discharge_input) result(success)
+   use MessageHandling, only: err_flush, msgbuf
+   use properties, only: prop_get
+   use tree_data_types, only: tree_data
+   use m_read_location_info, only: read_polyline_coordinates
 
+   ! Parameters
+   type(tree_data), pointer, intent(in) :: block_ptr
+   character(len=*), intent(in) :: base_dir
+   character(len=*), intent(in) :: file_name
+   character(len=*), intent(in) :: group_name
+   character(len=255), intent(out) :: id
+   real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+   real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+   real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
+   integer, intent(out) :: num_columns
+   real(kind=dp), intent(out) :: z_level
+   character(len=:), allocatable, intent(out) :: discharge_input
+   logical :: success
+
+   ! Local variables
+   character(len=INI_VALUE_LEN) :: readout_id
+   character(len=INI_VALUE_LEN) :: readout_discharge_input
+   logical :: is_read
+
+   success = .false.
+   num_columns = 0
+
+   ! (required) id
+   call prop_get(block_ptr, '', 'id', readout_id, is_read)
+   if (.not. is_read .or. len_trim(readout_id) == 0) then
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''id'' is missing.'
+      call err_flush()
+      return
+   end if
+   id = trim(readout_id)
+
+   ! (required) polyline coordinates (from locationFile or inline keys)
+   call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
+                                  x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+   if (.not. success) return
+
+   ! (required) zLevel
+   call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
+   if (.not. is_read) then
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''zLevel'' is missing or invalid.'
+      call err_flush()
+      success = .false.
+      return
+   end if
+
+   ! (required) discharge
+   call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
+   if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+      call err_flush()
+      success = .false.
+      return
+   end if
+   discharge_input = trim(readout_discharge_input)
+
+   success = .true.
+end function read_bubblescreen_forcing_attributes
 end module fm_external_forcings_utils

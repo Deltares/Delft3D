@@ -1,4 +1,4 @@
-!----- AGPL --------------------------------------------------------------------
+﻿!----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2026.
 !
@@ -34,7 +34,7 @@ module m_flow ! flow arrays-999
    use fm_external_forcings_data
    use m_alloc
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, &
-      max_iterations_pressure_density, jabarocponbnd
+                                   max_iterations_pressure_density, jabarocponbnd
    use m_flowparameters
    use m_flowoutput
    use m_grw
@@ -64,9 +64,11 @@ module m_flow ! flow arrays-999
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
+   integer, allocatable, dimension(:) :: ndkx_to_ndx  ! Maps NDKX â†’ NDX
+
    real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
-   integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters 
+   integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters
    integer, parameter :: LAYTP_SIGMA = 1 !< Sigma-layers
    integer, parameter :: LAYTP_Z = 2 !< Fixed z- or z-sigma-layers
    integer, parameter :: LAYTP_POLYGON_MIXED = 3 !< Mixed layering in polygon regions (layer count + layertype in each polygon's z-values)
@@ -80,31 +82,31 @@ module m_flow ! flow arrays-999
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
-   real(kind=dp) :: sigmagrowthfactor !<layer thickness growth factor from bed up
+   real(kind=dp) :: z_layer_growth_factor !< z-layer thickness growth factor from DzTopUniAboveZ downwards
    real(kind=dp) :: dztopuniabovez = -999.0_dp !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999.0_dp !< floor  level of top zlayer, == sini if not specified
    real(kind=dp) :: dztop = -999.0_dp !< if specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx
    real(kind=dp) :: zlaybot = -999.0_dp !< if specified, first zlayer starts from zlaybot, if not, it starts from the lowest bed point
    real(kind=dp) :: zlaytop = -999.0_dp !< if specified, highest zlayer ends at zlaytop, if not, it ends at the initial water level
-   real(kind=dp), allocatable :: aak(:) !< coefficient vertical mom exchange of kmx layers
-   real(kind=dp), allocatable :: bbk(:) !< coefficient vertical mom exchange of kmx layers
-   real(kind=dp), allocatable :: cck(:) !< coefficient vertical mom exchange of kmx layers
-   real(kind=dp), allocatable :: ddk(:) !< coefficient vertical mom exchange of kmx layers
-   real(kind=dp), allocatable :: eek(:) !< coefficient vertical mom exchange of kmx layers
-   real(kind=dp), allocatable :: uuk(:) !< coefficient vertical mom exchange of kmx layers
+   real(kind=dp), allocatable, dimension(:) :: aak !< coefficient vertical mom exchange of kmx layers
+   real(kind=dp), allocatable, dimension(:) :: bbk !< coefficient vertical mom exchange of kmx layers
+   real(kind=dp), allocatable, dimension(:) :: cck !< coefficient vertical mom exchange of kmx layers
+   real(kind=dp), allocatable, dimension(:) :: ddk !< coefficient vertical mom exchange of kmx layers
+   real(kind=dp), allocatable, dimension(:) :: eek !< coefficient vertical mom exchange of kmx layers
+   real(kind=dp), allocatable, dimension(:) :: uuk !< coefficient vertical mom exchange of kmx layers
 
-   real(kind=dp), allocatable :: laycof(:) !< coefficients for sigma layer
+   real(kind=dp), allocatable, dimension(:) :: laycof !< coefficients for sigma layer
    !    1: Percentages of the layers, user defined, laycof(kmx)
    !    2: Stretching level, and two coefficients for layers growth, laycof(3)
    !
-   real(kind=dp), allocatable :: dzslay(:, :) ! the normalized thickness of layer, dim = (: , maxlaydefs)
+   real(kind=dp), allocatable, dimension(:, :) :: dzslay ! the normalized thickness of layer, dim = (: , maxlaydefs)
 
    !real(kind=dp), allocatable     :: dzu(:)           !< vertical layer size at layer centre    at u-velocity points (m) 1:kmx Local
    !real(kind=dp), allocatable     :: dzw(:)           !< vertical layer size at layer interface at u-velocity points (m) 1:kmx Local
    !< 1:kmx: bottom interface not included
 
-   real(kind=dp), allocatable, target :: zws(:) !< [m] z levels  (m) of interfaces (w-points) at cell centres (s-points) (m)    (1:ndkx) {"shape": ["ndkx"]}
-   real(kind=dp), allocatable :: zws0(:) !< z levels  (m) of interfaces (w-points) at cell centres (s-points) (m)    (1:ndkx), be
+   real(kind=dp), allocatable, target, dimension(:) :: zws !< [m] z levels  (m) of interfaces (w-points) at cell centres (s-points) (m)    (1:ndkx) {"shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: zws0 !< z levels  (m) of interfaces (w-points) at cell centres (s-points) (m)    (1:ndkx), be
 
                                                         !!
                                                         !!-------------------------------------  zws(2) = interface(2), zws (ktop(ndx) ) == s1(ndx)
@@ -122,122 +124,120 @@ module m_flow ! flow arrays-999
                                                         !!-------------------------------------  zws(0) = interface(0) = bl
                                                         !!
 
-   real(kind=dp), allocatable, target :: zcs(:) !< z levels at layer mid-points, only for nudging
+   real(kind=dp), allocatable, target, dimension(:) :: zcs !< z levels at layer mid-points, only for nudging
 
    !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
-   integer, allocatable, target :: kbot(:) !< [-] layer-compressed bottom layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
-   integer, allocatable, target :: ktop(:) !< [-] layer-compressed top layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
-   integer, allocatable :: ktop0(:) !< store of ktop
-   integer, allocatable :: kmxn(:) !< Maximum number of active vertical cells per horizontal base cell n (cell_index_2d). The maximum is decided upon initialization, depends on many keywords and can be smaller than kmx.
-   integer, allocatable, target :: Lbot(:) !< [-] layer-compressed bottom layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
-   integer, allocatable, target :: Ltop(:) !< [-] layer-compressed top layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
-   integer, allocatable :: kmxL(:) !< max nr of vertical links per base link L
-   integer, allocatable :: kbotc(:) !< as kbot, for cornerpoints
-   integer, allocatable :: kmxc(:) !< as kmxn, for cornerpoints
+   integer, allocatable, target, dimension(:) :: kbot !< [-] layer-compressed bottom layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
+   integer, allocatable, target, dimension(:) :: ktop !< [-] layer-compressed top layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
+   integer, allocatable, dimension(:) :: ktop0 !< store of ktop
+   integer, allocatable, dimension(:) :: kmxn !< Maximum number of active vertical cells per horizontal base cell n (cell_index_2d). The maximum is decided upon initialization, depends on many keywords and can be smaller than kmx.
+   integer, allocatable, target, dimension(:) :: Lbot !< [-] layer-compressed bottom layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
+   integer, allocatable, target, dimension(:) :: Ltop !< [-] layer-compressed top layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
+   integer, allocatable, dimension(:) :: kmxL !< max nr of vertical links per base link L
+   integer, allocatable, dimension(:) :: kbotc !< as kbot, for cornerpoints
+   integer, allocatable, dimension(:) :: kmxc !< as kmxn, for cornerpoints
 
    integer :: mxlaydefs = 4 !< max nr of layering definitions
-   integer, allocatable :: laydefnr(:) !< dim = (ndx), pointer to laydef, if positive to unique laydef, otherwise interpolate in 1,2, and 3
-   integer, allocatable :: laytyp(:) !< dim = (mxlaydefs), 1 = sigma, 2 = z
-   integer, allocatable :: laymx(:) !< dim = (mxlaydefs), max nr of layers
-   integer, allocatable :: nrlayn(:) !< dim = (ndx), max nr of layers
-   integer, allocatable :: nlaybn(:) !< dim = (ndx), bed lay nr
-   real(kind=dp), allocatable :: zslay(:, :) !< dim = (: , maxlaydefs) z or s coordinate,
-   real(kind=dp), allocatable :: wflaynod(:, :) !< dim = (3 , ndx) weight factors to flownodes indlaynod
-   integer, allocatable :: indlaynod(:, :) !< dim = (3 , ndx)
-   real(kind=dp), allocatable :: dkx(:) !< dim = ndx, sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
-   real(kind=dp), allocatable :: sdkx(:) !< dim = ndx, sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+   integer, allocatable, dimension(:) :: laydefnr !< dim = (ndx), pointer to laydef, if positive to unique laydef, otherwise interpolate in 1,2, and 3
+   integer, allocatable, dimension(:) :: laytyp !< dim = (mxlaydefs), 1 = sigma, 2 = z
+   integer, allocatable, dimension(:) :: laymx !< dim = (mxlaydefs), max nr of layers
+   integer, allocatable, dimension(:) :: nrlayn !< dim = (ndx), max nr of layers
+   integer, allocatable, dimension(:) :: nlaybn !< dim = (ndx), bed lay nr
+   real(kind=dp), allocatable, dimension(:, :) :: zslay !< dim = (: , maxlaydefs) z or s coordinate,
+   real(kind=dp), allocatable, dimension(:, :) :: wflaynod !< dim = (3 , ndx) weight factors to flownodes indlaynod
+   integer, allocatable, dimension(:, :) :: indlaynod !< dim = (3 , ndx)
+   real(kind=dp), allocatable, dimension(:) :: dkx !< dim = ndx, sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+   real(kind=dp), allocatable, dimension(:) :: sdkx !< dim = ndx, sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
-   real(kind=dp), allocatable :: asig(:) !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
-   real(kind=dp), allocatable :: ustb(:) !< ustar at Lbot, dim=Lnx,
-   real(kind=dp), allocatable :: ustw(:) !< ustar at Ltop, dim=Lnx
-   real(kind=dp), allocatable :: ustbc(:) !< ustar at bed at netnodes, dim=numk
+   real(kind=dp), allocatable, dimension(:) :: asig !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+   real(kind=dp), allocatable, dimension(:) :: ustb !< ustar at Lbot, dim=Lnx,
+   real(kind=dp), allocatable, dimension(:) :: ustw !< ustar at Ltop, dim=Lnx
+   real(kind=dp), allocatable, dimension(:) :: ustbc !< ustar at bed at netnodes, dim=numk
 
    integer :: nfixed, nsigma
 
    ! flow arrays
 
    ! node related, dim = ndx
-   real(kind=dp), allocatable, target :: s0(:) !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: s1(:) !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: s1max(:) !< [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable :: s00(:) !< waterlevel    (m ) for checking iteration in nonlin
-   real(kind=dp), allocatable, target :: a0(:) !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: a1(:) !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable :: sq(:) !< total  influx (m3/s) at water level point
-   real(kind=dp), allocatable :: sqa(:) !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
-   real(kind=dp), allocatable, target :: hs(:) !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable :: cfs(:) !< dimensionless friction coefficient sag/C in cell centre
-   real(kind=dp), allocatable :: volerror(:) !< volume error
+   real(kind=dp), allocatable, target, dimension(:) :: s0 !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: s1 !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: s1max !< [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: s00 !< waterlevel    (m ) for checking iteration in nonlin
+   real(kind=dp), allocatable, target, dimension(:) :: a0 !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: a1 !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol1 !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol0 !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol1_f !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, dimension(:) :: sq !< total  influx (m3/s) at water level point
+   real(kind=dp), allocatable, dimension(:) :: sqa !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
+   real(kind=dp), allocatable, target, dimension(:) :: hs !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: cfs !< dimensionless friction coefficient sag/C in cell centre
+   real(kind=dp), allocatable, dimension(:) :: volerror !< volume error
 
-   real(kind=dp), allocatable :: voldhu(:) !< node volume based on downwind hu
+   real(kind=dp), allocatable, dimension(:) :: voldhu !< node volume based on downwind hu
 
-   real(kind=dp), allocatable :: s1m(:) !< waterlevel   pressurized nonlin minus part
-   real(kind=dp), allocatable :: a1m(:) !< surface area pressurized nonlin minus part
+   real(kind=dp), allocatable, dimension(:) :: s1m !< waterlevel   pressurized nonlin minus part
+   real(kind=dp), allocatable, dimension(:) :: a1m !< surface area pressurized nonlin minus part
 
-   real(kind=dp), allocatable :: negativeDepths(:) !< Number of negative depths during output interval at nodes.
-   real(kind=dp), allocatable :: negativeDepths_cum(:) !< Cumulative number of negative depths at nodes.
-   real(kind=dp), allocatable :: noIterations(:) !< Number of no iteration locations during output interval at nodes.
-   real(kind=dp), allocatable :: noIterations_cum(:) !< Cumulative number of no iteration locations at nodes.
-   real(kind=dp), allocatable :: limitingTimestepEstimation(:) !< Number of times during the output interval the conditions in a node is limiting the time step
-   real(kind=dp), allocatable :: limitingTimestepEstimation_cum(:) !< Cumulative number of times the conditions in a node is limiting the time step.
+   real(kind=dp), allocatable, dimension(:) :: negativeDepths !< Number of negative depths during output interval at nodes.
+   real(kind=dp), allocatable, dimension(:) :: negativeDepths_cum !< Cumulative number of negative depths at nodes.
+   real(kind=dp), allocatable, dimension(:) :: noIterations !< Number of no iteration locations during output interval at nodes.
+   real(kind=dp), allocatable, dimension(:) :: noIterations_cum !< Cumulative number of no iteration locations at nodes.
+   real(kind=dp), allocatable, dimension(:) :: limitingTimestepEstimation !< Number of times during the output interval the conditions in a node is limiting the time step
+   real(kind=dp), allocatable, dimension(:) :: limitingTimestepEstimation_cum !< Cumulative number of times the conditions in a node is limiting the time step.
    !< Note: this doubles with variable numlimdt(:), which contains the same cumulative count, under a different MDU option.
    !< Note: these variables are real(kind=dp) (in stead of integers) because post processing is
    !<       based on real(kind=dp) variables.
-   real(kind=dp), allocatable :: flowCourantNumber(:) !< Courant number
+   real(kind=dp), allocatable, dimension(:) :: flowCourantNumber !< Courant number
 
-! node related, dim = ndkx
+   real(kind=dp), allocatable, dimension(:) :: volau !< trial, au based cell volume (m3)
+   real(kind=dp), allocatable, target, dimension(:) :: ucx !< [m/s] cell center velocity, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: ucy !< [m/s] cell center velocity, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: ucz !< [m/s] cell center velocity, global z-dir (m/s) {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: ucxq !< cell center velocity, q based  global x-dir (m/s)
+   real(kind=dp), allocatable, target, dimension(:) :: ucyq !< cell center velocity, q based  global y-dir (m/s)
+   real(kind=dp), allocatable, dimension(:) :: uqcx !< cell center incoming momentum, global x-dir (m4/s2), only for iadvec = 1
+   real(kind=dp), allocatable, dimension(:) :: uqcy !< cell center incoming momentum, global y-dir (m4/s2), only for iadvec = 1
+   real(kind=dp), allocatable, target, dimension(:) :: ucmag !< [m/s] cell center velocity magnitude {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: uc1D !< [m/s] 1D cell center velocities
+   real(kind=dp), allocatable, dimension(:) :: alpha_mom_1D !< [-] ratio of incoming momentum versus initial estimate of outgoing momentum
+   real(kind=dp), allocatable, dimension(:) :: alpha_ene_1D !< [-] ratio of incoming energy versus initial estimate of outgoing energy
+   real(kind=dp), allocatable, dimension(:) :: cfli !< sum of incoming courants (    ) = sum( Dt*Qj/Vi)
+   real(kind=dp), allocatable, dimension(:) :: dvxc !< cell center stress term, global x-dir (m3/s2)
+   real(kind=dp), allocatable, dimension(:) :: dvyc !< cell center stress term, global y-dir (m3/s2)
+   real(kind=dp), allocatable, dimension(:) :: squ !< cell center outgoing flux (m3/s)
+   real(kind=dp), allocatable, dimension(:) :: sqi !< cell center incoming flux (m3/s)
+   real(kind=dp), allocatable, dimension(:) :: squ2D !< cell center outgoing 2D flux (m3/s)
+   real(kind=dp), allocatable, dimension(:) :: sqwave !< cell center outgoing flux, including gravity wave velocity (m3/s) (for explicit time-step)
+   real(kind=dp), allocatable, dimension(:) :: squcor !< cell center outgoing flux with some corrections to exclude structure links (if enabled)
+   real(kind=dp), allocatable, dimension(:) :: hus !< hu averaged at 3D cell
+   real(kind=dp), allocatable, dimension(:) :: workx !< Work array
+   real(kind=dp), allocatable, dimension(:) :: worky !< Work array
+   real(kind=dp), allocatable, dimension(:, :) :: work0 !< Work array
+   real(kind=dp), allocatable, dimension(:, :) :: work1 !< Work array
+   real(kind=dp), allocatable, target, dimension(:) :: ucx_mor !< [m/s] cell center velocity for sedmor, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: ucy_mor !< [m/s] cell center velocity for sedmor, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable :: volau(:) !< trial, au based cell volume (m3)
-   real(kind=dp), allocatable, target :: ucx(:) !< [m/s] cell center velocity, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: ucy(:) !< [m/s] cell center velocity, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: ucz(:) !< [m/s] cell center velocity, global z-dir (m/s) {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: ucxq(:) !< cell center velocity, q based  global x-dir (m/s)
-   real(kind=dp), allocatable, target :: ucyq(:) !< cell center velocity, q based  global y-dir (m/s)
-   real(kind=dp), allocatable :: uqcx(:) !< cell center incoming momentum, global x-dir (m4/s2), only for iadvec = 1
-   real(kind=dp), allocatable :: uqcy(:) !< cell center incoming momentum, global y-dir (m4/s2), only for iadvec = 1
-   real(kind=dp), allocatable, target :: ucmag(:) !< [m/s] cell center velocity magnitude {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable :: uc1D(:) !< [m/s] 1D cell center velocities
-   real(kind=dp), allocatable :: alpha_mom_1D(:) !< [-] ratio of incoming momentum versus initial estimate of outgoing momentum
-   real(kind=dp), allocatable :: alpha_ene_1D(:) !< [-] ratio of incoming energy versus initial estimate of outgoing energy
-   real(kind=dp), allocatable :: cfli(:) !< sum of incoming courants (    ) = sum( Dt*Qj/Vi)
-   real(kind=dp), allocatable :: dvxc(:) !< cell center stress term, global x-dir (m3/s2)
-   real(kind=dp), allocatable :: dvyc(:) !< cell center stress term, global y-dir (m3/s2)
-   real(kind=dp), allocatable :: squ(:) !< cell center outgoing flux (m3/s)
-   real(kind=dp), allocatable :: sqi(:) !< cell center incoming flux (m3/s)
-   real(kind=dp), allocatable :: squ2D(:) !< cell center outgoing 2D flux (m3/s)
-   real(kind=dp), allocatable :: sqwave(:) !< cell center outgoing flux, including gravity wave velocity (m3/s) (for explicit time-step)
-   real(kind=dp), allocatable :: squcor(:) !< cell center outgoing flux with some corrections to exclude structure links (if enabled)
-   real(kind=dp), allocatable :: hus(:) !< hu averaged at 3D cell
-   real(kind=dp), allocatable :: workx(:) !< Work array
-   real(kind=dp), allocatable :: worky(:) !< Work array
-   real(kind=dp), allocatable :: work0(:, :) !< Work array
-   real(kind=dp), allocatable :: work1(:, :) !< Work array
-   real(kind=dp), allocatable, target :: ucx_mor(:) !< [m/s] cell center velocity for sedmor, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: ucy_mor(:) !< [m/s] cell center velocity for sedmor, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
-
-   real(kind=dp), allocatable :: dsadx(:) !< cell center sa gradient, (ppt/m)
-   real(kind=dp), allocatable :: dsady(:) !< cell center sa gradient, (ppt/m)
+   real(kind=dp), allocatable, dimension(:) :: dsadx !< cell center sa gradient, (ppt/m)
+   real(kind=dp), allocatable, dimension(:) :: dsady !< cell center sa gradient, (ppt/m)
 
    ! node related, dim = ndxi
-   real(kind=dp), allocatable, target :: freeboard(:) !< [m] For output purposes: freeboard at cell center, only for 1D
-   real(kind=dp), allocatable, target :: hsOnGround(:) !< [m] For output purposes: waterdepth above ground level, only for 1D
-   real(kind=dp), allocatable, target :: volOnGround(:) !< [m3] For output purposes: volume above ground level, only for 1D
-   real(kind=dp), allocatable :: qCur1d2d(:) !< [m3/s] total 1d2d net inflow, current discharge
-   real(kind=dp), allocatable :: vTot1d2d(:) !< [m3] total 1d2d net inflow, cumulative volume
-   real(kind=dp), allocatable :: qCurLat(:) !< [m3/s] total lateral net inflow, current discharge
-   real(kind=dp), allocatable :: vTotLat(:) !< [m3] total lateral net inflow, cumulative volume
+   real(kind=dp), allocatable, target, dimension(:) :: freeboard !< [m] For output purposes: freeboard at cell center, only for 1D
+   real(kind=dp), allocatable, target, dimension(:) :: hsOnGround !< [m] For output purposes: waterdepth above ground level, only for 1D
+   real(kind=dp), allocatable, target, dimension(:) :: volOnGround !< [m3] For output purposes: volume above ground level, only for 1D
+   real(kind=dp), allocatable, dimension(:) :: qCur1d2d !< [m3/s] total 1d2d net inflow, current discharge
+   real(kind=dp), allocatable, dimension(:) :: vTot1d2d !< [m3] total 1d2d net inflow, cumulative volume
+   real(kind=dp), allocatable, dimension(:) :: qCurLat !< [m3/s] total lateral net inflow, current discharge
+   real(kind=dp), allocatable, dimension(:) :: vTotLat !< [m3] total lateral net inflow, cumulative volume
 
    ! link related, dim = lnx
-   real(kind=dp), allocatable :: s1Gradient(:) !< [1] For output purposes: water level gradient on flow links
+   real(kind=dp), allocatable, dimension(:) :: s1Gradient !< [1] For output purposes: water level gradient on flow links
 
    ! Secondary Flow
-   real(kind=dp), allocatable :: ducxdx(:) !< cell center gradient of x-velocity in x-dir,    (1/s)
-   real(kind=dp), allocatable :: ducxdy(:) !< cell center gradient of x-velocity in y-dir,    (1/s)
-   real(kind=dp), allocatable :: ducydx(:) !< cell center gradient of y-velocity in x-dir,    (1/s)
-   real(kind=dp), allocatable :: ducydy(:) !< cell center gradient of y-velocity in y-dir,    (1/s)
+   real(kind=dp), allocatable, dimension(:) :: ducxdx !< cell center gradient of x-velocity in x-dir,    (1/s)
+   real(kind=dp), allocatable, dimension(:) :: ducxdy !< cell center gradient of x-velocity in y-dir,    (1/s)
+   real(kind=dp), allocatable, dimension(:) :: ducydx !< cell center gradient of y-velocity in x-dir,    (1/s)
+   real(kind=dp), allocatable, dimension(:) :: ducydy !< cell center gradient of y-velocity in y-dir,    (1/s)
 ! real(kind=dp), allocatable, target     :: dsdx   (:)   !< cell center gradient of waterlevel in x-dir,    ( )
 ! real(kind=dp), allocatable, target     :: dsdy   (:)   !< cell center gradient of waterlevel in y-dir,    ( )
 ! real(kind=dp), allocatable, target     :: dvdx   (:)   !< cell center gradient of y-velocity in x-dir,    (1/s)
@@ -268,118 +268,123 @@ module m_flow ! flow arrays-999
    real(kind=dp), dimension(:), allocatable :: dsalL ! the flux of salinity    on flow linkes for anti-creep
    real(kind=dp), dimension(:), allocatable :: dtemL ! the flux of temperature on flow nodes  for anti-creep
 
-   real(kind=dp), allocatable, target :: sa0(:) !< [1e-3] salinity (ppt) at start of timestep {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: sa1(:) !< [1e-3] salinity (ppt) at end   of timestep {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: satop(:) !< [1e-3] salinity (ppt) help in initialise , deallocated {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: sabot(:) !< [1e-3] salinity (ppt) help in initialise , deallocated {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable :: supq(:) !< summed upwind salinity fluxes (ppt*m3/s)
-   real(kind=dp), allocatable :: qsho(:) !< higher order part of upwind salinity    fluxes (ppt*m3/s) (dim=lnkx)
-   real(kind=dp), allocatable, target :: tem0(:) !< [degC] water temperature at end of timestep {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: tem1(:) !< [degC] water temperature at end of timestep {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable :: qtho(:) !< higher order part of upwind temperature fluxes (ppt*m3/s) (dim=lnkx)
+   real(kind=dp), allocatable, target, dimension(:) :: sa0 !< [1e-3] salinity (ppt) at start of timestep {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: sa1 !< [1e-3] salinity (ppt) at end   of timestep {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: satop !< [1e-3] salinity (ppt) help in initialise , deallocated {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: sabot !< [1e-3] salinity (ppt) help in initialise , deallocated {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: supq !< summed upwind salinity fluxes (ppt*m3/s)
+   real(kind=dp), allocatable, dimension(:) :: qsho !< higher order part of upwind salinity    fluxes (ppt*m3/s) (dim=lnkx)
+   real(kind=dp), allocatable, target, dimension(:) :: tem0 !< [degC] water temperature at end of timestep {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: tem1 !< [degC] water temperature at end of timestep {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: qtho !< higher order part of upwind temperature fluxes (ppt*m3/s) (dim=lnkx)
 
-   real(kind=dp), allocatable :: sam0(:) !< salinity mass       (pptm3) at start of timestep  ! remove later
-   real(kind=dp), allocatable :: sam1(:) !< salinity mass       (pptm3) at end   of timestep  ! remove later
-   real(kind=dp), allocatable :: same(:) !< salinity mass error (pptm3) at end   of timestep  ! remove later
+   real(kind=dp), allocatable, dimension(:) :: sam0 !< salinity mass       (pptm3) at start of timestep  ! remove later
+   real(kind=dp), allocatable, dimension(:) :: sam1 !< salinity mass       (pptm3) at end   of timestep  ! remove later
+   real(kind=dp), allocatable, dimension(:) :: same !< salinity mass error (pptm3) at end   of timestep  ! remove later
 
-   real(kind=dp), allocatable :: ww1(:) !< vertical velocity (m/s) end of timestep
-   real(kind=dp), allocatable :: qw(:) !< vertical flux through interface (m3/s)
-   real(kind=dp), allocatable :: tidep(:, :) !< tidal potential (m2/s2)
-   real(kind=dp), allocatable :: tidef(:) !< tidal force (m/s2)
-   real(kind=dp), allocatable :: s1init(:) !< initial water level, for correction in SAL
+   real(kind=dp), allocatable, dimension(:) :: ww1 !< vertical velocity (m/s) end of timestep
+   real(kind=dp), allocatable, dimension(:) :: qw !< vertical flux through interface (m3/s)
+   real(kind=dp), allocatable, dimension(:, :) :: tidep !< tidal potential (m2/s2)
+   real(kind=dp), allocatable, dimension(:) :: tidef !< tidal force (m/s2)
+   real(kind=dp), allocatable, dimension(:) :: s1init !< initial water level, for correction in SAL
 
-   real(kind=dp), allocatable :: vih(:) !< horizontal eddy viscosity in cell center (m2/s)
-   real(kind=dp), allocatable :: qin(:) !< rain, evap, qlat and src netto inloop (m3/s)
+   real(kind=dp), allocatable, dimension(:) :: vih !< horizontal eddy viscosity in cell center (m2/s)
+   real(kind=dp), allocatable, dimension(:) :: qin !< rain, evap, qlat and src netto inloop (m3/s)
 
    real(kind=dp) :: errmas !< (cumulative) mass   error ()
 
 ! link related, dim = lnkx
-   real(kind=dp), allocatable, target :: u0(:) !< flow velocity (m/s)  at start of timestep
-   real(kind=dp), allocatable, target :: u1(:) !< [m/s]  flow velocity (m/s)  at   end of timestep {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable, target :: u_to_umain(:) !< [-]  Factor for translating general velocity to the flow velocity in the main channel at end of timestep (1d) {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable, target :: q1(:) !< [m3/s] discharge     (m3/s) at   end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable, target :: q1_main(:) !< [m3/s] discharge     (m3/s) in main channel at {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable :: qa(:) !< discharge (m3/s) used in advection, qa=au(n)*u1(n+1) instead of
-   real(kind=dp), allocatable :: map_fixed_weir_energy_loss(:) !< fixed weir energy loss at end of timestep {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable :: cflj(:) !< courant nr link j to downwind volume i (    ) = Dt*Qj/Vi
-   real(kind=dp), allocatable :: tetaj(:) !< 1-1/sum(upwind incoming courants)      (    )
-   real(kind=dp), allocatable, target :: au(:) !< [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable, target :: au_nostrucs(:) !< [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable :: ucxu(:) !< upwind link ucx (m/s)
-   real(kind=dp), allocatable :: ucyu(:) !< upwind link ucy (m/s)
-   real(kind=dp), allocatable :: au1D(:, :) !< [m2] cross-sectional area at begin and end of 1D link (only relevant for Pure1D)
-   real(kind=dp), allocatable :: wu1D(:, :) !< [m] surface width at begin and end of 1D link (only relevant for Pure1D)
-   real(kind=dp), allocatable :: sar1D(:, :) !< [m2] surface area of first and second half of 1D link (only relevant for Pure1D)
-   real(kind=dp), allocatable :: volu1D(:) !< [m3] volume of 1D link (only relevant for Pure1D)
-   real(kind=dp), allocatable :: u1Du(:) !< [m/s] upwind 1D link velocity (only relevant for Pure1D)
-   real(kind=dp), allocatable :: q1D(:, :) !< [m3/s] discharge at begin and end of 1D link (only relevant for Pure1D)
-   integer, allocatable :: isnbnod(:, :) !< sign of left/right node follows your dir in jaPure1D assumptions, -1 or 1 for Ja1D nodes
-   integer, allocatable :: isnblin(:, :) !< sign of left/right link follows your dir in jaPure1D assumptions, -1 or 1 for Ja1D nodes
-   real(kind=dp), allocatable :: advi(:) !< advection implicit part (1/s)
-   real(kind=dp), allocatable :: adve(:) !< advection explicit part (m/s2)
-   real(kind=dp), allocatable :: adve0(:) !< advection explicit part (m/s2) prevstep
-   real(kind=dp), allocatable, target :: hu(:) !< [m] upwind waterheight at u-point; for 3D layers the distance from the top of layer to the bed (m) {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable :: huvli(:) !< inverse alfa weighted waterheight at u-point (m) (volume representative)
-   real(kind=dp), allocatable :: v(:) !< tangential velocity in u point (m/s)
-   real(kind=dp), allocatable :: suu(:) !< stress u dir (m/s2)
-   real(kind=dp), allocatable :: cfuhi(:) !< g/(hCC) u point (1/m)
-   real(kind=dp), allocatable, target :: frcu(:) !< [TODO] friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable :: frcu_mor(:) !< friction coefficient in morphologically active region set by initial fields {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable :: frcu_bkp(:) !< Backup of friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable :: cfclval(:) !< array for calibration factor for friction coefficients
-   real(kind=dp), allocatable :: cftrt(:, :) !< array for friction coefficients due to trachytopes
-   real(kind=dp), allocatable, target :: cftrtfac(:) !< array for optional multiplication factor for trachytopes's returned roughness values
+   real(kind=dp), allocatable, target, dimension(:) :: u0 !< flow velocity (m/s)  at start of timestep
+   real(kind=dp), allocatable, target, dimension(:) :: u1 !< [m/s]  flow velocity (m/s)  at   end of timestep {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: u_to_umain !< [-]  Factor for translating general velocity to the flow velocity in the main channel at end of timestep (1d) {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: q1 !< [m3/s] discharge     (m3/s) at   end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: q1_main !< [m3/s] discharge     (m3/s) in main channel at {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, dimension(:) :: qa !< discharge (m3/s) used in advection, qa=au(n)*u1(n+1) instead of
+   real(kind=dp), allocatable, dimension(:) :: map_fixed_weir_energy_loss !< fixed weir energy loss at end of timestep {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, dimension(:) :: cflj !< courant nr link j to downwind volume i (    ) = Dt*Qj/Vi
+   real(kind=dp), allocatable, dimension(:) :: tetaj !< 1-1/sum(upwind incoming courants)      (    )
+   real(kind=dp), allocatable, target, dimension(:) :: au !< [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_nostrucs !< [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, dimension(:) :: ucxu !< upwind link ucx (m/s)
+   real(kind=dp), allocatable, dimension(:) :: ucyu !< upwind link ucy (m/s)
+   real(kind=dp), allocatable, dimension(:, :) :: au1D !< [m2] cross-sectional area at begin and end of 1D link (only relevant for Pure1D)
+   real(kind=dp), allocatable, dimension(:, :) :: wu1D !< [m] surface width at begin and end of 1D link (only relevant for Pure1D)
+   real(kind=dp), allocatable, dimension(:, :) :: sar1D !< [m2] surface area of first and second half of 1D link (only relevant for Pure1D)
+   real(kind=dp), allocatable, dimension(:) :: volu1D !< [m3] volume of 1D link (only relevant for Pure1D)
+   real(kind=dp), allocatable, dimension(:) :: u1Du !< [m/s] upwind 1D link velocity (only relevant for Pure1D)
+   real(kind=dp), allocatable, dimension(:, :) :: q1D !< [m3/s] discharge at begin and end of 1D link (only relevant for Pure1D)
+   integer, allocatable, dimension(:, :) :: isnbnod !< sign of left/right node follows your dir in jaPure1D assumptions, -1 or 1 for Ja1D nodes
+   integer, allocatable, dimension(:, :) :: isnblin !< sign of left/right link follows your dir in jaPure1D assumptions, -1 or 1 for Ja1D nodes
+   real(kind=dp), allocatable, dimension(:) :: advi !< advection implicit part (1/s)
+   real(kind=dp), allocatable, dimension(:) :: adve !< advection explicit part (m/s2)
+   real(kind=dp), allocatable, dimension(:) :: adve0 !< advection explicit part (m/s2) prevstep
+   real(kind=dp), allocatable, target, dimension(:) :: hu !< [m] upwind waterheight at u-point; for 3D layers the distance from the top of layer to the bed (m) {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: huvli !< inverse alfa weighted waterheight at u-point (m) (volume representative)
+   real(kind=dp), allocatable, dimension(:) :: v !< tangential velocity in u point (m/s)
+   real(kind=dp), allocatable, dimension(:) :: suu !< stress u dir (m/s2)
+   real(kind=dp), allocatable, dimension(:) :: cfuhi !< g/(hCC) u point (1/m)
+   real(kind=dp), allocatable, target, dimension(:) :: frcu !< [TODO] friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: frcu_mor !< friction coefficient in morphologically active region set by initial fields {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: frcu_bkp !< Backup of friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: cfclval !< array for calibration factor for friction coefficients
+   real(kind=dp), allocatable, dimension(:, :) :: cftrt !< array for friction coefficients due to trachytopes
+   real(kind=dp), allocatable, target, dimension(:) :: cftrtfac !< array for optional multiplication factor for trachytopes's returned roughness values
    integer :: jacftrtfac !< Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
-   real(kind=dp), allocatable :: czu(:) !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: frculin(:) !< friction coefficient set by initial fields ( todo mag later ook single real worden)
-   integer, allocatable :: ifrcutp(:) !< friction coefficient type   initial fields ( todo mag later ook single real worden)
-   real(kind=dp), allocatable, target :: Cdwusp(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
-   real(kind=dp), allocatable :: wind_speed_factor(:) !< wind speed multiplication factor
-   real(kind=dp), allocatable :: solar_radiation_factor(:) !< solar radiation multiplication factor
-   real(kind=dp), allocatable :: z0ucur(:) !< current related roughness, moved from waves, always needed
-   real(kind=dp), allocatable :: z0urou(:) !< current and wave related roughness
+   real(kind=dp), allocatable, dimension(:) :: czu !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: frculin !< friction coefficient set by initial fields ( todo mag later ook single real worden)
+   integer, allocatable, dimension(:) :: ifrcutp !< friction coefficient type   initial fields ( todo mag later ook single real worden)
+   real(kind=dp), allocatable, target, dimension(:) :: Cdwusp !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
+   real(kind=dp), allocatable, dimension(:) :: wind_speed_factor !< wind speed multiplication factor
+   real(kind=dp), allocatable, dimension(:) :: solar_radiation_factor !< solar radiation multiplication factor
+   real(kind=dp), allocatable, dimension(:) :: z0ucur !< current related roughness, moved from waves, always needed
+   real(kind=dp), allocatable, dimension(:) :: z0urou !< current and wave related roughness
 
-   real(kind=dp), allocatable :: frcuroofs(:) !< temp
+   real(kind=dp), allocatable, dimension(:) :: frcuroofs !< temp
 
-   real(kind=dp), allocatable, target :: frcInternalTides2D(:) !< internal tides friction coefficient gamma, tau/rho = - gamma u.grad h grad h
+   real(kind=dp), allocatable, target, dimension(:) :: frcInternalTides2D !< internal tides friction coefficient gamma, tau/rho = - gamma u.grad h grad h
 
-   real(kind=dp), allocatable :: wavfu(:) !< wave force u point
-   real(kind=dp), allocatable :: wavfv(:) !< wave force u point
-   real(kind=dp), allocatable :: wdsu(:) !< windstress/rhow u point  (m2/s2)
-   real(kind=dp), allocatable, target :: wdsu_x(:) !< windstress u point  (N/m2) x-component
-   real(kind=dp), allocatable, target :: wdsu_y(:) !< windstress u point  (N/m2) y-component
-   real(kind=dp), allocatable :: wavmubnd(:) !< wave-induced mass flux (on open boundaries)
+   real(kind=dp), allocatable, dimension(:) :: wavfu !< wave force u point
+   real(kind=dp), allocatable, dimension(:) :: wavfv !< wave force u point
+   real(kind=dp), allocatable, dimension(:) :: wdsu !< windstress/rhow u point  (m2/s2)
+   real(kind=dp), allocatable, target, dimension(:) :: wdsu_x !< windstress u point  (N/m2) x-component
+   real(kind=dp), allocatable, target, dimension(:) :: wdsu_y !< windstress u point  (N/m2) y-component
+   real(kind=dp), allocatable, target, dimension(:) :: w_star !< [m/s] free convective velocity scale at cell centers
+   real(kind=dp), allocatable, target, dimension(:) :: obukhov_length !< [m] Obukhov length at cell centers
+   real(kind=dp), allocatable, target, dimension(:) :: transfer_coeff_momentum !< [-] bulk transfer coefficient for momentum flux at cell centers
+   real(kind=dp), allocatable, target, dimension(:) :: transfer_coeff_sensible_heat !< [-] bulk transfer coefficient for sensible heat flux at cell centers
+   real(kind=dp), allocatable, target, dimension(:) :: transfer_coeff_latent_heat !< [-] bulk transfer coefficient for latent heat flux at cell centers
+   real(kind=dp), allocatable, dimension(:) :: wavmubnd !< wave-induced mass flux (on open boundaries)
    integer :: number_steps_limited_visc_flux_links = 0 !< number of steps with limited viscosity/flux on links
    integer, parameter :: MAX_PRINTS_LIMITED_VISC_FLUX_LINKS = 10 !< number of messages in dia file on limited viscosity/flux links
-   real(kind=dp), allocatable :: vicLu(:) !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
-   real(kind=dp), allocatable :: viu(:) !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
-   real(kind=dp), allocatable, target :: viusp(:) !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: diusp(:) !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: vicLu !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
+   real(kind=dp), allocatable, dimension(:) :: viu !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
+   real(kind=dp), allocatable, target, dimension(:) :: viusp !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: diusp !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    !< so in transport, total diffusivity = viu*sigdifi + diusp
-   real, allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
-   real(kind=dp), allocatable :: fvcoro(:) !< 3D adamsbashford u point (m/s2)
+   real(kind=dp), allocatable, dimension(:) :: fcori !< spatially variable fcorio coeff at u point (1/s)
+   real(kind=dp), allocatable, dimension(:) :: fvcoro !< 3D adamsbashford u point (m/s2)
 
-   real(kind=dp), allocatable :: plotlin(:) !< for plotting on u points
-   integer, allocatable :: numlimdt(:) !< nr of times this point was the timestep limiting point
+   real(kind=dp), allocatable, dimension(:) :: plotlin !< for plotting on u points
+   integer, allocatable, dimension(:) :: numlimdt !< nr of times this point was the timestep limiting point
    integer :: numlimdt_baorg = 0 !< nr of times limiting > numlimdt_baorg, keep org ba
    real(kind=dp) :: baorgfracmin = 0 !< ba = max(cutarea, ba*baorgfracmin)
 
-   real(kind=dp), allocatable :: zn2rn(:) !< weight from zn to rn, flownode to netnode
+   real(kind=dp), allocatable, dimension(:) :: zn2rn !< weight from zn to rn, flownode to netnode
 
-   real(kind=dp), allocatable, target :: tausx(:) ! vector components shear stress
-   real(kind=dp), allocatable, target :: tausy(:)
-   real(kind=dp), allocatable, target :: taubxu(:) !< Maximal bed shear stress
-   real(kind=dp), allocatable, target :: taubu(:) !< Mean bed shear stress
-   real(kind=dp), allocatable :: q1waq(:) !< Cumulative q1 within current waq-timestep
-   real(kind=dp), allocatable :: qwwaq(:) !< Cumulative qw within current waq-timestep
+   real(kind=dp), allocatable, target, dimension(:) :: tausx ! vector components shear stress
+   real(kind=dp), allocatable, target, dimension(:) :: tausy
+   real(kind=dp), allocatable, target, dimension(:) :: taubxu !< Maximal bed shear stress
+   real(kind=dp), allocatable, target, dimension(:) :: taubu !< Mean bed shear stress
+   real(kind=dp), allocatable, dimension(:) :: q1waq !< Cumulative q1 within current waq-timestep
+   real(kind=dp), allocatable, dimension(:) :: qwwaq !< Cumulative qw within current waq-timestep
 
    ! solving related, dim = ndx for 2D, otherwise ndx*kmxd
-   real(kind=dp), allocatable :: fu(:) !< main diag (lnx)
-   real(kind=dp), allocatable :: ru(:) !< rhs       (lnx)
-   real(kind=dp), allocatable :: bb(:) !< main diag (ndx)
-   real(kind=dp), allocatable :: dd(:) !< rhs       (ndx)
+   real(kind=dp), allocatable, dimension(:) :: fu !< main diag (lnx)
+   real(kind=dp), allocatable, dimension(:) :: ru !< rhs       (lnx)
+   real(kind=dp), allocatable, dimension(:) :: bb !< main diag (ndx)
+   real(kind=dp), allocatable, dimension(:) :: dd !< rhs       (ndx)
 
-   integer, allocatable :: struclink(:)
+   integer, allocatable, dimension(:) :: struclink
 
    ! basis
    real(kind=dp) :: vol0tot !< Total volume start of timestep            (m3)
@@ -447,7 +452,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), dimension(2) :: voutextcum !< Total outflow to  Qext (1D and 2D)        (m3) "
 
    real(kind=dp) :: DissInternalTides !< Total Internal Tides Dissipation (J/s)
-   real(kind=dp), allocatable :: DissInternalTidesPerArea(:) !< Internal tides dissipation / area (J/(m^2 s))
+   real(kind=dp), allocatable, dimension(:) :: DissInternalTidesPerArea !< Internal tides dissipation / area (J/(m^2 s))
    real(kind=dp) :: GravInput !< Total Gravitational Input (incl. SAL) (J/s)
    real(kind=dp) :: SALInput !< Total SAL Input (J/s)
    real(kind=dp) :: SALInput2 !< Total SAL Input (J/s), different formulation
@@ -564,7 +569,7 @@ contains
       layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-      sigmagrowthfactor = 1.0_dp !<layer thickness growth factor from bed up
+      z_layer_growth_factor = 1.0_dp
 
       ! Remaining of variables is handled in reset_flow()
       call reset_flow()
@@ -731,5 +736,28 @@ contains
 
       res = (jasal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0)
    end function use_density
+
+   subroutine map_ndkx_to_ndx()
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: realloc
+      
+      integer :: n, k
+
+      call realloc(ndkx_to_ndx, ndkx)
+
+      ! Fill the surface layer
+      do n = 1, ndx
+         ndkx_to_ndx(n) = n
+      end do
+
+      ! Fill the 3D layers
+      if (kmx > 0) then
+         do n = 1, ndx
+            do k = kbot(n), kbot(n) + kmxn(n) - 1
+               ndkx_to_ndx(k) = n
+            end do
+         end do
+      end if
+   end subroutine map_ndkx_to_ndx
 
 end module m_flow

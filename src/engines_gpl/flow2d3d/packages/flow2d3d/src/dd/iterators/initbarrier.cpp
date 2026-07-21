@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: initbarrier.cpp 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/iterators/initbarrier.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/iterators/initbarrier.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Initial inter-domain synchronization - IMPLEMENTATION
@@ -35,101 +37,87 @@
 //  1 jun 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
-
 
 //------------------------------------------------------------------------------
 //  Iterator function
 
-
-void
-InitBarrier_Function (
-    Iterator *      self,
-    const char *    name,
-    Blob *          configblob
-    ) {
-
+void InitBarrier_Function(Iterator* self, const char* name, Blob* configblob)
+{
     // INITIALIZATION PHASE
     // Determine number of neighbors (= number of subdomains)
 
-    int npart = self->NeighborCount ();
-    self->dd->log->Write (Log::ITER_MAJOR, "InitBarrier starting for %d participants", npart);
+    int npart = self->NeighborCount();
+    self->dd->log->Write(Log::ITER_MAJOR, "InitBarrier starting for %d participants", npart);
 
     // If we're the only participant go away
 
-    if (npart <= 1) {
-        self->Ready ();
+    if (npart <= 1)
+    {
+        self->Ready();
         return;
-        }
+    }
 
-    Iterator ** part = new Iterator * [npart];
-    self->RewindNeighbors ();
-    for (int i = 0 ; i < npart ; i++)
-        part[i] = self->NextNeighbor ();
+    Iterator** part = new Iterator*[npart];
+    self->RewindNeighbors();
+    for (int i = 0; i < npart; i++) part[i] = self->NextNeighbor();
 
-    self->Ready ();
+    self->Ready();
 
     // SIMULATION PHASE
 
-    self->dd->log->Write (Log::ITER_MAJOR, "InitBarrier iterator starting simulation phase");
+    self->dd->log->Write(Log::ITER_MAJOR, "InitBarrier iterator starting simulation phase");
 
     // First time only: Receive a dummy integer from all subdomains
 
     int inimesg;
-    Blob * initBlob = new Blob (&inimesg, sizeof inimesg);
-    for (int i = 0 ; i < npart ; i++) {
+    Blob* initBlob = new Blob(&inimesg, sizeof inimesg);
+    for (int i = 0; i < npart; i++)
+    {
         int blobtype;
-        part[i]->Receive (initBlob, &blobtype);
+        part[i]->Receive(initBlob, &blobtype);
         if (blobtype != InitBarrier::F2IB_initFinished)
-            throw new Exception (true, "Unexpected message (%d) from Flow %s to InitBarrier",blobtype,part[i]->name);
-        }
+            throw new Exception("Unexpected message (%d) from Flow %s to InitBarrier", blobtype, part[i]->name);
+    }
 
     // Communicate dummy integer to all participants so they can continue
 
     inimesg = 1;
-    for (int ipart = 0 ; ipart < npart ; ipart++)
-        part[ipart]->Send (initBlob, InitBarrier::IB2F_startSimulation);
+    for (int ipart = 0; ipart < npart; ipart++) part[ipart]->Send(initBlob, InitBarrier::IB2F_startSimulation);
 
     delete initBlob;
-    delete [] part;
+    delete[] part;
 
-    self->dd->log->Write (Log::ITER_MAJOR, "InitBarrier is finished");
-    }
-
+    self->dd->log->Write(Log::ITER_MAJOR, "InitBarrier is finished");
+}
 
 //------------------------------------------------------------------------------
 //  Function called from tricom.f90
 
-
 extern "C" {
-void STDCALL
-INITFINISHED (
-    int * numdomains
-    ) {
-
+void STDCALL INITFINISHED(int* numdomains)
+{
     if (*numdomains == 1) return;
 
-    Iterator * self = IteratorSelf ();
-    if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in InitFinished");
+    Iterator* self = IteratorSelf();
+    if (self == NULL) throw new Exception("Cannot get iterator self in InitFinished");
 
-    Iterator * initbarIterator = FLOW2D3D->dd->initbar;
+    Iterator* initbarIterator = FLOW2D3D->dd->initbar;
 
     // Send dummy integer to InitBarrier iterator
 
     int inimesg = 1;
-    Blob * initBlob = new Blob (&inimesg, sizeof inimesg);
-    initbarIterator->Send (initBlob, InitBarrier::F2IB_initFinished);
+    Blob* initBlob = new Blob(&inimesg, sizeof inimesg);
+    initbarIterator->Send(initBlob, InitBarrier::F2IB_initFinished);
 
     // Receive a dummy integer from InitBarrier iterator
     // initBlob and inimesg are reused
 
     int blobtype;
-    initbarIterator->Receive (initBlob, &blobtype);
+    initbarIterator->Receive(initBlob, &blobtype);
     if (blobtype != InitBarrier::IB2F_startSimulation)
-        throw new Exception (true, "Unexpected message (%d) in %s from InitBarrier",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from InitBarrier", blobtype, self->name);
 
     delete initBlob;
-    }
+}
 }

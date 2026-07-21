@@ -46,7 +46,7 @@ contains
       use m_physcoef
       use m_trachy
       use m_trtrou
-      use m_flowparameters, only: eps8, epshs, jacali, jawave, flowwithoutwaves
+      use m_flowparameters, only: EPS8, epshs, jacali, jawave, flow_without_waves
       use network_data, only: numl, lne
       use m_monitoring_crosssections
       use m_observations_data, only: valobs, IPNT_S1
@@ -137,7 +137,7 @@ contains
          ! - D3D4 uses GLM velocities for trachytopes. Not sure if that is conceptually correct, to discuss.
          !   For now, I added the code to use eulerian vector for consistency
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             if (.not. allocated(u1eul)) then
                allocate (u1eul(1:lnkx), stat=ierr)
             end if
@@ -235,7 +235,7 @@ contains
                   & z0rou, 1, waqol, trachy_fl, &
                   & umag, 1, numl, 1, ndx, & ! first entry in row r(u1) should be gdp%gderosed%umod !!WO-temp
                   & rhomean, ag, vonkar, viskin, & ! ~z0 used for what?   ~viskin instead of vicmol (Delft3D)
-                  & eps8, epshs, spatial_bedform, bedformD50, bedformD90, &
+                  & EPS8, epshs, spatial_bedform, bedformD50, bedformD90, &
                   & rksr, rksmr, rksd, error,  &
                   & lfdxx, nxx, lsedtot, dxx, i50, i90,    &
                   & rhosol)
@@ -246,7 +246,7 @@ contains
                  & z0rou, 1, waqol, trachy_fl, &
                  & umag, 1, numl, 1, ndx, &
                  & rhomean, ag, vonkar, viskin, &
-                 & eps8, epshs, spatial_bedform, bedformD50, bedformD90, &
+                 & EPS8, epshs, spatial_bedform, bedformD50, bedformD90, &
                  & rksr, rksmr, rksd, error,  &
                  & lfdxx, 2, 1) ! nxx, lsedtot
       end if

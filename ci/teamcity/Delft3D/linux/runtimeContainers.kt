@@ -9,9 +9,14 @@ import Delft3D.linux.containers.*
 
 object LinuxRuntimeContainers : BuildType({
 
-    description = "Build two separate container images: one for running the Delft3D software and the other for executing its tests."
+    description = ""
+    description = """
+        Build two separate container images: one for running the Delft3D software and the other for executing its tests.
+        The runtime container is the Docker image 'end-product' for releases that is published in Harbor.
+    """.trimIndent()
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
@@ -46,17 +51,15 @@ object LinuxRuntimeContainers : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         step {
             name = "Download artifact from Nexus"
-            type = "RawDownloadNexusLinux"
+            type = "RawDownloadNexusLinux2"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("artifact_path", "/07_day_retention/dimrset/%file_path%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_username", "%nexus_username%")
-            param("download_to", ".")
+            param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
         }
         script {
             name = "Extract artifact"
@@ -143,15 +146,13 @@ object LinuxRuntimeContainers : BuildType({
                 """.trimIndent()
             }
         }
-        artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
-            cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "Bin64.zip!/Release/Wandadef.dat=>wanda/bin/Wandadef.dat"
-        }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
             cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "build.zip!/lib/*=>wanda/lib"
+            buildRule = build("939")
+            artifactRules = """
+                build.zip!/lib/*.so=>wanda/lib
+                build.zip!/lib/Wandadef.dat=>wanda/bin/Wandadef.dat
+            """.trimIndent()
         }
     }
 })

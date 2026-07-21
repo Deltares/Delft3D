@@ -99,8 +99,6 @@ module m_waves
    real(kind=dp) :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
    integer :: jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
    integer :: jauorb !< multiply with factor sqrt(pi)/2 (=0), or not (=1). Default 0, delft3d style
-   integer :: jahissigwav !< 1: sign wave height on his output; 0: hrms wave height on his output.
-   integer :: jamapsigwav !< 1: sign wave height on map output; 0: hrms wave height on map output.
    integer :: jauorbfromswan !< 1: get uorb from SWAN, compare with Delft3D
    logical :: extfor_wave_initialized !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
 
@@ -115,8 +113,6 @@ contains
       hminlw = 0.2_dp !< [-] minimum depth for wave forcing in flow momentum equation RHS.
       jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
       jauorb = 0
-      jahissigwav = 1
-      jamapsigwav = 0 ! Present behaviour
       jauorbfromswan = 0
       ftauw = 1.0_dp
       fwfac = 1.0_dp

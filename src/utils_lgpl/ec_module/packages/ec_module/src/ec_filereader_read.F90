@@ -92,7 +92,7 @@ contains
       iomsg = ""
       rewind (unit=fileReaderPtr%fileHandle, IOMSG=iomsg, IOSTAT=istat)
       if (istat /= 0) then
-         call setECMessage("Rewind failed on "//trim(fileReaderPtr%fileName)//". Error: "//trim(iomsg))
+         call set_ec_message("Rewind failed on "//trim(fileReaderPtr%fileName)//". Error: "//trim(iomsg))
          return
       end if
       ! continue reading lines untill a data line is encountered
@@ -106,8 +106,8 @@ contains
                exit
             end if
          else
-!              call setECMessage("  IOMessage: "//trim(iomsg))
-            call setECMessage("File error in "//trim(fileReaderPtr%fileName))
+!              call set_ec_message("  IOMessage: "//trim(iomsg))
+            call set_ec_message("File error in "//trim(fileReaderPtr%fileName))
             exit
          end if
       end do
@@ -137,12 +137,12 @@ contains
                   time_steps = time_steps * 60.0_dp
                   success = .true.
                else
-                  call setECMessage("ERROR: ec_filereader_read::ecUniReadTimeSteps: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("ERROR: ec_filereader_read::ecUniReadTimeSteps: Read failure before end of file: "//trim(fileReaderPtr%fileName))
                   return
                end if
             end if
          else
-            call setECMessage("INFO: ec_filereader_read::ecUniReadTimeSteps: File end has been reached of: "//trim(fileReaderPtr%fileName))
+            call set_ec_message("INFO: ec_filereader_read::ecUniReadTimeSteps: File end has been reached of: "//trim(fileReaderPtr%fileName))
             exit
          end if
       end do
@@ -179,14 +179,14 @@ contains
                   time_steps = fileReaderPtr%tframe%ec_refdate - fileReaderPtr%tframe%ec_timezone / 24.0 + time_steps / 1440.0
                   success = .true.
                else
-                  call setECMessage("Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                  call setECMessage("     string = '"//trim(rec0)//"'")
+                  call set_ec_message("Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("     string = '"//trim(rec0)//"'")
                   return
                end if
                exit
             end if
          else
-            call setECMessage("File end has been reached of: "//trim(fileReaderPtr%fileName))
+            call set_ec_message("File end has been reached of: "//trim(fileReaderPtr%fileName))
             exit
          end if
       end do
@@ -235,7 +235,7 @@ contains
       keyword = 'TIME'
       rec = ecFindInFile(handle, keyword)
       if (len(trim(rec)) == 0) then
-         call setECMessage("ERROR: ec_filereader_read::ecCurviReadBlock: Failed to find next 'TIME =' record in file: "//trim(fileReaderPtr%fileName))
+         call set_ec_message("ERROR: ec_filereader_read::ecCurviReadBlock: Failed to find next 'TIME =' record in file: "//trim(fileReaderPtr%fileName))
          return
       end if
       ! Read and convert the timesteps to seconds.
@@ -257,7 +257,7 @@ contains
             do i = n_rows, 1, -1
                read (handle, *, IOSTAT=istat) (item%sourceT0FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
                if (istat /= 0) then
-                  call setECMessage("ec_filereader_read::ecCurviReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("ec_filereader_read::ecCurviReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
                   return
                end if
             end do
@@ -276,13 +276,13 @@ contains
             do i = n_rows, 1, -1
                read (handle, *, IOSTAT=istat) (item%sourceT1FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
                if (istat /= 0) then
-                  call setECMessage("ec_filereader_read::ecCurviReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("ec_filereader_read::ecCurviReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
                   return
                end if
             end do
          end do
       else
-         call setECMessage("ERROR: ec_filereader_read::ecCurviReadBlock: Invalid Field specified.")
+         call set_ec_message("ERROR: ec_filereader_read::ecCurviReadBlock: Invalid Field specified.")
          return
       end if
       success = .true.
@@ -316,7 +316,7 @@ contains
       ! Find the time specification line of the next block.
       rec = ecFindInFile(handle, keyword)
       if (len(trim(rec)) == 0) then
-         call setECMessage("ERROR: ec_filereader_read::ecArcinfoAndT3dReadBlock: Reached end of file: "//trim(fileReaderPtr%fileName))
+         call set_ec_message("ERROR: ec_filereader_read::ecArcinfoAndT3dReadBlock: Reached end of file: "//trim(fileReaderPtr%fileName))
          return
       end if
       ! Read and convert the timesteps to seconds.
@@ -342,8 +342,8 @@ contains
          do i = n_rows, 1, -1
             read (handle, *, IOSTAT=istat) (item1%sourceT0FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -352,8 +352,8 @@ contains
             do i = n_rows, 1, -1
                read (handle, *, IOSTAT=istat) (item2%sourceT0FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
                if (istat /= 0) then
-                  call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                  call setECMessage("     line = "//trim(rec))
+                  call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("     line = "//trim(rec))
                   success = .false.
                   return
                end if
@@ -363,8 +363,8 @@ contains
             do i = n_rows, 1, -1
                read (handle, *, IOSTAT=istat) (item3%sourceT0FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
                if (istat /= 0) then
-                  call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                  call setECMessage("     line = "//trim(rec))
+                  call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("     line = "//trim(rec))
                   success = .false.
                   return
                end if
@@ -386,8 +386,8 @@ contains
          do i = n_rows, 1, -1
             read (handle, *, IOSTAT=istat) (item1%sourceT1FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -396,8 +396,8 @@ contains
             do i = n_rows, 1, -1
                read (handle, *, IOSTAT=istat) (item2%sourceT1FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
                if (istat /= 0) then
-                  call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                  call setECMessage("     line = "//trim(rec))
+                  call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("     line = "//trim(rec))
                   success = .false.
                   return
                end if
@@ -407,15 +407,15 @@ contains
             do i = n_rows, 1, -1
                read (handle, *, IOSTAT=istat) (item3%sourceT1FieldPtr%arr1dPtr((i - 1) * n_cols + j), j=1, n_cols)
                if (istat /= 0) then
-                  call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                  call setECMessage("     line = "//trim(rec))
+                  call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("     line = "//trim(rec))
                   success = .false.
                   return
                end if
             end do
          end if
       else
-         call setECMessage("ERROR: ec_filereader_read::ecArcinfoAndT3dReadBlock: Invalid Field specified.")
+         call set_ec_message("ERROR: ec_filereader_read::ecArcinfoAndT3dReadBlock: Invalid Field specified.")
          success = .false.
       end if
    end function ecArcinfoAndT3dReadBlock
@@ -423,7 +423,7 @@ contains
    ! =======================================================================
    ! TODO: we should really switch to newer spiderweb reader in
    ! ec_module\packages\ec_module\src\meteo\meteo_read.f90
-
+   
    !> Read the next record from a spiderweb file.
       !! meteo1: reaspwtim
    function ecSpiderwebReadBlock(fileReaderPtr, item1, item2, item3, t0t1, n_cols, n_rows) result(success)
@@ -450,7 +450,7 @@ contains
       !
       rec = ecFindInFile(fileReaderPtr%fileHandle, 'TIME')
       if (len(trim(rec)) == 0) then
-         call setECMessage("INFO: ec_filereader_read::ecSpiderwebReadBlock: Reached end of file: "//trim(fileReaderPtr%fileName))
+         call set_ec_message("INFO: ec_filereader_read::ecSpiderwebReadBlock: Reached end of file: "//trim(fileReaderPtr%fileName))
          return
       end if
       ! Read and convert the timesteps to seconds.
@@ -466,15 +466,15 @@ contains
          item3%sourceT0FieldPtr%timesteps = ecSupportThisTimeToMJD(fileReaderPtr%tframe, time_steps)
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'x_spw_eye', .false.)
          if (len_trim(rec) == 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
             success = .false.
             return
          end if
 
          read (rec, *, IOSTAT=istat) x_spw_eye
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
-            call setECMessage("     line = "//trim(rec))
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
+            call set_ec_message("     line = "//trim(rec))
             success = .false.
             return
          end if
@@ -484,15 +484,15 @@ contains
 
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'y_spw_eye', .false.)
          if (len_trim(rec) == 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
             success = .false.
             return
          end if
 
          read (rec, *, IOSTAT=istat) y_spw_eye
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
-            call setECMessage("     line = "//trim(rec))
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
+            call set_ec_message("     line = "//trim(rec))
             success = .false.
             return
          end if
@@ -502,15 +502,15 @@ contains
 
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'p_drop_spw_eye', .false.)
          if (len_trim(rec) == 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
             success = .false.
             return
          end if
 
          read (rec, *, IOSTAT=istat) p_drop_spw_eye
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
-            call setECMessage("     line = "//trim(rec))
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
+            call set_ec_message("     line = "//trim(rec))
             success = .false.
             return
          end if
@@ -518,8 +518,8 @@ contains
          do i = 1, n_rows - 1
             read (fileReaderPtr%fileHandle, *, IOSTAT=istat) (item1%sourceT0FieldPtr%arr1dPtr(i * n_cols + j), j=1, n_cols - 1)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -527,8 +527,8 @@ contains
          do i = 1, n_rows - 1
             read (fileReaderPtr%fileHandle, *, IOSTAT=istat) (item2%sourceT0FieldPtr%arr1dPtr(i * n_cols + j), j=1, n_cols - 1)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -536,8 +536,8 @@ contains
          do i = 1, n_rows - 1
             read (fileReaderPtr%fileHandle, *, IOSTAT=istat) (item3%sourceT0FieldPtr%arr1dPtr(i * n_cols + j), j=1, n_cols - 1)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -565,15 +565,15 @@ contains
          item3%sourceT1FieldPtr%timesteps = ecSupportThisTimeToMJD(fileReaderPtr%tframe, time_steps)
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'x_spw_eye', .false.)
          if (len_trim(rec) == 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
             success = .false.
             return
          end if
 
          read (rec, *, IOSTAT=istat) x_spw_eye
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
-            call setECMessage("     line = "//trim(rec))
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "x_spw_eye")
+            call set_ec_message("     line = "//trim(rec))
             success = .false.
             return
          end if
@@ -583,15 +583,15 @@ contains
          item3%sourceT1FieldPtr%x_spw_eye = x_spw_eye
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'y_spw_eye', .false.)
          if (len_trim(rec) == 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
             success = .false.
             return
          end if
 
          read (rec, *, IOSTAT=istat) y_spw_eye
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
-            call setECMessage("     line = "//trim(rec))
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "y_spw_eye")
+            call set_ec_message("     line = "//trim(rec))
             success = .false.
             return
          end if
@@ -602,15 +602,15 @@ contains
 
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'p_drop_spw_eye', .false.)
          if (len_trim(rec) == 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to find keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
             success = .false.
             return
          end if
 
          read (rec, *, IOSTAT=istat) p_drop_spw_eye
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
-            call setECMessage("     line = "//trim(rec))
+            call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Failed to read keyword in file: "//trim(fileReaderPtr%fileName), "p_drop_spw_eye")
+            call set_ec_message("     line = "//trim(rec))
             success = .false.
             return
          end if
@@ -618,8 +618,8 @@ contains
          do i = 1, n_rows - 1
             read (fileReaderPtr%fileHandle, *, IOSTAT=istat) (item1%sourceT1FieldPtr%arr1dPtr(i * n_cols + j), j=1, n_cols - 1)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -627,8 +627,8 @@ contains
          do i = 1, n_rows - 1
             read (fileReaderPtr%fileHandle, *, IOSTAT=istat) (item2%sourceT1FieldPtr%arr1dPtr(i * n_cols + j), j=1, n_cols - 1)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -636,8 +636,8 @@ contains
          do i = 1, n_rows - 1
             read (fileReaderPtr%fileHandle, *, IOSTAT=istat) (item3%sourceT1FieldPtr%arr1dPtr(i * n_cols + j), j=1, n_cols - 1)
             if (istat /= 0) then
-               call setECMessage("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-               call setECMessage("     line = "//trim(rec))
+               call set_ec_message("ec_filereader_read::ecSpiderwebReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+               call set_ec_message("     line = "//trim(rec))
                success = .false.
                return
             end if
@@ -659,7 +659,7 @@ contains
             end do
          end if
       else
-         call setECMessage("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Invalid Field specified.")
+         call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebReadBlock: Invalid Field specified.")
          success = .false.
       end if
    end function ecSpiderwebReadBlock
@@ -716,7 +716,7 @@ contains
       success = .false.
       fieldPtr => null()
       has_time = (fileReaderPtr%tframe%nr_timesteps > 0)
-      has_harmonics = associated(fileReaderPtr%hframe)
+      has_harmonics = allocated(fileReaderPtr%hframe%phases) ! a valid hframe will have allocated phases
       is_column_major = fileReaderPtr%is_column_major
 
       dmiss_nc = item%quantityPtr%fillvalue
@@ -733,13 +733,13 @@ contains
       else if (t0t1 == 1) then
          fieldPtr => item%sourceT1FieldPtr
       else
-         call setECMessage("Invalid source Field specified in ecNetcdfReadNextBlock.")
+         call set_ec_message("Invalid source Field specified in ecNetcdfReadNextBlock.")
          return
       end if
       !
       ! - Check for the presence of times, indicating the presence of further data blocks.
       if (.not. has_time .and. .not. has_harmonics) then
-         call setECMessage("Empty NetCDF time dimension and no harmonic components in "//trim(fileReaderPtr%filename)//".")
+         call set_ec_message("Empty NetCDF time dimension and no harmonic components in "//trim(fileReaderPtr%filename)//".")
          return
       end if
       !
@@ -758,8 +758,8 @@ contains
          maxtime = ecSupportTimeIndexToMJD(fileReaderPtr%tframe, int(fileReaderPtr%tframe%nr_timesteps))
          call real2string(cnumber1, '(f12.2)', mintime)
          call real2string(cnumber2, '(f12.2)', maxtime)
-         call setECMessage('   Valid range: '//trim(cnumber1)//' to '//trim(cnumber2))
-         call setECMessage("Data block requested outside valid time window in "//trim(fileReaderPtr%filename)//".")
+         call set_ec_message('   Valid range: '//trim(cnumber1)//' to '//trim(cnumber2))
+         call set_ec_message("Data block requested outside valid time window in "//trim(fileReaderPtr%filename)//".")
          if (.true.) then ! TODO : pass if extrapolation (constant value) is allowed here, now always allowed
             fieldPtr%timesteps = huge(fieldPtr%timesteps) ! set time to infinity
             fieldPtr%timesndx = timesndx
@@ -790,9 +790,9 @@ contains
          if (.not. allocated(fieldPtr%arr1d)) then
             allocate (fieldPtr%arr1d(Ndatasize * max(nlay, 1)), stat=istat)
             if (istat /= 0) then
-               call setECMessage("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
+               call set_ec_message("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
                write (message, '(a,i0,a,i0,a,i0,a,i0,a)') 'Failed to create storage for item ', item%id, ': (', ncol, 'x', nrow, 'x', nlay, ').'
-               call setECMessage(trim(message))
+               call set_ec_message(trim(message))
                return
             else
                fieldPtr%arr1d = ec_undef_hp
@@ -806,7 +806,7 @@ contains
             if (item%elementSetPtr%nCoordinates == 0) then
                ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, fieldPtr%arr1dPtr, start=[timesndx], count=[1])
                if (ierror /= NF90_NOERR) then
-                  call setECMessage("NetCDF:'"//trim(nf90_strerror(ierror))//"' in "//trim(fileReaderPtr%filename)//".")
+                  call set_ec_message("NetCDF:'"//trim(nf90_strerror(ierror))//"' in "//trim(fileReaderPtr%filename)//".")
                   return
                end if
                valid_field = (fieldPtr%arr1dPtr(1) /= dmiss_nc)
@@ -823,8 +823,8 @@ contains
                end if
                if (istat /= 0) then
                   write (message, '(a,i0,a,i0,a)') 'Allocating temporary array of ', ncol, ' x ', nrow, ' elements.'
-                  call setECMessage(trim(message))
-                  call setECMessage("Allocation of data_block (data from NetCDF) failed.")
+                  call set_ec_message(trim(message))
+                  call set_ec_message("Allocation of data_block (data from NetCDF) failed.")
                   return
                end if
             end if
@@ -868,9 +868,9 @@ contains
                      end if
                      if (ierror /= 0) then
                         if (has_harmonics) then
-                           call setECMessage("Error retrieving component data")
+                           call set_ec_message("Error retrieving component data")
                         else
-                           call setECMessage("Error retrieving time index ", timesndx)
+                           call set_ec_message("Error retrieving time index ", timesndx)
                         end if
                         return
                      end if
@@ -1037,7 +1037,7 @@ contains
       ! TODO: replace times by filereaderPtr%tframe%times
       allocate (times(ntimes), stat=ierror)
       if (ierror /= 0) then
-         call setECMessage("Allocation error in ec_filereader_read::ecNetcdfReadBlock.")
+         call set_ec_message("Allocation error in ec_filereader_read::ecNetcdfReadBlock.")
          return
       end if
       ! Parse refdate and tunit to reconstruct mjd from netcdf timestep vector
@@ -1112,7 +1112,7 @@ contains
             ierror = nf90_get_var(fileReaderPtr%fileHandle, idvar_q, item1%sourceT1FieldPtr%arr1dPtr, start=(/1, read_index/), count=(/n, 1/))
             success = ecSupportNetcdfCheckError(ierror, "get_var "//item1%quantityPtr%name, fileReaderPtr%fileName)
          else
-            call setECMessage("ecNetcdfReadBlock: Invalid Field specified.")
+            call set_ec_message("ecNetcdfReadBlock: Invalid Field specified.")
          end if
          fileReaderPtr%lastReadTime = times(read_index)
       else
@@ -1140,7 +1140,7 @@ contains
       !
       allocate (discharges(10), waterlevels(10), STAT=istat)
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_filereader_read::ecQhtableReadAll: Unable to allocate additional memory.")
+         call set_ec_message("ERROR: ec_filereader_read::ecQhtableReadAll: Unable to allocate additional memory.")
          return
       end if
       !
@@ -1169,13 +1169,13 @@ contains
                if (nr_rows == size(discharges)) then
                   call realloc(discharges, nr_rows + 10, STAT=istat, keepExisting=.true.)
                   if (istat /= 0) then
-                     call setECMessage("ERROR: ec_filereader_read::ecQhtableReadAll: Unable to allocate additional memory.")
+                     call set_ec_message("ERROR: ec_filereader_read::ecQhtableReadAll: Unable to allocate additional memory.")
                      success = .false.
                      exit
                   end if
                   call realloc(waterlevels, nr_rows + 10, STAT=istat, keepExisting=.true.)
                   if (istat /= 0) then
-                     call setECMessage("ERROR: ec_filereader_read::ecQhtableReadAll: Unable to allocate additional memory.")
+                     call set_ec_message("ERROR: ec_filereader_read::ecQhtableReadAll: Unable to allocate additional memory.")
                      success = .false.
                      exit
                   end if
@@ -1184,7 +1184,7 @@ contains
                read (rec, *, iostat=istat) discharges(nr_rows), waterlevels(nr_rows)
                if (istat /= 0) then
                   success = .false.
-                  call setECMessage("ERROR: ec_filereader_read::ecQhtableReadAll: Cannot find two numbers in line: "//trim(rec)//" in file: "//trim(fileReaderPtr%FILENAME))
+                  call set_ec_message("ERROR: ec_filereader_read::ecQhtableReadAll: Cannot find two numbers in line: "//trim(rec)//" in file: "//trim(fileReaderPtr%FILENAME))
                   exit
                end if
             end if
@@ -1223,7 +1223,7 @@ contains
       !
       allocate (periods(10), components(10), magnitudes(10), phases(10), STAT=istat)
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate additional memory.")
+         call set_ec_message("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate additional memory.")
          return
       end if
 
@@ -1264,7 +1264,7 @@ contains
                   if (istat == 0) call realloc(magnitudes, nPeriods + 10, STAT=istat, keepExisting=.true.)
                   if (istat == 0) call realloc(phases, nPeriods + 10, STAT=istat, keepExisting=.true.)
                   if (istat /= 0) then
-                     call setECMessage("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate additional memory.")
+                     call set_ec_message("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate additional memory.")
                      success = .false.
                      return
                   end if
@@ -1276,14 +1276,14 @@ contains
                   ! period found
                   read (rec, *, IOSTAT=istat) periods(nPeriods), magnitudes(nPeriods), phases(nPeriods)
                   if (istat /= 0) then
-                     call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                     call setECMessage("     line = "//trim(rec))
+                     call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                     call set_ec_message("     line = "//trim(rec))
                      success = .false.
                      return
                   end if
                   !
                   if (is_astro) then
-                     call setECMessage("ERROR: mixed astro-components/harmonic components encountered.")
+                     call set_ec_message("ERROR: mixed astro-components/harmonic components encountered.")
                      success = .false.
                      return
                   end if
@@ -1324,8 +1324,8 @@ contains
                   ! component found
                   read (rec, *, IOSTAT=istat) component, magnitudes(nPeriods), phases(nPeriods)
                   if (istat /= 0) then
-                     call setECMessage("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
-                     call setECMessage("     line = "//trim(rec))
+                     call set_ec_message("ec_filereader_read::ecUniReadBlock: Read failure before end of file: "//trim(fileReaderPtr%fileName))
+                     call set_ec_message("     line = "//trim(rec))
                      success = .false.
                      return
                   end if
@@ -1357,7 +1357,7 @@ contains
       if (istat == 0) call realloc(magnitudes, nPeriods, STAT=istat, keepExisting=.true.)
       if (istat == 0) call realloc(phases, nPeriods, STAT=istat, keepExisting=.true.)
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate actual memory (components).")
+         call set_ec_message("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate actual memory (components).")
          success = .false.
          return
       end if
@@ -1368,7 +1368,7 @@ contains
          call realloc(fileReaderPtr%bc%quantity%astro_amplitude, nPeriods, STAT=istat, keepExisting=.true.)
          call realloc(fileReaderPtr%bc%quantity%astro_phase, nPeriods, STAT=istat, keepExisting=.true.)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate actual memory (original components).")
+            call set_ec_message("ERROR: ec_filereader_read::ecFourierReadAll: Unable to allocate actual memory (original components).")
             success = .false.
             return
          end if
@@ -1407,7 +1407,7 @@ contains
                end if
             end if
          else
-            call setECMessage("INFO: ec_filereader_read::ecFindInFile: File end has been reached.")
+            call set_ec_message("INFO: ec_filereader_read::ecFindInFile: File end has been reached.")
             rec = ' '
             exit ! Jump out of do-loop
          end if
@@ -1447,7 +1447,7 @@ contains
             answer = adjustl(rec(indx + 1:))
          end if
       else
-         call setECMessage("ERROR: ec_filereader_read::ecSpiderwebAndCurviFindInFile: Failed to read an existing line.")
+         call set_ec_message("ERROR: ec_filereader_read::ecSpiderwebAndCurviFindInFile: Failed to read an existing line.")
          answer = ' '
       end if
    end function ecSpiderwebAndCurviFindInFile
@@ -1530,7 +1530,7 @@ contains
       real(dp) :: dmiss_dflt = -999_dp ! Use default missing value for this 'old' sample file type
       real(dp) :: xymis_dflt = -999_dp !
       character(len=:), allocatable :: rec
-      character(len=maxMessageLen) :: tex
+      character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: tex
       integer :: istat
 
       success = .true.
@@ -1568,7 +1568,7 @@ contains
 40    continue
       success = .false.
       write (tex, '(a,a,a,i0,a)') "ERROR: ec_filereader_read::ecSampleReadAll: read error in file '", trim(filename), "' on line ", nSamples + 1, "."
-      call setECMessage(trim(tex))
+      call set_ec_message(trim(tex))
       return
 
 30    continue
@@ -1619,7 +1619,7 @@ contains
 !      do
 !        read (unitnr, '(a)', iostat=ierr) rec
 !        if (ierr /= 0) then
-!           call setECMessage("ERROR: error reading header of meteo-file")
+!           call set_ec_message("ERROR: error reading header of meteo-file")
 !           success = .false.
 !           return
 !        endif
@@ -1638,7 +1638,7 @@ contains
 !   if (loc_is .gt. 0) then
 !      read (rec(loc_is+1:), *) tread
 !   else
-!      call setECMessage('Could not find time in meteo-file')
+!      call set_ec_message('Could not find time in meteo-file')
 !      success = .false.
 !      return
 !   endif
@@ -1647,7 +1647,7 @@ contains
 !   !
 !   if (ipart == 1 .or. ipart == -1) then
 !      if ( size(xwind,1) .ne. num_rows .or. size(xwind,2) .ne. num_columns) then
-!         call setECMessage('READ_SPV_BLOCK: wrong sizes xwind')
+!         call set_ec_message('READ_SPV_BLOCK: wrong sizes xwind')
 !         success = .false.
 !         return
 !      endif
@@ -1657,7 +1657,7 @@ contains
 !   endif
 !   if (ipart == 2 .or. ipart == -1) then
 !      if ( size(ywind,1) .ne. num_rows .or. size(ywind,2) .ne. num_columns ) then
-!         call setECMessage('READ_SPV_BLOCK: wrong sizes ywind')
+!         call set_ec_message('READ_SPV_BLOCK: wrong sizes ywind')
 !         success = .false.
 !         return
 !      endif
@@ -1667,7 +1667,7 @@ contains
 !   endif
 !   if (ipart == 3 .or. ipart == -1) then
 !      if ( size(press,1) .ne. num_rows .or. size(press,2) .ne. num_columns ) then
-!         call setECMessage('READ_SPV_BLOCK: wrong sizes press')
+!         call set_ec_message('READ_SPV_BLOCK: wrong sizes press')
 !         success = .false.
 !         return
 !      endif
@@ -1685,19 +1685,19 @@ contains
 !   success = .true.
 !   return
 !100 continue
-!   call setECMessage('Unexpected end of file in meteo_on_flow_grid file')
+!   call set_ec_message('Unexpected end of file in meteo_on_flow_grid file')
 !   success = .false.
 !   return
 !101 continue
-!   call setECMessage('Error reading wind u-field')
+!   call set_ec_message('Error reading wind u-field')
 !   success = .false.
 !   return
 !102 continue
-!   call setECMessage('Error reading wind v-field')
+!   call set_ec_message('Error reading wind v-field')
 !   success = .false.
 !   return
 !103 continue
-!   call setECMessage('Error reading pressure field')
+!   call set_ec_message('Error reading pressure field')
 !   success = .false.
 !   return
 !end function read_spv_block
@@ -1735,15 +1735,15 @@ contains
 !   case (0)
 !      success = .true.
 !   case (-1)
-!      call setECMessage("ERROR: grib open: could not open file")
+!      call set_ec_message("ERROR: grib open: could not open file")
 !   case (-2)
-!      call setECMessage("ERROR: grib open: invalid filename")
+!      call set_ec_message("ERROR: grib open: invalid filename")
 !   case (-3)
-!      call setECMessage("ERROR: grib open: invalid open mode")
+!      call set_ec_message("ERROR: grib open: invalid open mode")
 !   case (-4)
-!      call setECMessage("ERROR: grib lib not linked")
+!      call set_ec_message("ERROR: grib lib not linked")
 !   case default
-!      call setECMessage("ERROR: grib open: unknown error")
+!      call set_ec_message("ERROR: grib open: unknown error")
 !   end select
 !   !
 !end function ec_grib_open
@@ -1818,7 +1818,7 @@ contains
 !   endif
 !   allocate(buffer(bufsz1), zbuf4(bufsz2), stat=ierr)
 !   if (ierr /= 0) then
-!      call setECMessage("allocate problem in read_grib")
+!      call set_ec_message("allocate problem in read_grib")
 !      return
 !   endif
 !   !
@@ -1833,7 +1833,7 @@ contains
 !         call pbgrib(unitnr, buffer, bufsz1, lenout, ierr)
 !#     else
 !         success = .false.
-!         call setECMessage("ERROR: grib lib not linked")
+!         call set_ec_message("ERROR: grib lib not linked")
 !         exit outer
 !#     endif
 !      select case (ierr)
@@ -1841,7 +1841,7 @@ contains
 !         success = .true.
 !      case (-1)
 !         if (filenr == -1) then
-!            call setECMessage("end of file")
+!            call set_ec_message("end of file")
 !            exit
 !         else
 !#           if defined GRIB
@@ -1862,24 +1862,24 @@ contains
 !                  if (ierr == 0) then
 !                     exit inner
 !                  else
-!                     call setECMessage("too much trouble with wildcards in gribfiles")
+!                     call set_ec_message("too much trouble with wildcards in gribfiles")
 !                     exit outer
 !                  endif
 !               endif
 !            enddo inner
 !            if (.not. success) then
-!               call setECMessage("too much trouble with wildcards in gribfiles")
+!               call set_ec_message("too much trouble with wildcards in gribfiles")
 !               exit outer
 !            endif
 !         endif
 !      case (-2)
-!         call setECMessage("error in file handling")
+!         call set_ec_message("error in file handling")
 !         exit
 !      case (-3)
-!         call setECMessage("size of buffer array too small to hold product")
+!         call set_ec_message("size of buffer array too small to hold product")
 !         exit
 !      case default
-!         call setECMessage("unknown error in grib_grid")
+!         call set_ec_message("unknown error in grib_grid")
 !         exit
 !      end select
 !      !
@@ -1898,7 +1898,7 @@ contains
 !      case (0)
 !         success = .true.
 !      case (1:999)
-!         call setECMessage("decoding error in read_grib", ierr)
+!         call set_ec_message("decoding error in read_grib", ierr)
 !         success = .false.
 !         exit
 !      case default
@@ -2123,7 +2123,7 @@ contains
       success = .false.
 
       if (.not. ecSupportOpenExistingFile(fmask, maskfilname)) then
-         call setECMessage('Cannot open maskfile '//trim(maskfilname))
+         call set_ec_message('Cannot open maskfile '//trim(maskfilname))
          return
       end if
 
@@ -2159,7 +2159,7 @@ contains
                   allocate (mask%msk(mask%mrange * mask%nrange))
                   jamaskinit = .true.
                else
-                  call setECMessage('At least one of the mask dimensions in '//trim(maskfilname)//' is smaller than 1.')
+                  call set_ec_message('At least one of the mask dimensions in '//trim(maskfilname)//' is smaller than 1.')
                   return
                end if
             end if
@@ -2306,9 +2306,9 @@ contains
                   ierr = ncu_get_att(fileHandle, varid, 'standard_name', standard_name)
                   if (ierr /= 0) then
                      write (stringBuffer, *) 'varid = ', varid
-                     call setECMessage("Read error in read_data_sparse for "//trim(stringBuffer))
+                     call set_ec_message("Read error in read_data_sparse for "//trim(stringBuffer))
                   else
-                     call setECMessage("Read error in read_data_sparse for "//trim(standard_name))
+                     call set_ec_message("Read error in read_data_sparse for "//trim(standard_name))
                   end if
                   goto 1234
                end if

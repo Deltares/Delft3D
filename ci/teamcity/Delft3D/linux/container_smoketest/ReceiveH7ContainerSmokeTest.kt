@@ -11,8 +11,10 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 object LinuxReceiveH7ContainerSmokeTest : BuildType({
     
     templates(
+        TemplateLinuxAgentNoFips,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Receive"
@@ -30,7 +32,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
 
     params {
         // H7 smoke test directory
-        param("h7_work_directory", "~/smoke/%build.revisions.short%")
+        param("h7_work_directory", "smoke/%build.revisions.short%")
         
         // H7 cluster access credentials
         param("h7_account_username", DslContext.getParameter("ad_h7_smoke_test_user"))
@@ -77,7 +79,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
                     --compare 
                     --skip-run
                     --skip-download cases 
-                    --config configs/apptainer/dimr/dimr_smoke_test_lnx64.xml
+                    --config configs/smoke_tests/apptainer_lnx64.xml
                     --log-level INFO 
                     --teamcity 
                     --parallel

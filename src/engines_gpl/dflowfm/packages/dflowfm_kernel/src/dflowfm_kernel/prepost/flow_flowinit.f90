@@ -33,8 +33,6 @@ module m_flow_flowinit
    use m_statisticsini, only: statisticsini
    use m_setzminmax, only: setzminmax
    use m_flow_settidepotential, only: flow_settidepotential
-   use m_set_saltem_nudge, only: set_saltem_nudge
-   use m_set_nudgerate, only: set_nudgerate
    use m_setvelocityfield, only: setvelocityfield
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
@@ -52,7 +50,7 @@ module m_flow_flowinit
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
    use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
-   use m_tauwavehk, only: tauwavehk
+   use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
    use m_setwavfu, only: setwavfu
@@ -81,10 +79,6 @@ module m_flow_flowinit
    integer, parameter :: OFF = 0
    integer, parameter :: ON = 1
    integer, parameter :: INITIALIZE = 1
-   integer, parameter :: LATERAL_1D2D_LINK = 3
-   integer, parameter :: STREET_INLET_1D2D_LINK = 5
-   integer, parameter :: ROOF_GUTTER_1D2D_LINK = 7
-   integer, parameter :: BOUNDARY_1D = -1
    integer, parameter :: SET_ZWS0 = 1
    logical, parameter :: INITIALIZATION_PHASE = .true.
 
@@ -267,11 +261,31 @@ contains
       if (janudge == ON) then
          call setzcs()
       end if
+      
+      call initialize_salinity_from_bottom_or_top()
+      call initialize_temperature_3D()
+      call initialize_sediment_3D()
+
+      ! hk: and, make sure this is done prior to fill constituents
+      if (jarestart > OFF) then
+         call initialize_salinity_temperature_on_boundary()
+         call restore_au_q1_3D_for_1st_history_record()
+      end if
+
       call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
       if (is_error_at_any_processor(error)) then
          call qnerror('Error occurred when setting external forcings.', ' ', ' ')
          return
       end if
+
+      if (jasal > OFF) then
+         call fill_constituents_with_salinity()
+      end if
+      if (itemp > OFF) then
+         call fill_constituents_with_temperature()
+      end if
+
+      call initialise_density_at_cell_centres()
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
@@ -359,26 +373,6 @@ contains
 
       call set_initial_velocity_in_3D()
       call set_wave_modelling()
-      call initialize_salinity_from_bottom_or_top()
-      call initialize_temperature_3D()
-      call initialize_sediment_3D()
-
-      ! hk: and, make sure this is done prior to fill constituents
-      if (jarestart > OFF) then
-         call initialize_salinity_temperature_on_boundary()
-         call restore_au_q1_3D_for_1st_history_record()
-      end if
-
-      call initialize_salinity_and_temperature_with_nudge_variables()
-
-      if (jasal > OFF) then
-         call fill_constituents_with_salinity()
-      end if
-      if (itemp > OFF) then
-         call fill_constituents_with_temperature()
-      end if
-
-      call initialise_density_at_cell_centres()
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
@@ -408,7 +402,7 @@ contains
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
-         if (jamapVolOnGround > 0) then
+         if (map_write_settings%vol_on_ground > 0) then
             call set_max_volume_for_1d_nodes() ! set maximal volume, it will be used to update the volume on ground level for the output
          end if
       end if
@@ -630,6 +624,7 @@ contains
    subroutine set_advection_type_for_lateral_flow_and_pipes()
       use m_flowparameters, only: iadveccorr1D2D
       use m_flowgeom, only: lnxi, iadv, kcu, IADV_ORIGINAL_LATERAL_OVERFLOW
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -637,13 +632,13 @@ contains
 
       do link = 1, lnxi
          if (iadv(link) /= OFF) then
-            if (kcu(link) == LATERAL_1D2D_LINK) then
+            if (kcu(link) == LINK_1D2D_INTERNAL) then
                if (iadveccorr1D2D == 2) then
                   iadv(link) = OFF
                else
                   iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
-            else if (kcu(link) == STREET_INLET_1D2D_LINK .or. kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+            else if (kcu(link) == LINK_1D2D_STREETINLET .or. kcu(link) == LINK_1D2D_ROOF) then
                iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end if
@@ -687,6 +682,7 @@ contains
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -697,13 +693,13 @@ contains
       do link = 1, lnx
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
-               if (kcu(link) == LATERAL_1D2D_LINK) then
+               if (kcu(link) == LINK_1D2D_INTERNAL) then
                   frcu(link) = frcuni1d2d
-               else if (kcu(link) == STREET_INLET_1D2D_LINK) then
+               else if (kcu(link) == LINK_1D2D_STREETINLET) then
                   ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
                   frcu(link) = frcunistreetinlet
                   ifrcutp(link) = MANNING
-               else if (kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+               else if (kcu(link) == LINK_1D2D_ROOF) then
                   ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
                   frcu(link) = frcuniroofgutterpipe
                   ifrcutp(link) = MANNING
@@ -879,14 +875,14 @@ contains
 !! to restart from mapfile, then make sure that the morphological start
 !! time corresponds to the hydrodynamic start time. This includes TStart!
    subroutine initialize_morphological_start_time()
-      use m_flowparameters, only: jased, eps10
+      use m_flowparameters, only: jased, EPS10
       use m_sediment, only: stm_included, stmpar
       use m_flowtimes, only: tstart_user
 
       implicit none
 
       if (jased > OFF .and. stm_included) then
-         if (stmpar%morpar%morft < eps10) then
+         if (stmpar%morpar%morft < EPS10) then
             stmpar%morpar%morft = tstart_user / 86400.0_dp
             stmpar%morpar%morft0 = stmpar%morpar%morft
          end if
@@ -965,6 +961,7 @@ contains
       use m_flowparameters, only: jaconveyance2D
       use m_flowgeom, only: lnxi, lnx, kcu, Lbnd1D, aifu
       use m_flow, only: frcu, ifrcutp
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -972,7 +969,7 @@ contains
       integer :: boundary_link
 
       do flow_link = lnxi + 1, lnx
-         if (kcu(flow_link) == BOUNDARY_1D) then
+         if (kcu(flow_link) == LINK_1D_BOUNDARY) then
             boundary_link = Lbnd1D(flow_link)
             frcu(flow_link) = frcu(boundary_link)
             ifrcutp(flow_link) = ifrcutp(boundary_link)
@@ -1001,6 +998,7 @@ contains
       use m_flowparameters, only: nonlin1d, nonlin2D
       use m_flowgeom, only: kcu, lbnd1d, lnx1D, lnxi, lnx, prof1d, teta
       use m_missing, only: dmiss
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -1023,7 +1021,7 @@ contains
             end if
          end do
          do boundary_link = lnxi + 1, lnx
-            if (kcu(boundary_link) == BOUNDARY_1D) then
+            if (kcu(boundary_link) == LINK_1D_BOUNDARY) then
                link1D = lbnd1d(boundary_link)
                if (abs(prof1d(3, link1D)) == CIRCLE) then
                   teta(boundary_link) = 1.0_dp ! closed pipes always implicit
@@ -1231,16 +1229,15 @@ contains
    subroutine temporary_fix_for_sepr_3D()
       use m_flow, only: kmx, hu, au
       use m_flowgeom, only: lnx, kcu, wu
+      use network_data, only: LINK_1D
 
       implicit none
-
-      integer, parameter :: link_1D = 1
 
       integer :: link
 
       if (kmx > 0) then
          do link = 1, lnx
-            if (abs(kcu(link)) == link_1D) then
+            if (abs(kcu(link)) == LINK_1D) then
                call addlink1D(link, 1)
                if (hu(link) > 0.0_dp) then
                   wu(link) = au(link) / hu(link)
@@ -1276,7 +1273,7 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use precision, only: dp
-      use m_flowparameters, only: jawave, flowWithoutWaves, waveforcing, jawavestokes
+      use m_flowparameters, only: jawave, flow_without_waves, waveforcing, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
@@ -1304,7 +1301,7 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
          if (jawave >= SWAN_NETCDF) then
@@ -1335,7 +1332,7 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
@@ -1349,7 +1346,7 @@ contains
          call wave_uorbrlabda() ! hwav gets depth-limited here
       end if
 
-      if (jawave == CONST .and. .not. flowWithoutWaves) then
+      if (jawave == CONST .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
@@ -1363,7 +1360,7 @@ contains
                   tw = 0.5_dp * (twav(left_node) + twav(right_node))
                   csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
                   snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
-                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  call compute_wave_shear_velocity(hw, tw, hh, uorbi, rkw, ustt)
                   ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
                   vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
                end do
@@ -1570,26 +1567,6 @@ contains
       end if
 
    end subroutine initialize_salinity_temperature_on_boundary
-
-!> initialize salinity and temperature with nudge variables
-   subroutine initialize_salinity_and_temperature_with_nudge_variables()
-      use m_flowparameters, only: janudge, jainiwithnudge
-      use m_nudge
-
-      implicit none
-
-      if (janudge == ON) then ! and here last actions on sal/tem nudging, before we set rho
-         call set_nudgerate()
-         if (jainiwithnudge > OFF) then
-            call set_saltem_nudge()
-            if (jainiwithnudge == 2) then
-               janudge = OFF
-               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
-            end if
-         end if
-      end if
-
-   end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 !> fill_constituents_with_salinity
    subroutine fill_constituents_with_salinity()

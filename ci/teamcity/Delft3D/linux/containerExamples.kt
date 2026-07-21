@@ -11,14 +11,16 @@ import Trigger
 
 object LinuxRunAllContainerExamples : BuildType({
     name = "Run all container examples (Matrix)"
-    description = "Run all container example cases for fm/ and all/ pull-requests using Docker and Apptainer."
+    description = "Run all container example cases for fm/ and all/ pull-requests using Docker and Apptainer on Alma8, 9 and 10."
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     templates(
+        TemplateLinuxAgentNoFips,
         TemplateMergeRequest,
         TemplateDockerRegistry,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     vcs {
@@ -80,7 +82,4 @@ object LinuxRunAllContainerExamples : BuildType({
         }
     }
 
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
 })

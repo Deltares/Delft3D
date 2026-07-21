@@ -1595,7 +1595,7 @@ contains
 
 !          compute tolerance
                dtol = 1.0e-4_dp * max(dbdistance(xk(k1), yk(k1), xk(k), yk(k), jsferic, jasfer3D, dmiss), &
-                                 dbdistance(xk(k2), yk(k2), xk(k), yk(k), jsferic, jasfer3D, dmiss))
+                                      dbdistance(xk(k2), yk(k2), xk(k), yk(k), jsferic, jasfer3D, dmiss))
                if (dbdistance(xk(k), yk(k), xkc, ykc, jsferic, jasfer3D, dmiss) < dtol) then ! brother links found
                   linkbrother(L) = Lp1
                   linkbrother(Lp1) = L

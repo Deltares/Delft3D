@@ -37,7 +37,8 @@ module fm_external_forcings_data
    integer :: mhis !< unit nr external forcings history *.exthis
    integer :: kx, filetype, mext
    character(len=256) :: qid
-   character(len=1) :: operand
+   integer :: operand
+
    integer :: numbnp !< total nr of open boundary cells for network extension
    integer :: jaoldrstfile !< using old-version rst file, which does not contain boundary info
    ! For postprocessing, each boundary polyline is named as a open boundary section.
@@ -383,39 +384,19 @@ module fm_external_forcings_data
    integer :: nwbnd !< number of wave-energy boundaries
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
-   integer :: numsrc !< nr of point sources/sinks
-   integer :: numsrc_old !< nr of point sources/sinks in old ext-file
-   integer :: numvalssrc !< nr of point constituents
-   integer :: numsrc_nf !< nr of sources/sinks added for nearfield
-   integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
-   integer, allocatable :: ksrc(:, :) !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
-   real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
-   real(kind=dp), allocatable :: sasrc(:) !< q*salinity    (ppt) (m3/s)  if ksrc 3,4 == 0, else delta salinity
-   real(kind=dp), allocatable :: tmsrc(:) !< q*temperature (degC) (m3/s) if ksrc 3,4 == 0, else delta temperature
-   real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc,numsrc), keeps sasrc, tmsrc etc
-   real(kind=dp), allocatable :: qcsrc(:, :) !< q*constituent (c) (m3/s)  )
-   real(kind=dp), allocatable :: vcsrc(:, :) !< v*constituent (c) (m3)    )
-   real(kind=dp), allocatable :: arsrc(:) !< pipe cross sectional area (m2). If 0, no net momentum
-   real(kind=dp), allocatable :: cssrc(:, :) !< (1:2,numsrc) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
-   real(kind=dp), allocatable :: snsrc(:, :) !< (1:2,numsrc) sine discharge dir pipe on start side (1) and end side (2) of pipe.
-   real(kind=dp), allocatable :: zsrc(:, :) !< vertical level (m) bot
-   real(kind=dp), allocatable :: zsrc2(:, :) !< vertical level (m) top (optional)
-   real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),numsrc, to be reduced
-   integer, allocatable :: jamess(:) !< issue message mess for from or to point, 0, 1, 2
-   real(kind=dp), allocatable, target :: qstss(:) !< array to catch multiple_uni_discharge_salinity_temperature
-   character(len=255), allocatable :: srcname(:) !< sources/sinks name (numsrc)
-   real(kind=dp), target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
-   real(kind=dp), allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
-   real(kind=dp), target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink
-   real(kind=dp), allocatable :: xsrc(:, :) !< x-coordinates of source/sink
-   real(kind=dp), allocatable :: ysrc(:, :) !< y-coordinates of source/sink
-   integer, allocatable :: nxsrc(:) !< mx nr of points in xsrc, ysrc
-   integer, allocatable :: ksrcwaq(:) !< index array, starting point in qsrcwaq
-   real(kind=dp), allocatable :: qsrcwaq(:) !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp), allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp) :: addksources = 0.0_dp !< Add k of sources to turkin 1/0
+   type t_Bubblescreen
+      character(len=255) :: id !< Bubble screen id
+      integer :: num_flowcells !< Number of flow cells in bubble screen
+      integer, dimension(:), allocatable :: flowcell_indices !< Indices of flow cells in bubble screen. {size=num_flowcells}
+      integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
+      real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
+      real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
+      character(len=:), allocatable  :: discharge_input !< filename or value for the bubble screen air discharge
+      logical, dimension(:), allocatable :: is_active !< True if computation is currently possible (min 3 layers above z-level). {size=num_flowcells}
+   end type t_Bubblescreen
+
+   type(t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< Array containing all bubble screens
+   real(kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< Array to catch bubble screen air discharges
 
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
@@ -475,9 +456,6 @@ contains
       ! JRE
       nzbnd = 0
       nubnd = 0
-      numsrc = 0
-      numsrc_old = 0
-      numsrc_nf = 0
 
    end subroutine default_fm_external_forcing_data
 

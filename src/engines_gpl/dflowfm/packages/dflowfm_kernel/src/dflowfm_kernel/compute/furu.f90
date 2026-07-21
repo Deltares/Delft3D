@@ -62,6 +62,7 @@ contains
       use m_get_Lbot_Ltop
       use m_ispumpon
       use mathconsts, only: ee
+      use network_data, only: LINK_1D2D_INTERNAL
 
       implicit none
 
@@ -86,7 +87,7 @@ contains
       fsqrtt = sqrt(0.5_dp)
       call timstrt('Furu', handle_furu)
 
-      if (kmx == 0 .or. ifixedweirscheme > 0) then ! original 2D coding
+      if (kmx == 0) then ! original 2D coding
 
          call calculate_manhole_losses(network%storS, advi)
 
@@ -95,12 +96,6 @@ contains
          do L = 1, lnx
 
             if (hu(L) > 0) then
-
-               if (kmx > 0) then
-                  if (.not. (iadv(L) == IADV_SUBGRID_WEIR .or. iadv(L) >= IADV_RAJARATNAM_WEIR .and. iadv(L) <= IADV_VILLEMONTE_WEIR)) then ! in 3D, only do this for weir points
-                     cycle
-                  end if
-               end if
 
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -173,7 +168,7 @@ contains
                end if
 
                do itu1 = 1, 4 ! furu_loop
-                  if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
+                  if (jawave > NO_WAVES .and. .not. flow_without_waves) then ! Delft3D-Wave Stokes-drift correction
 
                      if (modind < 9) then
                         frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
@@ -192,7 +187,7 @@ contains
                      end if
 
                   else if (ifxedweirfrictscheme > 0) then
-                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
+                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == LINK_1D2D_INTERNAL) then
                         call fixedweirfriction2D(L, k1, k2, frL)
                      else
                         frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
@@ -374,7 +369,7 @@ contains
 
       call furusobekstructures()
 
-      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          if (kmx == 0) then
             !   add wave-induced mass fluxes on boundaries to convert euler input to GLM
             do L = Lnxi + 1, Lnx

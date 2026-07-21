@@ -21,7 +21,8 @@ object RunBashBatonUtilities : BuildType({
     templates(
         TemplatePublishStatus,
         TemplateMergeRequest,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {
@@ -48,8 +49,6 @@ object RunBashBatonUtilities : BuildType({
     val joinedTargetPaths = targetPaths.joinToString(" ")
 
     steps {
-        mergeTargetBranch {}
-
         script {
             name = "Display versions"
             scriptContent = """

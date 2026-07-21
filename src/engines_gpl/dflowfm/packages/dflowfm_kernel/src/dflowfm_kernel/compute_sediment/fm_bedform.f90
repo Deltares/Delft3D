@@ -56,7 +56,7 @@ contains
       use m_sediment, only: sedtra, stmpar, stm_included
       use m_physcoef, only: ag, rhomean, vismol
       use m_flowgeom, only: ndxi, ndx, lnx, lnxi, ln, wcl, bl
-      use m_flowparameters, only: epshs, jawave, flowWithoutWaves
+      use m_flowparameters, only: epshs, jawave, flow_without_waves
       use m_flow, only: frcu, ifrcutp, hu, u1, v, s1, ucx_mor, ucy_mor, lnkx
       use m_flowtimes
       use m_waves
@@ -140,7 +140,7 @@ contains
       czu = 0.0_dp
       u1eul = 0.0_dp
       !
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          u1eul = u1 - ustokes
          call setucxucy_mor(u1eul)
       end if
@@ -668,7 +668,7 @@ contains
       use m_flowtimes, only: dt_user, tfac
       use m_flow, only: kmx, s1, u0, hs, z0urou, ucx_mor, ucy_mor, zws, lnkx
       use m_flowgeom, only: ndx, bl, ndxi, lnx, lnxi, wcl, ln
-      use m_flowparameters, only: v2dwbl, epshs, jawave, flowWithoutWaves, epsz0
+      use m_flowparameters, only: v2dwbl, epshs, jawave, flow_without_waves, epsz0
       use m_sediment
       use m_bedform
       use m_rdtrt
@@ -742,7 +742,7 @@ contains
       deltas = 0.0_dp
       !
       ! Calculate Eulerian velocities at old time level
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          if (.not. allocated(u0eul)) then
             allocate (u0eul(1:lnkx), stat=ierr)
          end if
@@ -802,7 +802,7 @@ contains
                call getkbotktop(k, kb, kt)
                kmaxx = kb
                !
-               if (v2dwbl > 0 .and. (jawave > NO_WAVES) .and. .not. flowWithoutWaves .and. kmx > 0) then
+               if (v2dwbl > 0 .and. (jawave > NO_WAVES) .and. .not. flow_without_waves .and. kmx > 0) then
                   !
                   ! Determine representative 2Dh velocity based on velocities in first layer above wave boundary layer
                   ! kmaxx is the first layer with its centre above the wave boundary layer
@@ -829,7 +829,7 @@ contains
                   u2dh = umod * (log((1.0_dp + hs(k)) / z0rou(k)) - 1.0_dp) / (log(zz / z0rou(k)) - 1.0_dp)
                end if
                !
-               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                   hh = hwav(k) * sqrt(2.0_fp)
                   llabda = max(0.1_fp, rlabda(k))
                   arg = 2.0_fp * pi * depth / llabda

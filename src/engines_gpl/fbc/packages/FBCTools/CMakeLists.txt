@@ -21,7 +21,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # Enable OpenMP
 find_package(OpenMP)
-if(OPENMP_FOUND)
+if(OpenMP_FOUND)
     add_compile_options("${OpenMP_CXX_FLAGS}")
 endif()
 
@@ -31,13 +31,11 @@ set(Boost_USE_RELEASE_LIBS ON)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS OFF)
   set(Boost_DIR ${CMAKE_SOURCE_DIR}/../third_party_open/boost/boost_1_90_0/lib/cmake/Boost-1.90.0)
-  # Note: boost_system is header-only since Boost 1.69+ and not needed as a component
   find_package(Boost 1.90 CONFIG REQUIRED COMPONENTS filesystem date_time)
 endif()
 
-# version 1.65 is a minimum version
 if(LINUX)
-   find_package(Boost 1.65 REQUIRED COMPONENTS system filesystem)
+   find_package(Boost 1.90 REQUIRED COMPONENTS filesystem)
    find_package(XercesC REQUIRED)
    if(XercesC_FOUND)
       message(STATUS "Found Xerces-C: ${XercesC_VERSION}")
@@ -52,16 +50,16 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W3")
     set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} /W3")
 else()
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time") 
-    set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} -Wall -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++11 -lboost_filesystem -lboost_date_time")
+    set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} -Wall -std=c++11 -lboost_filesystem -lboost_date_time")
 endif()
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /W0")
     set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} /W0")
 else()
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time") 
-    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_date_time")
+    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_date_time")
 endif()
 
 set (version_include_dir ${PROJECT_SOURCE_DIR}/../../version/)
@@ -105,24 +103,23 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # Define BMI library
     add_library(FBCTools_BMI SHARED src/rtcToolsBMI.cpp src/bmi.h)
 endif()
-    
+
 # Link dependencies
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(LINK_LIBRARIES FBCTools_static 
+    set(LINK_LIBRARIES FBCTools_static
                        xerces-c_3
                        Boost::filesystem
                        Boost::date_time)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(LINK_LIBRARIES FBCTools_static 
+    set(LINK_LIBRARIES FBCTools_static
                        ${XercesC_LIBRARIES}
                        dl
-                       boost_system
                        boost_date_time
                        boost_filesystem)
 endif()
 
-if(${CMAKE_COMPILER_IS_GNUCXX}) 
-    set(LINK_LIBRARIES ${LINK_LIBRARIES} gomp)
+if(OpenMP_CXX_FOUND)
+    set(LINK_LIBRARIES ${LINK_LIBRARIES} OpenMP::OpenMP_CXX)
 endif()
 
 target_link_libraries(FBCTools PRIVATE ${LINK_LIBRARIES})
@@ -152,14 +149,14 @@ set(FBC_SUPPORT_FILES
 )
   install(FILES ${FBC_SUPPORT_FILES} DESTINATION share/drtc)
   install(TARGETS FBCTools RUNTIME DESTINATION bin)
-  install(TARGETS FBCTools_BMI RUNTIME DESTINATION lib
+  install(TARGETS FBCTools_BMI RUNTIME DESTINATION bin
                                LIBRARY DESTINATION lib
   )
   if(WIN32)
-     install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION lib)
+     install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION bin)
      if(NOT Boost_USE_STATIC_LIBS)
         get_target_property(BOOST_FILESYSTEM_DLL Boost::filesystem LOCATION)
         get_target_property(BOOST_DATETIME_DLL Boost::date_time LOCATION)
-        install(FILES ${BOOST_FILESYSTEM_DLL} ${BOOST_DATETIME_DLL} DESTINATION lib)
+        install(FILES ${BOOST_FILESYSTEM_DLL} ${BOOST_DATETIME_DLL} DESTINATION bin)
      endif()
   endif()

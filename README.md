@@ -1,94 +1,58 @@
-# Tarball
-Please use the tarball containing the latest released version of the source code, located at:
-https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code
-See section "Workflow" below in case you want to contribute to the source code.
+# Delft3D
+This Delft3D repository contains the source code of the simulation engines of the [Delft3D 4](https://www.deltares.nl/en/software-and-data/products/delft3d-4-suite) and [Delft3D Flexible Mesh](https://www.deltares.nl/en/software-and-data/products/delft3d-flexible-mesh-suite) Suites developed by [Deltares](https://www.deltares.nl/en).
+Both modelling suites can be used for the coastal, estuarine, river, rural and urban applications.
+The Delft3D 4 Suite supports only structured grids.
+Its successor, the Delft3D FM Suite, allows for unstructured grids including 1D networks.
+The simulation engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrology), real-time control (D-Real Time Control), morphodynamics (D-Morphology), waves (D-Waves, Delft3D-WAVE), water quality (D-Water Quality, Delft3D-WAQ) and particle tracking (Delft3D-PART).
 
-# About compiling https://github.com/Deltares/Delft3D
+<div align="center">
+<img src="doc/images/Delft3D_logo.png" width="20%" alt="Delft3D logo">
+</div>
 
-#### Windows:
-- build.bat from an Intel oneAPI command prompt for Intel 64 for Visual Studio 2022.
-  Execute "build.bat -help" to show the usage.
-- Open the generated solution from the command prompt to ensure that the intel environment is inherited by visual studio. For example:
-  "devenv build_fm-suite\fm-suite.sln"
-- Build from visual studio, or alternatively, use the command line to run
-  "cmake --build build_fm-suite --config Debug"
-  "cmake --install build_fm-suite --config Debug"
+## Documentation
 
-#### Linux:
-- build.sh
-  Execute "./build.sh --help" to show the usage
-  Currently used as default build process: "./build.sh fm-suite --compiler intel21"
-  This will execute "src/setenv.sh" on Deltares systems. On other systems, the environment must be prepared upfront.
-  For instructions, see [Setup your own Linux environment](Linux_setup.md).
+For a description of the functionality included in the various components, please check the nightly draft builds of our [Delft3D 4 manuals](https://oss.deltares.nl/web/delft3d/manuals) and [Delft3D FM manuals](https://oss.deltares.nl/web/delft3dfm/downloads).
 
-#### Alternative: without build-script (Windows and Linux)
-See ...\src\cmake\README
-WARNING: When building without build-script, the collection of the resulting binaries will need attention
+## Examples, tutorials and training
 
-#### More information:
-- Delft3D FM suite: https://oss.deltares.nl/web/delft3dfm/get-started
-- Delft3D 4  suite: https://oss.deltares.nl/web/delft3d/get-started
+Most manuals (see documentation above) include a "Getting started" and/or "Tutorial" chapter.
+This repository includes a few [example input files](examples/dflowfm) for the various simulation engines.
+Furthermore, we organize various online and in-person Delft3D courses throughout the year.
+The latest overview of scheduled Deltares courses is available on the [Deltares academy website](https://academy.deltares.nl/program?session-Language=en).
 
-# Debugging DIMR in VisualStudio
-Note: in this section:
-Replace "..." by the actual path on your system to the checkout directory.
+## Support packages
 
-- Use build.bat to prepare the "fm-suite" configuration
-- Open "...\build_fm-suite\fm-suite.sln" in VisualStudio and build the complete release version
-  Directory "...\build_fm-suite\x64\Release\share\bin" will be created
-- Build the debug versie of what you need (e.g. dimr and dflowfm, waq, wave)
-- dimr project -> Set as Startup Project
-- dimr project -> properties -> Debugging:
-    -> Command Arguments: dimr_config.xml
-    -> Working Directory: ...\examples\12_dflowfm\test_data\e100_f02_c02-FriesianInlet_schematic_FM
-    -> Environment: PATH=...\build_fm-suite\x64\Debug;%PATH%;...\fm-suite\x64\Release\share\bin
+If you are interested in using these products, and do not (yet) want to compile or contribute to the development, then check out the following websites for the Delft3D Service Packages (note that these Service Packages cover both Delft3D 4 and Delft3D FM):
 
-# Workflow
-- Request for access on https://github.com/Deltares/Delft3D
-- Create an issue in https://issuetracker.deltares.nl
-  If an issue is not created, you have to create a branch of type research
-- Clone the repository
-- Create a branch using the naming convention below
-  The frequency of updating your branch from main is up to personal taste.
-  Yet, merge from main as often as possible, and merge back to main as early as possible.
-- Create a MergeRequest (not for research branches):
-  - TeamCity projects will be triggered to build the source code (Windows and Linux). Continuation is only possible when it succeeds. This will take at least 30 minutes.
-  - A small set of QuickTests will be triggered on TeamCity. Continuation is only possible when it succeeds. This will take at least 30 minutes.
-  - You have to assign the MergeRequest to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into trunk.
-- Official binary deliveries are only allowed using Deltares TeamCity server
+- **Delft3D 4 Suite website:** https://www.deltares.nl/en/software-and-data/products/delft3d-4-suite
+- **Delft3D FM Suite:** https://www.deltares.nl/en/software-and-data/products/delft3d-flexible-mesh-suite
 
-# Branch naming
-\<kernel\>/\<type\>/\<ISSUENR\>_short_description
-with:
-- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave, tc
-  -> Use all/none/\<specific\> to trigger all/none/specific tests
-  -> Not needed for type \<research\>.
-- \<type\>    : one of: bugfix, doc, feature, poc, release, research, task
-  -> Use \<research\> for branches that will not be merged into trunk directly.
-- \<ISSUENR\> : JIRA issue number
-  -> Not needed for type \<research\>.
+and contact our **sales services team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
 
-Examples:
-- fm/feature/UNST-1234_improve_partition_file
-- research/improve_flow_scheme
+## Community support
 
-# Unit tests
-## Running Unit tests
-After building the source code, you can run the unit tests with `ctest`. 
-You can do this by running `ctest` in the build directory. Be sure to pass the "config"
-(`Debug`/`Release`) with the `-C|--build-config` argument.
-```
-cd build_fm-suite
-ctest --build-config Debug
-```
+Clients with Service Packages have access to the support team.
+For the wider open source community, we recommend the use of the [GitHub Discussions](https://github.com/Deltares/Delft3D/discussions) tab.
+Please post questions and suggestions there in the Q&A sections.
 
-Or...
+## Open Source Community
 
-`ctest --test-dir build_fm-suite --build-config Debug`
+We have community websites for [Delft3D 4](https://oss.deltares.nl/web/delft3d) and [Delft3D FM](https://oss.deltares.nl/web/delft3dfm).
+Source code repositories for the Delft3D [simulation engines](https://github.com/Deltares/Delft3D) (self-reference to this page unless you're looking at a forked version), the MATLAB-based postprocessing package [QUICKPLOT](https://github.com/Deltares/QUICKPLOT), the Python-based pre- and postprocessing packages [dfm_tools](https://github.com/Deltares/dfm_tools) and [hydrolib-core](https://github.com/Deltares/HYDROLIB-core), and our grid generation library [MeshKernel](https://github.com/Deltares/MeshKernel).
 
-`ctest` allows you to customize which tests you want to run or exclude, and supports
-options for customizing the output. For instance, you can use the `--output-junit` option
-to write the test results to an XML file, which is recognized by many tools that process
-test results. Use `ctest --help` for an overview of the options.
+### How to use the kernels?
 
-For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).
+All computational kernels can be run from the command line.
+This is what most people tend to use most of the time.
+However, a graphical user interface is very helpful for quickly setting up a model and to familiarize yourself with all the features of the modelling system.
+A set of pre-compiled user interfaces (Windows only) is available for both Delft3D 4 and Delft3D FM after registration on the Deltares software website.
+See [this page](doc/guis_for_open_source.md) for details on how to work with these user interfaces in combination with a self-compiled set of kernels.
+
+### How to compile, test and modify the kernels?
+For information on compiling, testing and development see the [development](doc/development.md) page.
+
+### How to contribute code back to the main version?
+If you want to contribute improvements or new features to our codebase, please see the [contributing](doc/contributing.md) page for information about developer guidelines, code branches and our review process.
+
+## License
+Most simulation engines are licensed under AGPL-3.0 or GPL-3.0, several utility libraries are licensed under LGPL-2.1, and several third-party packages under their original license. Details are listed in the respective subdirectories or source files.

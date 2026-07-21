@@ -27,11 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
-!
 module timespace_parameters
    use string_module, only: str_tolower
 
-   implicit none
+   implicit none(type, external)
 
    ! enumeration for filetypes van de providers
    integer, parameter :: FILE_TYPE_UNKNOWN = -1
@@ -90,14 +89,74 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
+
+   ! enumeration for interpolation methods of providers
+   integer, parameter :: OPERAND_UNKNOWN = -1 !< Unknown operand type.
+   integer, parameter :: OPERAND_OVERRIDE = 0 !< Override existing value with new value.
+   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 1 !< Override existing value, but only if missing.
+   integer, parameter :: OPERAND_ADD = 2 !< Add new value to existing value.
+   integer, parameter :: OPERAND_MULTIPLY = 3 !< Multiply existing value by new value.
+   integer, parameter :: OPERAND_MINIMUM = 4 !< Take the minimum of existing and new value.
+   integer, parameter :: OPERAND_MAXIMUM = 5 !< Take the maximum of existing and new value.
 
 contains
 
-!> Converts fileType string to an integer.
-!! Returns -1 when an invalid type string is given.
+   !> Converts operand string to an operand enum integer. Supports both the new operand strings (e.g. 'override') and the legacy
+   !! single-character strings (e.g. 'O') for backward compatibility. Returns OPERAND_UNKNOWN when an invalid operand string is given.
+   function convert_operand_string_to_integer(string) result(operand)
+      character(len=*), intent(in) :: string !< operand string
+      integer :: operand !< operand enumeration integer
+
+      select case (trim(str_tolower(string)))
+      case ('override')
+         operand = OPERAND_OVERRIDE
+      case ('overrideifmissing')
+         operand = OPERAND_OVERRIDE_IF_MISSING
+      case ('add')
+         operand = OPERAND_ADD
+      case ('multiply')
+         operand = OPERAND_MULTIPLY
+      case ('minimum')
+         operand = OPERAND_MINIMUM
+      case ('maximum')
+         operand = OPERAND_MAXIMUM
+      case default
+         ! Try to parse the string as a legacy operand string (single character) as a fallback
+         operand = convert_legacy_operand_string_to_integer(string)
+      end select
+   end function convert_operand_string_to_integer
+
+   !> Converts a legacy operand string (e.g. 'O') to an operand enum integer. Returns OPERAND_UNKNOWN when an invalid operand string is given.
+   function convert_legacy_operand_string_to_integer(string) result(operand)
+      character(len=*), intent(in) :: string !< operand string
+      integer :: operand !< operand enumeration integer
+
+      select case (trim(str_tolower(string)))
+      case ('o')
+         operand = OPERAND_OVERRIDE
+      case ('a')
+         operand = OPERAND_OVERRIDE_IF_MISSING
+      case ('+')
+         operand = OPERAND_ADD
+      case ('*')
+         operand = OPERAND_MULTIPLY
+      case ('v')
+         ! This used to map to operand_replace_if_value in the ec module, but this has been replaced by regular overriding behavior.
+         operand = OPERAND_OVERRIDE
+      case ('n')
+         operand = OPERAND_MINIMUM
+      case ('x')
+         operand = OPERAND_MAXIMUM
+      case default
+         operand = OPERAND_UNKNOWN
+      end select
+   end function convert_legacy_operand_string_to_integer
+
+   !> Converts fileType string to an integer.
+   !! Returns -1 when an invalid type string is given.
    function convert_file_type_string_to_integer(string) result(file_type)
-      implicit none
       character(len=*), intent(in) :: string !< file type string
       integer :: file_type !< file type integer
 
@@ -130,10 +189,9 @@ contains
 
    end function convert_file_type_string_to_integer
 
-!> Converts interpolationMethod string to an integer.
-!! Returns -1 when an invalid type string is given.
+   !> Converts interpolationMethod string to an integer.
+   !! Returns -1 when an invalid type string is given.
    function convert_method_string_to_integer(string) result(method)
-      implicit none
       character(len=*), intent(in) :: string !< method string
       integer :: method !< method integer
 
@@ -146,7 +204,7 @@ contains
          method = WEIGHTFACTORS
       case ('nearestnb')
          ! Nearest neighbour is currently automatically selected by ec_converter under standard method "weightfactors".
-         method = WEIGHTFACTORS
+         method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
       case default
@@ -155,10 +213,9 @@ contains
 
    end function convert_method_string_to_integer
 
-!> Provides default method for specific file type
-!! Returns -1 when an invalid type string is given.
+   !> Provides default method for specific file type
+   !! Returns -1 when an invalid type string is given.
    function get_default_method_for_file_type(string) result(method)
-      implicit none
       character(len=*), intent(in) :: string !< file type string
       integer :: method !< method integer
 
@@ -171,6 +228,10 @@ contains
          method = METHOD_TRIANGULATION
       case ('uniform')
          method = SPACEANDTIME
+      case ('polygon')
+         method = INSIDE_POLYGON
+      case ('1dfield')
+         method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
       end select
@@ -184,7 +245,6 @@ contains
    !! Mainly used to hide EC-module inconsistencies from the user.
    !! For example: uniform timeseries must always have interpolation type SPACEANDTIME.
    subroutine update_method_with_weightfactor_fallback(file_type, method)
-      implicit none
       character(len=*), intent(in) :: file_type !< File type string.
       integer, intent(inout) :: method !< Interpolation method integer (will keep its original value if no updated is needed).
 
@@ -206,7 +266,6 @@ contains
    end subroutine update_method_with_weightfactor_fallback
 
    subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
-      implicit none
       integer, intent(inout) :: method !< method integer
       logical, intent(in) :: is_extrapolation_allowed !< is extrapolation allowed
 

@@ -36,7 +36,8 @@ module precision_basics
    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_is_finite
    use stdlib_kinds, only: sp, dp, xdp, qp
 
-   implicit none
+   implicit none(type, external)
+   private
 
 ! A few notes on the use the floating point precisions from the stdlib_kinds module.
 ! This a rather arbitrary choice since there are many ways that seem to result in
@@ -78,23 +79,77 @@ module precision_basics
 ! hardware types.
 
 ! For backward compatibility: hp=high precision, equal to dp
-   integer, parameter :: hp = dp
+   integer, parameter, public :: hp = dp
 
 ! long integer of at least 54 bits:
-   integer, parameter :: long = selected_int_kind(16)
+   integer, parameter, public :: long = selected_int_kind(16)
 
-   interface comparereal
+   interface comparereal !< deprecated, preferably use new equal interface which returns a logical instead of integer
       module procedure comparerealdouble
       module procedure comparerealsingle
       module procedure comparerealdouble_finite_check
       module procedure comparerealsingle_finite_check
    end interface
 
-   private :: ieee_is_nan, ieee_is_finite
+   interface equal
+      module procedure real_dp_equal
+      module procedure real_sp_equal
+      module procedure real_dp_equal_eps
+      module procedure real_sp_equal_eps
+   end interface
+
+   public :: comparereal 
+   public :: equal
+   public :: dp
+   public :: sp
+   public :: int32
+   public :: int64
 
 contains
 
-   function comparerealdouble(val1, val2, eps)
+   !> Returns .true. if two double precision numbers are equal within 2x machine epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal(a, b) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a !< First double precision number to compare
+      real(kind=dp), intent(in) :: b !< Second double precision number to compare
+
+      res = abs(a - b) < 2.0_dp * epsilon(a) * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal
+
+   !> Returns .true. if two single precision numbers are equal within 2x machine epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal(a, b) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a !< First single precision number to compare
+      real(kind=sp), intent(in) :: b !< Second single precision number to compare
+
+      res = abs(a - b) < 2.0_sp * epsilon(a) * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal
+
+   !> Returns .true. if two double precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a   !< First double precision number to compare
+      real(kind=dp), intent(in) :: b   !< Second double precision number to compare
+      real(kind=dp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal_eps
+
+   !> Returns .true. if two single precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a   !< First single precision number to compare
+      real(kind=sp), intent(in) :: b   !< Second single precision number to compare
+      real(kind=sp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal_eps
+
+   pure function comparerealdouble(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -113,49 +168,46 @@ contains
 ! eps may not be given by the user! See what happens when
 ! val1 = -666.0, val2 = -999.0, eps = 0.5
 !
-!!--declarations----------------------------------------------------------------
-      implicit none
-!
 ! Return value
 !
-      integer :: comparerealdouble
+   integer :: comparerealdouble
 !
 ! Global variables
 !
-      real(kind=dp), intent(in) :: val1
-      real(kind=dp), intent(in) :: val2
-      real(kind=dp), optional, intent(in) :: eps
+   real(kind=dp), intent(in) :: val1
+   real(kind=dp), intent(in) :: val2
+   real(kind=dp), optional, intent(in) :: eps
 !
 ! Local variables
 !
-      real(kind=dp) :: eps0
-      real(kind=dp) :: value
+   real(kind=dp) :: eps0
+   real(kind=dp) :: value
 !
 !! executable statements -------------------------------------------------------
 !
-      if (present(eps)) then
-         eps0 = eps
-      else
-         eps0 = 2.0_hp * epsilon(val1)
-      end if
+   if (present(eps)) then
+      eps0 = eps
+   else
+      eps0 = 2.0_hp * epsilon(val1)
+   end if
 !
-      if (abs(val1) < 1.0_hp .or. abs(val2) < 1.0_hp) then
-         value = val1 - val2
-      else
-         value = val1 / val2 - 1.0_hp
-      end if
+   if (abs(val1) < 1.0_hp .or. abs(val2) < 1.0_hp) then
+      value = val1 - val2
+   else
+      value = val1 / val2 - 1.0_hp
+   end if
 !
-      if (abs(value) < eps0) then
-         comparerealdouble = 0
-      elseif (val1 < val2) then
-         comparerealdouble = -1
-      else
-         comparerealdouble = 1
-      end if
+   if (abs(value) < eps0) then
+      comparerealdouble = 0
+   elseif (val1 < val2) then
+      comparerealdouble = -1
+   else
+      comparerealdouble = 1
+   end if
 
    end function comparerealdouble
 
-   function comparerealsingle(val1, val2, eps)
+   pure function comparerealsingle(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -173,9 +225,6 @@ contains
 ! eps must be machine precision dependent.
 ! eps may not be given by the user! See what happens when
 ! val1 = -666.0, val2 = -999.0, eps = 0.5
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -217,7 +266,7 @@ contains
 
    end function comparerealsingle
 
-   function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
+   pure function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -228,9 +277,6 @@ contains
 !                0 if val1 = val2 (also if both val1 and val2 are NaN, or both Inf with the same sign)
 !               +1 if val1 > val2
 !               +2 if val1 is not NaN and val2 is NaN
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -267,7 +313,7 @@ contains
 
    end function comparerealdouble_finite_check
 
-   function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
+   pure function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -278,9 +324,6 @@ contains
 !                0 if val1 = val2 (also if both val1 and val2 are NaN, or both Inf with the same sign)
 !               +1 if val1 > val2
 !               +2 if val1 is not NaN and val2 is NaN
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -316,5 +359,4 @@ contains
       end if
 
    end function comparerealsingle_finite_check
-
 end module precision_basics

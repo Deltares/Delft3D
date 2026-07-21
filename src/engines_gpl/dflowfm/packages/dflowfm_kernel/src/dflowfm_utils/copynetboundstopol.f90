@@ -52,6 +52,7 @@ contains
       use gridoperations, only: findcells
       use m_sferic, only: jsferic
       use geometry_module, only: dbpinpol, pinpok, cross, get_startend
+      use m_tpoly, only: polorientation
 
       integer, intent(in) :: inpol !< net boundaries in polygon only (1) or not (0)
       integer, intent(in) :: needfindcells !< call findcells (1) or not (0)
@@ -101,9 +102,9 @@ contains
       inhul1 = -1
       inhul2 = -1
       maxpolh = size(xpl)
-      allocate(xtmp(maxpolh))
-      allocate(ytmp(maxpolh))
-      allocate(ztmp(maxpolh))
+      allocate (xtmp(maxpolh))
+      allocate (ytmp(maxpolh))
+      allocate (ztmp(maxpolh))
       xtmp = dmiss
       NPH = 0
       ! maxpolh = size(xtmp)

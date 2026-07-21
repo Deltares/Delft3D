@@ -39,7 +39,9 @@ module m_inidat
 
    private
 
-   public :: inidat, loadfile, savefile
+   public :: inidat, loadfile, savefile, jaSkipCmdLineArgs
+
+   integer :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
 
 contains
 
@@ -73,12 +75,14 @@ contains
       use m_increase_grid
       use m_ini_sferic
       use m_start_parameters, only: md_jaautostart
+      use properties, only: deprecate_pound_wrapped_values
 
       real(kind=dp) :: dx
       integer :: k
       real(kind=dp) :: rk
       real(kind=dp) :: rmiss
-      integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
+
+      deprecate_pound_wrapped_values = .true.
 
       !  1=CLS
       !  2=GRID/NET    1=RECHT   2=SPLINE

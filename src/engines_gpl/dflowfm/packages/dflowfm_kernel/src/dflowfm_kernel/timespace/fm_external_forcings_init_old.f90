@@ -40,7 +40,7 @@ contains
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
       use m_setinitialverticalprofile, only: setinitialverticalprofile
       use precision, only: dp
-      use m_addsorsin, only: addsorsin_from_polyline_file
+      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
@@ -59,14 +59,14 @@ contains
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
+      use m_laterals, only: numlatsg, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
       use unstruc_files, only: resolvepath, basename
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -78,9 +78,10 @@ contains
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
-      integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
+      integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=256) :: varname
@@ -263,17 +264,13 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) then
-                     deallocate (Secchisp)
-                  end if
-                  allocate (Secchisp(ndx), stat=ierr)
-                  call aerr('Secchisp(ndx)', ierr, lnx)
-                  Secchisp = dmiss
-                  jaSecchisp = 1
+               if (.not. secchi_depth_is_spatially_varying) then
+                  call realloc(spatial_secchi_depth, ndx, fill=dmiss)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
+                  secchi_depth_is_spatially_varying = .true.
                end if
 
-               success = timespaceinitialfield(xz, yz, Secchisp, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
+               success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'advectiontype') then
 
@@ -296,12 +293,9 @@ contains
 
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-                  call prepare_lateral_mask(mask, ilattype)
-               case ('2d')
-                  ilattype = ILATTP_2D
-                  call prepare_lateral_mask(mask, ilattype)
+               case ('1d', '2d')
+                  spatial_location_type = parse_spatial_location_type(trim(qid(18:)))
+                  call construct_mask(mask, UNC_LOC_S, spatial_location_type)
                case default
                   mask(:) = 1
                end select
@@ -989,9 +983,6 @@ contains
                   air_temperature = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypA = .true.
-               end if
 
             else if (qid == 'airdensity') then
 
@@ -1014,9 +1005,6 @@ contains
                   relative_humidity = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypH = .true.
-               end if
 
             else if (qid == 'dewpoint') then
 
@@ -1025,11 +1013,7 @@ contains
                   call aerr('dew_point_temperature(ndx)', ierr, ndx)
                   dew_point_temperature = 0.0_dp
                end if
-
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypD = .true.
-               end if
 
             else if (qid == 'sea_ice_area_fraction' .or. qid == 'sea_ice_thickness') then
 
@@ -1061,9 +1045,6 @@ contains
                   cloudiness = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypC = .true.
-               end if
 
             else if (qid == 'solarradiation') then
 
@@ -1074,7 +1055,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
                   solar_radiation_available = .true.
                end if
 
@@ -1087,7 +1067,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
                   net_solar_radiation_available = .true.
                end if
 
@@ -1099,7 +1078,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypL = .true.
                   long_wave_radiation_available = .true.
                end if
 
@@ -1123,18 +1101,8 @@ contains
 
                call ini_alloc_laterals()
 
-               select case (trim(qid(17:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               call prepare_lateral_mask(kclat, ilattype)
+               spatial_location_type = parse_spatial_location_type(trim(qid(17:)))
+               call construct_mask(kclat, UNC_LOC_S, spatial_location_type)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
@@ -1239,16 +1207,16 @@ contains
 
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
-               ! 1. Prepare source-sink location (will increment numsrc, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
+               ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
                call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
                   success = .true.
-                  numsrc_old = numsrc_old + 1
+                  source_sinks%num_oldfile = source_sinks%num_oldfile + 1
                end if
 
-               ! 2. Time series hookup is done below, once counting of all numsrc is done.
+               ! 2. Time series hookup is done below, once counting of all source_sinks%num_total is done.
 
             else if (qid == 'shiptxy') then
                kx = 2
@@ -1391,24 +1359,30 @@ contains
                if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+                  write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "waveperiod") then
                if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+                  write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "wavedirection") then
                if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "wavebreakerdissipation") then
@@ -1416,8 +1390,10 @@ contains
                if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "whitecappingdissipation") then
@@ -1425,32 +1401,40 @@ contains
                if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "xwaveforce") then
                if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "ywaveforce") then
                if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
                if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write (msgbuf, '(a,i0,a,i0,a)') 'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else
@@ -1484,6 +1468,7 @@ contains
    module subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
+      use m_source_sink, only: source_sinks
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr
@@ -1493,12 +1478,13 @@ contains
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
-                            initialize_lateraldata, apply_transport
+      use m_laterals, only: numlatsg, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg, loglevel_StdOut
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1522,8 +1508,8 @@ contains
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
-      if (numsrc < 0) then
-         jahissourcesink = 0
+      if (source_sinks%num_total < 0) then
+         his_write_settings%sourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
 
@@ -1596,7 +1582,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
                   call warn_flush()
@@ -1665,7 +1651,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
                   call warn_flush()
@@ -1824,7 +1810,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = kx = 3
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
                   call warn_flush()
@@ -1935,21 +1921,21 @@ contains
          end do
       end if
 
-      if (numsrc_old > 0) then
-         if (numsrc_old /= numsrc) then
+      if (source_sinks%num_oldfile > 0) then
+         if (source_sinks%num_oldfile /= source_sinks%num_total) then
             call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
          end if
          ja = 1
          rewind (mext)
          kx = numconst + 1
          ! TODO: UNST-537/UNST-190: we now support timeseries, the constant values should come from new format ext file, not from transformcoef
-         numsrc = 0
+         source_sinks%num_total = 0
          success = .true.
          do while (ja == 1) ! for sorsin again read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
                call resolvePath(filename, md_extfile_dir)
-               numsrc = numsrc + 1
+               source_sinks%num_total = source_sinks%num_total + 1
                ! 2. Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename, '.', back=.true.) - 1
                filename0 = filename(1:L)//'.tim'
@@ -1957,11 +1943,11 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'qsrc, sasrc and tmsrc' values in array qstss on positions: (3*numsrc-2), (3*numsrc-1), and (3*numsrc), respectively.
-                  call clearECMessage()
-                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then
+                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*source_sinks%num_total-2), (3*source_sinks%num_total-1), and (3*source_sinks%num_total), respectively.
+                  call clear_ec_message()
+                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=source_sinks%num_total)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
-                              //'''. for source/sinks failed:'//dumpECMessageStack(LEVEL_WARN, callback_msg)
+                              //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()
                      success = .false.
                   end if

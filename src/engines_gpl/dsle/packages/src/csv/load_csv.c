@@ -168,8 +168,7 @@ static int parse_headers(csv_context_t *context, char *line) {
   while (*next) {
     next = collect_field_str(next, &header_str, &header_len);
     // TODO: The _get_column_def_index status may return -1, maybe throw an error if we want to be strict.
-    context->column_def_index[column_count] =
-        get_column_def_index(context, header_str, header_len);
+    context->column_def_index[column_count] = get_column_def_index(context, header_str, header_len);
     column_count++;
   }
   context->num_columns = column_count;
@@ -256,7 +255,7 @@ static int parse_line(csv_context_t *context, char *line) {
 int set_dummy(void *ptr, csv_value_t value) { return CSV_OK; }
 
 // Get a sane, empty, csv_context.
-int init_csv_context(csv_context_t* context) {
+int init_csv_context(csv_context_t *context) {
   assert(context);
 
   context->rows = NULL;
@@ -376,7 +375,7 @@ int get_csv_row_data(csv_context_t *context, size_t row_index, void *struct_ptr)
 
 // Copy values of a given column and type to an array.
 static int get_array(csv_context_t *context, csv_type_t type, size_t column_index, void *array_ptr,
-               size_t array_len) {
+                     size_t array_len) {
   int row_index = 0;
   if (array_len > context->num_rows) {
     array_len = context->num_rows;
@@ -429,7 +428,7 @@ int get_csv_column_data(csv_context_t *context, char *label, void *array_ptr, si
     if (column_def_index != _CSV_NO_DEF_INDEX &&
         !strcmp(context->column_defs[column_def_index].label, label)) {
       return get_array(context, context->column_defs[column_def_index].value_type, column_index,
-                        array_ptr, array_len);
+                       array_ptr, array_len);
     }
   }
 

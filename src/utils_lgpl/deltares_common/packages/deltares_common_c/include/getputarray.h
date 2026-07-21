@@ -32,25 +32,21 @@
 // NONE
 ///-------------------------------------------------------------------------------
 
-
 /*
  *  Include files and definitions
  */
-
 
 #include "stream.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined (WIN32)
-#   include <sys/types.h>
-#   include <sys/stat.h>
+#if defined(WIN32)
+    #include <sys/types.h>
+    #include <sys/stat.h>
 #else
-#   include <unistd.h>
+    #include <unistd.h>
 #endif
-
-
 
 /*----------------------------------------------------------------------
  *  API-functions
@@ -60,37 +56,36 @@
  *  Function names for FORTRAN-C interface.
  */
 
-#if defined(linux)
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define CREATESTREAM FC_FUNC(createstream,CREATESTREAM)
-#   define GETSTREAM    FC_FUNC(getstream,GETSTREAM)
-#   define GETARRAY     FC_FUNC(getarray,GETARRAY)
-#   define PUTARRAY     FC_FUNC(putarray,PUTARRAY)
+#if defined(__linux__)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define CREATESTREAM FC_FUNC(createstream, CREATESTREAM)
+    #define GETSTREAM FC_FUNC(getstream, GETSTREAM)
+    #define GETARRAY FC_FUNC(getarray, GETARRAY)
+    #define PUTARRAY FC_FUNC(putarray, PUTARRAY)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define CREATESTREAM CREATESTREAM
-#   define GETSTREAM    GETSTREAM
-#   define GETARRAY     GETARRAY
-#   define PUTARRAY     PUTARRAY
+    // WIN32
+    #define STDCALL /* nothing */
+    #define CREATESTREAM CREATESTREAM
+    #define GETSTREAM GETSTREAM
+    #define GETARRAY GETARRAY
+    #define PUTARRAY PUTARRAY
 #endif
-
 
 /*
  *  Function definitions
  */
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 extern "C" {
 #endif
 
-int     STDCALL CREATESTREAM(char * filen, int filen_length);
-int     STDCALL GETSTREAM   (char * filen, int filen_length);
-void    STDCALL GETARRAY    (int  * handleID, double * array, int * size);
-void    STDCALL PUTARRAY    (int  * handleID, double * array, int * size);
+int STDCALL CREATESTREAM(char* filen, int filen_length);
+int STDCALL GETSTREAM(char* filen, int filen_length);
+void STDCALL GETARRAY(int* handleID, double* array, int* size);
+void STDCALL PUTARRAY(int* handleID, double* array, int* size);
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 }
 #endif
 
@@ -98,22 +93,20 @@ void    STDCALL PUTARRAY    (int  * handleID, double * array, int * size);
  *  Private Functions, Defines, Data
  */
 
-void    fortstr2cstr (char *, int, char *);
-void    StreamError  (char *);
-void    StreamTrace  (char *);
+void fortstr2cstr(char*, int, char*);
+void StreamError(char*);
+void StreamTrace(char*);
 
+#define MAXSTREAMS 100
+#define BUFSIZE 100
 
-#define MAXSTREAMS      100
-#define BUFSIZE         100
-
-#define INIT_MESSAGE    "GetPutArray"
-#define INIT_MLEN       (strlen (INIT_MESSAGE) + 1)
-
+#define INIT_MESSAGE "GetPutArray"
+#define INIT_MLEN (strlen(INIT_MESSAGE) + 1)
 
 /*
  *  Global data (not thread-safe)
  */
 
-Stream * Danostream [MAXSTREAMS];
+Stream* Danostream[MAXSTREAMS];
 
 int Maxstream = -1;

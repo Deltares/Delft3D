@@ -97,7 +97,6 @@ contains
       ! Start Horton at max infiltration (alsoto trigger decrease mode).
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
          infiltcap = horton_infiltration_config%max_inf_cap * 1.0e-3_dp / 3600.0_dp ! mm/hr -> m/s
-         infiltcap0 = infiltcap
       end if
 
    end subroutine init_hydrology

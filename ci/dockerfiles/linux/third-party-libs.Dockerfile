@@ -9,7 +9,7 @@ ARG BUILDTOOLS_IMAGE_PATH=${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG}
 FROM ${BUILDTOOLS_IMAGE_PATH} AS base
 
 ARG INTEL_ONEAPI_VERSION
-ARG INTEL_FORTRAN_COMPILER=ifort
+ARG INTEL_FORTRAN_COMPILER=ifx
 ARG DEBUG=0
 ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}
 
@@ -47,27 +47,6 @@ do
     popd
 done
 EOF-compression-libs
-
-FROM base AS curl-custom
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-RUN --mount=type=cache,target=/var/cache/src/,id=curl-${CACHE_ID_SUFFIX} <<"EOF-curl"
-set -eo pipefail
-source /opt/intel/oneapi/setvars.sh
-
-dnf install rpm-build -y
-dnf download --source curl
-rpm -ivh curl-*.src.rpm
-cd /root/rpmbuild/SOURCES
-tar xf curl-*.tar.xz
-rm -f curl-*.tar.xz
-cd curl-*
-./configure --without-ssl --without-libpsl --prefix=/usr/local
-make --jobs=$(nproc)
-make install
-EOF-curl
 
 FROM base AS uuid
 
@@ -107,9 +86,10 @@ RUN --mount=type=cache,target=/var/cache/src/,id=metis-${CACHE_ID_SUFFIX} <<"EOF
 source /etc/bashrc
 set -eo pipefail
 
-GKLIB_COMMIT_ID='8bd6bad750b2b0d90800c632cf18e8ee93ad72d7'
+GKLIB_COMMIT_ID='6e7951358fd896e2abed7887196b6871aac9f2f8'
+METIS_COMMIT_ID='a6e6a2cfa92f93a3ee2971ebc9ddfc3b0b581ab2'
 for BASEDIR_URL in \
-    'METIS-5.2.1,https://github.com/KarypisLab/METIS/archive/refs/tags/v5.2.1.tar.gz' \
+    "METIS-${METIS_COMMIT_ID},https://github.com/KarypisLab/METIS/archive/${METIS_COMMIT_ID}.tar.gz" \
     "GKlib-${GKLIB_COMMIT_ID},https://github.com/KarypisLab/GKlib/archive/${GKLIB_COMMIT_ID}.tar.gz"
 do
     BASEDIR="${BASEDIR_URL%%,*}"
@@ -133,7 +113,7 @@ make install
 
 popd
 
-pushd "/var/cache/src/METIS-5.2.1"
+pushd "/var/cache/src/METIS-${METIS_COMMIT_ID}"
 if [[ $DEBUG = "0" ]]; then
     make config prefix=/usr/local cc=icx shared=1
 else
@@ -144,40 +124,12 @@ make install
 popd
 EOF-metis
 
-FROM base AS expat
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-RUN --mount=type=cache,target=/var/cache/src/,id=expat-${CACHE_ID_SUFFIX} <<"EOF-expat"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz'
-BASEDIR='libexpat-R_2_6_2/expat'
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-[[ $DEBUG = "0" ]] && FLAGS="-O3 -DNDEBUG -fPIC" || FLAGS="-g -O0 -fPIC"
-
-pushd "/var/cache/src/${BASEDIR}"
-./buildconf.sh
-./configure CC=icx CXX=icpx CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
-make --jobs=$(nproc)
-make install
-popd
-EOF-expat
-
 FROM base AS xerces-c
 
 ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
-RUN --mount=type=cache,target=/var/cache/src/,id=xerxes-c-${CACHE_ID_SUFFIX} <<"EOF-xerces-c"
+RUN --mount=type=cache,target=/var/cache/src/,id=xerces-c-${CACHE_ID_SUFFIX} <<"EOF-xerces-c"
 source /etc/bashrc
 set -eo pipefail
 
@@ -217,7 +169,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz'
+URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.24.5.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
@@ -236,84 +188,17 @@ pushd "/var/cache/src/${BASEDIR}"
     --prefix=/usr/local \
     --with-cc=mpiicx --with-cxx=mpiicpx --with-fc=$MPIFC \
     --with-debugging=0 --COPTFLAGS="$FLAGS" --CXXOPTFLAGS="$FLAGS" --FOPTFLAGS="$FLAGS" \
-    --FFLAGS="$FFLAGS"
+    --FFLAGS+="$FFLAGS"
 make
 make install
 popd
 EOF-petsc
 
-FROM base AS sqlite3
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=compression-libs --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=sqlite3-${CACHE_ID_SUFFIX} <<"EOF-sqlite3"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-pushd "/var/cache/src/${BASEDIR}"
-if [[ $DEBUG = "0" ]]; then
-    ./configure CC=icx CFLAGS="-O3 -DNDEBUG"
-else
-    ./configure CC=icx CFLAGS="-g -O0" CPPFLAGS="-DSQLITE_DEBUG"
-fi
-make --jobs=$(nproc)
-make install
-popd
-EOF-sqlite3
-
-FROM base AS tiff
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=compression-libs --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=tiff-${CACHE_ID_SUFFIX} <<"EOF-tiff"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-mkdir --parents "/var/cache/src/${BASEDIR}/build"
-pushd "/var/cache/src/${BASEDIR}/build"
-if [[ $DEBUG = "0" ]]; then
-    cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-        -DCMAKE_C_FLAGS="-O3 -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release
-else
-    cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-        -DCMAKE_C_FLAGS="-g -O0" -DCMAKE_CXX_FLAGS="-g -O0" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
-fi
-make --jobs=$(nproc)
-make install
-popd
-EOF-tiff
-
 FROM base AS hdf5
 
 ARG INTEL_FORTRAN_COMPILER
-ARG DEBUG
 ARG CACHE_ID_SUFFIX
+# Do not allow a debug build, since the build fails for --enable-build-mode="debug"
 
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
@@ -331,12 +216,11 @@ else
 fi
 
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
-[[ $DEBUG = "0" ]] && BUILD_MODE="production" || BUILD_MODE="debug"
 
 pushd "/var/cache/src/${BASEDIR}"
 ./configure CC=mpiicx CXX=mpiicpx FC=$MPIFC \
     --prefix=/usr/local \
-    --enable-build-mode=$BUILD_MODE \
+    --enable-build-mode="production" \
     --enable-fortran \
     --enable-parallel \
     --disable-szlib \
@@ -353,7 +237,6 @@ ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
 COPY --from=hdf5 --link /usr/local/ /usr/local/
-COPY --from=curl-custom --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-c-${CACHE_ID_SUFFIX} <<"EOF-netcdf-c"
 source /etc/bashrc
@@ -386,7 +269,11 @@ cmake .. \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DENABLE_PARALLEL4=ON \
     -DNETCDF_ENABLE_FILTER_SZIP=OFF \
-    -DENABLE_DAP=OFF
+    -DENABLE_DAP=OFF \
+    -DBUILD_UTILITIES=OFF \
+    -DENABLE_TESTS=OFF \
+    -DENABLE_BYTERANGE=OFF
+
 
 make --jobs=$(nproc)
 make install
@@ -429,101 +316,6 @@ make install
 popd
 EOF-netcdf-fortran
 
-FROM base AS proj
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=tiff --link /usr/local/ /usr/local/
-COPY --from=sqlite3 --link /usr/local/ /usr/local/
-COPY --from=curl-custom --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
-source /etc/bashrc
-set -eo pipefail
-
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
-export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
-export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
-
-URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
-
-mkdir --parents "/var/cache/src/${BASEDIR}/build"
-pushd "/var/cache/src/${BASEDIR}/build"
-cmake .. \
-    -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DSQLITE3_INCLUDE_DIR=/usr/local/include \
-    -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
-    -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
-    -DENABLE_TIFF=ON \
-    -DENABLE_CURL=OFF \
-    -DBUILD_PROJSYNC=OFF \
-    -DBUILD_TESTING=OFF
-cmake --build . --config $BUILD_TYPE --parallel $(nproc)
-cmake --build . --target install
-popd
-EOF-proj
-
-FROM base AS gdal
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=expat --link /usr/local/ /usr/local/
-COPY --from=xerces-c --link /usr/local/ /usr/local/
-COPY --from=netcdf --link /usr/local/ /usr/local/
-COPY --from=proj --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=gdal-${CACHE_ID_SUFFIX} <<"EOF-gdal"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://github.com/OSGeo/gdal/releases/download/v3.9.2/gdal-3.9.2.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-mkdir --parents "/var/cache/src/${BASEDIR}/build"
-pushd "/var/cache/src/${BASEDIR}/build"
-
-[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
-
-cmake .. \
-    -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
-    -DGDAL_USE_MYSQL=OFF -DGDAL_USE_SQLITE3=ON \
-    -DGDAL_USE_HDF5=ON -DGDAL_USE_NETCDF=ON \
-    -DGDAL_USE_EXPAT=ON -DGDAL_USE_XERCESC=ON \
-    -DGDAL_USE_ZSTD=ON -DGDAL_USE_ZLIB=ON \
-    -DGDAL_USE_TIFF=ON -DGDAL_USE_CURL=OFF
-
-cmake --build . --config $BUILD_TYPE --parallel $(nproc)
-cmake --build . --target install
-
-popd
-EOF-gdal
-
 FROM base as esmf
 
 # Do not provide a debug option, since ESMF is an external application that we do not link to.
@@ -537,8 +329,8 @@ RUN --mount=type=cache,target=/var/cache/src/,id=esmf-${CACHE_ID_SUFFIX} <<"EOF-
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.8.0.tar.gz'
-BASEDIR='esmf-8.8.0'
+URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.9.1.tar.gz'
+BASEDIR='esmf-8.9.1'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
@@ -579,18 +371,35 @@ EOF-esmf
 
 FROM base AS boost
 
-RUN <<"EOF-boost" 
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=boost-${CACHE_ID_SUFFIX} <<"EOF-boost"
+source /etc/bashrc
 set -eo pipefail
-dnf install --assumeyes boost-devel
 
-mkdir -p /usr/local/lib
-cp /usr/lib64/libboost_*.so* /usr/local/lib/
+URL='https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz'
+BASEDIR='boost_1_90_0'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
 
-mkdir -p /usr/local/include
-cp -r /usr/include/boost /usr/local/include/
+pushd "/var/cache/src/${BASEDIR}"
 
-mkdir -p /usr/local/share/licenses/boost-devel
-cp /usr/share/licenses/boost-devel/LICENSE_1_0.txt /usr/local/share/licenses/boost-devel/
+export CC=icx CXX=icpx
+[[ $DEBUG = "0" ]] && VARIANT=release || VARIANT=debug
+
+./bootstrap.sh --prefix=/usr/local
+
+# Patch intel-linux.jam to remove -ip flag (not supported by icpx)
+sed -i 's/-O3 -ip/-O3/g' tools/build/src/tools/intel-linux.jam
+
+./b2 --without-python variant=${VARIANT} toolset=intel-linux link=shared pch=off threading=multi -j$(nproc) install
+
+popd
 EOF-boost
 
 FROM base AS googletest
@@ -607,6 +416,240 @@ mkdir -p /usr/local/include
 cp -r /usr/include/gtest /usr/local/include/
 EOF-googletest
 
+FROM base AS eigen
+
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=eigen-${CACHE_ID_SUFFIX} <<"EOF-eigen"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.gz'
+BASEDIR='eigen-5.0.1'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}"
+
+cmake -S . -B build \
+    -D CMAKE_C_COMPILER=icx -D CMAKE_CXX_COMPILER=icpx -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D EIGEN_BUILD_TESTING=OFF -D EIGEN_BUILD_BLAS=OFF -D EIGEN_BUILD_LAPACK=OFF -D EIGEN_BUILD_DOC=OFF -D EIGEN_BUILD_DEMOS=OFF
+cmake --install build
+popd
+EOF-eigen
+
+FROM base AS libxml2
+
+RUN <<"EOF-libxml2"
+set -eo pipefail
+dnf install --assumeyes libxml2-devel
+
+mkdir -p /usr/local/lib
+cp /usr/lib64/libxml2.so* /usr/local/lib/
+
+mkdir -p /usr/local/include
+cp -r /usr/include/libxml2 /usr/local/include/
+
+mkdir -p /usr/local/lib/pkgconfig
+cp /usr/lib64/pkgconfig/libxml-2.0.pc /usr/local/lib/pkgconfig/
+EOF-libxml2
+
+FROM base AS precice
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+COPY --from=libxml2 --link /usr/local/ /usr/local/
+COPY --from=eigen --link /usr/local/ /usr/local/
+COPY --from=boost --link /usr/local/ /usr/local/
+
+RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-precice"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://github.com/precice/precice/archive/v3.3.1.tar.gz'
+BASEDIR='precice-3.3.1'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake --preset=development \
+    -D CMAKE_CXX_COMPILER=icpx \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib \
+    -D PRECICE_HIDE_SYMBOLS=OFF \
+    -D PRECICE_FEATURE_PETSC_MAPPING=OFF \
+    -D PRECICE_FEATURE_GINKGO_MAPPING=OFF \
+    -D PRECICE_FEATURE_PYTHON_ACTIONS=OFF \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D BUILD_SHARED_LIBS=ON \
+    -D BUILD_TESTING=OFF
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-precice
+
+FROM base AS vtk
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=vtk-${CACHE_ID_SUFFIX} <<"EOF-vtk"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://vtk.org/files/release/9.5/VTK-9.5.2.tar.gz'
+BASEDIR='VTK-9.5.2'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake -S . -B build \
+    -D VTK_WRAP_PYTHON="OFF" \
+    -D VTK_USE_MPI="ON" \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib \
+    -D VTK_GROUP_ENABLE_Imaging=NO \
+    -D VTK_GROUP_ENABLE_Views=NO \
+    -D VTK_GROUP_ENABLE_Web=NO \
+    -D VTK_GROUP_ENABLE_Qt=NO \
+    -D VTK_GROUP_ENABLE_Rendering=DONT_WANT \
+    -D VTK_GROUP_ENABLE_MPI=YES \
+    -D BUILD_TESTING=OFF
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-vtk
+
+FROM base AS aste
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+COPY --from=libxml2 --link /usr/local/ /usr/local/
+COPY --from=eigen --link /usr/local/ /usr/local/
+COPY --from=boost --link /usr/local/ /usr/local/
+COPY --from=precice --link /usr/local/ /usr/local/
+COPY --from=vtk --link /usr/local/ /usr/local/
+
+RUN --mount=type=cache,target=/var/cache/src/,id=aste-${CACHE_ID_SUFFIX} <<"EOF-aste"
+source /etc/bashrc
+set -eo pipefail
+
+dnf --assumeyes install patch
+
+URL='https://github.com/precice/aste/archive/refs/tags/v3.3.0.tar.gz'
+BASEDIR='aste-3.3.0'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+# Patch aste CmakeList.txt to not look for the system component of boost (it is no longer needed)
+cat << EOF_no_boost_system > no_boost_system.patch
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -28,7 +28,7 @@
+ 
+ find_package(precice 3.0 REQUIRED)
+ 
+-find_package(Boost 1.71.0 CONFIG REQUIRED COMPONENTS log log_setup system program_options unit_test_framework)
++find_package(Boost 1.83.0 CONFIG REQUIRED COMPONENTS log log_setup program_options unit_test_framework)
+ 
+ # Initial attempt to find VTK without specifying components (only supported for VTK9)
+ find_package(VTK QUIET)
+@@ -63,7 +63,6 @@
+   Boost::log
+   Boost::log_setup
+   Boost::program_options
+-  Boost::system
+   Boost::thread
+   Boost::unit_test_framework
+   MPI::MPI_CXX
+@@ -86,7 +85,6 @@
+   Boost::log
+   Boost::log_setup
+   Boost::program_options
+-  Boost::system
+   Boost::thread
+   Boost::unit_test_framework
+   MPI::MPI_CXX
+EOF_no_boost_system
+
+patch -p0 < no_boost_system.patch
+
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake -S . -B build \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-aste
+
+FROM base AS pugixml
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=pugixml-${CACHE_ID_SUFFIX} <<"EOF-pugixml"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz'
+BASEDIR='pugixml-1.15'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake -S . -B build \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D BUILD_SHARED_LIBS=ON \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-pugixml
+
 FROM base AS all
 
 RUN set -eo pipefail && \
@@ -622,10 +665,12 @@ EOT
 
 COPY --from=uuid --link /usr/local /usr/local/
 COPY --from=metis --link /usr/local /usr/local/
+COPY --from=xerces-c --link /usr/local /usr/local/
 COPY --from=petsc --link /usr/local/ /usr/local/
-COPY --from=netcdf --link /usr/local /usr/local/
-COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
-COPY --from=curl-custom --link /usr/local /usr/local/
+COPY --from=precice --link /usr/local/ /usr/local/
+COPY --from=vtk --link /usr/local/ /usr/local/
+COPY --from=aste --link /usr/local/ /usr/local/
+COPY --from=pugixml --link /usr/local/ /usr/local/

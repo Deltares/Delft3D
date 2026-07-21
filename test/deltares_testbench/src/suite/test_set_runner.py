@@ -3,15 +3,20 @@
 Copyright (C)  Stichting Deltares, 2026
 """
 
+import gc
 import multiprocessing
 import os
+import shutil
 import sys
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from multiprocessing.pool import AsyncResult
 from multiprocessing.synchronize import Condition
+from pathlib import Path
 from typing import Iterable, List, Optional
 
+from src.config.credentials import Credentials
 from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_failure import TestCaseFailure
@@ -25,6 +30,7 @@ from src.suite.test_case import TestCase
 from src.suite.test_case_result import TestCaseResult
 from src.utils.common import log_header, log_separator, log_sub_header
 from src.utils.errors.test_bench_error import TestBenchError
+from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.handlers.handler_factory import HandlerFactory
 from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.logging.i_logger import ILogger
@@ -32,6 +38,16 @@ from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.i_test_logger import ITestLogger
 from src.utils.logging.test_loggers.test_result_type import TestResultType
 from src.utils.paths import Paths
+
+
+@dataclass(frozen=True)
+class DvcLocationInfo:
+    """Resolved paths for a single DVC location within a test case."""
+
+    config: TestCaseConfig
+    location: Location
+    remote_path: str
+    local_path: str
 
 
 class TestSetRunner(ABC):
@@ -72,7 +88,10 @@ class TestSetRunner(ABC):
         start_time = datetime.now()
 
         if len(self.settings.configs_to_run) == 0:
-            logline = f"There are no test cases in '{self.settings.command_line_settings.config_file}' with applied filter '{self.settings.command_line_settings.filter}'."
+            logline = (
+                f"There are no test cases in '{self.settings.command_line_settings.config_file}' "
+                f"with applied filter '{self.settings.command_line_settings.filter}'."
+            )
             self.__logger.error(logline)
             raise ValueError(logline)
 
@@ -86,6 +105,13 @@ class TestSetRunner(ABC):
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
+        # Prepare DVC cases: batch-download all .dvc files in one command
+        self.__prepare_dvc_test_cases()
+
+        # Free memory accumulated during DVC preparation (repo objects, file
+        # indices, etc.) so the forked worker pool starts with a lean parent.
+        gc.collect()
+
         results = (
             self.run_tests_in_parallel()
             if self.__settings.command_line_settings.parallel
@@ -97,6 +123,8 @@ class TestSetRunner(ABC):
         if results:
             if not self.__settings.command_line_settings.skip_post_processing:
                 self.show_summary(results, self.__logger)
+                if self.settings.command_line_settings.copy_failed_cases:
+                    self._copy_failed_cases(results, Path("copy_cases"))
             else:
                 self.__logger.info("No summary, because postprocessing is skipped due to argument.")
         else:
@@ -219,11 +247,21 @@ class TestSetRunner(ABC):
         )
 
         try:
-            log_sub_header(f"Preparing test case name = '{config.name}'", logger)
-            self.__prepare_test_case(config, logger)
-            log_separator(logger, char="-")
+            if not config.path or config.path.version != "DVC":
+                log_sub_header(f"Preparing test case name = '{config.name}'", logger)
+                self.prepare_test_case(config, logger)
+                log_separator(logger, char="-")
+            else:
+                # DVC data is batch-downloaded upfront; create a fresh work copy for this run.
+                if config.absolute_test_case_path:
+                    work_path = Path(config.absolute_test_case_path)
+                    if work_path.name.endswith("_work") and not work_path.exists():
+                        source_path = work_path.with_name(work_path.name[:-5])
+                        self.__copy_to_work_folder(source_path, logger)
 
             # Run testcase
+            if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
+                raise TestBenchError("Test case paths are not prepared.")
             testcase = TestCase(config, logger)
 
             if self.__settings.command_line_settings.skip_run:
@@ -307,6 +345,13 @@ class TestSetRunner(ABC):
             Logger to log to.
         """
 
+    def _copy_failed_cases(self, results: list[TestCaseResult], dest_path: Path):
+        for result in results:
+            test_case_config = result.config
+            test_case_results = result.results
+            if any(not comparison.passed for (_, _, _, comparison) in test_case_results):
+                shutil.copytree(test_case_config.absolute_test_case_path, dest_path / test_case_config.name)
+
     @abstractmethod
     def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
         """Create an error result.
@@ -366,8 +411,196 @@ class TestSetRunner(ABC):
 
         return skip_testcase, skip_postprocessing
 
+    def cleanup_failed_preparation(self, config: TestCaseConfig) -> None:
+        """Clean up partially downloaded files after preparation failure.
+
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Configuration of the test case that failed to prepare.
+        """
+        # Clean up input directory (without _work suffix)
+        if config.absolute_test_case_path:
+            input_path = Path(config.absolute_test_case_path)
+            if input_path.name.endswith("_work"):
+                original_input = input_path.with_name(input_path.name[:-5])  # Remove "_work"
+                if original_input.exists():
+                    self.__logger.debug(f"Cleaning up input directory: {original_input}")
+                    try:
+                        shutil.rmtree(original_input)
+                    except Exception as e:
+                        self.__logger.warning(f"Failed to remove input directory: {e}")
+
+        # Clean up reference directory if it was created
+        if config.absolute_test_case_reference_path and os.path.exists(config.absolute_test_case_reference_path):
+            self.__logger.debug(f"Cleaning up reference directory: {config.absolute_test_case_reference_path}")
+            try:
+                shutil.rmtree(config.absolute_test_case_reference_path)
+            except Exception as e:
+                self.__logger.warning(f"Failed to remove reference directory: {e}")
+
+    def __prepare_dvc_test_cases(self) -> None:
+        """Prepare all DVC test cases with a single batched download."""
+        dvc_configs = [c for c in self.__settings.configs_to_run if c.path and c.path.version == "DVC"]
+        if not dvc_configs:
+            return
+
+        log_sub_header("Preparing DVC test cases (batch download)", self.__logger)
+
+        all_dvc_locations = self.__collect_dvc_locations(dvc_configs)
+
+        dvc_files = [
+            dvc_location.remote_path
+            for dvc_location in all_dvc_locations
+            if dvc_location.location.type not in self.skip_download
+        ]
+
+        # Include dependency .dvc files in the batch download
+        dependency_dvc_files = self.__collect_dependency_dvc_files(dvc_configs)
+        dvc_files.extend(dependency_dvc_files)
+
+        if not self.__batch_download_dvc(dvc_files, all_dvc_locations, dvc_configs):
+            return
+
+        self.__apply_dvc_paths(all_dvc_locations)
+
+        # Copy DVC dependencies now that the batch checkout has made the data available.
+        self.__copy_dvc_dependencies(dvc_configs)
+
+        self.__create_dvc_work_copies(dvc_configs)
+
+        log_separator(self.__logger, char="-")
+
+    def __create_dvc_work_copies(self, dvc_configs: list[TestCaseConfig]) -> None:
+        """Create _work copies of all DVC input directories serially."""
+        for config in dvc_configs:
+            if not config.absolute_test_case_path:
+                continue
+            work_path = Path(config.absolute_test_case_path)
+            if work_path.name.endswith("_work"):
+                source_path = work_path.with_name(work_path.name[:-5])
+                if source_path.is_dir():
+                    self.__copy_to_work_folder(source_path, self.__logger)
+
+    def __copy_dvc_dependencies(self, dvc_configs: list[TestCaseConfig]) -> None:
+        """Copy DVC dependency data to the expected location next to each test case's input."""
+        configs_with_deps = [c for c in dvc_configs if c.dependency and c.dependency.version == "DVC"]
+        if not configs_with_deps:
+            return
+
+        log_sub_header("Copying DVC dependencies", self.__logger)
+        for config in configs_with_deps:
+            self.__download_config_dependencies(config, self.__logger)
+
+    def __collect_dvc_locations(self, dvc_configs: list[TestCaseConfig]) -> list[DvcLocationInfo]:
+        """Validate each DVC config and collect its downloadable locations."""
+        all_dvc_locations: list[DvcLocationInfo] = []
+
+        for config in dvc_configs:
+            try:
+                self.__validate_test_case_preparation(config)
+                self.__log_preparation_info(config, self.__logger)
+            except Exception as exception:
+                self.__logger.error(f"Failed to validate test case '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
+                continue
+
+            locations = self.__collect_locations_for_config(config)
+            if locations is not None:
+                all_dvc_locations.extend(locations)
+
+        return all_dvc_locations
+
+    def __collect_locations_for_config(self, config: TestCaseConfig) -> list[DvcLocationInfo] | None:
+        """Collect location info for a single config. Returns None on validation failure."""
+        infos: list[DvcLocationInfo] = []
+        for location in config.locations:
+            if location.type == PathType.CHECK:
+                continue
+            try:
+                self.__validate_location(config, location)
+            except Exception as exception:
+                self.__logger.error(f"Failed to validate location for '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
+                return None
+
+            infos.append(
+                DvcLocationInfo(
+                    config=config,
+                    location=location,
+                    remote_path=self.__build_remote_path(config, location),
+                    local_path=self.__build_local_path(config, location),
+                )
+            )
+        return infos
+
+    def __collect_dependency_dvc_files(self, dvc_configs: list[TestCaseConfig]) -> list[str]:
+        """Collect .dvc file paths for DVC dependencies so they are included in the batch download."""
+        seen: set[str] = set()
+        dvc_files: list[str] = []
+        for config in dvc_configs:
+            if not config.dependency or config.dependency.version != "DVC":
+                continue
+            location = next((loc for loc in config.locations if loc.type == PathType.INPUT), None)
+            if location is None:
+                continue
+            dep_dvc_path = os.path.abspath(
+                Paths().rebuildToLocalPath(Paths().mergeFullPath(location.root, config.dependency.cases_path + ".dvc"))
+            )
+            if dep_dvc_path not in seen and os.path.isfile(dep_dvc_path):
+                seen.add(dep_dvc_path)
+                dvc_files.append(dep_dvc_path)
+                self.__logger.debug(f"Including dependency DVC file: {dep_dvc_path}")
+        return dvc_files
+
+    def __batch_download_dvc(
+        self,
+        dvc_files: list[str],
+        location_infos: list[DvcLocationInfo],
+        dvc_configs: list[TestCaseConfig],
+    ) -> bool:
+        """Batch-download all .dvc files. Returns False if download failed."""
+        if not dvc_files:
+            return True
+
+        credentials = self.__find_dvc_credentials(location_infos)
+        try:
+            handler = DvcHandler()
+            handler.download_batch(
+                dvc_files,
+                credentials,
+                self.__logger,
+            )
+            return True
+        except Exception as exception:
+            self.__logger.error(f"Batch DVC download failed: {exception}")
+            for config in dvc_configs:
+                self.cleanup_failed_preparation(config)
+            log_separator(self.__logger, char="-")
+            return False
+
+    @staticmethod
+    def __find_dvc_credentials(location_infos: list[DvcLocationInfo]) -> Credentials:
+        """Return the first credentials found in the location list, or empty defaults."""
+        for info in location_infos:
+            if info.location.credentials and info.location.credentials.username:
+                return info.location.credentials
+        return Credentials()
+
+    def __apply_dvc_paths(self, location_infos: list[DvcLocationInfo]) -> None:
+        """Set absolute paths on configs after a successful batch download."""
+        for info in location_infos:
+            try:
+                self.__set_absolute_paths(info.config, info.location.type, info.local_path)
+            except Exception as exception:
+                self.__logger.error(f"Failed post-download steps for '{info.config.name}': {exception}")
+                self.cleanup_failed_preparation(info.config)
+
     def __download_dependencies(self) -> None:
-        configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]
+        # DVC dependencies are handled after the DVC batch checkout in __prepare_dvc_test_cases.
+        configs_to_handle = [
+            c for c in self.__settings.configs_to_run if c.dependency and not (c.dependency.version == "DVC")
+        ]
         if len(configs_to_handle) == 0:
             return
 
@@ -400,46 +633,58 @@ class TestSetRunner(ABC):
                         and loc.type == PathType.CHECK
                     ):
                         # if the program is local, use the existing location
+                        # Try loc.root first, then fall back to engines_path
                         sourceLocation = Paths().mergeFullPath(loc.root, loc.from_path)
-                        if Paths().isPath(sourceLocation):
+                        enginesLocation = Paths().mergeFullPath(self.__settings.local_paths.engines_path, loc.from_path)
+                        resolved = False
+                        for candidate_source in [sourceLocation, enginesLocation]:
+                            if not Paths().isPath(candidate_source):
+                                continue
                             absLocation = os.path.abspath(
-                                Paths().mergeFullPath(sourceLocation, program_configuration.path)
+                                Paths().mergeFullPath(candidate_source, program_configuration.path)
                             )
                             if ResolveHandler.detect(absLocation, self.__logger, None) == HandlerType.PATH:
-                                if not os.path.exists(absLocation):
-                                    self.__logger.warning(f"could not yet detect specified program {absLocation}")
-                                #                                   raise SystemExit("Program does not exist")
-                                else:
+                                if os.path.exists(absLocation):
                                     self.__logger.debug(
                                         f"detected local path for program {program_configuration.name}, using {absLocation}"
                                     )
+                                    program_configuration.absolute_bin_path = absLocation
+                                    resolved = True
+                                    break
+                        if not resolved:
+                            if Paths().isPath(sourceLocation):
+                                # Use engines_path as default when not found locally
+                                absLocation = os.path.abspath(
+                                    Paths().mergeFullPath(enginesLocation, program_configuration.path)
+                                )
+                                self.__logger.warning(f"could not yet detect specified program {absLocation}")
                                 program_configuration.absolute_bin_path = absLocation
-                        # else download it from a remote location
-                        else:
-                            if loc.version:
-                                to = loc.to_path + "_" + loc.version
                             else:
-                                to = loc.to_path
-                            program_local_path = Paths().rebuildToLocalPath(
-                                os.path.join(self.__settings.local_paths.engines_path, to)
-                            )
+                                # download it from a remote location
+                                if loc.version:
+                                    to = loc.to_path + "_" + loc.version
+                                else:
+                                    to = loc.to_path
+                                program_local_path = Paths().rebuildToLocalPath(
+                                    os.path.join(self.__settings.local_paths.engines_path, to)
+                                )
 
-                            # if the program is remote (network or other) and it does not exist locally, download it
-                            if not os.path.exists(program_local_path):
-                                self.__logger.debug(
-                                    f"Downloading program, {program_configuration.name} from {sourceLocation}"
+                                # if the program is remote (network or other) and it does not exist locally, download it
+                                if not os.path.exists(program_local_path):
+                                    self.__logger.debug(
+                                        f"Downloading program, {program_configuration.name} from {sourceLocation}"
+                                    )
+                                    HandlerFactory.download(
+                                        sourceLocation,
+                                        program_local_path,
+                                        self.programs,
+                                        self.__logger,
+                                        loc.credentials,
+                                        loc.version,
+                                    )
+                                program_configuration.absolute_bin_path = os.path.abspath(
+                                    Paths().mergeFullPath(program_local_path, program_configuration.path)
                                 )
-                                HandlerFactory.download(
-                                    sourceLocation,
-                                    program_local_path,
-                                    self.programs,
-                                    self.__logger,
-                                    loc.credentials,
-                                    loc.version,
-                                )
-                            program_configuration.absolute_bin_path = os.path.abspath(
-                                Paths().mergeFullPath(program_local_path, program_configuration.path)
-                            )
 
             # If a program does not have a network path, and path is not a relative or absolute path, we assume the system can find it
             elif not Paths().isPath(program_configuration.path):
@@ -517,7 +762,7 @@ class TestSetRunner(ABC):
             yield Program(program_configuration, self.settings)
         log_separator(self.__logger, char="-", with_new_line=True)
 
-    def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
+    def prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Prepare test case based on provided config (download input & reference data).
 
         Parameters
@@ -552,10 +797,16 @@ class TestSetRunner(ABC):
     def __process_test_case_locations(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Process all locations for a test case, downloading files as needed."""
         for location in config.locations:
+            # Skip CHECK locations — those are for program binaries, handled by __update_programs
+            if location.type == PathType.CHECK:
+                continue
             self.__validate_location(config, location)
             remote_path = self.__build_remote_path(config, location)
             local_path = self.__build_local_path(config, location)
             self.__download_location_with_retries(config, location, remote_path, local_path, logger)
+            if location.type == PathType.INPUT:
+                self.__copy_to_work_folder(Path(local_path), logger)
+
             self.__set_absolute_paths(config, location.type, local_path)
 
     def __validate_location(self, config: TestCaseConfig, location: Location) -> None:
@@ -634,6 +885,22 @@ class TestSetRunner(ABC):
                     error_message = f"Unable to download testcase: {error}"
                     raise TestBenchError(error_message) from e
 
+    def __copy_to_work_folder(self, local_path: Path, logger: ILogger) -> None:
+        """Copy downloaded files to work folder if needed."""
+        if not local_path.is_dir():
+            raise NotADirectoryError(f"Expected a directory to copy to work folder, but got: {local_path}")
+
+        # Add "_work" suffix.
+        copy_path = local_path.with_name(f"{local_path.name}_work")
+
+        # Clean work directory if it exists
+        if copy_path.exists():
+            shutil.rmtree(copy_path)
+
+        # copy input to work directory
+        logger.debug(f"Copying input from {local_path} to {copy_path}")
+        shutil.copytree(local_path, copy_path, symlinks=False, ignore_dangling_symlinks=True)
+
     def __download_single_location(
         self, config: TestCaseConfig, location: Location, remote_path: str, local_path: str, logger: ILogger
     ) -> None:
@@ -652,7 +919,8 @@ class TestSetRunner(ABC):
     def __set_absolute_paths(self, config: TestCaseConfig, location_type: PathType, local_path: str) -> None:
         """Set absolute paths on the config based on location type."""
         if location_type == PathType.INPUT:
-            config.absolute_test_case_path = local_path
+            input_path = Path(local_path)
+            config.absolute_test_case_path = str(input_path.with_name(f"{input_path.name}_work"))
         elif location_type == PathType.REFERENCE:
             config.absolute_test_case_reference_path = local_path
 
@@ -705,7 +973,38 @@ class TestSetRunner(ABC):
             return
 
         location = next(loc for loc in config.locations if loc.type == PathType.INPUT)
+        dependency_version = config.dependency.version
+
+        logger.debug(
+            f"Dependency config - version: {dependency_version}, test path version: {config.path.version if config.path else None}"
+        )
+        logger.debug(f"Dependency local_dir: {config.dependency.local_dir}, cases_path: {config.dependency.cases_path}")
+
         destination_dir = self.__settings.local_paths.cases_path
+
+        if dependency_version == "DVC":
+            # DVC dependencies are already checked out at {location.root}/{cases_path}/.
+            # Place the dependency as a sibling of the test case's input directory,
+            # so that relative paths like ../local_dir resolve correctly from input_work.
+            local_path = Paths().rebuildToLocalPath(
+                Paths().mergeFullPath(location.root, config.path.prefix, config.dependency.local_dir)
+            )
+            if os.path.isdir(local_path) and any(os.scandir(local_path)):
+                logger.info("Dependency directory already exists: Skipping download")
+                return
+
+            source_input_path = Path(
+                Paths().rebuildToLocalPath(Paths().mergeFullPath(location.root, config.dependency.cases_path, "input"))
+            )
+            if source_input_path.is_dir():
+                logger.info(f"Copying DVC dependency from {source_input_path} to {local_path}")
+                shutil.copytree(str(source_input_path), local_path, dirs_exist_ok=True)
+            else:
+                logger.error(
+                    f"DVC dependency source not found at {source_input_path}. "
+                    "Ensure the dependency's .dvc files have been checked out."
+                )
+            return
 
         local_path = Paths().rebuildToLocalPath(
             Paths().mergeFullPath(
@@ -715,12 +1014,12 @@ class TestSetRunner(ABC):
             )
         )
 
-        if os.path.exists(local_path):
+        if os.path.isdir(local_path) and any(os.scandir(local_path)):
             logger.info("Dependency directory already exists: Skipping download")
             return
 
         remote_path = Paths().mergeFullPath(location.root, location.from_path, config.dependency.cases_path)
-        dependency_version = config.dependency.version
+
         if dependency_version is None:
             logger.warning("The dependency version timestamp is missing, downloading the 'latest' version")
         else:

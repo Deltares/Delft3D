@@ -23,35 +23,33 @@ set(dimr_lib_sources "${dimr_src_path}/clock.cpp"
 
 # Define the executable
 set(executable_name dimr)
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${absolute_header_path}")
 add_executable(${executable_name}   ${source}
                                     ${dimr_lib_sources}
-                                    ${rc_version_file} 
                                     ${header_version_file})
-
-# Common UNIX and WIN32 link library dependency
-target_link_libraries(${executable_name} netcdf)
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 if(UNIX)
    add_definitions(-DD3D_PLUGIN_EXT=".so")
 
    set(oss_dependencies    deltares_common_c
                            getopt
-                           dimr_lib
-                           expat)
+                           expat::expat
+                           netCDF::netcdf
+                           dimr_lib)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
                               "${dimr_lib_path}/include"
-                              "${getopt_include_path}"
-                              "${expat_include_path}")
+                              "${getopt_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies} ${CMAKE_DL_LIBS})
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(${executable_name} Threads::Threads)
+    target_link_libraries(${executable_name} PRIVATE Threads::Threads)
 
 
 endif(UNIX)
@@ -60,33 +58,29 @@ if (WIN32)
 
    set(oss_dependencies    deltares_common_c
                            getopt
+                           expat::expat
+                           netCDF::netcdf
                            dimr_lib) 
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
-    target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
     
     target_include_directories(${executable_name} 
                                 PRIVATE  
                                 ${header_path}
                                 "${dimr_lib_path}/include"
                                 "${getopt_include_path}"
-                                "${expat_include_path}"
                                 "${mpi_include_path}"
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${getopt_library_path_win}"
-                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${executable_name}    ${oss_dependencies}
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                                                 "${mpi_c_library}"
-                                                "libexpat.lib"
                                                 "pthreadVC2.lib")
 endif(WIN32)
 
@@ -106,6 +100,8 @@ endif(WIN32)
  message(STATUS "build_config ${build_config}")
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+
+install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/run_dimr.sh             DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dimr.sh          DESTINATION bin)

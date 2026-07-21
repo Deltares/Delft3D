@@ -41,6 +41,7 @@ module m_save_ugrid_state
    character(len=ug_idsLongNamesLen), allocatable :: nbranchlongnames(:), nnodelongnames(:), nodelongnames(:)
    character(len=255) :: network1dname, mesh2dname, mesh1dname, contactname_1D2D, contactname_2D2D !MAXSTRLEN = 255
    character(len=ug_idsLen), allocatable :: mesh1dNodeIds(:)
+   character(len=ug_idsLen), dimension(:), allocatable :: contactids_2D2D ! Long names of 2D-2D contacts
    integer, allocatable, dimension(:) :: mesh1dUnmergedToMerged(:)
    !integer, allocatable, dimension(:)                 :: mesh1dMergedToUnMerged(:)
    integer :: numMesh1dBeforeMerging
@@ -49,7 +50,7 @@ module m_save_ugrid_state
    integer :: contactnlinks !< Total number of links in all mesh contacts (typically we'll have one mesh contact with many netlinks part of it)
    integer, allocatable :: contact_cell_idx(:, :) !< cell numbers this contact connects (2D for 2D-2D links, 1D for 1D-2D links). Dimension(2, contactnlinks). Second row is always 2D
    type(t_hashlist) :: hashlist_contactids !< Hash list for quick search for contact ids.
-
+   
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_save_ugrid_state() instead.
 contains
@@ -82,6 +83,10 @@ contains
       contactnlinks = 0
       call dealloc(hashlist_contactids)
 
+      if (allocated(nbranchids)) then
+         deallocate(nbranchids)
+      end if
+      meshgeom1d = t_ug_meshgeom('')
       call reset_save_ugrid_state()
 
    end subroutine default_save_ugrid_state

@@ -1,6 +1,9 @@
 {
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "args": {
+            "THIRD_PARTY_LIBS_TAG": "oneapi-2024-ifx-release"
+        }
     },
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [
@@ -17,7 +20,13 @@
             "source": "delft3d-aws",
             "target": "/home/dev/.aws",
         },
+        {
+            "type": "volume",
+            "source": "delft3d-conan",
+            "target": "/home/dev/.conan2",
+        },
     ],
+    "runArgs": ["--ulimit", "stack=-1:-1"],
     "customizations": {
         "vscode": {
             "extensions": [
@@ -25,13 +34,10 @@
                 "ms-vscode.cmake-tools",
                 "fortran-lang.linter-gfortran",
                 "ms-vscode.cpptools",
-                "vscjava.vscode-maven",
-                "fwcd.kotlin",
                 "ms-python.python",
                 "ms-python.mypy-type-checker",
                 "charliermarsh.ruff",
                 "tamasfe.even-better-toml",
-                "ms-vscode.hexeditor",
             ]
         }
     }

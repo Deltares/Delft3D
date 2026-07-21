@@ -16,7 +16,6 @@ from src.utils.paths import Paths
 
 # Test case handler (compare or reference)
 class TestCase:
-    __errors = []
     __test__: ClassVar[bool] = False
 
     # constructor
@@ -26,6 +25,7 @@ class TestCase:
         self.__logger = logger
         self.__maxRunTime: float = self.__config.max_run_time
         self.__programs: List[Tuple[int, Program]] = []
+        self.__errors: list[Exception] = []
 
         logger.debug(f"Initializing test case ({self.__config.name}), max runtime : {str(self.__maxRunTime)}")
 
@@ -79,7 +79,7 @@ class TestCase:
 
             error = program[1].getError()
             return_code = program[1].last_return_code
-            if not program[1].ignore_return_code and return_code != 0:
+            if not program[1].ignore_return_code and return_code != 0 and error is not None:
                 self.__errors.append(error)
 
         # create testbench run file

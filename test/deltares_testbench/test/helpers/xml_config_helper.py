@@ -16,6 +16,7 @@ def make_test_case_config_xml(
     include: Optional[str] = "",
     case_root: Optional[str] = "{server_base_url}/cases",
     reference_root: Optional[str] = "{server_base_url}/references",
+    additional_locations: Optional[str] = "",
 ) -> io.BytesIO:
     """Make config xml with some default values."""
     # Build `path` element.
@@ -30,7 +31,8 @@ def make_test_case_config_xml(
         dependency_elem = f'<dependency local_dir="{dependency.local_dir}"'
         if dependency.version is not None:
             dependency_elem += f' version="{dependency.version}"'
-        dependency_elem += f">{dependency.version}</dependency>"
+
+        dependency_elem += f">{dependency.cases_path}</dependency>"
     else:
         dependency_elem = ""
 
@@ -62,6 +64,7 @@ def make_test_case_config_xml(
                         <credential ref="deltares" />
                         <root>{reference_root}</root>
                     </location>
+                    {additional_locations}
                 </locations>
             </config>
             <programs>

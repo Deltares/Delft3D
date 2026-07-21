@@ -85,12 +85,13 @@ set(DSLE_SOURCE_FILES
 ##############################################################################
 ################################## Targets ###################################
 ##############################################################################
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 #Version includes
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/../version/dsle_dll_version.rc)
 include_directories(${version_include_dir})
-add_library(dsle SHARED ${DSLE_SOURCE_FILES} ${rc_version_file})
+add_rc_object_library(dsle "${rc_version_file}" "${version_include_dir};${CMAKE_CURRENT_SOURCE_DIR}/../version")
+add_library(dsle SHARED ${DSLE_SOURCE_FILES})
+target_link_libraries(dsle PRIVATE dsle_rc)
 
 set_target_properties (dsle PROPERTIES
     DEFINE_SYMBOL "DSLE_EXPORTS"
@@ -111,6 +112,10 @@ set_target_properties(dsle-static PROPERTIES
 
 target_include_directories(dsle-static INTERFACE src)
 
+# Explicitly set the `-DNDEBUG` flag in "non-Debug" builds. We ran into an 'assertion failed' crash with Release binaries.
+target_compile_definitions(dsle        PRIVATE $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
+target_compile_definitions(dsle-static PRIVATE $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
+
 set(INSTALL_TARGETS dsle dsle-static)
 
 # We also generate a 32-bits stdcall version for VBA
@@ -127,6 +132,7 @@ elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
         C_STANDARD 23
     )
 
+    target_compile_definitions(dsle-stdcall PRIVATE $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
     set(INSTALL_TARGETS ${INSTALL_TARGETS} dsle-stdcall)
 endif()
 
@@ -139,4 +145,6 @@ add_subdirectory(tests)
 
 install(
     TARGETS
-    dsle RUNTIME DESTINATION lib)
+    dsle RUNTIME DESTINATION bin
+    PUBLIC_HEADER DESTINATION include
+)

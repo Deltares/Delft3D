@@ -37,7 +37,7 @@ module m_1d_structures
    use m_CrossSections
    use m_Culvert
    use m_pump
-   use m_General_Structure
+   use m_general_structure
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search
@@ -851,10 +851,11 @@ end subroutine deallocstructure
          allocate(struct%generalst%widthcenteronlink(numlinks), struct%generalst%gateclosedfractiononlink(numlinks), struct%generalst%sOnCrest(numlinks), struct%generalst%state(3,numlinks))
          struct%generalst%sOnCrest(1:numlinks) = 0d0
          struct%generalst%state = 0
-         allocate(struct%generalst%fu(3,numlinks), struct%generalst%ru(3,numlinks), struct%generalst%au(3,numlinks))
+         allocate(struct%generalst%fu(3,numlinks), struct%generalst%ru(3,numlinks), struct%generalst%au(3,numlinks),  struct%generalst%au_max(numlinks))
          struct%generalst%fu = 0d0
          struct%generalst%ru = 0d0
          struct%generalst%au = 0d0
+         struct%generalst%au_max = 0d0
          allocate(struct%generalst%gateclosedfractiononlink(numlinks))
          struct%generalst%gateclosedfractiononlink = 0d0
       case (ST_PUMP)

@@ -54,9 +54,10 @@ contains
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-      use m_nod2linx, only: nod2linx
-      use m_nod2liny, only: nod2liny
+      use m_nod2linx, only: nod2linx, nod2linx_fast
+      use m_nod2liny, only: nod2liny, nod2liny_fast
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL
       implicit none
 
       logical :: make2dh
@@ -70,7 +71,7 @@ contains
       ucyq = 0.0_dp ! zero arrays
 
       ! keep track of depth averaged flow velocity
-      make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
+      make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. map_write_settings%ucmag > 0 .or. map_write_settings%ucvec > 0))
 
       if (Perot_type /= NOT_DEFINED) then
          ucx = 0.0_dp
@@ -80,7 +81,7 @@ contains
 
             do i = 1, wetLink2D - 1
                L = onlyWetLinks(i)
-               if (kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+               if (kcu(L) /= LINK_1D2D_INTERNAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
@@ -1000,11 +1001,11 @@ contains
                do i = 1, wetLinkCount
                   L = onlyWetLinks(i)
                   if (qa(L) > 0) then ! set upwind ucxu, ucyu  on links
-                     ucxu(L) = nod2linx(L, 1, ucx(ln(1, L)), ucy(ln(1, L)))
-                     ucyu(L) = nod2liny(L, 1, ucx(ln(1, L)), ucy(ln(1, L)))
+                     ucxu(L) = nod2linx_fast(csb(1, L), snb(1, L), ucx(ln(1, L)), ucy(ln(1, L)))
+                     ucyu(L) = nod2liny_fast(csb(1, L), snb(1, L), ucx(ln(1, L)), ucy(ln(1, L)))
                   else if (qa(L) < 0) then
-                     ucxu(L) = nod2linx(L, 2, ucx(ln(2, L)), ucy(ln(2, L)))
-                     ucyu(L) = nod2liny(L, 2, ucx(ln(2, L)), ucy(ln(2, L)))
+                     ucxu(L) = nod2linx_fast(csb(2, L), snb(2, L), ucx(ln(2, L)), ucy(ln(2, L)))
+                     ucyu(L) = nod2liny_fast(csb(2, L), snb(2, L), ucx(ln(2, L)), ucy(ln(2, L)))
                   end if
                end do
                !$OMP END PARALLEL DO

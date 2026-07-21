@@ -8,10 +8,6 @@ if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
 
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
     set(oss_dependencies    deltares_common
                             deltares_common_c
                             deltares_common_mpi
@@ -48,8 +44,7 @@ if(UNIX)
 
     target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies}
-         Threads::Threads
-         PkgConfig::PETSC)
+         Threads::Threads)
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
@@ -79,8 +74,7 @@ if(WIN32)
                          morphology_io
                          morphology_kernel
                          morphology_plugins_c
-                         netcdff
-                         petsc
+                         netCDF::netcdff
                          polypack
                          trachytopes_io
                          trachytopes_kernel
@@ -92,33 +86,11 @@ if(WIN32)
                          interacter_stub
                          dflowfm_kernel
 )
-
-
-target_link_directories(${executable_name} PRIVATE
-                        "${mpi_library_path}"
-                        "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                        "${petsc_libdir}"
-                        "${checkout_src_root}/third_party_open/pthreads/bin/x64")
-
-target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
-                          "comctl32.lib"
-                          "wsock32.lib"
-                          "netapi32.lib"
-                          "kernel32.lib"
-                          "user32.lib"
-                          "Shlwapi.lib"
-                          "Gdi32.lib"
-                          "Winspool.lib"
-                          "netcdf.lib"
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
-)
-
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 endif(WIN32)
 
 include_directories(${mpi_module_path}
-                    ${petsc_path}
 )
 
 # Create the folder structure in vfproj

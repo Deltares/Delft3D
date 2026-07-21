@@ -41,7 +41,7 @@ if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "PTR8;linux;LINUX64;_IA64_;_LIB;_CRT_SECURE_NO_WARNINGS")    
 endif(UNIX)
 if (WIN32)
-    target_compile_definitions(${library_name} PRIVATE "W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS")
+    target_compile_definitions(${library_name} PRIVATE "W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_LIB;_CRT_SECURE_NO_WARNINGS")
 endif(WIN32)
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
@@ -79,7 +79,7 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
         target_compile_definitions(${library_name} PRIVATE "PTR8;linux;LINUX64;_IA64_;_LIB;_CRT_SECURE_NO_WARNINGS")    
     endif(UNIX)
     if (WIN32)
-        target_compile_definitions(${library_name} PRIVATE "NEFIS_DLL;W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS")
+        target_compile_definitions(${library_name} PRIVATE "NEFIS_DLL;W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_LIB;_CRT_SECURE_NO_WARNINGS")
     endif(WIN32)
   
   
@@ -88,8 +88,13 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
     source_group("Version Files" FILES ${ini_version_file})
   
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source} ${ini_version_file})
-    set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
+    set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME nefis)
+    if(UNIX)
+        set_target_properties(${library_name} PROPERTIES PREFIX "")
+    endif()
   
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME nefis.${library_suffix} DESTINATION lib)
+    install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                    LIBRARY DESTINATION lib
+    )
 endif()
-

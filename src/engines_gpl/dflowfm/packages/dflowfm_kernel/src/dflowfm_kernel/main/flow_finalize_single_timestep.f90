@@ -81,6 +81,7 @@ contains
       use m_fm_icecover, only: fm_icecover_prepare_output
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_wrimap, only: wrimap
+      use m_source_sink, only: source_sinks
 
       integer, intent(out) :: iresult
 
@@ -106,15 +107,15 @@ contains
       hs = s1 - bl
 
       if (jaeverydt > 0) then
-         if ((comparereal(time1, ti_maps, eps10) >= 0) .and. (comparereal(time1, ti_mape, eps10) <= 0)) then
-            if (jamapFlowAnalysis > 0) then
+         if ((comparereal(time1, ti_maps, EPS10) >= 0) .and. (comparereal(time1, ti_mape, EPS10) <= 0)) then
+            if (map_write_settings%flow_analysis > 0) then
                ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
                call updateFlowAnalysisParameters()
             end if
 
             call wrimap(time1)
 
-            if (jamapFlowAnalysis > 0) then
+            if (map_write_settings%flow_analysis > 0) then
                ! Reset the interval related flow analysis arrays
                negativeDepths = 0
                noiterations = 0
@@ -145,12 +146,12 @@ contains
             call updateValuesOnObservationStations()
          end if
 
-         if (comparereal(time1, time_his, eps10) >= 0) then
+         if (comparereal(time1, time_his, EPS10) >= 0) then
             if (jampi == 1) then
                call updateValuesOnRunupGauges_mpi()
                !call reduce_particles()
             end if
-            if (jahisbal > 0) then ! Update WaterBalances etc.
+            if (his_write_settings%bal > 0) then ! Update WaterBalances etc.
                call updateBalance()
             end if
             if (jacheckmonitor == 1) then
@@ -164,24 +165,24 @@ contains
       call update_values_on_cross_sections
       call updateValuesOnRunupGauges()
       if (jampi == 0 .or. (jampi == 1 .and. my_rank == 0)) then
-         if (numsrc > 0) then
+         if (source_sinks%num_total > 0) then
             call updateValuesonSourceSinks(time1) ! Compute discharge and volume on sources and sinks
          end if
       end if
 
-      if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
          call updateValuesOnLaterals(time1, dts)
       end if
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
-         if (jamapTimeWetOnGround > 0) then
+         if (map_write_settings%time_wet_on_ground > 0) then
             call updateTimeWetOnGround(dts)
          end if
-         if (jamapTotalInflow1d2d > 0) then
+         if (map_write_settings%total_inflow_1d2d > 0) then
             call updateTotalInflow1d2d(dts)
          end if
-         if (jamapTotalInflowLat > 0) then
+         if (map_write_settings%total_inflow_lat > 0) then
             call updateTotalInflowLat(dts)
          end if
       end if

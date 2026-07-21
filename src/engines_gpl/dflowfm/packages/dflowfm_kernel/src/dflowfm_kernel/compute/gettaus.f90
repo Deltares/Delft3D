@@ -41,8 +41,8 @@ contains
       use m_flow, only: czs, taus
       use m_alloc, only: realloc
       use m_get_tau, only: get_tau
-      use m_waveconst, only: wave_waq_shear_stress_hyd
-      use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
+      use m_waveconst, only: WAVE_WAQ_SHEAR_STRESS_HYD, NO_WAVES
+      use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq, jawave
       !
       !
       ! Parameters
@@ -54,12 +54,12 @@ contains
       real(kind=dp) :: czc !< local variable for chezy
       integer :: ierr !< Error code
       integer :: n !< Counter
-      integer :: jawaveswartdelwaq_local !< Local value of jawaveswartdelwaq, depending on kernel and flowWithoutWaves
+      integer :: jawaveswartdelwaq_local !< Local value of jawaveswartdelwaq, depending on kernel and flow_without_waves
       integer, parameter :: USE_DFLOWFM = 1
       integer, parameter :: SET_CZS_TAUS = 1
       !
       ! Body
-      if (flowWithoutWaves .and. kernel == USE_DFLOWFM) then
+      if ((jawave > NO_WAVES .and. flow_without_waves) .and. kernel == USE_DFLOWFM) then
          jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq

@@ -34,7 +34,7 @@ module m_s1ini
    use m_update_waq_sink_source_fluxes, only: update_waq_sink_source_fluxes
    use m_update_waq_lateral_fluxes, only: update_waq_lateral_fluxes
    use m_setgrwflowexpl, only: setgrwflowexpl
-   use m_setsorsin, only: setsorsin
+   use m_source_sink, only: setsorsin, source_sinks
 
    implicit none
 
@@ -71,7 +71,7 @@ contains
       ccr = 0.0_dp
       dd = 0.0_dp
 
-      if (jagrw > 0 .or. numsrc > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
+      if (jagrw > 0 .or. source_sinks%num_total > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
          jaqin = 1
       end if
 
@@ -265,12 +265,12 @@ contains
             call setgrwflowexpl() ! add grw-flow exchange to the qin array
          end if
 
-         if (numsrc > 0) then
+         if (source_sinks%num_total > 0) then
             call setsorsin() ! add sources and sinks
          end if
 
          if (wrwaqon) then ! Update waq output
-            if (numsrc > 0) then
+            if (source_sinks%num_total > 0) then
                call update_waq_sink_source_fluxes()
             end if
             if (numlatsg > 0) then

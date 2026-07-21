@@ -789,44 +789,44 @@ outppr,outpit,outpnm,outpdo,outpsx
 "SedOXYDem ","dOxSOD    ",   8," ",1
 "SedOXYDem ","dOxMinSed ",   9," ",1
 "SedOXYDem ","dSOD      ",  10," ",1
-"TF_Green  ","TFGroGreen",   1,"x",1
-"TF_Green  ","TFMrtGreen",   2,"x",1
-"TF_Diat   ","TFGroDiat ",   1,"x",1
-"TF_Diat   ","TFMrtDiat ",   2,"x",1
-"DL_Green  ","LimDLGreen",   1,"x",1
-"DL_Diat   ","LimDLdiat ",   1,"x",1
 "DL_DiatS1 ","LimDLdiaS1",   1,"x",1
-"NLGreen   ","LimNgreen ",   1,"x",1
-"NLGreen   ","LimPgreen ",   2,"x",1
-"NLGreen   ","LimSigreen",   3,"x",1
-"NLGreen   ","LimNutGree",   4,"x",1
-"NLDiat    ","LimNdiat  ",   1,"x",1
-"NLDiat    ","LimPdiat  ",   2,"x",1
-"NLDiat    ","LimSidiat ",   3,"x",1
-"NLDiat    ","LimNutDiat",   4,"x",1
-"Rad_Green ","LimRadGree",   1,"x",1
-"Rad_Diat  ","LimRadDiat",   1,"x",1
 "Rad_DiatS1","LimRadDiS1",   1,"x",1
-"GroMrt_Gre","RcGroGreen",   1,"x",1
-"GroMrt_Gre","RcMrtGreen",   2,"x",1
-"GroMrt_Gre","RcRespGree",   3,"x",1
-"GroMrt_Gre","fPPGreen  ",   4,"x",1
-"GroMrt_Gre","fMrtGreen ",   5,"x",1
-"GroMrt_Dia","RcGroDiat ",   1,"x",1
-"GroMrt_Dia","RcMrtDiat ",   2,"x",1
-"GroMrt_Dia","RcRespDiat",   3,"x",1
-"GroMrt_Dia","fPPDiat   ",   4,"x",1
-"GroMrt_Dia","fMrtDiat  ",   5,"x",1
+"GroMrt_Gre","TFGroGreen",   1,"x",1
+"GroMrt_Gre","TFMrtGreen",   2,"x",1
+"GroMrt_Gre","LimDLGreen",   3,"x",1
+"GroMrt_Gre","LimNgreen ",   4,"x",1
+"GroMrt_Gre","LimPgreen ",   5,"x",1
+"GroMrt_Gre","LimSigreen",   6,"x",1
+"GroMrt_Gre","LimNutGree",   7,"x",1
+"GroMrt_Gre","LimRadGree",   8,"x",1
+"GroMrt_Gre","RcGroGreen",   9,"x",1
+"GroMrt_Gre","RcMrtGreen",  10,"x",1
+"GroMrt_Gre","RcRespGree",  11,"x",1
+"GroMrt_Gre","fPPGreen  ",  12,"x",1
+"GroMrt_Gre","fMrtGreen ",  13,"x",1
+"GroMrt_Dia","TFGroDiat ",   1,"x",1
+"GroMrt_Dia","TFMrtDiat ",   2,"x",1
+"GroMrt_Dia","LimDLdiat ",   3,"x",1
+"GroMrt_Dia","LimNdiat  ",   4,"x",1
+"GroMrt_Dia","LimPdiat  ",   5,"x",1
+"GroMrt_Dia","LimSidiat ",   6,"x",1
+"GroMrt_Dia","LimNutDiat",   7,"x",1
+"GroMrt_Dia","LimRadDiat",   8,"x",1
+"GroMrt_Dia","RcGroDiat ",   9,"x",1
+"GroMrt_Dia","RcMrtDiat ",  10,"x",1
+"GroMrt_Dia","RcRespDiat",  11,"x",1
+"GroMrt_Dia","fPPDiat   ",  12,"x",1
+"GroMrt_Dia","fMrtDiat  ",  13,"x",1
 "GroMrt_DS1","RcGroDiaS1",   1,"x",1
 "GroMrt_DS1","RcMrtDiaS1",   2,"x",1
 "GroMrt_DS1","RcRespDiS1",   3,"x",1
 "GroMrt_DS1","fMrtDiatS1",   4,"x",1
 "GroMrt_DS1","EffNutDiS1",   5,"x",1
 "GroMrt_DS1","EffLigDiS1",   6,"x",1
-"PPrLim    ","fcPPGreen ",   1,"x",1
-"PPrLim    ","fcPPDiat  ",   2,"x",1
-"NutUpt_Alg","FracUptNH4",   1,"x",1
-"NutUpt_Alg","ReqDin    ",   2,"x",1
+"NutRel_Alg","fcPPGreen ",   1,"x",1
+"NutRel_Alg","fcPPDiat  ",   2,"x",1
+"NutRel_Alg","FracUptNH4",   3,"x",1
+"NutRel_Alg","ReqDin    ",   4,"x",1
 "OXYMin    ","OXYMIN    ",   1,"x",1
 "CONSELAC  ","FrOxCon   ",   1,"x",1
 "CONSELAC  ","FrNiDen   ",   2,"x",1
@@ -1061,15 +1061,18 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sed_IM1   ","PSedIM1   ",   1,"x",1
 "Sed_IM1   ","fSedIM1   ",   2,"x",1
 "Sed_IM1   ","fSedIM1S2 ",   3," ",1
-"Sed_IM1   ","VxSedIM1  ",   4,"x",0
+"Sed_IM1   ","WSSedim1  ",   4," ",1
+"Sed_IM1   ","VxSedIM1  ",   5,"x",0
 "Sed_IM2   ","PSedIM2   ",   1,"x",1
 "Sed_IM2   ","fSedIM2   ",   2,"x",1
 "Sed_IM2   ","fSedIM2S2 ",   3," ",1
-"Sed_IM2   ","VxSedIM2  ",   4,"x",0
+"Sed_IM2   ","WSSedim2  ",   4," ",1
+"Sed_IM2   ","VxSedIM2  ",   5,"x",0
 "Sed_IM3   ","PSedIM3   ",   1,"x",1
 "Sed_IM3   ","fSedIM3   ",   2,"x",1
 "Sed_IM3   ","fSedIM3S2 ",   3," ",1
-"Sed_IM3   ","VxSedIM3  ",   4,"x",0
+"Sed_IM3   ","WSSedim3  ",   4," ",1
+"Sed_IM3   ","VxSedIM3  ",   5,"x",0
 "SedDiat   ","PSedDiat  ",   1,"x",1
 "SedDiat   ","fSedDiat  ",   2,"x",1
 "SedDiat   ","VxSedDiat ",   3,"x",0
@@ -1224,27 +1227,33 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sed_Opal  ","PSedOpal  ",   1,"x",1
 "Sed_Opal  ","fSedOpal  ",   2,"x",1
 "Sed_Opal  ","fSedOpalS2",   3,"x",1
-"Sed_Opal  ","VxSedOpal ",   4,"x",0
+"Sed_Opal  ","WSSedOpal ",   4," ",1
+"Sed_Opal  ","VxSedOpal ",   5,"x",0
 "Sed_POC1  ","PSedPOC1  ",   1,"x",1
 "Sed_POC1  ","fSedPOC1  ",   2,"x",1
 "Sed_POC1  ","fSedPOC1S2",   3,"x",1
-"Sed_POC1  ","VxSedPOC1 ",   4,"x",0
+"Sed_POC1  ","WSSedPOC1 ",   4," ",1
+"Sed_POC1  ","VxSedPOC1 ",   5,"x",0
 "Sed_POC2  ","PSedPOC2  ",   1,"x",1
 "Sed_POC2  ","fSedPOC2  ",   2,"x",1
 "Sed_POC2  ","fSedPOC2S2",   3,"x",1
-"Sed_POC2  ","VxSedPOC2 ",   4,"x",0
+"Sed_POC2  ","WSSedPOC2 ",   4," ",1
+"Sed_POC2  ","VxSedPOC2 ",   5,"x",0
 "Sed_POC3  ","PSedPOC3  ",   1,"x",1
 "Sed_POC3  ","fSedPOC3  ",   2,"x",1
 "Sed_POC3  ","fSedPOC3S2",   3,"x",1
-"Sed_POC3  ","VxSedPOC3 ",   4,"x",0
+"Sed_POC3  ","WSSedPOC3 ",   4," ",1
+"Sed_POC3  ","VxSedPOC3 ",   5,"x",0
 "Sed_POC4  ","PSedPOC4  ",   1,"x",1
 "Sed_POC4  ","fSedPOC4  ",   2,"x",1
 "Sed_POC4  ","fSedPOC4S2",   3,"x",1
-"Sed_POC4  ","VxSedPOC4 ",   4,"x",0
+"Sed_POC4  ","WSSedPOC4 ",   4," ",1
+"Sed_POC4  ","VxSedPOC4 ",   5,"x",0
 "Sed_POC5  ","PSedPOC5  ",   1,"x",1
 "Sed_POC5  ","fSedPOC5  ",   2,"x",1
 "Sed_POC5  ","fSedPOC5S2",   3,"x",1
-"Sed_POC5  ","VxSedPOC5 ",   4,"x",0
+"Sed_POC5  ","WSSedPOC5 ",   4," ",1
+"Sed_POC5  ","VxSedPOC5 ",   5,"x",0
 "Sed_VivP  ","PSedVIVP  ",   1,"x",1
 "Sed_VivP  ","fSedVIVP  ",   2,"x",1
 "Sed_VivP  ","VxSedVIVP ",   3,"x",0

@@ -17,7 +17,7 @@ create_target(
 set(oss_dependencies part_data_f
         part_kernel_f)
 
-target_link_libraries(${executable_name} ${oss_dependencies})
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
 
 # Set additional compilation properties
@@ -33,7 +33,7 @@ if(WIN32)
             PRIVATE
             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
             "pthreadVC2.lib")
 
     # Set linker options
@@ -50,6 +50,7 @@ endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delpar.${platform_extension} DESTINATION bin)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/part/resources/data/leewayfactors.csv DESTINATION share/delft3d)
 if(WIN32)
     install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/dshell_run_delpar.${platform_extension} DESTINATION bin)
 endif(WIN32)

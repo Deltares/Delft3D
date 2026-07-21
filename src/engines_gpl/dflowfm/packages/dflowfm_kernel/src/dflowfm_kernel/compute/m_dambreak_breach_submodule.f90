@@ -29,7 +29,6 @@
 
 submodule(m_dambreak_breach) m_dambreak_breach_submodule
    use precision, only: dp
-   use m_meteo, only: ec_undef_int
 
    implicit none
 
@@ -40,59 +39,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    integer, dimension(:), allocatable :: first_link !< first dambreak link for each signal
    integer, dimension(:), allocatable :: last_link !< last dambreak link for each signal
 
-   type :: t_dambreak !< data for a single dambreak
-      integer :: algorithm = 0 !< algorithm for the dambreak breach growth
-      integer :: breach_start_link = -1 !< index of the starting link in the breach growth
-      integer :: index_structure = 0 !< index of the structure
-      integer :: ec_item = ec_undef_int !< item for EC module to get crest level and width from a tim file
-      integer :: number_of_links = 0 !< number of links in the dambreak
-      integer :: link_map_offset = 0 !< offset of the local array in the global link array
-      integer, dimension(:), allocatable :: link_indices !< link indices of the dambreak
-      integer, dimension(:), allocatable :: active_links !< active links of the dambreak
-      integer, dimension(:), allocatable :: upstream_link_ids !< upstream link indices
-      integer, dimension(:), allocatable :: downstream_link_ids !< downstream link indices
-      character(len=128) :: name = "" !< name of the dambreak
-      real(kind=dp) :: breach_depth = 0.0_dp !< depth of the breach
-      real(kind=dp) :: breach_width = 0.0_dp !< width of the breach
-      real(kind=dp) :: breach_width_ini = 0.0_dp !< initial width of the breach
-      real(kind=dp) :: breach_width_derivative !< derivative of the breach width
-      real(kind=dp) :: crest_level !< crest level of the breach
-      real(kind=dp) :: crest_level_ini !< initial crest level of the breach
-      real(kind=dp) :: crest_level_min !< minimum crest level of the breach
-      real(kind=dp) :: upstream_level !< upstream water level
-      real(kind=dp) :: downstream_level !< downstream water level
-      real(kind=dp), dimension(2) :: crest_level_and_width !< array to communicate with EC module
-      real(kind=dp) :: width = 0.0_dp !< width of the breach
-      real(kind=dp) :: maximum_width = 0.0_dp !< maximum width of the breach
-      real(kind=dp) :: maximum_allowed_width = -1.0_dp !< maximum allowed width of the breach
-      real(kind=dp) :: water_level_jump !< water level jump of the breach
-      real(kind=dp) :: normal_velocity !< normal velocity of the breach
-      real(kind=dp) :: u_crit !< critical velocity for the breach growth
-      real(kind=dp) :: t0 = 0.0_dp !< time of the start of the dambreak
-      real(kind=dp) :: time_to_breach_to_maximum_depth !< time to breach to maximum depth
-      real(kind=dp) :: a_coeff !< coefficient a for the breach growth
-      real(kind=dp) :: b_coeff !< coefficient b for the breach growth
-      real(kind=dp) :: f1 !< coefficient f1 for the breach width derivative
-      real(kind=dp) :: f2 !< coefficient f2 for the breach width derivative
-      real(kind=dp), dimension(:), allocatable :: link_actual_width !< actual width of the links in the dambreak
-      real(kind=dp), dimension(:), allocatable :: link_effective_width !< effective width of the links in the dambreak
-      procedure(calculate_breach_growth_using_any_model), pointer :: calculate_breach_growth => null()
-   contains
-      procedure :: array_allocation => allocate_arrays
-      final :: deallocate_arrays
-   end type
-
    type(t_dambreak), target, dimension(:), allocatable :: dambreaks(:) !< dambreak data for all dambreaks
-
-   abstract interface
-      subroutine calculate_breach_growth_using_any_model(dambreak, time, time_step)
-         use precision, only: dp
-         import t_dambreak
-         class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
-         real(kind=dp), intent(in) :: time !< current time
-         real(kind=dp), intent(in) :: time_step !< time step
-      end subroutine calculate_breach_growth_using_any_model
-   end interface
 
    integer :: number_of_mappings !< number of mappings for upstream and downstream water levels
    type :: t_mapping !< mapping of water level
@@ -161,33 +108,6 @@ contains
       number_of_averagings = 0
 
    end subroutine allocate_and_initialize_dambreak_data
-
-   !> alllocate internal arrays for a dambreak
-   subroutine allocate_arrays(this)
-      class(t_dambreak), intent(inout) :: this
-
-      allocate (this%link_indices(this%number_of_links), source=0)
-      allocate (this%active_links(this%number_of_links), source=0)
-      allocate (this%upstream_link_ids(this%number_of_links), source=0)
-      allocate (this%downstream_link_ids(this%number_of_links), source=0)
-      allocate (this%link_actual_width(this%number_of_links), source=0.0_dp)
-      allocate (this%link_effective_width(this%number_of_links), source=0.0_dp)
-
-   end subroutine allocate_arrays
-
-   !> dealllocate internal arrays for a dambreak
-   subroutine deallocate_arrays(this)
-      type(t_dambreak), intent(inout) :: this
-
-      if (allocated(this%link_indices)) then
-         deallocate (this%link_indices)
-         deallocate (this%active_links)
-         deallocate (this%upstream_link_ids)
-         deallocate (this%downstream_link_ids)
-         deallocate (this%link_actual_width)
-         deallocate (this%link_effective_width)
-      end if
-   end subroutine deallocate_arrays
 
    !> updates dambreak breach by updating water levels upstream and downstream and calculating dambreak widths
    module function update_dambreak_breach(current_time, time_step) result(error)
@@ -1255,7 +1175,7 @@ contains
       use m_dambreak, only: BREACH_GROWTH_TIMESERIES
       use m_meteo, only: ec_addtimespacerelation
       use messagehandling, only: msgbuf, err_flush
-      use timespace_parameters, only: UNIFORM, SPACEANDTIME
+      use timespace_parameters, only: UNIFORM, SPACEANDTIME, OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: filename !< the name of the time series file
       type(t_dambreak), intent(inout) :: dambreak !< the dambreak data
@@ -1273,7 +1193,7 @@ contains
 
       if (index(trim(filename)//'|', '.tim|') > 0) then
          success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, filename, UNIFORM, &
-                                           SPACEANDTIME, 'O', targetIndex=1, tgt_item1=dambreak%ec_item)
+                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item)
          if (.not. success) then
             write (msgbuf, '(5a)') 'Cannot process a tim file for "', QID, '" for the dambreak "', trim(dambreak%name), '".'
             call err_flush()
@@ -1291,6 +1211,7 @@ contains
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D
       use network_data, only: xk, yk
+      use network_data, only: LINK_1D2D_INTERNAL
 
       type(t_dambreak), intent(inout) :: dambreak !< the dambreak data
       real(kind=dp), intent(in) :: start_location_x !< x coordinate of the breach start location
@@ -1332,7 +1253,7 @@ contains
       ! compute the normal projections of the start and endpoints of the flow links
       do k = 1, dambreak%number_of_links
          link = abs(dambreak%link_indices(k))
-         if (kcu(link) == 3) then ! 1d2d flow link
+         if (kcu(link) == LINK_1D2D_INTERNAL) then ! 1d2d flow link
             dambreak%link_effective_width(k) = wu(link)
          else
             point = lftopol(k + dambreak%link_map_offset)
@@ -1349,4 +1270,36 @@ contains
       end do
 
    end subroutine calculate_start_link_and_widths
+
+   !> Remove 1D links and 1D2D longitudinal links from the dambreak polygon list.
+   !! This function filters out flow links that are not suitable for dambreak calculations
+   !! by examining the flow link type (kcu). Only 2D flow links and 1D2D lateral links
+   !! are retained in the list.
+   !!
+   !! Flow link types filtered out:
+   !! - kcu = 1: 1D flow links
+   !! - kcu = 4: 1D2D longitudinal flow links
+   !!
+   !! The function compacts the kegen array by removing unwanted links and updates
+   !! numgen to reflect the new count of valid links.
+   pure module subroutine remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
+      use m_flowgeom, only: kcu
+      use network_data, only: LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+      integer, intent(inout) :: numgen !< number of flow links in kegen
+      integer, dimension(:), intent(inout) :: kegen !< array with the link indices
+      integer :: i, cell, numcells
+      numcells = 0
+      do i = 1, numgen
+         cell = abs(kegen(i))
+         ! remove 1d links and 1d2d longitudinal links from the dambreak polygon list.
+         select case (abs(kcu(cell)))
+         case(LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
+         case default
+            numcells = numcells + 1
+            kegen(numcells) = kegen(i)
+         end select
+      end do
+      numgen = numcells
+   end subroutine remove_1d_links_from_dambreak_polygon_list
+
 end submodule m_dambreak_breach_submodule

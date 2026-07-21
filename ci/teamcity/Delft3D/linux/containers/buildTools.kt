@@ -14,10 +14,12 @@ object LinuxBuildTools : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
+        TemplateLinuxAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {
@@ -36,7 +38,6 @@ object LinuxBuildTools : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
         }
@@ -77,10 +78,6 @@ object LinuxBuildTools : BuildType({
                 commandArgs = "prune --force --filter type=exec.cachemount"
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })
 

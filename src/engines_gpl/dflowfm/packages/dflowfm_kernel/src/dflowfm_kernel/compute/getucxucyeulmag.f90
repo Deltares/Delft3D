@@ -41,7 +41,7 @@ contains
    subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
       use precision, only: dp
       use m_flow, only: ndkx, ucx, ucy
-      use m_flowparameters, only: jawave, flowWithoutWaves
+      use m_flowparameters, only: jawave, flow_without_waves
 
       integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
       real(kind=dp), intent(out) :: ucxeulg(N) !< Target array in which to store x-velocities.
@@ -56,7 +56,7 @@ contains
       ucyeulg(1:ndkx) = ucy(1:ndkx)
 
       ! Transform uxy/ucy into Eulerian velocities
-      if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          call getucxucyeuler(N, ucxeulg, ucyeulg)
       end if
 

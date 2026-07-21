@@ -34,13 +34,10 @@ if(WIN32)
                          io_netcdf_data
                          kdtree_wrapper
                          kdtree2
-                         netcdff)
-
-    target_link_directories(${executable_name} PRIVATE
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
+                         netCDF::netcdff)
 
     target_link_libraries(${executable_name} ${oss_dependencies}
-                                             "netcdf.lib")
+                                             netCDF::netcdf)
 endif(WIN32)
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ec_module_test.F90
@@ -52,6 +49,15 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/utils_lgpl/ec_module)
 
 configure_visual_studio_user_file(${executable_name})
+
+f90twtest(test_ec_module
+    CFILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.cpp
+    F90FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES ec_module
+    VISUAL_STUDIO_PATH tests/utils_lgpl/ec_module/test
+)
 
 if(WIN32)
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION test)

@@ -64,7 +64,7 @@ contains
       use m_getfetch, only: getfetch
       use m_hurdlestive, only: hurdlestive
       use m_ian_young_pt, only: ian_young_pt
-      use m_tauwavehk, only: tauwavehk
+      use m_wave_shear_velocity, only: compute_wave_shear_velocity
       use m_fetch_operation_utils, only: initialise_fetch_proc_data, stop_fetch_computation, stop_fetch_computation, &
                                          stop_fetch_computation, send_s1_to_fetch_proc, get_fetch_values_from_fetch_proc
       use m_waveconst
@@ -156,7 +156,7 @@ contains
 
                Hwav(cell) = Hsig * rsqrt2 ! Hwav === hrms
                Twav(cell) = Tsig
-               call tauwavehk(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum) ! basically now just a dispersion function with 2DH stokes drift magnitude
+               call compute_wave_shear_velocity(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum) ! basically now just a dispersion function with 2DH stokes drift magnitude
             end if
          end if
 
@@ -380,6 +380,7 @@ contains
       use m_sferic
       use m_fetch_local_data
       use m_alloc
+      use network_data, only: LINK_CLOSED
 
       real(kind=dp), intent(in) :: u_wind, v_wind
       integer, intent(out) :: nr_cells_done
@@ -435,7 +436,7 @@ contains
                node2 = netcell(cell)%nod(index_cell_node + 1)
             end if
             wdep = s1(cell) - min(zk(node1), zk(node2))
-            if (lnn(link) == 1 .or. wdep < 0.5_dp .or. kn(3, link) == 0 .or. jaopen == 1) then ! link shallow or closed => start fetch here
+            if (lnn(link) == 1 .or. wdep < 0.5_dp .or. kn(3, link) == LINK_CLOSED .or. jaopen == 1) then ! link shallow or closed => start fetch here
                call normalout(xk(node1), yk(node1), xk(node2), yk(node2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
                prin = u_wind * xn + v_wind * yn
                if (prin < 0.0_dp) then ! if upwind

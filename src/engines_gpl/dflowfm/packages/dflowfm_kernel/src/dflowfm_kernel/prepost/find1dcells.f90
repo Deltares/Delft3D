@@ -37,6 +37,7 @@ module m_find1dcells
    use m_save_ugrid_state
    use m_inquire_flowgeom
    use precision, only: dp
+   use precision_basics, only: equal
    implicit none
 
    private
@@ -58,7 +59,7 @@ contains
       integer, dimension(:), allocatable :: left_2D_cells, right_2D_cells
       logical :: Lisnew
       integer :: ierror
-      integer :: nump1d, nump1d_i
+      integer :: nump1d
 
       ierror = 1
 
@@ -74,7 +75,7 @@ contains
       end do
       !$OMP END PARALLEL DO
       call cleanup_cell_geom_polylines()
-      
+
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES
 
@@ -88,21 +89,53 @@ contains
          end if
       end do
 
-      ! Create branch node index array and inverse.
-      nump1d = size(meshgeom1d%nodebranchidx) !< Old number of nodes contained in meshgeom1d
-      if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
-         allocate (meshgeom1d%nodeidx(nump1d))
-         meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
+      if (associated(meshgeom1d%nodebranchidx)) then
+         ! Build nodeidx/nodeidx_inverse hint for branch-order preservation by coordinate matching.
+         nump1d = size(meshgeom1d%nodebranchidx)
+         if (.not. associated(meshgeom1d%nodeidx)) then
+            allocate (meshgeom1d%nodeidx(nump1d))
+            meshgeom1d%nodeidx = 0
+         end if
+         allocate (meshgeom1d%nodeidx_inverse(numk))
+         meshgeom1d%nodeidx_inverse = 0
+         if (associated(meshgeom1d%nodex) .and. associated(meshgeom1d%nodey)) then
+            do k = 1, numk
+               if (kc(k) /= 1) cycle  ! only 1D net node candidates
+               do i = 1, min(nump1d, size(meshgeom1d%nodex))
+                  if (equal(xk(k), meshgeom1d%nodex(i)) .and. equal(yk(k), meshgeom1d%nodey(i))) then
+                     meshgeom1d%nodeidx(i) = k
+                     meshgeom1d%nodeidx_inverse(k) = i
+                     exit
+                  end if
+               end do
+            end do
+         end if
+      else
+         nump1d = 0
       end if
-      allocate (meshgeom1d%nodeidx_inverse(size(kc)))
-      do i = 1, nump1d
-         meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i
-      end do
 
       nump1d2d = nump !> start from 2D cells
       !> two passes, second one in case branch order cannot be preserved.
       call construct_lne_array(lne, nump1d2d, left_2D_cells, right_2D_cells, preserve_branch_order=.true.)
       call construct_lne_array(lne, nump1d2d, left_2D_cells, right_2D_cells, preserve_branch_order=.false.)
+
+      ! Rebuild nodeidx/nodeidx_inverse from the actual kc result.
+      ! After construct_lne_array, kc(k) < 0 means net node k is 1D cell -kc(k).
+      ! Cell number minus nump gives the 1-based mesh1d node index.
+      if (nump1d > 0) then
+         if (associated(meshgeom1d%nodeidx_inverse)) deallocate(meshgeom1d%nodeidx_inverse)
+         allocate(meshgeom1d%nodeidx_inverse(numk))
+         meshgeom1d%nodeidx_inverse = 0
+         do k = 1, numk
+            if (kc(k) < 0) then
+               i = -kc(k) - nump  ! mesh1d node index (1-based)
+               if (i >= 1 .and. i <= nump1d) then
+                  meshgeom1d%nodeidx(i) = k
+                  meshgeom1d%nodeidx_inverse(k) = i
+               end if
+            end if
+         end do
+      end if
 
 !     fill 1D netcell administration and set cell centers
       call realloc(xzw, nump1d2d)
@@ -192,7 +225,7 @@ contains
 
       if (NC == 0) then
          branches_first = .true.
-         if (preserve_branch_order) then
+         if (associated(meshgeom1d%nodebranchidx) .and. preserve_branch_order) then
             ! if the branch order is to be preserved, check if the next found node matches the next node in the branchorder.
             next_found_node = meshgeom1d%nodeidx_inverse(k)
             next_branch_node = nump1d2d - nump + 1

@@ -19,7 +19,7 @@ object ReportVerschilanalyse: BuildType({
     """.trimIndent()
 
     params {
-        param("current_prefix", "output/weekly/latest")
+        param("current_prefix", "output/weekly/development")
         param("reference_prefix", "output/release/2025.01")
         param("send_email", "true")
 
@@ -45,7 +45,8 @@ object ReportVerschilanalyse: BuildType({
             dockerRunParameters = """
                 --rm
                 --entrypoint=/bin/bash
-                --volume="%env.AWS_SHARED_CREDENTIALS_FILE%:/root/.aws/credentials:ro"
+                -e AWS_ACCESS_KEY_ID="%env.AWS_ACCESS_KEY_ID%"
+                -e AWS_SECRET_ACCESS_KEY="%env.AWS_SECRET_ACCESS_KEY%"
                 -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
             """.trimIndent()
         }
@@ -111,9 +112,6 @@ object ReportVerschilanalyse: BuildType({
     features {
         perfmon {}
         swabra {}
-        provideAwsCredentials {
-            awsConnectionId = "minio_verschilanalyse_connection"
-        }
         dockerRegistryConnections {
             loginToRegistry = on {
                 dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"

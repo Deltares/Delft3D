@@ -54,6 +54,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
+      use m_source_sink, only: source_sinks
 
       integer :: k, k1, k2, isrc, ip, ilaysin, ilaysor
       integer :: kksin, kbsin, ktsin, kksor, kbsor, ktsor
@@ -61,35 +62,35 @@ contains
       real(8) :: dzss, qsrck, fsor, fsorlay
       real(8), allocatable :: fsin(:)
 
-      do isrc = 1, numsrc
-         if (ksrcwaq(isrc) >= 0) then
-            ! If ksrcwaq < 0, then the sink source is not in the current domain
+      do isrc = 1, source_sinks%num_total
+         if (source_sinks%waq_index(isrc) >= 0) then
+            ! If waq_index < 0, then the sink source is not in the current domain
             if (waqpar%kmxnxa == 1) then
                ! 2D case
-               ip = ksrcwaq(isrc) + 1
+               ip = source_sinks%waq_index(isrc) + 1
                if (ip > 0) then
-                  qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrc(isrc)
+                  source_sinks%cumulative_discharge_waq(ip) = source_sinks%cumulative_discharge_waq(ip) + dts * source_sinks%discharge(isrc)
                end if
             else
                ! 3D case
-               kksin = ksrc(1, isrc) ! 2D segment number of sink
-               kbsin = ksrc(2, isrc) ! actual kbot of sink
-               ktsin = ksrc(3, isrc) ! actual ktop of sink
-               kksor = ksrc(4, isrc) ! 2D segment number of source
-               kbsor = ksrc(5, isrc) ! actual kbot of source
-               ktsor = ksrc(6, isrc) ! actual ktop source
+               kksin = source_sinks%indices(isrc, 1) ! 2D segment number of sink
+               kbsin = source_sinks%indices(isrc, 2) ! actual kbot of sink
+               ktsin = source_sinks%indices(isrc, 3) ! actual ktop of sink
+               kksor = source_sinks%indices(isrc, 4) ! 2D segment number of source
+               kbsor = source_sinks%indices(isrc, 5) ! actual kbot of source
+               ktsor = source_sinks%indices(isrc, 6) ! actual ktop source
                if (kksin == 0 .and. kksor /= 0) then
                   ! there is only a source side
                   call getkbotktopmax(kksor, kkbsor, kktsor, kktxsor)
                   dzss = zws(ktsor) - zws(kbsor - 1)
                   do k = kbsor, ktsor
                      if (dzss > epshs) then
-                        qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                        qsrck = source_sinks%discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                      else
-                        qsrck = qsrc(isrc) / (ktsor - kbsor + 1)
+                        qsrck = source_sinks%discharge(isrc) / (ktsor - kbsor + 1)
                      end if
-                     ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsor - k + 1)
-                     qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                     ip = source_sinks%waq_index(isrc) + waqpar%ilaggr(kktxsor - k + 1)
+                     source_sinks%cumulative_discharge_waq(ip) = source_sinks%cumulative_discharge_waq(ip) + dts * qsrck
                   end do
                else if (kksin /= 0 .and. kksor == 0) then
                   ! there is only a sink side (used?)
@@ -97,12 +98,12 @@ contains
                   dzss = zws(ktsin) - zws(kbsin - 1)
                   do k = kbsin, ktsin
                      if (dzss > epshs) then
-                        qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                        qsrck = source_sinks%discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                      else
-                        qsrck = qsrc(isrc) / (ktsin - kbsin + 1)
+                        qsrck = source_sinks%discharge(isrc) / (ktsin - kbsin + 1)
                      end if
-                     ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1)
-                     qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                     ip = source_sinks%waq_index(isrc) + waqpar%ilaggr(kktxsin - k + 1)
+                     source_sinks%cumulative_discharge_waq(ip) = source_sinks%cumulative_discharge_waq(ip) + dts * qsrck
                   end do
                else if (kksin /= 0 .and. kksor /= 0) then
                   call getkbotktopmax(kksin, kkbsin, kktsin, kktxsin)
@@ -112,24 +113,24 @@ contains
                      dzss = zws(ktsor) - zws(kbsor - 1)
                      do k = kbsor, ktsor
                         if (dzss > epshs) then
-                           qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                           qsrck = source_sinks%discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                         else
-                           qsrck = qsrc(isrc) / (ktsor - kbsor + 1)
+                           qsrck = source_sinks%discharge(isrc) / (ktsor - kbsor + 1)
                         end if
-                        ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - kbsin + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - k + 1) - 1)
-                        qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                        ip = source_sinks%waq_index(isrc) + waqpar%ilaggr(kktxsin - kbsin + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - k + 1) - 1)
+                        source_sinks%cumulative_discharge_waq(ip) = source_sinks%cumulative_discharge_waq(ip) + dts * qsrck
                      end do
                   else if (kbsor == ktsor) then
                      ! sor side has only one layer
                      dzss = zws(ktsin) - zws(kbsin - 1)
                      do k = kbsin, ktsin
                         if (dzss > epshs) then
-                           qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                           qsrck = source_sinks%discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                         else
-                           qsrck = qsrc(isrc) / (ktsin - kbsin + 1)
+                           qsrck = source_sinks%discharge(isrc) / (ktsin - kbsin + 1)
                         end if
-                        ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - kbsor + 1) - 1)
-                        qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                        ip = source_sinks%waq_index(isrc) + waqpar%ilaggr(kktxsin - k + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - kbsor + 1) - 1)
+                        source_sinks%cumulative_discharge_waq(ip) = source_sinks%cumulative_discharge_waq(ip) + dts * qsrck
                      end do
                   else
                      ! multiple layers on both side... it's a bit more complicated...
@@ -158,8 +159,8 @@ contains
                            fsorlay = min(fsin(ilaysin), fsor)
                            fsin(ilaysin) = fsin(ilaysin) - fsorlay
                            fsor = fsor - fsorlay
-                           ip = ksrcwaq(isrc) + waqpar%ilaggr(ilaysin) + waqpar%kmxnxa * (waqpar%ilaggr(ilaysor) - 1)
-                           qsrcwaq(ip) = qsrcwaq(ip) + dts * fsorlay * qsrc(isrc)
+                           ip = source_sinks%waq_index(isrc) + waqpar%ilaggr(ilaysin) + waqpar%kmxnxa * (waqpar%ilaggr(ilaysor) - 1)
+                           source_sinks%cumulative_discharge_waq(ip) = source_sinks%cumulative_discharge_waq(ip) + dts * fsorlay * source_sinks%discharge(isrc)
                         end do
                      end do
                   end if

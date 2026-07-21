@@ -41,24 +41,23 @@ file(GLOB source ${src_path}/*.cpp)
 
 set(d_hydro_src_path "${d_hydro_lib_path}/src")
 
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${absolute_header_path}")
 add_executable(${executable_name}   ${source}
-                                    ${rc_version_file} 
                                     ${header_version_file})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Common UNIX and WIN32 link library dependency
 if(UNIX)
    set(oss_dependencies    deltares_common_c
                            getopt
-                           d_hydro_lib
-                           expat)
+                           d_hydro_lib)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
                               "${d_hydro_lib_path}/include"
-                              "${getopt_include_path}"
-                              "${expat_include_path}")
+                              "${getopt_include_path}")
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
@@ -74,31 +73,25 @@ if (WIN32)
                            d_hydro_lib)
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
-    target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
     
     target_include_directories(${executable_name} 
                                 PRIVATE  
                                 ${header_path}
                                 "${d_hydro_lib_path}/include"
                                 "${getopt_include_path}"
-                                "${expat_include_path}"
                                 "${mpi_include_path}"
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${getopt_library_path_win}"
-                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${executable_name} PRIVATE
                             ${oss_dependencies}
                             "${mpi_c_library}"
-                            "libexpat.lib"
                             "pthreadVC2.lib"
     )
 endif(WIN32)
@@ -118,5 +111,5 @@ endif(WIN32)
 
 message(STATUS "build_config ${build_config}")
 
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/create_config_xml.tcl DESTINATION bin)

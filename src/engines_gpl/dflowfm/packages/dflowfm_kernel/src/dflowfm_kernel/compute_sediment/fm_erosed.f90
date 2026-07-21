@@ -38,6 +38,9 @@ module m_fm_erosed_sub
    use m_fm_upwbed, only: fm_upwbed
    use m_fm_red_soursin, only: fm_red_soursin
    use m_waveconst
+   use m_compdiam, only: compdiam
+   use m_comphidexp, only: comphidexp
+   use m_compsandfrac, only: compsandfrac
 
    implicit none
 
@@ -78,7 +81,7 @@ contains
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-         u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -90,23 +93,18 @@ contains
       use m_missing
       use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
-         flowWithoutWaves, epshu
+                                  flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
-         kmxsed, taub, uuu, vvv
-      use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, &
-         sxtot, sytot, ucxq_mor, ucyq_mor
-      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
-      use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, &
-         sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
-      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, &
-         sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
-      use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, &
-         dzbdt, tratyp, ws, wslc
-      use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
-      use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
-      use m_fm_erosed, only: i10, i15, i50, i90
-      use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
-         factsd, pmcrit, uau
+                             kmxsed, taub, uuu, vvv, e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, &
+                             sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor, sourf, sourse, sour_im, sinkf, sinkse, hs_mor, &
+                             mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, sedtrcfac, sedd50, rhosol, nmudfrac, &
+                             taucr, tetacr, dstar, iform, dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, &
+                             nxx, sedd50fld, sedtyp, xx, min_dxx_sedtyp, logsedsig, asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, &
+                             iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
+                             dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
+                             cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
+                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
+      use m_fm_erosed, only: difparam, seddif_cal
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -123,6 +121,9 @@ contains
       use m_sand_mud
       use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
+      use m_compdiam, only: compdiam
+      use m_comphidexp, only: comphidexp
+      use m_getfixfac, only: getfixfac
       !
       implicit none
       !
@@ -242,6 +243,10 @@ contains
       real(kind=dp) :: z0u, czu
       !
       real(fp), dimension(:), allocatable :: localpar !< local array for sediment transport parameters
+
+      integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
@@ -279,7 +284,7 @@ contains
          call mess(LEVEL_FATAL, errmsg)
       end if
       !
-      wave = (jawave > NO_WAVES) .and. .not. flowWithoutWaves
+      wave = (jawave > NO_WAVES) .and. .not. flow_without_waves
       !
       ! Mass conservation; s1 is updated before entering fm_erosed
       !
@@ -295,7 +300,7 @@ contains
       !
       u1_tmp = u1 * u_to_umain
 
-      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          u1_tmp = u1 - ustokes
          call setucxucy_mor(u1_tmp)
       else
@@ -316,7 +321,7 @@ contains
       call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
 
       if (jawave > WAVE_FETCH_YOUNG) then
-         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flowWithoutWaves) then
+         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flow_without_waves) then
             ktb = 0.0_dp ! no roller turbulence
          else
             do k = 1, ndx
@@ -468,7 +473,7 @@ contains
       !
       if (kmx > 0) then ! 3D
          deltas = 0.05_dp
-         maxdepfrac = 0.05
+         maxdepfrac = 0.05_dp
          if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0.0_dp
             do L = 1, lnx
@@ -486,7 +491,7 @@ contains
             do k = kb, kt
                zcc = 0.5_dp * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
-               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
+               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. (jawave /= NO_WAVES .and. zcc >= (bl(kk) + deltas(kk)))) then
                   exit
                end if
             end do
@@ -534,7 +539,7 @@ contains
       dtmor = dts * morfac
       !
       call getfixfac(stmpar%morlyr, 1, ndx, lsedtot, & ! Update underlayer bookkeeping system for erosion/sedimentation
-                   & ndx, fixfac, ffthresh)
+                   & ndx, fixfac, ffthresh, ithresh)
       !
       ! Set fixfac to 1.0 for tracer sediments and adjust frac
       !
@@ -584,13 +589,31 @@ contains
          call compdiam(frac, sedd50, sedd50, sedtyp, lsedtot, &
             & logsedsig, nseddia, logseddia, ndx, 1, &
             & ndx, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
-            & sedd50fld, dm, dg, dxx, dgsd)
+            & spatial_d50, sedd50fld, dm, dg, dxx, dgsd)
          !
          ! determine hiding & exposure factors
          !
-         call comphidexp(frac, dm, ndx, lsedtot, &
-            & sedd50, hidexp, ihidexp, asklhe, &
-            & mwwjhe, 1, ndx)
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+            !In this case, the hiding and exposure factors are computed based on the mean grain
+            !size of the sediment in both the active layer (which is the top layer in the bed) and
+            !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
+            !in the second layer (the coarse layer) will influence the sediment transport rate. 
+            !`frac` is used for computing the sediment transport rate for each fraction. This should
+            !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
+            call getfrac(stmpar%morlyr,frac_he    ,anymud    ,mudcnt    , &
+                        & mudfrac_he   ,1, ndx, BED_LAYER_FROM, BED_LAYER_TO)
+            call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                        & logsedsig ,nseddia   ,logseddia ,ndx     ,1, &
+                        & ndx,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                        & spatial_d50, sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+            call comphidexp(frac_he   ,dm_he     ,ndx     ,lsedtot   , &
+                           & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                           & mwwjhe    ,1, ndx)
+         else
+            call comphidexp(frac, dm, ndx, lsedtot, &
+               & sedd50, hidexp, ihidexp, asklhe, &
+               & mwwjhe, 1, ndx)
+         endif
 
          !endif
          !
@@ -600,7 +623,7 @@ contains
          ! compute sand fraction
          !
          call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
-                         & max_mud_sedtyp, sandfrac, sedd50fld, &
+                         & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                          & 1, ndx)
       end if
       !
@@ -738,7 +761,7 @@ contains
             zvelb = h1 / ee
          end if
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             ubot = uorb(nm) ! array uitgespaard
          else
             ubot = 0.0_dp
@@ -746,7 +769,7 @@ contains
          !
          ! Calculate total (possibly wave enhanced) roughness
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             z0rou = max(epsz0, z0rouk(nm))
          else ! currents only
             z0rou = z0curk(nm) ! currents+potentially trachy
@@ -780,7 +803,7 @@ contains
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1.0e-5_dp))
+         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
@@ -808,8 +831,6 @@ contains
             temperature = backgroundwatertemperature
          end if
          !
-         taks0 = 0.0_dp
-         !
          ! Calculate Van Rijn's reference height
          !
          if (iopkcw == 1) then !  iopkcw: options to calculate curr related roughness height
@@ -819,7 +840,7 @@ contains
          end if
          taks0 = max(aksfac * rc, 0.01_dp * h1)
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             if (twav(nm) > 0.0_dp) then
                delr = 0.025_dp
                taks0 = max(0.5_dp * delr, taks0)
@@ -972,9 +993,9 @@ contains
                   end if
                end if
                !
-               kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
-               thick0 = max(thicklc(kmaxsd) * h0, epshs)
-               thick1 = max(thicklc(kmaxsd) * h1, epshs)
+               kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
+               thick0 = max(thicklc(kmaxsd) * h0, epshu)
+               thick1 = thicklc(kmaxsd) * h1
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
                           & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
@@ -1045,7 +1066,7 @@ contains
             !
             tsd = -999.0_fp
             di50 = sedd50(l)
-            if (di50 < 0.0_fp) then
+            if (spatial_d50) then
                !  Space varying sedd50 specified in array sedd50fld:
                !  Recalculate dstar, tetacr and taucr for each nm,l - point
                di50 = sedd50fld(nm)
@@ -1133,7 +1154,7 @@ contains
                      klc = klc + 1
                   end do
                end if
-               taks = 0.0_fp
+               taks = taks0
                !
                ! Solve equilibrium concentration vertical and
                ! integrate over vertical
@@ -1185,7 +1206,6 @@ contains
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
@@ -1195,15 +1215,20 @@ contains
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
+                  if (seddif_cal > 0.0_fp) then
+                     seddif(l, kb:kt) = seddif_cal * seddif(l, kb:kt)
+                  end if
+                  !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-
-                  difbot = 10.0_fp * ws(kmxsed(nm, l) - 1, l) * thick1
-                  do kk = kb - 1, kmxsed(nm, l) - 1
-                     seddif(l, kk) = difbot
-                  end do
+                  if (difparam > 0.0_fp) then
+                     difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
+                     do kk = kb - 1, kmxsed(nm, l) - 1
+                        seddif(l, kk) = difbot
+                     end do
+                  end if
                end if ! suspfrac
             else
                !
@@ -1332,14 +1357,14 @@ contains
          call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
       end if
       !
-      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          !
          ! Upwind wave-related bed load load transports
          !
          call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
       end if
       !
-      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          !
          ! Upwind wave-related suspended load transports
          !

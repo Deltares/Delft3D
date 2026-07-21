@@ -93,7 +93,7 @@ contains
          NUMFIL = NUMFIL + 1
          goto 777
 888      allocate (FILIST(NUMFIL))
-filist = ' '
+         filist = ' '
          rewind (MLIST)
          do N = 1, NUMFIL
             read (MLIST, '(A)') FILIST(N)
@@ -260,7 +260,7 @@ filist = ' '
       if (n12 == 5) then
 !    SPvdP: disable flow-links that are associated to disabled net-links
          do Lf = 1, Lnx
-            if (kcu(Lf) /= 2) then
+            if (kcu(Lf) /= LINK_2D) then
                cycle
             end if
             L = abs(ln2lne(Lf))

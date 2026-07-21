@@ -605,10 +605,12 @@ contains
       use messagehandling, only: mess, level_warn
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_polygon, only: npl
-      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use network_data, only: lc, numl, kn, LINK_CLOSED, LINK_2D, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, lperminv, netcell, numl1d
       use m_alloc, only: realloc
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
+      use m_save_ugrid_state, only: contactnetlinks, contactids_2D2D, hashlist_contactids
+      use m_longculverts_data, only: longculverts, longculverts0, nlongculverts
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -619,7 +621,7 @@ contains
 
       integer :: ic1, ic2, L
       logical :: domain_needs_cell_1, domain_needs_cell_2
-      integer :: i
+      integer :: i, j, icontact, i_valid_contact
       integer, dimension(:, :), allocatable :: lne_org
       integer :: i_old
       character(len=128) :: message
@@ -657,7 +659,7 @@ contains
          if (Lc(L) == 0) then
             kn(1, L) = 0
             kn(2, L) = 0
-            kn(3, L) = 0
+            kn(3, L) = LINK_CLOSED
          end if
       end do
 
@@ -670,6 +672,23 @@ contains
             lne_org(1, i) = abs(lne(1, i))
             lne_org(2, i) = abs(lne(2, i))
          end do
+      end if
+
+      if (allocated(contactnetlinks) .and. allocated(contactids_2D2D)) then
+         i_valid_contact = 0
+         call realloc(contactids_2D2D, size(contactnetlinks), keepExisting=.false.)
+         do icontact = 1, size(contactnetlinks)
+            L = contactnetlinks(icontact)
+            if (L > 0 .and. L <= numL) then
+               if (Lc(L) == 1) then !> valid link
+                  if (lne_org(1, L) < nump .and. lne_org(2, L) < nump) then !> both cells are real 2D cells
+                     i_valid_contact = i_valid_contact + 1
+                     contactids_2D2D(i_valid_contact) = hashlist_contactids%id_list(icontact)
+                  end if
+               end if
+            end if
+         end do
+         call realloc(contactids_2D2D, i_valid_contact, keepExisting=.true.)
       end if
 
 !     physically remove nodes and links from network
@@ -722,6 +741,18 @@ contains
             goto 1234
          end if
       end if
+
+      longculverts0 = longculverts !> save original longculverts for later use (technically only needs longculverts(i)%netlinks
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%netlinks)) then
+            do j = 1, size(longculverts(i)%netlinks)
+               L = longculverts0(i)%netlinks(j)
+               if (L > 0 .and. L < size(lperminv)) then
+                  longculverts(i)%netlinks(j) = Lperminv(L) !> global to local link number
+               end if
+            end do
+         end if
+      end do
       ierror = DFM_NOERR
 1234  continue
 
@@ -918,6 +949,16 @@ contains
          nullify (nodeoffsets_g, nodebranchidx_g, edgebranchidx_g, edgeoffsets_g)
       end if
    end subroutine restore_1dugrid_state
+
+   !> restore any structure arrays that were partitioned in partition_make_domain
+   subroutine restorestructures()
+      use m_longculverts_data
+
+      implicit none
+
+      longculverts = longculverts0
+
+   end subroutine restorestructures
 
 !> find original cell numbers for the current subset of cells.
 !! Typically used for reconstructing the global cell numbers for all cells in the current partition.
@@ -3525,6 +3566,50 @@ contains
       return
    end subroutine reduce_int1_max
 
+!> for an array of doubles, take maximum over all subdomains (not over the array itself)
+   subroutine reduce_double_array_max(N, var)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer, intent(in) :: N !< array size
+      real(kind=dp), dimension(N), intent(inout) :: var !< array with values to be reduced to global maximum over all subdomains
+
+      real(kind=dp), dimension(N) :: dum
+
+      integer :: ierror
+
+#ifdef HAVE_MPI
+      call MPI_allreduce(var, dum, N, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
+      var = dum
+#endif
+      return
+    end subroutine reduce_double_array_max
+
+!> reduce a logical array, take global OR
+   subroutine reduce_logical_array_or(N, var)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer, intent(in) :: N !< array size
+      logical, dimension(N), intent(inout) :: var !< array with logical values to be reduced across subdomains
+
+      logical, dimension(N) :: dum
+
+      integer :: ierror
+
+#ifdef HAVE_MPI
+      call MPI_allreduce(var, dum, N, mpi_logical, mpi_lor, DFM_COMM_DFMWORLD, ierror)
+      var = dum
+#endif
+      return
+    end subroutine reduce_logical_array_or
+    
    !> for an array over integers, take maximum over all subdomains (not over the array itself)
    subroutine reduce_int_max(N, var)
 #ifdef HAVE_MPI
@@ -3704,6 +3789,99 @@ contains
 #endif
    end subroutine reduce_kobs
 
+   !> Reduce lateral output, make all them available only in rank0
+   subroutine reduce_lateral_output()
+      use m_laterals, only: lateral_volume_per_layer, numlatsg, average_waterlevels_per_lateral, outgoing_lat_volume, &
+                            outgoing_lat_concentration
+      use m_flow, only: kmx
+      use m_transport, only: numconst
+      use precision_basics, only: comparereal
+      use m_flowparameters, only: EPS10
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer :: ierror, i_element, num_lateral_layer, num_lateral_layer_constituent
+      real(kind=dp), dimension(:, :), allocatable, save :: lateral_volume_per_layer_buffer
+      real(kind=dp), dimension(:, :), allocatable, save :: outgoing_lat_volume_buffer
+      real(kind=dp), dimension(:, :, :), allocatable, save :: outgoing_lat_concentration_buffer
+      real(kind=dp), dimension(:), allocatable, save :: cumulative_value_buffer
+      real(kind=dp), dimension(:), allocatable, save :: cumulative_weight_buffer
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
+
+#ifdef HAVE_MPI
+
+      ! Global lateral_volume_per_layer is required in all ranks, while the other variables only in rank0
+      lateral_volume_per_layer_buffer = lateral_volume_per_layer
+      outgoing_lat_concentration_buffer = outgoing_lat_concentration
+      outgoing_lat_volume_buffer = outgoing_lat_volume
+      if (kmx > 0) then
+         num_lateral_layer = kmx * numlatsg
+         num_lateral_layer_constituent = kmx * numlatsg * numconst
+      else
+         num_lateral_layer = numlatsg
+         num_lateral_layer_constituent = numlatsg * numconst
+      end if
+      call MPI_reduce(outgoing_lat_concentration_buffer, outgoing_lat_concentration, num_lateral_layer_constituent, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_reduce(outgoing_lat_volume_buffer, outgoing_lat_volume, num_lateral_layer, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_allreduce(lateral_volume_per_layer_buffer, lateral_volume_per_layer, num_lateral_layer, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+
+      if (average_waterlevels_per_lateral%is_used) then
+         cumulative_value_buffer = average_waterlevels_per_lateral%cumulative_value
+         cumulative_weight_buffer = average_waterlevels_per_lateral%cumulative_weight
+         call MPI_reduce(cumulative_value_buffer, average_waterlevels_per_lateral%cumulative_value, average_waterlevels_per_lateral%num_elements, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+         call MPI_reduce(cumulative_weight_buffer, average_waterlevels_per_lateral%cumulative_weight, average_waterlevels_per_lateral%num_elements, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+         if (my_rank == 0) then
+            do i_element = 1, average_waterlevels_per_lateral%num_elements
+               average_waterlevels_per_lateral%values(i_element) = average_waterlevels_per_lateral%cumulative_value(i_element) / &
+                                                                   max(average_waterlevels_per_lateral%cumulative_weight(i_element), EPS10)
+            end do
+         else
+            ! This is a work-around required to avoid issue in dimr.cpp send() i.e. when reducing negative values
+            average_waterlevels_per_lateral%values = dsmall
+         end if
+      end if
+#endif
+      return
+   end subroutine reduce_lateral_output
+
+   !> Distribute lateral input to all ranks
+   subroutine distribute_lateral_input()
+      use m_laterals, only: incoming_lat_concentration, numlatsg, qplat
+      use m_flow, only: kmx
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_transport, only: numconst
+      use precision_basics, only: comparereal
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer :: ierror, num_lateral_layer, num_lateral_layer_constituent
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
+
+#ifdef HAVE_MPI
+
+      if (my_rank > 0) then
+         qplat = 0.0_dp
+         incoming_lat_concentration = 0.0_dp
+      end if
+      if (kmx > 0) then
+         num_lateral_layer = kmx * numlatsg
+         num_lateral_layer_constituent = kmx * numlatsg * numconst
+      else
+         num_lateral_layer = numlatsg
+         num_lateral_layer_constituent = numlatsg * numconst
+      end if
+      call MPI_bcast(qplat, num_lateral_layer, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_bcast(incoming_lat_concentration, num_lateral_layer_constituent, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+#endif
+      return
+   end subroutine distribute_lateral_input
+
 !> reduce outputted values at observation stations
 !! NOTE: It seems that, now that we reduce the statistical output before writing, this routine is
 !!       only needed to maintain functionality in unstruc_bmi/get_compound_field
@@ -3795,25 +3973,23 @@ contains
 
    end subroutine reduce_statistical_output
 
-!> reduce source-sinks
-!>   it is assumed that the source-sinks are unique
+   !> reduce source-sinks
+   !! it is assumed that the source-sinks are unique
    subroutine reduce_srsn(numvals, numsrc, srsn)
       use m_missing
 #ifdef HAVE_MPI
       use mpi
 #endif
 
-      implicit none
-
-      integer, intent(in) :: numvals, numsrc !< number of sources/sinks
-      real(kind=dp) srsn(numvals, numsrc) !< values associated with sources/sinks
-
-      real(kind=dp), dimension(NUMVALS, numsrc) :: srsn_all
+      integer, intent(in) :: numvals
+      integer, intent(in) :: numsrc !< number of sources/sinks
+      real(kind=dp), dimension(numvals, numsrc), intent(inout) :: srsn !< values associated with sources/sinks
+      real(kind=dp), dimension(numvals, numsrc) :: srsn_all
 
       integer :: ierror
 
 #ifdef HAVE_MPI
-      call MPI_allreduce(srsn, srsn_all, numsrc * NUMVALS, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+      call MPI_allreduce(srsn, srsn_all, numsrc * numvals, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
       srsn = srsn_all
 #endif
       return
@@ -5472,7 +5648,7 @@ contains
    subroutine fill_geometry_arrays_crs()
       use m_alloc
       use m_GlobalParameters
-      use m_flowparameters, only: eps6
+      use m_flowparameters, only: EPS6
       use precision_basics
       use m_monitoring_crosssections, only: nodecountcrs, ncrs, crs, nnodescrs, geomxcrs, geomycrs
       implicit none
@@ -5540,7 +5716,7 @@ contains
                do L0 = 2, nlinks
                   L = crs(i)%path%iperm(L0)
 
-                  if (comparereal(crs(i)%path%xk(1, L), geomX(k - 1), eps6) /= 0 .or. comparereal(crs(i)%path%yk(1, L), geomY(k - 1), eps6) /= 0) then
+                  if (comparereal(crs(i)%path%xk(1, L), geomX(k - 1), EPS6) /= 0 .or. comparereal(crs(i)%path%yk(1, L), geomY(k - 1), EPS6) /= 0) then
                      ! If the 1st node of link L is not the ending node of the previous link,
                      ! then this means that the flowlinks for this cross section are not successive, and
                      ! they have a break between Link L and the previous link.
@@ -5679,7 +5855,7 @@ contains
                                     ! coincide with another boundary node maximal ONCE.
                                     xOld = geomXCrsMPI(indBndMPI(j1))
                                     yOld = geomYCrsMPI(indBndMPI(j1))
-                                    if (comparereal(xNew, xOld, eps6) == 0 .and. comparereal(xNew, xOld, eps6) == 0) then
+                                    if (comparereal(xNew, xOld, EPS6) == 0 .and. comparereal(xNew, xOld, EPS6) == 0) then
                                        jaexist = 1
                                        jaCoincide(j1) = 1
                                        exit
@@ -6279,5 +6455,91 @@ contains
          call mess(LEVEL_FATAL, 'mpi_allreduce failed in logical_and_across_partitions')
       end if
    end subroutine logical_and_across_partitions
+
+!> Given a list of local flow cell indices, returns a list of local flow cell numbers at their global position in the global union,
+! and -1 for the cells that lie on the other partitions.
+   function reduce_cells(local_cells, ndx) result(global_cells)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      integer, dimension(:), intent(in) :: local_cells !< Local flow cell indices found on this partition
+      integer, intent(in) :: ndx !< number of flow cells (internal + boundary), should match ndx in m_flowgeom
+      integer, dimension(:), allocatable :: global_cells !< Local flow cell indices of the global union
+      integer, dimension(:), allocatable :: global_cellmask, ilocal_s
+      integer :: k, num_cells
+#ifdef HAVE_MPI
+      integer :: mpi_err
+#endif
+
+      allocate (global_cellmask(nglobal_s))
+      global_cellmask = 0
+      ! Mark locally present cells in global cellmask, reduce afterwards
+      global_cellmask(iglobal_s(local_cells)) = 1
+
+#ifdef HAVE_MPI
+      call MPI_Allreduce(MPI_IN_PLACE, global_cellmask, nglobal_s, &
+                         MPI_INTEGER, MPI_MAX, DFM_COMM_DFMWORLD, mpi_err)
+#endif
+
+      num_cells = count(global_cellmask == 1)
+      allocate (global_cells(num_cells))
+
+      ! iglobal_s contains global numbers of local cells, but required are local numbers of global cells, so build an inverse mapping.
+      allocate (ilocal_s(nglobal_s))
+      ilocal_s = -1
+      do k = 1, ndx
+         if (iglobal_s(k) > 0) then
+            ilocal_s(iglobal_s(k)) = k
+         end if
+      end do
+      num_cells = 0
+      ! Build global cells from ilocal_s by iterating over global_cellmask.
+      ! Cells that exist globally not on current partition will have -1 in ilocal_s and thus -1 in global_cells.
+      do k = 1, nglobal_s
+         if (global_cellmask(k) == 1) then
+            num_cells = num_cells + 1
+            global_cells(num_cells) = ilocal_s(k)
+         end if
+      end do
+
+
+
+   end function reduce_cells
+
+   !< checks if a 3d layer is in the current partition
+   !< uses ndkx2ndx mapping.
+   !< if there is no mapping, assumes true
+   !< also returns true if there is no partitioning 
+   function is_3d_layer_in_current_partition(idx_ndkx) result(is_in_partition)
+      use m_flow, only: ndkx_to_ndx, ndkx, kmx
+      
+      integer, intent(in) :: idx_ndkx !< 3d layer index
+      logical :: is_in_partition
+
+      integer :: ndx
+
+      if (jampi == 0 .or. (.not. allocated(idomain))) then
+         is_in_partition = .true.
+         return
+      end if
+
+      if (kmx == 0) then
+         is_in_partition  = idomain(idx_ndkx) == my_rank
+         return
+      end if
+
+      if (idx_ndkx >= 1 .and. idx_ndkx <= ndkx) then
+         ndx = ndkx_to_ndx(idx_ndkx)
+      else
+         ndx = -1
+      end if
+
+      if (ndx > 0) then
+         is_in_partition  = idomain(ndx) == my_rank
+      else ! if there is no mapping, assume the layer is in the partition
+         is_in_partition = .true.
+      end if
+   end function is_3d_layer_in_current_partition
 
 end module m_partitioninfo

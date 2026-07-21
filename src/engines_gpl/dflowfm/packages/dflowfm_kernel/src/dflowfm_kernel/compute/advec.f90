@@ -55,10 +55,11 @@ contains
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
-                        jarhoxu, qw, zws, kbot, ktop, rho, numsrc, arsrc, qsrc, ksrc, epshs, rhomean, cssrc, snsrc, hu, u1, vol1_f, &
+                        jarhoxu, qw, zws, kbot, ktop, rho, epshs, rhomean, hu, u1, vol1_f, &
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
+      use m_source_sink, only: source_sinks
       use m_dslim, only: dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
@@ -73,6 +74,7 @@ contains
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
+      use network_data, only: LINK_1D, LINK_1D2D_INTERNAL
 
       ! locals
       integer :: L, k1, k2 ! link, nd1, nd2
@@ -315,21 +317,21 @@ contains
          sqa = sqa * rho
       end if
 
-      do n = 1, numsrc ! momentum
-         if (arsrc(n) > 0) then ! if momentum desired
-            if (qsrc(n) > 0) then
-               kk = ksrc(4, n) ! 2D pressure cell nr TO
-               ksb = ksrc(5, n) ! cell nr
-               kst = ksrc(6, n) ! cell nr
+      do n = 1, source_sinks%num_total ! momentum
+         if (source_sinks%area(n) > 0) then ! if momentum desired
+            if (source_sinks%discharge(n) > 0) then
+               kk = source_sinks%indices(n, 4) ! 2D pressure cell nr TO
+               ksb = source_sinks%indices(n, 5) ! cell nr
+               kst = source_sinks%indices(n, 6) ! cell nr
             else
-               kk = ksrc(1, n) ! 2D pressure cell nr FROM
-               ksb = ksrc(2, n) ! cell nr
-               kst = ksrc(3, n) ! cell nr
+               kk = source_sinks%indices(n, 1) ! 2D pressure cell nr FROM
+               ksb = source_sinks%indices(n, 2) ! cell nr
+               kst = source_sinks%indices(n, 3) ! cell nr
             end if
 
             if (kk > 0 .and. ksb > 0) then
 
-               qnn = qsrc(n)
+               qnn = source_sinks%discharge(n)
                do k = ksb, kst
                   qn = qnn
                   if (kmx > 0) then
@@ -340,7 +342,7 @@ contains
                         qn = qnn / (kst - ksb + 1)
                      end if
                   end if
-                  uqn = qn * qnn / arsrc(n)
+                  uqn = qn * qnn / source_sinks%area(n)
 
                   if (jarhoxu > 0) then
                      rhoinsrc = rhomean ! just for now
@@ -348,13 +350,13 @@ contains
                      uqn = uqn * rhoinsrc
                   end if
 
-                  if (qsrc(n) > 0) then ! from 1 to 2
-                     uqcx(k) = uqcx(k) - uqn * cssrc(2, n)
-                     uqcy(k) = uqcy(k) - uqn * snsrc(2, n)
+                  if (source_sinks%discharge(n) > 0) then ! from 1 to 2
+                     uqcx(k) = uqcx(k) - uqn * source_sinks%discharge_cosine(n, 2)
+                     uqcy(k) = uqcy(k) - uqn * source_sinks%discharge_sine(n, 2)
                      sqa(k) = sqa(k) - qn ! sqa : out - in
                   else ! from 2 to 1
-                     uqcx(k) = uqcx(k) + uqn * cssrc(1, n)
-                     uqcy(k) = uqcy(k) + uqn * snsrc(1, n)
+                     uqcx(k) = uqcx(k) + uqn * source_sinks%discharge_cosine(n, 1)
+                     uqcy(k) = uqcy(k) + uqn * source_sinks%discharge_sine(n, 1)
                      sqa(k) = sqa(k) + qn ! sqa : out - in
                   end if
 
@@ -402,13 +404,13 @@ contains
                   end if
 
                   if (jarhoxu == 0) then
-                     if (kcu(L) == 1) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                      else
                         volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                      end if
                   else
-                     if (kcu(L) == 1) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
                      else
                         volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
@@ -648,13 +650,13 @@ contains
                else if (iadvL == 5 .or. iadvL == 6) then ! 5,6 = advection like 3,4, now Piaczek teta
 
                   if (jarhoxu == 0) then
-                     if (kcu(L) == 1) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                      else
                         volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                      end if
                   else
-                     if (kcu(L) == 1) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
                      else
                         volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
@@ -685,9 +687,9 @@ contains
                      iad = 4
                   end if
 
-                  if (kcu(L) == 1) then
+                  if (kcu(L) == LINK_1D) then
                      volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
-                  else if (kcu(L) == 3 .and. iadveccorr1D2D == 1) then
+                  else if (kcu(L) == LINK_1D2D_INTERNAL .and. iadveccorr1D2D == 1) then
                      volu = au(L) * dx(L) ! Use volume weighting based on approximated "lateral volume", to avoid large 1D river volumes.
                   else
                      volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
@@ -929,13 +931,13 @@ contains
                            end if
 
                            if (jarhoxu > 0) then
-                              !if (kcu(LL) ==1) then
+                              !if (kcu(LL) ==LINK_1D) then
                               !   volu  = ac1*vol1_f(k1)*rho(k1) + ac2*vol1_f(k2)*rho(k2)
                               !else
                               volu = ac1 * vol1(k1) * rho(k1) + ac2 * vol1(k2) * rho(k2)
                               !endif
                            else
-                              !if (kcu(LL) ==1) then
+                              !if (kcu(LL) ==LINK_1D) then
                               !   volu  = ac1*vol1_f(k1)         + ac2*vol1_f(k2)
                               !else
                               volu = ac1 * vol1(k1) + ac2 * vol1(k2)
@@ -1100,8 +1102,8 @@ contains
                      end do
 
                      do L = Lb, Lt
-                     Ltx0 = Lt - Lb + 1
-                     siguL(0) = 0.0_dp
+                        Ltx0 = Lt - Lb + 1
+                        siguL(0) = 0.0_dp
                         siguL(L - Lb + 1) = hu(L) / hu(LL)
                      end do
 

@@ -43,10 +43,10 @@ contains
    subroutine setdtorg(jareduced) ! set computational timestep dts
       use precision, only: dp
       use m_flowgeom, only: ndx, lnx1d, iadv, iadv_general_structure, ln, ndxi, lnxi, lnx, dxi, wu, ba, kcu, lncn
-      use m_flow, only: jamapdtcell, plotlin, kkcflmx, kcflmx, itstep, squcor, squ, q1, qin, eps10, hs, epshu, vol1, jamapflowanalysis, flowcourantnumber, cflmx, sqwave, sqi, squ2d, rho, ag, hu, au, ihorvic, kmx, istresstyp, viclu, zws, limitingtimestepestimation
-      use m_flowtimes, only: dtcell, autotimestep, AUTO_TIMESTEP_OFF, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_2D_INOUT, AUTO_TIMESTEP_3D_HOR_OUT, AUTO_TIMESTEP_3D_HOR_INOUT, & 
-         AUTO_TIMESTEP_3D_INOUT, AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN, AUTO_TIMESTEP_3D_INOUT_BAROCLINE, AUTO_TIMESTEP_3D_OUT_NOTOP, AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN_NOTOP, &
-         dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
+      use m_flow, only: map_write_settings, plotlin, kkcflmx, kcflmx, itstep, squcor, squ, q1, qin, EPS10, hs, epshu, vol1, flowcourantnumber, cflmx, sqwave, sqi, squ2d, rho, ag, hu, au, ihorvic, kmx, istresstyp, viclu, zws, limitingtimestepestimation
+      use m_flowtimes, only: dtcell, autotimestep, AUTO_TIMESTEP_OFF, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_2D_INOUT, AUTO_TIMESTEP_3D_HOR_OUT, AUTO_TIMESTEP_3D_HOR_INOUT, &
+                             AUTO_TIMESTEP_3D_INOUT, AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN, AUTO_TIMESTEP_3D_INOUT_BAROCLINE, AUTO_TIMESTEP_3D_OUT_NOTOP, AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN_NOTOP, &
+                             dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
@@ -66,7 +66,7 @@ contains
       real(kind=dp) :: squloc
 
       jareduced = 0
-      if (jamapdtcell > 0) then
+      if (map_write_settings%dtcell > 0) then
          dtcell = 0.0_dp
       end if
 
@@ -81,7 +81,7 @@ contains
          kkcflmx = 0
          kcflmx = 0
 
-         ! Supported parameters 
+         ! Supported parameters
          !----------------------
 
          ! 2D outflow only
@@ -98,7 +98,7 @@ contains
                      ! Get indices of the two linked cells
                      k1 = ln(1, L)
                      k2 = ln(2, L)
-                     
+
                      ! Undo some of the added q1 contributions in squ (as produced by u1q1()).
                      if (q1(L) > 0) then
                         squcor(k1) = squcor(k1) - q1(L)
@@ -109,7 +109,7 @@ contains
                end if
 
                do k = 1, ndxi ! Go through all internal flow cells
-                  if (jampi == 1) then 
+                  if (jampi == 1) then
                      if (idomain(k) /= my_rank) then
                         cycle ! Do not include ghost cells
                      end if
@@ -125,16 +125,16 @@ contains
                      squloc = squloc - max(-qin(k), 0.0_dp)
                   end if
 
-                  if (squloc > eps10) then ! Check if outgoing flux is present
+                  if (squloc > EPS10) then ! Check if outgoing flux is present
                      if (hs(k) > epshu .and. vol1(k) > 0.0) then ! Check if cell is wet
-                        if (jamapFlowAnalysis > 0) then
+                        if (map_write_settings%flow_analysis > 0) then
                            ! The flowCourantNumber will be multiplied by dt on a later stage
                            flowCourantNumber(k) = squloc / vol1(k)
                         end if
 
                         dtsc = cflmx * vol1(k) / squloc ! Compute maximum cell timestep based on outgoing flux (2D)
 
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
 
@@ -153,16 +153,16 @@ contains
 
             else ! Explicit time-step
                do k = 1, ndxi ! Go through all internal flow cells
-                  if (jampi == 1) then 
+                  if (jampi == 1) then
                      if (idomain(k) /= my_rank) then
                         cycle ! Do not include ghost cells
                      end if
                   end if
-                  if (sqwave(k) > eps10) then ! Check if flux is outgoing
+                  if (sqwave(k) > EPS10) then ! Check if flux is outgoing
                      if (hs(k) > epshu) then ! Check if cell is wet
                         dtsc = cflmx * vol1(k) / sqwave(k) ! Compute maximum cell timestep
-                        
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
 
@@ -176,7 +176,7 @@ contains
 
             end if
 
-         ! 3D horizontal outflow or inflow+outflow
+            ! 3D horizontal outflow or inflow+outflow
          else if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT .or. autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT) then
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
@@ -186,14 +186,14 @@ contains
                   end if
                end if
 
-               if (squ2D(kk) > eps10) then ! Check if horizontal flux is present
+               if (squ2D(kk) > EPS10) then ! Check if horizontal flux is present
                   if (hs(kk) > epshu) then ! Check if cell is wet
                      call getkbotktop(kk, kb, kt) ! Get bottom and top layer index of cell
                      do k = kb, kt ! Go through all vertical layers
-                        if (squ2d(k) > eps10) then ! Check if local horizontal flux is present
+                        if (squ2d(k) > EPS10) then ! Check if local horizontal flux is present
                            dtsc = cflmx * vol1(k) / squ2d(k) ! Compute maximum cell timestep based on horizontal flux (3D)
 
-                           if (jamapdtcell > 0) then ! Store cell timestep if required
+                           if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                               dtcell(k) = dtsc
                            end if
 
@@ -208,7 +208,7 @@ contains
                end if
             end do
 
-         ! 3D inflow or outflow
+            ! 3D inflow or outflow
          else if (autotimestep == AUTO_TIMESTEP_3D_INOUT) then
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
@@ -221,10 +221,10 @@ contains
                if (hs(kk) > epshu) then ! Check if cell is wet
                   call getkbotktop(kk, kb, kt) ! Get bottom and top layer index of cell
                   do k = kb, kt ! Go through all vertical layers
-                     if (squ(k) > eps10 .or. sqi(k) > eps10) then ! Check if there is an incoming or outgoing flux present
+                     if (squ(k) > EPS10 .or. sqi(k) > EPS10) then ! Check if there is an incoming or outgoing flux present
                         dtsc = cflmx * vol1(k) / max(squ(k), sqi(k)) ! Compute maximum cell timestep based on largest flux
 
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
                         if (dtsc < dts) then
@@ -237,25 +237,24 @@ contains
                end if
             end do
 
+            ! Research parameters
+            !---------------------
 
-         ! Research parameters
-         !---------------------
-
-         ! 2D in+outflow
+            ! 2D in+outflow
          else if (autotimestep == AUTO_TIMESTEP_2D_INOUT) then
 
             do k = 1, ndxi ! Go through all internal flow cells
-               if (jampi == 1) then 
+               if (jampi == 1) then
                   if (idomain(k) /= my_rank) then
                      cycle ! do not include ghost cells
                   end if
                end if
 
-               if (squ(k) + sqi(k) > eps10) then ! Check if the total flux is positive
+               if (squ(k) + sqi(k) > EPS10) then ! Check if the total flux is positive
                   if (hs(k) > epshu .and. vol1(k) > 0.0) then ! Check if cell is wet
                      dtsc = cflmx * vol1(k) / (squ(k) + sqi(k)) ! Compute maximum cell timestep based on total flux (2D)
 
-                     if (jamapdtcell > 0) then ! Store cell timestep if required
+                     if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                         dtcell(k) = dtsc
                      end if
 
@@ -267,7 +266,7 @@ contains
                end if
             end do
 
-         ! 3D horizontal outflow + total inflow
+            ! 3D horizontal outflow + total inflow
          else if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN) then
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
@@ -280,17 +279,17 @@ contains
                if (hs(kk) > epshu) then ! Check if cell is wet
                   dtsc2D = dt_max
 
-                  if (squ(kk) > eps10) then ! Check if flux is outgoing
+                  if (squ(kk) > EPS10) then ! Check if flux is outgoing
                      dtsc2D = cflmx * vol1(kk) / squ(kk) ! Compute maximum cell timestep based on horizontal outflow (2D)
                   end if
 
                   call getkbotktop(kk, kb, kt) ! Get bottom and top layer index of cell
                   do k = kb, kt ! Go through all vertical layers
-                     if (sqi(k) > eps10) then ! Check if flux is incoming
+                     if (sqi(k) > EPS10) then ! Check if flux is incoming
                         dtsc = cflmx * vol1(k) / sqi(k) ! Compute maximum cell timestep based on inflow (3D)
                         dtsc = min(dtsc, dtsc2D) ! Take the most limiting timestep (2D/3D)
 
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
 
@@ -303,14 +302,14 @@ contains
                end if
             end do
 
-         ! 3D inflow+outflow plus barocline effects
+            ! 3D inflow+outflow plus barocline effects
          else if (autotimestep == AUTO_TIMESTEP_3D_INOUT_BAROCLINE) then
             ! First compute baroclinic contributions to fluxes, second compute timestep based on total fluxes
 
             do LL = 1, lnxi ! Go through all flow links
                ! Get indices of the two linked cells
                n1 = ln(1, LL)
-               n2 = ln(2, LL) 
+               n2 = ln(2, LL)
 
                call getLbotLtop(LL, Lb, Lt) ! Get bottom and top layer index of link
 
@@ -350,10 +349,10 @@ contains
                if (hs(kk) > epshu) then ! Check if cell is wet
                   call getkbotktop(kk, kb, kt) ! Get bottom and top layer index of cell
                   do k = kb, kt ! Go through all vertical layers
-                     if (squ(k) > eps10) then ! Check if flux is outgoing
+                     if (squ(k) > EPS10) then ! Check if flux is outgoing
                         dtsc = cflmx * vol1(k) / (squ(k) + sqi(k)) ! Compute maximum cell timestep based on total flux (3D)
 
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
 
@@ -366,7 +365,7 @@ contains
                end if
             end do
 
-         ! 3D outflow excluding top layer
+            ! 3D outflow excluding top layer
          else if (autotimestep == AUTO_TIMESTEP_3D_OUT_NOTOP) then
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
@@ -379,13 +378,13 @@ contains
                if (hs(kk) > epshu) then ! Check if cell is wet
                   call getkbotktop(kk, kb, kt) ! Get bottom and top layer index of cell
                   do k = kb, max(kb, kt - 1) ! Go through all vertical layers except the top layer
-                     if (squ(k) > eps10) then ! Check if there is an outgoing flux present
+                     if (squ(k) > EPS10) then ! Check if there is an outgoing flux present
                         dtsc = cflmx * vol1(k) / squ(k) ! Compute maximum cell timestep based on outflow (3D)
-                        
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
-                        
+
                         if (dtsc < dts) then ! Check if timestep of cell is globally limiting and store cell index
                            dts = dtsc
                            kkcflmx = kk
@@ -395,7 +394,7 @@ contains
                end if
             end do
 
-         ! 3D horizontal outflow + total inflow, excluding top layer
+            ! 3D horizontal outflow + total inflow, excluding top layer
          else if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN_NOTOP) then
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
@@ -408,17 +407,17 @@ contains
                if (hs(kk) > epshu) then ! Check if cell is wet
                   dtsc = 9.0e9_dp
 
-                  if (squ(kk) > eps10) then ! Check if flux is outgoing
+                  if (squ(kk) > EPS10) then ! Check if flux is outgoing
                      dtsc2D = cflmx * vol1(kk) / squ(kk) ! Compute maximum cell timestep based on horizontal outflow (2D)
                   end if
 
                   call getkbotktop(kk, kb, kt) ! Get bottom and top layer index of cell
                   do k = kb, kt - 1 ! Go through all vertical layers except the top layer
-                     if (sqi(k) > eps10) then ! Check if flux is incoming
+                     if (sqi(k) > EPS10) then ! Check if flux is incoming
                         dtsc = cflmx * vol1(k) / sqi(k) ! Compute maximum cell timestep based on inflow (3D)
                         dtsc = min(dtsc2D, dtsc) ! Take the minimum of horizontal outflow and total inflow timesteps
 
-                        if (jamapdtcell > 0) then ! Store cell timestep if required
+                        if (map_write_settings%dtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
 
@@ -472,7 +471,7 @@ contains
                               kkcflmx = k2
                            end if
 
-                           if (jamapdtcell > 0) then
+                           if (map_write_settings%dtcell > 0) then
                               dtcell(k1) = min(dtcell(k1), dtsc1)
                               dtcell(k2) = min(dtcell(k2), dtsc2)
                            end if
@@ -528,7 +527,7 @@ contains
                               kkcflmx = kk2
                            end if
 
-                           if (jamapdtcell > 0) then
+                           if (map_write_settings%dtcell > 0) then
                               dtcell(k1) = min(dtcell(k1), dtsc1)
                               dtcell(k2) = min(dtcell(k2), dtsc2)
                            end if
@@ -595,7 +594,7 @@ contains
 !       write(mout, '(3F14.4, I8)')         time0/60d0, dts, dtsc, kkcflmx
 !    endif
 ! endif
-      if (kkcflmx > 0 .and. jamapFlowAnalysis > 0) then
+      if (kkcflmx > 0 .and. map_write_settings%flow_analysis > 0) then
          limitingTimestepEstimation(kkcflmx) = limitingTimestepEstimation(kkcflmx) + 1
       end if
    end subroutine setdtorg

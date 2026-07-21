@@ -9,13 +9,15 @@ import Delft3D.windows.*
 object Publish : BuildType({
 
     templates(
+        TemplateLinuxAgent,
         TemplateMonitorPerformance,
         TemplateDockerRegistry,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateBuildConcurrency
     )
 
     name = "Publish Container"
-    description = "Currently only used for publishing the container."
+    description = "Retag and publish container images to Harbor after all previous steps are successful."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
     allowExternalStatus = true
@@ -107,10 +109,6 @@ object Publish : BuildType({
                 }
             }
         }
-    }
-
-    requirements {
-        contains("teamcity.agent.jvm.os.name", "Linux")
     }
 
     steps {

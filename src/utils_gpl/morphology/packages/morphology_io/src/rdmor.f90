@@ -86,6 +86,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     integer                                                           :: ilun     !< Unit number for attribute file
     integer                                                           :: istat
     integer                                                           :: j
+    integer                                                           :: l
     integer                                                           :: lenc
     integer                                                           :: lfile    !< Length of file name
     integer                                                           :: nxxprog
@@ -265,6 +266,23 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
        !
     end if
     !
+    ! Initialise unit_transport_conversion_factor according to Transptype
+    allocate(morpar%moroutput%unit_transport_conversion_factor(lsedtot), stat = istat)
+    do l = 1, lsedtot
+        select case (morpar%moroutput%transptype)
+            case default
+            call write_error('RDMOR: error in initialisation of Transptype',unit=lundia)
+            error = .true.
+            return
+            case (0)
+            morpar%moroutput%unit_transport_conversion_factor(l) = 1.0_dp
+            case (1)
+            morpar%moroutput%unit_transport_conversion_factor(l) = sedpar%cdryb(l)
+            case (2)
+            morpar%moroutput%unit_transport_conversion_factor(l) = sedpar%rhosol(l)
+        end select
+    end do  
+    !
     call remove_double_percentiles(morpar, nxxuser, nxxprog, xxprog, max_nuserfrac, rfield)
     !
     ! allocate memory for percentiles
@@ -366,6 +384,14 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! === start for calculating morphological changes
     !
     call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)       
+       !
+       call prop_get(mor_ptr, 'Morphology', 'IThresh', morpar%ithresh)
+       if (morpar%ithresh /= THRESH_CONSTANT .and. morpar%ithresh /= THRESH_BASED_ON_THICKNESS) then
+          write(errmsg, '(a,i0,a,i0,a,a)') 'IThresh should be ', THRESH_CONSTANT, ' (default) or ', THRESH_BASED_ON_THICKNESS, ' in ', trim(filmor)
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
     !
     ! === start for calculating bed composition changes
     !
