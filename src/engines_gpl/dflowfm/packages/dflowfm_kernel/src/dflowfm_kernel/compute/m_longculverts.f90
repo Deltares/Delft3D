@@ -880,12 +880,15 @@ contains
       implicit none
 
       integer i, L, L_dir, allowed_flowdir
+      real(dp) :: valve_relative_opening
 
       do i = 1, nlongculverts
          if (longculverts(i)%numlinks > 0) then
             L = abs(longculverts(i)%flowlinks(1))
             if (L > 0) then
-               au(L) = longculverts(i)%valve_relative_opening * au(L)
+               valve_relative_opening = min(longculverts(i)%valve_relative_opening, 1.0_dp)
+               valve_relative_opening = max(valve_relative_opening, 0.0_dp)
+               au(L) = valve_relative_opening * au(L)
                call getflowdir(L, L_dir)
                allowed_flowdir = longculverts(i)%allowed_flowdir
                if (allowed_flowdir == FLOWDIR_NONE &
