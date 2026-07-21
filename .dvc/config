@@ -5,4 +5,4 @@
     url = s3://delft3d-testbench
     endpointurl = https://s3.deltares.nl
     read_timeout = 300
-
+    ssl_verify = /etc/pki/tls/certs/ca-bundle.crt
