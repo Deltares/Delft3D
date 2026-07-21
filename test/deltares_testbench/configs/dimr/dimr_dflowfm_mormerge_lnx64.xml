@@ -218,6 +218,7 @@
 
     <testCase name="e123_f01_c02_trench_VanRijn1993_mormerge_parallel" ref="dflowfm_default">
         <path version="2025-10-16T13:00:00">e123_dflowfm-mormerge/f01_general/c02_trench_VanRijn1993_mormerge_parallel</path>
+      <maxRunTime>480</maxRunTime>
         
         <programs>
             <program ref="mormerge">

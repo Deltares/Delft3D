@@ -25,10 +25,10 @@ from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
 from src.config.types.presence_type import PresenceType
 from src.suite.command_line_settings import CommandLineSettings
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.test_result_type import TestResultType
-from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 
 
 class XmlConfig:

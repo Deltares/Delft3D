@@ -27,6 +27,7 @@
     </testCase>    
     <testCase name="e02_f022_c106_flow_wave_morpho_straightcoast" ref="platform_specific">
       <path version="2025-10-09T07:30:00">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
+      <maxRunTime>360</maxRunTime>
       
       <checks>
         <file name="fm/output/FlowFM_map.nc" type="netCDF">

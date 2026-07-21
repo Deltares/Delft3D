@@ -1,6 +1,7 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
+      <maxRunTime>2640</maxRunTime>
             <path version="2025-07-29T12:51:53.132000">e04_wave/f09-SWANDCSM/c01</path>
             
             <checks>
@@ -378,6 +379,7 @@
         <!-- f06: D-Flow FM + D-Waves coupling, moved to e100                         -->
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_trunk">
+      <maxRunTime>1200</maxRunTime>
             <path version="2025-07-29T12:53:10.423000">e04_wave/f09-SWANDCSM/c02</path>
             
             <checks>
@@ -392,6 +394,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
+      <maxRunTime>660</maxRunTime>
             <path version="2025-07-29T12:53:17.117000">e04_wave/f09-SWANDCSM/c03</path>
             
             <checks>
@@ -406,6 +409,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c04_SWANDCSM" ref="dimr_trunk">
+      <maxRunTime>900</maxRunTime>
             <path version="2025-07-29T12:53:23.514000">e04_wave/f09-SWANDCSM/c04</path>
             
             <checks>
@@ -420,6 +424,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c05_SWANDCSM" ref="dimr_trunk">
+      <maxRunTime>660</maxRunTime>
             <path version="2025-07-29T12:53:28.793000">e04_wave/f09-SWANDCSM/c05</path>
             
             <checks>

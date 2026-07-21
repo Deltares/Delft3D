@@ -10,6 +10,7 @@ from typing import ClassVar, Dict, List, Tuple
 
 from src.config.test_case_config import TestCaseConfig
 from src.suite.program import Program
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 from src.utils.logging.i_logger import ILogger
 from src.utils.paths import Paths
 
@@ -28,6 +29,8 @@ class TestCase:
         self.__errors: list[Exception] = []
 
         logger.debug(f"Initializing test case ({self.__config.name}), max runtime : {str(self.__maxRunTime)}")
+
+        self.__config.run_file_name = os.path.join(self.__config.absolute_test_case_path, "_tb3_char.run")
 
     def run(self, programs: List[Program]) -> None:
         """Execute a Test Case.
@@ -127,6 +130,11 @@ class TestCase:
             program_config.shell = shell
             program_config.case_name = self.__config.name
             program_copy.overwriteConfiguration(program_config)
+            if self.__maxRunTime:
+                program_copy.max_run_time = self.__maxRunTime
+            else:
+                self.__logger.debug(f"no max runtime specified, defaulting to {DEFAULT_MAX_RUNTIME_SECONDS} seconds")
+                program_copy.max_run_time = DEFAULT_MAX_RUNTIME_SECONDS
 
             # add runner sequence number and runner configuration to local storage
             self.__programs.append((program_config.sequence, program_copy))

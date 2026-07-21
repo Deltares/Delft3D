@@ -31,6 +31,7 @@ class Program:
         self.__settings: TestBenchSettings = copy.deepcopy(settings)
         self.__last_return_code: int = 0
         self.__error: Exception | None = None
+        self.max_run_time = None
 
     @property
     def name(self) -> str:
@@ -92,9 +93,6 @@ class Program:
             if len(program_config.modules) > 0:
                 for mod in program_config.modules:
                     self.__program_config.modules.append(mod)
-            # overwrite max run time if one is given
-            if program_config.max_run_time > 0:
-                self.__program_config.max_run_time = program_config.max_run_time
             # overwrite delay if one is given
             if program_config.delay > 0:
                 self.__program_config.delay = program_config.delay
@@ -155,8 +153,15 @@ class Program:
                 else:
                     logger.warning(f"{prog_path} contained error message - {error_message}")
                     self.__error = subprocess.CalledProcessError(-1, self.__program_config.path, error_message)
+        except subprocess.TimeoutExpired as e:
+            timeout_msg = (
+                f"Program {self.__program_config.path} exceeded its max run time of "
+                f"{self.__program_config.max_run_time}s and was terminated: {e!r}"
+            )
+            logger.exception(timeout_msg)
+            self.__error = e
         except Exception as e:
-            logger.exception(f"Could not execute program: {repr(e)}")
+            logger.exception(f"{repr(e)} Could not execute program: {getattr(e, 'filename', 'unknown')}")
             self.__error = e
 
     def __handle_process_output(self, logger: ILogger, completed_process: subprocess.CompletedProcess) -> None:
@@ -204,13 +209,13 @@ class Program:
             program_env["TestBenchRoot"] = tb_root
 
         logger.debug("Creating subprocess")
-        timeout = self.__program_config.max_run_time if self.__program_config.max_run_time != 0 else None
+        assert self.max_run_time is not None
         completed_process = subprocess.run(
             execmd,
             capture_output=True,
             env=program_env,
             cwd=self.__program_config.working_directory,
-            timeout=timeout,
+            timeout=self.max_run_time,
         )
 
         return completed_process

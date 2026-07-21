@@ -301,11 +301,12 @@ class TestSetRunner(ABC):
             if not skip_testcase:
                 logger.test_Result(TestResultType.Exception, str(exception))
 
-        logger.test_finished()
-        if in_use is not None:
-            with idle_process:
-                in_use.value -= config.process_count
-                idle_process.notify_all()
+        finally:
+            logger.test_finished()
+            if in_use is not None:
+                with idle_process:
+                    in_use.value -= config.process_count
+                    idle_process.notify_all()
 
         return test_result
 

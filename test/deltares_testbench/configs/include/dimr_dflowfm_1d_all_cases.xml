@@ -63,6 +63,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T3_refined_noCustomPoints" ref="dimr_default">
+      <maxRunTime>360</maxRunTime>
 		<path version="2025-10-15T15:07:53.583000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_refinedGRID_noWLpoints/Dambreak_refinedGRID_noWLpoints_map.nc" type="netCDF">
@@ -81,6 +82,8 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T4_refined_customPoints" ref="dimr_default">
+		
+      <maxRunTime>450</maxRunTime>
 		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T4_refined_customPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_refinedGRID_customWLpoints/Dambreak_refinedGRID_customWLpoints_map.nc" type="netCDF">
