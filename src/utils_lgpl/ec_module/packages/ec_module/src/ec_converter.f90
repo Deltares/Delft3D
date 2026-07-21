@@ -2630,14 +2630,28 @@ contains
       real(dp) :: delta
       real(dp) :: weightfac
 
+      logical :: dmiss_is_nan
+
+      ! outside of this function we have a lot of various way of dealing with dmissing values (unfortunately).
+      ! so we say here that if the dmissValue is present AND is ec_undef_hp then it probably comes from a missing value
       if (present(dmissValue)) then
-         if (var1 == dmissValue .or. var2 == dmissValue) then
-            cyclic_interpolation = dmissValue
+         if (ieee_is_nan(dmissValue)) then
+            dmiss_is_nan = .true.
+         else
+            dmiss_is_nan = dmissValue == ec_undef_hp
+         end if
+      else
+         dmiss_is_nan = .true.
+      end if
+
+      if (dmiss_is_nan) then
+         if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
+            cyclic_interpolation = ieee_value(0.0_dp, ieee_quiet_nan)
             return
          end if
       else
-         if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
-            cyclic_interpolation = ieee_value(0.0_dp, ieee_quiet_nan)
+         if (var1 == dmissValue .or. var2 == dmissValue) then
+            cyclic_interpolation = dmissValue
             return
          end if
       end if
