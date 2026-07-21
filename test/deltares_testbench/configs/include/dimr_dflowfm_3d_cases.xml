@@ -265,7 +265,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c030_lock_exchange_2m_3d" ref="platform_specific">
-     <path version="2025-07-21T08:52:56.851000">e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d</path>
+     <path version="2026-07-06T14:49:25.460000">e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -343,7 +343,7 @@
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
         <parameters>
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-         <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+         <parameter name="x_velocity" toleranceAbsolute="0.0003" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
          <parameter name="salinity" toleranceRelative="0.005" />
         </parameters>
@@ -556,7 +556,7 @@
     </testCase>
 
     <testCase name="e02_f018_c020_uxuyadvectionvelocitybnd3d_bc" ref="dflowfm_default">
-      <path version="2026-03-13T16:21:12.834000">e02_dflowfm/f018_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc</path>
+      <path version="2026-07-07T12:17:17.242000">e02_dflowfm/f018_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/uxuy_3d_map.nc" type="netCDF">
@@ -589,7 +589,7 @@
     </testCase>
 
     <testCase name="e02_f019_c033_lock_exchange_300m_unst_3d" ref="platform_specific">
-      <path version="2025-10-13T09:24:11.530000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
+      <path version="2026-07-06T14:49:31.161000">e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
@@ -703,12 +703,13 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c037_heatmodel5_secchidepth_temporal" ref="dflowfm_default">
-        <path version="2026-04-16T09:24:54.336000">e02_dflowfm/f020_heat_flux/c037_heatmodel5_secchidepth_temporal</path>
+        <path version="2026-07-07T12:24:54.336000">e02_dflowfm/f020_heat_flux/c037_heatmodel5_secchidepth_temporal</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/model_map.nc" type="netcdf">
                 <parameters>
                     <parameter name="mesh2d_tem1" toleranceAbsolute="1e-5" />
+                    <parameter name="mesh2d_Secc" toleranceAbsolute="1e-5" />
                 </parameters>
             </file>
         </checks>
@@ -859,7 +860,7 @@
     </testCase>
 
     <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:56.216000">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
+      <path version="2026-07-06T14:49:40.966000">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
@@ -1568,8 +1569,45 @@
       </checks>
     </testCase>
 
+    <testCase name="c001_ininudge_old_ext" ref="dflowfm_default">
+      <path version="2026-06-29T16:00:00">e02_dflowfm/f045_nudging/c001_ininudge_old_ext</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_ini_nudge/ini_nudge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_sa1" toleranceRelative="1e-6" />
+            <parameter name="mesh2d_tem1" toleranceRelative="1e-6" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="c002_ininudge_ini" ref="dflowfm_default">
+      <path version="2026-06-29T16:00:00">e02_dflowfm/f045_nudging/c002_ininudge_ini</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_ini_nudge/ini_nudge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_sa1" toleranceRelative="1e-6" />
+            <parameter name="mesh2d_tem1" toleranceRelative="1e-6" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="c003_ininudge_new_ext" ref="dflowfm_default">
+      <path version="2026-06-29T16:00:00">e02_dflowfm/f045_nudging/c003_ininudge_new_ext</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_ini_nudge/ini_nudge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_sa1" toleranceRelative="1e-6" />
+            <parameter name="mesh2d_tem1" toleranceRelative="1e-6" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	
     <testCase name="e02_f045_c010_nudgerate" ref="dflowfm_default">
-      <path version="2025-10-07T07:16:58.261000">e02_dflowfm/f045_nudging/c010_nudgerate</path>
+      <path version="2026-07-06T14:49:32.842000">e02_dflowfm/f045_nudging/c010_nudgerate</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">

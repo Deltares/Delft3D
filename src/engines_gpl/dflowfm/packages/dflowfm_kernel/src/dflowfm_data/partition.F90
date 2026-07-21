@@ -605,11 +605,12 @@ contains
       use messagehandling, only: mess, level_warn
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_polygon, only: npl
-      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use network_data, only: lc, numl, kn, LINK_CLOSED, LINK_2D, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, lperminv, netcell, numl1d
       use m_alloc, only: realloc
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
       use m_save_ugrid_state, only: contactnetlinks, contactids_2D2D, hashlist_contactids
+      use m_longculverts_data, only: longculverts, longculverts0, nlongculverts
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -620,7 +621,7 @@ contains
 
       integer :: ic1, ic2, L
       logical :: domain_needs_cell_1, domain_needs_cell_2
-      integer :: i, icontact, i_valid_contact
+      integer :: i, j, icontact, i_valid_contact
       integer, dimension(:, :), allocatable :: lne_org
       integer :: i_old
       character(len=128) :: message
@@ -658,7 +659,7 @@ contains
          if (Lc(L) == 0) then
             kn(1, L) = 0
             kn(2, L) = 0
-            kn(3, L) = 0
+            kn(3, L) = LINK_CLOSED
          end if
       end do
 
@@ -740,6 +741,18 @@ contains
             goto 1234
          end if
       end if
+
+      longculverts0 = longculverts !> save original longculverts for later use (technically only needs longculverts(i)%netlinks
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%netlinks)) then
+            do j = 1, size(longculverts(i)%netlinks)
+               L = longculverts0(i)%netlinks(j)
+               if (L > 0 .and. L < size(lperminv)) then
+                  longculverts(i)%netlinks(j) = Lperminv(L) !> global to local link number
+               end if
+            end do
+         end if
+      end do
       ierror = DFM_NOERR
 1234  continue
 
@@ -936,6 +949,16 @@ contains
          nullify (nodeoffsets_g, nodebranchidx_g, edgebranchidx_g, edgeoffsets_g)
       end if
    end subroutine restore_1dugrid_state
+
+   !> restore any structure arrays that were partitioned in partition_make_domain
+   subroutine restorestructures()
+      use m_longculverts_data
+
+      implicit none
+
+      longculverts = longculverts0
+
+   end subroutine restorestructures
 
 !> find original cell numbers for the current subset of cells.
 !! Typically used for reconstructing the global cell numbers for all cells in the current partition.

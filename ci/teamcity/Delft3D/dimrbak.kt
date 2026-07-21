@@ -8,7 +8,8 @@ import PublishToGui
 object DIMRbak : BuildType({
 
     templates(
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     name = "Publish DIMRset"

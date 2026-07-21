@@ -10,6 +10,7 @@ file(GLOB include_files "${CMAKE_CURRENT_SOURCE_DIR}/../../include/*.inc")
 add_library(${library_name} ${source_files} 
                             ${include_files})
 
+add_subdirectory(test)
 set_source_files_properties(
                    src/Laterals.F90
                    src/wetcrs_modules.F90

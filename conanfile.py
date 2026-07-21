@@ -8,13 +8,14 @@ class Delft3DRecipe(ConanFile):
 
     def requirements(self):
         self.requires("zlib/[>=1.2.11 <2]")
-        self.requires("hdf5/1.14.6")
+        self.requires("hdf5/1.14.2")
         self.requires("netcdf/4.9.2")
         self.requires("netcdf-fortran/4.6.2")
         self.requires("libtiff/4.7.1")
         self.requires("proj/9.3.1")
         self.requires("gdal/3.12.1")
         self.requires("expat/2.8.0")
+        self.requires("petsc/3.25.3")
 
     def generate(self):
         save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")
