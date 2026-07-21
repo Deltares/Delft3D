@@ -419,7 +419,6 @@ This section contains the setting for sediment transport and morphology.
 | `alfaSus` | Calibration par suspended load, default=1.0 ( )  |  |  |  |  |
 | `morCFL` | Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes) | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `DzbDtMax` | Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m) | `0.1` |  |  |  |
-| `masBalMinDep` | Minimum depth after bottom update for SSC adaptation mass balance. |  |  |  |  |
 | `morphoPol` | Only apply bed updating wihtin specified polygon (\*.pol) |  |  |  |  |
 | `ws` | Fall velocity (m/s), e.g. 0.0005 m/s |  |  |  |  |
 | `erosionPar` | Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s) |  |  |  |  |
@@ -1083,6 +1082,7 @@ The keywords and keyword values listed below are no longer supported and will ca
 | Keyword/value | Notes |
 | ------------- | ----- |
 | `[physics] umodLin` | Keyword no longer supported. |
+| `[sediment] masBalMinDep` | Keyword no longer supported. |
 
 <a id="release-2026.02"></a>
 ## Release 2026.02

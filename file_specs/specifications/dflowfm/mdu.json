@@ -3252,7 +3252,12 @@
                 {
                   "key": "masBalMinDep",
                   "value_type": "float",
-                  "description": "Minimum depth after bottom update for SSC adaptation mass balance."
+                  "description": "Minimum depth after bottom update for SSC adaptation mass balance.",
+                  "status": {
+                      "value": "obsolete",
+                      "since_release": 2027.01,
+                      "comment": "Keyword no longer supported."
+                  }
                 },
                 {
                   "key": "morphoPol",
