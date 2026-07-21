@@ -90,6 +90,8 @@ namespace pre_c_sumo
 
         const std::vector<double> zero_values(registered_vertex_count, 0.0);
 
+        // preCICE expects values for all registered vertices each step.
+        // When no entries are present, write explicit zeros with fixed mesh length.
         auto write_or_zero = [&](std::string_view data_name, const std::vector<double>& values) {
             if (values.empty())
             {
