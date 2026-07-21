@@ -6341,6 +6341,24 @@
         </file>        
       </checks>
     </testCase>
+    <testCase name="e02_f022_c109_timevarying_morfac_morft" ref="dflowfm_default"> 
+      <path version="2026-07-16T15:00:00.000000">e02_dflowfm/f022_morphology_2D/c109_timevarying_morfac_morft</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/test_his.nc" type="netCDF">
+          <parameters>
+      			<parameter name="morfac" toleranceAbsolute="0.00001" />
+      			<parameter name="morft" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/test_map.nc" type="netCDF">
+          <parameters>
+      			<parameter name="morfac" toleranceAbsolute="0.00001" />
+      			<parameter name="morft" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>
     <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
       <path version="2026-07-07T15:35:20.865000">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
       <maxRunTime>20.0</maxRunTime>
