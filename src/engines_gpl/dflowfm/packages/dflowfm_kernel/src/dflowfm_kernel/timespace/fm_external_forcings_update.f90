@@ -102,6 +102,7 @@ contains
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_bubblescreen_discharge, item_secchi_depth
+      use m_missing, only: dmiss
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
@@ -122,7 +123,7 @@ contains
       success = .true.
 
       allocate(zcgen_local_kx3(ncgensg * 3))
-      zcgen_local_kx3 = -999.0_dp
+      zcgen_local_kx3 = dmiss
 
       if (allocated(air_pressure)) then
          ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
@@ -199,11 +200,11 @@ contains
       if (ncgensg > 0) then
          call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen_local_kx3, time_in_seconds)
 
-         ! Copy zcgen_local_kx3 values to zcgen array
+         ! Copy zcgen_local_kx3 values to zcgen array, only when not equal to dmiss
          do i = 0, ncgensg - 1
-            zcgen(i * 4 + 1) = max(zcgen(i * 4 + 1), zcgen_local_kx3(i * 3 + 1))
-            zcgen(i * 4 + 2) = max(zcgen(i * 4 + 2), zcgen_local_kx3(i * 3 + 2))
-            zcgen(i * 4 + 4) = max(zcgen(i * 4 + 4), zcgen_local_kx3(i * 3 + 3))
+            zcgen(i * 4 + 1) = merge(zcgen_local_kx3(i * 3 + 1), zcgen(i * 4 + 1), zcgen_local_kx3(i * 3 + 1) /= dmiss)
+            zcgen(i * 4 + 2) = merge(zcgen_local_kx3(i * 3 + 2), zcgen(i * 4 + 2), zcgen_local_kx3(i * 3 + 2) /= dmiss)
+            zcgen(i * 4 + 4) = merge(zcgen_local_kx3(i * 3 + 3), zcgen(i * 4 + 4), zcgen_local_kx3(i * 3 + 3) /= dmiss)
          end do
 
          call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
