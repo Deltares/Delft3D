@@ -427,6 +427,8 @@ contains
                   end if
                   call prop_set(current, '', 'xCoordinates', xcoords(coordindex:coordindex + ncoords - 1), '')
                   call prop_set(current, '', 'yCoordinates', ycoords(coordindex:coordindex + ncoords - 1), '')
+                  longculverts(i)%xcoords = xcoords(coordindex:coordindex + ncoords - 1)
+                  longculverts(i)%ycoords = ycoords(coordindex:coordindex + ncoords - 1)
                   coordindex = coordindex + ncoords + 1
                   exit
                end if
@@ -779,6 +781,13 @@ contains
          end do
       end if
 
+      ! The cache and partition paths can retain flow links while changing their
+      ! local orientation. Therefore this mapping must also be refreshed when
+      ! skiplinks is true.
+      do ilongc = 1, nlongculverts
+         call setLongCulvertFlowDirectionSign(ilongc)
+      end do
+
       if (newculverts) then
          do ilongc = 1, nlongculverts
             do i = 2, longculverts(ilongc)%numlinks - 1
@@ -849,6 +858,51 @@ contains
 
    end subroutine longculvertsToProfs
 
+   !> Reconstruct the flow link orientation based on input polyline
+   subroutine setLongCulvertFlowDirectionSign(ilongc)
+      use network_data, only: kn, xk, yk
+      use precision_basics, only: equal
+
+      integer, intent(in) :: ilongc
+      integer :: Lnet, k1, k2
+      logical :: endpoint_is_first_node, endpoint_is_second_node
+
+      longculverts(ilongc)%flow_dir = 1
+
+      if (longculverts(ilongc)%numlinks <= 0) then
+         return
+      end if
+      if (.not. allocated(longculverts(ilongc)%flowlinks) .or. .not. allocated(longculverts(ilongc)%netlinks) .or. &
+          .not. allocated(longculverts(ilongc)%xcoords) .or. .not. allocated(longculverts(ilongc)%ycoords)) then
+         return
+      end if
+      if (size(longculverts(ilongc)%flowlinks) < 1 .or. size(longculverts(ilongc)%netlinks) < 1 .or. &
+          size(longculverts(ilongc)%xcoords) < 2 .or. size(longculverts(ilongc)%ycoords) < 2) then
+         return
+      end if
+
+      Lnet = longculverts(ilongc)%netlinks(1)
+      if (Lnet <= 0 .or. Lnet > size(kn, dim=2)) then
+         return
+      end if
+
+      k1 = kn(1, Lnet)
+      k2 = kn(2, Lnet)
+      if (k1 <= 0 .or. k2 <= 0) then
+         return
+      end if
+
+      endpoint_is_first_node = equal(xk(k1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(k1), longculverts(ilongc)%ycoords(2))
+      endpoint_is_second_node = equal(xk(k2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(k2), longculverts(ilongc)%ycoords(2))
+
+      if (endpoint_is_first_node .and. .not. endpoint_is_second_node) then
+         longculverts(ilongc)%flow_dir = -1
+      else if (.not. endpoint_is_second_node) then
+         call mess(LEVEL_WARN, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
+                   ' to either endpoint of its first flow link;')
+      end if
+   end subroutine setLongCulvertFlowDirectionSign
+
    !> Fill frcu and icrctyp for the corresponding flow link numbers of the long culverts
    subroutine setFrictionForLongculverts()
       use m_flow
@@ -890,6 +944,7 @@ contains
                valve_relative_opening = max(valve_relative_opening, 0.0_dp)
                au(L) = valve_relative_opening * au(L)
                call getflowdir(L, L_dir)
+               L_dir = longculverts(i)%flow_dir * L_dir
                allowed_flowdir = longculverts(i)%allowed_flowdir
                if (allowed_flowdir == FLOWDIR_NONE &
                    .or. L_dir < 0 .and. allowed_flowdir == FLOWDIR_POSITIVE &

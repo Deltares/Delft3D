@@ -656,6 +656,48 @@ contains
    end subroutine test_flow_reverse_head_gives_negative_discharge
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_longculvert, test_allowed_flowdir_follows_coordinate_order, test_allowed_flowdir_follows_coordinate_order,
+   !> Verifies that allowedFlowDir is evaluated in the input coordinate direction,
+   !! rather than the incidental direction of a resolved hydraulic flow link.
+   subroutine test_allowed_flowdir_follows_coordinate_order() bind(C)
+      use m_1d_structures, only: FLOWDIR_POSITIVE
+      use m_flow, only: au, u1
+      use m_flowgeom, only: ln
+      use m_longculverts, only: default_longculverts, longculvertsToProfs, reduceFlowAreaAtLongculverts
+      use m_longculverts_data, only: longculverts
+      use network_data, only: kn
+      use precision, only: dp
+
+      integer :: iresult, lc_link, lc_netlink, node
+
+      call setup_longculvert_model(iresult)
+
+      lc_link = longculverts(1)%flowlinks(1)
+      lc_netlink = longculverts(1)%netlinks(1)
+      node = ln(1, lc_link)
+      ln(1, lc_link) = ln(2, lc_link)
+      ln(2, lc_link) = node
+      node = kn(1, lc_netlink)
+      kn(1, lc_netlink) = kn(2, lc_netlink)
+      kn(2, lc_netlink) = node
+      call longculvertsToProfs(.true.)
+
+      call f90_expect_true(longculverts(1)%flow_dir == -1, &
+                           cstr("a reversed hydraulic link must be detected from the input coordinate order"))
+
+      longculverts(1)%allowed_flowdir = FLOWDIR_POSITIVE
+      longculverts(1)%valve_relative_opening = 1.0_dp
+      au(lc_link) = 1.0_dp
+      u1(lc_link) = -1.0_dp
+      call reduceFlowAreaAtLongculverts()
+
+      call f90_expect_true(au(lc_link) > 0.0_dp, &
+                           cstr("positive flow in input-coordinate direction must remain open"))
+
+      call default_longculverts
+   end subroutine test_allowed_flowdir_follows_coordinate_order
+   !$f90tw)
+
    !> Create a 5x3-node UGRID net (4 cells wide, 2 rows).
    subroutine create_two_row_netfile(filename)
       use precision, only: dp
