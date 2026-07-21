@@ -80,6 +80,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                           , pointer :: ustar_macro
     integer                            , pointer :: nmudfrac
     integer                            , pointer :: sc_mudfac
+    integer                            , pointer :: sc_intrawave_method
+    integer                            , pointer :: sc_intrawave_phases
     logical          , dimension(:)    , pointer :: cmpupdfrac
     real(fp)         , dimension(:)    , pointer :: tpsnumber
     real(fp)         , dimension(:)    , pointer :: rhosol
@@ -179,6 +181,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     character(256)              :: rec
     character(80)               :: parname
     character(20)               :: sc_type
+    character(20)               :: sc_intrawave_type
     character(10)               :: versionstring
     character(6)                :: seddxxstring
     character(256)              :: errmsg
@@ -203,6 +206,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     nflocsizes           => sedpar%nflocsizes
     nmudfrac             => sedpar%nmudfrac
     sc_mudfac            => sedpar%sc_mudfac
+    sc_intrawave_method  => sedpar%sc_intrawave_method
+    sc_intrawave_phases  => sedpar%sc_intrawave_phases
     flocsize             => sedpar%flocsize
     floclist             => sedpar%floclist
     cmpupdfrac           => sedpar%cmpupdfrac
@@ -578,6 +583,38 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        bsskin = .false.
        call prop_get(sed_ptr, 'SedimentOverall', 'BsSkin', bsskin)
+       sc_intrawave_method = SC_INTRAWAVE_LEGACY
+       sc_intrawave_type = 'legacy'
+       call prop_get(sed_ptr, 'SedimentOverall', 'SC_IntrawaveMethod', sc_intrawave_type)
+       call str_lower(sc_intrawave_type)
+       select case (trim(sc_intrawave_type))
+       case ('legacy')
+          sc_intrawave_method = SC_INTRAWAVE_LEGACY
+       case ('diagnostic')
+          sc_intrawave_method = SC_INTRAWAVE_DIAGNOSTIC
+       case ('stress')
+          sc_intrawave_method = SC_INTRAWAVE_STRESS
+       case default
+          errmsg = 'Unknown SC_IntrawaveMethod. Expecting ''legacy'', ''diagnostic'', or ''stress''.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       end select
+       sc_intrawave_phases = 64
+       call prop_get(sed_ptr, 'SedimentOverall', 'SC_IntrawavePhases', sc_intrawave_phases)
+       if (sc_intrawave_phases < 4 .or. sc_intrawave_phases > 4096 .or. &
+         & mod(sc_intrawave_phases, 4) /= 0) then
+          errmsg = 'SC_IntrawavePhases must be in the range 4 to 4096 and divisible by 4.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
+       if (sc_intrawave_method /= SC_INTRAWAVE_LEGACY .and. .not. bsskin) then
+          errmsg = 'SC_IntrawaveMethod requires BsSkin = true when not using legacy mode.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
        if (bsskin) then
           call prop_get(sed_ptr, 'SedimentOverall', 'KsSilt', kssilt)
           call prop_get(sed_ptr, 'SedimentOverall', 'KsSand', kssand)
@@ -1290,6 +1327,8 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)                          , pointer :: sc_flcf
     integer                           , pointer :: flocmod
     integer                           , pointer :: sc_mudfac
+    integer                           , pointer :: sc_intrawave_method
+    integer                           , pointer :: sc_intrawave_phases
     logical         , dimension(:)    , pointer :: cmpupdfrac
     real(fp)        , dimension(:)    , pointer :: tpsnumber
     real(fp)        , dimension(:)    , pointer :: rhosol
@@ -1351,6 +1390,8 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     sc_flcf              => sedpar%sc_flcf
     flocmod              => sedpar%flocmod
     sc_mudfac            => sedpar%sc_mudfac
+    sc_intrawave_method  => sedpar%sc_intrawave_method
+    sc_intrawave_phases  => sedpar%sc_intrawave_phases
     cmpupdfrac           => sedpar%cmpupdfrac
     tpsnumber            => sedpar%tpsnumber
     rhosol               => sedpar%rhosol
@@ -1493,6 +1534,20 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
        !
        txtput1 = 'Critical fluff layer coverage factor'
        write (lundia, '(2a,f12.6)') txtput1,':', sc_flcf
+    endif
+    if (bsskin) then
+       select case (sc_intrawave_method)
+       case (SC_INTRAWAVE_LEGACY)
+          txtput2 = 'legacy'
+       case (SC_INTRAWAVE_DIAGNOSTIC)
+          txtput2 = 'diagnostic'
+       case (SC_INTRAWAVE_STRESS)
+          txtput2 = 'stress'
+       end select
+       txtput1 = 'SC intrawave method'
+       write (lundia, '(3a)') txtput1, ':  ', trim(txtput2)
+       txtput1 = 'SC intrawave phases'
+       write (lundia, '(2a,i12)') txtput1, ':', sc_intrawave_phases
     endif
     if (sedpar%flnrd(0) /= ' ') then
        txtput1 = '1D nodal relations for bed/total load'

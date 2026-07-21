@@ -76,7 +76,7 @@ end function get_alpha_fluff
 
 subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
                      & teta  , thcmud, mudfrac, taumax, rhowat, vicmol, &
-                     & sedpar, alpha_fluff)
+                     & sedpar, alpha_fluff, taum_out, taup_out, phiwr_rad_out)
 !!--description-----------------------------------------------------------------
 !
 ! Compute tau in case of muddy bed (skin fraction  only)
@@ -118,6 +118,9 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     real(fp)         , intent(in)  :: vicmol      ! molecular viscosity
     type(sedpar_type), target      :: sedpar      ! sediment parameters, including Soulsby & Clark parameters
     real(fp)         , intent(in)  :: alpha_fluff ! fluff layer coverage factor
+    real(fp), intent(out), optional :: taum_out      ! mean current-related bed shear stress
+    real(fp), intent(out), optional :: taup_out      ! oscillatory bed shear stress amplitude
+    real(fp), intent(out), optional :: phiwr_rad_out ! wave-current angle in radians
 !
 ! Local variables
 !
@@ -144,6 +147,9 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     real(fp) :: rew     ! Reynolds number waves
     real(fp) :: rewcr   ! Critcal Reynolds number waves
     real(fp) :: taum    ! Mean shear stress
+    real(fp) :: taup    ! Oscillatory shear stress amplitude
+    real(fp) :: taupr   ! Oscillatory shear stress amplitude (rough bed)
+    real(fp) :: taups   ! Oscillatory shear stress amplitude (smooth bed)
     real(fp) :: tauw    ! Shear stress (waves)
     real(fp) :: taumr   ! Mean shear stress (rough  bed)
     real(fp) :: taums   ! Mean shear stress (smooth bed)
@@ -169,6 +175,12 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     kssand    => sedpar%kssand
     sc_cmf1   => sedpar%sc_cmf1
     sc_cmf2   => sedpar%sc_cmf2
+    taum  = 0.0_fp
+    taup  = 0.0_fp
+    taupr = 0.0_fp
+    taups = 0.0_fp
+    phiwr = 0.0_fp
+    !
     !
     ! Set constants
     !
@@ -178,7 +190,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     !
     ! Compute basic parameters
     !
-    effwave = wave .and. (tper > 0.0_fp) .and. (uorb >= 1.0-6_fp)
+    effwave = wave .and. (tper > 0.0_fp) .and. (uorb >= 1.0e-6_fp)
     umod   = max( sqrt(umean*umean + vmean*vmean) , localeps )
     !
     if (sc_mudfac == SC_MUDFRAC) then
@@ -225,6 +237,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
              !
              !taum   = 3.0_fp * rhowat * vicmol * umod / depth
              !tauw   = rhowat * uorbm * uorbm / sqrt(rew)
+             !taup   = tauw
              !taumax = sqrt((taum +  tauw*abs(cos(phiwr)))**2 &
              !             &      + (tauw*abs(sin(phiwr)))**2 )
           !else
@@ -243,6 +256,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
              cdmax   = sqrt((cdm +  t3*(uorbm/umod)*sqrt(fwr/2.0_fp)*abs(cos(phiwr)))**2 &
                             &    + (t3*(uorbm/umod)*sqrt(fwr/2.0_fp)*abs(sin(phiwr)))**2 )
              taumr   = rhowat * cdm   * umod * umod
+             taupr   = rhowat * t3 * uorbm * umod * sqrt(fwr/2.0_fp)
              taumaxr = rhowat * cdmax * umod * umod
              !
              ! 2) compute shear stresses belonging with smooth bed
@@ -258,15 +272,18 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
              cdmax   = sqrt((cdm +  t3*(uorbm/umod)*sqrt(fws/2.0_fp)*abs(cos(phiwr)))**2 &
                             &    + (t3*(uorbm/umod)*sqrt(fws/2.0_fp)*abs(sin(phiwr)))**2)
              taums   = rhowat * cdm   * umod * umod
+             taups   = rhowat * t3 * uorbm * umod * sqrt(fws/2.0_fp)
              taumaxs = rhowat * cdmax * umod * umod
              !
              ! 3) determine shear stresses
              !
              if (taumaxs > taumaxr) then
                 taum   = taums
+                taup   = taups
                 taumax = taumaxs
              else
                 taum   = taumr
+                taup   = taupr
                 taumax = taumaxr
              endif
           !endif
@@ -277,6 +294,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
           taum = 0.0_fp ! because there is no currents
           !if (rew <= rewcr) then
           !   taumax = rhowat * uorbm * uorbm / sqrt(rew) ! waves-only laminar
+          !   taup   = taumax
           !else
              if (fwr >= fws) then
                 taumax = 0.5_fp * rhowat * fwr * uorbm * uorbm ! waves-only turbulent rough
@@ -284,6 +302,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
                 taumax = 0.5_fp * rhowat * fws * uorbm * uorbm ! waves-only turbulent smooth
              endif
           !endif
+          taup = taumax
        endif
     elseif (umod >= 1.0e-6_fp) then
     !
@@ -299,13 +318,25 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
              taum = rhowat * cds * umod * umod ! flow-only smooth
           endif
           taumax = taum ! because there is no waves
+          taup   = 0.0_fp
        !endif
     else
        !
        ! No flow and no waves
        !
        taum   = 0.0_fp
+       taup   = 0.0_fp
        taumax = 0.0_fp
+    endif
+    !
+    if (present(taum_out)) then
+       taum_out = taum
+    endif
+    if (present(taup_out)) then
+       taup_out = taup
+    endif
+    if (present(phiwr_rad_out)) then
+       phiwr_rad_out = phiwr
     endif
 end subroutine compbsskin
 

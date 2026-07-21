@@ -4,7 +4,8 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
                  & npar     ,par       ,numintpar ,numrealpar, &
                  & numstrpar,dllfunc  ,dllhandle ,intpar    , &
                  & realpar  ,strpar   ,iflufflyr ,mflufftot , &
-                 & fracf    ,maxslope ,wetslope  , & ! output:
+                 & fracf    ,maxslope ,wetslope  , &
+                 & sc_intrawave_method,nstress,stress,weight, & ! output:
                  & error    ,wstau     ,sinktot   ,sourse   , &
                  & sourf    )
 !----- GPL ---------------------------------------------------------------------
@@ -47,7 +48,9 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
 !!--declarations----------------------------------------------------------------
     use precision
     use sediment_basics_module
-    use morphology_data_module, only: RP_TAUB
+    use morphology_data_module, only: RP_TAUB, SC_INTRAWAVE_LEGACY, &
+                                    & SC_INTRAWAVE_DIAGNOSTIC, SC_INTRAWAVE_STRESS
+    use intrawave_mobility_module, only: compute_intrawave_mobility, compute_weighted_excess
     use message_module, only: write_error
     use iso_c_binding, only: c_char
     !
@@ -61,6 +64,8 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     integer                             , intent(in)    :: num_layers_grid
     integer                                             :: lundia     !> handle of diagnostics file
     integer                             , intent(in)    :: npar
+    integer                             , intent(in)    :: nstress
+    integer                             , intent(in)    :: sc_intrawave_method
     integer       , dimension(numintpar), intent(inout) :: intpar
     integer(pntrsize)                   , intent(in)    :: dllhandle
     !
@@ -74,10 +79,12 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     real(fp)                            , intent(out)   :: sourf
     real(fp)                            , intent(out)   :: sourse
     real(fp)                            , intent(in)    :: srcmax
+    real(fp)       , dimension(nstress) , intent(in)    :: stress
     real(fp)       , dimension(num_layers_grid)    , intent(in)    :: thick
     real(fp)                            , intent(in)    :: thick0
     real(fp)                            , intent(in)    :: thick1
     real(fp)                            , intent(in)    :: wetslope
+    real(fp)       , dimension(nstress) , intent(in)    :: weight
     real(fp)       , dimension(0:num_layers_grid)  , intent(in)    :: ws
     real(fp)                            , intent(out)   :: wstau
     !
@@ -107,6 +114,13 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     real(fp) :: parfl1        !> first-order erosion rate parameter for the fluff layer (m*s/kg)
     real(fp) :: depeff        !> coefficient determining mud sedimentation (to fluff layer or bed) (-)
     real(fp) :: powern        !> exponent in the erosion rate formulation (-)
+    real(fp) :: conditional_excess_pa       !> mean excess conditional on mobilisation (N/m2)
+    real(fp) :: mean_excess_pa              !> phase-mean excess shear stress (N/m2)
+    real(fp) :: mean_fluff_excess_pa        !> phase-mean fluff excess shear stress (N/m2)
+    real(fp) :: mean_normalized_excess      !> phase-mean normalized excess stress (-)
+    real(fp) :: mean_powered_excess         !> phase-mean powered normalized excess (-)
+    real(fp) :: mobile_fraction             !> fraction of phases above the erosion threshold (-)
+    logical  :: intrawave_valid
     !
     ! Interface to dll is in High precision!
     !
@@ -128,6 +142,25 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     ! Calculate total (possibly wave enhanced) roughness
     !
     taub   = real(realpar(RP_TAUB), fp)
+    !
+    ! The representative-wave stress ensemble is implemented only for the
+    ! built-in cohesive erosion formula.
+    !
+    if (sc_intrawave_method /= SC_INTRAWAVE_LEGACY) then
+       if (flmd2l .or. iform /= -3) then
+          errmsg = 'SC intrawave mobilisation is supported only for built-in cohesive erosion.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
+       if (sc_intrawave_method /= SC_INTRAWAVE_DIAGNOSTIC .and. &
+         & sc_intrawave_method /= SC_INTRAWAVE_STRESS) then
+          write (errmsg,'(a,i0,a)') 'Invalid SC intrawave method ',sc_intrawave_method,'.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
+    endif
     !
     ! Bed transport following Partheniades and Krone
     ! but in case of fluid mud, source term is determined by
@@ -180,14 +213,55 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
              tcrero = max(tcrero, taucrmin)
           endif
           !
-          taum = max(0.0_fp, taub/tcrero - 1.0_fp)
-          sour = eropar * taum**powern
+          if (sc_intrawave_method == SC_INTRAWAVE_LEGACY) then
+             taum = max(0.0_fp, taub/tcrero - 1.0_fp)
+             sour = eropar * taum**powern
+             if (npar >= 3) then
+                par(1) = merge(1.0_fp, 0.0_fp, taub > tcrero)
+                par(2) = max(taub - tcrero, 0.0_fp)
+                par(3) = taum**powern
+             endif
+          else
+             call compute_intrawave_mobility(stress, weight, tcrero, powern, &
+                                           & mobile_fraction, mean_excess_pa, &
+                                           & mean_normalized_excess, conditional_excess_pa, &
+                                           & mean_powered_excess, intrawave_valid)
+             if (.not. intrawave_valid) then
+                errmsg = 'Invalid stress ensemble, TcrEro, or PowerN for SC intrawave mobilisation.'
+                call write_error(errmsg, unit=lundia)
+                error = .true.
+                return
+             endif
+             if (npar >= 3) then
+                par(1) = mobile_fraction
+                par(2) = mean_excess_pa
+                par(3) = mean_powered_excess
+             endif
+             if (sc_intrawave_method == SC_INTRAWAVE_STRESS) then
+                sour = eropar * mean_powered_excess
+             else
+                taum = max(0.0_fp, taub/tcrero - 1.0_fp)
+                sour = eropar * taum**powern
+             endif
+          endif
           !
           ! Erosion from fluff layer
           !
           if (iflufflyr>0) then
-            taum       = max(0.0_fp, taub - tcrflf)
-            sour_fluff = min(mflufftot*parfl1,parfl0)*taum
+            if (sc_intrawave_method == SC_INTRAWAVE_STRESS) then
+               call compute_weighted_excess(stress, weight, tcrflf, &
+                                          & mean_fluff_excess_pa, intrawave_valid)
+               if (.not. intrawave_valid) then
+                  errmsg = 'Invalid stress ensemble or TcrFluff for SC intrawave mobilisation.'
+                  call write_error(errmsg, unit=lundia)
+                  error = .true.
+                  return
+               endif
+               sour_fluff = min(mflufftot*parfl1,parfl0)*mean_fluff_excess_pa
+            else
+               taum       = max(0.0_fp, taub - tcrflf)
+               sour_fluff = min(mflufftot*parfl1,parfl0)*taum
+            endif
           else
             sour_fluff = 0.0_fp
           endif

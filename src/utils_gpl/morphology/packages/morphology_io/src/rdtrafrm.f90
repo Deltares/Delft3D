@@ -1189,6 +1189,15 @@ contains
          pardef(7) = -1.0_fp
          parkeyw(8) = 'PowerN'
          pardef(8) = 1.0_fp
+         if (present(noutpar)) then
+            noutpar = 3
+            outpar_name(1) = 'iwmobfrac'
+            outpar_longname(1) = 'intrawave mobile fraction [-]'
+            outpar_name(2) = 'iwmeanex'
+            outpar_longname(2) = 'mean intrawave excess bed shear stress [N/m2]'
+            outpar_name(3) = 'iwmeanpow'
+            outpar_longname(3) = 'mean powered normalized intrawave excess [-]'
+         end if
       elseif (iform == -2) then
          name = 'Van Rijn (2007): TRANSPOR2004'
          nparopt = 9

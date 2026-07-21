@@ -117,6 +117,7 @@ contains
       use m_tables, only: interpolate
       use m_partitioninfo
       use compbsskin_module, only: compbsskin, get_alpha_fluff
+      use intrawave_mobility_module, only: make_intrawave_stress_samples
       use m_debug
       use m_sand_mud
       use m_get_kbot_ktop
@@ -158,7 +159,9 @@ contains
       integer :: ll
       integer :: lstart
       integer :: nm
+      integer :: nstress
       logical :: error
+      logical :: iw_valid
       integer :: klc
       integer :: kmaxlc
       integer :: k1, k2
@@ -191,6 +194,9 @@ contains
       real(fp) :: taks
       real(fp) :: taks0
       real(fp) :: tauadd
+      real(fp) :: taum_iw
+      real(fp) :: taup_iw
+      real(fp) :: phiwr_iw
       real(fp) :: tdss ! temporary variable for dss
       real(fp) :: temperature
       real(fp), dimension(max(kmx, 1)) :: thicklc
@@ -217,6 +223,8 @@ contains
       real(fp) :: poros
       real(fp) :: wstau ! dummy for erosilt
       real(fp), dimension(:), allocatable :: evel ! erosion velocity [m/s]
+      real(fp), dimension(:), allocatable :: stress_iw
+      real(fp), dimension(:), allocatable :: weight_iw
       real(fp), dimension(0:kmax2d) :: dcww2d
       real(fp), dimension(0:kmax2d) :: sddf2d
       real(fp), dimension(0:kmax2d) :: ws2d
@@ -262,6 +270,10 @@ contains
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
       if (istat == 0) then
          allocate (localpar(npar), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (stress_iw(max(1, stmpar%sedpar%sc_intrawave_phases)), &
+                 & weight_iw(max(1, stmpar%sedpar%sc_intrawave_phases)), stat=istat)
       end if
       if (istat == 0) then
          allocate (ua(1:ndx), va(1:ndx), stat=istat)
@@ -782,6 +794,9 @@ contains
          ! combined waves and currents on rough and smooth beds"
          ! Estproc report TR137, 2004
          !
+         taum_iw = taub(nm)
+         taup_iw = 0.0_fp
+         phiwr_iw = 0.0_fp
          if (bsskin) then
             !
             ! Compute bed stress resulting from skin friction
@@ -795,11 +810,26 @@ contains
             if (wave) then
                call compbsskin(umean, vmean, h1, wave, uorb(nm), twav(nm), &
                                 & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                                & rhowat(kbed), vismol, stmpar%sedpar, afluff)
+                                & rhowat(kbed), vismol, stmpar%sedpar, afluff, &
+                                & taum_out=taum_iw, taup_out=taup_iw, phiwr_rad_out=phiwr_iw)
             else
                call compbsskin(umean, vmean, h1, wave, 0.0_dp, 0.0_dp, &
                                 & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                                & rhowat(kbed), vismol, stmpar%sedpar, afluff)
+                                & rhowat(kbed), vismol, stmpar%sedpar, afluff, &
+                                & taum_out=taum_iw, taup_out=taup_iw, phiwr_rad_out=phiwr_iw)
+            end if
+         end if
+         !
+         if (stmpar%sedpar%sc_intrawave_method == SC_INTRAWAVE_LEGACY) then
+            nstress = 1
+            stress_iw(1) = taub(nm)
+            weight_iw(1) = 1.0_fp
+         else
+            nstress = stmpar%sedpar%sc_intrawave_phases
+            call make_intrawave_stress_samples(taum_iw, taup_iw, phiwr_iw, &
+                                             & stress_iw(1:nstress), weight_iw(1:nstress), iw_valid)
+            if (.not. iw_valid) then
+               call mess(LEVEL_FATAL, 'fm_erosed::invalid SC intrawave stress reconstruction.')
             end if
          end if
          !
@@ -1004,6 +1034,8 @@ contains
                           & max_strings, dll_function(l), dll_handle(l), dll_integers, &
                           & dll_reals, dll_strings, iflufflyr, mfltot, &
                           & fracf, maxslope, wetslope, &
+                          & stmpar%sedpar%sc_intrawave_method, nstress, &
+                          & stress_iw(1:nstress), weight_iw(1:nstress), &
                           & error, wstau, sinktot, sourse(nm, l), sourfluff)
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
@@ -1432,6 +1464,9 @@ contains
       deallocate (dzdx, dzdy, stat=istat)
       if (istat == 0) then
          deallocate (localpar, stat=istat)
+      end if
+      if (istat == 0) then
+         deallocate (stress_iw, weight_iw, stat=istat)
       end if
       if (istat /= 0) then
          error = .true.

@@ -30,6 +30,7 @@ module test_morphology
    use m_trab19, only: trab19
    use m_rdtrafrm, only: traparams
    use morphology_data_module, only: NPARDEF
+   use intrawave_mobility_module, only: make_intrawave_stress_samples, compute_intrawave_mobility
 
    implicit none
 
@@ -131,6 +132,56 @@ contains
       call f90_assert_near(t_r%va, t%ua, 1.0e-08_fp, "va is not near the expected value")
 
    end subroutine test_trab19
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_morphology, test_intrawave_sampling, test_iw_sample,
+   subroutine test_iw_sample() bind(C)
+      real(fp) :: stress(4)
+      real(fp) :: weight(4)
+      real(fp) :: half_pi
+      logical :: is_valid
+
+      call make_intrawave_stress_samples(2.0_fp, 1.0_fp, 0.0_fp, stress, weight, is_valid)
+      call f90_assert_near(merge(1.0_fp, 0.0_fp, is_valid), 1.0_fp, 0.0_fp, "aligned sample validity")
+      call f90_assert_near(stress(1), 2.0_fp, 1.0e-10_fp, "aligned phase 1")
+      call f90_assert_near(stress(2), 3.0_fp, 1.0e-10_fp, "aligned phase 2")
+      call f90_assert_near(stress(3), 2.0_fp, 1.0e-10_fp, "aligned phase 3")
+      call f90_assert_near(stress(4), 1.0_fp, 1.0e-10_fp, "aligned phase 4")
+      call f90_assert_near(weight(1), 0.25_fp, 1.0e-10_fp, "phase weight")
+
+      half_pi = 0.5_fp*acos(-1.0_fp)
+      call make_intrawave_stress_samples(2.0_fp, 1.0_fp, half_pi, stress, weight, is_valid)
+      call f90_assert_near(merge(1.0_fp, 0.0_fp, is_valid), 1.0_fp, 0.0_fp, "normal sample validity")
+      call f90_assert_near(stress(1), 2.0_fp, 1.0e-10_fp, "normal phase 1")
+      call f90_assert_near(stress(2), sqrt(5.0_fp), 1.0e-10_fp, "normal phase 2")
+      call f90_assert_near(stress(3), 2.0_fp, 1.0e-10_fp, "normal phase 3")
+      call f90_assert_near(stress(4), sqrt(5.0_fp), 1.0e-10_fp, "normal phase 4")
+   end subroutine test_iw_sample
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_morphology, test_intrawave_reducer, test_iw_reduce,
+   subroutine test_iw_reduce() bind(C)
+      real(fp) :: stress(4)
+      real(fp) :: weight(4)
+      real(fp) :: mobile_fraction
+      real(fp) :: mean_excess
+      real(fp) :: mean_normalized
+      real(fp) :: conditional_excess
+      real(fp) :: mean_powered
+      logical :: is_valid
+
+      stress = [0.5_fp, 1.5_fp, 2.0_fp, 3.0_fp]
+      weight = 0.25_fp
+      call compute_intrawave_mobility(stress, weight, 1.0_fp, 2.0_fp, mobile_fraction, &
+                                    & mean_excess, mean_normalized, conditional_excess, &
+                                    & mean_powered, is_valid)
+      call f90_assert_near(merge(1.0_fp, 0.0_fp, is_valid), 1.0_fp, 0.0_fp, "reducer validity")
+      call f90_assert_near(mobile_fraction, 0.75_fp, 1.0e-10_fp, "mobile fraction")
+      call f90_assert_near(mean_excess, 0.875_fp, 1.0e-10_fp, "mean excess")
+      call f90_assert_near(mean_normalized, 0.875_fp, 1.0e-10_fp, "mean normalized excess")
+      call f90_assert_near(conditional_excess, 0.875_fp/0.75_fp, 1.0e-10_fp, "conditional excess")
+      call f90_assert_near(mean_powered, 1.3125_fp, 1.0e-10_fp, "mean powered excess")
+   end subroutine test_iw_reduce
    !$f90tw)
 
 end module test_morphology

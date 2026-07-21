@@ -225,6 +225,9 @@ module morphology_data_module
 !
    integer, parameter, public :: SC_MUDTHC = 1
    integer, parameter, public :: SC_MUDFRAC = 2
+   integer, parameter, public :: SC_INTRAWAVE_LEGACY = 0
+   integer, parameter, public :: SC_INTRAWAVE_DIAGNOSTIC = 1
+   integer, parameter, public :: SC_INTRAWAVE_STRESS = 2
 !
 ! Threshold options for FIXFAC calculation
 !
@@ -612,6 +615,8 @@ module morphology_data_module
       integer :: nflocsizes !  number of floc sizes distinguished in the flocculation model
       integer :: nmudfrac !  number of simulated mud fractions
       integer :: sc_mudfac !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
+      integer :: sc_intrawave_method ! Intrawave stress use: legacy, diagnostic, or stress response
+      integer :: sc_intrawave_phases ! Number of phase points in the representative wave cycle
       integer :: max_mud_sedtyp !  largest sediment type associated with mud
       integer :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
       !
@@ -1297,6 +1302,8 @@ contains
       sedpar%nflocsizes = 1
       sedpar%nmudfrac = 0
       sedpar%sc_mudfac = SC_MUDTHC
+      sedpar%sc_intrawave_method = SC_INTRAWAVE_LEGACY
+      sedpar%sc_intrawave_phases = 64
       sedpar%max_mud_sedtyp = SEDTYP_SILT
       sedpar%min_dxx_sedtyp = SEDTYP_SAND
       !

@@ -70,6 +70,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use morphology_data_module
     use sediment_basics_module
     use compbsskin_module, only: compbsskin, get_alpha_fluff
+    use intrawave_mobility_module, only: make_intrawave_stress_samples
     use m_sand_mud
     use globaldata
     use dfparall
@@ -209,6 +210,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     character(256)   , dimension(:)      , pointer :: dll_strings
     character(256)   , dimension(:)      , pointer :: dll_usrfil
     logical                              , pointer :: bsskin
+    integer                              , pointer :: sc_intrawave_method
+    integer                              , pointer :: sc_intrawave_phases
     real(fp)         , dimension(:)      , pointer :: thcmud
     logical                              , pointer :: oldmudfrac
     logical                              , pointer :: flmd2l
@@ -322,11 +325,13 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer                         :: ndm
     integer                         :: nhystp
     integer                         :: nm
+    integer                         :: nstress
     integer                         :: nmd
     integer                         :: nm_pos    ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
     integer                         :: nmu
     integer                         :: num
     logical                         :: error
+    logical                         :: iw_valid
     integer                         :: klc
     integer                         :: kmaxlc    
     logical                         :: suspfrac  ! includes suspended transport via advection-diffusion equation
@@ -363,6 +368,9 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)                        :: taks
     real(fp)                        :: taks0
     real(fp)                        :: tauadd
+    real(fp)                        :: taum_iw
+    real(fp)                        :: taup_iw
+    real(fp)                        :: phiwr_iw
     real(fp)                        :: tauc
     real(fp)                        :: tdss      ! temporary variable for dss
     real(fp)                        :: temperature
@@ -388,6 +396,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)                        :: z0rou
     real(fp)                        :: zvelb
     real(fp), dimension(:), pointer :: localpar
+    real(fp), dimension(:), allocatable :: stress_iw
+    real(fp), dimension(:), allocatable :: weight_iw
     real(fp), dimension(lsedtot)    :: E            ! erosion velocity [m/s]
     real(fp), dimension(0:kmax2d)   :: dcww2d
     real(fp), dimension(0:kmax2d)   :: sddf2d
@@ -537,6 +547,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dll_strings         => gdp%gdtrapar%dll_strings
     dll_usrfil          => gdp%gdtrapar%dll_usrfil
     bsskin              => gdp%gdsedpar%bsskin
+    sc_intrawave_method => gdp%gdsedpar%sc_intrawave_method
+    sc_intrawave_phases => gdp%gdsedpar%sc_intrawave_phases
     thcmud              => gdp%gdsedpar%thcmud
     oldmudfrac          => gdp%gdmorpar%oldmudfrac
     flmd2l              => gdp%gdprocs%flmd2l
@@ -545,7 +557,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     wetslope            => gdp%gdmorpar%wetslope
     ithresh             => gdp%gdmorpar%ithresh
     !
-    allocate (localpar (npar), stat = istat)
+    allocate (localpar(npar), stress_iw(max(1, sc_intrawave_phases)), &
+            & weight_iw(max(1, sc_intrawave_phases)), stat=istat)
     !
     if (varyingmorfac .and. icall==1) then
        call updmorfac(gdp%gdmorpar, timhr, julday)
@@ -861,6 +874,9 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! combined waves and currents on rough and smoooth beds"
        ! Estproc report TR137, 2004
        !
+       taum_iw = taub(nm)
+       taup_iw = 0.0_fp
+       phiwr_iw = 0.0_fp
        if (bsskin) then
           !
           ! Compute bed stress resulting from skin friction
@@ -872,7 +888,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           endif
           call compbsskin(umean, vmean, h1, wave, uorb(nm), tp(nm), &
                            & teta(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                           & rhowat(nm,kbed), vicmol, gdp%gdsedpar, afluff)
+                           & rhowat(nm,kbed), vicmol, gdp%gdsedpar, afluff, &
+                           & taum_out=taum_iw, taup_out=taup_iw, phiwr_rad_out=phiwr_iw)
        else
           !
           ! use max bed shear stress, rather than mean
@@ -894,6 +911,22 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ustarc = sqrt(tauc/rhowat(nm,kbed))
        else
           tauadd = 0.0_fp
+       endif
+       !
+       if (sc_intrawave_method == SC_INTRAWAVE_LEGACY) then
+          nstress = 1
+          stress_iw(1) = taub(nm)
+          weight_iw(1) = 1.0_fp
+       else
+          nstress = sc_intrawave_phases
+          call make_intrawave_stress_samples(taum_iw, taup_iw, phiwr_iw, &
+                                           & stress_iw(1:nstress), weight_iw(1:nstress), iw_valid)
+          if (.not. iw_valid) then
+             errmsg = 'Invalid SC intrawave stress reconstruction.'
+             call prterr(lundia, 'U021', trim(errmsg))
+             call d3stop(1, gdp)
+          endif
+          stress_iw(1:nstress) = sqrt(stress_iw(1:nstress)**2 + tauadd**2)
        endif
        !
        ! Compute effective depth averaged velocity
@@ -1074,9 +1107,17 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                         & max_strings ,dll_function(l),dll_handle(l),dll_integers, &
                         & dll_reals   ,dll_strings ,iflufflyr   ,mfltot       , &
                         & fracf       ,maxslope    ,wetslope    , &
+                        & sc_intrawave_method,nstress,stress_iw(1:nstress), &
+                        & weight_iw(1:nstress), &
                         & error       ,wstau(nm)   ,sinktot     ,sourse(nm,l) , &
                         & sourfluff   )
              if (error) call d3stop(1, gdp)
+             if (iform(l) == -3 .and. gdp%gdmorpar%moroutput%sedpar) then
+                do i = 1, gdp%gdtrapar%noutpar(l)
+                   j = gdp%gdtrapar%ioutpar(i,l)
+                   gdp%gdtrapar%outpar(j,nm) = localpar(i)
+                enddo
+             endif
              !
              if (iflufflyr>0) then
                 if (iflufflyr==2) then
@@ -1519,5 +1560,5 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     ! DD-Mapper: copy sbuu and sbvv
     !
     nhystp = nxtstp(d3dflow_sediment, gdp)
-    deallocate (localpar, stat = istat)
+    deallocate (localpar, stress_iw, weight_iw, stat=istat)
 end subroutine z_erosed
