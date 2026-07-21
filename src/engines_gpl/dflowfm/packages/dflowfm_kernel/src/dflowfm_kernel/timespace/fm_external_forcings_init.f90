@@ -29,7 +29,7 @@
 !
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
-   use m_missing, only: dmiss => dmiss_neg
+   use m_missing, only: dmiss, imiss
 
    implicit none(type, external)
 
@@ -400,7 +400,6 @@ contains
    subroutine read_lateral_discharge_definition(block_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
       use messageHandling, only: mess, err, LEVEL_ERROR
       use precision, only: dp
-      use m_missing, only: imiss, dmiss
       use properties, only: has_key, prop_get
       use tree_data_types, only: tree_data
       use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE
@@ -714,7 +713,6 @@ contains
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_alloc, only: reallocP
-      use m_missing, only: dmiss
 
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
       real(dp), intent(in) :: target_x(:), target_y(:)
@@ -1014,7 +1012,6 @@ contains
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
-      use m_missing, only: dmiss
       use m_alloc, only: realloc
       use messageHandling
 
@@ -1193,7 +1190,6 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_missing, only: dmiss
       use m_polygon, only: dzL, npl
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
@@ -1279,7 +1275,6 @@ contains
       use unstruc_files, only: resolvePath
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
-      use m_missing, only: dmiss
       use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
@@ -1535,7 +1530,6 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
-      use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx

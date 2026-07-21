@@ -1,16 +1,48 @@
+!----- AGPL --------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
+!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
 module m_missing
    use precision, only: dp
 
-   implicit none
-   real(kind=dp) :: dmiss = -999.0_dp
-   real(kind=dp), parameter :: dmiss_pos = 999.0_dp
-   real(kind=dp), parameter :: dmiss_neg = -999.0_dp
+   implicit none(type, external)
+
+   real(kind=dp) :: dmiss = -999.0_dp !< Default missing value for real(kind=dp) variables
    real(kind=dp) :: xymis = -999.0_dp
    real(kind=dp) :: dxymis = -999.0_dp
-   !double precision                 :: ieee_negative_inf = -1.7976931348623158e+308 ! IEEE standard for the maximum negative value
-   integer :: intmiss = -2147483647 ! integer fillvlue
-   integer :: imiss = -999 ! cf_dll missing value
-   integer :: LMOD, KMOD ! TBV READDY, LC gui related variables can go to unstruc_display
+
+   integer :: intmiss = -2147483647 !< integer fillvlue
+   integer :: imiss = -999 !< cf_dll missing value
+
+   integer :: lmod !< TBV READDY, LC gui related variables can go to unstruc_display
+   integer :: kmod !< TBV READDY, LC gui related variables can go to unstruc_display
+
    integer :: jins = 1
    integer :: jadelnetlinktyp = 0
+
 end module m_missing
