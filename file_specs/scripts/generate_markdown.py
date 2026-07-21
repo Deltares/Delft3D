@@ -19,6 +19,7 @@ import sys
 from typing import List, Optional
 
 from ini_spec import (
+    DateTimeFormatType,
     FileFormatType,
     IniFileSpec,
     IniPropertySpec,
@@ -335,7 +336,15 @@ def get_unit_formatted(ini_property: IniPropertySpec) -> str:
 
 
 def get_format_formatted(ini_property: IniPropertySpec) -> str:
-    return f"`{ini_property.format}`" if ini_property.format else ""
+    if isinstance(ini_property.format, DateTimeFormatType):
+        if ini_property.format == DateTimeFormatType.DATE:
+            return "`yyyymmdd`"
+        if ini_property.format == DateTimeFormatType.DATETIME:
+            return "`yyyymmddhhmmss`"
+        else:
+            raise ValueError(f"Unknown DateTimeFormatType: {ini_property.format}")
+
+    return ""
 
 def collect_items_with_status(ini_file_spec: IniFileSpec, status_value: StatusValue) -> List[DataItem]:
     """Collect keywords and keyword values with a specific status across all sections.

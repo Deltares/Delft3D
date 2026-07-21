@@ -10,8 +10,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
+TEnum = TypeVar("TEnum", bound=Enum)
+
+def parse_enum(enum_class: type[TEnum], value: Optional[str]) -> Optional[TEnum]:
+    """Parse a string value into an enum member of the given enum class."""
+    
+    return enum_class(value) if value else None
 
 class StatusValue(str, Enum):
     """Allowed values for a status entry."""
@@ -43,6 +49,18 @@ class FileFormatType(str, Enum):
 
     INI = "ini"
 
+class FloatFormatType(str, Enum):
+    """Allowed float format types."""
+
+    GENERAL = "general"
+    FIXED = "fixed"
+    SCIENTIFIC = "scientific"
+
+class DateTimeFormatType(str, Enum):
+    """Allowed datetime format types."""
+
+    DATE = "date"
+    DATETIME = "datetime"
 
 @dataclass
 class Status:
@@ -56,7 +74,7 @@ class Status:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Status":
         return cls(
-            value=StatusValue(data["value"]),
+            value=parse_enum(StatusValue, data["value"]),
             comment=data.get("comment"),
             since_release=data.get("since_release"),
             date=datetime.strptime(data["date"], "%Y-%m-%d") if data.get("date") else None
@@ -120,8 +138,8 @@ class EnumValue:
         if isinstance(data, str):
             return cls(description=data)
         return cls(status=Status.from_dict(data["status"]), 
-                   description=data.get("description"))
-
+                   description=data.get("description"))  
+    
 
 @dataclass
 class IniPropertySpec:
@@ -135,7 +153,7 @@ class IniPropertySpec:
     validation: Optional[Validation] = None
     enum_values: Optional[Dict[str, EnumValue]] = None
     unit: Optional[str] = None
-    format: Optional[str] = None
+    format: Optional[Union[DateTimeFormatType, FloatFormatType]] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "IniPropertySpec":
@@ -143,10 +161,17 @@ class IniPropertySpec:
         status = data.get("status")
         validation = data.get("validation")
         enum_values = data.get("enum_values")
+
+        format = None
+        if value_type == ValueType.DATETIME.value:
+            format = parse_enum(DateTimeFormatType, data.get("format"))
+        elif value_type == ValueType.FLOAT.value or value_type == ValueType.LIST_FLOAT.value:
+            format = parse_enum(FloatFormatType, data.get("format"))
+
         return cls(
             key=data["key"],
             default_value=data.get("default_value"),
-            value_type=ValueType(value_type) if value_type is not None else None,
+            value_type=parse_enum(ValueType, value_type),
             description=data.get("description"),
             status=Status.from_dict(status) if status is not None else None,
             validation=Validation.from_dict(validation)
@@ -159,7 +184,7 @@ class IniPropertySpec:
             if enum_values is not None
             else None,
             unit=data.get("unit"),
-            format=data.get("format"),
+            format=format,
         )
 
 
@@ -193,6 +218,7 @@ class IniFileSpec:
     file_format_version: str
     file_format_type: FileFormatType
     description: str
+    default_float_format: FloatFormatType
     ini_sections: List[IniSectionSpec] = field(default_factory=list)
 
     @classmethod
@@ -200,8 +226,9 @@ class IniFileSpec:
         return cls(
             file_version=data["file_version"],
             file_format_version=data["file_format_version"],
-            file_format_type=FileFormatType(data["file_format_type"]),
+            file_format_type=parse_enum(FileFormatType, data.get("file_format_type")),
             description=data["description"],
+            default_float_format=parse_enum(FloatFormatType, data.get("default_float_format")),
             ini_sections=[
                 IniSectionSpec.from_dict(section)
                 for section in data.get("ini_sections", [])

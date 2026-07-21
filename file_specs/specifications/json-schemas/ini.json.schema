@@ -2,6 +2,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "definitions": {
+        "float_format": {
+            "type": "string",
+            "enum": [
+                "general",
+                "fixed",
+                "scientific"
+            ]
+        },
         "status": {
             "type": "object",
             "properties": {
@@ -80,6 +88,9 @@
         },
         "description": {
             "type": "string"
+        },
+        "default_float_format": {
+            "$ref": "#/definitions/float_format"
         },
         "ini_sections": {
             "type": "array",
@@ -311,6 +322,9 @@
                                         "properties": {
                                             "default_value": {
                                                 "type": "number"
+                                            },
+                                            "format": {
+                                                "$ref": "#/definitions/float_format"
                                             }
                                         }
                                     }
@@ -419,6 +433,9 @@
                                                 "items": {
                                                     "type": "number"
                                                 }
+                                            },
+                                            "format": {
+                                                "$ref": "#/definitions/float_format"
                                             }
                                         }
                                     }
@@ -438,7 +455,35 @@
                                         "properties": {
                                             "default_value": {
                                                 "type": "string"
+                                            },
+                                            "format": {
+                                                "enum": [
+                                                    "date",
+                                                    "datetime"
+                                                ]
                                             }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$comment": "The 'format' property is only allowed for value types 'float', 'list[float]' and 'datetime'.",
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "enum": [
+                                                    "float",
+                                                    "list[float]",
+                                                    "datetime"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "then": true,
+                                    "else": {
+                                        "not": {
+                                            "required": [
+                                                "format"
+                                            ]
                                         }
                                     }
                                 }
@@ -462,6 +507,7 @@
         "file_format_version",
         "file_format_type",
         "description",
+        "default_float_format",
         "ini_sections"
     ],
     "additionalProperties": false
