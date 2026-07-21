@@ -446,24 +446,31 @@ contains
         do i = 1, nosegl
             is1 = nvert(1, i)
             if (i < num_cells) then
-                is2 = nvert(1, i + 1)
+                is2 = nvert(1, i + 1) - 1
             else
-                is2 = num_cells + 1
+                is2 = num_cells
             end if
             bmax = 0
-            do j = is1, is2 - 1
+            do j = is1, is2
                 cell_i = ivert(j)
                 if (ibas(cell_i) <= nob + 1) then
                     bmax = max(bmax, ibas(cell_i))
                 end if
             end do
             if (bmax == 0) cycle
-            do j = is1, is2 - 1
+            do j = is1, is2
                 cell_i = ivert(j)
                 if (ibas(cell_i) <= nob + 1) then
                     ibas(cell_i) = bmax
                 end if
             end do
+            if (bmax == nob + 1) then
+               do j = is1, is2
+                   cell_i = ivert(j)
+                   if (ibas(cell_i) == nob + 1) exit
+                   ibas(cell_i) = bmax
+               end do
+            end if
         end do
         if (wetting .and. report) then
             if (nosegl == num_cells) then
