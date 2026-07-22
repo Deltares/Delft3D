@@ -13,6 +13,7 @@ contains
    !> Test bubble and normal source-sinks
    subroutine test_with_normal_source_sinks() bind(C)
       use fm_external_forcings, only: init_new
+      use m_unstruc_model_data, only: extfile_new_list
       use m_flow_geominit, only: flow_geominit
       use Timers, only: timini
       use fm_external_forcings_data, only: bubblescreen_air_discharge
@@ -94,7 +95,8 @@ contains
       call flow_geominit(0)
       call initialize_ec_module()
 
-      call init_new("FlowFM_bnd.ext", iresult)
+      extfile_new_list = ["FlowFM_bnd.ext"]
+      call init_new(iresult)
 
       success = ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, 20010101, 0.0_dp, 1, 300.0_dp)
 
