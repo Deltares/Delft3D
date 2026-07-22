@@ -17,6 +17,7 @@ from src.config.program_config import ProgramConfig
 from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import add_search_path, get_default_logging_folder_path, stripPassword
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 from src.utils.logging.file_logger import FileLogger
 from src.utils.logging.i_logger import ILogger
 from src.utils.paths import Paths
@@ -31,7 +32,7 @@ class Program:
         self.__settings: TestBenchSettings = copy.deepcopy(settings)
         self.__last_return_code: int = 0
         self.__error: Exception | None = None
-        self.max_run_time = None
+        self.max_run_time = DEFAULT_MAX_RUNTIME_SECONDS
 
     @property
     def name(self) -> str:
