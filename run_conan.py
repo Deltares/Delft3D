@@ -15,7 +15,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-DEFAULT_CONAN_PROFILE = "delft3d_alma8_intel_2024_v3"
+DEFAULT_CONAN_PROFILE_LINUX = "delft3d_alma8_intel_2024_v3"
+DEFAULT_CONAN_PROFILE_WINDOWS = "delft3d_windows_msvc_194_v3"
 CONAN_PROFILE_ENV_VAR = "CONAN_DEFAULT_PROFILE"
 
 ROOT = Path(__file__).resolve().parent
@@ -266,13 +267,20 @@ def upload_new_packages(remote: str, *, ci: bool = False) -> None:
     print(f"\nDone. Uploaded: {uploaded}, skipped: {skipped}")
 
 
+def _get_default_profile() -> str:
+    if platform.system() == "Windows":
+        return DEFAULT_CONAN_PROFILE_WINDOWS
+    return DEFAULT_CONAN_PROFILE_LINUX
+
+
 def _get_profile(profile_override: str | None) -> str:
-    return profile_override or os.environ.get(CONAN_PROFILE_ENV_VAR) or DEFAULT_CONAN_PROFILE
+    return profile_override or os.environ.get(CONAN_PROFILE_ENV_VAR) or _get_default_profile()
 
 
 def _require_profile(profile: str) -> None:
-    profiles = [DEFAULT_CONAN_PROFILE]
-    if profile != DEFAULT_CONAN_PROFILE:
+    default_profile = _get_default_profile()
+    profiles = [default_profile]
+    if profile != default_profile:
         profiles.append(profile)
 
     for required_profile in profiles:
@@ -415,7 +423,7 @@ def main() -> None:
     parser_update_lockfile.add_argument(
         "--profile",
         help=(
-            f"Conan profile (default: ${CONAN_PROFILE_ENV_VAR}, or {DEFAULT_CONAN_PROFILE} "
+            f"Conan profile (default: ${CONAN_PROFILE_ENV_VAR}, or {_get_default_profile()} "
             "when the environment variable is unset)."
         ),
     )
@@ -429,7 +437,7 @@ def main() -> None:
     parser_install.add_argument(
         "--profile",
         help=(
-            f"Conan profile (default: ${CONAN_PROFILE_ENV_VAR}, or {DEFAULT_CONAN_PROFILE} "
+            f"Conan profile (default: ${CONAN_PROFILE_ENV_VAR}, or {_get_default_profile()} "
             "when the environment variable is unset)."
         ),
     )
