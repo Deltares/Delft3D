@@ -190,6 +190,10 @@ contains
          deallocate(kbndz)
       end if
 
+      if (allocated(extfile_new_list)) then
+         deallocate(extfile_new_list)
+      end if
+
       call cleanup_prefetch_arrays()
 
    end subroutine resetFullFlowModel
