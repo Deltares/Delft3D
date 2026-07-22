@@ -91,6 +91,7 @@ contains
       use m_calibration_update, only: calibration_update
       use m_flow_settidepotential, only: flow_settidepotential
       use precision, only: dp
+      use m_structures, only: jaoldstr
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
@@ -116,14 +117,16 @@ contains
       integer :: i
       integer :: i_const
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
-      real(kind=dp), dimension(:), allocatable :: zcgen_local_kx3 !< Local array for zcgen with 3 columns (width, height, crestlevel) to be passed to ec_gettimespacevalue
+         real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
 
       call timstrt('External forcings', handle_ext)
 
       success = .true.
 
-      allocate(zcgen_local_kx3(ncgensg * 3))
-      zcgen_local_kx3 = dmiss
+      if (jaoldstr > 0 .and. ncgensg > 0) then
+         allocate(zcgen_legacy_kx3(ncgensg * 3))
+         zcgen_legacy_kx3 = dmiss
+      end if
 
       if (allocated(air_pressure)) then
          ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
@@ -198,14 +201,20 @@ contains
       end if
 
       if (ncgensg > 0) then
-         call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen_local_kx3, time_in_seconds)
+         if (jaoldstr > 0) then
+            ! Old ext-style generalstructure forcing still supplies 3 values per structure.
+            call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen_legacy_kx3, time_in_seconds)
 
-         ! Copy zcgen_local_kx3 values to zcgen array, only when not equal to dmiss
-         do i = 0, ncgensg - 1
-            zcgen(i * 4 + 1) = merge(zcgen_local_kx3(i * 3 + 1), zcgen(i * 4 + 1), zcgen_local_kx3(i * 3 + 1) /= dmiss)
-            zcgen(i * 4 + 2) = merge(zcgen_local_kx3(i * 3 + 2), zcgen(i * 4 + 2), zcgen_local_kx3(i * 3 + 2) /= dmiss)
-            zcgen(i * 4 + 4) = merge(zcgen_local_kx3(i * 3 + 3), zcgen(i * 4 + 4), zcgen_local_kx3(i * 3 + 3) /= dmiss)
-         end do
+            ! Remap legacy slots 1:3 onto zcgen slots 1, 2 and 4, leaving slot 3
+            ! available for the newer time-varying gate height.
+            do i = 0, ncgensg - 1
+               zcgen(i * 4 + 1) = merge(zcgen_legacy_kx3(i * 3 + 1), zcgen(i * 4 + 1), zcgen_legacy_kx3(i * 3 + 1) /= dmiss)
+               zcgen(i * 4 + 2) = merge(zcgen_legacy_kx3(i * 3 + 2), zcgen(i * 4 + 2), zcgen_legacy_kx3(i * 3 + 2) /= dmiss)
+               zcgen(i * 4 + 4) = merge(zcgen_legacy_kx3(i * 3 + 3), zcgen(i * 4 + 4), zcgen_legacy_kx3(i * 3 + 3) /= dmiss)
+            end do
+         else
+            call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
+         end if
 
          call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
       end if
