@@ -77,8 +77,7 @@ module fm_external_forcings
    end interface
 
    interface
-      module subroutine init_new(external_force_file_name, iresult)
-         character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
+      module subroutine init_new(iresult)
          integer, intent(inout) :: iresult
       end subroutine init_new
    end interface
@@ -500,6 +499,7 @@ contains
       integer :: filetype
       integer, allocatable :: kce(:) ! kc edges (numl)
       integer, allocatable :: ke(:) ! kc edges (numl)
+      integer :: i_ext !< index of external forcing file
       logical :: jawel
       integer :: ja_ext_force
       logical :: ext_force_bnd_used
@@ -535,16 +535,21 @@ contains
             call err_flush()
          end if
       end if
-      if (len(trim(md_extfile_new)) > 0) then
-         inquire (file=trim(md_extfile_new), exist=jawel)
-         if (jawel) then
-            ext_force_bnd_used = .true.
-         else
-            call qnerror('External forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile_new), ''' not found.'
-            call err_flush()
+
+      do i_ext = 1, size(extfile_new_list)
+         if (len(trim(extfile_new_list(i_ext))) > 0) then
+            inquire (file=trim(extfile_new_list(i_ext)), exist=jawel)
+
+            if (jawel) then
+               ext_force_bnd_used = .true.
+            else
+               call qnerror('External forcing file '''//trim(extfile_new_list(i_ext))//''' not found.', '  ', ' ')
+               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(extfile_new_list(i_ext)), ''' not found.'
+               call err_flush()
+            end if
+
          end if
-      end if
+      end do
 
       if (allocated(xe)) then
          deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
@@ -674,14 +679,12 @@ contains
       num_bc_ini_blocks = 0
       if (ext_force_bnd_used) then
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
-         call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
-                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+         do i_ext = 1, size(extfile_new_list)
+            call read_location_files_from_boundary_blocks(trim(extfile_new_list(i_ext)), nx, kce, num_bc_ini_blocks, &
+               numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
 
-         call read_initialtracer_properties(trim(md_extfile_new), nx)
-      end if
-
-      if (len(trim(md_inifieldfile)) > 0) then
-         call read_initialtracer_properties(trim(md_inifieldfile), nx)
+            call read_initialtracer_properties(trim(extfile_new_list(i_ext)), nx)
+         end do
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -1840,17 +1843,13 @@ contains
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
 
       integer :: iresult
 
       call setup(iresult)
       if (iresult == DFM_NOERR) then
-         call init_new(md_inifieldfile, iresult)
-      end if
-      if (iresult == DFM_NOERR) then
-         call init_new(md_extfile_new, iresult)
+         call init_new(iresult)
       end if
       if (iresult == DFM_NOERR) then
          call init_old(iresult)
