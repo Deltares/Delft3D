@@ -101,6 +101,7 @@ module m_unstruc_model_data
 
    character(len=max_prop_length) :: md_extfile = ' ' !< External forcing specification file (e.g., *.ext)
    character(len=max_prop_length) :: md_extfile_new = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
+   character(len=max_prop_length), dimension(:), allocatable :: extfile_new_list !< List of external forcing specification files new style (bct format), (e.g., *.ext)
    character(len=max_prop_length) :: md_extfile_dir = ' ' !< Directory containing the old-style external forcing specification file (e.g., *.ext) (relative to MDU/current working dir)
 
    character(len=max_prop_length) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
