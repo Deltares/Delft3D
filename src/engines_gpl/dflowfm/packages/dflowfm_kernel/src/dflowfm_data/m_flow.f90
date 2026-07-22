@@ -46,6 +46,8 @@ module m_flow ! flow arrays-999
 
    implicit none
 
+   logical :: use_gpu = .false. !< Use GPU for flow calculations
+
    ! 3D parameters
    integer :: kmx !< nr of 3d layers, increasing in positive upward direction
                   !! if kmx==0 then 2D code. if kmx==1 then 3D code

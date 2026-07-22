@@ -226,6 +226,7 @@ contains
       call mess(LEVEL_INFO, 'Start of the computation time loop')
       iresult = flowinit()
       jastop = 0
+      iresult = to_gpu() ! Move flow data to GPU if use_gpu is true
       do while (time_user < tstop_user .and. jastop == 0 .and. iresult == DFM_NOERR) ! time loop
          call flowstep(jastop, iresult)
       end do
@@ -234,6 +235,7 @@ contains
          call dfm_strerror(msgbuf, iresult)
          call warn_flush()
       end if
+      iresult = clean_gpu() ! Clean up GPU data if use_gpu is true
 
       call write_some_final_output()
 
@@ -259,6 +261,31 @@ contains
       call loadmodel(file_name)
       write (*, *) 'model loaded'
    end subroutine api_loadmodel
+
+   integer function to_gpu() result(iresult)
+      use dfm_error
+      use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop, use_gpu
+      use m_flowgeom, only: lnx, ln, wcL, ndx
+
+      iresult = DFM_NOERR
+
+
+      !$OMP target enter data map(to: ktop, kbot, kmxn, lnx, Lbot, Ltop, ln)
+      use_gpu = .false.
+
+   end function to_gpu
+
+   integer function clean_gpu() result(iresult)
+      use dfm_error
+      use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop, use_gpu
+      use m_flowgeom, only: lnx, ln, wcL, ndx
+
+      iresult = DFM_NOERR
+
+      !$OMP target exit data map(delete: ktop, kbot, kmxn, lnx, Lbot, Ltop, ln)
+      use_gpu = .false.
+
+   end function clean_gpu
 
    integer function flowinit() result(iresult)
       use timers

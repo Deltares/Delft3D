@@ -31,7 +31,7 @@
 !
 module m_links_to_centers
    use precision, only: dp
-   use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop
+   use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop, use_gpu
    use m_flowgeom, only: lnx, ln, wcL, ndx
 
    implicit none
@@ -46,9 +46,9 @@ contains
       real(kind=dp), intent(in) :: vlin(lnkx)
       integer :: L, k1, k2, LL, kk, k_start, k_end, k
 
-      vnod = 0.0_dp
 
       if (kmx == 0) then
+         vnod = 0.0_dp
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
@@ -56,27 +56,59 @@ contains
             vnod(k2) = vnod(k2) + vlin(L) * wcL(2, L)
          end do
       else
-         do LL = 1, lnx
-            do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               vnod(k1) = vnod(k1) + vlin(L) * wcL(1, LL)
-               vnod(k2) = vnod(k2) + vlin(L) * wcL(2, LL)
+         if (use_gpu) then
+            !$OMP target data map(to: vlin, wcL) map(from: vnod)
+            !$OMP target teams distribute parallel do
+            do kk = 1, size(vnod)
+               vnod(kk) = 0.0_dp
             end do
-         end do
+            !$OMP end target teams distribute parallel do
 
-         !$OMP target teams distribute PARALLEL DO PRIVATE(kk, k_start, k_end, k) map(to: vnod, ktop, kbot, kmxn) map(tofrom: vnod)
-         do kk = 1, ndx
-            k_start = ktop(kk) + 1
-            k_end = kbot(kk) + kmxn(kk) - 1
-            !$OMP SIMD
-            do k = k_start, k_end
-               if (k <= ndkx) then ! Vector/simd code may go out of bounds without explicit check
-                  vnod(k) = vnod(ktop(kk))
-               end if
+            !$OMP target teams distribute parallel do
+            do LL = 1, lnx
+               do L = Lbot(LL), Ltop(LL)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  vnod(k1) = vnod(k1) + vlin(L) * wcL(1, LL)
+                  vnod(k2) = vnod(k2) + vlin(L) * wcL(2, LL)
+               end do
             end do
-         end do
-         !$OMP end target teams distribute PARALLEL DO
+            !$OMP end target teams distribute parallel do
+                     
+            !$OMP target teams distribute PARALLEL DO 
+            do kk = 1, ndx
+               k_start = ktop(kk) + 1
+               k_end = kbot(kk) + kmxn(kk) - 1
+               do k = k_start, k_end
+                  if (k <= ndkx) then ! Vector/simd code may go out of bounds without explicit check
+                     vnod(k) = vnod(ktop(kk))
+                  end if
+               end do
+            end do
+            !$OMP end target teams distribute PARALLEL DO
+            !$OMP end target data
+         else
+            vnod = 0.0_dp
+            do LL = 1, lnx
+               do L = Lbot(LL), Ltop(LL)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  vnod(k1) = vnod(k1) + vlin(L) * wcL(1, LL)
+                  vnod(k2) = vnod(k2) + vlin(L) * wcL(2, LL)
+               end do
+            end do
+
+            do kk = 1, ndx
+               k_start = ktop(kk) + 1
+               k_end = kbot(kk) + kmxn(kk) - 1
+               do k = k_start, k_end
+                  if (k <= ndkx) then ! Vector/simd code may go out of bounds without explicit check
+                     vnod(k) = vnod(ktop(kk))
+                  end if
+               end do
+            end do
+
+         end if
       end if
 
    end subroutine links_to_centers
