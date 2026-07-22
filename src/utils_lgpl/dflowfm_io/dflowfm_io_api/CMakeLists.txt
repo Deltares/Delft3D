@@ -29,7 +29,7 @@ install(TARGETS dflowfm_io_api
 # bundles it. The library is a build artifact: it is git-ignored there and only ever produced by
 # the build, never committed.
 set(DFLOWFM_IO_PY_WHEEL_LIB_DIR
-	"${CMAKE_CURRENT_SOURCE_DIR}/wrappers/python/packaging/src/dflowfm_io/_lib")
+	"${CMAKE_CURRENT_SOURCE_DIR}/wrappers/python/src/dflowfm_io/_lib")
 
 add_custom_command(TARGET dflowfm_io_api POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${DFLOWFM_IO_PY_WHEEL_LIB_DIR}"
