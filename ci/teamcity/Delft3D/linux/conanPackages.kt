@@ -29,6 +29,7 @@ object LinuxConanPackages : BuildType({
     allowExternalStatus = true
 
     params {
+        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2024")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
         param("env.CONAN_HOME", "/conan-cache")

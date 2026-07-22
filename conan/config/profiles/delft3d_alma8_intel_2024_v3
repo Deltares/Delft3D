@@ -6,6 +6,7 @@ compiler.libcxx=libstdc++11
 compiler.version=2024.2
 compiler.mode=icx
 fortran_compiler=ifx
+fortran_compiler.version=2024.2
 os=Linux
 os.distro=Alma8
 
