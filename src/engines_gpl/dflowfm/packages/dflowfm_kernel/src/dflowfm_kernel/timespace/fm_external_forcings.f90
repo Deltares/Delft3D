@@ -179,7 +179,9 @@ contains
       wy = 0.0_dp
       wdsu_x = 0.0_dp
       wdsu_y = 0.0_dp
-      wcharnock = 0.0_dp
+      if (jaspacevarcharn > 0) then
+         wcharnock%values = 0.0_dp
+      end if
       call initialize_array_with_zero(ec_pwxwy_x)
       call initialize_array_with_zero(ec_pwxwy_y)
 
@@ -262,13 +264,13 @@ contains
          end if
          if (allocated(ec_pwxwy_c)) then
             do link = 1, lnx
-               wcharnock(link) = wcharnock(link) + 0.5_dp * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
+               wcharnock%values(link) = wcharnock%values(link) + 0.5_dp * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
             end do
          end if
       end if
       if (allocated(ec_charnock)) then
          do link = 1, lnx
-            wcharnock(link) = wcharnock(link) + 0.5_dp * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
+            wcharnock%values(link) = wcharnock%values(link) + 0.5_dp * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
          end do
       end if
 

@@ -33,6 +33,7 @@
 module m_wind
 
    use precision, only: dp
+   use m_array_or_scalar, only: t_array_or_scalar
 
    implicit none
 
@@ -42,7 +43,7 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_y !< Temporary array, for comparing EC-module to Meteo1.
    real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_c !< Temporary array, for comparing EC-module to Meteo1.
    real(kind=dp), dimension(:), allocatable, target :: ec_charnock !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), dimension(:), allocatable, target :: wcharnock !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
+   type(t_array_or_scalar), target :: wcharnock !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
 
    real(kind=dp), dimension(:), allocatable, target :: air_pressure !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
                                                       !! so that it can be merged with tidep later and difpatm/dx = m/s2, saves 1 array , using mode = 'add'
@@ -159,6 +160,7 @@ contains
       jawind = 0 !< use wind yes or no
       jastresstowind = 0 !< if jawindstressgiven==1, convert stress to wind yes/no 1/0
       ja_computed_airdensity = 0
+      wcharnock%scalar = 0.018_dp !< ecmwf default value of charnock coefficient when wave is not used
       ! Remaining of variables is handled in reset_wind()
       call reset_wind()
    end subroutine default_wind

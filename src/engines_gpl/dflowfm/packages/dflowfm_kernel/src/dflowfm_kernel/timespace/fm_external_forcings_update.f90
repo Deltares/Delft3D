@@ -330,6 +330,7 @@ contains
    !> compute fluxes based on Monin-Obukhov Stability Theory
    module subroutine compute_air_water_interaction_most_fluxes(initialization)
       use precision, only: dp
+      use m_alloc, only: realloc
       use m_flowgeom, only: ndx, lnx, csu, snu
       use m_get_surface_temperature, only: get_surface_temperature
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
@@ -366,7 +367,10 @@ contains
       call compute_wind_relative_to_surface_on_link(wx(1:lnx), wy(1:lnx), relativewind, u1(ltop(1:lnx)), v(ltop(1:lnx)), &
                                csu(1:lnx), snu(1:lnx), windx_link, windy_link)
       call link_to_node_vector(windx_link, windy_link, windx, windy, ndx)
-      call link_to_node_scalar(wcharnock, charnock, ndx)
+      if (.not. allocated(wcharnock%values)) then
+         call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
+      end if
+      call link_to_node_scalar(wcharnock%values, charnock, ndx)
 
       call get_surface_temperature(surface_temperature, initialization)
       surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
