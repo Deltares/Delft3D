@@ -1155,7 +1155,13 @@
                     "description": "Fixed weir scheme.",
                     "enum_values": {
                         "0": "none",
+                        "1": "TODO",
+                        "2": "TODO",
+                        "3": "TODO",
+                        "4": "TODO",
+                        "5": "TODO",
                         "6": "semi-subgrid scheme",
+                        "7": "TODO",
                         "8": "Tabellenboek",
                         "9": "Villemonte"
                     }
