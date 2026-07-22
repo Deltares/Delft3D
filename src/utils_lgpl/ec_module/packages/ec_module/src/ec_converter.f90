@@ -1452,7 +1452,7 @@ contains
    !! Supports overwriting and adding-to the entire target Field array, as well all as overwriting only one array element.
    !! Converts all sources into one target: the magnitude of the wind.
    function ecConverterUniformToMagnitude(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
@@ -1555,7 +1555,7 @@ contains
    !! Assumes target(1) == wind_u and target(2) == wind_v.
    !! meteo1 : regdir, magdir2uv
    function ecConverterUnimagdir(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
@@ -1649,7 +1649,7 @@ contains
    end function ecConverterUnimagdir
 
    function ecConverterVerticalMean(zpos, val, zmin, zmax, ndxmin, ndxmax) result(integral)
-      ! Parameters
+      ! Arguments
       real(dp) :: integral
       real(dp), dimension(:), intent(in) :: zpos, val
       real(dp), intent(in) :: zmin, zmax
@@ -1711,7 +1711,7 @@ contains
       use m_missing,       only: dmiss
       use m_ec_message
 
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
@@ -2239,7 +2239,7 @@ contains
    !! Supports overwriting and adding-to the entire target Field array.
    !! meteo1 : gettimespacevalue
    function ecConverterArcinfo(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
@@ -2396,7 +2396,7 @@ contains
    !! Supports linear triangle interpolation in space, no time, no weights.
    !! meteo1 : timespaceinitialfield
    function ecConverterSamples(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
@@ -2543,7 +2543,7 @@ contains
    !! Converts angular velocity, phase and magnitude into an amplitude.
    !! meteo1 : readfouriercompstim
    function ecConverterFourier(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       type(c_time), intent(in) :: timesteps !< time in mjd
       logical :: success !< function status
@@ -2655,7 +2655,7 @@ contains
    !> Cyclic interpolation of two scalars, based on periodicity of 360 (degrees)
    !! Sort data in monotonically increasing order and rotate over smallest angle
    elemental function cyclic_interpolation(var1, var2, weight1, weight2)
-      ! Parameters
+      ! Arguments
       real(dp), intent(in) :: var1 !< First input argument for in interpolation functions using a scalar weight value
       real(dp), intent(in) :: var2 !< Second input argument for in interpolation functions using a scalar weight value
       real(dp), intent(in) :: weight1 !< Value for weighing two variables: 'weight1' holds for var1
@@ -2701,7 +2701,7 @@ contains
    !> Execute the Converters in the Connection sequentially.
    !! meteo1: gettimespacevalue
    function ecConverterSpiderweb(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
@@ -3009,7 +3009,7 @@ contains
       use m_alloc
       use kdtree2Factory
 
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
@@ -3803,7 +3803,7 @@ contains
    !> if the target field has an associated scalar pointer, fill it with the first element of the arr1DPtr array.
    !> This scalar pointer is connected with a scalar in a kernel, such as a single field in a derived type
    function ecConverterUpdateScalar(connection) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       logical :: success !< function status
 
@@ -3833,7 +3833,7 @@ contains
    !! defined by e--en and not normal to the polyline. Also, *all* polyline
    !! segments are checked, not the closest based on dbdistance of pli points.
    subroutine polyindexweight(xe, ye, xen, yen, xs, ys, kcs, ns, kL, wL, kR, wR)
-      ! Parameters
+      ! Arguments
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
       real(dp), dimension(:), intent(in) :: xs !< polygon
       real(dp), dimension(:), intent(in) :: ys
@@ -3923,7 +3923,7 @@ contains
    subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, jacros, sl, sm, xcr, ycr, crp)
       use ieee_arithmetic, only: ieee_is_nan
 
-      ! Parameters
+      ! Arguments
       real(dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
       integer, intent(inout) :: jacros
       real(dp), intent(inout) :: sl
@@ -3998,7 +3998,7 @@ contains
 
    !> distance point 1 -> 2
    real(dp) function dbdistance(x1, y1, x2, y2)
-      ! Parameters
+      ! Arguments
       real(dp) :: x1, y1, x2, y2
 
       ! Local variables
@@ -4024,7 +4024,7 @@ contains
 
    !> get field bounding box indices
    subroutine ecConverterGetBbox(instancePtr, itemID, t01, col0, col1, row0, row1, ncols, nrows, issparse, Ndatasize)
-      ! Parameters
+      ! Arguments
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: itemId !< unique Item id
       integer, intent(in) :: t01 !< field 0 (0) or 1 (other)
@@ -4067,7 +4067,7 @@ contains
    end subroutine ecConverterGetBbox
 
    subroutine MaskToSparse(n_cols, n_rows, imask, ia, ja)
-      ! Parameters
+      ! Arguments
       integer, intent(in) :: n_cols !< number of columns
       integer, intent(in) :: n_rows !< number of rows
       integer, dimension(n_cols, n_rows), intent(in) :: imask !< active (1) or not (0)
@@ -4117,7 +4117,7 @@ contains
    end subroutine MaskToSparse
 
    subroutine SetSparsityPattern(srcfld, n_cols, n_rows, ia, ja)
-      ! Parameters
+      ! Arguments
       type(tEcField), intent(inout) :: srcfld !< source field
       integer, intent(in) :: n_cols !< number of columns
       integer, intent(in) :: n_rows !< number of rows
@@ -4144,7 +4144,7 @@ contains
    !!  down-up: increasing row index
    !!  note: input indices are (row,col), not (col,row)
    subroutine ConvertToSparseIndices(n_points, indices, n_rows, ia, ja)
-      ! Parameters
+      ! Arguments
       integer, intent(in) :: n_points !< number of target points
       integer, dimension(2, n_points), intent(inout) :: indices !<(mrow,ncol) indices of lower-left source point (in), sparse index of (lower-left,upper-left) source points (out)
       integer, intent(in) :: n_rows !< number of rows of source
@@ -4206,7 +4206,7 @@ contains
 
    !> Applies the specified operand to the given target value with the provided value.
    elemental subroutine apply_operand(operand, target_value, provided_value)
-      ! Parameters
+      ! Arguments
       integer, intent(in) :: operand !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY)
       real(dp), intent(inout) :: target_value !< target_value to apply the operand to
       real(dp), intent(in) :: provided_value !< value to apply with the operand
@@ -4249,7 +4249,7 @@ contains
 
    !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
    subroutine check_undefined_values_for_operand(operand, target_values, istat)
-      ! Parameters
+      ! Arguments
       integer, intent(in) :: operand !< operand type (EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
       real(dp), dimension(:), intent(in) :: target_values !< array of target values to check for undefined values
       logical, intent(out) :: istat !< status code (.true. for success, .false. for error)
