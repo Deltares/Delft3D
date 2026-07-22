@@ -175,9 +175,10 @@ contains
         real(kind = dp) :: fact                               !< Interpolation factor for volumes
         integer(kind = int_wp) :: istep, nstep                !< Fractional step variables
         integer(kind = int_wp) :: is1, is2, if1, if2          !< Loop variables per box
-        integer(kind = int_wp) :: ih1, ih2                    !< Help variables parallellism
+        integer(kind = int_wp) :: ih1_top, ih1, ih2_bot, ih2  !< Help variables parallellism
         integer(kind = int_wp) :: ilay                        !< Loop counter layers
         integer(kind = int_wp) :: maxlay                      !< Maximum number of layers observed in this model
+        integer(kind = int_wp), allocatable, save :: ibas0(:) !< In which basket is my cell before unifying columns
         integer(kind = int_wp) :: bmax                        !< Maximum box number in a column
         integer(kind = int_wp) :: changed, remained, iter     !< Flooding help variables
         real(kind = dp), allocatable, save :: low(:), dia(:), upr(:) !< Matrix of one column
@@ -224,6 +225,7 @@ contains
                 write (file_unit, '(A,i3)') ' Default number of baskets : ', nob
             end if
             allocate (its(nob + 2), itf(nob + 2), iqsep(nob + 2), dt(nob + 1))
+            allocate (ibas0(num_cells))
             report = .false.
             i = index_in_array('Iteration report    ', coname)
             if (i > 0) then
@@ -441,6 +443,7 @@ contains
                 end do
             end if
         end do
+        ibas0 = ibas
 
         !   1d: give each cell of a column the highest basket nr. of the column
         do i = 1, nosegl
@@ -471,6 +474,10 @@ contains
                    ibas(cell_i) = bmax
                end do
             end if
+        end do
+        write (file_unit, '(/A)') ' Basket numbers of the cells (i, cell, basket before unifying columns, basket after unifying columns)'
+        do i = 1, num_cells
+           write (file_unit, '(i10,i10,i10,i10)') i, ivert(i), ibas0(ivert(i)), ibas(ivert(i))
         end do
         if (wetting .and. report) then
             if (nosegl == num_cells) then
@@ -1191,13 +1198,21 @@ contains
                 do i = is1, is2
                     cell_i = iords(i)
                     j = nvert(2, cell_i)
-                    if (j <= 0) cycle                                  ! Do this only for head of columns
-                    ih1 = nvert(1, j)
-                    if (j < num_cells) then
-                        ih2 = nvert(1, j + 1)
+                    ih1_top = nvert(1, abs(j))
+                    if (abs(j) < num_cells) then
+                        ih2 = nvert(1, abs(j) + 1)
                     else
                         ih2 = num_cells + 1
                     end if
+                    ! find the active top of the column
+                    do j = ih1_top, ih2 - 1
+                       if (ibas(ivert(j)) <= nob) then
+                          ih1 = j
+                          exit
+                       end if
+                    end do
+                    ! skip is active top is not the current cell
+                    if (cell_i /= ivert(ih1)) cycle
                     if (ih2 == ih1 + 1) then                             ! One cell in the column
                         do substance_i = 1, num_substances_transported
                             rhs(substance_i, cell_i) = dconc2(substance_i, cell_i)
