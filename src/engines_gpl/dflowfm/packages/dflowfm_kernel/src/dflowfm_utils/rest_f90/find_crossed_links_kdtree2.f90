@@ -271,12 +271,23 @@ contains
       return
    end subroutine find_crossed_links_kdtree2
 
-   !> Find links crossed by a polyline using a thread-safe uniform-grid index.
-   !! This routine is intended for comparing fixed-weir preprocessing performance with
-   !! find_crossed_links_kdtree2. The grid only rejects candidates; CROSSinbox remains
-   !! the exact intersection test. Spherical coordinates and non-flowlink intersection
-   !! modes retain the existing k-d-tree implementation.
-   subroutine find_crossed_links_kdtree_parallel(treeinst, NPL, xpl, ypl, itype, n_links_polyline_nodes, jaboundarylinks, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+   !> Find Cartesian flow links crossed by a polyline using a parallel uniform-grid index.
+   !!
+   !! Algorithm overview:
+   !! 1. Build a read-only, uniform 2D grid over flow-link bounding boxes.
+   !! 2. Walk each valid input-polyline segment through the grid using a 2D Digital Differential Analyzer.
+   !! 3. Test only links in the traversed buckets with CROSSinbox.
+   !!
+   !! Digital Differential Analyzer: For each input segment it starts in the
+   !! bucket containing the first endpoint, repeatedly steps to the next vertical or
+   !! horizontal bucket boundary crossed by the segment, and stops at the bucket
+   !! containing the final endpoint. This visits only locally relevant buckets rather
+   !! than every bucket in the segment bounding box.
+   !!
+   !! This implementation deliberately supports Cartesian ITYPE_FLOWLINK requests only.
+   !! Spherical coordinates require a surface-aware spatial index; all unsupported cases
+   !! fall back to find_crossed_links_kdtree2.
+   subroutine find_crossed_links_parallel(treeinst, NPL, xpl, ypl, itype, n_links_polyline_nodes, jaboundarylinks, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
       use precision, only: dp
       use m_flowgeom, only: lnx, lnxi, lnx1db, ln, xz, yz
       use kdtree2Factory, only: kdtree_instance
@@ -287,25 +298,35 @@ contains
       use geometry_module, only: crossinbox
       use omp_lib, only: omp_get_max_threads, omp_get_thread_num
 
-      type(kdtree_instance), intent(inout) :: treeinst
-      integer, intent(in) :: NPL
-      real(kind=dp), dimension(NPL), intent(in) :: xpl, ypl
-      integer, intent(in) :: itype
-      integer, intent(in) :: n_links_polyline_nodes
-      integer, intent(in) :: jaboundarylinks
-      integer, intent(out) :: intersection_count
-      integer, dimension(n_links_polyline_nodes), intent(inout) :: crossed_links
-      integer, dimension(n_links_polyline_nodes), intent(inout) :: polygon_nodes
-      real(kind=dp), dimension(n_links_polyline_nodes), intent(inout) :: polygon_segment_weights
-      integer, intent(out) :: ierror
+      type(kdtree_instance), intent(inout) :: treeinst !< kdtree instance used by the fallback implementation.
+      integer, intent(in) :: NPL !< Number of nodes in the input polyline.
+      real(kind=dp), dimension(NPL), intent(in) :: xpl, ypl !< Cartesian x/y coordinates of the input-polyline nodes.
+      integer, intent(in) :: itype !< Requested intersection type; this implementation supports ITYPE_FLOWLINK.
+      integer, intent(in) :: n_links_polyline_nodes !< Capacity of the crossed-link output arrays.
+      integer, intent(in) :: jaboundarylinks !< Boundary-link inclusion mode (BOUNDARY_NONE, BOUNDARY_ALL, or BOUNDARY_2D).
+      integer, intent(out) :: intersection_count !< Number of crossed-link records written to the output arrays.
+      integer, dimension(n_links_polyline_nodes), intent(inout) :: crossed_links !< Flow-link number for each intersection record.
+      integer, dimension(n_links_polyline_nodes), intent(inout) :: polygon_nodes !< Input-polyline start-node number for each intersection record.
+      real(kind=dp), dimension(n_links_polyline_nodes), intent(inout) :: polygon_segment_weights !< Relative crossing position along each polyline segment.
+      integer, intent(out) :: ierror !< Error status: 0 on success, 1 on failure.
 
-      integer, parameter :: TARGET_LINKS_PER_BUCKET = 8
-      integer, parameter :: MAX_BUCKETS_PER_LINK = 256
-      integer, parameter :: MAX_GRID_BUCKETS = 65536
+      integer, parameter :: TARGET_LINKS_PER_BUCKET = 8 ! Target average occupancy; actual occupancy follows mesh density.
 
+      integer, parameter :: MAX_BUCKETS_PER_LINK = 256 ! Long links use overflow_links instead of filling many buckets.
+
+      integer, parameter :: MAX_GRID_BUCKETS = 65536 ! Bounds index memory and construction time on very large meshes.
+
+      ! Original polygon-node index for every valid segment; DMISS-separated segments are omitted.
       integer, allocatable :: polyline_segments(:)
+      ! Compressed sparse row (CSR) layout for grid buckets: links in bucket b are
+      ! bucket_links(bucket_start(b):bucket_start(b+1)-1). bucket_cursor is used only
+      ! while filling the already-sized bucket_links array.
       integer, allocatable :: bucket_counts(:), bucket_start(:), bucket_cursor(:), bucket_links(:)
-      integer, allocatable :: overflow_links(:), candidate_seen(:,:)
+      ! Links spanning too many buckets; checked for every input segment.
+      integer, allocatable :: overflow_links(:)
+      ! Per-thread generation stamps; avoids duplicate testing of a link in several buckets.
+      integer, allocatable :: candidate_seen(:, :)
+      ! Conservative Cartesian flow-link boxes.
       real(kind=dp), allocatable :: link_xmin(:), link_xmax(:), link_ymin(:), link_ymax(:)
       integer :: link_count, segment_count, target_bucket_count, number_of_buckets
       integer :: grid_nx, grid_ny, total_bucket_entries, overflow_count, number_of_threads
@@ -322,8 +343,9 @@ contains
       ierror = 1
       intersection_count = 0
 
-      ! The grid index is a Cartesian conservative prefilter. Preserve the existing
-      ! implementation for spherical coordinates and all other intersection modes.
+      ! The grid follows straight segments in raw x/y space, so it is only valid for
+      ! Cartesian flow links. Do not replace this fallback with a lon/lat grid: longitude
+      ! wrapping and spherical segment geometry require a dedicated spherical index.
       if (jsferic /= 0 .or. itype /= ITYPE_FLOWLINK .or. NPL < 2) then
          call find_crossed_links_kdtree2(treeinst, NPL, xpl, ypl, itype, n_links_polyline_nodes, jaboundarylinks, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
          return
@@ -340,6 +362,8 @@ contains
          return
       end if
 
+      ! Compact the input once. All subsequent work is per valid segment rather than
+      ! per input node, and polygon_nodes keeps the original index expected by callers.
       allocate (polyline_segments(NPL - 1))
       segment_count = 0
       do k = 1, NPL - 1
@@ -354,6 +378,7 @@ contains
          goto 1234
       end if
 
+      ! Build one bounding box per eligible flow link and derive the spatial-index extent.
       allocate (link_xmin(link_count), link_xmax(link_count), link_ymin(link_count), link_ymax(link_count))
       grid_xmin = huge(0.0_dp)
       grid_xmax = -huge(0.0_dp)
@@ -378,6 +403,9 @@ contains
 
       xspan = grid_xmax - grid_xmin
       yspan = grid_ymax - grid_ymin
+      ! Determine the desired number of buckets from the number of flow links, targeting
+      ! roughly TARGET_LINKS_PER_BUCKET links per bucket. Then divide that total between
+      ! x and y in proportion to the mesh extent.
       target_bucket_count = min(MAX_GRID_BUCKETS, max(1, link_count / TARGET_LINKS_PER_BUCKET))
 
       if (xspan > 0.0_dp .and. yspan > 0.0_dp) then
@@ -404,6 +432,7 @@ contains
          grid_hy = 1.0_dp
       end if
 
+      ! First CSR pass: count entries so all shared index storage can be allocated once.
       allocate (bucket_counts(number_of_buckets), bucket_start(number_of_buckets + 1), bucket_cursor(number_of_buckets))
       bucket_counts = 0
       overflow_count = 0
@@ -418,6 +447,7 @@ contains
          iyhi = grid_cell_index(link_ymax(L), grid_ymin, grid_hy, grid_ny)
          bucket_count_for_link = (ixhi - ixlo + 1) * (iyhi - iylo + 1)
          if (bucket_count_for_link > MAX_BUCKETS_PER_LINK) then
+            ! very long links are handled separately to avoid filling many buckets and slowing down the candidate filter.
             overflow_count = overflow_count + 1
          else
             do iy = iylo, iyhi
@@ -429,6 +459,7 @@ contains
          end if
       end do
 
+      ! Prefix sum converts bucket counts to CSR start offsets.
       bucket_start(1) = 1
       do bucket = 1, number_of_buckets
          bucket_start(bucket + 1) = bucket_start(bucket) + bucket_counts(bucket)
@@ -438,6 +469,8 @@ contains
       bucket_cursor = bucket_start(1:number_of_buckets)
       overflow_count = 0
 
+      ! Second CSR pass: write each non-overflow link ID to the buckets overlapped by
+      ! its bounding box. From here onward this index is read-only and thread-safe.
       do L = 1, link_count
          if (jaboundarylinks == BOUNDARY_2D .and. L > lnxi .and. L <= lnx1db) then
             cycle
@@ -461,6 +494,8 @@ contains
          end if
       end do
 
+      ! A link can appear in several neighbouring or traversed buckets. Each worker owns
+      ! one stamp column, so de-duplication needs no locks in the hot candidate loop.
       number_of_threads = max(1, omp_get_max_threads())
       allocate (candidate_seen(link_count, number_of_threads))
       candidate_seen = 0
@@ -468,6 +503,8 @@ contains
       call mess(LEVEL_INFO, 'Finding crossed flowlinks using parallel spatial grid...')
       call readyy('Finding crossed links', 0.0_dp)
 
+      ! Work is distributed by input-polyline segment. GUIDED scheduling accounts for
+      ! unequal numbers of crossed buckets and local candidate links per segment.
       !$OMP PARALLEL DO SCHEDULE(GUIDED) DEFAULT(SHARED) &
       !$OMP PRIVATE(iseg, thread_index, k, xa, ya, xb, yb, dx, dy, segment_xmin, segment_xmax, segment_ymin, segment_ymax, &
       !$OMP         ix, iy, ix_end, iy_end, step_x, step_y, tmax_x, tmax_y, tdelta_x, tdelta_y, neighbour_x, neighbour_y, &
@@ -518,9 +555,11 @@ contains
             tdelta_y = huge(0.0_dp)
          end if
 
+         ! Amanatides-Woo style DDA visits the grid cells crossed by the segment. The
+         ! surrounding 3x3 neighbourhood makes the candidate filter conservative for
+         ! links on a bucket edge or a DDA corner crossing, while avoiding a scan of the
+         ! complete segment bounding box.
          do
-            ! Check neighbouring buckets as well, making grid-edge and grid-corner
-            ! intersections conservative without widening the query to the full bbox.
             do neighbour_y = max(1, iy - 1), min(grid_ny, iy + 1)
                do neighbour_x = max(1, ix - 1), min(grid_nx, ix + 1)
                   bucket = neighbour_x + (neighbour_y - 1) * grid_nx
@@ -534,10 +573,13 @@ contains
                          link_ymax(candidate_link) < segment_ymin .or. link_ymin(candidate_link) > segment_ymax) then
                         cycle
                      end if
-                      CRP = 0.0_dp
+                     CRP = 0.0_dp
                      call crossinbox(xa, ya, xb, yb, xz(ln(1, candidate_link)), yz(ln(1, candidate_link)), &
-                                      xz(ln(2, candidate_link)), yz(ln(2, candidate_link)), jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
+                                     xz(ln(2, candidate_link)), yz(ln(2, candidate_link)), jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
                      if (jacros == 1) then
+                        ! The only shared mutable output is the record count. Reserve a
+                        ! unique result slot atomically; the chosen array elements are
+                        ! subsequently written by this worker only.
                         !$OMP ATOMIC CAPTURE
                         output_index = intersection_count
                         intersection_count = intersection_count + 1
@@ -568,6 +610,7 @@ contains
             end if
          end do
 
+         ! Check the special links that were too long to be placed in the grid the old fashioned way.
          do overflow_index = 1, overflow_count
             candidate_link = overflow_links(overflow_index)
             if (candidate_seen(candidate_link, thread_index) == iseg) then
@@ -580,7 +623,7 @@ contains
             end if
             CRP = 0.0_dp
             call crossinbox(xa, ya, xb, yb, xz(ln(1, candidate_link)), yz(ln(1, candidate_link)), &
-                             xz(ln(2, candidate_link)), yz(ln(2, candidate_link)), jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
+                            xz(ln(2, candidate_link)), yz(ln(2, candidate_link)), jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
             if (jacros == 1) then
                !$OMP ATOMIC CAPTURE
                output_index = intersection_count
@@ -598,7 +641,7 @@ contains
 
       call readyy(' ', -1.0_dp)
       if (intersection_count > n_links_polyline_nodes) then
-         call mess(LEVEL_ERROR, 'find_crossed_links_kdtree_parallel: array size too small')
+         call mess(LEVEL_ERROR, 'find_crossed_links_parallel: array size too small')
          ierror = 1
          goto 1234
       end if
@@ -609,7 +652,7 @@ contains
 
 1234  continue
 
-   end subroutine find_crossed_links_kdtree_parallel
+   end subroutine find_crossed_links_parallel
 
    !> Convert a coordinate to a clamped uniform-grid index.
    pure integer function grid_cell_index(value, grid_min, grid_width, grid_count) result(index)

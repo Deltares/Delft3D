@@ -219,7 +219,7 @@ contains
          call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count_reference, crossed_links_reference, polygon_nodes_reference, polygon_segment_weights_reference, ierror_reference)
          call wall_clock_time(t_reference_end)
          call wall_clock_time(t_parallel_start)
-         call find_crossed_links_kdtree_parallel(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+         call find_crossed_links_parallel(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
          call wall_clock_time(t_parallel_end)
          call compare_fixed_weir_intersections(ierror_reference, intersection_count_reference, crossed_links_reference, polygon_nodes_reference, polygon_segment_weights_reference, &
                                               ierror, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights)
