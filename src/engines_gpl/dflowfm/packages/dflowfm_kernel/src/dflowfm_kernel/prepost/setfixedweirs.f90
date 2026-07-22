@@ -81,10 +81,12 @@ contains
       integer, dimension(:), allocatable :: crossed_links
       integer, dimension(:), allocatable :: iLcr ! link crossed yes no
       integer, dimension(:), allocatable :: polygon_nodes
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights_reference
+      integer, dimension(:), allocatable :: crossed_links_reference, polygon_nodes_reference
 
       integer :: iL, intersection_count, ii, LLL, LLLa, nx
       integer :: mout, jatabellenboekorvillemonte
-      integer :: ierror
+      integer :: ierror, ierror_reference, intersection_count_reference
       integer :: num_intersections
 
       character(len=5) :: sd
@@ -92,6 +94,7 @@ contains
       integer, allocatable :: start_npl_for_files(:)
       integer :: jadoorladen, ifil
       real(kind=dp) :: t0, t1, t_extra(2, 10), BLmn
+      real(kind=dp) :: t_reference_start, t_reference_end, t_parallel_start, t_parallel_end
       character(len=128) :: mesg
 
       integer, parameter :: KEEP_PLI_NAMES = 1
@@ -202,6 +205,9 @@ contains
       Ilcr = 0
       allocate (polygon_nodes(num_intersections))
       allocate (polygon_segment_weights(num_intersections))
+      allocate (crossed_links_reference(num_intersections))
+      allocate (polygon_nodes_reference(num_intersections))
+      allocate (polygon_segment_weights_reference(num_intersections))
       if (cache_retrieved()) then
          ierror = 0
          call copy_cached_fixed_weirs(npl, xpl, ypl, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, success)
@@ -209,13 +215,25 @@ contains
          success = .false.
       end if
       if (.not. success) then
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+         call wall_clock_time(t_reference_start)
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count_reference, crossed_links_reference, polygon_nodes_reference, polygon_segment_weights_reference, ierror_reference)
+         call wall_clock_time(t_reference_end)
+         call wall_clock_time(t_parallel_start)
+         call find_crossed_links_kdtree_parallel(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+         call wall_clock_time(t_parallel_end)
+         call compare_fixed_weir_intersections(ierror_reference, intersection_count_reference, crossed_links_reference, polygon_nodes_reference, polygon_segment_weights_reference, &
+                                              ierror, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights)
+         write (mesg, "('fixed weirs reference kdtree2, elapsed time: ', G15.5, 's.')") t_reference_end - t_reference_start
+         call mess(LEVEL_INFO, trim(mesg))
+         write (mesg, "('fixed weirs parallel spatial index, elapsed time: ', G15.5, 's.')") t_parallel_end - t_parallel_start
+         call mess(LEVEL_INFO, trim(mesg))
          call cache_fixed_weirs(npl, xpl, ypl, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights)
       end if
+      deallocate (crossed_links_reference, polygon_nodes_reference, polygon_segment_weights_reference)
       call wall_clock_time(t_extra(2, 3))
 
       call wall_clock_time(t_extra(1, 4))
-      if (ierror == 0) then ! find_crossed_links_kdtree2 succeeded
+      if (ierror == 0) then ! crossed-link search succeeded
          do iL = 1, intersection_count
             L = crossed_links(il)
             iLcr(L) = 1
@@ -277,7 +295,7 @@ contains
       call wall_clock_time(t_extra(2, 4))
 
       call wall_clock_time(t1)
-      write (mesg, "('fixed weirs with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
+      write (mesg, "('fixed weirs with intersection validation, elapsed time: ', G15.5, 's.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
       write (mesg, "('fixed weirs: read files,  elapsed time: ', G15.5, 's.')") t_extra(2, 1) - t_extra(1, 1)
       call mess(LEVEL_INFO, trim(mesg))
@@ -698,6 +716,63 @@ contains
       end if
 
    contains
+
+      !> Compare the original k-d-tree and parallel spatial-index intersection results.
+      subroutine compare_fixed_weir_intersections(reference_ierror, reference_count, reference_links, reference_polygon_nodes, reference_weights, &
+                                                  parallel_ierror, parallel_count, parallel_links, parallel_polygon_nodes, parallel_weights)
+         use precision, only: dp
+
+         integer, intent(in) :: reference_ierror, reference_count, parallel_ierror, parallel_count
+         integer, intent(in) :: reference_links(:), reference_polygon_nodes(:)
+         real(kind=dp), intent(in) :: reference_weights(:)
+         integer, intent(in) :: parallel_links(:), parallel_polygon_nodes(:)
+         real(kind=dp), intent(in) :: parallel_weights(:)
+
+         integer :: comparison_count, i, mismatch_count
+         real(kind=dp) :: max_weight_difference
+
+         if (reference_ierror /= 0 .or. parallel_ierror /= 0) then
+            write (msgbuf, "('Fixed-weir intersection validation could not compare results: kdtree ierror=', I0, ', parallel ierror=', I0)") &
+               reference_ierror, parallel_ierror
+            call mess(LEVEL_ERROR, msgbuf)
+            return
+         end if
+
+         comparison_count = min(reference_count, parallel_count)
+         mismatch_count = 0
+         max_weight_difference = 0.0_dp
+
+         do i = 1, comparison_count
+            max_weight_difference = max(max_weight_difference, abs(reference_weights(i) - parallel_weights(i)))
+            if (reference_links(i) /= parallel_links(i) .or. reference_polygon_nodes(i) /= parallel_polygon_nodes(i) .or. &
+                reference_weights(i) /= parallel_weights(i)) then
+               mismatch_count = mismatch_count + 1
+               if (mismatch_count <= 10) then
+                  write (msgbuf, "('Fixed-weir intersection mismatch ', I0, ': kdtree=(', I0, ',', I0, ',', ES15.7, '), parallel=(', I0, ',', I0, ',', ES15.7, ')')") &
+                     i, reference_links(i), reference_polygon_nodes(i), reference_weights(i), &
+                     parallel_links(i), parallel_polygon_nodes(i), parallel_weights(i)
+                  call mess(LEVEL_ERROR, msgbuf)
+               end if
+            end if
+         end do
+
+         if (reference_count /= parallel_count) then
+            mismatch_count = mismatch_count + abs(reference_count - parallel_count)
+            write (msgbuf, "('Fixed-weir intersection count mismatch: kdtree=', I0, ', parallel=', I0)") reference_count, parallel_count
+            call mess(LEVEL_ERROR, msgbuf)
+         end if
+
+         if (mismatch_count == 0) then
+            write (msgbuf, "('Fixed-weir intersection validation succeeded: ', I0, ' records matched; max |dSL|=', ES12.4)") &
+               parallel_count, max_weight_difference
+            call mess(LEVEL_INFO, msgbuf)
+         else
+            write (msgbuf, "('Fixed-weir intersection validation failed: ', I0, ' mismatch(es); max |dSL|=', ES12.4)") &
+               mismatch_count, max_weight_difference
+            call mess(LEVEL_ERROR, msgbuf)
+         end if
+
+      end subroutine compare_fixed_weir_intersections
 
       subroutine check_fixed_weirs_parameters_against_limits()
          use precision, only: dp
