@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+# The native dflowfm_io_api library is a build artifact: CMake builds it and stages it where it is
+# needed (the wheel package's _lib/, and it is located for tests via DFLOWFM_IO_LIB_DIR). Never commit it.
+*.dll
+*.so
+*.dylib
