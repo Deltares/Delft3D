@@ -199,7 +199,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `icgSolver` | Solver type. | `4` | <ul><li>**`1`**: sobekGS_OMP</li><li>**`2`**: sobekGS_OMPthreadsafe</li><li>**`3`**: sobekGS</li><li>**`4`**: sobekGS + Saad-ILUD (default sequential)</li><li>**`5`**: parallel/global Saad</li><li>**`6`**: PETSc (default parallel)</li><li>**`7`**: CG+MILU (parallel)</li></ul> |  |  |
 | `logSolverConvergence` | Print time step, number of solver iterations and solver residual to diagnostic output. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `maxDegree` | Maximum degree in Gauss elimination. | `6` |  |  |  |
-| `fixedWeirScheme` | Fixed weir scheme. | `9` | <ul><li>**`0`**: none</li><li>**`6`**: semi-subgrid scheme</li><li>**`8`**: Tabellenboek</li><li>**`9`**: Villemonte</li></ul> |  |  |
+| `fixedWeirScheme` | Fixed weir scheme. | `9` | <ul><li>**`0`**: none</li><li>**`1`**: TODO</li><li>**`2`**: TODO</li><li>**`3`**: TODO</li><li>**`4`**: TODO</li><li>**`5`**: TODO</li><li>**`6`**: semi-subgrid scheme</li><li>**`7`**: TODO</li><li>**`8`**: Tabellenboek</li><li>**`9`**: Villemonte</li></ul> |  |  |
 | `fixedWeirContraction` | flow width = flow width\*`fixedWeirContraction`. | `1.0` |  | [-] |  |
 | `fixedWeirTopWidth` | Uniform width of the groyne part of fixed weirs. | `3.0` |  | [m] |  |
 | `fixedWeirTalud` | Uniform talud slope of fixed weirs. | `4.0` |  |  |  |
