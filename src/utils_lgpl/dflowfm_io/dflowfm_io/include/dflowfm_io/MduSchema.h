@@ -29,11 +29,10 @@ namespace dflowfm_io
         DateTime,
     };
 
-    /// @brief Wrapper for enum values so they can be distinguished from 
-    ///        plain integers in the @ref Value variant.
+    /// @brief Represents a single value within an enumeration property.
     struct EnumValue
     {
-        int value;
+        int value; ///< The integer value.
     };
 
     /// @brief A discriminated union of all supported MDU property value types.
@@ -50,6 +49,30 @@ namespace dflowfm_io
         std::vector<double>
     >;
 
+    /// @brief Describes the lifecycle status of a property in the MDU schema.
+    enum class StatusType
+    {
+        GA, ///< Generally Available; stable and supported.
+        Research, ///< Experimental feature; may change without notice.
+        Deprecated, ///< Discouraged; still functional but scheduled for removal.
+        Obsolete ///< No longer supported; may be ignored or cause errors.
+    };
+
+    /// @brief Lifecycle status of a property or enum value.
+    struct Status
+    {
+        StatusType type = StatusType::GA; ///< The lifecycle status of the property or enum value.
+        std::string comment; ///< Explanation for Deprecated and Obsolete status types.
+    };
+
+    /// @brief Schema metadata for a single value within an enumeration property.
+    struct EnumValueSchema
+    {
+        int value; ///< Integer index (Enum) or integer value (IntEnum).
+        std::string label; ///< String label for Enum types. Empty for IntEnum types.
+        Status status; ///< Lifecycle status of this enum value.
+    };
+
     /// @brief Schema definition for a single property within an MDU section.
     struct PropertySchema
     {
@@ -58,9 +81,10 @@ namespace dflowfm_io
         bool nullable; ///< Whether the property may hold an explicit null (empty) value.
         ValueType value_type; ///< Expected type of the property value.
         std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
-        std::map<int, std::string> enum_values; ///< Mapping from integer to name for Enum and IntEnum types.
+        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
         std::string format; ///< Optional format string for DateTime and Float properties.
         std::string description; ///< Human-readable description of the property.
+        Status status; ///< Describes the lifecycle status of the property.
     };
 
     /// @brief Schema definition for a single section within an MDU file.

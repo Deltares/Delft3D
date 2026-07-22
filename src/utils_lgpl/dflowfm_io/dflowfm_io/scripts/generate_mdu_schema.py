@@ -18,6 +18,14 @@ VALUE_TYPE_MAP = {
     "datetime": "DateTime",
 }
 
+# Maps the JSON "status" strings to the C++ StatusType enum names.
+STATUS_TYPE_MAP = {
+    "GA": "GA",
+    "research": "Research",
+    "deprecated": "Deprecated",
+    "obsolete": "Obsolete",
+}
+
 # Template for the generated C++ source. Literal braces are doubled so the
 # string can be filled in with str.format(description=..., body=...).
 CPP_TEMPLATE = """\
@@ -50,21 +58,38 @@ def default_value_str(value):
 
 
 def enum_entries(prop):
-    """Return an ordered list of (int_key, name) pairs for an enum property.
-
-    For "enum" the JSON keys are symbolic names and the integer index is the
-    position. For "intenum" the JSON keys are the integer values themselves.
-    """
+    """Return an ordered list of (int_key, label, status) tuples for an enum property."""
     value_type = prop["value_type"]
     enum_values = prop.get("enum_values", {})
     entries = []
-    if value_type == "intenum":
-        for key, name in enum_values.items():
-            entries.append((int(key), name))
-    else:  # enum
-        for index, name in enumerate(enum_values.keys()):
-            entries.append((index, name))
+    for index, (key, entry) in enumerate(enum_values.items()):
+        int_key = int(key) if value_type == "intenum" else index
+        label = None if value_type == "intenum" else key
+        status = entry.get("status", {}) if isinstance(entry, dict) else {}
+        entries.append((int_key, label, status))
     return entries
+
+
+def render_enum_value(value, label, status, indent):
+    """Render a single EnumValueSchema block."""
+    pad = " " * indent
+    inner = " " * (indent + 4)
+    sub_width = len(".status") if status else len(".value")
+    lines = [pad + "EnumValueSchema {"]
+    lines.append(f'{inner}{".value".ljust(sub_width)} = {value},')
+    if label is not None:
+        lines.append(f'{inner}{".label".ljust(sub_width)} = "{label}",')
+    if status:
+        status_type = STATUS_TYPE_MAP[status["value"]]
+        comment = status.get("comment", "")
+        sub_status_width = len(".comment") if comment else len(".type")
+        lines.append(f'{inner}{".status".ljust(sub_width)} = {{')
+        lines.append(f'{inner}    {".type".ljust(sub_status_width)} = StatusType::{status_type},')
+        if comment:
+            lines.append(f'{inner}    {".comment".ljust(sub_status_width)} = "{comment}",')
+        lines.append(f'{inner}}},')
+    lines.append(pad + "}")
+    return "\n".join(lines)
 
 
 def render_property(prop, indent):
@@ -98,15 +123,26 @@ def render_property(prop, indent):
     entries = enum_entries(prop)
     if entries:
         lines.append(field(".enum_values", "{"))
-        for i, (key, name) in enumerate(entries):
-            comma = "," if i < len(entries) - 1 else ""
-            lines.append(f'{inner}    {{{key}, "{name}"}}{comma}')
+        enum_blocks = [render_enum_value(value, label, status, indent + 8) for value, label, status in entries]
+        lines.append(",\n".join(enum_blocks))
         lines.append(f"{inner}}},")
 
     if "format" in prop:
         lines.append(field(".format", f'"{prop["format"]}",'))
 
-    lines.append(field(".description", f'"{prop.get("description", "")}"'))
+    lines.append(field(".description", f'"{prop.get("description", "")}",'))
+
+    status = prop.get("status", {})
+    if status:
+        status_type = STATUS_TYPE_MAP[status["value"]]
+        comment = status.get("comment", "")
+        sub_width = len(".comment") if comment else len(".type")
+        lines.append(field(".status", "{"))
+        lines.append(f'{inner}    {".type".ljust(sub_width)} = StatusType::{status_type},')
+        if comment:
+            lines.append(f'{inner}    {".comment".ljust(sub_width)} = "{comment}",')
+        lines.append(f"{inner}}},")
+
     lines.append(pad + "}")
     return "\n".join(lines)
 

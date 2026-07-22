@@ -91,7 +91,7 @@ namespace dflowfm_io::test
         const auto [targetSection, targetProperty] = FirstRequiredProperty();
 
         ini::IniData iniData = CompliantIniData();
-        iniData.GetSection(targetSection->name).AddProperty("UnknownProperty_XYZ", "value");
+        iniData.GetSection(targetSection->name).AddProperty("unknownProperty_XYZ", "value");
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
@@ -99,23 +99,7 @@ namespace dflowfm_io::test
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
         EXPECT_NE(warning->message.find(targetSection->name), std::string::npos);
-        EXPECT_NE(warning->message.find("UnknownProperty_XYZ"), std::string::npos);
-    }
-
-    TEST_F(MduDataConverterTest, ConvertIniData_MissingOptionalProperty_ReportHasInfo)
-    {
-        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault();
-
-        ini::IniData iniData = CompliantIniData();
-        iniData.GetSection(targetSection->name).RemoveAllProperties(targetProperty->key);
-
-        const auto [mduData, report] = MduDataConverter::Convert(iniData);
-
-        EXPECT_TRUE(report.HasInfos());
-        const Issue* error = FirstIssue(report, Severity::Info);
-        ASSERT_NE(error, nullptr);
-        EXPECT_NE(error->message.find(targetSection->name), std::string::npos);
-        EXPECT_NE(error->message.find(targetProperty->key), std::string::npos);
+        EXPECT_NE(warning->message.find("unknownProperty_XYZ"), std::string::npos);
     }
 
     // -------------------------------------------------------------------------
@@ -161,9 +145,9 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasErrors());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
-        for (const auto& [_, description] : targetProperty->enum_values)
-            EXPECT_NE(error->message.find(description), std::string::npos)
-                << "Expected enum name \"" << description << "\" in error message";
+        for (const auto& ev : targetProperty->enum_values)
+            EXPECT_NE(error->message.find(ev.label), std::string::npos)
+                << "Expected enum label \"" << ev.label << "\" in error message";
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_InvalidIntEnumValue_ErrorMessageContainsAllEnumValues)
@@ -178,9 +162,9 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasErrors());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
-        for (const auto& [value, _] : targetProperty->enum_values)
-            EXPECT_NE(error->message.find(std::to_string(value)), std::string::npos)
-                << "Expected enum key " << value << " in error message";
+        for (const auto& ev : targetProperty->enum_values)
+            EXPECT_NE(error->message.find(std::to_string(ev.value)), std::string::npos)
+                << "Expected enum value " << ev.value << " in error message";
     }
 
     // -------------------------------------------------------------------------
@@ -226,10 +210,10 @@ namespace dflowfm_io::test
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         const auto it = std::find_if(targetProperty->enum_values.begin(), targetProperty->enum_values.end(),
-                                     [&](const auto& pair) { return pair.second == targetProperty->default_value; });
+                                     [&](const auto& ev) { return ev.label == targetProperty->default_value; });
         ASSERT_NE(it, targetProperty->enum_values.end());
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, it->first);
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, it->value);
     }
 
     // -------------------------------------------------------------------------
@@ -316,15 +300,15 @@ namespace dflowfm_io::test
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Enum);
 
         ini::IniData iniData = CompliantIniData();
-        const auto& [number, name] = *targetProperty->enum_values.begin();
-        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, name);
+        const auto& ev = *targetProperty->enum_values.begin();
+        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, ev.label);
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, number);
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, ev.value);
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ValidIntEnumValue_ConvertsSuccessfully)
@@ -332,15 +316,15 @@ namespace dflowfm_io::test
         const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::IntEnum);
 
         ini::IniData iniData = CompliantIniData();
-        const auto& [number, name] = *targetProperty->enum_values.begin();
-        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, std::to_string(number));
+        const auto& ev = *targetProperty->enum_values.begin();
+        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, ev.value);
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData);
 
         EXPECT_FALSE(report.HasErrors());
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, number);
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, ev.value);
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ValidPathListValue_ConvertsSuccessfully)

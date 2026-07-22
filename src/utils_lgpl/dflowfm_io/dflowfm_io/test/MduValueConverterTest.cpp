@@ -22,17 +22,19 @@ namespace dflowfm_io::test
             return schema;
         }
 
-        PropertySchema MakeEnumSchema(std::map<int, std::string> enumValues)
+        PropertySchema MakeEnumSchema(std::vector<std::pair<int, std::string>> enumValues)
         {
             PropertySchema schema = MakeSchema(ValueType::Enum);
-            schema.enum_values = std::move(enumValues);
+            for (auto& [value, label] : enumValues)
+                schema.enum_values.push_back({value, label});
             return schema;
         }
 
-        PropertySchema MakeIntEnumSchema(std::map<int, std::string> enumValues)
+        PropertySchema MakeIntEnumSchema(std::vector<int> enumValues)
         {
             PropertySchema schema = MakeSchema(ValueType::IntEnum);
-            schema.enum_values = std::move(enumValues);
+            for (int value : enumValues)
+                schema.enum_values.push_back({value});
             return schema;
         }
     } // namespace
@@ -222,7 +224,7 @@ namespace dflowfm_io::test
 
     TEST(MduValueConverterTest, FromString_IntEnum_ValidNumber_ReturnsCorrectValue)
     {
-        auto schema = MakeIntEnumSchema({{0, "None"}, {1, "Explicit"}, {2, "Implicit"}});
+        auto schema = MakeIntEnumSchema({0, 1, 2});
         auto result = MduValueConverter::FromString(schema, "2");
 
         ASSERT_TRUE(result.has_value());
@@ -231,7 +233,7 @@ namespace dflowfm_io::test
 
     TEST(MduValueConverterTest, FromString_IntEnum_OutOfRangeNumber_ReturnsNullopt)
     {
-        auto schema = MakeIntEnumSchema({{0, "None"}, {1, "Explicit"}});
+        auto schema = MakeIntEnumSchema({0, 1});
         auto result = MduValueConverter::FromString(schema, "99");
 
         EXPECT_FALSE(result.has_value());
@@ -239,7 +241,7 @@ namespace dflowfm_io::test
 
     TEST(MduValueConverterTest, FromString_IntEnum_InvalidString_ReturnsNullopt)
     {
-        auto schema = MakeIntEnumSchema({{0, "None"}, {1, "Explicit"}});
+        auto schema = MakeIntEnumSchema({0, 1});
         auto result = MduValueConverter::FromString(schema, "not_a_number");
 
         EXPECT_FALSE(result.has_value());
@@ -340,7 +342,7 @@ namespace dflowfm_io::test
 
     TEST(MduValueConverterTest, ToString_IntEnum_ReturnsIntegerString)
     {
-        auto schema = MakeIntEnumSchema({{0, "None"}, {1, "Explicit"}, {2, "Implicit"}});
+        auto schema = MakeIntEnumSchema({0, 1, 2});
         auto result = MduValueConverter::ToString(schema, Value{EnumValue{2}});
 
         EXPECT_EQ(result, "2");

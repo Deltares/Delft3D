@@ -31,8 +31,8 @@ namespace dflowfm_io
 
         std::optional<Value> TryEnumFromString(const PropertySchema& schema, const std::string& raw)
         {
-            for (const auto& [number, name] : schema.enum_values)
-                if (iequals(name, raw)) return EnumValue{number};
+            for (const auto& ev : schema.enum_values)
+                if (iequals(ev.label, raw)) return EnumValue{ev.value};
             return std::nullopt;
         }
 
@@ -42,10 +42,9 @@ namespace dflowfm_io
             try { number = ini::IniValueConverter::FromString<int>(raw); }
             catch (const std::exception&) { return std::nullopt; }
 
-            if (schema.enum_values.find(number) == schema.enum_values.end())
-                return std::nullopt;
-
-            return EnumValue{number};
+            for (const auto& ev : schema.enum_values)
+                if (ev.value == number) return EnumValue{ev.value};
+            return std::nullopt;
         }
 
         template <typename T>
@@ -69,11 +68,10 @@ namespace dflowfm_io
         std::string EnumToString(const PropertySchema& schema, const Value& value)
         {
             auto enumValue = std::get<EnumValue>(value);
-            auto it = schema.enum_values.find(enumValue.value);
-            if (it == schema.enum_values.end())
-                throw std::out_of_range(
-                    std::format("Enum value {} is out of range for property '{}'.", enumValue.value, schema.key));
-            return it->second;
+            for (const auto& ev : schema.enum_values)
+                if (ev.value == enumValue.value) return ev.label;
+            throw std::out_of_range(
+                std::format("Enum value {} is out of range for property '{}'.", enumValue.value, schema.key));
         }
 
         std::string IntEnumToString(const Value& value)

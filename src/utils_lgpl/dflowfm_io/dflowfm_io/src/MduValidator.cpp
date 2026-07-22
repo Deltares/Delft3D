@@ -8,18 +8,20 @@
 
 namespace dflowfm_io
 {
+    MduValidator::MduValidator(const MduSchema& schema) : schema(schema) {}
 
     IssueReport MduValidator::Validate(const ini::IniData& iniData)
     {
         IssueReport report;
         ValidateRequired(iniData, report);
         ValidateUnsupported(iniData, report);
+        ValidateDeprecated(iniData, report);
         return report;
     }
 
     void MduValidator::ValidateRequired(const ini::IniData& iniData, IssueReport& report)
     {
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+        for (const auto& sectionSchema : schema.Sections())
         {
             if (!iniData.HasSection(sectionSchema.name))
             {
@@ -63,7 +65,7 @@ namespace dflowfm_io
     {
         for (const auto& section : iniData)
         {
-            const auto* sectionSchema = MDU_SCHEMA.FindSection(section.GetName());
+            const auto* sectionSchema = schema.FindSection(section.GetName());
             if (!sectionSchema)
             {
                 report.AddWarning(section.GetLineNumber(), "Section [{}] is not a supported section.",
@@ -73,10 +75,53 @@ namespace dflowfm_io
 
             for (const auto& property : section)
             {
-                const auto* propertySchema = MDU_SCHEMA.FindProperty(section.GetName(), property.GetKey());
+                const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
                 if (!propertySchema)
                     report.AddWarning(property.GetLineNumber(), "Property [{}].{} is not a supported property.",
                                       section.GetName(), property.GetKey());
+            }
+        }
+    }
+
+    void MduValidator::ValidateDeprecated(const ini::IniData& iniData, IssueReport& report)
+    {
+        for (const auto& section : iniData)
+        {
+            for (const auto& property : section)
+            {
+                const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
+                if (!propertySchema)
+                    continue;
+
+                if (propertySchema->status.type == StatusType::Deprecated)
+                {
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{} is deprecated. {}",
+                                      section.GetName(), property.GetKey(), propertySchema->status.comment);
+                    continue;
+                }
+
+                if (propertySchema->value_type != ValueType::Enum && propertySchema->value_type != ValueType::IntEnum)
+                    continue;
+
+                if (!property.HasValue())
+                    continue;
+
+                for (const auto& enumValueSchema : propertySchema->enum_values)
+                {
+                    if (enumValueSchema.status.type != StatusType::Deprecated)
+                        continue;
+
+                    const std::string deprecatedValue = propertySchema->value_type == ValueType::IntEnum
+                                                            ? std::to_string(enumValueSchema.value)
+                                                            : enumValueSchema.label;
+
+                    if (property.GetValue() == deprecatedValue)
+                    {
+                        report.AddWarning(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
+                                          section.GetName(), property.GetKey(), deprecatedValue, enumValueSchema.status.comment);
+                        break;
+                    }
+                }
             }
         }
     }

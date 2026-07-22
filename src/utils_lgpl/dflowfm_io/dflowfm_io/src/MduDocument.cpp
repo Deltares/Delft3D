@@ -89,7 +89,8 @@ namespace dflowfm_io
     {
         const auto* ps = MDU_SCHEMA.FindProperty(key);
         if (!ps) return;
-        if (ps->enum_values.find(value.value) == ps->enum_values.end())
+        const auto it = std::ranges::find(ps->enum_values, value.value, &EnumValueSchema::value);
+        if (it == ps->enum_values.end())
             throw std::out_of_range(
                 std::format("Enum value {} is out of range for '{}'.", value.value, key));
     }

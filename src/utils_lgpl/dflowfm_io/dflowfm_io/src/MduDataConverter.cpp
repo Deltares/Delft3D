@@ -32,12 +32,12 @@ namespace dflowfm_io
             case ValueType::IntEnum:
             {
                 std::string values;
-                for (const auto& [value, description] : propertySchema.enum_values)
+                for (const auto& ev : propertySchema.enum_values)
                 {
                     if (!values.empty()) values += ", ";
                     values += propertySchema.value_type == ValueType::IntEnum
-                        ? std::format("\"{}\"", value)
-                        : std::format("\"{}\"", description);
+                        ? std::format("\"{}\"", ev.value)
+                        : std::format("\"{}\"", ev.label);
                 }
                 return std::format("Supported values: {}", values);
             }
@@ -65,7 +65,7 @@ namespace dflowfm_io
 
     std::pair<MduData, IssueReport> MduDataConverter::Convert(const ini::IniData& iniData)
     {
-        MduValidator validator;
+        MduValidator validator(MDU_SCHEMA);
         IssueReport report = validator.Validate(iniData);
 
         MduData mduData = MduData::CreateFromSchema();

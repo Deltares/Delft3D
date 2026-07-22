@@ -150,4 +150,24 @@ namespace dflowfm_io::test
         }
     }
 
+    TEST(MduSchemaTest, Schema_DeprecatedOrObsoletePropertiesHaveComment)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& prop : section.properties)
+                if (prop.status.type == StatusType::Deprecated || prop.status.type == StatusType::Obsolete)
+                    EXPECT_FALSE(prop.status.comment.empty())
+                        << "Deprecated/Obsolete property missing comment: " << section.name << "." << prop.key;
+    }
+
+    TEST(MduSchemaTest, Schema_DeprecatedOrObsoleteEnumValuesHaveComment)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& prop : section.properties)
+                for (const auto& enumValue : prop.enum_values)
+                    if (enumValue.status.type == StatusType::Deprecated || enumValue.status.type == StatusType::Obsolete)
+                        EXPECT_FALSE(enumValue.status.comment.empty())
+                            << "Deprecated/Obsolete enum value missing comment: " << section.name << "." << prop.key
+                            << " (value=" << enumValue.value << ")";
+    }
+
 } // namespace dflowfm_io::test
