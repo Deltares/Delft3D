@@ -25,6 +25,20 @@ install(TARGETS dflowfm_io_api
     ARCHIVE DESTINATION lib
 )
 
+# Stage the freshly built native library into the Python wheel package (_lib/) so `pip wheel`
+# bundles it. The library is a build artifact: it is git-ignored there and only ever produced by
+# the build, never committed.
+set(DFLOWFM_IO_PY_WHEEL_LIB_DIR
+	"${CMAKE_CURRENT_SOURCE_DIR}/wrappers/python/packaging/src/dflowfm_io/_lib")
+
+add_custom_command(TARGET dflowfm_io_api POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${DFLOWFM_IO_PY_WHEEL_LIB_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	"$<TARGET_FILE:dflowfm_io_api>" "${DFLOWFM_IO_PY_WHEEL_LIB_DIR}"
+	COMMENT "Staging dflowfm_io_api into the Python wheel package (_lib/)"
+	VERBATIM
+)
+
 include(CheckLanguage)
 check_language(Fortran)
 if(CMAKE_Fortran_COMPILER)
