@@ -7,6 +7,8 @@ from enum import IntEnum
 from pathlib import Path
 
 
+os.environ["DFLOWFM_IO_LIB_DIR"] = r"C:\my-computer\algorithms\Delft3D\src\utils_lgpl\dflowfm_io\dflowfm_io_api\wrappers\python\test"
+
 def _find_project_root():
     """Walk up from this file to find the top-level project root (contains CMakeLists.txt with 'project(')."""
     d = os.path.dirname(os.path.abspath(__file__))
@@ -22,36 +24,65 @@ def _find_project_root():
     return result
 
 
-def _load_library():
-    if platform.system() == "Windows":
-        lib_name = "dflowfm_io_api.dll"
-    else:
-        lib_name = "libdflowfm_io_api.so"
+class DLLFinder:
+    """Helper class to find the correct DLL on Windows."""
 
-    # Explicit override via environment variable
-    lib_dir = os.environ.get("DFLOWFM_IO_LIB_DIR", "")
-    if lib_dir:
-        return ctypes.CDLL(os.path.join(lib_dir, lib_name))
+    def __init__(self, dll_dir: str | None = None):
+        if platform.system() == "Windows":
+            lib_name = "dflowfm_io_api.dll"
+        else:
+            lib_name = "libdflowfm_io_api.so"
 
-    # Search common CMake build output directories
-    project_root = _find_project_root()
-    if project_root:
-        search_dirs = [
-            os.path.join(project_root, "build"),
-            os.path.join(project_root, "build", "Debug"),
-            os.path.join(project_root, "build", "Release"),
-            os.path.join(project_root, "build", "RelWithDebInfo"),
-            os.path.join(project_root, "build", "MinSizeRel"),
-        ]
-        for d in search_dirs:
-            candidate = os.path.join(d, lib_name)
-            if os.path.isfile(candidate):
-                return ctypes.CDLL(candidate)
+        self.dll_name = lib_name
+        self.dll_dir = dll_dir
+        self.dll_path = None
 
-    return ctypes.CDLL(lib_name)
+    def find_lib(self) -> None | Path:
+        """Find the DLL in the specified directory or in common locations.
+        The function first checks the directory specified in the constructor, then checks the environment variable
+        `DFLOWFM_IO_LIB_DIR`.
+        """
+        if self.dll_dir is None:
+            dll_dir = os.environ.get("DFLOWFM_IO_LIB_DIR", "")
+        else:
+            dll_dir = self.dll_dir
 
+        dll_path = Path(dll_dir) / self.dll_name
 
-_lib = _load_library()
+        if not dll_path.exists():
+            raise RuntimeError(f"Could not find {self.dll_path}")
+
+        return dll_path
+
+    def search_cmake_dirs(self) -> Path | None:
+        """Search for the DLL in common CMake build output directories."""
+        project_root = Path(_find_project_root())
+
+        dll_path = None
+        if project_root:
+            search_dirs = [
+                project_root / "build" /
+                project_root / "build" / "Debug",
+                project_root / "build" / "Release",
+                project_root / "build" / "RelWithDebInfo",
+                project_root / "build" / "MinSizeRel",
+            ]
+            for d in search_dirs:
+                candidate = d / self.dll_name
+                if os.path.isfile(candidate):
+                    dll_path = candidate
+        return dll_path
+
+    def load(self):
+        """Load the DLL."""
+        dll_path = self.find_lib()
+        if dll_path is None:
+            dll_path = self.search_cmake_dirs()
+
+        return ctypes.CDLL(dll_path)
+
+dll_finder = DLLFinder()
+_lib = dll_finder.load()
 
 DFLOWFM_IO_RESULT_SUCCESS = 0
 DFLOWFM_IO_RESULT_ERROR = 1
@@ -59,7 +90,7 @@ DFLOWFM_IO_RESULT_ERROR = 1
 
 def _check_result(result):
     if result != DFLOWFM_IO_RESULT_SUCCESS:
-        _lib.dflowfm_io_get_last_error.restype = ctypes.c_char_p    
+        _lib.dflowfm_io_get_last_error.restype = ctypes.c_char_p
         error_message = _lib.dflowfm_io_get_last_error()
         raise RuntimeError(error_message.decode('utf-8'))
 
@@ -85,12 +116,14 @@ class Issue:
 
 
 class _HandleRef:
+
     def __init__(self, handle: ctypes.c_void_p, owner: object):
         self.handle = handle
         self._owner = owner
 
 
 class MduDocument:
+
     def __init__(self):
         handle = ctypes.c_void_p()
         _check_result(_lib.mdu_create(ctypes.byref(handle)))
@@ -152,6 +185,7 @@ class MduReport:
 
 
 class MduModel:
+
     def __init__(self, ref: _HandleRef):
         self._ref = ref
 
