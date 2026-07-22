@@ -657,38 +657,46 @@ contains
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_longculvert, test_allowed_flowdir_follows_coordinate_order, test_allowed_flowdir_follows_coordinate_order,
-   !> Verifies that allowedFlowDir is evaluated in the input coordinate direction,
-   !! rather than the incidental direction of a resolved hydraulic flow link.
+   !> Verifies that direction reconstruction and allowedFlowDir follow the
+   !! input-coordinate order when the local flow-link orientation changes.
    subroutine test_allowed_flowdir_follows_coordinate_order() bind(C)
       use m_1d_structures, only: FLOWDIR_POSITIVE
       use m_flow, only: au, u1
       use m_flowgeom, only: ln
-      use m_longculverts, only: default_longculverts, longculvertsToProfs, reduceFlowAreaAtLongculverts
+      use m_longculverts, only: default_longculverts, find1d2dculvertlinks, reduceFlowAreaAtLongculverts
       use m_longculverts_data, only: longculverts
-      use network_data, only: kn
+      use unstruc_channel_flow, only: network
+      use dfm_error, only: DFM_NOERR
       use precision, only: dp
 
-      integer :: iresult, lc_link, lc_netlink, node
+      integer :: iresult, lc_link, node, flow_dir_before
+      character(len=*), parameter :: NET_FILE = "test_lc_allowed_flowdir_net.nc"
+      character(len=*), parameter :: STR_FILE = "test_lc_allowed_flowdir_str.ini"
+      character(len=256) :: mdu_file
 
-      call setup_longculvert_model(iresult)
+      mdu_file = "test_lc_allowed_flowdir.mdu"
+      call create_structure_file(STR_FILE)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("converted model init must succeed"))
 
+      call find1d2dculvertlinks(network, longculverts(1), size(longculverts(1)%xcoords))
       lc_link = longculverts(1)%flowlinks(1)
-      lc_netlink = longculverts(1)%netlinks(1)
+      flow_dir_before = longculverts(1)%flow_dir
       node = ln(1, lc_link)
       ln(1, lc_link) = ln(2, lc_link)
       ln(2, lc_link) = node
-      node = kn(1, lc_netlink)
-      kn(1, lc_netlink) = kn(2, lc_netlink)
-      kn(2, lc_netlink) = node
-      call longculvertsToProfs(.true.)
+      call find1d2dculvertlinks(network, longculverts(1), size(longculverts(1)%xcoords))
 
-      call f90_expect_true(longculverts(1)%flow_dir == -1, &
-                           cstr("a reversed hydraulic link must be detected from the input coordinate order"))
+      call f90_expect_true(longculverts(1)%flow_dir == -flow_dir_before, &
+                  cstr("reversing the flow link must reverse its mapping to input-coordinate direction"))
 
       longculverts(1)%allowed_flowdir = FLOWDIR_POSITIVE
       longculverts(1)%valve_relative_opening = 1.0_dp
       au(lc_link) = 1.0_dp
-      u1(lc_link) = -1.0_dp
+      u1(lc_link) = real(longculverts(1)%flow_dir, dp)
       call reduceFlowAreaAtLongculverts()
 
       call f90_expect_true(au(lc_link) > 0.0_dp, &

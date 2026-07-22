@@ -1440,12 +1440,14 @@ contains
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net
+      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net, direction_target
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
 
       longculvert%flowlinks = 0
+      longculvert%flow_dir = 1
+      direction_target = 0
       jafounds = 0 ! Found the starting node or not
       jafounde = 0 ! Found the ending node or not
       is = 1 ! the starting node of the polyline
@@ -1491,6 +1493,7 @@ contains
                linkabs = abs(nd(nodenum)%ln(i))
                if (kcu(abs(linkabs)) == 5) then
                   longculvert%flownode_up = ln(1, linkabs) + ln(2, linkabs) - nodenum
+                  direction_target = longculvert%flownode_up
                   ! For the later search
                   jafounds = 1
                end if
@@ -1502,6 +1505,7 @@ contains
                call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
                if (ierror == 0 .and. jnode(1) > 0) then
                   nodenum = jnode(1) ! For the later search
+                  direction_target = nodenum
                   is = j ! this will be the starting node of the long culvert in current domain
                   jafounds = 1
                   exit
@@ -1535,7 +1539,7 @@ contains
 
       if (jafounds == 1 .and. jafounde == 1) then
          if (contact_idx > 0) then
-            longculvert%flowlinks(1) = contactnetlinks(contact_idx)
+            longculvert%flowlinks(1) = lne2ln(contactnetlinks(contact_idx))
          else
             do i = 1, nd(nodenum)%lnx
                linknum = nd(nodenum)%ln(i)
@@ -1565,6 +1569,15 @@ contains
                   end do
                end if
             end do
+         end if
+      end if
+
+      ! Positive long-culvert flow follows the input polyline. The first flow
+      ! link has positive direction from ln(1, :) to ln(2, :).
+      if (longculvert%flowlinks(1) /= 0) then
+         linkabs = abs(longculvert%flowlinks(1))
+         if (direction_target == ln(1, linkabs)) then
+            longculvert%flow_dir = -1
          end if
       end if
    end subroutine
