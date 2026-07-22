@@ -66,6 +66,10 @@ Before building for the first time, you need to install the Conan profile (compi
 description), configure some conan settings, and configure the remotes from where Conan downloads packages.
 The helper script [run_conan.py](../run_conan.py) takes care of this.
 
+The script uses the repository's default Conan profile. Setting `CONAN_DEFAULT_PROFILE` overrides that
+selection and should be done at your own risk: it can keep selecting an outdated or incompatible profile.
+When the repository's default profile changes, update the environment variable to the new profile name or unset it.
+
 If you use the [devcontainer](../.devcontainer/delft3d/README.md), the Conan cache is persisted
 in a Docker volume across container rebuilds, so you only need to do this setup once.
 
@@ -217,31 +221,25 @@ Note that the default tag used here deviates from the one set in the prerequisit
 
 ## Power-user workflow (raw Conan + CMake)
 
-`run_conan.py` and `build.py` are thin wrappers around `conan` and `cmake` that cover the common
-use cases (and the more complex orchestration required by TeamCity). If you want full control,
-for example to iterate on CMake without re-running Conan, or to use a non-default profile,
-you can drive `conan` and `cmake` directly inside the build container.
+Use Conan and CMake directly when you want to manage dependency installation and CMake
+configuration separately, for example to iterate on CMake without reinstalling dependencies.
 
-Make sure the Delft3D Conan configuration (profiles, settings, remotes) is installed in your
-Conan home. You can do this with the raw `conan` command:
+Install the repository's Conan configuration (profiles, settings, and remotes) in your Conan home:
 ```bash
 conan config install conan/config
 ```
-This is what `python run_conan.py initialize deltares` does under the hood. The `external`
-variant additionally removes the Nexus remotes and registers [conan/recipes](../conan/recipes)
-as a `local-recipes-index` remote. See [run_conan.py](../run_conan.py) for details.
-
-`run_conan.py` detects the active `ifx` version and selects `delft3d_alma8_intel_2024_v3` or
-`delft3d_alma8_intel_2026_v1`. Other Intel oneAPI versions are not supported. The
-lockfile [conan.lock](../conan.lock) pins recipe revisions for reproducibility. On Linux we use a single-config generator (`Unix Makefiles`),
-so the build type is selected at both `conan install` and `cmake` time. The third-party packages
-themselves are always built/downloaded as `Release`, while the consumer (CMakeDeps generator) build type is selected via
-`&:build_type=...`.
+Use `conan profile list` to find an installed profile compatible with your compiler. The lockfile
+[conan.lock](../conan.lock) pins recipe revisions for reproducibility. Linux uses the single-config
+`Unix Makefiles` generator, so select the consumer build type during both `conan install` and CMake
+configuration. Third-party packages are always built in their `Release` configuration. The CMakeDeps
+generator uses `&:build_type=...` to select the configuration for the consumer, which is Delft3D.
 
 ```bash
 # 1. Install dependencies (generates CMakeDeps files).
 #    The first call may build packages (or download them from Nexus).
-conan install . --profile:all=delft3d_alma8_intel_2024_v3 \
+#    Use `conan profile list` to find the current profile name.
+DELFT3D_CONAN_PROFILE=PROFILE_FROM_CONAN_PROFILE_LIST
+conan install . --profile:all="$DELFT3D_CONAN_PROFILE" \
       --settings:all build_type=Release \
       --settings:all &:build_type=Release \
       --output-folder=build_fm-suite_release/conan \
@@ -260,7 +258,7 @@ cmake --install build_fm-suite_release
 
 To build missing dependencies from source (e.g. after changing a recipe), add `--build=missing`:
 ```bash
-conan install . --profile:all=delft3d_alma8_intel_2024_v3 \
+conan install . --profile:all="$DELFT3D_CONAN_PROFILE" \
       --settings:all build_type=Release \
       --settings:all &:build_type=Release \
       --output-folder=build_fm-suite_release/conan \
@@ -268,7 +266,7 @@ conan install . --profile:all=delft3d_alma8_intel_2024_v3 \
       --build=missing
 ```
 Use `--build=*` (and `--remote=local-recipes`) instead to rebuild every package from the local
-recipes only. This is what external developers do via `build.py --build-dependencies`.
+recipes only.
 
 ## Run
 Now, you should be able to run your first simulations.

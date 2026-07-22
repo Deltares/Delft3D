@@ -9,11 +9,3 @@ fortran_compiler:
     null:
     ifx:
         version: ["2024.2", "2026.1"]
-    gfortran:
-        version: ANY
-    nvfortran:
-        version: ANY
-    crayftn:
-        version: ANY
-    nagfor:
-        version: ANY
