@@ -340,7 +340,9 @@ contains
       use physicalconsts, only: celsius_to_kelvin
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity, &
-                                  sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity
+                                  sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
+                                  air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff
+
 
       logical, intent(in) :: initialization !< initialization phase
       
@@ -385,6 +387,9 @@ contains
       atm_stability_options%sensor_height_wind_velocity = sensor_height_wind_velocity
       atm_stability_options%sensor_height_air_temperature = sensor_height_air_temperature
       atm_stability_options%sensor_height_humidity = sensor_height_humidity
+      atm_stability_options%alpha_m = air_viscous_momentum_coeff
+      atm_stability_options%alpha_h = air_viscous_heat_coeff
+      atm_stability_options%alpha_q = air_viscous_moisture_coeff
 
       call compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
                                      air_pressure, charnock, surface_temperature_kelvin, atm_stability_options)
