@@ -18,7 +18,8 @@ namespace dflowfm_io::test
     class MduValidatorTest : public ::testing::Test
     {
     protected:
-        MduValidator validator{TestSchema()};
+        const MduSchema& schema = TestSchema();
+        ini::IniData iniData = TestIniData();
     };
 
     // -------------------------------------------------------------------------
@@ -27,14 +28,14 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoErrors)
     {
-        const IssueReport report = validator.Validate(TestIniData());
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_FALSE(report.HasErrors());
     }
 
     TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoWarnings)
     {
-        const IssueReport report = validator.Validate(TestIniData());
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_FALSE(report.HasWarnings());
     }
@@ -45,14 +46,14 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ReturnsError)
     {
-        const IssueReport report = validator.Validate(ini::IniData{});
+        const IssueReport report = MduValidator::Validate(ini::IniData{}, schema);
 
         EXPECT_TRUE(report.HasErrors());
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ErrorMentionsSectionName)
     {
-        const IssueReport report = validator.Validate(ini::IniData{});
+        const IssueReport report = MduValidator::Validate(ini::IniData{}, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -65,20 +66,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ReturnsError)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasErrors());
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndPropertyKey)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -92,20 +91,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ReturnsError)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasErrors());
     }
 
     TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndPropertyKey)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -119,20 +116,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_ReturnsInfo)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasInfos());
     }
 
     TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_InfoMentionsSectionAndPropertyKeyAndDefault)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* info = FirstIssue(report, Severity::Info);
         ASSERT_NE(info, nullptr);
@@ -147,20 +142,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_UnknownSection_ReturnsWarning)
     {
-        ini::IniData iniData = TestIniData();
         iniData.AddSection("UnknownSection_XYZ");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasWarnings());
     }
 
     TEST_F(MduValidatorTest, Validate_UnknownSection_WarningMentionsSectionName)
     {
-        ini::IniData iniData = TestIniData();
         iniData.AddSection("UnknownSection_XYZ");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -173,20 +166,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_UnknownProperty_ReturnsWarning)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasWarnings());
     }
 
     TEST_F(MduValidatorTest, Validate_UnknownProperty_WarningMentionsSectionAndPropertyKey)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -200,20 +191,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedProperty_ReturnsWarning)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasWarnings());
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndPropertyKey)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -228,20 +217,18 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_ReturnsWarning)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("layerType", 3);
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasWarnings());
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionPropertyKeyAndValue)
     {
-        ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("layerType", 3);
 
-        const IssueReport report = validator.Validate(iniData);
+        const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);

@@ -14,10 +14,10 @@ namespace dflowfm_io
     /// @brief Represents a D-Flow FM Model Definition Unstructured (MDU) file.
     ///
     /// Supports loading from and saving to file or stream. Property values are
-    /// validated against the MDU schema on load; any issues are accessible via
-    /// @ref GetReport after loading. 
+    /// validated against the @ref MduSchema on load; any issues are accessible via
+    /// @ref GetReport after loading.
     ///
-    /// Individual property values can be read and written via @ref GetValue and @ref SetValue, 
+    /// Individual property values can be read and written via @ref GetValue and @ref SetValue,
     /// or the full dataset can be accessed directly via @ref GetData.
     ///
     /// @code
@@ -31,7 +31,8 @@ namespace dflowfm_io
     {
     public:
         /// @brief Constructs an @ref MduDocument.
-        explicit MduDocument();
+        /// @param schema The schema to validate and convert against. Defaults to the global MDU schema.
+        explicit MduDocument(const MduSchema& schema = MDU_SCHEMA);
 
         /// @brief Loads and validates an MDU file from a stream.
         /// @param in Input stream positioned at the start of the MDU content.
@@ -102,6 +103,7 @@ namespace dflowfm_io
         void EnsureKnownKey(const std::string& key) const;
         void EnsureEnumInRange(const std::string& key, EnumValue value) const;
 
+        const MduSchema& schema;
         MduData mduData;
         IssueReport issues;
     };

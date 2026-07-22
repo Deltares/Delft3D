@@ -26,7 +26,8 @@ namespace dflowfm_io
             },
     };
 
-    MduDocument::MduDocument() : mduData(MduData::CreateFromSchema()) {}
+    MduDocument::MduDocument(const MduSchema& schema)
+        : schema(schema), mduData(MduData::CreateFromSchema(schema)) {}
 
     void MduDocument::Load(std::istream& in)
     {
@@ -37,7 +38,7 @@ namespace dflowfm_io
         iniFile.Load(in);
         ini::IniData& iniData = iniFile.GetData();
 
-        std::pair<MduData, IssueReport> result = MduDataConverter::Convert(iniData);
+        std::pair<MduData, IssueReport> result = MduDataConverter::Convert(iniData, schema);
         mduData = std::move(result.first);
         issues = std::move(result.second);
     }
@@ -59,7 +60,7 @@ namespace dflowfm_io
         if (out.fail())
             throw std::ios_base::failure("Stream is not in a writable state.");
 
-        ini::IniData iniData = MduDataConverter::Convert(mduData);
+        ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 
         ini::IniFile iniFile{mduIniOptions};
         iniFile.SetData(iniData);
@@ -80,14 +81,14 @@ namespace dflowfm_io
 
     void MduDocument::EnsureKnownKey(const std::string& key) const
     {
-        if (!MDU_SCHEMA.FindProperty(key))
+        if (!schema.FindProperty(key))
             throw std::invalid_argument(
                 std::format("Unknown MDU property: '{}'.", key));
     }
 
     void MduDocument::EnsureEnumInRange(const std::string& key, EnumValue value) const
     {
-        const auto* ps = MDU_SCHEMA.FindProperty(key);
+        const auto* ps = schema.FindProperty(key);
         if (!ps) return;
         const auto it = std::ranges::find(ps->enum_values, value.value, &EnumValueSchema::value);
         if (it == ps->enum_values.end())

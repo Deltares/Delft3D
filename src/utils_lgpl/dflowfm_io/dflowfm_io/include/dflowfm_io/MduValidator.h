@@ -14,7 +14,7 @@ namespace dflowfm_io
     /// @brief Performs schema-based validation of MDU file contents.
     ///
     /// MduValidator checks a parsed MDU file (represented as an @ref ini::IniData) against
-    /// the MDU schema. The validation consists of the following passes:
+    /// a given @ref MduSchema. The validation consists of the following passes:
     ///
     /// 1. **Required validation** — verifies that all sections and properties marked as
     ///    required in the schema are present and have a value. Missing optional properties
@@ -30,22 +30,18 @@ namespace dflowfm_io
     class MduValidator
     {
     public:
-        /// @brief Constructs a validator using the provided @ref MduSchema.
-        explicit MduValidator(const MduSchema& schema);
-
-        /// @brief Validates the given MDU data against the MDU schema.
+        /// @brief Validates the given MDU data against the given @ref MduSchema.
         /// @param iniData The parsed MDU file contents to validate.
+        /// @param schema The schema to validate against.
         /// @return An @ref IssueReport containing all errors, warnings, and informational
         ///         messages produced during validation. The report is empty if the data
         ///         fully conforms to the schema.
-        IssueReport Validate(const ini::IniData& iniData);
+        static IssueReport Validate(const ini::IniData& iniData, const MduSchema& schema);
 
     private:
-        const MduSchema& schema;
-
-        void ValidateRequired(const ini::IniData& iniData, IssueReport& report);
-        void ValidateUnsupported(const ini::IniData& iniData, IssueReport& report);
-        void ValidateDeprecated(const ini::IniData& iniData, IssueReport& report);
+        static void ValidateRequired(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
+        static void ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
+        static void ValidateDeprecated(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
     };
 
 } // namespace dflowfm_io

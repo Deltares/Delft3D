@@ -7,11 +7,11 @@
 
 namespace dflowfm_io
 {
-    MduData MduData::CreateFromSchema()
+    MduData MduData::CreateFromSchema(const MduSchema& schema)
     {
         MduData mduData;
 
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+        for (const auto& sectionSchema : schema.Sections())
         {
             for (const auto& propertySchema : sectionSchema.properties)
             {

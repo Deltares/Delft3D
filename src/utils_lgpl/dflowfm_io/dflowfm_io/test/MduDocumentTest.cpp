@@ -13,125 +13,119 @@ namespace dflowfm_io::test
 {
 
     // -------------------------------------------------------------------------
+    // Fixture
+    // -------------------------------------------------------------------------
+
+    class MduDocumentTest : public ::testing::Test
+    {
+    protected:
+        const MduSchema& schema = TestSchema();
+        MduDocument doc{schema};
+    };
+
+    // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
 
-    TEST(MduDocumentTest, Constructor_PopulatesSchemaDefaults)
-    {
-        MduDocument doc;
-        EXPECT_FALSE(doc.GetData().data_entries.empty());
-    }
+    TEST_F(MduDocumentTest, Constructor_PopulatesSchemaDefaults) { EXPECT_FALSE(doc.GetData().data_entries.empty()); }
 
     // -------------------------------------------------------------------------
     // Load(stream)
     // -------------------------------------------------------------------------
 
-    TEST(MduDocumentTest, Load_ValidStream_NoErrors)
+    TEST_F(MduDocumentTest, Load_ValidStream_NoErrors)
     {
-        const auto mdu_str = MakeCompliantMduString();
-        auto stream = std::istringstream(mdu_str);
+        auto stream = std::istringstream(TestMduString());
 
-        MduDocument doc;
         doc.Load(stream);
 
         EXPECT_FALSE(doc.GetReport().HasErrors());
     }
 
-    TEST(MduDocumentTest, Load_ValidStream_PopulatesMduData)
+    TEST_F(MduDocumentTest, Load_ValidStream_PopulatesMduData)
     {
-        const auto mdu_str = MakeCompliantMduString();
-        auto stream = std::istringstream(mdu_str);
+        auto stream = std::istringstream(TestMduString());
 
-        MduDocument doc;
         doc.Load(stream);
 
         EXPECT_FALSE(doc.GetData().data_entries.empty());
     }
 
-    TEST(MduDocumentTest_Stream, Load_FailedStream_ThrowsIosBaseFailure)
+    TEST_F(MduDocumentTest, Load_FailedStream_ThrowsIosBaseFailure)
     {
         std::istringstream stream;
         stream.setstate(std::ios::failbit);
-        MduDocument doc;
 
         EXPECT_THROW(doc.Load(stream), std::ios_base::failure);
     }
 
-    TEST(MduDocumentTest, Load_ValidStream_OverridesDefaultValues)
+    TEST_F(MduDocumentTest, Load_ValidStream_OverridesDefaultValues)
     {
-        const auto [intSection, intProperty] = FirstOptionalPropertyWithDefault(ValueType::Int);
-        const auto [floatSection, floatProperty] = FirstOptionalPropertyWithDefault(ValueType::Float);
-        const auto [stringSection, stringProperty] = FirstOptionalPropertyWithDefault(ValueType::String);
-
-        auto iniData = MakeCompliantIniData();
-        iniData.GetSection(intSection->name).SetPropertyValue(intProperty->key, -1212);
-        iniData.GetSection(stringSection->name).SetPropertyValue(stringProperty->key, "overriden");
-        iniData.GetSection(floatSection->name).SetPropertyValue(floatProperty->key, 32424.22);
+        auto iniData = TestIniData();
+        iniData.GetSection("general").SetPropertyValue("fileVersion", "overriden");
+        iniData.GetSection("numerics").SetPropertyValue("maxNonLinearIterations", -1212);
+        iniData.GetSection("geometry").SetPropertyValue("bedLevUni", 32424.22);
 
         std::ostringstream out;
         ini::IniFormatter{}.Format(iniData, out);
-        std::istringstream stream = std::istringstream(out.str());
+        auto stream = std::istringstream(out.str());
 
-        MduDocument doc;
         doc.Load(stream);
 
-        EXPECT_EQ(doc.GetValue<int>(FormatKey(intSection->name, intProperty->key)), -1212);
-        EXPECT_EQ(doc.GetValue<std::string>(FormatKey(stringSection->name, stringProperty->key)), "overriden");
-        EXPECT_DOUBLE_EQ(doc.GetValue<double>(FormatKey(floatSection->name, floatProperty->key)), 32424.22);
+        const std::string fileVersionKey = FormatKey("general", "fileVersion");
+        const std::string maxIterKey = FormatKey("numerics", "maxNonLinearIterations");
+        const std::string bedLevKey = FormatKey("geometry", "bedLevUni");
+
+        EXPECT_EQ(doc.GetValue<std::string>(fileVersionKey), "overriden");
+        EXPECT_EQ(doc.GetValue<int>(maxIterKey), -1212);
+        EXPECT_DOUBLE_EQ(doc.GetValue<double>(bedLevKey), 32424.22);
     }
 
-    TEST(MduDocumentTest, Load_ValidStream_RetainsDefaultForAbsentProperty)
+    TEST_F(MduDocumentTest, Load_ValidStream_RetainsDefaultForAbsentProperty)
     {
-        const auto [intSection, intProperty] = FirstOptionalPropertyWithDefault(ValueType::Int);
-        const auto [floatSection, floatProperty] = FirstOptionalPropertyWithDefault(ValueType::Float);
-        const auto [stringSection, stringProperty] = FirstOptionalPropertyWithDefault(ValueType::String);
-
-        auto iniData = MakeCompliantIniData();
-        iniData.GetSection(intSection->name).RemoveAllProperties(intProperty->key);
-        iniData.GetSection(stringSection->name).RemoveAllProperties(stringProperty->key);
-        iniData.GetSection(floatSection->name).RemoveAllProperties(floatProperty->key);
+        auto iniData = TestIniData();
+        iniData.GetSection("general").RemoveAllProperties("fileVersion");
+        iniData.GetSection("numerics").RemoveAllProperties("maxNonLinearIterations");
+        iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
         std::ostringstream out;
         ini::IniFormatter{}.Format(iniData, out);
-        std::istringstream stream = std::istringstream(out.str());
+        auto stream = std::istringstream(out.str());
 
-        MduDocument doc;
         doc.Load(stream);
 
-        EXPECT_EQ(doc.GetValue<int>(FormatKey(intSection->name, intProperty->key)),
-                  std::stoi(intProperty->default_value));
-        EXPECT_EQ(doc.GetValue<std::string>(FormatKey(stringSection->name, stringProperty->key)),
-                  stringProperty->default_value);
-        EXPECT_DOUBLE_EQ(doc.GetValue<double>(FormatKey(floatSection->name, floatProperty->key)),
-                         std::stof(floatProperty->default_value));
+        const std::string fileVersionKey = FormatKey("general", "fileVersion");
+        const std::string maxIterKey = FormatKey("numerics", "maxNonLinearIterations");
+        const std::string bedLevKey = FormatKey("geometry", "bedLevUni");
+
+        EXPECT_EQ(doc.GetValue<std::string>(fileVersionKey), "1.09");
+        EXPECT_EQ(doc.GetValue<int>(maxIterKey), 100);
+        EXPECT_DOUBLE_EQ(doc.GetValue<double>(bedLevKey), -5.0);
     }
 
     // -------------------------------------------------------------------------
     // Load(path)
     // -------------------------------------------------------------------------
 
-    TEST(MduDocumentTest_Path, Load_EmptyPath_ThrowsInvalidArgument)
+    TEST_F(MduDocumentTest, Load_EmptyPath_ThrowsInvalidArgument)
     {
-        MduDocument doc;
         EXPECT_THROW(doc.Load(std::filesystem::path{}), std::invalid_argument);
     }
 
-    TEST(MduDocumentTest_Path, Load_NonExistingPath_ThrowsIosBaseFailure)
+    TEST_F(MduDocumentTest, Load_NonExistingPath_ThrowsIosBaseFailure)
     {
-        MduDocument doc;
-        EXPECT_THROW(doc.Load(std::filesystem::path{"nonexistent_file_xyz.mdu"}), std::ios_base::failure);
+        const auto path = std::filesystem::path{"nonexistent_file_xyz.mdu"};
+
+        EXPECT_THROW(doc.Load(path), std::ios_base::failure);
     }
 
     // -------------------------------------------------------------------------
     // Save(stream)
     // -------------------------------------------------------------------------
 
-    TEST(MduDocumentTest, Save_ValidStream_WritesNonEmptyContent)
+    TEST_F(MduDocumentTest, Save_ValidStream_WritesNonEmptyContent)
     {
-        const auto mdu_str = MakeCompliantMduString();
-        auto stream = std::istringstream(mdu_str);
-
-        MduDocument doc;
+        auto stream = std::istringstream(TestMduString());
         doc.Load(stream);
 
         std::ostringstream out;
@@ -140,10 +134,8 @@ namespace dflowfm_io::test
         EXPECT_FALSE(out.str().empty());
     }
 
-    TEST(MduDocumentTest, Save_FailedStream_ThrowsIosBaseFailure)
+    TEST_F(MduDocumentTest, Save_FailedStream_ThrowsIosBaseFailure)
     {
-        MduDocument doc;
-
         std::ostringstream out;
         out.setstate(std::ios::failbit);
 
@@ -154,78 +146,222 @@ namespace dflowfm_io::test
     // Save(path)
     // -------------------------------------------------------------------------
 
-    TEST(MduDocumentTest_Path, Save_EmptyPath_ThrowsInvalidArgument)
+    TEST_F(MduDocumentTest, Save_EmptyPath_ThrowsInvalidArgument)
     {
-        MduDocument doc;
         EXPECT_THROW(doc.Save(std::filesystem::path{}), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
-    // GetValue / SetValue
+    // GetValue
     // -------------------------------------------------------------------------
 
-    TEST(MduDocumentTest, GetValue_UnknownKey_ThrowsInvalidArgument)
+    TEST_F(MduDocumentTest, GetValue_UnknownKey_ThrowsInvalidArgument)
     {
-        MduDocument doc;
         EXPECT_THROW(doc.GetValue<int>("general.nonexistent_xyz"), std::invalid_argument);
     }
 
-    TEST(MduDocumentTest, GetValue_ExistingIntProperty_ReturnsDefaultValue)
+    TEST_F(MduDocumentTest, GetValue_ExistingIntProperty_ReturnsDefaultValue)
     {
-        MduDocument doc;
+        const std::string key = FormatKey("numerics", "maxNonLinearIterations");
 
-        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Int);
-        const std::string key = FormatKey(targetSection->name, targetProperty->key);
-
-        EXPECT_EQ(doc.GetValue<int>(key), std::stoi(targetProperty->default_value));
+        EXPECT_EQ(doc.GetValue<int>(key), 100);
     }
 
-    TEST(MduDocumentTest, GetValue_ExistingFloatProperty_ReturnsDefaultValue)
+    TEST_F(MduDocumentTest, GetValue_ExistingFloatProperty_ReturnsDefaultValue)
     {
-        MduDocument doc;
+        const std::string key = FormatKey("geometry", "bedLevUni");
 
-        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::Float);
-        const std::string key = FormatKey(targetSection->name, targetProperty->key);
-
-        EXPECT_DOUBLE_EQ(doc.GetValue<double>(key), std::stof(targetProperty->default_value));
+        EXPECT_DOUBLE_EQ(doc.GetValue<double>(key), -5.0);
     }
 
-    TEST(MduDocumentTest, GetValue_ExistingStringProperty_ReturnsDefaultValue)
+    TEST_F(MduDocumentTest, GetValue_ExistingStringProperty_ReturnsDefaultValue)
     {
-        MduDocument doc;
+        const std::string key = FormatKey("general", "fileVersion");
 
-        const auto [targetSection, targetProperty] = FirstOptionalPropertyWithDefault(ValueType::String);
-        const std::string key = FormatKey(targetSection->name, targetProperty->key);
-
-        EXPECT_EQ(doc.GetValue<std::string>(key), targetProperty->default_value);
+        EXPECT_EQ(doc.GetValue<std::string>(key), "1.09");
     }
 
-    TEST(MduDocumentTest, SetValue_UnknownKey_ThrowsInvalidArgument)
+    TEST_F(MduDocumentTest, GetValue_ExistingEnumProperty_ReturnsDefaultValue)
     {
-        MduDocument doc;
+        const std::string key = FormatKey("numerics", "vertAdvTypSal");
+
+        EXPECT_EQ(doc.GetValue<EnumValue>(key).value, 6);
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingBoolProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("geometry", "useCaching");
+
+        EXPECT_TRUE(doc.GetValue<bool>(key));
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingPathProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("geometry", "netFile");
+
+        EXPECT_EQ(doc.GetValue<std::filesystem::path>(key), std::filesystem::path("test_net.nc"));
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingPathListProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("geometry", "structureFile");
+
+        const auto& value = doc.GetValue<std::vector<std::filesystem::path>>(key);
+
+        ASSERT_EQ(value.size(), 1u);
+        EXPECT_EQ(value[0], std::filesystem::path("structures.ini"));
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingStringListProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("geometry", "activeProcesses");
+
+        const auto& value = doc.GetValue<std::vector<std::string>>(key);
+
+        ASSERT_EQ(value.size(), 3u);
+        EXPECT_EQ(value[0], "Nitrification");
+        EXPECT_EQ(value[1], "Denitrification");
+        EXPECT_EQ(value[2], "Reaeration");
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingFloatListProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("geometry", "stretchCoef");
+
+        const auto& value = doc.GetValue<std::vector<double>>(key);
+
+        ASSERT_EQ(value.size(), 3u);
+        EXPECT_DOUBLE_EQ(value[0], 0.1);
+        EXPECT_DOUBLE_EQ(value[1], 0.3);
+        EXPECT_DOUBLE_EQ(value[2], 0.6);
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingDateTimeProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("time", "refDate");
+
+        EXPECT_NO_THROW(doc.GetValue<std::chrono::system_clock::time_point>(key));
+    }
+
+    // -------------------------------------------------------------------------
+    // SetValue
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduDocumentTest, SetValue_UnknownKey_ThrowsInvalidArgument)
+    {
         EXPECT_THROW(doc.SetValue("general.nonexistent_xyz", 42), std::invalid_argument);
     }
 
-    TEST(MduDocumentTest, SetValue_EnumOutOfRange_ThrowsOutOfRange)
+    TEST_F(MduDocumentTest, SetValue_EnumOutOfRange_ThrowsOutOfRange)
     {
-        MduDocument doc;
+        const std::string key = FormatKey("general", "fileType");
+        const EnumValue outOfRange{std::numeric_limits<int>::max()};
 
-        const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Enum);
-        const std::string key = FormatKey(targetSection->name, targetProperty->key);
-
-        EXPECT_THROW(doc.SetValue(key, EnumValue{std::numeric_limits<int>::max()}), std::out_of_range);
+        EXPECT_THROW(doc.SetValue(key, outOfRange), std::out_of_range);
     }
 
-    TEST(MduDocumentTest, SetValue_ValidIntValue_UpdatesData)
+    TEST_F(MduDocumentTest, SetValue_ValidIntValue_UpdatesData)
     {
-        MduDocument doc;
-
-        const auto [targetSection, targetProperty] = FirstPropertyOfType(ValueType::Int);
-        const std::string key = FormatKey(targetSection->name, targetProperty->key);
+        const std::string key = FormatKey("numerics", "maxNonLinearIterations");
 
         doc.SetValue(key, 99);
 
         EXPECT_EQ(doc.GetValue<int>(key), 99);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidFloatValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "bedLevUni");
+
+        doc.SetValue(key, -20.0);
+
+        EXPECT_DOUBLE_EQ(doc.GetValue<double>(key), -20.0);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidStringValue_UpdatesData)
+    {
+        const std::string key = FormatKey("general", "fileVersion");
+
+        doc.SetValue(key, std::string("1.10"));
+
+        EXPECT_EQ(doc.GetValue<std::string>(key), "1.10");
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidEnumValue_UpdatesData)
+    {
+        const std::string key = FormatKey("numerics", "vertAdvTypSal");
+
+        doc.SetValue(key, EnumValue{4});
+
+        EXPECT_EQ(doc.GetValue<EnumValue>(key).value, 4);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidBoolValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "useCaching");
+
+        doc.SetValue(key, false);
+
+        EXPECT_FALSE(doc.GetValue<bool>(key));
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidPathValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "netFile");
+
+        doc.SetValue(key, std::filesystem::path("other_net.nc"));
+
+        EXPECT_EQ(doc.GetValue<std::filesystem::path>(key), std::filesystem::path("other_net.nc"));
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidPathListValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "structureFile");
+        const std::vector<std::filesystem::path> newValue{"a.ini", "b.ini"};
+
+        doc.SetValue(key, newValue);
+
+        const auto& value = doc.GetValue<std::vector<std::filesystem::path>>(key);
+        ASSERT_EQ(value.size(), 2u);
+        EXPECT_EQ(value[0], std::filesystem::path("a.ini"));
+        EXPECT_EQ(value[1], std::filesystem::path("b.ini"));
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidStringListValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "activeProcesses");
+        const std::vector<std::string> newValue{"Foo", "Bar"};
+
+        doc.SetValue(key, newValue);
+
+        const auto& value = doc.GetValue<std::vector<std::string>>(key);
+        ASSERT_EQ(value.size(), 2u);
+        EXPECT_EQ(value[0], "Foo");
+        EXPECT_EQ(value[1], "Bar");
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidFloatListValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "stretchCoef");
+        const std::vector<double> newValue{0.2, 0.3, 0.5};
+
+        doc.SetValue(key, newValue);
+
+        const auto& value = doc.GetValue<std::vector<double>>(key);
+        ASSERT_EQ(value.size(), 3u);
+        EXPECT_DOUBLE_EQ(value[0], 0.2);
+        EXPECT_DOUBLE_EQ(value[1], 0.3);
+        EXPECT_DOUBLE_EQ(value[2], 0.5);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidDateTimeValue_UpdatesData)
+    {
+        const std::string key = FormatKey("time", "refDate");
+        const auto newValue = std::chrono::system_clock::now();
+
+        doc.SetValue(key, newValue);
+
+        EXPECT_EQ(doc.GetValue<std::chrono::system_clock::time_point>(key), newValue);
     }
 
 } // namespace dflowfm_io::test

@@ -8,18 +8,16 @@
 
 namespace dflowfm_io
 {
-    MduValidator::MduValidator(const MduSchema& schema) : schema(schema) {}
-
-    IssueReport MduValidator::Validate(const ini::IniData& iniData)
+    IssueReport MduValidator::Validate(const ini::IniData& iniData, const MduSchema& schema)
     {
         IssueReport report;
-        ValidateRequired(iniData, report);
-        ValidateUnsupported(iniData, report);
-        ValidateDeprecated(iniData, report);
+        ValidateRequired(iniData, schema, report);
+        ValidateUnsupported(iniData, schema, report);
+        ValidateDeprecated(iniData, schema, report);
         return report;
     }
 
-    void MduValidator::ValidateRequired(const ini::IniData& iniData, IssueReport& report)
+    void MduValidator::ValidateRequired(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
         for (const auto& sectionSchema : schema.Sections())
         {
@@ -61,7 +59,7 @@ namespace dflowfm_io
         }
     }
 
-    void MduValidator::ValidateUnsupported(const ini::IniData& iniData, IssueReport& report)
+    void MduValidator::ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
         for (const auto& section : iniData)
         {
@@ -83,7 +81,7 @@ namespace dflowfm_io
         }
     }
 
-    void MduValidator::ValidateDeprecated(const ini::IniData& iniData, IssueReport& report)
+    void MduValidator::ValidateDeprecated(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
         for (const auto& section : iniData)
         {

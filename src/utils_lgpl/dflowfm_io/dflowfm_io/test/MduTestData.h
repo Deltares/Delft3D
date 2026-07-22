@@ -19,8 +19,7 @@ namespace dflowfm_io::test
 
     inline const MduSchema& TestSchema()
     {
-        static const MduSchema schema = []
-        {
+        static const MduSchema schema = [] {
             // [general]
             SectionSchema general;
             general.name = "general";
@@ -32,6 +31,7 @@ namespace dflowfm_io::test
             fileType.value_type = ValueType::Enum;
             fileType.default_value = "modelDef";
             fileType.enum_values = {{0, "modelDef"}};
+            fileType.description = "File type. Do not edit this.";
             general.properties.push_back(fileType);
 
             PropertySchema fileVersion;
@@ -39,6 +39,7 @@ namespace dflowfm_io::test
             fileVersion.required = true;
             fileVersion.value_type = ValueType::String;
             fileVersion.default_value = "1.09";
+            fileVersion.description = "File version. Do not edit this.";
             general.properties.push_back(fileVersion);
 
             // [geometry]
@@ -51,6 +52,7 @@ namespace dflowfm_io::test
             netFile.required = true;
             netFile.value_type = ValueType::Path;
             netFile.default_value = "test_net.nc";
+            netFile.description = "Net file (*_net.nc) containing mesh information.";
             geometry.properties.push_back(netFile);
 
             PropertySchema useCaching;
@@ -58,6 +60,7 @@ namespace dflowfm_io::test
             useCaching.required = false;
             useCaching.value_type = ValueType::IntBool;
             useCaching.default_value = "1";
+            useCaching.description = "Use caching for geometrical/network-related items.";
             geometry.properties.push_back(useCaching);
 
             PropertySchema bedLevUni;
@@ -65,12 +68,15 @@ namespace dflowfm_io::test
             bedLevUni.required = false;
             bedLevUni.value_type = ValueType::Float;
             bedLevUni.default_value = "-5.0";
+            bedLevUni.description = "Uniform bed level.";
             geometry.properties.push_back(bedLevUni);
 
             PropertySchema structureFile;
             structureFile.key = "structureFile";
             structureFile.required = false;
             structureFile.value_type = ValueType::PathList;
+            structureFile.default_value = "structures.ini";
+            structureFile.description = "File (*.ini) containing list of hydraulic structures.";
             geometry.properties.push_back(structureFile);
 
             PropertySchema stretchCoef;
@@ -78,6 +84,7 @@ namespace dflowfm_io::test
             stretchCoef.required = false;
             stretchCoef.value_type = ValueType::FloatList;
             stretchCoef.default_value = "0.1 0.3 0.6";
+            stretchCoef.description = "Coefficients for sigma layer.";
             geometry.properties.push_back(stretchCoef);
 
             PropertySchema activeProcesses;
@@ -85,6 +92,7 @@ namespace dflowfm_io::test
             activeProcesses.required = false;
             activeProcesses.value_type = ValueType::StringList;
             activeProcesses.default_value = "Nitrification Denitrification Reaeration";
+            activeProcesses.description = "Active processes.";
             geometry.properties.push_back(activeProcesses);
 
             // [numerics]
@@ -97,6 +105,7 @@ namespace dflowfm_io::test
             maxNonLinearIterations.required = false;
             maxNonLinearIterations.value_type = ValueType::Int;
             maxNonLinearIterations.default_value = "100";
+            maxNonLinearIterations.description = "Maximal iterations in non-linear iteration loop.";
             numerics.properties.push_back(maxNonLinearIterations);
 
             PropertySchema timeStepType;
@@ -105,14 +114,25 @@ namespace dflowfm_io::test
             timeStepType.value_type = ValueType::IntEnum;
             timeStepType.default_value = "0";
             timeStepType.enum_values = {{0}, {1}, {2}, {3}, {4}};
+            timeStepType.description = "Type of time stepping.";
             numerics.properties.push_back(timeStepType);
+
+            PropertySchema verticalAdvectionType;
+            verticalAdvectionType.key = "verticalAdvectionType";
+            verticalAdvectionType.required = false;
+            verticalAdvectionType.value_type = ValueType::Enum;
+            verticalAdvectionType.default_value = "higherOrderUpwindExplicit";
+            verticalAdvectionType.enum_values = {{0, "centralImplicit"}, {1, "higherOrderUpwindExplicit"}};
+            verticalAdvectionType.description = "Vertical advection type for salinity.";
+            numerics.properties.push_back(verticalAdvectionType);
 
             PropertySchema vertAdvTypSal;
             vertAdvTypSal.key = "vertAdvTypSal";
             vertAdvTypSal.required = false;
             vertAdvTypSal.value_type = ValueType::IntEnum;
             vertAdvTypSal.default_value = "6";
-            timeStepType.enum_values = {{0}, {4}, {6}};
+            vertAdvTypSal.enum_values = {{0}, {4}, {6}};
+            vertAdvTypSal.description = "Vertical advection type for salinity.";
             vertAdvTypSal.status.type = StatusType::Deprecated;
             vertAdvTypSal.status.comment = "Use [numerics] verticalAdvectionType instead.";
             numerics.properties.push_back(vertAdvTypSal);
@@ -123,6 +143,7 @@ namespace dflowfm_io::test
             layerType.value_type = ValueType::IntEnum;
             layerType.default_value = "1";
             layerType.enum_values = {{1, ""}, {2, ""}, {3, "", {StatusType::Deprecated, "Option is deprecated."}}};
+            layerType.description = "Vertical layer type.";
             numerics.properties.push_back(layerType);
 
             // [time]
@@ -135,8 +156,18 @@ namespace dflowfm_io::test
             refDate.required = false;
             refDate.value_type = ValueType::DateTime;
             refDate.default_value = "20000101";
+            refDate.format = FormatType::Date;
+            refDate.description = "Reference date.";
             time.properties.push_back(refDate);
 
+            PropertySchema tStart;
+            tStart.key = "tStart";
+            tStart.required = false;
+            tStart.value_type = ValueType::DateTime;
+            tStart.default_value = "20000101000010";
+            tStart.format = FormatType::DateTime;
+            tStart.description = "Start time w.r.t. `refDate`.";
+            time.properties.push_back(tStart);
 
             return MduSchema{"Test schema", {general, geometry, numerics, time}};
         }();
@@ -159,40 +190,17 @@ namespace dflowfm_io::test
         return iniData;
     }
 
-    inline std::pair<const SectionSchema*, const PropertySchema*> FirstRequiredProperty()
+    inline std::string TestMduString()
     {
-        for (const auto& s : MDU_SCHEMA.Sections())
-            for (const auto& p : s.properties)
-                if (p.required) return {&s, &p};
-        throw std::runtime_error("No required property found in MDU_SCHEMA");
+        std::ostringstream out;
+        ini::IniFormatter{}.Format(TestIniData(), out);
+        return out.str();
     }
 
-    inline std::pair<const SectionSchema*, const PropertySchema*> FirstOptionalPropertyWithDefault(
-        ValueType type = ValueType::Int)
+    inline MduData TestMduData()
     {
-        for (const auto& s : MDU_SCHEMA.Sections())
-            for (const auto& p : s.properties)
-                if (!p.required && p.value_type == type && !p.default_value.empty()) return {&s, &p};
-        throw std::runtime_error(
-            std::format("No optional property of the specified type with a default value found in MDU_SCHEMA"));
-    }
-
-    inline std::pair<const SectionSchema*, const PropertySchema*> FirstPropertyOfType(ValueType type)
-    {
-        for (const auto& s : MDU_SCHEMA.Sections())
-            for (const auto& p : s.properties)
-                if (p.value_type == type) return {&s, &p};
-        throw std::runtime_error("No property of the specified type found in MDU_SCHEMA");
-    }
-
-    inline std::pair<const SectionSchema*, const PropertySchema*> FirstDateTimePropertyWithFormat(FormatType format)
-    {
-        for (const auto& section : MDU_SCHEMA.Sections())
-            for (const auto& property : section.properties)
-                if (property.value_type == ValueType::DateTime && property.format.has_value() &&
-                    *property.format == format)
-                    return {&section, &property};
-        throw std::runtime_error("No DateTime property found with the requested format.");
+        MduData mduData = MduData::CreateFromSchema(TestSchema());
+        return mduData;
     }
 
     inline const Issue* FirstIssue(const IssueReport& report, Severity severity)
@@ -207,39 +215,6 @@ namespace dflowfm_io::test
         const auto pos = key.find('.');
         if (pos == std::string::npos) throw std::runtime_error("Key has no '.' separator: " + key);
         return {key.substr(0, pos), key.substr(pos + 1)};
-    }
-
-    inline ini::IniData MakeCompliantIniData()
-    {
-        ini::IniData iniData;
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
-        {
-            ini::IniSection section(sectionSchema.name);
-            for (const auto& propSchema : sectionSchema.properties)
-                if (propSchema.status.type == StatusType::GA && (propSchema.required || !propSchema.default_value.empty()))
-                    section.AddProperty(propSchema.key, propSchema.default_value);
-            iniData.AddSection(std::move(section));
-        }
-        iniData.GetSection("general").SetPropertyValue("fileType", "modelDef");
-        iniData.GetSection("general").SetPropertyValue("fileVersion", "1.09");
-        iniData.GetSection("geometry").SetPropertyValue("netFile", "test_net.nc");
-        return iniData;
-    }
-
-    inline MduData MakeCompliantMduData()
-    {
-        MduData mduData = MduData::CreateFromSchema();
-        mduData.data_entries[FormatKey("general", "fileType")] = EnumValue{0};
-        mduData.data_entries[FormatKey("general", "fileVersion")] = std::string{"1.09"};
-        mduData.data_entries[FormatKey("geometry", "netFile")] = std::filesystem::path{"test_net.nc"};
-        return mduData;
-    }
-
-    inline std::string MakeCompliantMduString()
-    {
-        std::ostringstream out;
-        ini::IniFormatter{}.Format(MakeCompliantIniData(), out);
-        return out.str();
     }
 
 } // namespace dflowfm_io::test

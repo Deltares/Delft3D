@@ -70,14 +70,12 @@ namespace dflowfm_io
         return std::format("{:%H:%M:%S, %d-%m-%Y}", time);
     }
 
-    std::pair<MduData, IssueReport> MduDataConverter::Convert(const ini::IniData& iniData)
+    std::pair<MduData, IssueReport> MduDataConverter::Convert(const ini::IniData& iniData, const MduSchema& schema)
     {
-        MduValidator validator(MDU_SCHEMA);
-        IssueReport report = validator.Validate(iniData);
+        IssueReport report = MduValidator::Validate(iniData, schema);
+        MduData mduData = MduData::CreateFromSchema(schema);
 
-        MduData mduData = MduData::CreateFromSchema();
-
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+        for (const auto& sectionSchema : schema.Sections())
         {
             for (const auto& propertySchema : sectionSchema.properties)
             {
@@ -102,11 +100,11 @@ namespace dflowfm_io
         return {std::move(mduData), std::move(report)};
     }
 
-    ini::IniData MduDataConverter::Convert(const MduData& mduData)
+    ini::IniData MduDataConverter::Convert(const MduData& mduData, const MduSchema& schema)
     {
         ini::IniData iniData;
 
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+        for (const auto& sectionSchema : schema.Sections())
         {
             auto& iniSection = iniData.AddSection(sectionSchema.name);
 
