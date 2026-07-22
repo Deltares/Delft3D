@@ -110,41 +110,38 @@ def render_property(prop, indent):
     required = bool(prop.get("validation", {}).get("is_required", False))
     nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
+    entries = enum_entries(prop)
+    status = prop.get("status", {})
 
     def field(name, val):
         return f"{inner}{name.ljust(width)} = {val}"
 
     field_blocks = [field(".key", f'"{prop["key"]}"')]
+    field_blocks.append(field(".value_type", f"ValueType::{value_type}"))
+    if "default_value" in prop:
+        dvs = default_value_str(prop["default_value"])
+        field_blocks.append(field(".default_value", f'"{dvs}"'))
+    if "format" in prop:
+        field_blocks.append(field(".format", f'"{prop["format"]}"'))
+        
+    field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
+
     if required:
         field_blocks.append(field(".required", "true"))
     if nullable:
         field_blocks.append(field(".nullable", "true"))
-    field_blocks.append(field(".value_type", f"ValueType::{value_type}"))
-
-    if "default_value" in prop:
-        dvs = default_value_str(prop["default_value"])
-        field_blocks.append(field(".default_value", f'"{dvs}"'))
-
-    entries = enum_entries(prop)
     if entries:
-        enum_blocks = [render_enum_value(v, label, status, indent + 8) for v, label, status in entries]
+        enum_blocks = [render_enum_value(v, label, st, indent + 8) for v, label, st in entries]
         enum_body = ",\n".join(enum_blocks)
         field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
 
-    if "format" in prop:
-        field_blocks.append(field(".format", f'"{prop["format"]}"'))
-
-    field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
-
-    status = prop.get("status", {})
     if status:
         status_type = STATUS_TYPE_MAP[status["value"]]
         comment = status.get("comment", "")
-        status_inner = " " * (indent + 8)
         sub_width = len(".comment") if comment else len(".type")
 
         def status_field(name, val):
-            return f"{status_inner}{name.ljust(sub_width)} = {val}"
+            return f"{inner}    {name.ljust(sub_width)} = {val}"
 
         status_lines = [status_field(".type", f"StatusType::{status_type}")]
         if comment:

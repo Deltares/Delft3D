@@ -77,13 +77,13 @@ namespace dflowfm_io
     struct PropertySchema
     {
         std::string key; ///< Case-insensitive property key as it appears in the MDU file.
-        bool required; ///< Whether the property must be present in the MDU file.
-        bool nullable; ///< Whether the property may hold an explicit null (empty) value.
         ValueType value_type; ///< Expected type of the property value.
         std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
-        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
         std::string format; ///< Optional format string for DateTime and Float properties.
         std::string description; ///< Human-readable description of the property.
+        bool required; ///< Whether the property must be present in the MDU file.
+        bool nullable; ///< Whether the property may hold an explicit null (empty) value.
+        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
         Status status; ///< Describes the lifecycle status of the property.
     };
 
