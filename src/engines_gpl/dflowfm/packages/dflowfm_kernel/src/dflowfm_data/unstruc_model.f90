@@ -1025,6 +1025,7 @@ contains
       if (c3e_stable > 0.0_dp) then
          call mess(LEVEL_ERROR, 'c3eStable should be <= 0')
       end if
+      c3e_unstable = c1e ! Default value for 'c3eUnstable' is c1e, but can be overridden via the mdu file.
       call prop_get(md_ptr, 'numerics', 'c3eUnstable', c3e_unstable)
       if (c3e_unstable < 0.0_dp) then
          call mess(LEVEL_ERROR, 'c3eUnstable should be >= 0')

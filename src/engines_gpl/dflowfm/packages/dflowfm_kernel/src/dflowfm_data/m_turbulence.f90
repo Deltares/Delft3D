@@ -136,11 +136,10 @@ contains
 
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
-      c1e = 1.44_dp
+      c1e = 1.44_dp ! For backward-compatible results, set [numerics] c1e to 1.4889743589743589. More info in UNST-10054.
       c1t = (1.0_dp - c1e) * CMUKEP
       c3t_unstable = (1.0_dp - c1e) * CMUKEP
       c3e_stable = 0.0_dp
-      c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
       tke_min = MINIMUM_VALUE_K_EPS_TAU
       eps_min = MINIMUM_VALUE_K_EPS_TAU
    end subroutine default_turbulence
