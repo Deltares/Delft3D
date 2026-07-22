@@ -1166,9 +1166,9 @@ contains
    ! =======================================================================
 
    !> Perform the configured conversion, if supported, for a uniform FileReader.
-      !! Supports linear interpolation in time, no interpolation in space and no weights.
-      !! Supports overwriting and adding-to the entire target Field array, as well all as overwriting only one array element.
-      !! Converts source(i) to target(i).
+   !! Supports linear interpolation in time, no interpolation in space and no weights.
+   !! Supports overwriting and adding-to the entire target Field array, as well all as overwriting only one array element.
+   !! Converts source(i) to target(i).
    function ecConverterUniform(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
@@ -2444,14 +2444,17 @@ contains
    !! No interpolation is supported. Data is constant over time.
    !! Supports overwriting an array element of the target Field's data array.
    function ecConverterQhtable(connection) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(dp), pointer :: input !< input value to the lookup table (referenced by pointer
+      real(kind=dp), pointer :: input !< input value to the lookup table (referenced by pointer
       logical :: success !< function status
       
+      ! Local variables
       integer :: j
       integer :: start_j
-      integer :: grid_width, tgtndx
+      integer :: grid_width
+      integer :: tgtndx
+      real(kind=dp) :: sourceValue !< sourceValue to be applied to the targetValues
       logical :: status !< status of undefined values check
       
       success = .false.
@@ -2470,39 +2473,11 @@ contains
 
             if (input < connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)) then
 
-               call check_undefined_values_for_operand( &
-                  connection%converterPtr%operandType, &
-                  [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
-                  status &
-               )
-
-               if (.not. status) then
-                  return
-               end if
-
-               call apply_operand( &
-                  connection%converterPtr%operandType, &
-                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
-                  connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(1) & ! waterlevel(i)
-               )
+               sourceValue = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(1)
 
             else if (input > connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width)) then
 
-               call check_undefined_values_for_operand( &
-                  connection%converterPtr%operandType, &
-                  [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
-                  status &
-               )
-
-               if (.not. status) then
-                  return
-               end if
-
-               call apply_operand( &
-                  connection%converterPtr%operandType, &
-                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
-                  connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width) & ! waterlevel(grid_width)
-               )
+               sourceValue = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width)
 
             else
 
@@ -2513,24 +2488,26 @@ contains
                   end if
                end do
 
-               call check_undefined_values_for_operand( &
+               sourceValue = connection%sourceItemsPtr(3)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) * input + &
+                             connection%sourceItemsPtr(4)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1)
+
+            end if
+
+            call check_undefined_values_for_operand( &
                   connection%converterPtr%operandType, &
                   [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
                   status &
-               )
+            )
 
-               if (.not. status) then
-                  return
-               end if
-
-               call apply_operand( &
-                  connection%converterPtr%operandType, &
-                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
-                  connection%sourceItemsPtr(3)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) * input + &
-                  connection%sourceItemsPtr(4)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) &
-               )
-
+            if (.not. status) then
+               return
             end if
+
+            call apply_operand( &
+               connection%converterPtr%operandType, &
+               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
+               sourceValue &
+            )
 
          case default
 
