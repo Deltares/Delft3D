@@ -3,6 +3,7 @@
     "file_format_version": "1.0.0",
     "file_format_type": "ini",
     "description": "The master definition file of D-Flow FM",
+    "default_float_format": "general",
     "ini_sections": [
         {
             "name": "general",
@@ -1948,6 +1949,7 @@
                     "enum_values": {
                         "0": "none",
                         "4": "theta implicit",
+                        "5": "legacy mode for backwards compatibility",
                         "6": "higher order explicit, no Forester filter"
                     }
                 },
@@ -3250,7 +3252,12 @@
                 {
                   "key": "masBalMinDep",
                   "value_type": "float",
-                  "description": "Minimum depth after bottom update for SSC adaptation mass balance."
+                  "description": "Minimum depth after bottom update for SSC adaptation mass balance.",
+                  "status": {
+                      "value": "obsolete",
+                      "since_release": 2027.01,
+                      "comment": "Keyword no longer supported."
+                  }
                 },
                 {
                   "key": "morphoPol",
@@ -3822,7 +3829,7 @@
                     "default_value": "20010101",
                     "value_type": "datetime",
                     "description": "Reference date. By default midnight is taken (00h00m00s).",
-                    "format": "yyyymmdd"
+                    "format": "date"
                 },
                 {
                     "key": "tZone",
@@ -3889,13 +3896,13 @@
                     "key": "startDateTime",
                     "value_type": "datetime",
                     "description": "Computation start datetime, when specified, overrides `tStart`.",
-                    "format": "yyyymmddhhmmss"
+                    "format": "datetime"
                 },
                 {
                     "key": "stopDateTime",
                     "value_type": "datetime",
                     "description": "Computation stop datetime, when specified, overrides `tStop`.",
-                    "format": "yyyymmddhhmmss"
+                    "format": "datetime"
                 },
                 {
                     "key": "updateRoughnessInterval",
@@ -3915,7 +3922,7 @@
                     "key": "startDateTimeTlfsmo",
                     "value_type": "datetime",
                     "description": "Computation start datetime w.r.t. `refDate` of Fourier smoothing time on water level boundaries, when specified, overrides `tStartTlfsmo`.",
-                    "format": "yyyymmddhhmmss"
+                    "format": "datetime"
                 },
                 {
                     "key": "autoTimestep",
@@ -3990,7 +3997,7 @@
                     "key": "restartDateTime",
                     "value_type": "datetime",
                     "description": "Restart time, only relevant but obligatory in case of restart from *_map.nc.",
-                    "format": "yyyymmddhhmmss"
+                    "format": "datetime"
                 },
                 {
                     "key": "rstIgnoreBl",
