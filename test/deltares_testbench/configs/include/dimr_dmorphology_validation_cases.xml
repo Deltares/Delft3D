@@ -170,7 +170,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c11_rouse_algebraic_30lyrs" ref="dflowfm_default">
-      <path version="2026-06-16T09:00:00.000000">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
+      <path version="2026-07-09T14:50:27.344000">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/rouse_his.nc" type="netCDF">
