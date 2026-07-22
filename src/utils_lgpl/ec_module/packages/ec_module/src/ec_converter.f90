@@ -3052,7 +3052,7 @@ contains
       logical :: has_wave_direction
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       logical :: status !< Status of undefined values check
-      real(dp) :: interpolated_source_value !< Interpolated source value
+      real(dp) :: sourceValue !< Source value at t0 or t1, depending on the time interpolation
       real(dp), dimension(:), pointer :: targetValues
       real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
@@ -3249,7 +3249,7 @@ contains
 
                if (n_layers == 0) then
                   do j = 1, n_points
-                     interpolated_source_value = 0.0_dp
+                     sourceValue = 0.0_dp
 
                      do i_weight_index = 1, size(indexWeight%indices, 1)
                         mp = indexWeight%indices(i_weight_index, j)
@@ -3260,7 +3260,7 @@ contains
                               return
                            end if
                            weight_factor = indexWeight%weightfactors(i_weight_index, j)
-                           interpolated_source_value = interpolated_source_value + (a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)) * weight_factor
+                           sourceValue = sourceValue + (a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)) * weight_factor
                         end if
                      end do
 
@@ -3270,7 +3270,7 @@ contains
                         return
                      end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetValues(j), interpolated_source_value)
+                     call apply_operand(connection%converterPtr%operandType, targetValues(j), sourceValue)
                   end do
                else
                   call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Multiple layers sources not yet supported for meteo from stations.")
@@ -3496,9 +3496,9 @@ contains
                                  end if
 
                                  ! interpolating between times and between vertical layers
-                                 interpolated_source_value = a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
+                                 sourceValue = a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
 
-                                 call apply_operand(connection%converterPtr%operandType, targetValues(k), interpolated_source_value)
+                                 call apply_operand(connection%converterPtr%operandType, targetValues(k), sourceValue)
                                  
                               end if
                            end if
@@ -3633,7 +3633,7 @@ contains
                                  return
                               end if
 
-                              interpolated_source_value = a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j) + &
+                              sourceValue = a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j) + &
                                                           a1 * sourcevals(1, 1, 1, 2) * indexWeight%weightFactors(1, j) + &
                                                           a0 * sourcevals(2, 1, 1, 1) * indexWeight%weightFactors(2, j) + &
                                                           a1 * sourcevals(2, 1, 1, 2) * indexWeight%weightFactors(2, j) + &
@@ -3642,7 +3642,7 @@ contains
                                                           a0 * sourcevals(1, 2, 1, 1) * indexWeight%weightFactors(4, j) + &
                                                           a1 * sourcevals(1, 2, 1, 2) * indexWeight%weightFactors(4, j)
 
-                              call apply_operand(connection%converterPtr%operandType, targetValues(j), interpolated_source_value)
+                              call apply_operand(connection%converterPtr%operandType, targetValues(j), sourceValue)
 
                               if (allocated(x_extrapolate)) then
                                  x_extrapolate(j) = targetElementSet%x(j) ! x_extrapolate is a copy of the x with missing points marked by ec_undef_hp
@@ -3765,7 +3765,7 @@ contains
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
                      sourceValueT0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
                      sourceValueT1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(j)
-                     interpolated_source_value = sourceValueT0 * a0 + sourceValueT1 * a1
+                     sourceValue = sourceValueT0 * a0 + sourceValueT1 * a1
 
                      call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
 
@@ -3773,7 +3773,7 @@ contains
                         return
                      end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), interpolated_source_value)
+                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), sourceValue)
                   end do
 
                   targetField%timesteps = timesteps
