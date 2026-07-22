@@ -74,77 +74,86 @@ def render_enum_value(value, label, status, indent):
     """Render a single EnumValueSchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
-    sub_width = len(".status") if status else len(".value")
-    lines = [pad + "EnumValueSchema {"]
-    lines.append(f'{inner}{".value".ljust(sub_width)} = {value},')
+    width = len(".status") if status else len(".value")
+
+    def field(name, val):
+        return f"{inner}{name.ljust(width)} = {val}"
+
+    field_blocks = [field(".value", value)]
     if label is not None:
-        lines.append(f'{inner}{".label".ljust(sub_width)} = "{label}",')
+        field_blocks.append(field(".label", f'"{label}"'))
     if status:
         status_type = STATUS_TYPE_MAP[status["value"]]
         comment = status.get("comment", "")
-        sub_status_width = len(".comment") if comment else len(".type")
-        lines.append(f'{inner}{".status".ljust(sub_width)} = {{')
-        lines.append(f'{inner}    {".type".ljust(sub_status_width)} = StatusType::{status_type},')
+        status_inner = " " * (indent + 8)
+        sub_width = len(".comment") if comment else len(".type")
+
+        def status_field(name, val):
+            return f"{status_inner}{name.ljust(sub_width)} = {val}"
+
+        status_lines = [status_field(".type", f"StatusType::{status_type}")]
         if comment:
-            lines.append(f'{inner}    {".comment".ljust(sub_status_width)} = "{comment}",')
-        lines.append(f'{inner}}},')
-    lines.append(pad + "}")
-    return "\n".join(lines)
+            status_lines.append(status_field(".comment", f'"{comment}"'))
+        status_body = ",\n".join(status_lines)
+        field_blocks.append(field(".status", f"{{\n{status_body}\n{inner}}}"))
+
+    body = ",\n".join(field_blocks)
+    return f"{pad}EnumValueSchema {{\n{body}\n{pad}}}"
 
 
 def render_property(prop, indent):
     """Render a single PropertySchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
-    lines = [pad + "PropertySchema {"]
+    width = len(".default_value") if "default_value" in prop else len(".description")
 
     required = bool(prop.get("validation", {}).get("is_required", False))
     nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
 
-    # Field names are padded to the width of the longest one so the
-    # "=" signs line up in the generated C++.
-    width = len(".default_value")
+    def field(name, val):
+        return f"{inner}{name.ljust(width)} = {val}"
 
-    def field(name, value):
-        return f"{inner}{name.ljust(width)} = {value}"
-
-    lines.append(field(".key", f'"{prop["key"]}",'))
+    field_blocks = [field(".key", f'"{prop["key"]}"')]
     if required:
-        lines.append(field(".required", "true,"))
+        field_blocks.append(field(".required", "true"))
     if nullable:
-        lines.append(field(".nullable", "true,"))
-    lines.append(field(".value_type", f"ValueType::{value_type},"))
+        field_blocks.append(field(".nullable", "true"))
+    field_blocks.append(field(".value_type", f"ValueType::{value_type}"))
 
     if "default_value" in prop:
         dvs = default_value_str(prop["default_value"])
-        lines.append(field(".default_value", f'"{dvs}",'))
+        field_blocks.append(field(".default_value", f'"{dvs}"'))
 
     entries = enum_entries(prop)
     if entries:
-        lines.append(field(".enum_values", "{"))
-        enum_blocks = [render_enum_value(value, label, status, indent + 8) for value, label, status in entries]
-        lines.append(",\n".join(enum_blocks))
-        lines.append(f"{inner}}},")
+        enum_blocks = [render_enum_value(v, label, status, indent + 8) for v, label, status in entries]
+        enum_body = ",\n".join(enum_blocks)
+        field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
 
     if "format" in prop:
-        lines.append(field(".format", f'"{prop["format"]}",'))
+        field_blocks.append(field(".format", f'"{prop["format"]}"'))
 
-    lines.append(field(".description", f'"{prop.get("description", "")}",'))
+    field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
 
     status = prop.get("status", {})
     if status:
         status_type = STATUS_TYPE_MAP[status["value"]]
         comment = status.get("comment", "")
+        status_inner = " " * (indent + 8)
         sub_width = len(".comment") if comment else len(".type")
-        lines.append(field(".status", "{"))
-        lines.append(f'{inner}    {".type".ljust(sub_width)} = StatusType::{status_type},')
-        if comment:
-            lines.append(f'{inner}    {".comment".ljust(sub_width)} = "{comment}",')
-        lines.append(f"{inner}}},")
 
-    lines.append(pad + "}")
-    return "\n".join(lines)
+        def status_field(name, val):
+            return f"{status_inner}{name.ljust(sub_width)} = {val}"
+
+        status_lines = [status_field(".type", f"StatusType::{status_type}")]
+        if comment:
+            status_lines.append(status_field(".comment", f'"{comment}"'))
+        status_body = ",\n".join(status_lines)
+        field_blocks.append(field(".status", f"{{\n{status_body}\n{inner}}}"))
+
+    body = ",\n".join(field_blocks)
+    return f"{pad}PropertySchema {{\n{body}\n{pad}}}"
 
 
 def render_section(section, indent):
@@ -158,19 +167,22 @@ def render_section(section, indent):
         p.get("validation", {}).get("is_required", False) for p in properties
     )
 
-    lines = [pad + "SectionSchema {"]
-    lines.append(f'{inner}.name        = "{section["name"]}",')
+    width = len(".description")
+
+    def field(name, value):
+        return f"{inner}{name.ljust(width)} = {value}"
+
+    field_blocks = [field(".name", f'"{section["name"]}"')]
     if required:
-        lines.append(f"{inner}.required    = true,")
-    lines.append(f'{inner}.description = "{section.get("description", "")}",')
-    lines.append(f"{inner}.properties  = {{")
+        field_blocks.append(field(".required", "true"))
+    field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
 
     prop_blocks = [render_property(p, indent + 8) for p in properties]
-    lines.append(",\n".join(prop_blocks))
+    props_body = ",\n".join(prop_blocks)
+    field_blocks.append(field(".properties", f"{{\n{props_body}\n{inner}}}"))
 
-    lines.append(f"{inner}}}")
-    lines.append(pad + "}")
-    return "\n".join(lines)
+    body = ",\n".join(field_blocks)
+    return f"{pad}SectionSchema {{\n{body}\n{pad}}}"
 
 
 def generate_schema_file(spec):
