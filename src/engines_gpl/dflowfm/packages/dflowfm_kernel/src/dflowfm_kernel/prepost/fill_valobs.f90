@@ -118,7 +118,7 @@ contains
       real(kind=dp), allocatable :: ship_level(:)
       real(kind=dp), allocatable :: cell_z_centers(:)
       real(kind=dp), allocatable :: waq_tmp(:)
-      real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
+      real(kind=dp), allocatable, save :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
       integer      , allocatable :: wet_or_dry(:)
       
       kmx_const = kmx
