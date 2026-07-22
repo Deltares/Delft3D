@@ -208,7 +208,7 @@ Run `conan install` once per configuration you want to consume:
 :: 1. Install dependencies for all three configurations.
 ::    The first call may build packages (or download them from Nexus). The other two reuse the cache.
 ::    Replace the value below with the applicable name from `conan profile list`.
-set DELFT3D_CONAN_PROFILE=PROFILE_FROM_CONAN_PROFILE_LIST
+set "DELFT3D_CONAN_PROFILE=<PROFILE_FROM_CONAN_PROFILE_LIST>"
 conan install . --profile:all=%DELFT3D_CONAN_PROFILE% ^
       --settings:all build_type=Release ^
       --output-folder=build_fm-suite\conan ^

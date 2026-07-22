@@ -273,7 +273,7 @@ def _get_default_profile() -> str:
     return DEFAULT_CONAN_PROFILE_LINUX
 
 
-def _get_profile(profile_override: str | None) -> str:
+def _get_profile_or_default(profile_override: str | None) -> str:
     return profile_override or os.environ.get(CONAN_PROFILE_ENV_VAR) or _get_default_profile()
 
 
@@ -357,13 +357,13 @@ def cmd_clean_cache(args: argparse.Namespace) -> None:
 
 
 def cmd_update_lockfile(args: argparse.Namespace) -> None:
-    profile = _get_profile(args.profile)
+    profile = _get_profile_or_default(args.profile)
     _require_profile(profile)
     update_lockfile(profile)
 
 
 def cmd_install(args: argparse.Namespace) -> None:
-    profile = _get_profile(args.profile)
+    profile = _get_profile_or_default(args.profile)
     _require_profile(profile)
 
     if args.rebuild_packages:

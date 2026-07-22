@@ -238,7 +238,7 @@ generator uses `&:build_type=...` to select the configuration for the consumer, 
 # 1. Install dependencies (generates CMakeDeps files).
 #    The first call may build packages (or download them from Nexus).
 #    Use `conan profile list` to find the current profile name.
-DELFT3D_CONAN_PROFILE=PROFILE_FROM_CONAN_PROFILE_LIST
+DELFT3D_CONAN_PROFILE="<PROFILE_FROM_CONAN_PROFILE_LIST>"
 conan install . --profile:all="$DELFT3D_CONAN_PROFILE" \
       --settings:all build_type=Release \
       --settings:all &:build_type=Release \
