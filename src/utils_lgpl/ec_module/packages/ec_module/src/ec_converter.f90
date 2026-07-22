@@ -2103,7 +2103,7 @@ contains
    !! Converts data from source Item i to target Item i.
    !! unstruc : gettimespacevalue
    function ecConverterCurvi(connection, timesteps) result(success)
-      ! Parameters
+      ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
@@ -2188,23 +2188,33 @@ contains
 
                   if (nmiss == 0) then ! if sufficient data for bi-linear interpolation
 
-                     wf_i = indexWeight%weightFactors(1:4, i)
-                     sourceValue = a0 * (wf_i(1) * s2D_T0(mp, np) + &
-                                         wf_i(2) * s2D_T0(mp + 1, np) + &
-                                         wf_i(3) * s2D_T0(mp + 1, np + 1) + &
-                                         wf_i(4) * s2D_T0(mp, np + 1)) &
-                                 + a1 * (wf_i(1) * s2D_T1(mp, np) + &
-                                         wf_i(2) * s2D_T1(mp + 1, np) + &
-                                         wf_i(3) * s2D_T1(mp + 1, np + 1) + &
-                                         wf_i(4) * s2D_T1(mp, np + 1))
+                     select case (connection%converterPtr%operandType)
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(i)], status)
-                     if (.not. status) then
+                     case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
+
+                        wf_i = indexWeight%weightFactors(1:4, i)
+                        sourceValue = a0 * (wf_i(1) * s2D_T0(mp, np) + &
+                                          wf_i(2) * s2D_T0(mp + 1, np) + &
+                                          wf_i(3) * s2D_T0(mp + 1, np + 1) + &
+                                          wf_i(4) * s2D_T0(mp, np + 1)) &
+                                    + a1 * (wf_i(1) * s2D_T1(mp, np) + &
+                                          wf_i(2) * s2D_T1(mp + 1, np) + &
+                                          wf_i(3) * s2D_T1(mp + 1, np + 1) + &
+                                          wf_i(4) * s2D_T1(mp, np + 1))
+
+                        call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(i)], status)
+                        if (.not. status) then
+                           return
+                        end if
+
+                        call apply_operand(connection%converterPtr%operandType, targetValues(i), sourceValue)
+
+                     case default
+
+                        call set_ec_message("ERROR: ec_converter::ecConverterCurvi: Unsupported operand type requested.")
                         return
-                     end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetValues(i), sourceValue)
-
+                     end select
                   end if
                end if
             end do
