@@ -4,94 +4,51 @@ file(GLOB source src/*.f90)
 
 add_executable(${executable_name} ${source})
 
+target_link_libraries(${executable_name} PRIVATE
+    deltares_common
+    deltares_common_c
+    deltares_common_mpi
+    dhydrology_kernel
+    ec_module
+    flow1d
+    flow1d_core
+    flow1d_io
+    ftnunit
+    gridgeom
+    io_netcdf
+    io_netcdf_data
+    kdtree_wrapper
+    kdtree2
+    fortrangis
+    libsigwatch
+    md5digest
+    md5
+    morphology_data
+    morphology_io
+    morphology_kernel
+    morphology_plugins_c
+    polypack
+    trachytopes_io
+    trachytopes_kernel
+    triangle::triangle
+    wq_processes
+    waq_process
+    waq_utils_c
+    waq_utils_f
+    interacter_stub
+    dflowfm_kernel
+)
+
 if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
 
-    set(oss_dependencies    deltares_common
-                            deltares_common_c
-                            deltares_common_mpi
-                            dhydrology_kernel
-                            ec_module
-                            flow1d
-                            flow1d_core
-                            flow1d_io
-                            ftnunit
-                            gridgeom
-                            io_netcdf
-                            io_netcdf_data
-                            interacter_stub
-                            kdtree_wrapper
-                            kdtree2
-                            fortrangis
-                            libsigwatch
-                            md5digest
-                            md5
-                            morphology_data
-                            morphology_io
-                            morphology_kernel
-                            morphology_plugins_c
-                            polypack
-                            trachytopes_io
-                            trachytopes_kernel
-                            triangle_c
-                            wq_processes
-                            waq_process
-                            waq_utils_c
-                            waq_utils_f
-                            dflowfm_kernel)
-
-
-    target_link_libraries(${executable_name} PRIVATE
-         ${oss_dependencies}
-         Threads::Threads)
+    target_link_libraries(${executable_name} PRIVATE Threads::Threads)
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
-
-
-if(WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         deltares_common_mpi
-                         dhydrology_kernel
-                         ec_module
-                         flow1d
-                         flow1d_core
-                         flow1d_io
-                         ftnunit
-                         gridgeom
-                         io_netcdf
-                         io_netcdf_data
-                         kdtree_wrapper
-                         kdtree2
-                         fortrangis
-                         libsigwatch
-                         md5digest
-                         md5
-                         morphology_data
-                         morphology_io
-                         morphology_kernel
-                         morphology_plugins_c
-                         netCDF::netcdff
-                         polypack
-                         trachytopes_io
-                         trachytopes_kernel
-                         triangle_c
-                         wq_processes
-                         waq_process
-                         waq_utils_c
-                         waq_utils_f
-                         interacter_stub
-                         dflowfm_kernel
-)
-target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
-
-endif(WIN32)
-
-include_directories(${mpi_module_path}
-)
+include_directories(${mpi_module_path})
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
