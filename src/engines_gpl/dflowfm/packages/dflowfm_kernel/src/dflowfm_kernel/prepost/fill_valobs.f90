@@ -232,9 +232,9 @@ contains
       end if
 
       if (his_write_settings%tur > 0) then
-         if (.not. allocated(vius)) then
-            allocate (vius(ndkx))
+         if (.not. allocated(vius)) then ! The lines in this if-statement will only be executed once. The value of viclu will be updated in the main flow solver.
             ! Set initial value of horizontal viscosity to user-defined value
+            allocate (vius(ndkx))
             if (javiusp == 1) then ! Spatially varying horizontal eddy viscosity
                if (model_is_3D()) then
                   do LL = 1, lnx
