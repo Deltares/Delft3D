@@ -75,7 +75,7 @@ contains
                                      ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_vicwws_total, ipnt_difwws, ipnt_difwws_total, ipnt_bruv, ipnt_richs, ival_seddif1, &
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_rwin, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
-                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs,xobs,yobs,namobs 
+                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs, namobs
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
@@ -97,9 +97,9 @@ contains
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness, relativewind
       use fm_location_types
       use m_flowparameters, only: his_write_settings
-      use messagehandling, only: LEVEL_WARN, msgbuf, mess      
+      use messagehandling, only: LEVEL_WARN, msgbuf, mess
       use m_relative_wind, only: compute_wind_relative_to_surface_on_link
-      
+
       implicit none
 
       integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
@@ -119,8 +119,8 @@ contains
       real(kind=dp), allocatable :: cell_z_centers(:)
       real(kind=dp), allocatable :: waq_tmp(:)
       real(kind=dp), allocatable, save :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
-      integer      , allocatable :: wet_or_dry(:)
-      
+      integer, allocatable :: wet_or_dry(:)
+
       kmx_const = kmx
       if (kmx == 0) then
          kmx_const = 1 ! to make numbering work
@@ -135,18 +135,18 @@ contains
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
       end if
-      
+
       ! Allocate 2D aray to detrmine determine wet,1, or dry, 0
       if (.not. allocated(wet_or_dry)) then
          call realloc(wet_or_dry, ndx, keepExisting=.false., fill=1)
       end if
-      
+
       if (.not. allocated(water_depth)) then
          ! Allocate as 2D arry for water levels
          call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
          water_depth = s1 - bl
       end if
-          
+
       if (model_is_3D() .and. .not. allocated(cell_z_centers)) then
          ! Allocate as 2D arry for cell z centers
          call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
@@ -259,27 +259,27 @@ contains
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
          if ((intobs(i) == 0) .or. (neighbour_nodes_obs(1, i) == 0)) then
-             if (intobs(i) /= 0 .and. kobs(i) /= 0) then
+            if (intobs(i) /= 0 .and. kobs(i) /= 0) then
                write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
                call mess(LEVEL_WARN, msgbuf)
             end if
             ! Treat snapped stations as interpolated ones!
-            neighbour_nodes_obs(1,i)   = k
-            neighbour_nodes_obs(2,i)   = k
-            neighbour_nodes_obs(3,i)   = k
-            neighbour_weights_obs(1,i)           = 1.0_dp
-            neighbour_weights_obs(2,i)           = 0.0_dp
-            neighbour_weights_obs(3,i)           = 0.0_dp
-            wet_or_dry(neighbour_nodes_obs(:,i)) = 1       ! normal stations always wet!
-         else 
-            if (neighbour_nodes_obs(1,i) /=0) then
-               do i_neighbours = 1,3
+            neighbour_nodes_obs(1, i) = k
+            neighbour_nodes_obs(2, i) = k
+            neighbour_nodes_obs(3, i) = k
+            neighbour_weights_obs(1, i) = 1.0_dp
+            neighbour_weights_obs(2, i) = 0.0_dp
+            neighbour_weights_obs(3, i) = 0.0_dp
+            wet_or_dry(neighbour_nodes_obs(:, i)) = 1 ! normal stations always wet!
+         else
+            if (neighbour_nodes_obs(1, i) /= 0) then
+               do i_neighbours = 1, 3
                   ! Points that based on their depth are initially dry (epshs does not recognize temporary drying)
-                  if (comparereal(water_depth(neighbour_nodes_obs(i_neighbours,i)),0.10_dp) == -1) wet_or_dry(neighbour_nodes_obs(i_neighbours,i)) = 0
+                  if (comparereal(water_depth(neighbour_nodes_obs(i_neighbours, i)), 0.10_dp) == -1) wet_or_dry(neighbour_nodes_obs(i_neighbours, i)) = 0
                end do
             end if
          end if
-     
+
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
 
             if (model_is_3D()) then
@@ -302,93 +302,93 @@ contains
             !              (water levels, velocities, salinity and temperature). Treat other quantities (water quality, morphology, turbulence) as before (snapped)
             !
             ! To exclude points, determine whether a point is dry or wet, set a point to dry if water depth < 0.05 m
-            
+
             ! Water levels
-            
-            call interpolate_and_fill_valobs (s1,i,IPNT_S1,UNC_LOC_S,wet_or_dry) 
-            
-           if (nshiptxy > 0) then
+
+            call interpolate_and_fill_valobs(s1, i, IPNT_S1, UNC_LOC_S, wet_or_dry)
+
+            if (nshiptxy > 0) then
                if (allocated(zsp)) then
-                  call interpolate_and_fill_valobs(ship_level, i, IPNT_S1, UNC_LOC_S,wet_or_dry)
+                  call interpolate_and_fill_valobs(ship_level, i, IPNT_S1, UNC_LOC_S, wet_or_dry)
                end if
             end if
 
             ! Water Depth
-            call interpolate_and_fill_valobs(water_depth, i, IPNT_HS, UNC_LOC_S,wet_or_dry)
+            call interpolate_and_fill_valobs(water_depth, i, IPNT_HS, UNC_LOC_S, wet_or_dry)
 
             ! Bed level
-            call interpolate_and_fill_valobs(bl, i, IPNT_BL, UNC_LOC_S,wet_or_dry)
+            call interpolate_and_fill_valobs(bl, i, IPNT_BL, UNC_LOC_S, wet_or_dry)
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
 
             ! Horizontal velocities (3D)
             if (his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
-               call interpolate_and_fill_valobs(ueux, i, IPNT_UCX, UNC_LOC_S3D,wet_or_dry)
-               call interpolate_and_fill_valobs(ueuy, i, IPNT_UCY, UNC_LOC_S3D,wet_or_dry)
+               call interpolate_and_fill_valobs(ueux, i, IPNT_UCX, UNC_LOC_S3D, wet_or_dry)
+               call interpolate_and_fill_valobs(ueuy, i, IPNT_UCY, UNC_LOC_S3D, wet_or_dry)
             end if
 
             ! Vertical velocities (3D)
             if (model_is_3D()) then
-               call interpolate_and_fill_valobs(ucz, i, IPNT_UCZ, UNC_LOC_S3D,wet_or_dry)
+               call interpolate_and_fill_valobs(ucz, i, IPNT_UCZ, UNC_LOC_S3D, wet_or_dry)
             end if
 
             ! Velocity magnitude (3D)
             if (his_write_settings%velocity > 0) then
-               call interpolate_and_fill_valobs(ucmag, i, IPNT_UMAG, UNC_LOC_S3D,wet_or_dry)
+               call interpolate_and_fill_valobs(ucmag, i, IPNT_UMAG, UNC_LOC_S3D, wet_or_dry)
             end if
 
             ! Depth averaged velocities (first ndx points of ucx/ucy array)
             if (model_is_3D()) then
-               call interpolate_and_fill_valobs(ucx, i, IPNT_UCXQ, UNC_LOC_S,wet_or_dry)
-               call interpolate_and_fill_valobs(ucy, i, IPNT_UCYQ, UNC_LOC_S,wet_or_dry)
+               call interpolate_and_fill_valobs(ucx, i, IPNT_UCXQ, UNC_LOC_S, wet_or_dry)
+               call interpolate_and_fill_valobs(ucy, i, IPNT_UCYQ, UNC_LOC_S, wet_or_dry)
             end if
 
             ! Salinity (interpolated)
             if (jasal > 0) then
-               call interpolate_and_fill_valobs(constituents(isalt, :), i, IPNT_SA1, UNC_LOC_S3D,wet_or_dry)
+               call interpolate_and_fill_valobs(constituents(isalt, :), i, IPNT_SA1, UNC_LOC_S3D, wet_or_dry)
             end if
 
             ! Temperature
             ! if (jatem > 0) then
             if (temperature_model /= TEMPERATURE_MODEL_NONE) then
-               call interpolate_and_fill_valobs(constituents(itemp, :), i, IPNT_TEM1, UNC_LOC_S3D,wet_or_dry)
+               call interpolate_and_fill_valobs(constituents(itemp, :), i, IPNT_TEM1, UNC_LOC_S3D, wet_or_dry)
             end if
 
             ! Finally; vertical positions
             if (model_is_3D()) then
                !       interface
-               call interpolate_and_fill_valobs(zws, i, IPNT_ZWS, UNC_LOC_W,wet_or_dry)
-               call interpolate_and_fill_valobs(cell_z_centers, i, IPNT_ZCS, UNC_LOC_S3D,wet_or_dry)
+               call interpolate_and_fill_valobs(zws, i, IPNT_ZWS, UNC_LOC_W, wet_or_dry)
+               call interpolate_and_fill_valobs(cell_z_centers, i, IPNT_ZCS, UNC_LOC_S3D, wet_or_dry)
             else
                valobs(i, IPNT_ZWS) = valobs(i, IPNT_BL)
                valobs(i, IPNT_ZWS + 1) = valobs(i, IPNT_S1)
                valobs(i, IPNT_ZCS) = 0.5_dp * (valobs(i, IPNT_BL) + valobs(i, IPNT_S1))
             end if
-            
+
             ! Water quality parameters
             ! Start with allocating temporary array
-            ! 2D array for IM1S1, IM1S2 etc 
+            ! 2D array for IM1S1, IM1S2 etc
             if (IVAL_WQB1 > 0) then
-                 call realloc(waq_tmp, ndx, keepExisting=.false., fill=0.0_dp)
+               call realloc(waq_tmp, ndx, keepExisting=.false., fill=0.0_dp)
             end if
-                                    
+
             ! Bed quantities 2D
             if (IVAL_WQB1 > 0) then
                do j = IVAL_WQB1, IVAL_WQBN
                   ii = j - IVAL_WQB1 + 1
                   do i_tmp = 1, 3
-                      call getkbotktop    (neighbour_nodes_obs(i_tmp,i), kb_tmp   , kt_tmp  )
-                      waq_tmp(neighbour_nodes_obs(i_tmp,i)) = wqbot(ii, kb_tmp)
+                     call getkbotktop(neighbour_nodes_obs(i_tmp, i), kb_tmp, kt_tmp)
+                     waq_tmp(neighbour_nodes_obs(i_tmp, i)) = wqbot(ii, kb_tmp)
                   end do
-                  call interpolate_and_fill_valobs(waq_tmp,i,IPNT_WQB1 + ii - 1, UNC_LOC_S,wet_or_dry)
+                  call interpolate_and_fill_valobs(waq_tmp, i, IPNT_WQB1 + ii - 1, UNC_LOC_S, wet_or_dry)
                end do
             end if
-            
+
             ! 3D array for other quantities
-            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0 .or. IVAL_TRA1 >0) then
-               if (allocated(waq_tmp)) deallocate(waq_tmp)  
-               call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp) 
+            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0 .or. IVAL_TRA1 > 0) then
+               if (allocated(waq_tmp)) deallocate (waq_tmp)
+               call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp)
             end if
 
             ! Bed quantities 3D
@@ -396,39 +396,39 @@ contains
                do j = IVAL_WQB3D1, IVAL_WQB3DN
                   ii = j - IVAL_WQB3D1 + 1
                   waq_tmp = wqbot(ii, :)
-                  call interpolate_and_fill_valobs (waq_tmp,i,IPNT_WQB3D1 +  (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
+                  call interpolate_and_fill_valobs(waq_tmp, i, IPNT_WQB3D1 + (ii - 1) * kmx_const, UNC_LOC_S3D, wet_or_dry)
                end do
             end if
 
-             ! Waqoutputs (Must be more elegant way of doing this)
+            ! Waqoutputs (Must be more elegant way of doing this)
             if (IVAL_HWQ1 > 0) then
                do j = IVAL_HWQ1, IVAL_HWQN
                   ii = j - IVAL_HWQ1 + 1
                   do i_tmp = 1, 3
-                      call getkbotktop    (neighbour_nodes_obs(i_tmp,i), kb_tmp   , kt_tmp  )
-                      waq_tmp(kb_tmp:kt_tmp) = waqoutputs(ii, kb_tmp - kbx + 1:kt_tmp - kbx + 1)
+                     call getkbotktop(neighbour_nodes_obs(i_tmp, i), kb_tmp, kt_tmp)
+                     waq_tmp(kb_tmp:kt_tmp) = waqoutputs(ii, kb_tmp - kbx + 1:kt_tmp - kbx + 1)
                   end do
-                  call interpolate_and_fill_valobs(waq_tmp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D,wet_or_dry)
+                  call interpolate_and_fill_valobs(waq_tmp, i, IPNT_HWQ1 + (ii - 1) * kmx_const, UNC_LOC_S3D, wet_or_dry)
                end do
             end if
-            
+
             ! Transport quantities (Delwaq constituents)
             if (IVAL_TRA1 > 0) then
-                  do j = IVAL_TRA1, IVAL_TRAN
-                     ii = j - IVAL_TRA1 + 1
-                     waq_tmp = constituents(ITRA1 + ii - 1, :)
-                     call interpolate_and_fill_valobs (waq_tmp,i,IPNT_TRA1 + (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
-                  end do
+               do j = IVAL_TRA1, IVAL_TRAN
+                  ii = j - IVAL_TRA1 + 1
+                  waq_tmp = constituents(ITRA1 + ii - 1, :)
+                  call interpolate_and_fill_valobs(waq_tmp, i, IPNT_TRA1 + (ii - 1) * kmx_const, UNC_LOC_S3D, wet_or_dry)
+               end do
             end if
 
             if (IVAL_SF1 > 0) then
                do j = IVAL_SF1, IVAL_SFN
                   ii = j - IVAL_SF1 + 1
                   waq_tmp = constituents(ISED1 + ii - 1, :)
-                  call interpolate_and_fill_valobs (waq_tmp,i,IPNT_SF1 + (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
-                end do
-            end if 
-            
+                  call interpolate_and_fill_valobs(waq_tmp, i, IPNT_SF1 + (ii - 1) * kmx_const, UNC_LOC_S3D, wet_or_dry)
+               end do
+            end if
+
             ! Frome here: everything as snapped!!!
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
@@ -773,7 +773,7 @@ contains
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
                   valobs(i, IPNT_QLON) = Qlongmap(k)
-                  valobs(i, IPNT_QTOT) = Qtotmap(k)                   
+                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                   call getlink1(k, LL)
                   wxL = wx(LL)
                   wyL = wy(LL)
@@ -786,18 +786,18 @@ contains
                   if (jawind > 0) then
                      valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
                   end if
-               
+
                   if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
                      valobs(i, IPNT_TAIR) = air_temperature(k)
                      valobs(i, IPNT_QTOT) = Qtotmap(k)
                   end if
-               
+
                   if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                      if (allocated(relative_humidity) .and. allocated(cloudiness)) then
                         valobs(i, IPNT_RHUM) = relative_humidity(k)
                         valobs(i, IPNT_CLOU) = cloudiness(k)
                      end if
-               
+
                      valobs(i, IPNT_QSUN) = Qsunmap(k)
                      valobs(i, IPNT_QEVA) = Qevamap(k)
                      valobs(i, IPNT_QCON) = Qconmap(k)
@@ -817,11 +817,11 @@ contains
       if (allocated(wa)) then
          deallocate (wa)
       end if
-      
+
       if (allocated(wet_or_dry)) then
          deallocate (wet_or_dry)
       end if
-      
+
       if (allocated(waq_tmp)) then
          deallocate (waq_tmp)
       end if
@@ -878,32 +878,32 @@ contains
    !!
    !! Interpolation is only horizontally, within each computational layer.
    !! Interpolation points and weights are supposed to be already available in neighbour_nodes_obs and neighbour_weights_obs.
-   subroutine interpolate_and_fill_valobs(values_on_grid, i_station, ipnt_valobs, loc_type,wet_or_dry)
+   subroutine interpolate_and_fill_valobs(values_on_grid, i_station, ipnt_valobs, loc_type, wet_or_dry)
 
-      use precision,             only: dp, comparereal
+      use precision, only: dp, comparereal
       use fm_statistical_output, only: model_is_3d
-      use m_observations_data,   only: neighbour_nodes_obs, neighbour_weights_obs,intobs ,  valobs
-      use m_get_kbot_ktop,       only: getkbotktop
-      use m_get_layer_indices,   only: getlayerindices
-      use fm_location_types,     only: UNC_LOC_S3D, UNC_LOC_W
+      use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs, intobs, valobs
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_layer_indices, only: getlayerindices
+      use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
 
-      real(kind=dp), intent(in)    :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
-      integer      , intent(in)    :: wet_or_dry(:)       !< Array indicating wheter point is wet or dry
-      integer, intent(in)          :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
-      integer, intent(in)          :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
-      integer, intent(in)          :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
+      real(kind=dp), intent(in) :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
+      integer, intent(in) :: wet_or_dry(:) !< Array indicating wheter point is wet or dry
+      integer, intent(in) :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
+      integer, intent(in) :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
+      integer, intent(in) :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
 
       real(kind=dp) :: value
       real(kind=dp) :: weighttot
 
-      integer       :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
 
       ! Interpolation needed, however no surroundig wet points, return, value remains dmiss!
       if (intobs(i_station) == 1) then
-          if (neighbour_nodes_obs(1,i_station)                  == 0)   return
-          if (sum(wet_or_dry(neighbour_nodes_obs(:,i_station))) == 0 )  return
-      end if 
-      
+         if (neighbour_nodes_obs(1, i_station) == 0) return
+         if (sum(wet_or_dry(neighbour_nodes_obs(:, i_station))) == 0) return
+      end if
+
       oneDown = 0
 
       do i_point = 1, 3
@@ -945,7 +945,7 @@ contains
                end if
             end if
          end do
-         if (comparereal(weighttot,0.0_dp) == 1) valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
+         if (comparereal(weighttot, 0.0_dp) == 1) valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
       end do
    end subroutine interpolate_and_fill_valobs
 
