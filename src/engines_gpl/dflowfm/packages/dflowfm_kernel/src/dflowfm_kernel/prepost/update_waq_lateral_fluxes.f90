@@ -70,6 +70,7 @@ contains
                   index_max_top_layer = kbot(k) + kmxn(k) - 1
                   do i_layer = 1, num_layers
                      layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                     ! Redirect discharges to the nearest active layer
                      if (layer_index < kbot(k)) then
                         layer_index = kbot(k)
                      else if (layer_index > ktop(k)) then

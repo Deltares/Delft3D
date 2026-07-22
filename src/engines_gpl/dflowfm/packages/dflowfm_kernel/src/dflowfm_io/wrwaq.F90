@@ -357,13 +357,17 @@ module waq
       integer :: noq12 !  number of horizontal WAQ exchanges (excluding sink/sources and laterals)
       integer :: noq12s !  number of horizontal WAQ exchanges (including sink/sources, excluding laterals)
       integer :: noq12sl !  number of horizontal WAQ exchanges (including sink/sources and laterals)
-      integer :: numsrcbnd !  number of sinks/sources that are boundary conditions
-      integer :: numsrcwaq !  number of addition sources/sinks exchanges in waq (based on posible combinations)
-      integer :: numlatsect !  number of lateral boundary sections
-      integer, allocatable :: numlatinsect(:) !  number of lateral boundaries in this section
-      integer :: numlatbnd !  number of lateral boundary conditions
-      integer :: numlatwaq !  number of addition lateral exchanges in waq (for all layers)
-      integer :: numbnd !  total number of boundary conditions including sinks/sources and laterals
+      integer :: numsrcbnd !  number of sinks/sources boundary conditions per layer
+      integer :: numsrcwaq !  number of sources/sinks exchanges that are boundary conditions for all layers
+      integer :: numlatproviders !  number of active lateral discharge providers
+      integer, allocatable :: numlatbndinprovider(:) !  number of active lateral boundaries in provider
+      integer :: numlatbnd !  number of lateral boundary exchanges per layer
+      integer :: numlatwaq !  number of lateral boundary exchanges for all layers
+      integer :: numbnd !  total number of active boundary conditions including source-sinks and laterals per layer (in this domain)
+      ! Boundaries recieve a unique id that is stored as a negative cell number in the pointer table. 
+      ! First, for the top layerthe open boundaries are added, followed by the source-sinks that are
+      ! boundaries and the laterals. For 3D models the pointers are extended in the third dimension
+      ! by the adding links to numbnd * (layer number - 1) to the boundary ids for each of the layers.
       integer :: kmxnx ! maximum number of active layers
       integer :: kmxnxa ! maximum number of aggregated layers
       integer :: ndkxi ! nr of internal flowcells (3D)
@@ -373,9 +377,11 @@ module waq
       integer, allocatable :: iapnt(:) ! flow-to-waq pointer (mapping of flow cells to waq cells)
       integer, allocatable :: iqaggr(:) ! exchange aggregation pointer
       integer, allocatable :: iqwaggr(:) ! exchange aggregation pointer for the vertical
-      integer, allocatable :: ifrmto(:, :) ! from-to pointer table
-      integer, allocatable :: ifrmtosrc(:, :) ! from-to pointer table for sources
-      integer, allocatable :: ifrmtolat(:, :) ! from-to pointer table for sources
+      integer, allocatable :: ifrmto(:, :) ! final from-to, from-1-to+1 pointer table
+      ! the final from-to pointer table consists of horizontal internal exchanges, open boundary exchanges, source-sink boundary exchanges,
+      ! source-sink internal exchanges and lateral boundary exchanges, followed by vertical internal exchanges
+      integer, allocatable :: ifrmtosrc(:, :) ! helper from-to pointer table to be added for sources (sources do not have a from-1-to+1)
+      integer, allocatable :: ifrmtolat(:, :) ! helper from-to pointer table to be added for laterals (laterals do not have a from-1-to+1)
       integer, allocatable :: ifsmin(:) ! first active layer (counting from the top) (z-model)
       integer, allocatable :: ifsmax(:) ! maximum active layer (counting from the top) (z-model)
       integer, allocatable :: nosega(:) ! no of segments aggregated into WAQ segments
@@ -1590,7 +1596,7 @@ contains
       integer :: lunbnd
       character(len=255) :: filename
       real(kind=dp) :: x1, y1, x2, y2, xn, yn
-      character(len=20) :: sectionname
+      character(len=20) :: bndgroupname
       !
    !! executable statements -------------------------------------------------------
       !
@@ -1608,14 +1614,14 @@ contains
          nopenbndsectnonempty = nopenbndsectnonempty + 1
       end do
 
-      write (lunbnd, '(i8)') nopenbndsectnonempty + waqpar%numsrcbnd + waqpar%numlatsect ! Nr of open boundary sections, sink sources and laterals.
+      write (lunbnd, '(i8)') nopenbndsectnonempty + waqpar%numsrcbnd + waqpar%numlatproviders ! Nr of open boundary sections, sink sources and laterals.
       istart = 0
       do i = 1, nopenbndsect
          if (nopenbndlin(i) - istart == 0) then
             cycle
          end if
-         sectionname = makesectionname('bnd_', openbndname(i))
-         write (lunbnd, '(a)') sectionname ! Section name
+         bndgroupname = makebndgroupname('bnd_', openbndname(i))
+         write (lunbnd, '(a)') bndgroupname ! Section name
          write (lunbnd, '(i8)') nopenbndlin(i) - istart ! Nr of links in section
 
          do LL = istart + 1, nopenbndlin(i)
@@ -1669,8 +1675,8 @@ contains
             else
                kk = source_sinks%indices(isrc, 4)
             end if
-            sectionname = makesectionname('src_', source_sinks%name(isrc))
-            write (lunbnd, '(a)') sectionname ! Section name
+            bndgroupname = makebndgroupname('src_', source_sinks%name(isrc))
+            write (lunbnd, '(a)') bndgroupname ! Source sink name
             write (lunbnd, '(i8)') 1 ! Nr of source links in section
             write (lunbnd, '(i8,4f18.8)') - (ibnd), xz(kk), yz(kk), xz(kk), yz(kk)
          end if
@@ -1678,10 +1684,10 @@ contains
 
       if (numlatsg > 0) then
          do ilat = 1, numlatsg
-            if (waqpar%numlatinsect(ilat) > 0) then
-               sectionname = makesectionname('lat_', lat_ids(ilat))
-               write (lunbnd, '(a)') trim(sectionname) ! Section name
-               write (lunbnd, '(i8)') waqpar%numlatinsect(ilat) ! Nr of lateral links in section
+            if (waqpar%numlatbndinprovider(ilat) > 0) then
+               bndgroupname = makebndgroupname('lat_', lat_ids(ilat))
+               write (lunbnd, '(a)') trim(bndgroupname) ! Provider name
+               write (lunbnd, '(i8)') waqpar%numlatbndinprovider(ilat) ! Nr of lateral links in provider
                do k1 = n1latsg(ilat), n2latsg(ilat)
                   kk = nnlat(k1)
                   if (kk > 0) then
@@ -2027,15 +2033,15 @@ contains
       ! Prepare arrays for sinks and sources.
       call waq_prepare_src()
 
-      ! Prepare arrays for sinks and sources.
+      ! Prepare arrays for laterals.
       call waq_prepare_lat()
 
-      waqpar%numbnd = ndx - ndxi + waqpar%numsrcbnd + waqpar%numlatbnd ! total number of boudaries
+      waqpar%numbnd = ndx - ndxi + waqpar%numsrcbnd + waqpar%numlatbnd ! total number of boundary links per layer
 
       ! Fill arrays for sinks and sources.
       call waq_fill_src()
 
-      ! Fill arrays for sinks and sources.
+      ! Fill arrays for laterals.
       call waq_fill_lat()
 
       ! allocate maximum possible number of exchanges before aggregation
@@ -2313,9 +2319,11 @@ contains
             if (kk1 > 0 .and. kk2 > 0) then
                ! And the first node is not a ghost cell
                source_sinks%waq_index(isrc) = waqpar%numsrcwaq
+               ! Added room for links from each layer on the sink side to each layer on the source 
+               ! side, since we do not know which one will be active.
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa * waqpar%kmxnxa
             else if (kk1 > 0 .or. kk2 > 0) then
-               ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
+               ! Since we do not know the (global) cell number when one of the nodes is not in the current domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
                write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sinks%name(source_sinks%num_total)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
                call err_flush()
@@ -2365,7 +2373,9 @@ contains
             ! This is a sink/source combination
             if (kk1 > 0 .and. kk2 > 0) then
                ! The first location is not a ghost cell.
-               ! The  internal sink source should only appear in one domain!
+               ! The internal sink source should only appear in one domain!
+               ! Added links from each layer on the sink side to each layer on the source side,
+               ! since we do not know which one will be active.
                if (waqpar%kmxnxa > 1) then
                   do K1 = 1, waqpar%kmxnxa
                      do K2 = 1, waqpar%kmxnxa
@@ -2396,16 +2406,16 @@ contains
       implicit none
 
       integer :: ilat, k1, kk
-      logical :: firstinsection
+      logical :: firstinprovider
 
       waqpar%numlatwaq = 0
-      waqpar%numlatsect = 0
-      call realloc(waqpar%numlatinsect, numlatsg, fill=0, keepExisting=.false.)
+      waqpar%numlatproviders = 0
+      call realloc(waqpar%numlatbndinprovider, numlatsg, fill=0, keepExisting=.false.)
 
       ! First determine the number of laterals actually used and the allocations needed
       do ilat = 1, numlatsg
          if (nodeCountLat(ilat) > 0) then
-            firstinsection = .true.
+            firstinprovider = .true.
             do k1 = n1latsg(ilat), n2latsg(ilat)
                kk = nnlat(k1)
                if (kk > 0) then
@@ -2413,10 +2423,10 @@ contains
                      ! This is a lateral within the current domain
                      waqpar%numlatbnd = waqpar%numlatbnd + 1
                      waqpar%numlatwaq = waqpar%numlatwaq + waqpar%kmxnxa
-                     waqpar%numlatinsect(ilat) = waqpar%numlatinsect(ilat) + 1
-                     if (firstinsection) then
-                        waqpar%numlatsect = waqpar%numlatsect + 1
-                        firstinsection = .false.
+                     waqpar%numlatbndinprovider(ilat) = waqpar%numlatbndinprovider(ilat) + 1
+                     if (firstinprovider) then
+                        waqpar%numlatproviders = waqpar%numlatproviders + 1
+                        firstinprovider = .false.
                      end if
                   end if
                end if
@@ -3290,13 +3300,13 @@ contains
 !
 !------------------------------------------------------------------------------
 
-   function makesectionname(prefix, id) result(sectionname)
-      ! Make sure the Delwaq section id contains letters and is not just a number disguised as a string
+   function makebndgroupname(prefix, id) result(bndgroupname)
+      ! Make sure the Delwaq boundary group mane id contains letters and is not just a number disguised as a string
       implicit none
 
       character(len=*), intent(in) :: prefix !< Optional prefix
       character(len=*), intent(in) :: id !< Input D-FM id
-      character(len=20) :: sectionname !< Delwaq section name
+      character(len=20) :: bndgroupname !< Delwaq boundary group name
 
       integer(8) :: int
       real(8) :: reel
@@ -3308,11 +3318,11 @@ contains
 
       if (ierrint == 0 .or. ierrreel == 0) then
          ! id could be read as an integer or real, add prefix
-         sectionname = trim(prefix)//id
+         bndgroupname = trim(prefix)//id
       else
          ! use original id
-         sectionname = id
+         bndgroupname = id
       end if
-   end function makesectionname
+   end function makebndgroupname
 
 end module waq

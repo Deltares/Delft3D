@@ -2466,10 +2466,10 @@ contains
 
       select case (str_tolower(field_name))
       case ("water_discharge")
-         if (apply_transport(item_index) == 1 .or. kmx == 0) then
+         if (apply_transport(item_index) == 1) then
             c_lateral_pointer = c_loc(qplat(1:num_layers, item_index))
          else
-            c_lateral_pointer = c_loc(qplat(kmx, item_index))
+            c_lateral_pointer = c_loc(qplat((max(1, kmx), item_index))
          end if
          return
       case ("water_level")

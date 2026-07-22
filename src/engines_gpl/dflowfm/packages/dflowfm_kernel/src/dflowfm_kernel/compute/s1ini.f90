@@ -231,6 +231,7 @@ contains
                      qin(k) = qin(k) + qqlat(i_layer, k1)
                      if (kmx > 0) then
                         layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                        ! Redirect discharges to the nearest active layer
                         if (layer_index < kbot(k)) then
                            layer_index = kbot(k)
                         else if (layer_index > ktop(k)) then
