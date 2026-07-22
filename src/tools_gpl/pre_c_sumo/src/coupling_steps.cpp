@@ -222,13 +222,14 @@ namespace pre_c_sumo
     ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
                                                          const std::vector<NF2FFReader>& nf2ff_readers)
     {
+        (void)csumoSettings;
         ConnectedSinkSources connectedsinksources{};
 
         for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
             const auto& diffuser = nf2ff_readers[diffuser_index];
-            const auto& diffuser_setting = csumoSettings.diffusers()[diffuser_index];
             std::vector<SourceOrSinkData> sources;
+            const bool single_nf2ff_source = diffuser.sources().size() == 1;
 
             // Normalize the source list once: non-modelled diffusers expand a single NF2FF source
             // into a generated DESA track, so all downstream loops must use this converted list
@@ -251,20 +252,24 @@ namespace pre_c_sumo
             source_weight_norm = std::max(source_weight_norm, 1.0);
 
             const auto sinks = diffuser.sinks();
-            // Match FM nearfield parity: entrainment starts at the second sink because
-            // delta_s uses the previous sink value, so a 1-sink case produces no entrainment entries.
+            // Match nearfield entrainment behavior: use sink deltas, so the first sink does
+            // not create entrainment discharge by itself.
             for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
             {
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
+                const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
                 double sink_z_bottom = -sink.z_coordinate - sink.half_plume_height;
 
                 for (const auto& source : sources)
                 {
-                    double discharge = delta_s * source.entrainment * (source.has_weight ? source.weight : 1.0);
-                    double source_z_top = -source.z_coordinate;
-                    double source_z_bottom = -source.z_coordinate;
+                    double discharge =
+                        delta_s * source_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double source_z_top =
+                        single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
+                    double source_z_bottom =
+                        single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
                     double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
@@ -274,23 +279,48 @@ namespace pre_c_sumo
                 }
             }
 
-            // Intake
-            if (diffuser_setting.intake.has_value())
+            // Match nearfield dischargeToSrc behavior: add explicit source discharge
+            // terms independent of entrainment sink deltas.
+            if (!sources.empty())
             {
-                const auto& intake = diffuser_setting.intake.value();
-                const double intake_flow_rate = diffuser.intakeFlowRate();
+                const double source_flow_rate = diffuser.sourceFlowRate();
                 for (const auto& source : sources)
                 {
                     double discharge =
-                        intake_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
-                    double source_z_top = -source.z_coordinate;
-                    double source_z_bottom = -source.z_coordinate;
+                        source_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double source_z_top =
+                        single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
+                    double source_z_bottom =
+                        single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
+                    double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
+                    double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge, 0.0, 0.0);
+                                                   source_z_bottom, source_z_top, discharge, source_moment_magnitude,
+                                                   source_moment_direction);
                 }
-                // Add the intake itself as a sink.
-                connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                               diffuser.intakeFlowRate(), 0.0, 0.0);
+            }
+
+            // Intake
+            const auto intakes = diffuser.intakes();
+            if (!intakes.empty())
+            {
+                const double intake_flow_rate = diffuser.intakeFlowRate();
+                double intake_weight_norm = 0.0;
+                for (const auto& intake : intakes)
+                {
+                    intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
+                }
+                intake_weight_norm = std::max(intake_weight_norm, 1.0);
+
+                // Intakes are sink-only terms (not connected to source points).
+                for (const auto& intake : intakes)
+                {
+                    const double intake_discharge =
+                        intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
+                    connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
+                                                   -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
+                                                   0.0);
+                }
             }
         }
         std::println("connectedsinksources size = {}", connectedsinksources.size());
