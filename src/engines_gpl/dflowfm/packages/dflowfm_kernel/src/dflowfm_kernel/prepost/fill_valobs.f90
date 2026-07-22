@@ -888,7 +888,7 @@ contains
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
 
       real(kind=dp), intent(in) :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
-      integer, intent(in) :: wet_or_dry(:) !< Array indicating wheter point is wet or dry
+      integer, intent(in) :: wet_or_dry(:) !< Array indicating whether point is wet or dry
       integer, intent(in) :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
       integer, intent(in) :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
       integer, intent(in) :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
