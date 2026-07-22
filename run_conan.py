@@ -15,8 +15,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-WINDOWS_PROFILE = "delft3d_windows_msvc_194_v2"
-LINUX_PROFILE = "delft3d_alma8_intel_2024_v2"
+DEFAULT_CONAN_PROFILE_LINUX = "delft3d_alma8_intel_2024_v3"
+DEFAULT_CONAN_PROFILE_WINDOWS = "delft3d_windows_msvc_194_v3"
+CONAN_PROFILE_ENV_VAR = "CONAN_DEFAULT_PROFILE"
 
 ROOT = Path(__file__).resolve().parent
 CONFIG_DIR = ROOT / "conan/config"
@@ -266,26 +267,35 @@ def upload_new_packages(remote: str, *, ci: bool = False) -> None:
     print(f"\nDone. Uploaded: {uploaded}, skipped: {skipped}")
 
 
-def _get_profile() -> str:
-    os_name = platform.system()
-    if os_name == "Windows":
-        return WINDOWS_PROFILE
-    elif os_name == "Linux":
-        return LINUX_PROFILE
-    else:
-        raise RuntimeError(f"Unsupported OS: {os_name}")
+def _get_default_profile() -> str:
+    if platform.system() == "Windows":
+        return DEFAULT_CONAN_PROFILE_WINDOWS
+    return DEFAULT_CONAN_PROFILE_LINUX
+
+
+def _get_profile_or_default(profile_override: str | None) -> str:
+    return profile_override or os.environ.get(CONAN_PROFILE_ENV_VAR) or _get_default_profile()
 
 
 def _require_profile(profile: str) -> None:
-    result = subprocess.run(
-        ["conan", "profile", "path", profile],
-        capture_output=True,
-    )
-    if result.returncode != 0:
+    default_profile = _get_default_profile()
+    profiles = [default_profile]
+    if profile != default_profile:
+        profiles.append(profile)
+
+    for required_profile in profiles:
+        result = subprocess.run(
+            ["conan", "profile", "path", required_profile],
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            continue
+
         sys.exit(
-            f"ERROR: Conan profile '{profile}' not found.\n"
+            f"ERROR: Conan profile '{required_profile}' not found.\n"
             "       Run 'python run_conan.py initialize external' (or 'initialize deltares' on the network) "
-            "first to install the latest profiles, configure settings and set up remotes."
+            "first to install the latest profiles, configure settings and set up remotes.\n"
+            f"       If {CONAN_PROFILE_ENV_VAR} is set, update it to the latest profile name or unset it."
         )
 
 
@@ -347,12 +357,13 @@ def cmd_clean_cache(args: argparse.Namespace) -> None:
 
 
 def cmd_update_lockfile(args: argparse.Namespace) -> None:
-    profile = _get_profile()
+    profile = _get_profile_or_default(args.profile)
+    _require_profile(profile)
     update_lockfile(profile)
 
 
 def cmd_install(args: argparse.Namespace) -> None:
-    profile = _get_profile()
+    profile = _get_profile_or_default(args.profile)
     _require_profile(profile)
 
     if args.rebuild_packages:
@@ -409,12 +420,26 @@ def main() -> None:
         "update-lockfile",
         help="Regenerate conan.lock from the current conanfile and recipes.",
     )
+    parser_update_lockfile.add_argument(
+        "--profile",
+        help=(
+            f"Conan profile (default: ${CONAN_PROFILE_ENV_VAR}, or {_get_default_profile()} "
+            "when the environment variable is unset)."
+        ),
+    )
     parser_update_lockfile.set_defaults(func=cmd_update_lockfile)
 
     # --- install ---
     parser_install = subparsers.add_parser(
         "install",
         help="Install Conan-managed dependencies.",
+    )
+    parser_install.add_argument(
+        "--profile",
+        help=(
+            f"Conan profile (default: ${CONAN_PROFILE_ENV_VAR}, or {_get_default_profile()} "
+            "when the environment variable is unset)."
+        ),
     )
     parser_install.add_argument("--ci", action="store_true", help="Non-interactive mode.")
     build_group = parser_install.add_mutually_exclusive_group()
