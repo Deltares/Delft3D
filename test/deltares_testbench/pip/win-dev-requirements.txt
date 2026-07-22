@@ -204,7 +204,7 @@ lxml==5.4.0
     # via deltares-testbench (pyproject.toml)
 markdown-it-py==4.2.0
     # via rich
-matplotlib==3.8.4
+matplotlib==3.11.1
     # via deltares-testbench (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
@@ -232,7 +232,6 @@ numpy==1.26.4
     #   matplotlib
     #   netcdf4
     #   pandas
-    #   pyarrow
 omegaconf==2.3.1
     # via
     #   dvc
@@ -271,8 +270,6 @@ psutil==7.2.2
     # via
     #   dvc
     #   flufl-lock
-pyarrow==16.1.0
-    # via deltares-testbench (pyproject.toml)
 pycparser==3.0
     # via cffi
 pycryptodome==3.23.0
