@@ -7,8 +7,6 @@ from enum import IntEnum
 from pathlib import Path
 
 
-os.environ["DFLOWFM_IO_LIB_DIR"] = r"C:\my-computer\algorithms\Delft3D\src\utils_lgpl\dflowfm_io\dflowfm_io_api\wrappers\python\test"
-
 def _find_project_root():
     """Walk up from this file to find the top-level project root (contains CMakeLists.txt with 'project(')."""
     d = os.path.dirname(os.path.abspath(__file__))

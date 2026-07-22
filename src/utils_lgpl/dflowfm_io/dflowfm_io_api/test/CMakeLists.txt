@@ -1,6 +1,6 @@
 enable_testing()
 
-cmake_path(SET PYTHON_TEST_DIR NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../wrappers/python/test")
+cmake_path(SET PYTHON_TEST_DIR NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../wrappers/python/tests")
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
     add_test(
