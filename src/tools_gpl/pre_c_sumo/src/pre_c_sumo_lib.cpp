@@ -113,6 +113,7 @@ namespace pre_c_sumo
 {
     /**
      * @details Entry point into the preC-SUMO preCICE library.
+     * Note: Consider refactoring/clean up
      */
     int run(const std::string_view csumo_settings_file_name, const std::string_view precice_config_file_name)
     {
@@ -152,8 +153,9 @@ namespace pre_c_sumo
 
         // Set sources_sinks mesh
         SourcesSinks sources_sinks;
-        const std::size_t initial_sources_sinks_size =
-            initial_connected_sink_sources.size() == 0 ? 1 : initial_connected_sink_sources.size();
+        const std::size_t initial_sources_sinks_size = initial_connected_sink_sources.get_number_of_entries() == 0
+                                                           ? 1
+                                                           : initial_connected_sink_sources.get_number_of_entries();
         sources_sinks.setCoordinatesDimension(initial_sources_sinks_size);
         participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
@@ -188,9 +190,8 @@ namespace pre_c_sumo
             }
             catch (const std::exception& exception)
             {
-                std::println(stderr,
-                             "Error: Unable to write sources/sinks data at time {} s: {}",
-                             current_time_seconds, exception.what());
+                std::println(stderr, "Error: Unable to write sources/sinks data at time {} s: {}", current_time_seconds,
+                             exception.what());
                 return -1;
             }
 

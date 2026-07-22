@@ -39,6 +39,16 @@ namespace
     </settings>
 </COSUMO>)";
 
+    /**
+     * @brief Builds a synthetic NF2FF XML payload for conversion tests.
+     *
+     * @param sink_count Number of sink records to emit in <sinks>.
+     * @param source_count Number of source records to emit in <sources>.
+     * @param include_qintake Whether to include the <Qintake> element.
+     * @param qintake Intake discharge value written when @p include_qintake is true.
+     * @param intake_count Number of intake entries to emit; defaults to derived behavior.
+     * @return std::string XML document as a string.
+     */
     std::string build_nf2ff_xml(std::size_t sink_count, std::size_t source_count, bool include_qintake,
                                 double qintake,
                                 std::size_t intake_count = std::numeric_limits<std::size_t>::max())
@@ -239,7 +249,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     const auto connected_sources_sinks =
         pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
 
-    EXPECT_EQ(connected_sources_sinks.size(), 2000u);
+    EXPECT_EQ(connected_sources_sinks.get_number_of_entries(), 2000u);
 }
 
 TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGeneratedDiffuserModelWithOneSink)
@@ -275,7 +285,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     const auto connected_sources_sinks =
         pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
 
-    EXPECT_EQ(connected_sources_sinks.size(), 1000u);
+    EXPECT_EQ(connected_sources_sinks.get_number_of_entries(), 1000u);
 }
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticNF2FFCasesYieldExpectedConnectedCounts)
@@ -304,7 +314,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticNF2FFCasesYieldExpectedConnectedCou
         const auto connected = convert_from_synthetic_case(scenario.sink_count, scenario.source_count,
                                                            scenario.include_qintake, scenario.qintake,
                                                            scenario.intake_count);
-        EXPECT_EQ(connected.size(), scenario.expected_count) << scenario.name;
+        EXPECT_EQ(connected.get_number_of_entries(), scenario.expected_count) << scenario.name;
     }
 }
 
@@ -336,15 +346,15 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseCopiedToAllTimestepsKeepsStable
         const auto step_connected = convert_from_synthetic_case(scenario.sink_count, scenario.source_count,
                                                                 scenario.include_qintake, scenario.qintake,
                                                                 scenario.intake_count);
-        EXPECT_EQ(step_connected.size(), initial_connected.size()) << scenario.name;
-        EXPECT_GT(step_connected.size(), 0u) << scenario.name;
+        EXPECT_EQ(step_connected.get_number_of_entries(), initial_connected.get_number_of_entries()) << scenario.name;
+        EXPECT_GT(step_connected.get_number_of_entries(), 0u) << scenario.name;
     }
 }
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So2YieldsExpectedDischarges)
 {
     const auto connected = convert_from_synthetic_case(2u, 2u, true, 10.0);
-    ASSERT_EQ(connected.size(), 5u);
+    ASSERT_EQ(connected.get_number_of_entries(), 5u);
 
     const auto& discharges = connected.get_discharge_value();
     ASSERT_EQ(discharges.size(), 5u);
@@ -358,7 +368,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So2YieldsExpectedDischarges)
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge)
 {
     const auto connected = convert_from_synthetic_case(2u, 1u, false, 0.0);
-    ASSERT_EQ(connected.size(), 2000u);
+    ASSERT_EQ(connected.get_number_of_entries(), 2000u);
 
     const auto& discharges = connected.get_discharge_value();
     ASSERT_EQ(discharges.size(), 2000u);
@@ -371,7 +381,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI10Si2So1WithTenIntakesYieldsExpectedCount)
 {
     const auto connected = convert_from_synthetic_case(2u, 1u, true, 10.0, 10u);
-    ASSERT_EQ(connected.size(), 2010u);
+    ASSERT_EQ(connected.get_number_of_entries(), 2010u);
 
     const auto& discharges = connected.get_discharge_value();
     ASSERT_EQ(discharges.size(), 2010u);

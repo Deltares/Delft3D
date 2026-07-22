@@ -42,7 +42,7 @@ namespace pre_c_sumo
         /**
          * @brief Get the number of entries stored.
          */
-        std::size_t size() const;
+        std::size_t get_number_of_entries() const;
 
         /**
          * @brief Writes all accrued data to preCICE as the specified participant on the specified
@@ -55,7 +55,7 @@ namespace pre_c_sumo
                               const std::vector<int>& precice_ids);
 
         /**
-         * @brief Read-only access to converted discharge values.
+         * @brief Read-only access to converted discharge values - used by unit test.
          */
         const std::vector<double>& get_discharge_value() const { return discharge_vector; }
 

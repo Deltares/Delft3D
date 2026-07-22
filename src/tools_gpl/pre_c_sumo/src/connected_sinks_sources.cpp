@@ -8,20 +8,6 @@
 
 namespace pre_c_sumo
 {
-    /**
-     * @brief Adds a connected sink and source entry to this instance.
-        * @param sink_x Sink X coordinate.
-        * @param sink_y Sink Y coordinate.
-        * @param sink_z_bottom Sink lower Z extent.
-        * @param sink_z_top Sink upper Z extent.
-        * @param source_x Source X coordinate.
-        * @param source_y Source Y coordinate.
-        * @param source_z_bottom Source lower Z extent.
-        * @param source_z_top Source upper Z extent.
-        * @param discharge Discharge value.
-        * @param momentum_magnitude Momentum magnitude value.
-        * @param momentum_direction Momentum direction.
-     */
     void ConnectedSinkSources::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
                                          double discharge, double momentum_magnitude, double momentum_direction)
@@ -60,7 +46,7 @@ namespace pre_c_sumo
     /**
      * @brief Get the number of entries stored.
      */
-    std::size_t ConnectedSinkSources::size() const { return sink_x_vector.size(); }
+    std::size_t ConnectedSinkSources::get_number_of_entries() const { return sink_x_vector.size(); }
 
     /**
      * @brief Writes all accrued data to preCICE as the specified participant on the specified
@@ -73,7 +59,7 @@ namespace pre_c_sumo
                                                 const std::vector<int>& precice_ids)
     {
         const std::size_t registered_vertex_count = precice_ids.size();
-        const std::size_t entry_count = size();
+        const std::size_t entry_count = get_number_of_entries();
 
         if (registered_vertex_count == 0)
         {
@@ -82,10 +68,10 @@ namespace pre_c_sumo
 
         if (entry_count != 0 && entry_count != registered_vertex_count)
         {
-            throw std::runtime_error(std::format(
-                "Connected source/sink count changed from the registered preCICE mesh size {} to {}. "
-                "Remeshing is not implemented.",
-                registered_vertex_count, entry_count));
+            throw std::runtime_error(
+                std::format("Connected source/sink count changed from the registered preCICE mesh size {} to {}. "
+                            "Remeshing is not implemented.",
+                            registered_vertex_count, entry_count));
         }
 
         const std::vector<double> zero_values(registered_vertex_count, 0.0);
@@ -113,7 +99,6 @@ namespace pre_c_sumo
         write_or_zero("sources_sinks_discharge", discharge_vector);
         write_or_zero("sources_momentum_magnitude", momentum_magnitude_vector);
         write_or_zero("sources_momentum_direction", momentum_direction_vector);
-        // TODO: Send Momentum.
 
         // After the write, we can clear the list.
         clear();

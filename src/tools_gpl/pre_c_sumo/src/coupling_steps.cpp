@@ -323,7 +323,7 @@ namespace pre_c_sumo
                 }
             }
         }
-        std::println("connectedsinksources size = {}", connectedsinksources.size());
+        std::println("connectedsinksources size = {}", connectedsinksources.get_number_of_entries());
         return connectedsinksources;
     }
 
