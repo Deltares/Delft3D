@@ -49,7 +49,14 @@ namespace dflowfm_io
             case ValueType::PathList: return std::format("{}\"list of paths (separated by whitespace)\"", prefix);
             case ValueType::FloatList: return std::format("{}\"list of floats (separated by whitespace)\"", prefix);
             case ValueType::StringList: return std::format("{}\"list of strings (separated by whitespace)\"", prefix);
-            case ValueType::DateTime: return std::format("{}\"datetime with format {}\"", prefix, propertySchema.format);
+            case ValueType::DateTime:
+            {
+                const std::string dateTimeFormat =
+                    propertySchema.format.has_value() && *propertySchema.format == FormatType::Date
+                    ? "yyyymmdd"
+                    : "yyyymmddhhmmss";
+                return std::format("{}\"datetime with format {}\"", prefix, dateTimeFormat);
+            }
             default: throw std::invalid_argument(std::format("Unhandled ValueType: {}", static_cast<int>(propertySchema.value_type)));
         }
     }

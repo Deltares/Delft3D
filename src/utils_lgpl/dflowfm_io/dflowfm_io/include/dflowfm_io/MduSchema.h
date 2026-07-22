@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <locale>
 #include <map>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -29,10 +30,20 @@ namespace dflowfm_io
         DateTime,
     };
 
+    /// @brief Describes the formatting style.
+    enum class FormatType
+    {
+        General,
+        Fixed,
+        Scientific,
+        Date,
+        DateTime,
+    };
+
     /// @brief Represents a single value within an enumeration property.
     struct EnumValue
     {
-        int value; ///< The integer value.
+        int value;
     };
 
     /// @brief A discriminated union of all supported MDU property value types.
@@ -79,7 +90,7 @@ namespace dflowfm_io
         std::string key; ///< Case-insensitive property key as it appears in the MDU file.
         ValueType value_type; ///< Expected type of the property value.
         std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
-        std::string format; ///< Optional format string for DateTime and Float properties.
+        std::optional<FormatType> format; ///< Optional format for Float, FloatList and DateTime properties.
         std::string description; ///< Human-readable description of the property.
         bool required; ///< Whether the property must be present in the MDU file.
         bool nullable; ///< Whether the property may hold an explicit null (empty) value.

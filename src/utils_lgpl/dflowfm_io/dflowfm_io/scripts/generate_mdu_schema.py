@@ -18,6 +18,15 @@ VALUE_TYPE_MAP = {
     "datetime": "DateTime",
 }
 
+# Maps the JSON "format" strings to the C++ FormatType enum names.
+FORMAT_TYPE_MAP = {
+    "general": "General",
+    "fixed": "Fixed",
+    "scientific": "Scientific",
+    "date": "Date",
+    "datetime": "DateTime",
+}
+
 # Maps the JSON "status" strings to the C++ StatusType enum names.
 STATUS_TYPE_MAP = {
     "GA": "GA",
@@ -122,7 +131,8 @@ def render_property(prop, indent):
         dvs = default_value_str(prop["default_value"])
         field_blocks.append(field(".default_value", f'"{dvs}"'))
     if "format" in prop:
-        field_blocks.append(field(".format", f'"{prop["format"]}"'))
+        format_type = FORMAT_TYPE_MAP[prop["format"]]
+        field_blocks.append(field(".format", f"FormatType::{format_type}"))
         
     field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
 

@@ -167,6 +167,38 @@ namespace dflowfm_io::test
                 << "Expected enum value " << ev.value << " in error message";
     }
 
+    TEST_F(MduDataConverterTest, ConvertIniData_InvalidDateTimeValue_ErrorMessageContainsExpectedFormat)
+    {
+        const auto [targetSection, targetProperty] = FirstDateTimePropertyWithFormat(FormatType::DateTime);
+
+        ini::IniData iniData = CompliantIniData();
+        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "##invalid##");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
+
+        EXPECT_TRUE(report.HasErrors());
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("yyyymmddhhmmss"), std::string::npos)
+            << "Expected date/time format \"yyyymmddhhmmss\" in error message";
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_InvalidDateValue_ErrorMessageContainsExpectedFormat)
+    {
+        const auto [targetSection, targetProperty] = FirstDateTimePropertyWithFormat(FormatType::Date);
+
+        ini::IniData iniData = CompliantIniData();
+        iniData.GetSection(targetSection->name).SetPropertyValue(targetProperty->key, "##invalid##");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData);
+
+        EXPECT_TRUE(report.HasErrors());
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("yyyymmdd"), std::string::npos)
+            << "Expected date format \"yyyymmdd\" in error message";
+    }
+
     // -------------------------------------------------------------------------
     // Convert IniData → MduData — absent property with default falls back to schema default
     // -------------------------------------------------------------------------

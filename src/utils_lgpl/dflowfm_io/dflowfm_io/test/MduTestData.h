@@ -185,6 +185,16 @@ namespace dflowfm_io::test
         throw std::runtime_error("No property of the specified type found in MDU_SCHEMA");
     }
 
+    inline std::pair<const SectionSchema*, const PropertySchema*> FirstDateTimePropertyWithFormat(FormatType format)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& property : section.properties)
+                if (property.value_type == ValueType::DateTime && property.format.has_value() &&
+                    *property.format == format)
+                    return {&section, &property};
+        throw std::runtime_error("No DateTime property found with the requested format.");
+    }
+
     inline const Issue* FirstIssue(const IssueReport& report, Severity severity)
     {
         for (const auto& issue : report)
