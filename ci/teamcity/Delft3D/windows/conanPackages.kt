@@ -30,6 +30,7 @@ object WindowsConanPackages : BuildType({
         param("container.tag", "vs2022-intel2024-ltsc2025")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
+        param("conan_build_option", "--build-missing")
         param("env.CONAN_HOME", "C:/conan-cache")
     }
 
@@ -53,7 +54,7 @@ object WindowsConanPackages : BuildType({
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                python run_conan.py install --rebuild-packages --ci --output-folder build
+                python run_conan.py install %conan_build_option% --ci --output-folder build
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
                 python run_conan.py upload --remote=delft3d-conan-dev --ci
@@ -81,6 +82,9 @@ object WindowsConanPackages : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
+            buildParams {
+                param("conan_build_option", "--rebuild-packages")
+            }
         }
     }
 
