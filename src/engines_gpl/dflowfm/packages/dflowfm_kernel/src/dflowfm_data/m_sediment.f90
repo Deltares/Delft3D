@@ -102,7 +102,6 @@ module m_sediment
    integer :: jabndtreatment
    integer :: jamorcfl
    real(kind=dp) :: dzbdtmax
-   real(kind=dp) :: botcrit !< mass balance: minimum depth after bottom update to adapt concentrations
    integer :: jamormergedtuser
    real(kind=dp) :: upperlimitssc
    integer :: inmorphopol !< value of the update inside morphopol (only 0 or 1 make sense)

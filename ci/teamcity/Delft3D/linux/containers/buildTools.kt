@@ -18,8 +18,7 @@ object LinuxBuildTools : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry,
-        TemplateBuildConcurrency
+        TemplateDockerRegistry
     )
 
     vcs {

@@ -1335,7 +1335,6 @@ contains
       call prop_get(md_ptr, 'sediment', 'inMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
       call prop_get(md_ptr, 'sediment', 'morCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
       call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-      call prop_get(md_ptr, 'sediment', 'masBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
@@ -1703,6 +1702,26 @@ contains
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+
+      if (allocated(extfile_new_list)) then
+         deallocate(extfile_new_list)
+      end if
+
+      if (len_trim(md_extfile_new) > 0) then        
+         call strsplit(md_extfile_new, 1, extfile_new_list, 1)
+      end if
+
+      if (.not. allocated(extfile_new_list)) then
+         ! If no new external forcing files were specified, allocate an empty list so functions can still 'loop' over this list.
+         allocate(extfile_new_list(0))
+      end if
+      
+      ! IniFieldFile is treated entirely by ExtForceFileNew code (during deprecation phase)
+      if (len_trim(md_inifieldfile) > 0) then
+         call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
+         extfile_new_list(size(extfile_new_list)) = md_inifieldfile
+      end if
+
       call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
       if (jarain > 0) then
          jaqin = 1
