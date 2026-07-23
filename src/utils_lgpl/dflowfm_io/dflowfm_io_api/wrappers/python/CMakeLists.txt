@@ -15,6 +15,23 @@ option(
 	OFF
 )
 
+# Regenerate the ctypes binding layer (src/dflowfm_io/base/bindings.py) from the C header, so the
+# Python bindings can never drift from the dflowfm_io_api ABI. The generated file is committed, but
+# rebuilt here whenever the header or the generator changes.
+cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
+	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
+set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/codegen/generate_bindings.py")
+set(DFLOWFM_IO_BINDINGS "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py")
+
+add_custom_command(
+	OUTPUT "${DFLOWFM_IO_BINDINGS}"
+	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_BINDINGS_GENERATOR}"
+	DEPENDS "${DFLOWFM_IO_BINDINGS_GENERATOR}" "${DFLOWFM_IO_HEADER}"
+	COMMENT "Generating dflowfm_io Python ctypes bindings from dflowfm_io_api.h"
+	VERBATIM
+)
+add_custom_target(dflowfm_io_bindings DEPENDS "${DFLOWFM_IO_BINDINGS}")
+
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
 
 if(DFLOWFM_IO_BUILD_PYTHON_WHEEL)
@@ -31,5 +48,6 @@ add_custom_target(dflowfm_io_wheel ${_dflowfm_io_wheel_in_all}
 	VERBATIM
 )
 
-# The wheel bundles the native library, so it must be built (and staged into _lib) first.
-add_dependencies(dflowfm_io_wheel dflowfm_io_api)
+# The wheel bundles the native library (built + staged into _lib by dflowfm_io_api) and the
+# generated bindings, so both must be up to date first.
+add_dependencies(dflowfm_io_wheel dflowfm_io_api dflowfm_io_bindings)
