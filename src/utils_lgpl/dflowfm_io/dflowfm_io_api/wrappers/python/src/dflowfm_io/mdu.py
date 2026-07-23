@@ -5,10 +5,8 @@ import ctypes
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .errors import check_result
-from .handle import HandleRef
-from .issues import Issue, MduIssue, Severity
-from .library import lib
+from dflowfm_io.base import HandleRef, check_result, lib
+from dflowfm_io.issues import Issue, MduIssue, Severity
 
 
 class MduModel:

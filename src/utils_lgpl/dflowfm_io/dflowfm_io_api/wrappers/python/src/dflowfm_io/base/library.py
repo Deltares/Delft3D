@@ -41,7 +41,9 @@ class DLLFinder:
         self.dll_dir = dll_dir
 
     def _bundled_lib(self) -> Path | None:
-        candidate = Path(__file__).parent / "_lib" / self.dll_name
+        # The native library is bundled at the package root (dflowfm_io/_lib), one level up from
+        # this base subpackage.
+        candidate = Path(__file__).parents[1] / "_lib" / self.dll_name
         return candidate if candidate.is_file() else None
 
     def _env_lib(self) -> Path | None:

@@ -2,7 +2,7 @@
 
 import ctypes
 
-from .library import lib
+from dflowfm_io.base.library import lib
 
 DFLOWFM_IO_RESULT_SUCCESS = 0
 DFLOWFM_IO_RESULT_ERROR = 1
