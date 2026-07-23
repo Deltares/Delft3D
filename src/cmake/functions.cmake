@@ -1,3 +1,30 @@
+# strip_boost_header_only_deps
+# Boost's CMake config conservatively declares compile-time header
+# dependencies (e.g. thread -> atomic, chrono, container) as
+# INTERFACE_LINK_LIBRARIES. These are not actual runtime DLL dependencies
+# (verified via dumpbin /dependents), but CMake's TARGET_RUNTIME_DLLS
+# walks INTERFACE_LINK_LIBRARIES and picks them up anyway. This function
+# strips those header-only transitive deps from the given Boost targets
+# so the corresponding DLLs don't get installed.
+#
+# Arguments
+#   TARGETS       : List of Boost targets to clean (e.g. Boost::thread Boost::log)
+#   EXCLUDE_DEPS  : List of Boost targets to remove from INTERFACE_LINK_LIBRARIES
+function(strip_boost_header_only_deps)
+    cmake_parse_arguments("" "" "" "TARGETS;EXCLUDE_DEPS" ${ARGN})
+    foreach(_target IN LISTS _TARGETS)
+        if(TARGET ${_target})
+            get_target_property(_libs ${_target} INTERFACE_LINK_LIBRARIES)
+            if(_libs)
+                foreach(_dep IN LISTS _EXCLUDE_DEPS)
+                    list(REMOVE_ITEM _libs ${_dep})
+                endforeach()
+                set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
 # create_target
 # Creates a target (library or executable) of a certain module
 #
@@ -53,7 +80,22 @@ function(create_target target_name source_group_name)
     endif()
 
     # combine all the given files (if any of the parameters is given)
-    set(all_source ${op_src_files} ${op_resource_files} ${source})
+    # Separate .rc files from other resource files (e.g. .F90 version files).
+    # RC files are compiled in a separate object library to avoid resource
+    # compiler command line length issues with include directories.
+    set(rc_sources "")
+    set(non_rc_resources "")
+    if(DEFINED op_resource_files)
+        foreach(f IN LISTS op_resource_files)
+            if(f MATCHES "\\.rc$")
+                list(APPEND rc_sources ${f})
+            else()
+                list(APPEND non_rc_resources ${f})
+            endif()
+        endforeach()
+    endif()
+
+    set(all_source ${op_src_files} ${non_rc_resources} ${source})
 
     if(${op_target_type} STREQUAL "library")
         if (op_shared)
@@ -64,6 +106,11 @@ function(create_target target_name source_group_name)
     else()
         # executable
         add_executable(${target_name} ${all_source})
+    endif()
+
+    if(rc_sources)
+        add_rc_object_library(${target_name} "${rc_sources}" "${version_include_dir}")
+        target_link_libraries(${target_name} PRIVATE ${target_name}_rc)
     endif()
     # Set the language of the target.
     if(UNIX)
@@ -88,11 +135,37 @@ function(create_target target_name source_group_name)
 
 endfunction()
 
+# add_rc_object_library
+# Creates a separate OBJECT library for .rc resource files, compiled as C with
+# only the specified include directories. This prevents the resource compiler
+# command line from exceeding the Windows length limit when many transitive
+# include paths (e.g. from Conan packages) are inherited by the main target.
+# The resulting object library should be linked into the main target.
+#
+# Arguments:
+#   target_name      : The name of the main target (used to derive the object library name).
+#   rc_files         : List of .rc files to compile.
+#   include_dirs     : Include directories the .rc files actually need.
+#
+# Usage:
+#   add_rc_object_library(my_target "${rc_version_file}" "${version_include_dir}")
+#   target_link_libraries(my_target PRIVATE my_target_rc)
+function(add_rc_object_library target_name rc_files include_dirs)
+    set(rc_lib_name ${target_name}_rc)
+    if(WIN32)
+        add_library(${rc_lib_name} OBJECT ${rc_files})
+        set_target_properties(${rc_lib_name} PROPERTIES LINKER_LANGUAGE C)
+        target_include_directories(${rc_lib_name} PRIVATE ${include_dirs})
+        set_target_properties(${rc_lib_name} PROPERTIES FOLDER "rc_objects")
+    else()
+        add_library(${rc_lib_name} INTERFACE)
+    endif()
+endfunction()
 
 # Create template for Visual Studio environment paths for debugging on Windows
 function(create_vs_user_files)
     cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe" TO_NATIVE_PATH_LIST debugcommand)
-    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
     set(envpath "PATH=${path_prefix};%PATH%")
     set(userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
@@ -131,9 +204,6 @@ function(configure_visual_studio_user_file executable_name)
     endif()
 endfunction()
 
-
-
-
 # get_fortran_source_files
 # Gathers Fortran *.f or *.f90 files from a given directory.
 #
@@ -160,11 +230,11 @@ endfunction()
 # Return
 # source_files : The source files that were gathered.
 function(get_fortran_source_files_recursive source_directory source_files)
-    file(GLOB_RECURSE source ${source_directory} *.f90
-                        ${source_directory} *.F90
-                        ${source_directory} *.for
-                        ${source_directory} *.f
-                        ${source_directory} *.F)
+    file(GLOB_RECURSE source ${source_directory}/*.f90
+                        ${source_directory}/*.F90
+                        ${source_directory}/*.for
+                        ${source_directory}/*.f
+                        ${source_directory}/*.F)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 
@@ -187,8 +257,6 @@ function(get_module_include_path module_path library_name return_include_path)
 
     set(${return_include_path} ${public_include_path} PARENT_SCOPE)
 endfunction()
-
-
 
 # configure_package_installer
 # Configures a package for installing.
@@ -214,8 +282,6 @@ function(configure_package_installer name description_file  major minor build ge
   include(CPack)
 endfunction(configure_package_installer)
 
-
-
 # set_rpath
 # Find all binaries in "targetDir" and set rpath to "rpathValue" in these binaries
 # This function is called from the "install_and_bundle.cmake" files
@@ -226,7 +292,6 @@ endfunction(configure_package_installer)
 function(set_rpath targetDir rpathValue)
   execute_process(COMMAND find "${targetDir}" -type f -exec bash -c "patchelf --set-rpath '${rpathValue}' $1" _ {} \; -exec echo "patched rpath of: " {} \;)
 endfunction(set_rpath)
-
 
 # Use the `create_test` cmake function to create a unit test by providing the following arguments.
 # test_name:
@@ -304,7 +369,7 @@ function(create_test test_name)
         set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
     endif (UNIX)
     if (WIN32)
-        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
+        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/bin\;$ENV{PATH}")
     endif (WIN32)
 
 
@@ -366,77 +431,4 @@ function(create_test test_name)
         )
     endforeach()
 
-endfunction()
-
-# Function to set a key-value pair
-# Use the `dict` cmake function to create a dictionary-like data structure {key:value} like python
-# dict_name:
-#           The dictionary name
-# "key:value": [string]
-#           a string of the key and value separated by a colon
-# Examples:
-# dict(labels "test_1:fast" "test_2:medium" "test_3:e2e")
-# message(${labels})
-# >>> test_1:fast;test_2:medium;test_3:e2e
-function(dict dict_name)
-    math(EXPR arg_len "${ARGC}-1")
-    foreach(i RANGE 1 ${arg_len})
-        list(GET ARGV ${i} pair)
-        list(APPEND ${dict_name} "${pair}")
-    endforeach()
-    set(${dict_name} "${${dict_name}}" PARENT_SCOPE)
-endfunction()
-
-# Function to get a value for a given key
-# Function to set a key-value pair
-# Use the `get_dict_value` cmake function to retrieve a value coresponding to a certain key from a dictionary created by the `dict`
-# function
-# dict_name: [string/input]
-#           The dictionary name, do not use the ${} in the dictionary na,e
-# key: [string/input]
-#       key value.
-# value: [string/output]
-#       value coresponding to the key you entered.
-# Examples:
-# dict(labels "test_1:fast" "test_2:medium" "test_3:e2e")
-# get_dict_value(labels test_3 test_label)
-# message(${test_label})
-# >>> e2e
-function(get_dict_value dict_name key value)
-    set(result NOTFOUND)
-    foreach(pair IN LISTS ${dict_name})
-        if(pair MATCHES "^${key}:")
-            string(REPLACE "${key}:" "" result "${pair}")
-            break()
-        endif()
-    endforeach()
-    set(${value} "${result}" PARENT_SCOPE)
-endfunction()
-
-# Function to return ifort version number
-function(get_intel_version)
-    # Intel OneAPI versions have different version numbers for their compilers.
-    # Furthermore, the compiler versions reported through CMAKE_Fortran_COMPILER_VERSION do not always match the official compiler version string.
-    # Before OneAPI 2021, the compiler version matches the ifort version (e.g., 2020.2)
-    # After OneAPI 2024, the compiler version matches the ifx version (e.g., 2025.1)
-    # In between, the ifx version does match the OneAPI version, but the ifort version is always reported as 2021.x(x).x.xxxxxxxx.
-    # Up to and including version 2023, the 2021.x version kept increasing, but in OneAPI 2024 the version reported in CMake goes back to 2021.0 or 2021.1.
-    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.[0-9]\\.[0-9]\\.(20231010|202[4-9][0-9][0-9][0-9][0-9])|^2024[\\.0-9]*")
-        set(intel_version 24 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(8|9|10)\\.[\\.0-9]*|^2023[\\.0-9]*")
-        set(intel_version 23 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(5|6|7)\\.[\\.0-9]*|^2022[\\.0-9]*")
-        set(intel_version 22 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^20([0-9][0-9])[\\.0-9]*")
-        set(intel_version ${CMAKE_MATCH_1} PARENT_SCOPE) # Set to the result of the first capture group in parentheses (the last two year numbers, for example 25)
-    else()
-        message(FATAL_ERROR "Intel version ${CMAKE_Fortran_COMPILER_VERSION} is not recognized.")
-    endif()
-    if (NOT DEFINED ENV{ONEAPI_ROOT})
-        if (WIN32)
-            message(FATAL_ERROR "ONEAPI_ROOT environment variable not found. \nPlease run CMake from an intel oneapi command prompt for intel 64.")
-        else()
-            message(FATAL_ERROR "ONEAPI_ROOT environment variable not found. \nPlease ensure that the intel environment is set via an environment module or via a setvars script.")
-        endif()
-    endif()
 endfunction()

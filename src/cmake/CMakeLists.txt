@@ -9,7 +9,7 @@ endif()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
 if (WIN32)
     add_compile_definitions(NOMINMAX)
@@ -25,6 +25,35 @@ include(functions.cmake)
 
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
+set(checkout_root ${checkout_src_root}/..)
+
+# Conan: check if conan.lock or conanfile.py have changed since last conan install.
+# If so, configuration is stopped and conan must be rerun. This doesn't catch all conan changes
+# (e.g. profile changes aren't taken into account), but it is a good basic safety net.
+set(conan_lock_source "${checkout_root}/conan.lock")
+set(conan_file_source "${checkout_root}/conanfile.py")
+set(conan_stamp "${CMAKE_BINARY_DIR}/conan/generators/conan.stamp")
+if("${conan_lock_source}" IS_NEWER_THAN "${conan_stamp}" OR
+   "${conan_file_source}" IS_NEWER_THAN "${conan_stamp}")
+    message(FATAL_ERROR
+        "The conan configuration has been updated since the last conan install. "
+        "Please do a clean build using build.py to ensure dependencies are up to date."
+    )
+endif()
+
+# Conan: add the CMakeDeps generator output to the search path and find all explicit dependencies.
+# In the CMakeDeps generator, transitively depending on a dll counts as an explicit dependency,
+# because we need to install the dll and deliver it to a user.
+list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/generators")
+find_package(ZLIB CONFIG REQUIRED)
+find_package(HDF5 CONFIG REQUIRED)
+find_package(netCDF CONFIG REQUIRED)
+find_package(netCDF-Fortran CONFIG REQUIRED)
+find_package(expat CONFIG REQUIRED)
+find_package(TIFF CONFIG REQUIRED)
+find_package(PROJ CONFIG REQUIRED)
+find_package(GDAL CONFIG REQUIRED)
+find_package(PETSc CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
@@ -56,7 +85,6 @@ set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes"
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    get_intel_version()
     include(compiler_options/intel.cmake)
 else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
@@ -86,17 +114,9 @@ if (WIN32)
         message(STATUS "Intel MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-        if(intel_version GREATER_EQUAL 24)
-            message(STATUS "Using Intel 2024 folder structure.")
-            set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
-            set(mpi_module_path ${mpi_include_path}/mpi)
-            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
-        else()
-            message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
-            set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
-            set(mpi_module_path ${mpi_include_path})
-            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<IF:$<CONFIG:Debug>,debug,release>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
-        endif()
+        set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
+        set(mpi_module_path ${mpi_include_path}/mpi)
+        set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
     else()
@@ -110,18 +130,6 @@ if (WIN32)
     message(STATUS "mpi c library \"${mpi_c_library}\"")
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
-
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
-    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
-    message(STATUS "PETSC")
-    list(APPEND CMAKE_MESSAGE_INDENT "  ")
-    message(STATUS "path ${petsc_path}")
-    message(STATUS "library directory ${petsc_libdir}")
-    list(POP_BACK CMAKE_MESSAGE_INDENT)
-
-    # Set the SQLITE3 path
-    set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
-    message(STATUS "sqlite3 set to ${sqlite3_path}")
 
     add_definitions(-DHAVE_MPI=1)
 
@@ -137,27 +145,6 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
-
-    #NetCDF
-    pkg_check_modules(NETCDF     REQUIRED netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED netcdf-fortran)
-
-    # Create two separate targets, because the targets created by pkg_check_modules with IMPORTED_TARGET
-    # mix variables for both static and dynamic linking of netcdf, and the C library is not explicitly
-    # linked by the Fortran target. Use the same names as on windows.
-    add_library(netcdf INTERFACE)
-    target_include_directories(netcdf INTERFACE ${NETCDF_INCLUDE_DIRS})
-    target_link_libraries(netcdf INTERFACE ${NETCDF_LINK_LIBRARIES})
-
-    add_library(netcdff INTERFACE)
-    target_include_directories(netcdff INTERFACE ${NETCDF_FTN_INCLUDE_DIRS})
-    target_link_libraries(netcdff INTERFACE ${NETCDF_FTN_LINK_LIBRARIES} netcdf)
-
-    # Petsc
-    pkg_check_modules(PETSC REQUIRED PETSc)
-
-    # Proj
-    pkg_check_modules(proj REQUIRED proj)
 endif(UNIX)
 
 if (UNIX)
@@ -168,18 +155,10 @@ elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
-    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_NO_WARNINGS TRUE) # Ignore warnings about missing ifort libs, we use ifx
     set(library_prefix "")
     include(InstallRequiredSystemLibraries)
 endif()
-
-# Expat:
-#     Windows: use prebuild library in ".../expat/x64/x64"
-#     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
-set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
-if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
-endif(WIN32)
 
 # getopt:
 #     Windows: use prebuild library in ".../getopt/x64"
@@ -429,7 +408,7 @@ if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
 endif()
 
 if(UNIX)
-    add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
+    add_subdirectory(${checkout_src_root}/${install_linux_libs_module} install_linux_libs)
 endif()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt

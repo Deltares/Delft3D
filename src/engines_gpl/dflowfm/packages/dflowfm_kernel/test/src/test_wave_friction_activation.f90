@@ -35,9 +35,15 @@ contains
       call f90_expect_near(wave_current_friction_coefficient(0.02_dp, 0.08_dp, 0.25_dp), 0.035_dp, 1.0e-12_dp, &
                            "Partial activation should blend from current-only to wave-current friction.")
       call f90_expect_near(wave_current_friction_coefficient(0.02_dp, 0.0_dp, 1.0_dp), 0.02_dp, 1.0e-12_dp, &
+<<<<<<< HEAD
                            "Invalid wave-current friction should fall back to current-only friction.")
       call f90_expect_near(wave_current_friction_coefficient(0.0_dp, 0.08_dp, 0.0_dp), 0.0_dp, 1.0e-12_dp, &
                            "Inactive waves should not inject wave-current friction when current-only friction is zero.")
+=======
+                            "Invalid wave-current friction should fall back to current-only friction.")
+      call f90_expect_near(wave_current_friction_coefficient(0.0_dp, 0.08_dp, 0.0_dp), 0.0_dp, 1.0e-12_dp, &
+                            "Inactive waves should stay inactive when current-only friction is zero.")
+>>>>>>> db32a19707753ca5af71e3d08c74b0266be99f84
    end subroutine test_friction_blend_floor
    !$f90tw)
 

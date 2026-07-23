@@ -51,6 +51,7 @@ contains
       use unstruc_channel_flow, only: network, st_pump, st_general_st, getcsparsflow, st_dambreak, st_culvert, st_uni_weir, st_bridge, st_longculvert, msgbuf, err_flush, level_warn
       use m_get_chezy, only: get_chezy
       use m_distribute_linearized_3d_structure_coefficients, only: distribute_linearized_3d_structure_coefficients
+      use network_data, only: LINK_1D
 
       implicit none
 
@@ -106,14 +107,13 @@ contains
                if (hu(l) > 0) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
-
                   select case (network%sts%struct(istru)%type)
                   case (ST_GENERAL_ST)
                      firstiter = .true.
                      ! The upstream flow area is necessary for computing the upstream velocity height
                      ! For 1d the flow area is computed, using the upstream water depth
                      ! For 2D the flow area is computed, using the flow width WU and the waterdepth at the upstream grid cell
-                     if (kcu(L) == 1) then
+                     if (kcu(L) == LINK_1D) then
                         dpt = max(epshu, s1(k1) - bob0(1, L))
                         call GetCSParsFlow(network%adm%line2cross(L, 2), network%crs%cross, dpt, as1, perimeter, width, maxFlowWidth=maxwidth1)
                         dpt = max(epshu, s1(k2) - bob0(2, L))
@@ -188,6 +188,7 @@ contains
                      pstru%generalst%fu(:, L0) = 0.0_dp
                      pstru%generalst%ru(:, L0) = 0.0_dp
                      pstru%generalst%au(:, L0) = 0.0_dp
+                     pstru%generalst%au_max(L0) = 0.0_dp
                      pstru%generalst%state(:, L0) = 0
                   else if (pstru%type == ST_CULVERT) then
                      pstru%culvert%state = 0

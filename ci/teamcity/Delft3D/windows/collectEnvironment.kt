@@ -16,7 +16,8 @@ object WindowsCollectEnvironment : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Delft3D collect environment container"
@@ -49,7 +50,7 @@ object WindowsCollectEnvironment : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push with commit hash in tag"
             commandType = push {
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/collect-windows:%build.vcs.number%
@@ -57,7 +58,7 @@ object WindowsCollectEnvironment : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push with production tag"
             enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
@@ -72,9 +73,14 @@ object WindowsCollectEnvironment : BuildType({
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-collect
+                +:ci/teamcity/Delft3D/windows/collectEnvironment.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
-            param("trigger.type", "vcs")
+            buildParams {
+                param("trigger.type", "vcs")
+            }
         }
         schedule {
             schedulingPolicy = weekly {
@@ -85,7 +91,9 @@ object WindowsCollectEnvironment : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
-            param("trigger.type", "schedule")
+            buildParams {
+                param("trigger.type", "schedule")
+            }
         }
     }
 

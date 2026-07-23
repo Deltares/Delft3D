@@ -65,8 +65,19 @@ module fm_external_forcings
    end interface
 
    interface
-      module subroutine init_new(external_force_file_name, iresult)
-         character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
+      module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+      end subroutine prepare_air_pressure_temperature_dew_point_temperature
+   end interface
+
+   interface
+      module subroutine compute_air_water_interaction_most_fluxes(initialization)
+         logical, intent(in) :: initialization !< initialization phase
+      end subroutine compute_air_water_interaction_most_fluxes
+   end interface
+
+   interface
+      module subroutine init_new(iresult)
          integer, intent(inout) :: iresult
       end subroutine init_new
    end interface
@@ -121,6 +132,9 @@ module fm_external_forcings
 
    public :: set_external_forcings
    public :: calculate_wind_stresses
+   public :: prepare_wind
+   public :: prepare_air_pressure_temperature_dew_point_temperature
+   public :: compute_air_water_interaction_most_fluxes
    public :: sourcesink_parse_coordinates
 
    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
@@ -351,19 +365,29 @@ contains
 
    end subroutine prepare_wind_model_data
 
-!> Gets windstress (and air pressure) from input files, and sets the windstress
-   subroutine calculate_wind_stresses(time_in_seconds, iresult)
+!> Prepare wind data if jawind=1 and air_pressure_available
+   subroutine prepare_wind(time_in_seconds, iresult)
       use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
+
       if (jawind == 1 .or. air_pressure_available) then
          call prepare_wind_model_data(time_in_seconds, iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
       end if
+      iresult = DFM_NOERR
+   end subroutine prepare_wind
+
+!> Gets windstress (and air pressure) from input files, and sets the windstress
+   subroutine calculate_wind_stresses(iresult)
+      use m_wind, only: jawind
+      use dfm_error, only: DFM_NOERR
+
+      integer, intent(out) :: iresult !< Error indicator
 
       if (jawind > 0) then
          call setwindstress()
@@ -440,7 +464,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          hwavcom(kb) = hwavcom(ki)
-         twav(kb) = twav(ki)
+         twavcom(kb) = twavcom(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
          sxwav(kb) = sxwav(ki)
@@ -475,6 +499,7 @@ contains
       integer :: filetype
       integer, allocatable :: kce(:) ! kc edges (numl)
       integer, allocatable :: ke(:) ! kc edges (numl)
+      integer :: i_ext !< index of external forcing file
       logical :: jawel
       integer :: ja_ext_force
       logical :: ext_force_bnd_used
@@ -510,16 +535,20 @@ contains
             call err_flush()
          end if
       end if
-      if (len(trim(md_extfile_new)) > 0) then
-         inquire (file=trim(md_extfile_new), exist=jawel)
+
+      do i_ext = 1, size(extfile_new_list)
+         if (len(trim(extfile_new_list(i_ext))) > 0) then
+            inquire (file=trim(extfile_new_list(i_ext)), exist=jawel)
+
          if (jawel) then
             ext_force_bnd_used = .true.
          else
-            call qnerror('Boundary external forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(md_extfile_new), ''' not found.'
+               call qnerror('External forcing file '''//trim(extfile_new_list(i_ext))//''' not found.', '  ', ' ')
+               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(extfile_new_list(i_ext)), ''' not found.'
             call err_flush()
          end if
       end if
+      end do
 
       if (allocated(xe)) then
          deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
@@ -649,14 +678,12 @@ contains
       num_bc_ini_blocks = 0
       if (ext_force_bnd_used) then
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
-         call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
+         do i_ext = 1, size(extfile_new_list)
+            call read_location_files_from_boundary_blocks(trim(extfile_new_list(i_ext)), nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
 
-         call read_initialtracer_properties(trim(md_extfile_new), nx)
-      end if
-      
-      if (len(trim(md_inifieldfile)) > 0) then
-         call read_initialtracer_properties(trim(md_inifieldfile), nx)
+            call read_initialtracer_properties(trim(extfile_new_list(i_ext)), nx)
+         end do
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -788,7 +815,6 @@ contains
 
    end subroutine read_initialtracer_properties
 
-
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       use properties
@@ -839,7 +865,7 @@ contains
       call tree_create(trim(filename), bnd_ptr)
       call prop_file('ini', trim(filename), bnd_ptr, istat)
       if (istat /= 0) then
-         call qnerror('Boundary external forcing file ', trim(filename), ' could not be read')
+         call qnerror('External forcing file ', trim(filename), ' could not be read.')
          return
       end if
 
@@ -1010,7 +1036,7 @@ contains
       integer, dimension(nx), intent(inout) :: kce !
       real(kind=dp), intent(in) :: return_time
       integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
-                                numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+                             numt, numuxy, numn, num1d2d, numw, numtr, numsf !
       integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
@@ -1202,7 +1228,6 @@ contains
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-!       realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
@@ -1213,14 +1238,13 @@ contains
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
-      
-      else if (qid(1:13) == 'initialtracer') then ! Obsolete, still required for old extforce file support
+
+      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-            ! realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
@@ -1231,7 +1255,6 @@ contains
          if (isf == 0) then ! add
 
             numfracs = numfracs + 1
-!       realloc
             call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
@@ -1529,6 +1552,12 @@ contains
             end if
 
             fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
             ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
             if (index(trim(fnam)//'|', '.tim|') > 0) then
                ! uniform=single time series vectormax = 1
@@ -1813,16 +1842,12 @@ contains
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
       integer :: iresult
 
       call setup(iresult)
       if (iresult == DFM_NOERR) then
-         call init_new(md_inifieldfile, iresult)
-      end if
-      if (iresult == DFM_NOERR) then
-         call init_new(md_extfile_new, iresult)
+         call init_new(iresult)
       end if
       if (iresult == DFM_NOERR) then
          call init_old(iresult)
@@ -1843,7 +1868,6 @@ contains
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
-      use unstruc_model, only: md_inifieldfile
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
       use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
@@ -1856,6 +1880,7 @@ contains
       use m_setzminmax, only: setzminmax
       use m_bnd, only: alloc_bnd, dealloc_bndarr
       use messagehandling, only: msgbuf, LEVEL_WARN, mess
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer, intent(out) :: iresult
 
@@ -1970,7 +1995,7 @@ contains
                teta(L) = 1.0_dp
             end do
 
-            if (iadvec /= 0 .and. kcu(L) == -1) then
+            if (iadvec /= 0 .and. kcu(L) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -1990,7 +2015,7 @@ contains
          do k = 1, nbndz
             kbi = kbndz(2, k)
             Lf = kbndz(3, k)
-            if (iadvec /= 0 .and. kcu(Lf) == -1) then
+            if (iadvec /= 0 .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2559,9 +2584,9 @@ contains
 
    end subroutine setup
 
-   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read.
    !> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
-   !> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   !> filling the geometry of the source/sinks and bubblescreens. (used for output)
    subroutine finalize_source_sinks()
       use m_source_sink, only: source_sinks
       use fm_external_forcings_data, only: bubblescreens
@@ -2574,6 +2599,9 @@ contains
       integer :: flownode_nr !< Flow node number
       logical, dimension(:), allocatable :: is_source_sink_bubblescreen
 
+      if (source_sinks%num_total == 0) then
+         return ! No source/sinks, nothing to do
+      end if
       ! actually compute is_source_sink_bubble and then negate it
       call realloc(is_source_sink_bubblescreen, source_sinks%num_total, fill=.false.)
 
@@ -2593,13 +2621,18 @@ contains
          end associate
       end do
 
-      if(jampi == 1) then
-        call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
+      if (jampi == 1) then
+         call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
       end if
 
-      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
-      source_sinks%is_normal = .NOT. is_source_sink_bubblescreen
-      source_sinks%num_normal = count(source_sinks%is_normal)
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble).
+      ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
+      ! capacity, while is_source_sink_bubblescreen is sized to num_total.
+      if (allocated(source_sinks%is_normal)) then
+         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+         source_sinks%num_normal = count(source_sinks%is_normal)
+      end if
 
       call fill_geometry_source_sinks()
 
@@ -2624,10 +2657,11 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
-      use m_physcoef, only: constant_dicoww, dicoww
+      use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use unstruc_inifields, only: finalize_1dfield_global_values
+      use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2965,7 +2999,7 @@ contains
             do L = 1, lnx1D ! for all links, set link width
                k1 = ln(1, L)
                k2 = ln(2, L)
-               if (kcu(L) == 1) then
+               if (kcu(L) == LINK_1D) then
                   ! Calculate maximal total area by using a water depth of 1000 m. FOR BARE we need the maximal possible catchment area.
                   ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                   ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.
@@ -3067,11 +3101,6 @@ contains
       ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
-
-      ! Set dicoww to scalar value if not read from inifields file
-      if (.not. allocated(dicoww)) then
-         call realloc(dicoww, constant_dicoww)
-      end if
 
    end subroutine finalize
 

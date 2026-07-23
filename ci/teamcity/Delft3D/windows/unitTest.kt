@@ -22,11 +22,12 @@ object WindowsUnitTest : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     params {
-        param("env.PATH", "%teamcity.build.checkoutDir%\\x64\\bin;%teamcity.build.checkoutDir%\\x64\\lib;%env.PATH%")
+        param("env.PATH", "%teamcity.build.checkoutDir%\\x64\\bin;%env.PATH%")
     }
 
     vcs {

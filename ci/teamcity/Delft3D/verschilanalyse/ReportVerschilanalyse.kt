@@ -45,6 +45,8 @@ object ReportVerschilanalyse: BuildType({
             dockerRunParameters = """
                 --rm
                 --entrypoint=/bin/bash
+                -e AWS_ACCESS_KEY_ID="%env.AWS_ACCESS_KEY_ID%"
+                -e AWS_SECRET_ACCESS_KEY="%env.AWS_SECRET_ACCESS_KEY%"
                 -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
             """.trimIndent()
         }

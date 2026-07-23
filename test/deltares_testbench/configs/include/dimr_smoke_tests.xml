@@ -1,0 +1,170 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+  <testCase name="e109_f01_c010_weir_timeseries" ref="dimr_trunk_lnx64">
+    <!-- dflowfm + drtc + dwaves -->
+    <path version="2025-06-05T13:59:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.01"></parameter>
+          <parameter name="mesh2d_u1" toleranceAbsolute="0.01"></parameter>
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_com.nc" type="NETCDF">
+        <parameters>
+          <parameter name="hrms" toleranceAbsolute="0.1"></parameter>
+          <parameter name="tp" toleranceAbsolute="1.0"></parameter>
+          <parameter name="dir" toleranceAbsolute="400.0"></parameter>
+          <parameter name="distot" toleranceAbsolute="0.1"></parameter>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+        <testCase name="e109_f01_c010" ref="dimr_trunk">
+            <path version="2025-06-05T13:59:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
+             <checks>
+                <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                        <parameter name="mesh2d_u1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.1" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+  <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default">
+  <path version="2026-05-13T11:48:52.451000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
+  <checks>
+    <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_OXY" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_CBOD5" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_NO3" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_NH4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_PO4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_AAP" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_Si" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_Diat" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_Green" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetC" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetN" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetP" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetSi" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_AAPS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DiatS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_GreenS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetCS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetNS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetPS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_DetSiS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_IM1S1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_IM2S1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_water_quality_output_1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_water_quality_output_2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-5"/>
+        <parameter name="mesh2d_water_quality_output_3" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-5"/>
+        <parameter name="mesh2d_water_quality_output_4" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_water_quality_output_5" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_dynamo_his.nc" type="netCDF">
+      <parameters>
+        <parameter name="OXY" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="CBOD5" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="NO3" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="NH4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="PO4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="AAP" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="Si" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="Diat" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="Green" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetC" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetN" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetP" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetSi" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="IM1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="IM2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="AAPS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DiatS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="GreenS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetCS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetNS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetPS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="DetSiS1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="IM1S1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="IM2S1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-5"/>
+        <parameter name="water_quality_output_3" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-5"/>
+        <parameter name="water_quality_output_4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_5" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_6" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_7" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_9" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_10" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_11" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_12" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_13" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+<!--            <parameter name="water_quality_output_14" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/> -->
+        <parameter name="water_quality_output_15" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_16" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_17" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_18" toleranceAbsolute="1.0e-5" toleranceRelative="2.0e-6"/>
+        <parameter name="water_quality_output_19" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_20" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_21" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_22" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_23" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_24" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_25" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_26" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_27" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_28" toleranceAbsolute="1.0e-5" toleranceRelative="2.0e-6"/>
+        <parameter name="water_quality_output_29" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_30" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_31" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_32" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_33" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_34" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_35" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_36" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_dynamo_mass_balances.txt" type="ASCII">
+      <parameters>
+        <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+      </parameters>
+      <skipline>balance error</skipline>
+    </file>
+  </checks>
+</testCase>
+  <testCase name="e100_f00_c00" ref="dimr_trunk">
+    <!--  dflowfm-dwaves -->
+    <path version="2025-06-05T11:45:44.084000">e100_dflowfm-dwaves/f00_general/c00-FriesianInlet_schematic_nonstat</path>
+    <maxRunTime>300.0</maxRunTime>
+    <checks>
+      <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="s1" toleranceAbsolute="0.1"></parameter>
+          <parameter name="unorm" toleranceAbsolute="0.1"></parameter>
+        </parameters>
+      </file>
+      <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+        <parameters>
+          <parameter name="hrms" toleranceAbsolute="0.1"></parameter>
+          <parameter name="tp" toleranceAbsolute="1.0"></parameter>
+          <parameter name="dir" toleranceAbsolute="400.0"></parameter>
+          <parameter name="distot" toleranceAbsolute="0.1"></parameter>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+</testCases>

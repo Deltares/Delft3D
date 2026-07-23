@@ -252,6 +252,7 @@ module morphology_data_module
       integer :: nstatqnt ! number of quantities for morphology statistics output
       integer :: weightflg ! weighting by time or dbodsd
       real(fp), dimension(3) :: avgintv ! interval, start, stop for writing statistics (FM only)
+      real(fp), allocatable , dimension(:) :: unit_transport_conversion_factor !  Factor for converting the unit of sediment transport quantities in the his/map writers
       !
       logical :: aks
       logical :: cumavg
@@ -587,8 +588,7 @@ module morphology_data_module
       ! doubles
       !
       real(fp) :: csoil !  concentration at bed used in hindered settling formulation
-      real(fp) :: mdcuni !  mud content / mud fraction uniform value (non-zero only
-      !  if mud is not included simulation)
+      real(fp) :: mdcuni !  mud content / mud fraction uniform value (non-zero only if mud is not included simulation)
       real(fp) :: kssilt !  ks value for silt for Soulsby 2004 formulation (used below sc_cmf1)
       real(fp) :: kssand !  ks value for sand (used above sc_cmf2)
       real(fp) :: sc_cmf1 !  lower critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
@@ -599,6 +599,8 @@ module morphology_data_module
       real(fp) :: d_micro !  characteristic diameter of micro flocs [m]
       real(fp) :: ustar_macro ! characteristic shear velocity of macro flocs [m/s]
       real(fp) :: version !  interpreter version
+      real(fp) :: seddif_cal ! calibration factor for susp. sed. diffusion, only applied if strictly positive
+      real(fp) :: difparam ! scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive
       !
       ! reals
       !
@@ -1287,6 +1289,8 @@ contains
       sedpar%tfloc = 1e-10_fp
       sedpar%d_micro = 1e-4_fp
       sedpar%ustar_macro = 0.067_fp
+      sedpar%seddif_cal = 0.0_fp
+      sedpar%difparam = 10.0_fp
       !
       sedpar%flocmod = FLOC_NONE
       sedpar%nflocpop = 1

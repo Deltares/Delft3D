@@ -13,7 +13,8 @@ object LifecycleScanCiTools : BuildType({
     }
 
     templates(
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     artifactRules = """

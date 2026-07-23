@@ -35,8 +35,9 @@ dnf config-manager --set-enabled powertools
 # modern version than the standard, since the Intel C++ compiler
 # uses the standard library of gcc/g++.
 dnf install --assumeyes \
-    binutils patchelf diffutils xz procps m4 make gcc-toolset-14 \
-    perl wget which less unzip git
+    gcc-toolset-14 xz make m4  \
+    binutils patchelf diffutils  \
+    which less procps unzip wget git
 
 # For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
 # as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
@@ -60,6 +61,12 @@ elif [[ $INTEL_ONEAPI_VERSION = "2025" ]]; then
     COMPILER_FORTRAN_VERSION="2025.3.2"
     MKL_DEVEL_VERSION="2025.3.1"
     MPI_DEVEL_VERSION="2021.17.2"
+elif [[ $INTEL_ONEAPI_VERSION = "2026" ]]; then
+    COMMON_VARS_VERSION="2026.0.0"
+    COMPILER_DPCPP_CPP_VERSION="2026.1"
+    COMPILER_FORTRAN_VERSION="2026.1"
+    MKL_DEVEL_VERSION="2026.1"
+    MPI_DEVEL_VERSION="2021.18"
 fi
 
 dnf install --assumeyes \
@@ -81,32 +88,6 @@ EOT
 
 EOF
 
-# Build autotools, because some libraries require recent versions of it.
-RUN --mount=type=cache,target=/var/cache/src/,id=autotools-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
-source /etc/bashrc
-set -eo pipefail
-
-for URL in \
-    'https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz' \
-    'https://mirrors.kernel.org/gnu/automake/automake-1.17.tar.xz' \
-    'https://mirrors.kernel.org/gnu/libtool/libtool-2.4.7.tar.xz'
-do
-    BASEDIR=$(basename -s '.tar.xz' "$URL")
-    if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-        echo "CACHED ${BASEDIR}"
-    else
-        echo "Fetching ${BASEDIR}.tar.xz..."
-        wget --quiet --output-document=- "$URL" | tar --extract --xz --file=- --directory='/var/cache/src/'
-    fi
-
-    pushd "/var/cache/src/${BASEDIR}"
-    ./configure CC=icx CXX=icpx FC=ifx CFLAGS="-O3" CXXFLAGS="-O3" FCFLAGS="-O3"
-    make --jobs=$(nproc)
-    make install
-    popd
-done
-EOF
-
 # ninja is required for building cmake
 RUN --mount=type=cache,target=/var/cache/ninja <<"EOF"
 set -eo pipefail
@@ -114,7 +95,7 @@ set -eo pipefail
 URL=https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
 INSTALLER_DIR=/var/cache/ninja/$(basename $(dirname "$URL"))
 if [[ -d "$INSTALLER_DIR" ]]; then
-echo "CACHED $INSTALLER_DIR"
+    echo "CACHED $INSTALLER_DIR"
 else
     mkdir -p $INSTALLER_DIR
     wget --quiet --output-document="${INSTALLER_DIR}/ninja-linux.zip" $URL

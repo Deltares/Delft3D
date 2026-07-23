@@ -4,10 +4,15 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 import Delft3D.linux.*
 import Delft3D.windows.*
+import Delft3D.template.*
 
 object PublishToGui : BuildType({
     name = "Publish to GUI"
     description = "Push latest DIMR release to NuGet for GUI pipeline"
+
+    templates(
+        TemplateBuildConcurrency
+    )
 
     buildNumberPattern = "%build.vcs.number%"
 
@@ -46,7 +51,7 @@ object PublishToGui : BuildType({
             formatStderrAsError = true
             scriptMode = script {
                 content = """
-                    ${'$'}pathToDll = "source\x64\lib\ec_module.dll"
+                    ${'$'}pathToDll = "source\x64\bin\ec_module.dll"
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
@@ -72,7 +77,7 @@ object PublishToGui : BuildType({
             formatStderrAsError = true
             scriptMode = script {
                 content = """
-                    ${'$'}pathToDll = "source\x64\lib\gridgeom.dll"
+                    ${'$'}pathToDll = "source\x64\bin\gridgeom.dll"
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {

@@ -3967,6 +3967,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'node_id', prefix//'_node_id')
          ierr = nf90_def_var(ncid, prefix//'_node_id', nf90_char, (/meshids%dimids(mdim_idstring), meshids%dimids(mdim_node)/), meshids%varids(mid_node_ids))
          ierr = nf90_put_att(ncid, meshids%varids(mid_node_ids), 'long_name', 'ID of mesh nodes')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_node_ids), 'cf_role', 'timeseries_id')
          !long_names
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'node_long_name', prefix//'_node_long_name')
          ierr = nf90_def_var(ncid, prefix//'_node_long_name', nf90_char, (/meshids%dimids(mdim_longnamestring), meshids%dimids(mdim_node)/), meshids%varids(mid_node_longnames))
@@ -3976,6 +3977,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'edge_id', prefix//'_edge_id')
          ierr = nf90_def_var(ncid, prefix//'_edge_id', nf90_char, (/meshids%dimids(mdim_idstring), meshids%dimids(mdim_edge)/), meshids%varids(mid_edge_ids))
          ierr = nf90_put_att(ncid, meshids%varids(mid_edge_ids), 'long_name', 'ID of mesh edges')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_edge_ids), 'cf_role', 'timeseries_id')
          !long names
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'edge_long_name', prefix//'_edge_long_name')
          ierr = nf90_def_var(ncid, prefix//'_edge_long_name', nf90_char, (/meshids%dimids(mdim_longnamestring), meshids%dimids(mdim_edge)/), meshids%varids(mid_edge_longnames))
@@ -3985,6 +3987,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'face_id', prefix//'_face_id')
          ierr = nf90_def_var(ncid, prefix//'_face_id', nf90_char, (/meshids%dimids(mdim_idstring), meshids%dimids(mdim_face)/), meshids%varids(mid_face_ids))
          ierr = nf90_put_att(ncid, meshids%varids(mid_face_ids), 'long_name', 'ID of mesh faces')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_face_ids), 'cf_role', 'timeseries_id')
          !long names
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'face_long_name', prefix//'_face_long_name')
          ierr = nf90_def_var(ncid, prefix//'_face_long_name', nf90_char, (/meshids%dimids(mdim_longnamestring), meshids%dimids(mdim_face)/), meshids%varids(mid_face_longnames))

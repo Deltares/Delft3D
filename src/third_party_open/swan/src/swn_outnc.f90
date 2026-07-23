@@ -778,8 +778,8 @@ contains
                     end if
                     ips(tmip) = ivertg(ip)
                 else
-                    ips(tmip) = ip
-                end if
+                ips(tmip) = ip
+            end if
             end if
         end do
         if ( NSTATM > 0 ) then
@@ -832,12 +832,11 @@ contains
                     direct_done = .true.
                 end if
             end if
-
             if ( .not. direct_done ) then
-                call SWCMSP (otype, lspcaux%xc(ip), lspcaux%yc(ip), AC2, lspcaux%E(:, ip), SPCSIG, &
-                             lspcaux%depth(ip) , dep2, lspcaux%ux(ip), lspcaux%uy(ip),        &
-                             SPCDIR(1,2), SPCDIR(1,3), 1., KGRPNT,  &
-                             CROSS(1,IP), ierr)
+            call SWCMSP (otype, lspcaux%xc(ip), lspcaux%yc(ip), AC2, lspcaux%E(:, ip), SPCSIG, &
+                         lspcaux%depth(ip) , dep2, lspcaux%ux(ip), lspcaux%uy(ip),        &
+                         SPCDIR(1,2), SPCDIR(1,3), 1., KGRPNT,  &
+                         CROSS(1,IP), ierr)
             end if
 
             ! when ierr > 0 then energy == 0. That's fine.

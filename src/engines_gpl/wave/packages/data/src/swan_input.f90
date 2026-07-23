@@ -100,7 +100,7 @@ module swan_input
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
-   integer, parameter :: SWAN_GRID_STRUCTURED = 0
+   integer,parameter::SWAN_GRID_STRUCTURED=0
    integer, parameter :: SWAN_GRID_UNSTRUCTURED = 1
    integer, parameter :: SWAN_UNSTRUC_TRIANGLE = 1
    integer, parameter :: SWAN_UNSTRUC_EASYMESH = 2
@@ -387,9 +387,209 @@ module swan_input
    integer, parameter :: q_veg = 5 ! used as index in array qextnd
 
    private :: get_pointname
+   private :: has_overall_sp2_boundary
 
 contains
 !
+!
+!==============================================================================
+   !> Check whether configuration contains an overall SP2 boundary file.
+   !!
+   !! @param[in] sr SWAN runtime/configuration data.
+   !! @return       True when any boundary has bndtyp=4 (overall spectral file).
+   logical function has_overall_sp2_boundary(sr)
+      implicit none
+
+      type(swan_type), intent(in) :: sr
+
+      integer :: ibound
+
+      has_overall_sp2_boundary = .false.
+      if (.not. associated(sr%bnd)) return
+
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%bndtyp == 4) then
+            has_overall_sp2_boundary = .true.
+            exit
+         end if
+      end do
+   end function has_overall_sp2_boundary
+
+!
+!==============================================================================
+   !> Register all spectral boundary files in the boundary cache.
+   !!
+   !! Algorithm:
+   !! - reset cache state from any previous setup
+   !! - register overall SP2 file when present
+   !! - register per-boundary spectrum files for PARREAD boundaries
+   !!
+   !! @param[in] sr       SWAN runtime/configuration data.
+   !! @param[in] refdate  Reference date (YYYYMMDD) used for time conversion.
+   subroutine register_boundary_spectrum_files(sr, refdate)
+      use boundary_spectral_cache, only: register_boundary_spectral_file, reset_boundary_spectral_cache
+
+      implicit none
+
+      type(swan_type), intent(in) :: sr
+      integer, intent(in) :: refdate
+
+      integer :: ibound
+      integer :: isect
+
+      call reset_boundary_spectral_cache()
+
+      if (has_overall_sp2_boundary(sr) .and. len_trim(sr%specfile) > 0) then
+         call register_boundary_spectral_file(trim(sr%specfile), refdate)
+      end if
+
+      if (.not. associated(sr%bnd)) return
+
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%parread /= 1) cycle
+         if (.not. associated(sr%bnd(ibound)%spectrum)) cycle
+         do isect = 1, size(sr%bnd(ibound)%spectrum)
+            if (len_trim(sr%bnd(ibound)%spectrum(isect)) == 0) cycle
+            call register_boundary_spectral_file(trim(sr%bnd(ibound)%spectrum(isect)), refdate)
+         end do
+      end do
+   end subroutine register_boundary_spectrum_files
+
+!
+!==============================================================================
+   !> Cleanup cached spectral subset files and cache administration.
+   subroutine cleanup_boundary_spectrum_files()
+      use boundary_spectral_cache, only: cleanup_boundary_spectral_cache
+
+      implicit none
+
+      call cleanup_boundary_spectral_cache()
+   end subroutine cleanup_boundary_spectrum_files
+
+!
+!==============================================================================
+   !> Replace all registered boundary spectrum paths in a SWAN INPUT line.
+   !!
+   !! For each known source spectrum path, this routine resolves a run-window
+   !! specific cached subset path and rewrites the line when replacement is
+   !! available.
+   !!
+   !! @param[inout] line       INPUT line that may contain spectrum filenames.
+   !! @param[in]    sr         SWAN runtime/configuration data.
+   !! @param[in]    run_start  Start of requested run window (seconds).
+   !! @param[in]    run_end    End of requested run window (seconds).
+   subroutine replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
+      use precision_basics, only: hp
+
+      implicit none
+
+      character(*), intent(inout) :: line
+      type(swan_type), intent(in) :: sr
+      real(hp), intent(in) :: run_start
+      real(hp), intent(in) :: run_end
+
+      integer :: ibound
+      integer :: isect
+
+      if (has_overall_sp2_boundary(sr) .and. len_trim(sr%specfile) > 0) then
+         call replace_cached_path(line, trim(sr%specfile), run_start, run_end)
+      end if
+
+      if (.not. associated(sr%bnd)) return
+
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%parread /= 1) cycle
+         if (.not. associated(sr%bnd(ibound)%spectrum)) cycle
+         do isect = 1, size(sr%bnd(ibound)%spectrum)
+            if (len_trim(sr%bnd(ibound)%spectrum(isect)) == 0) cycle
+            call replace_cached_path(line, trim(sr%bnd(ibound)%spectrum(isect)), run_start, run_end)
+         end do
+      end do
+   end subroutine replace_cached_boundary_spectrum_paths
+
+!
+!==============================================================================
+   !> Replace one source spectrum path in a line by its cached active path.
+   !!
+   !! @param[inout] line       INPUT line to update.
+   !! @param[in]    sourcefile Original source spectrum filename.
+   !! @param[in]    run_start  Start of requested run window (seconds).
+   !! @param[in]    run_end    End of requested run window (seconds).
+   subroutine replace_cached_path(line, sourcefile, run_start, run_end)
+      use precision_basics, only: hp
+
+      implicit none
+
+      character(*), intent(inout) :: line
+      character(*), intent(in) :: sourcefile
+      real(hp), intent(in) :: run_start
+      real(hp), intent(in) :: run_end
+
+      integer :: new_length
+      character(256) :: activefile
+      character(256) :: newline
+      integer :: old_length
+      integer :: pos
+
+      call resolve_cached_boundary_spectrum_path(sourcefile, run_start, run_end, activefile)
+      if (trim(activefile) == trim(sourcefile)) then
+         return
+      end if
+
+      pos = index(line, trim(sourcefile))
+      if (pos <= 0) then
+         return
+      end if
+
+      old_length = len_trim(sourcefile)
+      new_length = len_trim(activefile)
+      if (new_length <= 0) then
+         return
+      end if
+      if (len_trim(line) + max(0, new_length - old_length) > len(line)) then
+         return
+      end if
+
+      newline = ' '
+
+      if (pos > 1) then
+         newline(1:pos - 1) = line(1:pos - 1)
+      end if
+
+      newline(pos:pos + new_length - 1) = activefile(1:new_length)
+
+      if (pos + old_length <= len_trim(line)) then
+         newline(pos + new_length:) = line(pos + old_length:)
+      end if
+
+      line = newline
+   end subroutine replace_cached_path
+
+!
+!==============================================================================
+   !> Resolve active boundary spectrum file for the given run window.
+   !!
+   !! Delegates to boundary_spectral_cache and returns either the original
+   !! sourcefile or a generated cached subset file.
+   !!
+   !! @param[in]  sourcefile Original source spectrum filename.
+   !! @param[in]  run_start  Start of requested run window (seconds).
+   !! @param[in]  run_end    End of requested run window (seconds).
+   !! @param[out] activefile File that should be written into INPUT.
+   subroutine resolve_cached_boundary_spectrum_path(sourcefile, run_start, run_end, activefile)
+      use boundary_spectral_cache, only: resolve_boundary_spectral_file
+      use precision_basics, only: hp
+
+      implicit none
+
+      character(*), intent(in) :: sourcefile
+      real(hp), intent(in) :: run_start
+      real(hp), intent(in) :: run_end
+      character(*), intent(out) :: activefile
+
+      call resolve_boundary_spectral_file(sourcefile, run_start, run_end, activefile)
+   end subroutine resolve_cached_boundary_spectrum_path
+
 !
 !==============================================================================
    subroutine dealloc_swan(sr)
@@ -1625,11 +1825,11 @@ contains
          end if
          if (sr%swangridtype == SWAN_GRID_STRUCTURED) then
             call readgriddims(dom%curlif, dom%mxc, dom%myc)
-            !
-            ! poles? No, fences!
-            !
-            dom%mxc = dom%mxc - 1
-            dom%myc = dom%myc - 1
+         !
+         ! poles? No, fences!
+         !
+         dom%mxc = dom%mxc - 1
+         dom%myc = dom%myc - 1
          else
             dom%mxc = -999
             dom%myc = -999
@@ -1640,7 +1840,7 @@ contains
          dom%depfil = ''
          call prop_get(tmp_ptr, '*', 'BedLevelGrid', dom%depfil)
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
-            if (dom%depfil /= '') then
+         if (dom%depfil /= '') then
                write (*, *) 'SWAN_INPUT: BedLevelGrid is not supported for unstructured SWAN grids. Use BedLevel values on the unSWAN vertices.'
                call handle_errors_mdw(sr)
             end if
@@ -2553,6 +2753,8 @@ contains
       character(15) :: tendc
       character(15), external :: datetime_to_string
       character(256) :: fname
+      real(hp) :: run_end
+      real(hp) :: run_start
 !
 !! executable statements -------------------------------------------------------
 !
@@ -2564,21 +2766,6 @@ contains
          close (old_input)
          call wavestop(1, 'Unable to find file '//trim(filnam))
       end if
-      !
-      call scan_template_swanout_files(old_input, has_swanout1, has_swanout2, has_swanout3)
-      if (has_swanout1 .neqv. has_swanout2) then
-         call wavestop(1, 'INPUTTemplateFile must contain both SWANOUT1 and SWANOUT2, or neither')
-      endif
-      if (allocated(sr%add_out_names)) then
-         if (has_swanout1 .and. has_swanout2 .and. .not. has_swanout3) then
-            call wavestop(1, 'INPUTTemplateFile must contain SWANOUT3 when AdditionalOutput is used')
-         endif
-      endif
-      insert_swanout   = .not. has_swanout1
-      inserted_swanout = .false.
-      if (insert_swanout) then
-         write (*, '(a)') 'INPUTTemplateFile does not contain SWANOUT1/SWANOUT2; inserting D-Waves output requests'
-      endif
       !
       open (newunit=new_input, file='INPUT', form='formatted', status='replace')
 
@@ -2618,6 +2805,9 @@ contains
             ! SPEC for netcdf hotfiles, with format hot_inest_date_time.nc
             call create_hotfile_line(fname, inest, line, sr, wavedata)
          end if
+         
+         call replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
+         
          if (insert_swanout .and. .not. inserted_swanout .and. is_swan_compute_or_stop(line)) then
             call write_template_swanout_requests(new_input, calccount, sr, wavedata)
             inserted_swanout = .true.
@@ -2964,6 +3154,8 @@ contains
       integer :: myfr
       integer :: n
       integer :: nb
+      integer :: nactive
+      integer :: maxcopy
       integer :: npoints
       integer :: nsect
       integer :: orient
@@ -3001,6 +3193,7 @@ contains
       character(37) :: mudfil
       character(37) :: vegfil
       character(37) :: aicefil
+      character(256) :: active_specfile
       character(60) :: lijn
       character(60) :: outfirst
       character(256) :: line
@@ -3009,6 +3202,8 @@ contains
       character(4) :: copy
       type(swan_bnd), pointer :: bnd
       type(swan_dom), pointer :: dom
+      real(hp) :: run_end
+      real(hp) :: run_start
       !
       ! Do not add more variables to varnam1
       !
@@ -3026,6 +3221,15 @@ contains
       !
       tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
       write (outfirst, '(3a,f8.2,a)') "OUT ", tbegc, " ", sr%nonstat_interval, " MIN"
+      ! Boundary spectrum cache window:
+      ! - stationary/quasi-stationary: current time only
+      ! - non-stationary: full COMPUTE NONSTAT interval until tendc
+      run_start = wavedata%time%timsec
+      if (sr%modsim == 3) then
+         run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+      else
+         run_end = run_start
+      end if
 
       dom => sr%dom(inest)
       !
@@ -3196,10 +3400,10 @@ contains
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
          line(7:18) = 'UNSTRUCTURED'
       else
-         line(7:11) = 'CURV '
-         write (line(12:21), '(2(I4,1X))') dom%mxc, dom%myc
-         ! Write missing values in exactly the same format as used when writing the grid
-         write (line(22:80), '(A,2(E25.17,1X))') 'EXCEPT ', xymiss, xymiss
+      line(7:11) = 'CURV '
+      write (line(12:21), '(2(I4,1X))') dom%mxc, dom%myc
+      ! Write missing values in exactly the same format as used when writing the grid
+      write (line(22:80), '(A,2(E25.17,1X))') 'EXCEPT ', xymiss, xymiss
       endif
       line(82:83) = ' _'
       write (luninp, '(1X,A)') line
@@ -3235,18 +3439,18 @@ contains
          end select
          write (luninp, '(1X,A)') trim(line)
       else
-         line(1:13) = 'READ COOR 1. '
-         ind = index(curlif, ' ')
-         i = 14
-         line(i:i) = ''''''
-         line(15:14 + ind) = curlif
-         line(14 + ind:14 + ind) = ''''''
-         line(15 + ind:16 + ind) = ' _'
-         line(17 + ind:) = ' '
-         write (luninp, '(1X,A)') line
-         line = ' '
-         line(1:) = ' 4   0   1 FREE'
-         write (luninp, '(1X,A)') line
+      line(1:13) = 'READ COOR 1. '
+      ind = index(curlif, ' ')
+      i = 14
+      line(i:i) = ''''''
+      line(15:14 + ind) = curlif
+      line(14 + ind:14 + ind) = ''''''
+      line(15 + ind:16 + ind) = ' _'
+      line(17 + ind:) = ' '
+      write (luninp, '(1X,A)') line
+      line = ' '
+      line(1:) = ' 4   0   1 FREE'
+      write (luninp, '(1X,A)') line
       endif
       line = ' '
       line(1:2) = '$ '
@@ -3262,8 +3466,8 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:19) = 'BOTTOM UNSTRUCTURED'
          else
-            line(1:18) = 'BOTTOM CURV 0. 0. '
-            write (line(19:28), '(2(I4,1X))') dom%mxb, dom%myb
+         line(1:18) = 'BOTTOM CURV 0. 0. '
+         write (line(19:28), '(2(I4,1X))') dom%mxb, dom%myb
          endif
          write (luninp, '(1X,A)') line
       else
@@ -3316,8 +3520,8 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:19) = 'CURREN UNSTRUCTURED'
          else
-            line(1:18) = 'CURREN CURV 0. 0. '
-            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         line(1:18) = 'CURREN CURV 0. 0. '
+         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
          endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
@@ -3351,8 +3555,8 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:18) = 'AICE UNSTRUCTURED'
          else
-            line(1:18) = 'AICE CURV 0. 0. '
-            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         line(1:18) = 'AICE CURV 0. 0. '
+         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
          endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
@@ -3374,8 +3578,8 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:18) = 'MUDL UNSTRUCTURED'
          else
-            line(1:18) = 'MUDL CURV 0. 0. '
-            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         line(1:18) = 'MUDL CURV 0. 0. '
+         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
          endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
@@ -3399,8 +3603,8 @@ contains
                if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
                   line(1:22) = 'NPLANTS UNSTRUCTURED'
                else
-                  line(1:19) = 'NPLANTS CURV 0. 0. '
-                  write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+               line(1:19) = 'NPLANTS CURV 0. 0. '
+               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
                endif
                write (luninp, '(1X,A)') lijn
                write (luninp, '(1X,A)') trim(line)
@@ -3423,8 +3627,8 @@ contains
             if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
                line(1:22) = 'NPLANTS UNSTRUCTURED'
             else
-               line(1:19) = 'NPLANTS CURV 0. 0. '
-               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+            line(1:19) = 'NPLANTS CURV 0. 0. '
+            write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
             endif
             write (luninp, '(1X,A)') lijn
             write (luninp, '(1X,A)') trim(line)
@@ -3550,15 +3754,15 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:18) = 'FRIC UNSTRUCTURED'
          else
-            line(1:18) = 'FRIC CURV 0. 0.   '
-            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
-            if (sr%excval > -998.99 .or. sr%excval < -999.01) then
-               line(29:37) = ' EXCVAL '
-               write (line(38:49), '(F12.4)') sr%excval
-               line(50:) = ' '
-            else
-               line(29:) = ' '
-            end if
+         line(1:18) = 'FRIC CURV 0. 0.   '
+         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         if (sr%excval > -998.99 .or. sr%excval < -999.01) then
+            line(29:37) = ' EXCVAL '
+            write (line(38:49), '(F12.4)') sr%excval
+            line(50:) = ' '
+         else
+            line(29:) = ' '
+         end if
          endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
@@ -3597,23 +3801,20 @@ contains
          do bound = 1, nb
             bnd => sr%bnd(bound)
             if (bnd%bndtyp == 4) then
+               call resolve_cached_boundary_spectrum_path(trim(sr%specfile), run_start, run_end, active_specfile)
+               if (len(trim(active_specfile)) == 0) then
+                  write (*, *) 'SWAN_INPUT: could not create temporary spectrum input file'
+                  call handle_errors_mdw(sr)
+               end if
                line = ' '
                line(1:10) = 'BOUN NEST '
-               line(11:11) = ''''''
-               ind = index(sr%specfile, ' ') - 1
-               line(12:12 + ind) = sr%specfile
-               line(12 + ind:12 + ind) = ''''''
-               line(12 + ind + 1:12 + ind + 7) = ' CLOSED'
+               line = trim(line)//' '''//trim(active_specfile)//''''//' CLOSED'
                write (luninp, '(1X,A)') line
                cycle
             elseif (bnd%bndtyp == 5) then
                line = ' '
-               line(1:11) = 'BOUN WWIII '
-               line(12:12) = ''''''
-               ind = index(sr%specfile, ' ') - 1
-               line(13:13 + ind) = sr%specfile
-               line(13 + ind:13 + ind) = ''''''
-               line(13 + ind + 1:13 + ind + 10) = ' FREE OPEN'
+               line(1:9) = 'BOUN WW3 '       ! manual p54
+               line = trim(line)//' '''//trim(sr%specfile)//''''//' FREE OPEN'
                write (luninp, '(1X,A)') line
                cycle
             end if
@@ -3654,26 +3855,6 @@ contains
             nsect = bnd%nsect
             convar = bnd%convar
             if (bnd%bndtyp == 6) then
-               if (sr%swangridtype /= SWAN_GRID_UNSTRUCTURED) then
-                  write (*, *) 'SWAN_INPUT: boundary marker definition is only valid for unstructured SWAN grids'
-                  call wavestop(1, 'Boundary marker definition is only valid for unstructured SWAN grids')
-               endif
-               if (dom%unstructured_grid_generator /= SWAN_UNSTRUC_TRIANGLE .and. &
-                 & dom%unstructured_grid_generator /= SWAN_UNSTRUC_EASYMESH) then
-                  write (*, *) 'SWAN_INPUT: boundary marker definition requires a Triangle or Easymesh unSWAN grid'
-                  call wavestop(1, 'Boundary marker definition requires a Triangle or Easymesh unSWAN grid')
-               endif
-               if (.not.allocated(dom%unstructured_boundary_markers)) then
-                  write (*, *) 'SWAN_INPUT: unSWAN boundary markers are not available'
-                  call wavestop(1, 'unSWAN boundary markers are not available')
-               endif
-               if (.not.any(dom%unstructured_boundary_markers == bnd%marker_id)) then
-                  write (*, '(a,i0)') 'SWAN_INPUT: boundary MarkerId not found in unSWAN grid file: ', bnd%marker_id
-                  call wavestop(1, 'Boundary MarkerId not found in unSWAN grid file')
-               endif
-               write(line, '(a,i0,a)') 'BOUN SIDE ', bnd%marker_id, ' _'
-               write (luninp, '(1X,A)') trim(line)
-            elseif (bnd%bndtyp == 1) then
                !              Side
                line(6:) = 'SIDE'
                orient = bnd%orient
@@ -3733,14 +3914,13 @@ contains
                                   & bnd%direction(1), bnd%dirspread(1)
                else
                   !                    Read conditions from file
-                  ind = index(bnd%spectrum(1), ' ') - 1
+                  call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(1)), run_start, run_end, active_specfile)
+                  if (len(trim(active_specfile)) == 0) then
+                     write (*, *) 'SWAN_INPUT: could not create temporary spectrum input file'
+                     call handle_errors_mdw(sr)
+                  end if
                   line(26:30) = 'FILE '
-                  i = 31
-                  line(i:i) = ''''''
-                  line(i + 1:i + ind) = bnd%spectrum(1)
-                  i = i + ind
                   line(i + 1:i + 1) = ''''''
-                  line(i + 3:i + 4) = ' 1'
                end if
                write (luninp, '(1X,A)') line
                rindx = rindx + 5
@@ -3769,20 +3949,19 @@ contains
                   do sect = 1, nsect
                      write (line(30:38), '(F9.2)') bnd%distance(sect)
                      line(39:39) = ' '
-                     i = 40
-                     line(i:i) = ''''''
-                     ind = index(bnd%spectrum(sect), ' ') - 1
-                     line(i + 1:i + ind) = bnd%spectrum(sect)
-                     i = i + ind
-                     line(i + 1:i + 1) = ''''''
-                     line(i + 3:i + 4) = ' 1'
+                     call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), run_start, run_end, active_specfile)
+                     if (len(trim(active_specfile)) == 0) then
+                        write (*, *) 'SWAN_INPUT: could not create temporary spectrum input file'
+                        call handle_errors_mdw(sr)
+                     end if
+                     line = trim(line)//' '''//trim(active_specfile)//''''//' 1'
                      if (sect < nsect) then
-                        line(79:) = '&'
+                        line = trim(line)//' &'
                      end if
                      rindx = rindx + 5
                      cindx = cindx + 1
                      write (luninp, '(1X,A)') line
-                     line(1:79) = ' '
+                     line(1:len(trim(line))) = ' '
                   end do
                end if
             end if
@@ -4648,7 +4827,7 @@ contains
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
          line = "SPEC 'COMPGRID' RELATIVE '"//trim(fname)//"'"
       else
-         line = "SPEC 'COMPGRID' RELATIVE '"//trim(fname)//"' MDGRID"
+      line = "SPEC 'COMPGRID' RELATIVE '"//trim(fname)//"' MDGRID"
       end if
 
    end subroutine create_hotfile_line

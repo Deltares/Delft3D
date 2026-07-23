@@ -72,6 +72,7 @@ contains
       use m_ec_interpolationsettings
       use unstruc_channel_flow
       use m_sobekdfm
+      use m_fm_icecover, only: default_fm_icecover
       use m_waves, only: default_waves
       use m_save_ugrid_state
       use m_xbeach_avgoutput, only: default_xbeach_avgoutput
@@ -157,6 +158,8 @@ contains
 
       call default_flow()
 
+      call default_fm_icecover()
+
       call default_interpolationsettings()
 
       call default_xbeach_avgoutput()
@@ -185,6 +188,10 @@ contains
 
       if (allocated(kbndz)) then
          deallocate(kbndz)
+      end if
+
+      if (allocated(extfile_new_list)) then
+         deallocate(extfile_new_list)
       end if
 
       call cleanup_prefetch_arrays()

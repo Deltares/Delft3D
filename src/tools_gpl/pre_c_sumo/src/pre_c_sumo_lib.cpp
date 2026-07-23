@@ -7,6 +7,7 @@
 #include <map>
 
 #include "csumo_settings_reader.hpp"
+#include "connected_sinks_sources.hpp"
 #include "coupling_steps.hpp"
 
 namespace
@@ -142,22 +143,16 @@ namespace pre_c_sumo
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
         // Set sources_sinks mesh
+        // ConnectedSinkSources connected_sink_sources;
         // TESTDATA based on file NF2FF__FlowFM_SubMod001_120.000.xml
         // TODO: Just-In-Time remeshing?
         SourcesSinks sources_sinks;
-        sources_sinks.addCoordinates({
-            250.000, 350.048,  // Entrainment: sink2_source1
-            250.000, 350.048,  // Entrainment: sink2_source2
-            1050.000, 350.365, // Entrainment: source1_sink2
-            1050.500, 350.365, // Entrainment: source2_sink2
-            1050.000, 350.365, // Discharge: source1
-            1050.500, 350.365, // Discharge: source2
-            1500.6, 1000.6,    // Intake from C-SUMO settings file, if no intakes in NF2FF file
-        });
+        sources_sinks.setCoordinatesDimension(5);
         participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
             sendSourcesSinksToFF(participant, sources_sinks);
+            // connected_sink_sources.write_to_precice(participant, "sources_sink_nodes", sources_sinks.precice_ids);
         }
 
         participant.initialize();
@@ -168,11 +163,13 @@ namespace pre_c_sumo
 
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
-            waitForNF2FFFiles(csumo_settings.value());
-            readNF2FFFiles(csumo_settings.value());
-            convertNFToSourcesSinks(csumo_settings.value());
+            waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+            const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
+            ConnectedSinkSources connected_sink_sources =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
 
-            sendSourcesSinksToFF(participant, sources_sinks);
+            // sendSourcesSinksToFF(participant, sources_sinks);
+            connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;

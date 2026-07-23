@@ -53,8 +53,7 @@ contains
         real, dimension(:,:,:)                 :: AC2
 
         integer                                :: jx, jy, ix, iy, indx, iindx, &
-                                                  ncid, ri, is, global_ip, local_ip, nglob
-        integer                                :: spc_as_map_i
+                                                  ncid, ri, is
         integer, dimension(:), allocatable     :: ig2loc
         type(recordaxe_type)                   :: recordaxe
         type(mapgrid_type)                     :: mapgrid
@@ -64,12 +63,21 @@ contains
         real, dimension(:,:,:, :), allocatable :: density
         logical                                :: spc_as_map, STPNOW
 
+        spc_as_map = .false.
+        spc_as_map_i = 0
+
         if ( IAMMASTER ) then
             call open_ncfile( ncfile, 'read', ncid)
 
             call swn_hre_get_grids(ncid, recordaxe, spcgrid, mapgrid, pntgrid, spc_as_map)
             if ( STPNOW() ) return
+            if ( spc_as_map ) spc_as_map_i = 1
+        end if
+
+        call SWBROADC (spc_as_map_i, 1, SWINT)
+        spc_as_map = spc_as_map_i /= 0
             
+        if ( IAMMASTER ) then
             ! For now, always pick the last field. The problem is that until the COMPUTE
             ! command is called, we have no idea at what time the computation will start
             ! and hence what record index to pick
@@ -115,21 +123,21 @@ contains
                 end do
                 deallocate(ig2loc)
             else
-                do jx=1,MXCGL
-                    if ( IAMMASTER ) then
-                        edloc(:,:) = 0.
-                        if ( jx <= size(density, 3) ) then
-                            edloc = density(:,:, jx, 1)
-                        end if
+            do jx=1,MXCGL
+                if ( IAMMASTER ) then
+                    edloc(:,:) = 0.
+                    if ( jx <= size(density, 3) ) then
+                        edloc = density(:,:, jx, 1)
                     end if
-                    call SWBROADC (edloc, MDC*MSC, SWREAL)
+                end if
+                call SWBROADC (edloc, MDC*MSC, SWREAL)
                     if ( jx >= 1 .and. jx <= size(AC2, 3) ) then
                         do is=1, MSC
                             ! energy to action density
                             AC2(:,is, jx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
                         end do
                     end if
-                end do
+            end do
             end if
         else
             do jx=1,MXCGL

@@ -11,7 +11,7 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.11"
+version = "2026.1"
 
 project {
 
@@ -49,6 +49,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
+    template(TemplateBuildConcurrency)
 
     subProject {
         id("Linux")
@@ -59,10 +60,12 @@ project {
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildType(LinuxDevContainer)
+            buildType(LinuxPython)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
+                LinuxPython,
             )
         }        
         subProject {
@@ -99,7 +102,7 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsTestEnvironment)
         buildType(WindowsCollectEnvironment)
         buildType(WindowsConanPackages)
@@ -110,7 +113,7 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironment,
             WindowsTestEnvironment,
             WindowsCollectEnvironment,
             WindowsConanPackages,
