@@ -25,8 +25,8 @@ class LibLoader:
     Search order (first match wins):
       1. an explicit override — the ``dll_dir`` argument, else the ``DFLOWFM_IO_LIB_DIR``
          environment variable — so a developer can always point at a specific build;
-      2. the copy bundled next to this package (``_lib/`` — the installed-wheel case);
-      3. common CMake build-output directories under the project root (the developer tree).
+      2. the copy bundled next to this package (``_lib/``), which the ``dflowfm_io_api`` build
+         stages after every compile, covering both the installed-wheel and developer-tree cases.
 
     The explicit override deliberately outranks the bundled copy: if you set it, you mean it.
     """
@@ -35,16 +35,6 @@ class LibLoader:
         self.dll_name = _platform_library_name()
         self.dll_dir = dll_dir
         self._loaded: ctypes.CDLL | None = None
-
-    @staticmethod
-    def _project_root() -> Path | None:
-        """Walk up from this file to the top-most directory that contains a ``CMakeLists.txt``."""
-        directory = Path(__file__).resolve().parent
-        root: Path | None = None
-        for candidate in (directory, *directory.parents):
-            if (candidate / "CMakeLists.txt").is_file():
-                root = candidate
-        return root
 
     def _override_dir(self) -> str | None:
         """The explicit library directory, if any: constructor argument or environment variable."""
@@ -62,11 +52,6 @@ class LibLoader:
 
         # Bundled at the package root (dflowfm_io/_lib), one level up from this base subpackage.
         dirs.append(Path(__file__).resolve().parents[1] / "_lib")
-
-        root = self._project_root()
-        if root:
-            for sub in ("build", "build/Debug", "build/Release", "build/RelWithDebInfo", "build/MinSizeRel"):
-                dirs.append(root / sub)
 
         return dirs
 
