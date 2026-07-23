@@ -6,6 +6,7 @@ shares. See :class:`LibLoader` for the search order.
 """
 
 import ctypes
+import os
 import platform
 from pathlib import Path
 
@@ -38,8 +39,6 @@ class LibLoader:
 
     def _override_dir(self) -> str | None:
         """The explicit library directory, if any: constructor argument or environment variable."""
-        import os
-
         return self.dll_dir or os.environ.get("DFLOWFM_IO_LIB_DIR") or None
 
     def _candidate_dirs(self) -> list[Path]:
@@ -69,11 +68,8 @@ class LibLoader:
         if self._loaded is None:
             path = self.find()
             # Make sibling runtime DLLs next to the library discoverable (Windows).
-            if platform.system() == "Windows":
-                import os
-
-                if hasattr(os, "add_dll_directory"):
-                    os.add_dll_directory(str(path.parent))
+            if platform.system() == "Windows" and hasattr(os, "add_dll_directory"):
+                os.add_dll_directory(str(path.parent))
             self._loaded = ctypes.CDLL(str(path))
         return self._loaded
 
