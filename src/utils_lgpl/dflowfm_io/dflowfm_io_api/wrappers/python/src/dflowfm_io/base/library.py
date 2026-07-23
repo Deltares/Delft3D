@@ -2,7 +2,7 @@
 
 Importing this module loads the shared library once and exposes it as :data:`lib` — a single
 process-wide :class:`Lib` handle that every other module (``bindings``, ``errors``, ``mdu``)
-shares. See :class:`LibLoader` for the search order.
+shares. See :class:`LibLoader` for where it is loaded from.
 """
 
 import ctypes
@@ -23,45 +23,24 @@ def _platform_library_name() -> str:
 class LibLoader:
     """Locate and load the native dflowfm_io_api library.
 
-    Search order (first match wins):
-      1. an explicit override — the ``dll_dir`` argument, else the ``DFLOWFM_IO_LIB_DIR``
-         environment variable — so a developer can always point at a specific build;
-      2. the copy bundled next to this package (``_lib/``), which the ``dflowfm_io_api`` build
-         stages after every compile, covering both the installed-wheel and developer-tree cases.
-
-    The explicit override deliberately outranks the bundled copy: if you set it, you mean it.
+    The library lives next to this package in ``_lib/``, where the ``dflowfm_io_api`` build stages it
+    after every compile — the single, fixed location for both the installed wheel and the developer
+    tree.
     """
 
-    def __init__(self, dll_dir: str | None = None):
+    def __init__(self):
         self.dll_name = _platform_library_name()
-        self.dll_dir = dll_dir
         self._loaded: ctypes.CDLL | None = None
 
-    def _override_dir(self) -> str | None:
-        """The explicit library directory, if any: constructor argument or environment variable."""
-        return self.dll_dir or os.environ.get("DFLOWFM_IO_LIB_DIR") or None
-
-    def _candidate_dirs(self) -> list[Path]:
-        """The directories to search, in precedence order."""
-        dirs: list[Path] = []
-
-        override = self._override_dir()
-        if override:
-            dirs.append(Path(override))
-
-        # Bundled at the package root (dflowfm_io/_lib), one level up from this base subpackage.
-        dirs.append(Path(__file__).resolve().parents[1] / "_lib")
-
-        return dirs
-
     def find(self) -> Path:
-        """Return the path to the native library, or raise if it cannot be found."""
-        searched = [directory / self.dll_name for directory in self._candidate_dirs()]
-        found = next((candidate for candidate in searched if candidate.is_file()), None)
-        if found is None:
-            locations = "\n  ".join(str(path) for path in searched)
-            raise RuntimeError(f"Could not find {self.dll_name}. Searched:\n  {locations}")
-        return found
+        """Return the path to the bundled native library, or raise if it has not been staged."""
+        # Bundled at the package root (dflowfm_io/_lib), one level up from this base subpackage.
+        path = Path(__file__).resolve().parents[1] / "_lib" / self.dll_name
+        if not path.is_file():
+            raise RuntimeError(
+                f"Could not find {path}. Build the dflowfm_io_api target so the library is staged into _lib."
+            )
+        return path
 
     def load(self) -> ctypes.CDLL:
         """Load the native library (once) and return the shared :class:`ctypes.CDLL` handle."""
