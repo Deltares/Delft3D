@@ -1,9 +1,8 @@
 from conan import ConanFile
 from conan.tools.files import save
 
-
 class Delft3DRecipe(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
+    settings = "os", "compiler", "build_type", "arch", "fortran_compiler"
     generators = "CMakeDeps"
 
     def requirements(self):
@@ -15,6 +14,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("proj/9.3.1")
         self.requires("gdal/3.12.1")
         self.requires("expat/2.8.0")
+        self.requires("petsc/3.25.3")
 
     def generate(self):
         save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")

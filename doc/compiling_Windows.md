@@ -48,6 +48,10 @@ Deltares developers download them directly and external developers build them lo
   ```
   conan --version
   ```
+- External developers and developers of Conan packages on Windows need [Cygwin](https://www.cygwin.com/)
+  to build the PETSc Conan package from source. Install the 64-bit version in `C:\cygwin64` and
+  select the `make` and `python3` packages in the Cygwin installer. Developers with access to the Deltares
+  network are not required to install Cygwin if they only consume Conan packages.
 
 **Note**
 - We are currently using Visual Studio 2022 and Intel oneAPI 2024.2 for the official release.
@@ -70,6 +74,10 @@ Before building for the first time you need to install the Conan profile (compil
 description), configure some conan settings, and configure the remotes from where Conan downloads packages.
 The helper script [run_conan.py](../run_conan.py) takes care of this.
 Run it from the repository root.
+
+The script uses the repository's default Conan profile. Setting `CONAN_DEFAULT_PROFILE` overrides that
+selection and should be done at your own risk: it can keep selecting an outdated or incompatible profile.
+When the repository's default profile changes, update the environment variable to the new profile name or unset it.
 
 ### Deltares developers (with Nexus access)
 
@@ -113,10 +121,15 @@ From the repository root:
 ```
 python run_conan.py initialize external
 ```
-This installs the same compiler profile and settings.
-You will build all third-party dependencies locally from the recipes in [conan/recipes](../conan/recipes).
-Once built, the packages are cached in `~/.conan2` and reused on
-subsequent builds. You only have to rebuild them when the recipes change.
+This installs the same compiler profile and settings. Please check the conan profile in your local Conan
+cache. Use `conan profile list` to find its current name and `conan profile path <profile-name>` to
+locate it. If you installed Cygwin in a
+different location than `C:\cygwin64`, then change your Conan profile to point to Cygwin's `bash.exe`
+using the `tools.microsoft.bash:path` option.
+
+Next, you can build all third-party dependencies locally from the recipes in
+[conan/recipes](../conan/recipes). Once built, the packages are cached in `%USERPROFILE%\.conan2` and
+reused on subsequent builds. You only have to rebuild them when the recipes change.
 
 When invoking the build script you will need to pass the additional `--build-dependencies` flag (see below).
 
@@ -176,22 +189,15 @@ to build the debug version of the Delft3D FM binaries.
 
 ## Power-user workflow (raw Conan + CMake)
 
-`run_conan.py` and `build.py` are thin wrappers around `conan` and `cmake` that cover the common
-use cases (and the more complex orchestration required by TeamCity). If you want full control,
-for example to iterate on CMake without re-running Conan, or to use a non-default profile,
-you can drive `conan` and `cmake` directly inside the build container.
+Use Conan and CMake directly when you want to manage dependency installation and CMake
+configuration separately, for example to iterate on CMake without reinstalling dependencies.
 
-Make sure the Delft3D Conan configuration (profiles, settings, remotes) is installed in your
-Conan home. You can do this with the raw `conan` command:
+Install the repository's Conan configuration (profiles, settings, and remotes) in your Conan home:
 ```bat
 conan config install conan\config
 ```
-This is what `python run_conan.py initialize deltares` does under the hood. The `external`
-variant additionally removes the Nexus remotes and registers [conan/recipes](../conan/recipes)
-as a `local-recipes-index` remote. See [run_conan.py](../run_conan.py) for details.
-
-The Conan profile is `delft3d_windows_msvc_194` and the lockfile [conan.lock](../conan.lock)
-pins recipe revisions for reproducibility.
+Use `conan profile list` to find an installed profile compatible with your Visual Studio version.
+The lockfile [conan.lock](../conan.lock) pins recipe revisions for reproducibility.
 
 The Visual Studio generator is multi-config, so a single build directory hosts `Debug`, `Release`
 and `RelWithDebInfo`. The third-party packages themselves are always built/downloaded as
@@ -201,18 +207,20 @@ Run `conan install` once per configuration you want to consume:
 ```bat
 :: 1. Install dependencies for all three configurations.
 ::    The first call may build packages (or download them from Nexus). The other two reuse the cache.
-conan install . --profile:all=delft3d_windows_msvc_194 ^
+::    Replace the value below with the applicable name from `conan profile list`.
+set "DELFT3D_CONAN_PROFILE=<PROFILE_FROM_CONAN_PROFILE_LIST>"
+conan install . --profile:all=%DELFT3D_CONAN_PROFILE% ^
       --settings:all build_type=Release ^
       --output-folder=build_fm-suite\conan ^
       --lockfile=conan.lock
 
-conan install . --profile:all=delft3d_windows_msvc_194 ^
+conan install . --profile:all=%DELFT3D_CONAN_PROFILE% ^
       --settings:all build_type=Release ^
       --settings:all &:build_type=Debug ^
       --output-folder=build_fm-suite\conan ^
       --lockfile=conan.lock
 
-conan install . --profile:all=delft3d_windows_msvc_194 ^
+conan install . --profile:all=%DELFT3D_CONAN_PROFILE% ^
       --settings:all build_type=Release ^
       --settings:all &:build_type=RelWithDebInfo ^
       --output-folder=build_fm-suite\conan ^
@@ -231,11 +239,11 @@ cmake --install build_fm-suite --config Debug
 To build missing dependencies from source (e.g. after changing a recipe), add `--build=missing` to
 the first `conan install` call:
 ```bat
-conan install . --profile:all=delft3d_windows_msvc_194 ^
+conan install . --profile:all=%DELFT3D_CONAN_PROFILE% ^
       --settings:all build_type=Release ^
       --output-folder=build_fm-suite\conan ^
       --lockfile=conan.lock ^
       --build=missing
 ```
 Use `--build=*` (and `--remote=local-recipes`) instead to rebuild every package from the local
-recipes only. This is what external developers do via `build.py --build-dependencies`.
+recipes only.
