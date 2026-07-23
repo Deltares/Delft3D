@@ -117,6 +117,17 @@ module = [
 ]
 ignore_missing_imports = true
 
+# Coverage settings (pytest-cov / coverage.py)
+# https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.run]
+# This prevents a strange error when running `pytest` with coverage. For some reason this doesn't
+# work well in combination with the `netCDF4` package which includes `Cython` code: A file with
+# `.pyx` extension that `coverage.py` tries to parse as python code and gives the following
+# warning: https://coverage.readthedocs.io/en/7.15.2/messages.html#warning-couldnt-parse
+omit = [
+    "src/netCDF4/*",
+]
+
 # Pytest settings
 # https://docs.pytest.org/en/stable/reference/customize.html
 [tool.pytest.ini_options]
