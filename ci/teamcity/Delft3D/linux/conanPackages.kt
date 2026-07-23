@@ -51,6 +51,7 @@ object LinuxConanPackages : BuildType({
                 set -eo pipefail
 
                 python run_conan.py initialize deltares --ci
+                conan remote disable deltares-conan-center-proxy
 
                 python run_conan.py install %conan_build_option% --ci --output-folder build
 

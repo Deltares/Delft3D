@@ -54,6 +54,9 @@ object WindowsConanPackages : BuildType({
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
+                conan remote disable deltares-conan-center-proxy
+                if %%errorlevel%% neq 0 exit /b %%errorlevel%%
+
                 python run_conan.py install %conan_build_option% --ci --output-folder build
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
