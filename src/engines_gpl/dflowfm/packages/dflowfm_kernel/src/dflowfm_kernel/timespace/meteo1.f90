@@ -29,26 +29,23 @@
 
 module m_itdate
    use precision, only: dp
-   implicit none
-   private
 
-   character(len=8), public :: refdat
-   integer, public :: itdate !< should be user specified for (asc routines)
-   integer, public :: jul0, imonth0, iday0, iyear0
-   real(kind=dp), public :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+   implicit none(type, external)
+
+   character(len=8) :: refdat
+   integer :: itdate !< should be user specified for (asc routines)
+   integer :: jul0
+   integer :: imonth0
+   integer :: iday0
+   integer :: iyear0
+   real(kind=dp) :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+
 end module m_itdate
 
-! ==========================================================================
-
-!>
 module timespace_read
-!!--description-----------------------------------------------------------------
-!
-!!--pseudo code and references--------------------------------------------------
-!
-!!--declarations----------------------------------------------------------------
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    integer, parameter :: maxnamelen = 256
    real(kind=dp), parameter :: dmiss_default = -999.0_dp ! Default missing value in meteo arrays
@@ -62,10 +59,6 @@ module timespace_read
    real(kind=dp), private, parameter :: earthrad = 6378137.0_dp ! Mathworld, IUGG
 
 contains
-   !
-   !
-   ! ==========================================================================
-   !>
    !> Parses an UDUnit-conventions datetime unit string.
    !! TODO: replace this by calling C-API from UDUnits(-2).
    function parse_ud_timeunit(timeunitstr, iunit, iyear, imonth, iday, ihour, imin, isec) result(ierr)
@@ -3338,7 +3331,9 @@ contains
       !   ! return?
       !end if
 
-      if (method == 4) then ! polyfil
+      select case (method)
+
+      case(METHOD_CONSTANT) ! polyfil
 
          call savepol()
          call reapol(minp0, 0)
