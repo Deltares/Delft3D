@@ -13,7 +13,7 @@ if (WIN32)
 
     if(NOT DEFINED ENV{ONEAPI_ROOT} OR "$ENV{ONEAPI_ROOT}" STREQUAL "")
         message(FATAL_ERROR
-            "ONEAPI_ROOT is not set. Build from an Intel OneApi command prompt or manually set the environment."
+            "ONEAPI_ROOT is not set. Configure from an Intel OneApi command prompt or manually set the environment."
         )
     endif()
 
