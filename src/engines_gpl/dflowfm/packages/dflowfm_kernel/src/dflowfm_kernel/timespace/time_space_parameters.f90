@@ -89,6 +89,7 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: METHOD_BILINEAR = 7
    integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
@@ -207,6 +208,8 @@ contains
          method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
+      case ('bilinear')
+         method = METHOD_BILINEAR
       case default
          method = METHOD_UNKNOWN
       end select
