@@ -10,6 +10,18 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
 if (WIN32)
     add_compile_definitions(NOMINMAX)
+
+    if(NOT DEFINED ENV{ONEAPI_ROOT} OR "$ENV{ONEAPI_ROOT}" STREQUAL "")
+        message(FATAL_ERROR
+            "ONEAPI_ROOT is not set. Build from an Intel OneApi command prompt or manually set the environment."
+        )
+    endif()
+
+    if(NOT IS_DIRECTORY "$ENV{ONEAPI_ROOT}")
+        message(FATAL_ERROR
+            "ONEAPI_ROOT does not point to an existing directory: '$ENV{ONEAPI_ROOT}'."
+        )
+    endif()
 endif()
 
 message(STATUS "Configuring")
