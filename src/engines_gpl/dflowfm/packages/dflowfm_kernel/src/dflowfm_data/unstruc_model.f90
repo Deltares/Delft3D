@@ -3152,9 +3152,7 @@ contains
       if (writeall .or. locsaltmax /= 10.0_dp) then
          call prop_set(prop_ptr, 'numerics', 'LocSaltMax', locsaltmax, 'maximum salinity for case of lock exchange')
       end if
-      if (writeall .or. numlimdt_baorg > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
-      end if
+      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
       if (writeall .or. baorgfracmin > 0) then
          call prop_set(prop_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin, 'Cell area = max(orgcellarea*Baorgfracmin, cutcell area) ')
       end if
@@ -3191,7 +3189,6 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
-      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
 
       ! Physics
       call prop_set(prop_ptr, 'physics', 'unifFrictCoef', frcuni, 'Uniform friction coefficient [the unit depends on unifFrictType].')
