@@ -1,7 +1,7 @@
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
-from conan.tools.files import copy, load, save
+from conan.tools.files import load, save
 from conan.tools.scm import Git
 import os
 
@@ -11,6 +11,7 @@ class TriangleConan(ConanFile):
     name = "triangle"
     license = "Custom"
     description = "A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator."
+    # The Delft3D copy contains 64-bit and modern compiler fixes that are absent upstream.
     url = "https://github.com/Deltares/Delft3D"
     homepage = "https://www.cs.cmu.edu/~quake/triangle.html"
     topics = ("triangle", "delaunay", "triangulation", "mesh")
@@ -43,6 +44,7 @@ class TriangleConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables["CMAKE_INSTALL_LIBDIR"] = "lib"
         tc.generate()
 
     def build(self):
@@ -57,10 +59,9 @@ class TriangleConan(ConanFile):
         )
 
     def package(self):
+        cmake = CMake(self)
+        cmake.install()
         save(self, os.path.join(self.package_folder, "licenses", "LICENSE"), self._extract_license())
-        copy(self, "triangle.h", src=self._triangle_source_folder, dst=os.path.join(self.package_folder, "include"))
-        copy(self, "*.a", src=self.build_folder, dst=os.path.join(self.package_folder, "lib"), keep_path=False)
-        copy(self, "*.lib", src=self.build_folder, dst=os.path.join(self.package_folder, "lib"), keep_path=False)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_target_name", "triangle::triangle")
