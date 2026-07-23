@@ -6,7 +6,7 @@ aiobotocore==3.8.0
     #   s3fs
 aiohappyeyeballs==2.7.1
     # via aiohttp
-aiohttp==3.14.2
+aiohttp==3.14.3
     # via
     #   aiobotocore
     #   aiohttp-retry
@@ -171,7 +171,7 @@ funcy==2.0
     #   gto
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.54
+gitpython==3.1.55
     # via scmrepo
 grandalf==0.8
     # via dvc
@@ -358,8 +358,9 @@ scmrepo==3.6.2
     #   gto
 semver==3.0.4
     # via gto
-setuptools==83.0.0
+setuptools==81.0.0
     # via
+    #   deltares-testbench (pyproject.toml)
     #   bmi-python
     #   zc-lockfile
 shortuuid==1.0.13

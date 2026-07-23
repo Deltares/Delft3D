@@ -23,6 +23,7 @@ authors = [
 requires-python = ">= 3.11"
 dependencies = [
     "bmi-python ~= 0.3.0",
+    "setuptools < 82.0.0", # Version 82.0.0 removed `pkg_resources` module that `bmi-python` unfortunately depends on
     "pywin32 ; platform_system == 'Windows'",  # Required for Windows to access the registry.
     "netCDF4 ~= 1.7.2",
     "lxml ~= 5.4.0",
