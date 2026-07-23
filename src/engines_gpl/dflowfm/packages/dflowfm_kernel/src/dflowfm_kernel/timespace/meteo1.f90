@@ -3227,12 +3227,9 @@ contains
          end if
       end if
    end subroutine operate
-   !
-   !
-   ! ==========================================================================
-   !>
-   function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
 
+   function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
+      use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING
       use kdtree2Factory
       use m_samples
       use m_netw
@@ -3259,55 +3256,45 @@ contains
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
       use m_filez, only: oldfil, doclose, newfil
 
-      implicit none
-
       logical :: success
 
+      ! Arguments
+      real(kind=dp), dimension(nx), intent(in) :: xu
+      real(kind=dp), dimension(nx), intent(in) :: yu
+      real(kind=dp), dimension(nx), intent(out) :: zu
       integer, intent(in) :: nx
-      real(kind=dp), intent(in) :: xu(nx)
-      real(kind=dp), intent(in) :: yu(nx)
-      real(kind=dp), intent(out) :: zu(nx)
-
-      character(*), intent(in) :: filename ! file name for meteo data file
-      integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method ! time/space interpolation method
-      ! 4 : inside polygon
-      ! 5 : triangulation
-      ! 6 : averaging
-      ! 7 : index triangulation
-      ! 8 : smoothing
-      ! 9 : internal diffusion
+      character(*), intent(in) :: filename !< file name for meteo data file
+      integer, intent(in) :: filetype !< spw, arcinfo, uniuvp etc
+      integer, intent(in) :: method !< time/space interpolation method
       integer, intent(in) :: operand
-      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
-      integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
-      ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
-      integer, intent(in), optional :: kcc(nx)
+      real(kind=dp), dimension(:), intent(in) :: transformcoef !< Transformation coefficients
+      integer, intent(in) :: iprimpos !< only needed for averaging, position of primitive variables in network
+                                      !! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
+      integer, dimension(nx), intent(in), optional :: kcc
 
-      real(kind=dp), allocatable :: zh(:)
+      ! Local variables
       integer :: ierr
       integer :: minp0, inside, k, jdla, mout
-      real(kind=dp), allocatable :: xx(:, :), yy(:, :)
-      integer, allocatable :: nnn(:)
-
-      real(kind=dp), allocatable :: xxx(:), yyy(:)
-      integer, allocatable :: LnnL(:), Lorg(:)
-
-      real(kind=dp) :: zz
-
       integer :: n6, L, Lk, n, n1, n2, i
       integer :: ierror, jakc
-      integer :: jakdtree = 1
-
-      real(kind=dp) :: rcel_store, percentileminmax_store
       integer :: iav_store, nummin_store
-
+      integer :: jakdtree
+      integer, dimension(:), allocatable :: nnn
+      integer, dimension(:), allocatable :: LnnL, Lorg
+      real(kind=dp) :: zz
+      real(kind=dp) :: rcel_store
+      real(kind=dp) :: percentileminmax_store
+      real(kind=dp), dimension(:), allocatable :: zh
+      real(kind=dp), dimension(:), allocatable :: xxx, yyy
+      real(kind=dp), dimension(:, :), allocatable :: xx, yy
       character(len=5) :: sd
-
       type(TerrorInfo) :: errorInfo
 
       success = .false.
       minp0 = 0
       jakc = 0
+      jakdtree = 1
+
       if (present(kcc)) then
          jakc = 1
       end if
@@ -3333,7 +3320,7 @@ contains
 
       select case (method)
 
-      case(METHOD_CONSTANT) ! polyfil
+      case(METHOD_CONSTANT)
 
          call savepol()
          call reapol(minp0, 0)
@@ -3353,39 +3340,54 @@ contains
          end do
          call restorepol()
 
-      else if (method == 5 .or. method == 6) then ! triangulation & averaging
+      case(METHOD_TRIANGULATION, METHOD_AVERAGING)
 
          if (filetype == ncflow) then
+
             call read_flowsamples_from_netcdf(filename, qid, ierr)
+
          elseif (filetype == ncgrid) then
+
             ! TODO: support reading initial fields from NetCDF too
             msgbuf = 'timespace::timespaceinitialfield: Error while reading '''//trim(qid)// &
                      ''' from file '''//trim(filename)//'''. File type not supported for initial fields.'
             call warn_flush()
             return
+
          else if (filetype == arcinfo) then
+
             call read_samples_from_arcinfo(filename, 0, 0)
+
          else if (filetype == geotiff) then
+
             success = read_samples_from_geotiff(filename)
             if (.not. success) then
                return
             end if
+
          else
+
             call reasam(minp0, 0)
+
          end if
 
          if (method == 5) then
+
             if (filetype == arcinfo) then
+
                call bilinarc(xu, yu, zh, nx)
+
             else
+
                jdla = 1
-               call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, &
-                               NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef, kcc)
+               call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
+                  ZPL, transformcoef, kcc)
+
             end if
 
          else if (method == 6) then ! and this only applies to flow-link data
 
-!         store settings
+            ! store settings
             iav_store = iav
             rcel_store = rcel
             percentileminmax_store = percentileminmax
@@ -3394,75 +3396,100 @@ contains
             if (transformcoef(4) /= DMISS) then
                iav = int(transformcoef(4))
             end if
+
             if (transformcoef(5) /= DMISS) then
                rcel = transformcoef(5)
             end if
+
             if (transformcoef(7) /= DMISS) then
                percentileminmax = transformcoef(7)
             end if
+
             if (transformcoef(8) /= DMISS) then
                nummin = int(transformcoef(8))
             end if
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
+
                n6 = 4
-               allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+               allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+
                do L = 1, lnx
+
                   xx(1, L) = xzw(ln(1, L))
                   yy(1, L) = yzw(ln(1, L))
                   xx(3, L) = xzw(ln(2, L))
                   yy(3, L) = yzw(ln(2, L))
+
                   Lk = ln2lne(L)
+
                   xx(2, L) = xk(kn(1, Lk))
                   yy(2, L) = yk(kn(1, Lk))
                   xx(4, L) = xk(kn(2, Lk))
                   yy(4, L) = yk(kn(2, Lk))
+
                end do
+
                nnn = 4 ! array nnn
+
             else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
+
                n6 = maxval(netcell%n)
                if (jsferic == 1) then
                   n6 = n6 + 2 ! safety at poles
                end if
 
-               allocate (xx(n6, nx), yy(n6, nx), nnn(nx))
+               allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
 
-               allocate (LnnL(n6), Lorg(n6))
+               allocate(LnnL(n6), Lorg(n6))
 
                do n = 1, nx
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
-               deallocate (LnnL, Lorg)
+
+               deallocate(LnnL, Lorg)
+
             else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
 
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+               allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+
                do k = 1, numk
+
                   if (jakc == 1) then
+
                      if (kcc(k) /= 1) then
                         cycle
                      end if
+
                   end if
 
-!                 get the cell list
+                  ! get the cell list
                   call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
+
                   do i = 1, nnn(k)
                      xx(i, k) = xxx(i)
                      yy(i, k) = yyy(i)
                   end do
+
                end do
 
-               deallocate (xxx, yyy)
+               deallocate(xxx, yyy)
+
             end if
 
             if (jakdtree == 1) then
-!              initialize kdtree
+
+               ! initialize kdtree
                call build_kdtree(treeglob, Ns, xs, ys, ierror, jsferic, dmiss)
                if (ierror /= 0) then
-!                 disable kdtree
+
+                  ! disable kdtree
                   call delete_kdtree2(treeglob)
                   jakdtree = 0
+
                end if
+
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
@@ -3473,15 +3500,17 @@ contains
                write (msgbuf, '(5a,i0,a)') 'For quantity ', trim(qid), ' in file ', trim(filename), ' no values found for ', errorInfo%cntNoSamples, ' cells/links.'
                call warn_flush()
             end if
+
             if (allocated(errorInfo%message)) then
                msgbuf = errorInfo%message
                call warn_flush()
             end if
+
             if (.not. errorInfo%success) then
                return
             end if
 
-!         restore settings
+            ! restore settings
             iav = iav_store
             rcel = rcel_store
             percentileminmax = percentileminmax_store
@@ -3500,15 +3529,18 @@ contains
             end if
          end do
 
-!     SPvdP: sample set can be large, delete it and do not make a copy
+         ! sample set can be large, delete it and do not make a copy
          call delsam(-1)
          if (allocated(d)) then
-            deallocate (d)
+
+            deallocate(d)
             mca = 0
             nca = 0
+
          end if
 
-      end if
+      end select
+
       success = .true.
       call doclose(minp0)
 
