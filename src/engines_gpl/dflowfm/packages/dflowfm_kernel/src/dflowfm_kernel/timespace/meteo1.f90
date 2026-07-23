@@ -3553,6 +3553,23 @@ contains
 
             call bilinarc(xu, yu, zh, nx)
 
+            do k = 1, nx
+               if (zh(k) /= dmiss_default) then
+                  call operate(zu(k), zh(k), operand)
+                  zh(k) = zu(k)
+               end if
+            end do
+
+            ! sample set can be large, delete it and do not make a copy
+            call delsam(-1)
+            if (allocated(d)) then
+
+               deallocate(d)
+               mca = 0
+               nca = 0
+
+            end if
+
          end if
 
       end select
