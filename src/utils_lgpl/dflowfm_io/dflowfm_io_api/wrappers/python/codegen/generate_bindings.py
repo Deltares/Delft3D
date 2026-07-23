@@ -1,14 +1,14 @@
 """Generate the ctypes binding layer from the dflowfm_io_api C header.
 
-Reads ``dflowfm_io_api.h`` and writes ``src/dflowfm_io/base/bindings.py``: the enum constants, the
-``mdu_issue_t`` struct, and the ``argtypes``/``restype`` for every exported function, applied to the
-``lib`` loaded by ``dflowfm_io.base.library``. This is the ABI-coupled layer — regenerate it whenever
+Reads `dflowfm_io_api.h` and writes `src/dflowfm_io/base/bindings.py`: the enum constants, the
+`mdu_issue_t` struct, and the `argtypes`/`restype` for every exported function, applied to the
+`lib` loaded by `dflowfm_io.base.library`. This is the ABI-coupled layer — regenerate it whenever
 the C API changes so the Python side can never drift from the DLL.
 
 Run:
     python codegen/generate_bindings.py
 
-The header here is small and regular (flat ``extern "C"`` declarations), so this parses it directly
+The header here is small and regular (flat `extern "C"` declarations), so this parses it directly
 rather than depending on a C preprocessor.
 """
 
@@ -36,7 +36,7 @@ BASE_TYPES = {
 
 
 def c_to_ctypes(decl: str) -> str:
-    """Map a C type declaration (possibly with ``const`` and ``*``) to a ctypes expression."""
+    """Map a C type declaration (possibly with `const` and `*`) to a ctypes expression."""
     stars = decl.count("*")
     base = decl.replace("const", "").replace("*", "").strip()
     if base == "char":  # char* -> c_char_p; each extra * wraps once more
