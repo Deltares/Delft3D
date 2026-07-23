@@ -1057,7 +1057,7 @@ contains
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use m_nudge, only: nudge_time, nudge_rate
-      use m_physcoef, only: dicoww, vicoww
+      use m_physcoef, only: dicoww, vicoww, xlozmidov
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
@@ -1157,6 +1157,11 @@ contains
          call realloc(spatial_secchi_depth, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
          target_location_type = UNC_LOC_S
          target_array => spatial_secchi_depth
+
+      case ('xlozmidov')
+         target_location_type = UNC_LOC_S
+         call realloc(xlozmidov%values, ndx, keepExisting=.true., fill=xlozmidov%scalar, stat=ierr)
+         target_array => xlozmidov%values
 
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S

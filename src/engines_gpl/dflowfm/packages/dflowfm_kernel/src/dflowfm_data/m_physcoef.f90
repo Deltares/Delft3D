@@ -67,6 +67,7 @@ module m_physcoef
    real(kind=dp) :: Elder !< add Elder viscosity
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
 
+   type(t_array_or_scalar), target :: xlozmidov !< Ozmidov length scale (m)
    type(t_array_or_scalar), target :: dicoww !< background vertical eddy diffusivity (m2/s)
    type(t_array_or_scalar), target :: vicoww !< background vertical eddy viscosity (m2/s)
 
@@ -83,7 +84,7 @@ module m_physcoef
    integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
    real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
-   real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
+
 
    real(kind=dp), parameter :: viskinair = 1.5e-5_dp !< kinematic air viscosity
    real(kind=dp) :: backgroundwatertemperature !< background water temp (C)
@@ -156,7 +157,7 @@ contains
       diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
       diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
       vicwminb = 0.0_dp
-      xlozmidov = 0.0_dp
+      xlozmidov%scalar = 0.0_dp
       idensform = 2
       apply_thermobaricity = .false.
       thermobaricity_in_pressure_gradient = .false.

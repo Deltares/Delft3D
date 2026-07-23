@@ -1176,7 +1176,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Dicoww', dicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
-      call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
+      call prop_get(md_ptr, 'physics', 'Xlozmidov', xlozmidov%scalar)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
       if (iturbulencemodel == 4) then ! k-tau
          call prop_get(md_ptr, 'physics', 'TAUMin', eps_min)
@@ -3214,7 +3214,7 @@ contains
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
-         call prop_set(prop_ptr, 'physics', 'Xlozmidov', xlozmidov, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
+         call prop_set(prop_ptr, 'physics', 'Xlozmidov', xlozmidov%scalar, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
          if (writeall .or. (comparereal(tke_min, MINIMUM_VALUE_K_EPS_TAU) /= 0)) then
             call prop_set(prop_ptr, 'physics', 'TKEMin', tke_min, 'Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model')
          end if

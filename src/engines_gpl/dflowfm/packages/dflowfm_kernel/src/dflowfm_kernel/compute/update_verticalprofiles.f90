@@ -51,7 +51,7 @@ contains
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
+                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, xlozmidov
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -61,7 +61,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
-                  c3t_stable, c3t_unstable
+                              c3t_stable, c3t_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -81,6 +81,7 @@ contains
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
+      real(kind=dp) :: ozmid
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror
 
@@ -386,6 +387,15 @@ contains
                      else ! Weighted average
                         bruva(k) = (acl(LL) * drhodz(k1) + (1.0_dp - acl(LL)) * drhodz(k2)) * brunt_vaisala_coefficient
                      end if
+
+                     ! Add xlozmidov
+                     if (xlozmidov%get(LL) > 0.0_dp) then
+                        if (bruva(k) > 0.0_dp) then ! stable stratification
+                           ozmid = 0.2_dp * xlozmidov%get(LL) * xlozmidov%get(LL) * sqrt(bruva(k) * SIGRHO)
+                           vicwwu(L) = vicwwu(L) + ozmid * SIGRHO
+                        end if
+                     end if
+
                      buoflu(k) = max(vicwwu(L), vicwminb) * bruva(k)
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
