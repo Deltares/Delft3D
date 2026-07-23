@@ -137,6 +137,7 @@ contains
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
       c1e = 1.44_dp ! For backward-compatible results, set [numerics] c1e to 1.4889743589743589. More info in UNST-10054.
+      c1e = 1.48897435897436_dp
       c1t = (1.0_dp - c1e) * CMUKEP
       c3t_unstable = (1.0_dp - c1e) * CMUKEP
       c3e_stable = 0.0_dp
