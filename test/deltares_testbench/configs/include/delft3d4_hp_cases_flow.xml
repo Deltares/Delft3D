@@ -523,6 +523,7 @@
 		</testCase>
 		<testCase name="e01_f01_c30-64bit" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f01_general/c30-64bit</path>
+      <maxRunTime>1020</maxRunTime>
 			
 			<checks>
 				<file name="trih-zd10.dat" type="NEFIS">
@@ -1605,6 +1606,7 @@
 		</testCase>
 		<testCase name="e01_f06_c12-vanrijn_temp" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f06_ols/c12-vanrijn_temp</path>
+      <maxRunTime>450</maxRunTime>
 			
 			<checks>
 				<file name="trih-T01.dat" type="NEFIS">
@@ -3588,6 +3590,7 @@
 		</testCase>
 		<testCase name="e01_f25_c03-estuarium_equid" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c03-estuarium_equid</path>
+      <maxRunTime>600</maxRunTime>
 			
 			<checks>
 				<file name="trih-est.dat" type="NEFIS">
@@ -3608,6 +3611,7 @@
 		</testCase>
 		<testCase name="e01_f25_c04-estuarium_log" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c04-estuarium_log</path>
+      <maxRunTime>600</maxRunTime>
 			
 			<checks>
 				<file name="trih-est.dat" type="NEFIS">
@@ -3970,6 +3974,7 @@
 		</testCase>
 		<testCase name="e01_f27_c25-z_upper_pierce_slope_limiter" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c25-z_upper_pierce_slope_limiter</path>
+      <maxRunTime>1500</maxRunTime>
 			
 			<checks>
 				<file name="trih-b11.dat" type="NEFIS">

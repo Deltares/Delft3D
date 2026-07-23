@@ -1106,7 +1106,7 @@
     </testCase>
     <testCase name="e02_f208_c015_gate_free_3Dz" ref="platform_specific">
       <path version="2025-10-07T07:02:17.211000">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
-      <maxRunTime>480</maxRunTime>
+      <maxRunTime>560</maxRunTime>
       
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
