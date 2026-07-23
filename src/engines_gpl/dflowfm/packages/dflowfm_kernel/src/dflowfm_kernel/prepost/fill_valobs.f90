@@ -45,8 +45,8 @@ contains
       use precision, only: dp, comparereal
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, ucmag, jaeulervel, &
-                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, viclu, vius, &
+                        s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
@@ -109,17 +109,16 @@ contains
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens
       real(kind=dp) :: ux, uy, um, wxL, wyL
-      real(kind=dp), allocatable :: wa(:, :)
-      real(kind=dp), allocatable :: frac(:, :)
-      real(kind=dp), allocatable :: poros(:)
-      real(kind=dp), allocatable :: ueux(:)
-      real(kind=dp), allocatable :: ueuy(:)
-      real(kind=dp), allocatable :: water_depth(:)
-      real(kind=dp), allocatable :: ship_level(:)
-      real(kind=dp), allocatable :: cell_z_centers(:)
-      real(kind=dp), allocatable :: waq_tmp(:)
-      real(kind=dp), allocatable, save :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
-      integer, allocatable :: wet_or_dry(:)
+      real(kind=dp), dimension(:, :), allocatable :: wa
+      real(kind=dp), dimension(:, :), allocatable :: frac
+      real(kind=dp), dimension(:), allocatable :: poros
+      real(kind=dp), dimension(:), allocatable :: ueux
+      real(kind=dp), dimension(:), allocatable :: ueuy
+      real(kind=dp), dimension(:), allocatable :: water_depth
+      real(kind=dp), dimension(:), allocatable :: ship_level
+      real(kind=dp), dimension(:), allocatable :: cell_z_centers
+      real(kind=dp), dimension(:), allocatable :: waq_tmp
+      integer, dimension(:), allocatable :: wet_or_dry
 
       kmx_const = kmx
       if (kmx == 0) then
@@ -130,24 +129,18 @@ contains
       if (timon) then
          call timstrt("fill_valobs", handle_extra(55))
       end if
-      !
-      if (.not. allocated(ueux)) then
-         call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
-         call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
-      end if
+
+      call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
+      call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
 
       ! Allocate 2D aray to detrmine determine wet,1, or dry, 0
-      if (.not. allocated(wet_or_dry)) then
-         call realloc(wet_or_dry, ndx, keepExisting=.false., fill=1)
-      end if
+      call realloc(wet_or_dry, ndx, keepExisting=.false., fill=1)
 
-      if (.not. allocated(water_depth)) then
-         ! Allocate as 2D arry for water levels
-         call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
-         water_depth = s1 - bl
-      end if
+      ! Allocate as 2D arry for water levels
+      call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
+      water_depth = s1 - bl
 
-      if (model_is_3D() .and. .not. allocated(cell_z_centers)) then
+      if (model_is_3D()) then
          ! Allocate as 2D arry for cell z centers
          call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
          do j = 2, ndkx
@@ -155,7 +148,7 @@ contains
          end do
 
       end if
-      if ((nshiptxy > 0) .and. allocated(zsp) .and. (.not. allocated(ship_level))) then
+      if ((nshiptxy > 0) .and. allocated(zsp)) then
          call realloc(ship_level, ndx, keepExisting=.false., fill=0.0_dp)
          ship_level = s1 + zsp
       end if
@@ -166,10 +159,7 @@ contains
          else
             wavfac = sqrt(2.0_dp)
          end if
-         if (allocated(wa)) then
-            deallocate (wa)
-         end if
-         allocate (wa(1:2, 1:max(kmx, 1)))
+         call realloc(wa, [2, max(kmx, 1)], keepExisting=.false., fill=0.0_dp)
       end if
 
       ! get velocities here (and not at velocity writing)
@@ -218,16 +208,8 @@ contains
       !
       if (stm_included .and. jased > 0) then
          if (stmpar%morlyr%settings%iunderlyr == 2) then
-            if (allocated(frac)) then
-               deallocate (frac)
-            end if
-            allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr))
-            frac = dmiss
-            if (allocated(poros)) then
-               deallocate (poros)
-            end if
-            allocate (poros(1:stmpar%morlyr%settings%nlyr))
-            poros = dmiss
+            call realloc(frac, [stmpar%lsedtot, stmpar%morlyr%settings%nlyr], keepExisting=.false., fill=dmiss)
+            call realloc(poros, stmpar%morlyr%settings%nlyr, keepExisting=.false., fill=dmiss)
          end if
       end if
 
@@ -275,7 +257,6 @@ contains
             end if
 
             if (jawave > NO_WAVES .and. .not. flow_without_waves) then
-               wa = 0.0_dp
                call linkstocentercartcomp(k, ustokes, wa) ! wa now 2*1 value or 2*1 vertical slice
             end if
 
@@ -793,20 +774,6 @@ contains
             valobs(i, :) = DMISS
          end if
       end do
-
-!  No need to copy empty layers from top anymore, they have been filled with dmiss
-
-      if (allocated(wa)) then
-         deallocate (wa)
-      end if
-
-      if (allocated(wet_or_dry)) then
-         deallocate (wet_or_dry)
-      end if
-
-      if (allocated(waq_tmp)) then
-         deallocate (waq_tmp)
-      end if
 
       if (timon) then
          call timstop(handle_extra(55))
