@@ -25,7 +25,6 @@ object LinuxConanPackages : BuildType({
 
     name = "Conan packages"
     buildNumberPattern = "%build.vcs.number%"
-
     allowExternalStatus = true
 
     params {
