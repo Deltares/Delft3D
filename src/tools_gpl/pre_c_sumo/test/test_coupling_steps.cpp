@@ -303,7 +303,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticNF2FFCasesYieldExpectedConnectedCou
 
     constexpr std::array<SyntheticCase, 5> cases = {
         SyntheticCase{"i0si2so2", 2u, 2u, true, 10.0, 1u, 5u},
-        SyntheticCase{"i0si2so1", 2u, 1u, false, 0.0, 0u, 2000u},
+        SyntheticCase{"i0si2so1", 2u, 1u, false, 0.0, 0u, 2001u},
         SyntheticCase{"i1si2so2", 2u, 2u, true, 10.0, 1u, 5u},
         SyntheticCase{"i10si2so1", 2u, 1u, true, 10.0, 10u, 2010u},
         SyntheticCase{"i1si42so1", 42u, 1u, true, 10.0, 1u, 42001u},
@@ -368,14 +368,15 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So2YieldsExpectedDischarges)
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge)
 {
     const auto connected = convert_from_synthetic_case(2u, 1u, false, 0.0);
-    ASSERT_EQ(connected.get_number_of_entries(), 2000u);
+    ASSERT_EQ(connected.get_number_of_entries(), 2001u);
 
     const auto& discharges = connected.get_discharge_value();
-    ASSERT_EQ(discharges.size(), 2000u);
+    ASSERT_EQ(discharges.size(), 2001u);
     EXPECT_NEAR(discharges[0], 0.04, 1e-12);
     EXPECT_NEAR(discharges[999], 0.04, 1e-12);
     EXPECT_NEAR(discharges[1000], 0.01, 1e-12);
     EXPECT_NEAR(discharges[1999], 0.01, 1e-12);
+    EXPECT_NEAR(discharges[2000], 0.0, 1e-12);
 }
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI10Si2So1WithTenIntakesYieldsExpectedCount)

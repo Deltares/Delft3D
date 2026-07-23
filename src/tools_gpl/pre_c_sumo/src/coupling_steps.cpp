@@ -222,8 +222,8 @@ namespace pre_c_sumo
     ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
                                                          const std::vector<NF2FFReader>& nf2ff_readers)
     {
-        (void)csumoSettings;
         ConnectedSinkSources connectedsinksources{};
+        const auto& diffuser_settings = csumoSettings.diffusers();
 
         for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
@@ -301,7 +301,18 @@ namespace pre_c_sumo
             }
 
             // Intake
-            const auto intakes = diffuser.intakes();
+            auto intakes = diffuser.intakes();
+            if (intakes.empty() && diffuser_index < diffuser_settings.size() &&
+                diffuser_settings[diffuser_index].intake.has_value())
+            {
+                // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
+                const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
+                intakes.push_back(
+                    IntakeData{.x_coordinate = intake_xy.x_coordinate, .y_coordinate = intake_xy.y_coordinate,
+                               .z_coordinate = 0.0,
+                               .weight = 0.0, .has_weight = false});
+            }
+
             if (!intakes.empty())
             {
                 const double intake_flow_rate = diffuser.intakeFlowRate();
