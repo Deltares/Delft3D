@@ -1159,7 +1159,7 @@ contains
          target_array => spatial_secchi_depth
 
       case ('xlozmidov')
-         target_location_type = UNC_LOC_S
+         target_location_type = UNC_LOC_U
          call realloc(xlozmidov%values, lnx, keepExisting=.true., fill=xlozmidov%scalar, stat=ierr)
          target_array => xlozmidov%values
 
