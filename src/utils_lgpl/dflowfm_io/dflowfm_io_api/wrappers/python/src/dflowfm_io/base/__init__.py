@@ -12,6 +12,9 @@ from dflowfm_io.base.errors import (
 from dflowfm_io.base.handle import HandleRef
 from dflowfm_io.base.library import DLLFinder, dll_finder, lib
 
+# Importing bindings applies the generated argtypes/restype to `lib` (generated from the C header).
+from dflowfm_io.base import bindings  # noqa: E402,F401
+
 __all__ = [
     "lib",
     "DLLFinder",

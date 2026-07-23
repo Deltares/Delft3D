@@ -1,8 +1,11 @@
 """Validation issue value types reported by the MDU document."""
 
-import ctypes
 from dataclasses import dataclass
 from enum import IntEnum
+
+# The ctypes wire form of an issue is the generated struct, so it is the exact type the generated
+# argtypes expect (re-exported here under the wrapper's naming).
+from dflowfm_io.base.bindings import mdu_issue_t as MduIssue  # noqa: F401
 
 
 class Severity(IntEnum):
@@ -11,16 +14,6 @@ class Severity(IntEnum):
     INFO = 0
     WARNING = 1
     ERROR = 2
-
-
-class MduIssue(ctypes.Structure):
-    """ctypes mirror of the C ``mdu_issue_t`` struct (the wire form of an :class:`Issue`)."""
-
-    _fields_ = [
-        ("line_number", ctypes.c_int32),
-        ("severity", ctypes.c_int32),
-        ("message", ctypes.c_char_p),
-    ]
 
 
 @dataclass
