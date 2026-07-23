@@ -1160,7 +1160,7 @@ contains
 
       case ('xlozmidov')
          target_location_type = UNC_LOC_S
-         call realloc(xlozmidov%values, ndx, keepExisting=.true., fill=xlozmidov%scalar, stat=ierr)
+         call realloc(xlozmidov%values, lnx, keepExisting=.true., fill=xlozmidov%scalar, stat=ierr)
          target_array => xlozmidov%values
 
       case ('backgroundverticaleddydiffusivitycoefficient')
