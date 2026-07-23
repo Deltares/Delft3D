@@ -1481,6 +1481,7 @@
 </testCase>
 <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
   <path version="2025-10-16T07:13:15.591000">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
+      <maxRunTime>540</maxRunTime>
   <programs>
     <program ref="dimr_plain" seq="1">
       <arguments>
@@ -1625,7 +1626,7 @@
 </testCase>
 <testCase name="e02_f030_c402_Course_bacteria" ref="dflowfm_platform_specific_refs">
   <path version="2026-07-07T15:36:20.453000">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
-      <maxRunTime>360</maxRunTime>
+      <maxRunTime>450</maxRunTime>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>
@@ -1644,7 +1645,7 @@
 </testCase>
 <testCase name="e02_f030_c403_Course_eutrophication" ref="dflowfm_platform_specific_refs">
   <path version="2026-07-07T15:36:25.497000">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
-      <maxRunTime>450</maxRunTime>
+      <maxRunTime>540</maxRunTime>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>

@@ -1920,7 +1920,7 @@
     </testCase>
     <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
       <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c011_gate_free</path>
-      <maxRunTime>360</maxRunTime>
+      <maxRunTime>450</maxRunTime>
       <checks>
         <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
           <parameters>

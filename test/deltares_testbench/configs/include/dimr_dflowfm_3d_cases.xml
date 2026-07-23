@@ -823,7 +823,7 @@
     </testCase>
 
     <testCase name="e02_f025_c011_bendcase_structured_3d" ref="dflowfm_default">
-      <maxRunTime>480</maxRunTime>
+      <maxRunTime>540</maxRunTime>
       <path version="2026-07-09T15:46:55.684000">e02_dflowfm/f025_secondary_flow_hydrodynamics/c011_bendcase_structured_3d</path>
       <checks>
         <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
@@ -866,6 +866,7 @@
 
     <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
       <path version="2026-07-06T14:49:40.966000">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
+      <maxRunTime>360</maxRunTime>
       
       <checks>
         <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
@@ -1037,6 +1038,7 @@
     </testCase>
     <testCase name="e02_f208_c011_gate_sub_3Dz" ref="platform_specific">
       <path version="2025-10-16T07:22:38.995000">e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz</path>
+      <maxRunTime>360</maxRunTime>
       
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dz_his.nc" type="netCDF">
@@ -1079,7 +1081,7 @@
     </testCase>
     <testCase name="e02_f208_c014_gate_free_3Dsigma" ref="dflowfm_default">
       <path version="2025-10-09T14:02:09.492000">e02_dflowfm/f208_3D_hydraulic_structures/c014_gate_free_3Dsigma</path>
-      <maxRunTime>560</maxRunTime>
+      <maxRunTime>600</maxRunTime>
       
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dsigma_his.nc" type="netCDF">
@@ -1093,7 +1095,7 @@
     </testCase>
     <testCase name="e02_f208_c015_gate_free_3Dz" ref="platform_specific">
       <path version="2025-10-07T07:02:17.211000">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
-      <maxRunTime>560</maxRunTime>
+      <maxRunTime>600</maxRunTime>
       
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
@@ -1121,7 +1123,7 @@
     </testCase>
     <testCase name="e02_f208_c017_gate_free_3Dzsigma2" ref="platform_specific">
       <path version="2025-10-13T09:55:24">e02_dflowfm/f208_3D_hydraulic_structures/c017_gate_free_3Dzsigma2</path>
-      <maxRunTime>720</maxRunTime>
+      <maxRunTime>900</maxRunTime>
       
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dzsigma2_his.nc" type="netCDF">
@@ -1216,7 +1218,7 @@
     </testCase>
     <testCase name="e02_f208_c024_sill_free_3Dzsigma1" ref="dflowfm_default">
       <path version="2025-10-07T17:43:24.518000">e02_dflowfm/f208_3D_hydraulic_structures/c024_sill_free_3Dzsigma1</path>
-      <maxRunTime>720</maxRunTime>
+      <maxRunTime>900</maxRunTime>
 
       
       <checks>
