@@ -79,6 +79,26 @@ def enum_entries(prop):
     return entries
 
 
+def render_status(status, indent):
+    """Render the Status block."""
+    inner = " " * (indent + 4)
+    status_type = STATUS_TYPE_MAP[status["value"]]
+    comment = status.get("comment", "")
+    since_release = status.get("since_release", "")
+    sub_width = len(".comment") if comment else len(".type")
+
+    def status_field(name, val):
+        return f"{inner}{name.ljust(sub_width)} = {val}"
+
+    status_lines = [status_field(".type", f"StatusType::{status_type}")]
+    if comment:
+        status_lines.append(status_field(".comment", f'"{comment}"'))
+    if since_release:
+        status_lines.append(status_field(".since", f'"{since_release}"'))
+    body = ",\n".join(status_lines)
+    return f"{{\n{body}\n{' ' * indent}}}"
+
+
 def render_enum_value(value, label, status, indent):
     """Render a single EnumValueSchema block."""
     pad = " " * indent
@@ -92,19 +112,7 @@ def render_enum_value(value, label, status, indent):
     if label is not None:
         field_blocks.append(field(".label", f'"{label}"'))
     if status:
-        status_type = STATUS_TYPE_MAP[status["value"]]
-        comment = status.get("comment", "")
-        status_inner = " " * (indent + 8)
-        sub_width = len(".comment") if comment else len(".type")
-
-        def status_field(name, val):
-            return f"{status_inner}{name.ljust(sub_width)} = {val}"
-
-        status_lines = [status_field(".type", f"StatusType::{status_type}")]
-        if comment:
-            status_lines.append(status_field(".comment", f'"{comment}"'))
-        status_body = ",\n".join(status_lines)
-        field_blocks.append(field(".status", f"{{\n{status_body}\n{inner}}}"))
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
 
     body = ",\n".join(field_blocks)
     return f"{pad}EnumValueSchema {{\n{body}\n{pad}}}"
@@ -144,20 +152,8 @@ def render_property(prop, indent):
         enum_blocks = [render_enum_value(v, label, st, indent + 8) for v, label, st in entries]
         enum_body = ",\n".join(enum_blocks)
         field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
-
     if status:
-        status_type = STATUS_TYPE_MAP[status["value"]]
-        comment = status.get("comment", "")
-        sub_width = len(".comment") if comment else len(".type")
-
-        def status_field(name, val):
-            return f"{inner}    {name.ljust(sub_width)} = {val}"
-
-        status_lines = [status_field(".type", f"StatusType::{status_type}")]
-        if comment:
-            status_lines.append(status_field(".comment", f'"{comment}"'))
-        status_body = ",\n".join(status_lines)
-        field_blocks.append(field(".status", f"{{\n{status_body}\n{inner}}}"))
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
 
     body = ",\n".join(field_blocks)
     return f"{pad}PropertySchema {{\n{body}\n{pad}}}"

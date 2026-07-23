@@ -21,11 +21,13 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, CreateFromSchema_ContainsAllPropertiesWithDefaults)
     {
-        const MduData data = MduData::CreateFromSchema(TestSchema());
+        const MduSchema& schema = TestSchema();
+        const MduData data = MduData::CreateFromSchema(schema);
 
-        for (const auto& sectionSchema : TestSchema().Sections())
+        for (const auto& sectionSchema : schema.Sections())
             for (const auto& propertySchema : sectionSchema.properties)
-                if (!propertySchema.default_value.empty())
+                if (!propertySchema.default_value.empty() &&
+                    !schema.IsObsolete(propertySchema, propertySchema.default_value))
                 {
                     const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                     EXPECT_TRUE(data.hasValue(key));
@@ -39,6 +41,20 @@ namespace dflowfm_io::test
         for (const auto& sectionSchema : TestSchema().Sections())
             for (const auto& propertySchema : sectionSchema.properties)
                 if (propertySchema.default_value.empty())
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_FALSE(data.hasValue(key));
+                }
+    }
+
+    TEST(MduDataTest, CreateFromSchema_DoesNotContainObsoleteProperties)
+    {
+        const MduSchema& schema = TestSchema();
+        const MduData data = MduData::CreateFromSchema(schema);
+
+        for (const auto& sectionSchema : schema.Sections())
+            for (const auto& propertySchema : sectionSchema.properties)
+                if (schema.IsObsolete(propertySchema, propertySchema.default_value))
                 {
                     const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                     EXPECT_FALSE(data.hasValue(key));

@@ -17,6 +17,8 @@ namespace dflowfm_io
             {
                 if (propertySchema.default_value.empty()) continue;
 
+                if (schema.IsObsolete(propertySchema, propertySchema.default_value)) continue;
+
                 std::optional<Value> value =
                     MduValueConverter::FromString(propertySchema, propertySchema.default_value);
 

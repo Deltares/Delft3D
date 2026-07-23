@@ -74,6 +74,7 @@ namespace dflowfm_io
     {
         StatusType type = StatusType::GA; ///< The lifecycle status of the property or enum value.
         std::string comment; ///< Explanation for Deprecated and Obsolete status types.
+        std::string since; ///< Since which this status applies.
     };
 
     /// @brief Schema metadata for a single value within an enumeration property.
@@ -143,6 +144,20 @@ namespace dflowfm_io
         /// @param property The property key to look up.
         /// @return The matching @ref PropertySchema, or nullptr if not found.
         const PropertySchema* FindProperty(const std::string& section, const std::string& property) const;
+
+        /// @brief Finds the enum value schema within @p propertySchema whose value/label matches @p rawValue.
+        /// @param propertySchema The schema of the property (must be of type Enum or IntEnum).
+        /// @param rawValue The raw string value as it appears in the MDU file.
+        /// @return The matching @ref EnumValueSchema, or nullptr if no match is found
+        /// or the property is not an Enum/IntEnum.
+        const EnumValueSchema* FindEnumValue(const PropertySchema& propertySchema, const std::string& rawValue) const;
+
+        /// @brief Determines whether @p rawValue is obsolete for @p propertySchema, either because the
+        /// property itself is obsolete, or because @p rawValue matches an obsolete enum value.
+        /// @param propertySchema The schema of the property.
+        /// @param rawValue The raw string value as it appears in the MDU file.
+        /// @return True if the property or the matching enum value is obsolete.
+        bool IsObsolete(const PropertySchema& propertySchema, const std::string& rawValue) const;
 
     private:
         std::string description;

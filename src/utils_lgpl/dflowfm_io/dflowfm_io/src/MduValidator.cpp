@@ -13,7 +13,7 @@ namespace dflowfm_io
         IssueReport report;
         ValidateRequired(iniData, schema, report);
         ValidateUnsupported(iniData, schema, report);
-        ValidateDeprecated(iniData, schema, report);
+        ValidateStatus(iniData, schema, report);
         return report;
     }
 
@@ -81,7 +81,7 @@ namespace dflowfm_io
         }
     }
 
-    void MduValidator::ValidateDeprecated(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
+    void MduValidator::ValidateStatus(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
         for (const auto& section : iniData)
         {
@@ -90,6 +90,14 @@ namespace dflowfm_io
                 const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
                 if (!propertySchema)
                     continue;
+
+                if (propertySchema->status.type == StatusType::Obsolete)
+                {
+                    report.AddError(property.GetLineNumber(), "Property [{}].{} is obsolete since {}. {}",
+                                    section.GetName(), property.GetKey(), propertySchema->status.since,
+                                    propertySchema->status.comment);
+                    continue;
+                }
 
                 if (propertySchema->status.type == StatusType::Deprecated)
                 {
@@ -104,22 +112,18 @@ namespace dflowfm_io
                 if (!property.HasValue())
                     continue;
 
-                for (const auto& enumValueSchema : propertySchema->enum_values)
-                {
-                    if (enumValueSchema.status.type != StatusType::Deprecated)
-                        continue;
+                const auto* enumValueSchema = schema.FindEnumValue(*propertySchema, property.GetValue());
+                if (!enumValueSchema)
+                    continue;
 
-                    const std::string deprecatedValue = propertySchema->value_type == ValueType::IntEnum
-                                                            ? std::to_string(enumValueSchema.value)
-                                                            : enumValueSchema.label;
-
-                    if (property.GetValue() == deprecatedValue)
-                    {
-                        report.AddWarning(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
-                                          section.GetName(), property.GetKey(), deprecatedValue, enumValueSchema.status.comment);
-                        break;
-                    }
-                }
+                if (enumValueSchema->status.type == StatusType::Obsolete)
+                    report.AddError(property.GetLineNumber(), "Property [{}].{}={} is obsolete since {}. {}",
+                                    section.GetName(), property.GetKey(), property.GetValue(),
+                                    enumValueSchema->status.since, enumValueSchema->status.comment);
+                else if (enumValueSchema->status.type == StatusType::Deprecated)
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
+                                      section.GetName(), property.GetKey(), property.GetValue(),
+                                      enumValueSchema->status.comment);
             }
         }
     }

@@ -73,7 +73,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasErrors());
     }
 
-    TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndPropertyKey)
+    TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndProperty)
     {
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
@@ -98,7 +98,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasErrors());
     }
 
-    TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndPropertyKey)
+    TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndProperty)
     {
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
@@ -123,7 +123,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasInfos());
     }
 
-    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_InfoMentionsSectionAndPropertyKeyAndDefault)
+    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_InfoMentionsSectionAndPropertyAndDefault)
     {
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
@@ -173,7 +173,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasWarnings());
     }
 
-    TEST_F(MduValidatorTest, Validate_UnknownProperty_WarningMentionsSectionAndPropertyKey)
+    TEST_F(MduValidatorTest, Validate_UnknownProperty_WarningMentionsSectionAndProperty)
     {
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
@@ -198,7 +198,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasWarnings());
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndPropertyKey)
+    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
     {
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
@@ -217,25 +217,80 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_ReturnsWarning)
     {
-        iniData.GetSection("numerics").SetPropertyValue("layerType", 3);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasWarnings());
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionPropertyKeyAndValue)
+    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
     {
-        iniData.GetSection("numerics").SetPropertyValue("layerType", 3);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
         EXPECT_NE(warning->message.find("deprecated"), std::string::npos);
-        EXPECT_NE(warning->message.find("numerics"), std::string::npos);
+        EXPECT_NE(warning->message.find("geometry"), std::string::npos);
         EXPECT_NE(warning->message.find("layerType"), std::string::npos);
         EXPECT_NE(warning->message.find("3"), std::string::npos);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validate — obsolete property
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ReturnsError)
+    {
+        iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        EXPECT_TRUE(report.HasErrors());
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ErrorMentionsSectionAndPropertyAndSinceRelease)
+    {
+        iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("2022.02"), std::string::npos);
+        EXPECT_NE(error->message.find("numerics"), std::string::npos);
+        EXPECT_NE(error->message.find("qhRelax"), std::string::npos);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validate — obsolete enum value
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ReturnsError)
+    {
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        EXPECT_TRUE(report.HasErrors());
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ErrorMentionsSectionAndPropertyAndValueAndSinceRelease)
+    {
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("2026.02"), std::string::npos);
+        EXPECT_NE(error->message.find("geometry"), std::string::npos);
+        EXPECT_NE(error->message.find("layerType"), std::string::npos);
+        EXPECT_NE(error->message.find("4"), std::string::npos);
     }
 
 } // namespace dflowfm_io::test

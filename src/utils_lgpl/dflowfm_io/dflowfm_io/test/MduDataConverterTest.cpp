@@ -251,6 +251,46 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
+    // Convert IniData → MduData — obsolete properties and enum values are skipped
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteProperty_PropertyOmittedFromMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("numerics").AddProperty("qhRelax", 0.05);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("numerics", "qhRelax");
+        EXPECT_FALSE(mduData.hasValue(key));
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_ObsoletePropertyValue_ObsoleteValueSkippedAndDefaultValueUsedInstead)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("geometry", "layerType");
+        // The obsolete value (4) is skipped, so the schema default value (1) is used instead.
+        EXPECT_TRUE(mduData.hasValue(key));
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedPropertyValue_PropertyPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("geometry", "layerType");
+        EXPECT_TRUE(mduData.hasValue(key));
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 3);
+    }
+
+    // -------------------------------------------------------------------------
     // Convert IniData → MduData — valid property values per type
     // -------------------------------------------------------------------------
 

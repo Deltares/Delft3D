@@ -10,7 +10,6 @@ namespace ini
 
 namespace dflowfm_io
 {
-
     /// @brief Performs schema-based validation of MDU file contents.
     ///
     /// MduValidator checks a parsed MDU file (represented as an @ref ini::IniData) against
@@ -23,8 +22,8 @@ namespace dflowfm_io
     /// 2. **Unsupported validation** — reports any sections or properties found in the
     ///    parsed data that are not defined in the schema.
     ///
-    /// 3. **Deprecated validation** — reports any properties or enum values that are marked
-    ///    as deprecated in the schema.
+    /// 3. **Status validation** — reports any properties or enum values that
+    ///    are marked as deprecated or obsolete in the schema.
     ///
     /// All findings are collected into an @ref IssueReport and returned to the caller.
     class MduValidator
@@ -41,7 +40,7 @@ namespace dflowfm_io
     private:
         static void ValidateRequired(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
         static void ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
-        static void ValidateDeprecated(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
+        static void ValidateStatus(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
     };
 
 } // namespace dflowfm_io

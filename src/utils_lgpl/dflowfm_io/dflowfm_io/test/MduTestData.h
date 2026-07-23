@@ -79,6 +79,18 @@ namespace dflowfm_io::test
             structureFile.description = "File (*.ini) containing list of hydraulic structures.";
             geometry.properties.push_back(structureFile);
 
+            PropertySchema layerType;
+            layerType.key = "layerType";
+            layerType.required = false;
+            layerType.value_type = ValueType::IntEnum;
+            layerType.default_value = "1";
+            layerType.enum_values = {{1, ""},
+                                     {2, ""},
+                                     {3, "", {StatusType::Deprecated, "Option is deprecated."}},
+                                     {4, "", {StatusType::Obsolete, "Option is obsololete.", "2026.02"}}};
+            layerType.description = "Vertical layer type.";
+            geometry.properties.push_back(layerType);
+
             PropertySchema stretchCoef;
             stretchCoef.key = "stretchCoef";
             stretchCoef.required = false;
@@ -117,6 +129,17 @@ namespace dflowfm_io::test
             timeStepType.description = "Type of time stepping.";
             numerics.properties.push_back(timeStepType);
 
+            PropertySchema qhRelax;
+            qhRelax.key = "qhRelax";
+            qhRelax.required = false;
+            qhRelax.value_type = ValueType::Float;
+            qhRelax.default_value = "0.01";
+            qhRelax.description = "Relaxation on Q-h open boundaries.";
+            qhRelax.status.type = StatusType::Obsolete;
+            qhRelax.status.comment = "Option no longer supported.";
+            qhRelax.status.since = "2022.02";
+            numerics.properties.push_back(qhRelax);
+
             PropertySchema verticalAdvectionType;
             verticalAdvectionType.key = "verticalAdvectionType";
             verticalAdvectionType.required = false;
@@ -136,15 +159,6 @@ namespace dflowfm_io::test
             vertAdvTypSal.status.type = StatusType::Deprecated;
             vertAdvTypSal.status.comment = "Use [numerics] verticalAdvectionType instead.";
             numerics.properties.push_back(vertAdvTypSal);
-
-            PropertySchema layerType;
-            layerType.key = "layerType";
-            layerType.required = false;
-            layerType.value_type = ValueType::IntEnum;
-            layerType.default_value = "1";
-            layerType.enum_values = {{1, ""}, {2, ""}, {3, "", {StatusType::Deprecated, "Option is deprecated."}}};
-            layerType.description = "Vertical layer type.";
-            numerics.properties.push_back(layerType);
 
             // [time]
             SectionSchema time;
