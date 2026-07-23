@@ -5,8 +5,7 @@ Importing this package loads the native library and exposes the public API:
 :class:`Issue` / :class:`Severity` value types.
 """
 
-from .document import MduDocument
 from .issues import Issue, Severity
-from .mdu import MduModel, MduReport
+from .mdu import MduDocument, MduModel, MduReport
 
 __all__ = ["MduDocument", "MduModel", "MduReport", "Issue", "Severity"]
