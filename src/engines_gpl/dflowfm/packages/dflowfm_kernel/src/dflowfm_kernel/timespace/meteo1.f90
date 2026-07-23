@@ -3667,6 +3667,9 @@ module m_meteo
    use m_flow
    use m_transportdata, only: numconst, const_names, ISALT
    use m_waves
+   use m_waveconst, only: WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                          WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                          WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
    use m_ship
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
@@ -4459,23 +4462,28 @@ contains
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
          map_write_settings%wav_hwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_SIGNIFICANT_HEIGHT)
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
          map_write_settings%wav_twav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_PERIOD)
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
          map_write_settings%wav_phiwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_DIRECTION)
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_X)
       case ('fy', 'ywaveforce')
          itemPtr1 => item_fy
          dataPtr1 => sywav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_Y)
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
@@ -4491,12 +4499,15 @@ contains
       case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_SURFACE)
       case ('diswcap', 'whitecappingdissipation')
          itemPtr1 => item_diswcap
          dataPtr1 => dwcap
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
       case ('totalwaveenergydissipation')
          itemPtr1 => item_distot
          dataPtr1 => distot
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_TOTAL)
       case ('ubot')
          itemPtr1 => item_ubot
          dataPtr1 => uorbwav

@@ -148,7 +148,7 @@ module m_flowparameters
 
    integer :: jawave !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=surfbeat, 5=Const, 7=Offline Wave Coupling
 
-   integer :: waveforcing !< Wave forcing type, 0=no, 1=based on radiation stress gradients, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
+   integer :: waveforcing !< Wave forcing type, 0=no, 1=based on radiation stress gradients, 2=based on total dissipation, 3=based on dissipation at free surface and water column
 
    logical :: flow_without_waves = .false. !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
 

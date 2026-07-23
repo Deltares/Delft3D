@@ -511,7 +511,7 @@ contains
       use m_fm_icecover, only: fm_ice_read
       use m_f1dimp, only: f1dimppar
       use m_sediment
-      use m_waves, only: hwavuni, twavuni, phiwavuni
+      use m_waves, only: hwavuni, twavuni, phiwavuni, ftauw, offline_wave_input_requirements
       use m_sedtrails_data, only: sedtrails_analysis
       use m_gui
       use m_output_config, only: scan_input_tree
@@ -1534,6 +1534,10 @@ contains
       end if
 
       call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      if (jawave == WAVE_NC_OFFLINE .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+         call mess(LEVEL_ERROR, 'Wavemodelnr = 7 does not support 3Dwavebreakerturbulence. Set 3Dwavebreakerturbulence = 0.')
+         istat = DFM_WRONGINPUT
+      end if
       call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -1554,6 +1558,15 @@ contains
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
          jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
          modind = 0
+      end if
+
+      if (jawave == WAVE_NC_OFFLINE) then
+         offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
+                                                                                jawavestreaming, jawavedelta, &
+                                                                                modind > 0 .and. ftauw > 0.0_dp, &
+                                                                                flow_without_waves)
+      else
+         offline_wave_input_requirements = 0
       end if
 
       call prop_get(md_ptr, 'grw', 'groundwater', jagrw)
@@ -3517,7 +3530,7 @@ contains
             call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
          end if
          if (jawave == WAVE_NC_OFFLINE) then
-            call prop_set(prop_ptr, 'waves', 'Waveforcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
+            call prop_set(prop_ptr, 'waves', 'Waveforcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 0: none, 1: based on radiation stress gradients, 2: based on total dissipation, 3: based on dissipation at free surface and water column')
          end if
 
       end if

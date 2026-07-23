@@ -45,7 +45,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
                       dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
                       twavcom, flow_without_waves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
-                      item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
+                      item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
                       item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
@@ -66,6 +66,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
+   use m_waves, only: offline_wave_input_requirements
 
    implicit none
 
@@ -532,21 +533,9 @@ contains
 
          if (.not. initialization) then
             !
-            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_RADIATION_STRESS) then
+            if (jawave == WAVE_NC_OFFLINE) then
                !
-               call set_parameters_for_radiation_stress_driven_forces()
-               !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
-               !
-               call set_parameters_for_dissipation_driven_forces()
-               !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
-               !
-               call set_parameters_for_3d_dissipation_driven_forces()
-               !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_NO_WAVEFORCES) then
-               !
-               call set_parameters_for_no_wave_forces()
+               call set_offline_wave_parameters()
                !
             else
                !
@@ -635,7 +624,7 @@ contains
                end if
             end if
 
-            all_wave_variables = .not. (jawave == WAVE_NC_OFFLINE .and. waveforcing /= WAVEFORCING_DISSIPATION_3D)
+            all_wave_variables = jawave /= WAVE_NC_OFFLINE
             call select_wave_variables_subgroup(all_wave_variables)
 
             ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
@@ -730,75 +719,51 @@ contains
 
    end subroutine set_all_wave_parameters
 
-!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
-   subroutine set_parameters_for_radiation_stress_driven_forces()
+   !> Read only the offline wave quantities required by the active configuration.
+   subroutine set_offline_wave_parameters()
 
+      hwavcom(:) = 0.0_dp
+      twavcom(:) = 0.0_dp
       twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
-   end subroutine set_parameters_for_radiation_stress_driven_forces
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation)
-   subroutine set_parameters_for_dissipation_driven_forces()
-
-      twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_distot, ecTime)
+      phiwav(:) = 270.0_dp
       sxwav(:) = 0.0_dp
       sywav(:) = 0.0_dp
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
-   end subroutine set_parameters_for_dissipation_driven_forces
-
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
-   subroutine set_parameters_for_3d_dissipation_driven_forces()
-
-      twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_diswcap, ecTime)
       sbxwav(:) = 0.0_dp
       sbywav(:) = 0.0_dp
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
-   end subroutine set_parameters_for_3d_dissipation_driven_forces
-
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 0 (no wave forces)
-   subroutine set_parameters_for_no_wave_forces()
-
-      twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      !success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      phiwav(:) = 0.0_dp ! no directions for you
-      sxwav(:) = 0.0_dp
-      sywav(:) = 0.0_dp
       dsurf(:) = 0.0_dp
       dwcap(:) = 0.0_dp
-      sbxwav(:) = 0.0_dp
-      sbywav(:) = 0.0_dp
+      distot(:) = 0.0_dp
       mxwav(:) = 0.0_dp
       mywav(:) = 0.0_dp
       uorbwav(:) = 0.0_dp
 
-   end subroutine set_parameters_for_no_wave_forces
+      call get_required_offline_wave_value(WAVE_INPUT_SIGNIFICANT_HEIGHT, item_hrms)
+      call get_required_offline_wave_value(WAVE_INPUT_PERIOD, item_tp)
+      call get_required_offline_wave_value(WAVE_INPUT_DIRECTION, item_dir)
+      call get_required_offline_wave_value(WAVE_INPUT_FORCE_X, item_fx)
+      call get_required_offline_wave_value(WAVE_INPUT_FORCE_Y, item_fy)
+      call get_required_offline_wave_value(WAVE_INPUT_DISSIPATION_TOTAL, item_distot)
+      call get_required_offline_wave_value(WAVE_INPUT_DISSIPATION_SURFACE, item_dissurf)
+      call get_required_offline_wave_value(WAVE_INPUT_DISSIPATION_WHITE_CAPPING, item_diswcap)
+
+   end subroutine set_offline_wave_parameters
+
+   !> Read one required offline wave item, while never passing an undefined item to EC.
+   subroutine get_required_offline_wave_value(quantity_flag, item)
+      integer, intent(in) :: quantity_flag
+      integer, intent(in) :: item
+
+      if (.not. wave_input_is_required(offline_wave_input_requirements, quantity_flag)) then
+         return
+      end if
+
+      if (item == ec_undef_int) then
+         success = .false.
+         return
+      end if
+
+      success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
+   end subroutine get_required_offline_wave_value
 
 !> convert wave direction [degrees] from nautical to cartesian meteorological convention
    elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)

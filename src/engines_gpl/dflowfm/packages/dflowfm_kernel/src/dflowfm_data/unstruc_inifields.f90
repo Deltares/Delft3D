@@ -1052,7 +1052,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_GLOBAL
       use m_flow, only: frcu, cftrtfac, viusp, diusp, frcInternalTides2D, DissInternalTidesPerArea, frculin, Cdwusp, jacftrtfac
       use m_flowgeom, only: ndx, lnx, grounlay, jagrounlay
-      use m_flowparameters, only: jatrt, javiusp, jadiusp, jafrculin, jaCdwusp, jafrcInternalTides2D, ibedlevtyp, jawave, waveforcing
+      use m_flowparameters, only: jatrt, javiusp, jadiusp, jafrculin, jaCdwusp, jafrcInternalTides2D, ibedlevtyp, jawave
       use m_heatfluxes, only: spatial_secchi_depth
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_vegetation, only: stemdiam, stemdens, stemheight
@@ -1060,7 +1060,10 @@ contains
       use m_physcoef, only: dicoww, vicoww
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
+      use m_waveconst, only: WAVE_NC_OFFLINE, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                    WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                    WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING, wave_input_is_required
+      use m_waves, only: offline_wave_input_requirements
       use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions
       use fm_external_forcings_utils, only: split_qid
       use string_module, only: str_tolower
@@ -1077,6 +1080,7 @@ contains
       integer :: ierr
       character(len=idlen) :: qid_base, qid_specific
       integer :: index_waq_input
+      integer :: wave_input_flag
 
       call split_qid(qid, qid_base, qid_specific)
 
@@ -1225,7 +1229,8 @@ contains
          end if
          target_location_type = UNC_LOC_S
 
-      case ('wavesignificantheight', 'waveperiod', 'wavedirection')
+      case ('wavesignificantheight', 'waveperiod', 'wavedirection', 'wavebreakerdissipation', &
+            'whitecappingdissipation', 'xwaveforce', 'ywaveforce', 'totalwaveenergydissipation')
          if (jawave /= WAVE_NC_OFFLINE) then
             write (msgbuf, '(a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
                '" requires WaveModelNr=', WAVE_NC_OFFLINE, '.'
@@ -1233,37 +1238,30 @@ contains
             success = .false.
             return
          end if
-         target_location_type = UNC_LOC_S
 
-      case ('wavebreakerdissipation', 'whitecappingdissipation')
-         if (.not. (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
-            write (msgbuf, '(a,i0,a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
-               '" requires WaveModelNr=', WAVE_NC_OFFLINE, ' and WaveForcing=', WAVEFORCING_DISSIPATION_3D, '.'
-            call warn_flush()
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
+         select case (str_tolower(qid_base))
+         case ('wavesignificantheight')
+            wave_input_flag = WAVE_INPUT_SIGNIFICANT_HEIGHT
+         case ('waveperiod')
+            wave_input_flag = WAVE_INPUT_PERIOD
+         case ('wavedirection')
+            wave_input_flag = WAVE_INPUT_DIRECTION
+         case ('xwaveforce')
+            wave_input_flag = WAVE_INPUT_FORCE_X
+         case ('ywaveforce')
+            wave_input_flag = WAVE_INPUT_FORCE_Y
+         case ('totalwaveenergydissipation')
+            wave_input_flag = WAVE_INPUT_DISSIPATION_TOTAL
+         case ('wavebreakerdissipation')
+            wave_input_flag = WAVE_INPUT_DISSIPATION_SURFACE
+         case ('whitecappingdissipation')
+            wave_input_flag = WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+         end select
 
-      case ('xwaveforce', 'ywaveforce')
-         if (.not. (jawave == WAVE_NC_OFFLINE .and. &
-                    (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D))) then
-            write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
-               '" requires WaveModelNr=', WAVE_NC_OFFLINE, ' and WaveForcing=', WAVEFORCING_RADIATION_STRESS, &
-               ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+         if (.not. wave_input_is_required(offline_wave_input_requirements, wave_input_flag)) then
+            write (msgbuf, '(a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
+               '" is not required by the active offline wave configuration and will not be read during the simulation.'
             call warn_flush()
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
-
-      case ('totalwaveenergydissipation')
-         if (.not. (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL)) then
-            write (msgbuf, '(a,i0,a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
-               '" requires WaveModelNr=', WAVE_NC_OFFLINE, ' and WaveForcing=', WAVEFORCING_DISSIPATION_TOTAL, '.'
-            call warn_flush()
-            success = .false.
-            return
          end if
          target_location_type = UNC_LOC_S
 

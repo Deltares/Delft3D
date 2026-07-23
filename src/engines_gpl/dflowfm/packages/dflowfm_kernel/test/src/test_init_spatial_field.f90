@@ -329,4 +329,82 @@ contains
    end subroutine test_validate_nonlegacy_operand_does_not_warn
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_radiation_stress_direct_only, test_offline_wave_requirements_radiation_stress_direct_only,
+   subroutine test_offline_wave_requirements_radiation_stress_direct_only() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                          .false., .false.)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                           "radiation-stress force limiting requires waveperiod")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_X), &
+                           "radiation-stress forcing requires xwaveforce")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_Y), &
+                           "radiation-stress forcing requires ywaveforce")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                            "direct radiation-stress forcing does not require wave height")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "direct radiation-stress forcing does not require direction")
+   end subroutine test_offline_wave_requirements_radiation_stress_direct_only
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_stokes_adds_kinematics, test_offline_wave_requirements_stokes_adds_kinematics,
+   subroutine test_offline_wave_requirements_stokes_adds_kinematics() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
+                                                          STOKES_DRIFT_DEPTHUNIFORM, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false.)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "Stokes drift requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                           "Stokes drift requires wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                           "Stokes drift requires wave direction")
+   end subroutine test_offline_wave_requirements_stokes_adds_kinematics
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_disabled_forces_need_no_input, test_offline_wave_requirements_disabled_forces_need_no_input,
+   subroutine test_offline_wave_requirements_disabled_forces_need_no_input() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_TOTAL, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                          .false., .false.)
+
+      call f90_expect_eq(requirements, 0, "no active wave consumer should require no offline wave input")
+   end subroutine test_offline_wave_requirements_disabled_forces_need_no_input
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_3d_dissipation, test_offline_wave_requirements_3d_dissipation,
+   subroutine test_offline_wave_requirements_3d_dissipation() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_3D, WAVE_FORCES_ON, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                          .false., .false.)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), "3D dissipation requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), "3D dissipation requires wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), "3D dissipation requires wave direction")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_X), "3D dissipation requires xwaveforce")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_Y), "3D dissipation requires ywaveforce")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                           "3D dissipation requires surface-breaking dissipation")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                           "3D dissipation requires white-capping dissipation")
+   end subroutine test_offline_wave_requirements_3d_dissipation
+   !$f90tw)
+
 end module test_init_spatial_field

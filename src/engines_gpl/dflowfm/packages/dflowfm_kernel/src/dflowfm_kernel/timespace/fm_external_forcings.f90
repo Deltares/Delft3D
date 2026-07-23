@@ -444,7 +444,9 @@ contains
 !> fill_open_boundary_cells_with_inner_values_fewer
    subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
       use m_waves
-      use m_flowparameters, only: jawave, waveforcing
+      use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                    WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                    WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
 
       integer, intent(in) :: number_of_links !< number of links
       integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
@@ -452,25 +454,46 @@ contains
       integer :: link !< link counter
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
+      logical :: wave_kinematics_required
 
-      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
-         do link = 1, number_of_links
-            kb = link2cell(1, link)
-            ki = link2cell(2, link)
-            distot(kb) = distot(ki)
-         end do
-      end if
+      wave_kinematics_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT) .and. &
+                                 wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD) .and. &
+                                 wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+
       do link = 1, number_of_links
          kb = link2cell(1, link)
          ki = link2cell(2, link)
-         hwavcom(kb) = hwavcom(ki)
-         twav(kb) = twav(ki)
-         phiwav(kb) = phiwav(ki)
-         uorbwav(kb) = uorbwav(ki)
-         sxwav(kb) = sxwav(ki)
-         sywav(kb) = sywav(ki)
-         mxwav(kb) = mxwav(ki)
-         mywav(kb) = mywav(ki)
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)) then
+            hwavcom(kb) = hwavcom(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)) then
+            twav(kb) = twav(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)) then
+            phiwav(kb) = phiwav(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_X)) then
+            sxwav(kb) = sxwav(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y)) then
+            sywav(kb) = sywav(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_TOTAL)) then
+            distot(kb) = distot(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_SURFACE)) then
+            dsurf(kb) = dsurf(ki)
+            sbxwav(kb) = sbxwav(ki)
+            sbywav(kb) = sbywav(ki)
+         end if
+         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)) then
+            dwcap(kb) = dwcap(ki)
+         end if
+         if (wave_kinematics_required) then
+            uorbwav(kb) = uorbwav(ki)
+            mxwav(kb) = mxwav(ki)
+            mywav(kb) = mywav(ki)
+         end if
       end do
 
    end subroutine fill_open_boundary_cells_with_inner_values_fewer
@@ -1844,9 +1867,11 @@ contains
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
+      use m_waves, only: reset_offline_wave_input_providers
 
       integer :: iresult
 
+      call reset_offline_wave_input_providers()
       call setup(iresult)
       if (iresult == DFM_NOERR) then
          call init_new(iresult)
@@ -1855,10 +1880,60 @@ contains
          call init_old(iresult)
       end if
       if (iresult == DFM_NOERR) then
+         call validate_offline_wave_input_providers(iresult)
+      end if
+      if (iresult == DFM_NOERR) then
          call finalize()
       end if
 
    end function flow_initexternalforcings
+
+!> Validate all external-forcing providers required by the active offline wave configuration.
+   subroutine validate_offline_wave_input_providers(iresult)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_flowparameters, only: jawave, waveforcing
+      use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      integer, intent(inout) :: iresult
+
+      logical :: missing_input
+
+      if (jawave /= WAVE_NC_OFFLINE) then
+         return
+      end if
+
+      missing_input = .false.
+      call report_missing_input(WAVE_INPUT_SIGNIFICANT_HEIGHT, 'wavesignificantheight')
+      call report_missing_input(WAVE_INPUT_PERIOD, 'waveperiod')
+      call report_missing_input(WAVE_INPUT_DIRECTION, 'wavedirection')
+      call report_missing_input(WAVE_INPUT_FORCE_X, 'xwaveforce')
+      call report_missing_input(WAVE_INPUT_FORCE_Y, 'ywaveforce')
+      call report_missing_input(WAVE_INPUT_DISSIPATION_TOTAL, 'totalwaveenergydissipation')
+      call report_missing_input(WAVE_INPUT_DISSIPATION_SURFACE, 'wavebreakerdissipation')
+      call report_missing_input(WAVE_INPUT_DISSIPATION_WHITE_CAPPING, 'whitecappingdissipation')
+
+      if (missing_input) then
+         iresult = DFM_WRONGINPUT
+      else
+         iresult = DFM_NOERR
+      end if
+
+   contains
+
+      subroutine report_missing_input(quantity_flag, quantity_name)
+         integer, intent(in) :: quantity_flag
+         character(len=*), intent(in) :: quantity_name
+
+         if (wave_input_is_required(offline_wave_input_requirements, quantity_flag) .and. &
+             .not. wave_input_is_required(offline_wave_input_providers, quantity_flag)) then
+            call mess(LEVEL_ERROR, 'Missing offline wave quantity '''//quantity_name// &
+                      ''' required by the active Wavemodelnr = 7 configuration with Waveforcing =', waveforcing)
+            missing_input = .true.
+         end if
+      end subroutine report_missing_input
+
+   end subroutine validate_offline_wave_input_providers
 
 !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
    subroutine setup(iresult)

@@ -47,12 +47,13 @@ contains
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
       use precision, only: dp
-      use m_waves, only: hwav, gammax, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni
+      use m_waves, only: hwav, gammax, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, &
+                distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni, offline_wave_input_requirements
       use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
-      use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flow_without_waves, epshu, ag, hs, waveforcing
+      use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flow_without_waves, epshu, ag, hs, waveforcing, jawaveforces
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
       use mathconsts, only: sqrt2_hp
-      use m_transform_wave_physics, only: transform_wave_physics_hp
+      use m_transform_wave_physics, only: transform_wave_physics_hp, transform_wave_period_hp
       use m_wind, only: wx, wy
 
       integer :: k1, k2, k, L
@@ -94,48 +95,19 @@ contains
 
       end if
 
-      ! SWAN
-      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
-         if (jawave == WAVE_NC_OFFLINE) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
+      ! Online SWAN coupling
+      if (jawave == WAVE_SWAN_ONLINE) then
+         hwav = min(hwavcom, gammax * hs)
          twav = twavcom
-         !
-         ! Needed here, because we need wave mass fluxes to calculate stokes drift
-         if (jawave == WAVE_NC_OFFLINE) then
-            !
-            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
-                               & sxwav, sywav, mxwav, mywav, &
-                               & distot, dsurf, dwcap, &
-                               & ndx, 1, hwav, twav, &
-                               & ag, .true., waveforcing, &
-                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
-         end if
-         !
-         call wave_uorbrlabda() ! twav is potentially changed above
-         !
-         if (kmx == 0) then
+         call wave_uorbrlabda()
+         if (kmx == 0 .and. .not. flow_without_waves) then
             call wave_comp_stokes_velocities()
          end if
       end if
-      !
-      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. flow_without_waves) then
-         ! Exceptional situation: use wave info not in FLOW, only in WAQ
-         ! Only compute uorb
-         ! Works both for 2D and 3D
-         if (jawave == WAVE_NC_OFFLINE) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         twav = twavcom
-         call wave_uorbrlabda()
+
+      ! Offline wave coupling
+      if (jawave == WAVE_NC_OFFLINE) then
+         call compute_offline_wave_parameters()
       end if
       !
       ! Surfbeat model
@@ -180,6 +152,50 @@ contains
 
 1234  continue
       return
+
+   contains
+
+      !> Convert only the wave quantities needed by the active offline configuration.
+      subroutine compute_offline_wave_parameters()
+         integer :: forcing_for_transformation
+         logical :: complete_wave_kinematics
+
+         complete_wave_kinematics = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT) .and. &
+                                    wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD) .and. &
+                                    wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+
+         if (complete_wave_kinematics) then
+            forcing_for_transformation = WAVEFORCING_NO_WAVEFORCES
+            if (jawaveforces > WAVE_FORCES_OFF) then
+               forcing_for_transformation = waveforcing
+            end if
+
+            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
+                                           sxwav, sywav, mxwav, mywav, &
+                                           distot, dsurf, dwcap, &
+                                           ndx, 1, hwav, twav, &
+                                           ag, .true., forcing_for_transformation, &
+                                           JONSWAPgamma0, sbxwav, sbywav, ierror)
+            hwav = min(hwav, gammax * hs)
+            call wave_uorbrlabda()
+
+            if (kmx == 0 .and. .not. flow_without_waves) then
+               call wave_comp_stokes_velocities()
+            end if
+         else
+            hwav = 0.0_dp
+            twav = 0.0_dp
+            mxwav = 0.0_dp
+            mywav = 0.0_dp
+            sbxwav = 0.0_dp
+            sbywav = 0.0_dp
+
+            if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)) then
+               call transform_wave_period_hp(twavcom, ndx, 1, JONSWAPgamma0, twav, ierror)
+            end if
+         end if
+      end subroutine compute_offline_wave_parameters
+
    end subroutine compute_wave_parameters
 
 end module m_compute_wave_parameters

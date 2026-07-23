@@ -29,9 +29,32 @@
 module m_transform_wave_physics
    implicit none
 
-   public :: transform_wave_physics_hp, transform_wave_physics_sp
+   public :: transform_wave_physics_hp, transform_wave_physics_sp, transform_wave_period_hp
 
 contains
+
+   !> Convert an input mean wave period to the peak-period representation used by D-Flow FM.
+   subroutine transform_wave_period_hp(period, m, n, gamma0, tp, ierr)
+      use precision, only: hp
+
+      integer, intent(in) :: m
+      integer, intent(in) :: n
+      real(hp), dimension(m*n), intent(in) :: period
+      real(hp), intent(in) :: gamma0
+      real(hp), dimension(m*n), intent(out) :: tp
+      integer, intent(out) :: ierr
+
+      real(hp) :: perfac
+
+      perfac = 1.0_hp
+      call jonswap_mean2peak_period_factor(gamma0, perfac, ierr)
+      if (ierr < 0) then
+         tp = 0.0_hp
+         return
+      end if
+
+      tp = period * perfac
+   end subroutine transform_wave_period_hp
 
    subroutine transform_wave_physics_hp(hs, dir, period, depth, &
                                      & fx, fy, mx, my, &
