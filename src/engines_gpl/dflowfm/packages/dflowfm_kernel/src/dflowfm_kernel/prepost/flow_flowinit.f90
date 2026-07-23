@@ -33,8 +33,6 @@ module m_flow_flowinit
    use m_statisticsini, only: statisticsini
    use m_setzminmax, only: setzminmax
    use m_flow_settidepotential, only: flow_settidepotential
-   use m_set_saltem_nudge, only: set_saltem_nudge
-   use m_set_nudgerate, only: set_nudgerate
    use m_setvelocityfield, only: setvelocityfield
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
@@ -81,10 +79,6 @@ module m_flow_flowinit
    integer, parameter :: OFF = 0
    integer, parameter :: ON = 1
    integer, parameter :: INITIALIZE = 1
-   integer, parameter :: LATERAL_1D2D_LINK = 3
-   integer, parameter :: STREET_INLET_1D2D_LINK = 5
-   integer, parameter :: ROOF_GUTTER_1D2D_LINK = 7
-   integer, parameter :: BOUNDARY_1D = -1
    integer, parameter :: SET_ZWS0 = 1
    logical, parameter :: INITIALIZATION_PHASE = .true.
 
@@ -278,7 +272,11 @@ contains
          call restore_au_q1_3D_for_1st_history_record()
       end if
 
-      call initialize_salinity_and_temperature_with_nudge_variables()
+      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
+      if (is_error_at_any_processor(error)) then
+         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
+         return
+      end if
 
       if (jasal > OFF) then
          call fill_constituents_with_salinity()
@@ -288,12 +286,6 @@ contains
       end if
 
       call initialise_density_at_cell_centres()
-
-      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
-      if (is_error_at_any_processor(error)) then
-         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
-         return
-      end if
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
@@ -632,6 +624,7 @@ contains
    subroutine set_advection_type_for_lateral_flow_and_pipes()
       use m_flowparameters, only: iadveccorr1D2D
       use m_flowgeom, only: lnxi, iadv, kcu, IADV_ORIGINAL_LATERAL_OVERFLOW
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -639,13 +632,13 @@ contains
 
       do link = 1, lnxi
          if (iadv(link) /= OFF) then
-            if (kcu(link) == LATERAL_1D2D_LINK) then
+            if (kcu(link) == LINK_1D2D_INTERNAL) then
                if (iadveccorr1D2D == 2) then
                   iadv(link) = OFF
                else
                   iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
-            else if (kcu(link) == STREET_INLET_1D2D_LINK .or. kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+            else if (kcu(link) == LINK_1D2D_STREETINLET .or. kcu(link) == LINK_1D2D_ROOF) then
                iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end if
@@ -689,6 +682,7 @@ contains
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -699,13 +693,13 @@ contains
       do link = 1, lnx
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
-               if (kcu(link) == LATERAL_1D2D_LINK) then
+               if (kcu(link) == LINK_1D2D_INTERNAL) then
                   frcu(link) = frcuni1d2d
-               else if (kcu(link) == STREET_INLET_1D2D_LINK) then
+               else if (kcu(link) == LINK_1D2D_STREETINLET) then
                   ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
                   frcu(link) = frcunistreetinlet
                   ifrcutp(link) = MANNING
-               else if (kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+               else if (kcu(link) == LINK_1D2D_ROOF) then
                   ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
                   frcu(link) = frcuniroofgutterpipe
                   ifrcutp(link) = MANNING
@@ -967,6 +961,7 @@ contains
       use m_flowparameters, only: jaconveyance2D
       use m_flowgeom, only: lnxi, lnx, kcu, Lbnd1D, aifu
       use m_flow, only: frcu, ifrcutp
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -974,7 +969,7 @@ contains
       integer :: boundary_link
 
       do flow_link = lnxi + 1, lnx
-         if (kcu(flow_link) == BOUNDARY_1D) then
+         if (kcu(flow_link) == LINK_1D_BOUNDARY) then
             boundary_link = Lbnd1D(flow_link)
             frcu(flow_link) = frcu(boundary_link)
             ifrcutp(flow_link) = ifrcutp(boundary_link)
@@ -1003,6 +998,7 @@ contains
       use m_flowparameters, only: nonlin1d, nonlin2D
       use m_flowgeom, only: kcu, lbnd1d, lnx1D, lnxi, lnx, prof1d, teta
       use m_missing, only: dmiss
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -1025,7 +1021,7 @@ contains
             end if
          end do
          do boundary_link = lnxi + 1, lnx
-            if (kcu(boundary_link) == BOUNDARY_1D) then
+            if (kcu(boundary_link) == LINK_1D_BOUNDARY) then
                link1D = lbnd1d(boundary_link)
                if (abs(prof1d(3, link1D)) == CIRCLE) then
                   teta(boundary_link) = 1.0_dp ! closed pipes always implicit
@@ -1233,16 +1229,15 @@ contains
    subroutine temporary_fix_for_sepr_3D()
       use m_flow, only: kmx, hu, au
       use m_flowgeom, only: lnx, kcu, wu
+      use network_data, only: LINK_1D
 
       implicit none
-
-      integer, parameter :: link_1D = 1
 
       integer :: link
 
       if (kmx > 0) then
          do link = 1, lnx
-            if (abs(kcu(link)) == link_1D) then
+            if (abs(kcu(link)) == LINK_1D) then
                call addlink1D(link, 1)
                if (hu(link) > 0.0_dp) then
                   wu(link) = au(link) / hu(link)
@@ -1572,26 +1567,6 @@ contains
       end if
 
    end subroutine initialize_salinity_temperature_on_boundary
-
-!> initialize salinity and temperature with nudge variables
-   subroutine initialize_salinity_and_temperature_with_nudge_variables()
-      use m_flowparameters, only: janudge, jainiwithnudge
-      use m_nudge
-
-      implicit none
-
-      if (janudge == ON) then ! and here last actions on sal/tem nudging, before we set rho
-         call set_nudgerate()
-         if (jainiwithnudge > OFF) then
-            call set_saltem_nudge()
-            if (jainiwithnudge == 2) then
-               janudge = OFF
-               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
-            end if
-         end if
-      end if
-
-   end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 !> fill_constituents_with_salinity
    subroutine fill_constituents_with_salinity()

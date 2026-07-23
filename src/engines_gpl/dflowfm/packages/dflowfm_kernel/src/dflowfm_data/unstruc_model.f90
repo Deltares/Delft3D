@@ -59,7 +59,6 @@ contains
       use m_trachy, only: trtdef_ptr
       use unstruc_netcdf, only: UNC_CONV_UGRID
       use unstruc_channel_flow
-      use m_fm_icecover, only: fm_ice_null
       use m_start_parameters, only: md_jaautostart, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       use unstruc_display, only: jagui
 
@@ -183,7 +182,6 @@ contains
       !md_findcells       = 0      !< If it is not zero, then the codes call findcells
       !md_pressakey       = 0      !< press a key (1) or not (0)
       !md_jasavenet = 0
-      call fm_ice_null()
 
    end subroutine resetModel
 
@@ -529,6 +527,8 @@ contains
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
+      use m_array_or_scalar, only: realloc
+
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -1174,8 +1174,8 @@ contains
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
-      call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
-      call prop_get(md_ptr, 'physics', 'Dicoww', constant_dicoww)
+      call prop_get(md_ptr, 'physics', 'Vicoww', vicoww%scalar)
+      call prop_get(md_ptr, 'physics', 'Dicoww', dicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
@@ -1316,33 +1316,33 @@ contains
       call prop_get(md_ptr, 'veg', 'Arealeaf', arealeaf)
       call prop_get(md_ptr, 'veg', 'Cdleaf', Cdleaf)
 
-      call prop_get(md_ptr, 'sediment', 'Sedimentmodelnr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
+      call prop_get(md_ptr, 'sediment', 'sedimentModelNr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D-Morphology
       !ideally this is moved to a subroutine that groups reworking
       if (jadpuopt == 2 .and. jased /= 4) then
-         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and sedimentModelNr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
       end if
-      call prop_get(md_ptr, 'sediment', 'SedFile', md_sedfile, success)
-      call prop_get(md_ptr, 'sediment', 'MorFile', md_morfile, success)
-
+      
+      call prop_get(md_ptr, 'sediment', 'sedFile', md_sedfile, success)
+      call prop_get(md_ptr, 'sediment', 'morFile', md_morfile, success)
       stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased == 4)
       if (jased == 4 .and. .not. stm_included) then
-         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: sedimentModelNr=4, but no *.sed or no *.mor file specified.')
       end if
 
-      call prop_get(md_ptr, 'sediment', 'DredgeFile', md_dredgefile, success)
-      call prop_get(md_ptr, 'sediment', 'BndTreatment', jabndtreatment, success) ! separate treatment boundary links in upwinding transports
-      call prop_get(md_ptr, 'sediment', 'SourSink', jasourcesink, success) ! switch off source or sink terms for sed advection
-      call prop_get(md_ptr, 'sediment', 'MorphoPol', md_morphopol, success) ! Only apply mormerge operation/bottom change in polygon
-      call prop_get(md_ptr, 'sediment', 'InMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
-      call prop_get(md_ptr, 'sediment', 'MorCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
+      call prop_get(md_ptr, 'sediment', 'dredgeFile', md_dredgefile, success)
+      call prop_get(md_ptr, 'sediment', 'bndTreatment', jabndtreatment, success) ! separate treatment boundary links in upwinding transports
+      call prop_get(md_ptr, 'sediment', 'sourSink', jasourcesink, success) ! switch off source or sink terms for sed advection
+      call prop_get(md_ptr, 'sediment', 'morphoPol', md_morphopol, success) ! Only apply mormerge operation/bottom change in polygon
+      call prop_get(md_ptr, 'sediment', 'inMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
+      call prop_get(md_ptr, 'sediment', 'morCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
       call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-      call prop_get(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
-      call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-      call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'masBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
+      call prop_get(md_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
+      call prop_get(md_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
-      call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
+      call prop_get(md_ptr, 'sediment', 'nr_of_sedFractions', Mxgr)
       MxgrKrone = -1
-      call prop_get(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
+      call prop_get(md_ptr, 'sediment', 'mxGrKrone', MxgrKrone)
 
       if (jased > 0 .and. .not. stm_included) then
          if (Mxgr <= 0) then
@@ -1354,42 +1354,42 @@ contains
                MxgrKrone = 0
             end if
          elseif (MxgrKrone == 0 .and. jased == 1) then
-            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be set to 0 for Sedimentmodelnr = 1.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be set to 0 for sedimentModelNr = 1.')
          elseif (MxgrKrone > Mxgr) then
             call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be larger than total number of fractions (Nr_of_sedfractions).')
          end if
       end if
-      call prop_get(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
-      call prop_get(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
+      call prop_get(md_ptr, 'sediment', 'sedDensCoupling', jaseddenscoupling)
+      call prop_get(md_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity)
 
       if (jased * mxgr > 0 .and. .not. stm_included) then
 
          call allocgrains()
 
-         call prop_get(md_ptr, 'sediment', 'D50', D50, Mxgr)
-         call prop_get(md_ptr, 'sediment', 'Rhosed', rhosed, Mxgr)
+         call prop_get(md_ptr, 'sediment', 'd50', D50, Mxgr)
+         call prop_get(md_ptr, 'sediment', 'rhoSed', rhosed, Mxgr)
          call setgrainsizes()
 
          if (mxgrKrone > 0) then
-            call prop_get(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
-            call prop_get(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
-            call prop_get(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'ws', Ws, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'erosionPar', erosionpar, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'tauCre', Ustcre2, MxgrKrone)
             Ustcre2 = Ustcre2 / rhomean ! ust2 = tau/rho
          end if
 
-         call prop_get(md_ptr, 'sediment', 'InitialSedimentConcentration', sedini, mxgr)
-         call prop_get(md_ptr, 'sediment', 'Uniformerodablethickness', Uniformerodablethickness, Mxgr)
-         call prop_get(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
-         call prop_get(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
-         call prop_get(md_ptr, 'sediment', 'Morfac', Dmorfac)
+         call prop_get(md_ptr, 'sediment', 'initialSedimentConcentration', sedini, mxgr)
+         call prop_get(md_ptr, 'sediment', 'uniformErodableThickness', Uniformerodablethickness, Mxgr)
+         call prop_get(md_ptr, 'sediment', 'numIntVerticalEinstein', Numintverticaleinstein)
+         call prop_get(md_ptr, 'sediment', 'jaCenEqTr', Jaceneqtr)
+         call prop_get(md_ptr, 'sediment', 'morFac', Dmorfac)
          if (jased == 0) then
             dmorfac = 0.0_dp
          end if
 
-         call prop_get(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
-         call prop_get(md_ptr, 'sediment', 'Alfabed', alfabed)
-         call prop_get(md_ptr, 'sediment', 'Alfasus', alfasus)
-         call prop_get(md_ptr, 'sediment', 'Crefcav', crefcav)
+         call prop_get(md_ptr, 'sediment', 'tMorfSpinup', tmorfspinup)
+         call prop_get(md_ptr, 'sediment', 'alfaBed', alfabed)
+         call prop_get(md_ptr, 'sediment', 'alfaSus', alfasus)
+         call prop_get(md_ptr, 'sediment', 'cRefCav', crefcav)
 
       end if ! jased
 
@@ -1424,9 +1424,12 @@ contains
       end if
 
       call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
-      call prop_get(md_ptr, 'meteo', 'StabilityFunction', atmospheric_stability_function)
+      call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
       call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity)
+      call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
+      call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
+      call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -1729,6 +1732,26 @@ contains
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+
+      if (allocated(extfile_new_list)) then
+         deallocate(extfile_new_list)
+      end if
+
+      if (len_trim(md_extfile_new) > 0) then        
+         call strsplit(md_extfile_new, 1, extfile_new_list, 1)
+      end if
+
+      if (.not. allocated(extfile_new_list)) then
+         ! If no new external forcing files were specified, allocate an empty list so functions can still 'loop' over this list.
+         allocate(extfile_new_list(0))
+      end if
+      
+      ! IniFieldFile is treated entirely by ExtForceFileNew code (during deprecation phase)
+      if (len_trim(md_inifieldfile) > 0) then
+         call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
+         extfile_new_list(size(extfile_new_list)) = md_inifieldfile
+      end if
+
       call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
       if (jarain > 0) then
          jaqin = 1
@@ -1791,6 +1814,7 @@ contains
       call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
+      call prop_get(md_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file)
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
@@ -1879,6 +1903,8 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', his_write_settings%long_culvert, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', his_write_settings%tur, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', his_write_settings%wind, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_windstress', his_write_settings%windstress, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bulk_exchange_coefficients', his_write_settings%bulk_exchange_coeff, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', his_write_settings%rain, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', his_write_settings%infilt, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', his_write_settings%airdensity, success)
@@ -2521,7 +2547,7 @@ contains
       use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
-      use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
       use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
@@ -3213,8 +3239,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
-         call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', 'Dicoww', constant_dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww%scalar, 'Uniform vertical eddy viscosity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
@@ -3336,47 +3362,55 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
+      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air water interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
+      call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
+      call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
+      call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity, 'Salinity reduction factor for saturation humidity in bulk formulae.')      
+      call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
+      call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
+      call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
+      
       if (writeall .or. jased > 0) then
-         call prop_set(prop_ptr, 'sediment', 'Sedimentmodelnr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
-         call prop_set(prop_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')
+         call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
+         call prop_set(prop_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')
 
          if (jased == 4) then
-            call prop_set(prop_ptr, 'sediment', 'SedFile', trim(md_sedfile), 'Sediment characteristics file (*.sed)')
-            call prop_set(prop_ptr, 'sediment', 'MorFile', trim(md_morfile), 'Morphology settings file (*.mor)')
-            call prop_set(prop_ptr, 'sediment', 'DredgeFile', trim(md_dredgefile), 'Dredging/dumping settings file (*.dad)')
-            call prop_set(prop_ptr, 'sediment', 'MorphoPol', md_morphopol, 'Only apply bed updating wihtin specified polygon (*.pol)')
-            call prop_set(prop_ptr, 'sediment', 'MorCFL', jamorcfl, 'Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)')
+            call prop_set(prop_ptr, 'sediment', 'sedFile', trim(md_sedfile), 'Sediment characteristics file (*.sed)')
+            call prop_set(prop_ptr, 'sediment', 'morFile', trim(md_morfile), 'Morphology settings file (*.mor)')
+            call prop_set(prop_ptr, 'sediment', 'dredgeFile', trim(md_dredgefile), 'Dredging/dumping settings file (*.dad)')
+            call prop_set(prop_ptr, 'sediment', 'morphoPol', md_morphopol, 'Only apply bed updating wihtin specified polygon (*.pol)')
+            call prop_set(prop_ptr, 'sediment', 'morCFL', jamorcfl, 'Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)')
             call prop_set(prop_ptr, 'sediment', 'DzbDtMax', dzbdtmax, 'Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)')
-            call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
-            call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
-            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
+            call prop_set(prop_ptr, 'sediment', 'inMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
+            call prop_set(prop_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
+            call prop_set(prop_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
          end if
 
          if (jased /= 4) then
-            call prop_set(prop_ptr, 'sediment', 'Nr_of_sedfractions', mxgr, 'Nr of sediment fractions, (specify the next parameters for each fraction) ')
-            call prop_set(prop_ptr, 'sediment', 'MxgrKrone', MxgrKrone, 'Highest fraction index treated by Krone ')
-            call prop_set(prop_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling, 'Sed rho coupling (0=no, 1=yes')
+            call prop_set(prop_ptr, 'sediment', 'nr_of_sedFractions', mxgr, 'Nr of sediment fractions, (specify the next parameters for each fraction) ')
+            call prop_set(prop_ptr, 'sediment', 'mxGrKrone', MxgrKrone, 'Highest fraction index treated by Krone ')
+            call prop_set(prop_ptr, 'sediment', 'sedDensCoupling', jaseddenscoupling, 'Sed rho coupling (0=no, 1=yes')
 
             if (Mxgr > 0) then
 
-               call prop_set(prop_ptr, 'sediment', 'D50', D50, 'Mean Sandgrain diameter (m), e.g. 0.0001')
-               call prop_set(prop_ptr, 'sediment', 'Rhosed', rhosed, 'Mean Sandgrain rho (kg/m3) , e.g. 2650')
+               call prop_set(prop_ptr, 'sediment', 'd50', D50, 'Mean Sandgrain diameter (m), e.g. 0.0001')
+               call prop_set(prop_ptr, 'sediment', 'rhoSed', rhosed, 'Mean Sandgrain rho (kg/m3) , e.g. 2650')
 
                if (MxgrKrone > 0) then
-                  call prop_set(prop_ptr, 'sediment', 'Ws', Ws(1:mxgrKrone), 'Fall velocity (m/s), e.g. 0.0005 m/s')
-                  call prop_set(prop_ptr, 'sediment', 'Erosionpar', erosionpar(1:mxgrKrone), 'Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s)')
-                  call prop_set(prop_ptr, 'sediment', 'Taucre', rhomean * Ustcre2(1:mxgrKrone), 'Critical shear stress for erosion    (N/m2), e.g. 0.3')
+                  call prop_set(prop_ptr, 'sediment', 'ws', Ws(1:mxgrKrone), 'Fall velocity (m/s), e.g. 0.0005 m/s')
+                  call prop_set(prop_ptr, 'sediment', 'erosionPar', erosionpar(1:mxgrKrone), 'Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s)')
+                  call prop_set(prop_ptr, 'sediment', 'tauCre', rhomean * Ustcre2(1:mxgrKrone), 'Critical shear stress for erosion    (N/m2), e.g. 0.3')
                end if
 
-               call prop_set(prop_ptr, 'sediment', 'InitialSedimentConcentration', sedini, 'Initial Sediment Concentration in jased==3 (kg/m3)  ')
-               call prop_set(prop_ptr, 'sediment', 'UniformErodablethickness', Uniformerodablethickness, 'Uniform erodable layer thickness (m)')
-               call prop_set(prop_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein, 'Number of vertical intervals in Einstein integrals ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Jaceneqtr', jaceneqtr, '1=equilibriumtransport at cell centre, 2= at netnode (default) ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Morfac ', Dmorfac, 'Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc')
-               call prop_set(prop_ptr, 'sediment', 'TMorfspinup', Tmorfspinup, 'Spin up time for morphological adaptations (s)')
-               call prop_set(prop_ptr, 'sediment', 'Alfabed', alfabed, 'Calibration par bed      load, default=1.0 ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Alfasus', alfasus, 'Calibration par suspended load, default=1.0 ( ) ')
-               call prop_set(prop_ptr, 'sediment', 'Crefcav', crefcav, 'Calibration par only in jased==3, default=20.0 ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'initialSedimentConcentration', sedini, 'Initial Sediment Concentration in jased==3 (kg/m3)  ')
+               call prop_set(prop_ptr, 'sediment', 'uniformErodableThickness', Uniformerodablethickness, 'Uniform erodable layer thickness (m)')
+               call prop_set(prop_ptr, 'sediment', 'numIntVerticalEinstein', Numintverticaleinstein, 'Number of vertical intervals in Einstein integrals ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'jaCenEqTr', jaceneqtr, '1=equilibriumtransport at cell centre, 2= at netnode (default) ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'morFac ', Dmorfac, 'Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc')
+               call prop_set(prop_ptr, 'sediment', 'tMorfSpinup', Tmorfspinup, 'Spin up time for morphological adaptations (s)')
+               call prop_set(prop_ptr, 'sediment', 'alfaBed', alfabed, 'Calibration par bed      load, default=1.0 ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'alfaSus', alfasus, 'Calibration par suspended load, default=1.0 ( ) ')
+               call prop_set(prop_ptr, 'sediment', 'cRefCav', crefcav, 'Calibration par only in jased==3, default=20.0 ( ) ')
             end if
          end if
       end if
@@ -3663,7 +3697,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'OutputDir', trim(md_OutputDir), 'Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.')
       call prop_set(prop_ptr, 'output', 'FlowGeomFile', trim(md_flowgeomfile), 'Flow geometry NetCDF *_flowgeom.nc')
-
+      
       call prop_set(prop_ptr, 'output', 'ObsFile', trim(md_obsfile), 'Points file *.xyn with observation stations with rows x, y, station name')
       call prop_set(prop_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, '0 - do not delete, 1 - delete')
       call prop_set(prop_ptr, 'output', 'CrsFile', trim(md_crsfile), 'Polyline file *_crs.pli defining observation cross sections')
@@ -3673,6 +3707,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
+      call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss

@@ -59,14 +59,14 @@ contains
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
+      use m_laterals, only: numlatsg, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
       use unstruc_files, only: resolvepath, basename
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -78,9 +78,10 @@ contains
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
-      integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
+      integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=256) :: varname
@@ -292,12 +293,9 @@ contains
 
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-                  call prepare_lateral_mask(mask, ilattype)
-               case ('2d')
-                  ilattype = ILATTP_2D
-                  call prepare_lateral_mask(mask, ilattype)
+               case ('1d', '2d')
+                  spatial_location_type = parse_spatial_location_type(trim(qid(18:)))
+                  call construct_mask(mask, UNC_LOC_S, spatial_location_type)
                case default
                   mask(:) = 1
                end select
@@ -1103,18 +1101,8 @@ contains
 
                call ini_alloc_laterals()
 
-               select case (trim(qid(17:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               call prepare_lateral_mask(kclat, ilattype)
+               spatial_location_type = parse_spatial_location_type(trim(qid(17:)))
+               call construct_mask(kclat, UNC_LOC_S, spatial_location_type)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
@@ -1490,8 +1478,8 @@ contains
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
-                            initialize_lateraldata, apply_transport
+      use m_laterals, only: numlatsg, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral

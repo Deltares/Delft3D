@@ -16,7 +16,8 @@ object WindowsBuild : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
  
     name = "Build"
@@ -75,7 +76,12 @@ object WindowsBuild : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
+                if exist C:\set-env.cmd (
+                    call C:\set-env.cmd
+                ) else (
+                    call C:\set-env-vs2022.cmd
+                )
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
@@ -99,6 +105,11 @@ object WindowsBuild : BuildType({
             rules = "+:unit-test-report-windows.xml"
         }
     }
+
+    failureConditions {
+        executionTimeoutMin = 120
+    }
+
     requirements {
         doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2022")
     }

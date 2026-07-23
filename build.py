@@ -10,17 +10,8 @@ from pathlib import Path
 
 CONFIGURATIONS = [
     "all",
-    "all-testbench",
     "fm-suite",
-    "fm-testbench",
     "d3d4-suite",
-    "d3d4-testbench",
-    "waq-testbench",
-    "part-testbench",
-    "rr-testbench",
-    "wave-testbench",
-    "swan-testbench",
-    "tc-testbench",
     "dflowfm_interacter",
     "dflowfm",
     "dimr",
@@ -91,6 +82,7 @@ def run_conan(
     build_dir: Path,
     *,
     build_type: str,
+    profile: str | None = None,
     ci: bool = False,
     build_dependencies: bool = False,
 ) -> None:
@@ -104,6 +96,8 @@ def run_conan(
     ]
     if platform.system() != "Windows":
         cmd.append(f"--build-type={build_type}")
+    if profile:
+        cmd.append(f"--profile={profile}")
     if ci:
         cmd.append("--ci")
     if build_dependencies:
@@ -171,8 +165,12 @@ def main() -> None:
     parser.add_argument(
         "--config",
         default="fm-suite",
-        choices=CONFIGURATIONS,
-        help="Configuration type to build (default: fm-suite).",
+        metavar="CONFIG",
+        help=(
+            "Configuration type to build (default: fm-suite). "
+            "The value is forwarded to CMake, which validates it. "
+            "Known configurations: " + ", ".join(CONFIGURATIONS) + "."
+        ),
     )
     parser.add_argument(
         "--build",
@@ -184,6 +182,10 @@ def main() -> None:
         default="Debug",
         choices=["Debug", "Release", "RelWithDebInfo"],
         help="CMake build type (default: Debug).",
+    )
+    parser.add_argument(
+        "--profile",
+        help="Conan profile to pass to run_conan.py (overrides environment variable CONAN_DEFAULT_PROFILE and its default).",
     )
     parser.add_argument(
         "--vs",
@@ -243,7 +245,13 @@ def main() -> None:
         clean_directories(build_dir, install_dir)
 
     # Conan
-    run_conan(build_dir, build_type=args.build_type, ci=args.ci, build_dependencies=args.build_dependencies)
+    run_conan(
+        build_dir,
+        build_type=args.build_type,
+        profile=args.profile,
+        ci=args.ci,
+        build_dependencies=args.build_dependencies,
+    )
 
     # CMake configure
     run_cmake_configure(

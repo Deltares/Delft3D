@@ -8,13 +8,17 @@
 module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
    use precision, only: dp
-   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double, c_null_char
+   use m_source_sink, only: source_sinks, source_sink_all_discharges
 
    implicit none(type, external)
 
    private
    real(kind=dp), save :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
+   public :: precice_adapter_add_to_fm_administration !> Needs to be public for unittesting
+   public :: precice_adapter_deallocate_read_arrays !> Needs to be public for unittesting
+   public :: precice_adapter_allocate_read_arrays !> Needs to be public for unittesting
 
    !> Maximum length for preCICE standard name strings stored in quantity_t.
    integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
@@ -27,10 +31,21 @@ module precice_adapter
 
    !> Container with all quantities used by the adapter.
    type :: quantities_t
+      ! Writing
       type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
       type(quantity_t) :: s1 = quantity_t(standard_name="sea_surface_height", is_active=.true.)
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
+      ! Reading
+      type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
+      type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
+      type(quantity_t) :: sinks_z_min = quantity_t(standard_name="sinks_z_min", is_active=.false.)
+      type(quantity_t) :: sinks_z_max = quantity_t(standard_name="sinks_z_max", is_active=.false.)
+      type(quantity_t) :: sources_x = quantity_t(standard_name="sources_x", is_active=.false.)
+      type(quantity_t) :: sources_y = quantity_t(standard_name="sources_y", is_active=.false.)
+      type(quantity_t) :: sources_z_min = quantity_t(standard_name="sources_z_min", is_active=.false.)
+      type(quantity_t) :: sources_z_max = quantity_t(standard_name="sources_z_max", is_active=.false.)
+      type(quantity_t) :: sources_sinks_discharge = quantity_t(standard_name="sources_sinks_discharge", is_active=.false.)
    end type quantities_t
 
    !> Concrete preCICE adapter implementation.
@@ -40,17 +55,31 @@ module precice_adapter
       character(kind=c_char, len=:), allocatable :: name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_3d_name
+      character(kind=c_char, len=:), allocatable :: sources_sinks_mesh_name
       type(quantities_t) :: quantities
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids_3d
+      integer(kind=c_int), dimension(:), allocatable :: vertex_ids_sources_sinks
       logical :: is_communicator_set = .false.
       integer(kind=c_int) :: communicator
       integer(kind=c_int) :: my_rank = 0_c_int
       integer(kind=c_int) :: number_of_ranks = 1_c_int
       real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_2d ! Mesh coordinates: x1,y1,x2,y2,...,xN,yN
       real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_3d ! Mesh coordinates: x1,y1,z1,x2,y2,z2,...,xN,yN,zN
+      real(kind=c_double), dimension(:), allocatable :: sources_sinks_mesh_coordinates  ! Mesh coordinates: x1,y1,x2,y2,...,xN,yN
+      real(kind=c_double), dimension(4) :: sources_sinks_bounding_box ! [xmin, xmax, ymin, ymax]
       integer(kind=c_int) :: mesh_size = 0_c_int ! Number of vertices in the mesh: N
       integer(kind=c_int) :: mesh_3d_size = 0_c_int ! Number of vertices in the 3D mesh: N*kmax
+      integer(kind=c_int) :: mesh_sources_sinks_size = 0_c_int ! Number of vertices in the sources_sinks_mesh
+      real(kind=c_double), dimension(:), allocatable :: sinks_x
+      real(kind=c_double), dimension(:), allocatable :: sinks_y
+      real(kind=c_double), dimension(:), allocatable :: sinks_z_min
+      real(kind=c_double), dimension(:), allocatable :: sinks_z_max
+      real(kind=c_double), dimension(:), allocatable :: sources_x
+      real(kind=c_double), dimension(:), allocatable :: sources_y
+      real(kind=c_double), dimension(:), allocatable :: sources_z_min
+      real(kind=c_double), dimension(:), allocatable :: sources_z_max
+      real(kind=c_double), dimension(:), allocatable :: sources_sinks_discharge
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -64,11 +93,14 @@ module precice_adapter
 
 contains
 
+
+
+   !===========================================================================
    !> Constructor for `precice_adapter_t`.
    !! Allocates and populates a new adapter instance with the provided settings and mesh coordinates.
    !! @return pointer to newly allocated `precice_adapter_t` instance.
    function precice_adapter_constructor(config_file, name, is_communicator_set, communicator, my_rank, number_of_ranks, cell_center_mesh_name, cell_center_mesh_3d_name, &
-                                        mesh_size, mesh_3d_size, cell_center_mesh_coordinates_2d, cell_center_mesh_coordinates_3d) result(adapter_instance)
+                                        mesh_size, mesh_3d_size, cell_center_mesh_coordinates_2d, cell_center_mesh_coordinates_3d, sources_sinks_mesh_name) result(adapter_instance)
       use precision, only: dp
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
 
@@ -82,6 +114,7 @@ contains
       integer(kind=c_int), intent(in) :: number_of_ranks
       character(kind=c_char, len=*), intent(in) :: cell_center_mesh_name
       character(kind=c_char, len=*), intent(in) :: cell_center_mesh_3d_name
+      character(kind=c_char, len=*), intent(in) :: sources_sinks_mesh_name
       integer(kind=c_int), intent(in) :: mesh_size
       integer(kind=c_int), intent(in) :: mesh_3d_size
       real(kind=c_double), dimension(:), intent(in), allocatable :: cell_center_mesh_coordinates_2d
@@ -97,6 +130,7 @@ contains
       adapter_instance%communicator = communicator
       adapter_instance%cell_center_mesh_name = cell_center_mesh_name
       adapter_instance%cell_center_mesh_3d_name = cell_center_mesh_3d_name
+      adapter_instance%sources_sinks_mesh_name = sources_sinks_mesh_name
 
       adapter_instance%mesh_size = mesh_size
       adapter_instance%mesh_3d_size = mesh_3d_size
@@ -105,19 +139,23 @@ contains
 
    end function precice_adapter_constructor
 
+
+
+   !===========================================================================
    !> Initialize the preCICE adapter and preCICE participant.
    !! Creates the preCICE participant (with or without communicator), registers mesh vertices,
    !! produces initial data if required, and calls preCICE initialize.
    subroutine precice_adapter_initialize(self)
       use precice, only: precicef_set_vertices, precicef_initialize, &
                          precicef_create_with_communicator, precicef_create, &
-                         precicef_requires_initial_data, precicef_set_mesh_access_region
+                         precicef_requires_initial_data, precicef_get_mesh_dimensions, &
+                         precicef_set_mesh_access_region
+      use MessageHandling
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
       integer(kind=c_int) :: is_initial_data_required = 0_c_int
-      character(kind=c_char, len=19) :: sources_sinks_mesh_name = "sources_sinks_nodes"
-      real(kind=c_double), dimension(4) :: sources_sinks_bounding_box = [-1.0, 1.0, -1.0, 1.0]
+      integer(kind=c_int) :: sources_sinks_mesh_dims = 0_c_int
 
       if (self%is_communicator_set) then
          call precicef_create_with_communicator(self%name, self%config_file, self%my_rank, &
@@ -133,7 +171,12 @@ contains
       call precicef_set_vertices(self%cell_center_mesh_name, self%mesh_size, self%cell_center_mesh_coordinates_2d, self%vertex_ids, len(self%cell_center_mesh_name))
       call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
 
-      call precicef_set_mesh_access_region(sources_sinks_mesh_name, sources_sinks_bounding_box, len(sources_sinks_mesh_name))
+      call precicef_get_mesh_dimensions(self%sources_sinks_mesh_name, sources_sinks_mesh_dims, len(self%sources_sinks_mesh_name))
+      if (sources_sinks_mesh_dims /= 2) then
+         call mess(LEVEL_ERROR, 'preCICE mesh "'//trim(self%sources_sinks_mesh_name)//'" does not have 2 dimensions.')
+      endif
+      self%sources_sinks_bounding_box = [-1.0, 1.0, -1.0, 1.0] ! All coupled_sources_sinks have coordinates 0.0,0.0
+      call precicef_set_mesh_access_region(self%sources_sinks_mesh_name, self%sources_sinks_bounding_box, len(self%sources_sinks_mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
@@ -144,6 +187,9 @@ contains
       summed_time_progress = 0.0
    end subroutine precice_adapter_initialize
 
+
+
+   !===========================================================================
    !> Advance the coupling when the accumulated model_time reaches the preCICE time_window.
    !! Accumulate timesteps, if the preCICE time_window is reached:
    !! - Remesh the 3D mesh
@@ -187,6 +233,8 @@ contains
             call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
          end if
          call precice_adapter_write_data(self)
+         call precice_adapter_read_data(self, max_timestep)
+         call precice_adapter_add_to_fm_administration(self)
          call precicef_advance(max_timestep)
          ! Reset summed_time_progress after advancing
          summed_time_progress = 0.0
@@ -195,17 +243,71 @@ contains
       end if
    end subroutine precice_adapter_update
 
+
+
+   !===========================================================================
    !> Finalize the preCICE adapter and perform preCICE shutdown.
    subroutine precice_adapter_finalize(self)
       use precice, only: precicef_finalize
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
+      call precice_adapter_deallocate_read_arrays(self)
       if (loc(self) >= 0) continue ! Suppress unused error.
 
       call precicef_finalize()
    end subroutine precice_adapter_finalize
 
+
+
+   !===========================================================================
+   !> Deallocate the arrays used for reading the sources/sinks data from preCICE.
+   subroutine precice_adapter_deallocate_read_arrays(self)
+      implicit none(type, external)
+      class(precice_adapter_t), intent(inout) :: self
+
+      if (allocated(self%sources_sinks_mesh_coordinates)) deallocate(self%sources_sinks_mesh_coordinates)
+      if (allocated(self%vertex_ids_sources_sinks)) deallocate(self%vertex_ids_sources_sinks)
+      if (allocated(self%sinks_x)) deallocate(self%sinks_x)
+      if (allocated(self%sinks_y)) deallocate(self%sinks_y)
+      if (allocated(self%sinks_z_min)) deallocate(self%sinks_z_min)
+      if (allocated(self%sinks_z_max)) deallocate(self%sinks_z_max)
+      if (allocated(self%sources_x)) deallocate(self%sources_x)
+      if (allocated(self%sources_y)) deallocate(self%sources_y)
+      if (allocated(self%sources_z_min)) deallocate(self%sources_z_min)
+      if (allocated(self%sources_z_max)) deallocate(self%sources_z_max)
+      if (allocated(self%sources_sinks_discharge)) deallocate(self%sources_sinks_discharge)
+   end subroutine precice_adapter_deallocate_read_arrays
+
+
+
+   !===========================================================================
+   !> Allocate or reallocate the arrays for reading the sources/sinks data from preCICE.
+   subroutine precice_adapter_allocate_read_arrays(self, dimension_in)
+      use m_alloc, only: realloc
+
+      implicit none(type, external)
+      class(precice_adapter_t), intent(inout) :: self
+      integer, intent(in) :: dimension_in
+
+      self%mesh_sources_sinks_size = dimension_in
+
+      call realloc(self%sources_sinks_mesh_coordinates, 2 * self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%vertex_ids_sources_sinks, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_x, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_y, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_x, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_y, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
+   end subroutine precice_adapter_allocate_read_arrays
+
+
+
+   !===========================================================================
    !> Write the currently active model quantities to the registered preCICE meshes.
    !! Quantities published:
    !! - `hs` (sea_floor_depth_below_sea_surface) written to 2D mesh when active.
@@ -243,5 +345,155 @@ contains
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
    end subroutine precice_adapter_write_data
+
+
+
+   !===========================================================================
+   !> Read the quantities from preCICE for the coupled sources and sinks
+   !! Store them in the adapter instance for later use in the FM administration
+   !! Quantities read:
+   !! - `vertex_ids`                                         created by preCICE, added to source_sinks%name
+   !! - `mesh_coordinates`                                   not needed, they are all zero
+   !! - `sinks_x, sinks_y, sinks_z_min, sinks_z_max`         might be zero if this is a source-only coupling
+   !! - `sources_x, sources_y, sources_z_min, sources_z_max` might be zero if this is a sink-only coupling
+   !! - `discharge`
+   subroutine precice_adapter_read_data(self, current_time_in_window)
+      use precice, only: precicef_get_mesh_vertex_size, &
+                         precicef_get_mesh_vertex_ids_and_coordinates, &
+                         precicef_read_data
+      use precision, only: dp
+      use MessageHandling, only: mess, LEVEL_ERROR
+      implicit none(type, external)
+      class(precice_adapter_t), intent(inout) :: self
+      real(kind=dp), intent(in) :: current_time_in_window
+      integer :: mesh_sources_sinks_size
+      
+      call precicef_get_mesh_vertex_size(self%sources_sinks_mesh_name, mesh_sources_sinks_size, len(self%sources_sinks_mesh_name))
+      call precice_adapter_allocate_read_arrays(self, mesh_sources_sinks_size)
+      call precicef_get_mesh_vertex_ids_and_coordinates(self%sources_sinks_mesh_name, &
+                                                        self%mesh_sources_sinks_size, &
+                                                        self%vertex_ids_sources_sinks, &
+                                                        self%sources_sinks_mesh_coordinates, &
+                                                        len(self%sources_sinks_mesh_name))
+      ! Read sinks_x
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sinks_x%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sinks_x, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_x%standard_name)))
+      ! Read sinks_y
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sinks_y%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sinks_y, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_y%standard_name)))
+      ! Read sinks_z_min
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sinks_z_min%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sinks_z_min, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_z_min%standard_name)))
+      ! Read sinks_z_max
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sinks_z_max%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sinks_z_max, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_z_max%standard_name)))
+      ! Read sources_x
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_x%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_x, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_x%standard_name)))
+      ! Read sources_y
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_y%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_y, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_y%standard_name)))
+      ! Read sources_z_min
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_z_min%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_z_min, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_z_min%standard_name)))
+      ! Read sources_z_max
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_z_max%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_z_max, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_z_max%standard_name)))
+      ! Read discharge
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_sinks_discharge%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_sinks_discharge, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_sinks_discharge%standard_name)))
+   end subroutine precice_adapter_read_data
+
+
+
+   !===========================================================================
+   !> Add the coupled sources and sinks read from preCICE to the FM administration
+   !! Compare with the 3 nearfield::*ToSrc functions for the coupling via DIMR
+   !! Assumption: a coupled_source_sink from preCICE is not completely empty
+   !! No checks needed: invalid data will be zero and need to be zero in the FM administration
+   !! TODO: When computing in parallel, checks might be needed for sources/sinks outside the local domain
+   !! TODO: Add constituents
+   !! TODO: Add momentum
+   !! TODO, optionally: lump sources/sinks in the same cell
+   !! TODO, optionally: dealloc self%sink/self%source arrays after use
+   subroutine precice_adapter_add_to_fm_administration(self)
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+
+      class(precice_adapter_t), intent(inout) :: self
+      integer :: i
+      integer :: sink_cell
+      integer :: source_cell
+
+      call init_cell_geom_as_polylines()
+      source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
+      source_sinks%num_nearfield = 0
+      
+      do i = 1, self%mesh_sources_sinks_size
+         sink_cell = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
+         source_cell = point_find_netcell(self%sources_x(i), self%sources_y(i))
+         ! sink_cell=0 and source_cell=0: 
+         !    Both source and sink location are outside this domain
+         !    Still this source_sink needs to be added to avoid hampering the MPI communication in D-Flow FM (see subroutine reduce_srsn)
+         !    D-Flow FM will handle it correctly
+         source_sinks%num_total = source_sinks%num_total + 1
+         source_sinks%num_nearfield = source_sinks%num_nearfield + 1
+         call source_sinks%resize(source_sinks%num_total)
+         write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
+         source_sinks%indices(source_sinks%num_total, 1) = sink_cell
+         source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, 1) = self%sinks_z_max(i)
+         source_sinks%indices(source_sinks%num_total, 4) = source_cell
+         source_sinks%z_bottom(source_sinks%num_total, 2) = self%sources_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, 2) = self%sources_z_max(i)
+         source_sink_all_discharges(1, source_sinks%num_total) = ABS(self%sources_sinks_discharge(i))
+      end do
+
+      call cleanup_cell_geom_polylines()
+   end subroutine precice_adapter_add_to_fm_administration
 
 end module precice_adapter

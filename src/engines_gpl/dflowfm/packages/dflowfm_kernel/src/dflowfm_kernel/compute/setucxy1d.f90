@@ -43,6 +43,7 @@ contains
 
       use m_flowgeom, only: ndx, lnx, lnxi, kcu, ln
       use m_flow, only: ucx, ucy, uc1d
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer :: n, LL, k2
       real(kind=dp) :: uxy
@@ -59,7 +60,7 @@ contains
       end do
 
       do LL = lnxi + 1, lnx ! bnd
-         if (kcu(LL) == -1) then ! 1D type link
+         if (kcu(LL) == LINK_1D_BOUNDARY) then ! 1D type link
             n = Ln(1, LL)
             k2 = Ln(2, LL)
             if (uc1D(k2) /= 0) then
