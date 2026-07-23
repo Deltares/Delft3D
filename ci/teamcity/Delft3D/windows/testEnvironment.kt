@@ -65,9 +65,6 @@ object WindowsTestEnvironment : BuildType({
                     containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%
                 """.trimIndent()
             }
-            conditions {
-                matches("trigger.type", "vcs|schedule")
-            }
         }
     }
 
