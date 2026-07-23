@@ -28,6 +28,30 @@ install(FILES
     ${redist_path}/libiomp5md_db.dll
     DESTINATION bin CONFIGURATIONS debug
 )
+
+if(NOT TARGET mkl_sequential)
+    add_library(mkl_sequential SHARED IMPORTED GLOBAL)
+
+    file(TO_CMAKE_PATH "$ENV{ONEAPI_ROOT}" oneapi_root_cmake)
+    file(GLOB mkl_sequential_dll
+        LIST_DIRECTORIES false
+        CONFIGURE_DEPENDS
+        "${mkl_path}/mkl_sequential.*.dll"
+    )
+
+    list(LENGTH mkl_sequential_dll mkl_sequential_dll_count)
+    if(NOT mkl_sequential_dll_count EQUAL 1)
+        message(FATAL_ERROR
+            "Expected exactly one mkl_sequential.*.dll in '${mkl_path}', "
+            "but found ${mkl_sequential_dll_count}."
+        )
+    endif()
+
+    set_target_properties(mkl_sequential PROPERTIES
+        IMPORTED_LOCATION "${mkl_sequential_dll}"
+        IMPORTED_IMPLIB "${oneapi_root_cmake}/mkl/latest/lib/mkl_sequential.lib"
+    )
+endif()
     
 # Intel MPI
 if("${OSS_MPI}" STREQUAL "IntelMPI")
