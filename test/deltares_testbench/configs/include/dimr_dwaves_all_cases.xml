@@ -445,4 +445,28 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
+		<testCase name="e04_f12_c01_overallspecfile" ref="dimr_noconf">
+            <path version="2026-06-02T12:53:36.167000">e04_wave/f12_wave_spectral_cache/c01_overallspecfile</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="wave/wavm-icelandnest.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
+		<testCase name="e04_f12_c02_from_specfile" ref="dimr_noconf">
+            <path version="2026-06-02T12:53:36.167000">e04_wave/f12_wave_spectral_cache/c02_from_specfile</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="wave/wavm-iceland.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
     </testCases>
