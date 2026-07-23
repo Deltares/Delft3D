@@ -121,7 +121,7 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_crsfile = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
    character(len=max_prop_length) :: md_rugfile = ' ' !< File containing runup gauges (e.g., *_rug.pli)
    character(len=max_prop_length) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
-   character(len=max_prop_length) :: md_output_polyfile = ' ' !< File containing an output polygon to restrict map output to (e.g., *_out.pol)
+  character(len=max_prop_length) :: md_output_polyfile = ' ' !< Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)
 
    character(len=max_prop_length) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
    character(len=max_prop_length) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
