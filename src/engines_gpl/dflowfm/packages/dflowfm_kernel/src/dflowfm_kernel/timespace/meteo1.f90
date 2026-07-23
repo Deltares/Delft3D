@@ -3229,7 +3229,6 @@ contains
    end subroutine operate
 
    function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
-      use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING
       use kdtree2Factory
       use m_samples
       use m_netw
@@ -3256,8 +3255,6 @@ contains
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
       use m_filez, only: oldfil, doclose, newfil
 
-      logical :: success
-
       ! Arguments
       real(kind=dp), dimension(nx), intent(in) :: xu
       real(kind=dp), dimension(nx), intent(in) :: yu
@@ -3271,6 +3268,7 @@ contains
       integer, intent(in) :: iprimpos !< only needed for averaging, position of primitive variables in network
                                       !! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
       integer, dimension(nx), intent(in), optional :: kcc
+      logical :: success
 
       ! Local variables
       integer :: ierr
@@ -3279,6 +3277,7 @@ contains
       integer :: ierror, jakc
       integer :: iav_store, nummin_store
       integer :: jakdtree
+      integer :: local_method
       integer, dimension(:), allocatable :: nnn
       integer, dimension(:), allocatable :: LnnL, Lorg
       real(kind=dp) :: zz
@@ -3294,6 +3293,7 @@ contains
       minp0 = 0
       jakc = 0
       jakdtree = 1
+      local_method = method
 
       if (present(kcc)) then
          jakc = 1
@@ -3318,9 +3318,25 @@ contains
       !   ! return?
       !end if
 
-      select case (method)
+      if (local_method /= METHOD_BILINEAR .and. filetype == arcinfo) then
 
-      case(METHOD_CONSTANT)
+         local_method = METHOD_BILINEAR
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': for ArcInfo files only the bilinear interpolation method is supported. &
+                  Method has been set to bilinear interpolation instead.'
+         call warn_flush()
+
+      else if (local_method == METHOD_BILINEAR .and. filetype /= arcinfo) then
+
+         local_method = METHOD_TRIANGULATION
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': method bilinear interpolation is used, which is only supported for ArcInfo files. &
+                  Method has been set to triangulation interpolation instead.'
+         call warn_flush()
+
+      end if
+
+      select case (local_method)
+
+      case (METHOD_CONSTANT)
 
          call savepol()
          call reapol(minp0, 0)
@@ -3340,13 +3356,15 @@ contains
          end do
          call restorepol()
 
-      case(METHOD_TRIANGULATION, METHOD_AVERAGING)
+      case (METHOD_TRIANGULATION, METHOD_AVERAGING)
 
-         if (filetype == ncflow) then
+         select case (filetype)
+         
+         case (NCFLOW)
 
             call read_flowsamples_from_netcdf(filename, qid, ierr)
 
-         elseif (filetype == ncgrid) then
+         case (NCGRID)
 
             ! TODO: support reading initial fields from NetCDF too
             msgbuf = 'timespace::timespaceinitialfield: Error while reading '''//trim(qid)// &
@@ -3354,38 +3372,26 @@ contains
             call warn_flush()
             return
 
-         else if (filetype == arcinfo) then
-
-            call read_samples_from_arcinfo(filename, 0, 0)
-
-         else if (filetype == geotiff) then
+         case (GEOTIFF)
 
             success = read_samples_from_geotiff(filename)
             if (.not. success) then
                return
             end if
 
-         else
+         case default
 
             call reasam(minp0, 0)
 
-         end if
+         end select
 
-         if (method == 5) then
+         if (local_method == METHOD_TRIANGULATION) then
 
-            if (filetype == arcinfo) then
+            jdla = 1
+            call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
+               ZPL, transformcoef, kcc)
 
-               call bilinarc(xu, yu, zh, nx)
-
-            else
-
-               jdla = 1
-               call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
-                  ZPL, transformcoef, kcc)
-
-            end if
-
-         else if (method == 6) then ! and this only applies to flow-link data
+         else if (local_method == METHOD_AVERAGING) then ! and this only applies to flow-link data
 
             ! store settings
             iav_store = iav
@@ -3536,6 +3542,16 @@ contains
             deallocate(d)
             mca = 0
             nca = 0
+
+         end if
+
+      case (METHOD_BILINEAR)
+
+         if (filetype == ARCINFO) then
+            
+            call read_samples_from_arcinfo(filename, 0, 0)
+
+            call bilinarc(xu, yu, zh, nx)
 
          end if
 
