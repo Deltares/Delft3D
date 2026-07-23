@@ -1020,7 +1020,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'cstbnd', jacstbnd)
       call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
 
-      call prop_get(md_ptr, 'numerics', 'c1e', c1e)
+      !call prop_get(md_ptr, 'numerics', 'c1e', c1e)
       call prop_get(md_ptr, 'numerics', 'c3eStable', c3e_stable)
       if (c3e_stable > 0.0_dp) then
          call mess(LEVEL_ERROR, 'c3eStable should be <= 0')
