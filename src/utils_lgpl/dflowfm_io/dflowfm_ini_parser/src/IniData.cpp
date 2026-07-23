@@ -27,18 +27,25 @@ namespace ini
         }
     }
 
-    bool IniData::HasSection(const std::string& name) const
-    {
-        if (name.empty())
-        {
-            throw std::invalid_argument("Section name cannot be empty.");
-        }
-
-        return std::any_of(sections.cbegin(), sections.cend(),
-                           [&name](const IniSection& section) { return section.IsNameEqualTo(name); });
-    }
+    bool IniData::HasSection(const std::string& name) const { return FindSection(name) != nullptr; }
 
     const IniSection& IniData::GetSection(const std::string& name) const
+    {
+        const IniSection* section = FindSection(name);
+        if (section == nullptr)
+        {
+            throw std::out_of_range("No section with name '" + name + "' was found.");
+        }
+
+        return *section;
+    }
+
+    IniSection& IniData::GetSection(const std::string& name)
+    {
+        return const_cast<IniSection&>(std::as_const(*this).GetSection(name));
+    }
+
+    const IniSection* IniData::FindSection(const std::string& name) const
     {
         if (name.empty())
         {
@@ -48,17 +55,55 @@ namespace ini
         const auto it = std::find_if(sections.cbegin(), sections.cend(),
                                      [&name](const IniSection& section) { return section.IsNameEqualTo(name); });
 
-        if (it == sections.cend())
-        {
-            throw std::out_of_range("No section with name '" + name + "' was found.");
-        }
-
-        return *it;
+        return it == sections.cend() ? nullptr : &*it;
     }
 
-    IniSection& IniData::GetSection(const std::string& name)
+    IniSection* IniData::FindSection(const std::string& name)
     {
-        return const_cast<IniSection&>(std::as_const(*this).GetSection(name));
+        return const_cast<IniSection*>(std::as_const(*this).FindSection(name));
+    }
+
+    bool IniData::HasProperty(const std::string& sectionName, const std::string& key) const
+    {
+        return FindProperty(sectionName, key) != nullptr;
+    }
+
+    const IniProperty& IniData::GetProperty(const std::string& sectionName, const std::string& key) const
+    {
+        const IniProperty* property = FindProperty(sectionName, key);
+        if (property == nullptr)
+        {
+            throw std::out_of_range("No property with key '" + key + "' was found in section with name '" +
+                                    sectionName + "'.");
+        }
+
+        return *property;
+    }
+
+    IniProperty& IniData::GetProperty(const std::string& sectionName, const std::string& key)
+    {
+        return const_cast<IniProperty&>(std::as_const(*this).GetProperty(sectionName, key));
+    }
+
+    const IniProperty* IniData::FindProperty(const std::string& sectionName, const std::string& key) const
+    {
+        if (sectionName.empty())
+        {
+            throw std::invalid_argument("Section name cannot be empty.");
+        }
+
+        if (key.empty())
+        {
+            throw std::invalid_argument("Property key cannot be empty.");
+        }
+
+        const IniSection* section = FindSection(sectionName);
+        return section == nullptr ? nullptr : section->FindProperty(key);
+    }
+
+    IniProperty* IniData::FindProperty(const std::string& sectionName, const std::string& key)
+    {
+        return const_cast<IniProperty*>(std::as_const(*this).FindProperty(sectionName, key));
     }
 
     void IniData::RemoveSection(const IniSection& section)

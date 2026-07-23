@@ -265,6 +265,201 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
+    // FindSection
+    // -------------------------------------------------------------------------
+
+    TEST(IniDataTest, FindSection_EmptyName_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+
+        EXPECT_THROW(iniData.FindSection(""), std::invalid_argument);
+    }
+
+    class IniDataFindSectionPointerCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniDataFindSectionPointerCaseInsensitiveTest, FindSection_ExistingCaseInsensitiveName_ReturnsSection)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection");
+
+        const IniSection* section = iniData.FindSection(GetParam());
+
+        ASSERT_NE(section, nullptr);
+        EXPECT_EQ(section->GetName(), "TestSection");
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniDataTest, IniDataFindSectionPointerCaseInsensitiveTest,
+                             ::testing::Values("testsection", "TestSection", "TESTSECTION"));
+
+    TEST(IniDataTest, FindSection_NonExistingName_ReturnsNullptr)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection");
+
+        EXPECT_EQ(iniData.FindSection("NonExistingName"), nullptr);
+    }
+
+    TEST(IniDataTest, FindSection_MultipleSectionsSameName_ReturnsFirstMatch)
+    {
+        IniData iniData;
+        IniSection& first = iniData.AddSection("TestSection");
+        first.AddProperty("Key", "FirstValue");
+        iniData.AddSection("TestSection").AddProperty("Key", "SecondValue");
+
+        const IniSection* found = iniData.FindSection("TestSection");
+
+        ASSERT_NE(found, nullptr);
+        EXPECT_EQ(found->GetPropertyValue("Key"), "FirstValue");
+    }
+
+    // -------------------------------------------------------------------------
+    // HasProperty
+    // -------------------------------------------------------------------------
+
+    TEST(IniDataTest, HasProperty_EmptySectionName_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+
+        EXPECT_THROW(iniData.HasProperty("", "TestKey"), std::invalid_argument);
+    }
+
+    TEST(IniDataTest, HasProperty_EmptyKey_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection");
+
+        EXPECT_THROW(iniData.HasProperty("TestSection", ""), std::invalid_argument);
+    }
+
+    TEST(IniDataTest, HasProperty_ExistingSectionAndKey_ReturnsTrue)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_TRUE(iniData.HasProperty("TestSection", "TestKey"));
+    }
+
+    TEST(IniDataTest, HasProperty_NonExistingSection_ReturnsFalse)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_FALSE(iniData.HasProperty("OtherSection", "TestKey"));
+    }
+
+    TEST(IniDataTest, HasProperty_NonExistingKey_ReturnsFalse)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_FALSE(iniData.HasProperty("TestSection", "OtherKey"));
+    }
+
+    // -------------------------------------------------------------------------
+    // GetProperty
+    // -------------------------------------------------------------------------
+
+    TEST(IniDataTest, GetProperty_EmptySectionName_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+
+        EXPECT_THROW(iniData.GetProperty("", "TestKey"), std::invalid_argument);
+    }
+
+    TEST(IniDataTest, GetProperty_EmptyKey_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection");
+
+        EXPECT_THROW(iniData.GetProperty("TestSection", ""), std::invalid_argument);
+    }
+
+    TEST(IniDataTest, GetProperty_ExistingSectionAndKey_ReturnsProperty)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        const IniProperty& property = iniData.GetProperty("TestSection", "TestKey");
+
+        EXPECT_EQ(property.GetValue(), "TestValue");
+    }
+
+    TEST(IniDataTest, GetProperty_NonExistingSection_ThrowsOutOfRange)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_THROW(iniData.GetProperty("OtherSection", "TestKey"), std::out_of_range);
+    }
+
+    TEST(IniDataTest, GetProperty_NonExistingKey_ThrowsOutOfRange)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_THROW(iniData.GetProperty("TestSection", "OtherKey"), std::out_of_range);
+    }
+
+    TEST(IniDataTest, GetProperty_NonConstIniData_AllowsModifyingProperty)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        IniProperty& property = iniData.GetProperty("TestSection", "TestKey");
+        property.SetValue("UpdatedValue");
+
+        EXPECT_EQ(iniData.GetProperty("TestSection", "TestKey").GetValue(), "UpdatedValue");
+    }
+
+    // -------------------------------------------------------------------------
+    // FindProperty
+    // -------------------------------------------------------------------------
+
+    TEST(IniDataTest, FindProperty_EmptySectionName_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+
+        EXPECT_THROW(iniData.FindProperty("", "TestKey"), std::invalid_argument);
+    }
+
+    TEST(IniDataTest, FindProperty_EmptyKey_ThrowsInvalidArgument)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection");
+
+        EXPECT_THROW(iniData.FindProperty("TestSection", ""), std::invalid_argument);
+    }
+
+    TEST(IniDataTest, FindProperty_ExistingSectionAndKey_ReturnsProperty)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        const IniProperty* property = iniData.FindProperty("TestSection", "TestKey");
+
+        ASSERT_NE(property, nullptr);
+        EXPECT_EQ(property->GetValue(), "TestValue");
+    }
+
+    TEST(IniDataTest, FindProperty_NonExistingSection_ReturnsNullptr)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_EQ(iniData.FindProperty("OtherSection", "TestKey"), nullptr);
+    }
+
+    TEST(IniDataTest, FindProperty_NonExistingKey_ReturnsNullptr)
+    {
+        IniData iniData;
+        iniData.AddSection("TestSection").AddProperty("TestKey", "TestValue");
+
+        EXPECT_EQ(iniData.FindProperty("TestSection", "OtherKey"), nullptr);
+    }
+
+    // -------------------------------------------------------------------------
     // RemoveSection
     // -------------------------------------------------------------------------
 

@@ -166,6 +166,15 @@ namespace ini
         /// @copydoc IniSection::GetProperty(const std::string&)
         const IniProperty& GetProperty(const std::string& key) const;
 
+        /// @brief Finds the first property with the specified key.
+        /// @param key The key to search for (case-insensitive).
+        /// @return A pointer to the first matching property, or @c nullptr when none is found.
+        /// @throws std::invalid_argument When @p key is empty.
+        IniProperty* FindProperty(const std::string& key);
+
+        /// @copydoc IniSection::FindProperty(const std::string&)
+        const IniProperty* FindProperty(const std::string& key) const;
+
         /// @brief Gets the value of the first property with the specified key, or a default value
         ///        if the property is not found.
         /// @param key The key to search for (case-insensitive).
@@ -184,13 +193,13 @@ namespace ini
         template <typename T>
         T GetPropertyValue(const std::string& key, const T& defaultValue = {}) const
         {
-            const auto it = FindProperty(key);
-            if (it == end())
+            const IniProperty* property = FindProperty(key);
+            if (property == nullptr)
             {
                 return defaultValue;
             }
 
-            auto convertedValue = it->TryGetValue<T>();
+            auto convertedValue = property->TryGetValue<T>();
             return convertedValue.value_or(defaultValue);
         }
 
@@ -234,13 +243,13 @@ namespace ini
         template <typename T>
         std::vector<T> GetPropertyValues(const std::string& key, char delimiter = ' ') const
         {
-            const auto it = FindProperty(key);
-            if (it == end())
+            const IniProperty* property = FindProperty(key);
+            if (property == nullptr)
             {
                 return {};
             }
 
-            auto convertedValues = it->TryGetValues<T>(delimiter);
+            auto convertedValues = property->TryGetValues<T>(delimiter);
             return convertedValues.value_or(std::vector<T>{});
         }
 
@@ -262,14 +271,14 @@ namespace ini
         template <typename T>
         IniProperty& SetPropertyValue(const std::string& key, const T& value)
         {
-            const auto it = FindProperty(key);
-            if (it == end())
+            IniProperty* property = FindProperty(key);
+            if (property == nullptr)
             {
                 return AddProperty(key, value);
             }
 
-            it->SetValue(value);
-            return *it;
+            property->SetValue(value);
+            return *property;
         }
 
         /// @brief Sets the values of the first multi-value property with the specified key, or
@@ -283,14 +292,14 @@ namespace ini
         template <typename T>
         IniProperty& SetPropertyValues(const std::string& key, const std::vector<T>& values, char separator = ' ')
         {
-            const auto it = FindProperty(key);
-            if (it == end())
+            IniProperty* property = FindProperty(key);
+            if (property == nullptr)
             {
                 return AddProperty(key, values, separator);
             }
 
-            it->SetValues(values, separator);
-            return *it;
+            property->SetValues(values, separator);
+            return *property;
         }
 
         /// @brief Removes the specified property from the section.
@@ -363,9 +372,6 @@ namespace ini
         std::string name;
         std::vector<IniProperty> properties;
         std::vector<std::string> comments;
-
-        std::vector<IniProperty>::iterator FindProperty(const std::string& key);
-        std::vector<IniProperty>::const_iterator FindProperty(const std::string& key) const;
     };
 
 } // namespace ini

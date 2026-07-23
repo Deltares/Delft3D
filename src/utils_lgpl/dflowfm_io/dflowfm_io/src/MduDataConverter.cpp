@@ -13,18 +13,6 @@ namespace dflowfm_io
 
     namespace
     {
-        const ini::IniProperty* FindProperty(
-            const ini::IniData& iniData,
-            const std::string& sectionName,
-            const std::string& propertyKey)
-        {
-            if (!iniData.HasSection(sectionName)) return nullptr;
-            const auto& section = iniData.GetSection(sectionName);
-
-            if (!section.HasProperty(propertyKey)) return nullptr;
-            return &section.GetProperty(propertyKey);
-        }
-
         std::string GetExpectedValueDescription(const PropertySchema& propertySchema)
         {
             static constexpr std::string_view prefix = "Expected value type: ";
@@ -83,7 +71,7 @@ namespace dflowfm_io
         {
             for (const auto& propertySchema : sectionSchema.properties)
             {
-                const auto* iniProperty = FindProperty(iniData, sectionSchema.name, propertySchema.key);
+                const auto* iniProperty = iniData.FindProperty(sectionSchema.name, propertySchema.key);
                 const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
 
                 if (!iniProperty || !iniProperty->HasValue())
