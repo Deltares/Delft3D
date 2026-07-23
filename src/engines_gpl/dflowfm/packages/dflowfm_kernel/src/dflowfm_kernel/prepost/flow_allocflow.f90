@@ -58,7 +58,7 @@ contains
                         dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
-                        au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
@@ -957,6 +957,8 @@ contains
       call aerr('au_nostrucs(lnkx)', ierr, lnkx)
       call realloc(viu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('viu(lnkx)', ierr, lnkx)
+      call realloc(vius, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+      call aerr('vius(ndkx)', ierr, ndkx)
       call realloc(vicLu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('vicLu(lnkx)', ierr, lnkx)
       call realloc(suu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)

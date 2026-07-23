@@ -45,8 +45,8 @@ contains
       use precision, only: dp, comparereal
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, ucmag, jaeulervel, &
-                        flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, javiusp, viclu, viusp, &
                         vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
+                        flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, viclu, vius, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
