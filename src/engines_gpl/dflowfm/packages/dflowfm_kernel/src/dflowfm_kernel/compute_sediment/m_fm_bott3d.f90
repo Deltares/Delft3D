@@ -1582,7 +1582,7 @@ contains
       use m_flow, only: kmx, hs
       use m_flowgeom, only: ndx
       use m_transport, only: constituents, itra1, itran, isalt, ised1
-      use m_sediment, only: botcrit, stmpar
+      use m_sediment, only: stmpar
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
       use m_get_kbot_ktop
@@ -1596,6 +1596,7 @@ contains
       integer :: k, ll, kb, kt, kk, itrac
 
       real(kind=dp) :: hsk
+      real(kind=dp) :: botcrit
       real(kind=dp) :: ddp
 
    !!
@@ -1605,9 +1606,6 @@ contains
       if (kmx == 0) then
          do k = 1, ndx
             hsk = hs(k)
-            ! After review, botcrit as a parameter is a really bad idea, as it causes concentration explosions if chosen poorly or blchg is high.
-            ! Instead, allow bottom level changes up until 5% of the waterdepth to influence concentrations
-            ! This is in line with the bed change messages above. Above that threshold, change the concentrations as if blchg==0.95hs
             if (hsk < epshs) then
                cycle
             end if
