@@ -9,8 +9,11 @@
 # or include it in the default build by configuring with:
 #     -D DFLOWFM_IO_BUILD_PYTHON_WHEEL=ON
 
-option(DFLOWFM_IO_BUILD_PYTHON_WHEEL
-	"Build the dflowfm_io Python wheel as part of the default build" OFF)
+option(
+	DFLOWFM_IO_BUILD_PYTHON_WHEEL
+	"Build the dflowfm_io Python wheel as part of the default build"
+	OFF
+)
 
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
 
