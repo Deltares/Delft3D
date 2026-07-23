@@ -1335,7 +1335,6 @@ contains
       call prop_get(md_ptr, 'sediment', 'inMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
       call prop_get(md_ptr, 'sediment', 'morCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
       call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-      call prop_get(md_ptr, 'sediment', 'masBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
