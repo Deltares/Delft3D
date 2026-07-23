@@ -229,6 +229,8 @@ contains
          method = WEIGHTFACTORS
       case ('sample')
          method = METHOD_TRIANGULATION
+      case ('arcinfo')
+         method = METHOD_BILINEAR
       case ('uniform')
          method = SPACEANDTIME
       case ('polygon')
