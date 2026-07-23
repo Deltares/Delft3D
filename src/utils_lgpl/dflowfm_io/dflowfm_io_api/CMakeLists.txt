@@ -60,4 +60,11 @@ if(DOTNET_EXECUTABLE)
     endif()
 endif()
 
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+	add_subdirectory(wrappers/python)
+else()
+	message(STATUS "No Python 3 interpreter found. Skipping the Python wheel target.")
+endif()
+
 add_subdirectory(test)
