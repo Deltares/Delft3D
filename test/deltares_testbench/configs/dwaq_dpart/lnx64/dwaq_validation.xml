@@ -27,7 +27,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
 
         <!-- Configuration for DELWAQ steady-state options - dummy -->
@@ -46,7 +46,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
     </defaultTestCases>
 

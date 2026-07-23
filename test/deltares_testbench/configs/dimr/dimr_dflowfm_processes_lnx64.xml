@@ -133,7 +133,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="dflowfm_default_restart">
     <programs>
@@ -159,7 +159,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="dflowfm_platform_specific_refs">
     <programs>
@@ -180,7 +180,7 @@
         <from>lnx64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="dflowfm_platform_specific_refs_restart">
     <programs>
@@ -206,7 +206,7 @@
         <from>lnx64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
   </defaultTestCases>
   <!--

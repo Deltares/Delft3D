@@ -127,7 +127,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
         <testCase name="dwaq_default">
       <location ref="dsctestbench-cases" type="input">
@@ -138,7 +138,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
   </defaultTestCases>
   <!--

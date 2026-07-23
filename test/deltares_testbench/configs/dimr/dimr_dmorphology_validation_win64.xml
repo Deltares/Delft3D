@@ -69,7 +69,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="platform_specific">
     <programs>
@@ -87,7 +87,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
   </defaultTestCases>
   <!--

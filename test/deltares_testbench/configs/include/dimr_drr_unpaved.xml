@@ -38,7 +38,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c02_401_Ernst" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c02_401_Ernst</path>
@@ -62,7 +62,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
 
 
@@ -113,7 +113,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c05_404_Seepage" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c05_404_Seepage</path>
@@ -132,7 +132,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c06_405_Seepage" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c06_405_Seepage</path>
@@ -151,7 +151,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c07_406_Evaporation" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c07_406_Evaporation</path>
@@ -172,7 +172,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c08_407_Evaporation" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c08_407_Evaporation</path>
@@ -193,7 +193,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c09_416_DeZeeuwHellinga" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c09_416_DeZeeuwHellinga</path>
@@ -211,7 +211,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c10_417_DeZeeuwHellinga" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c10_417_DeZeeuwHellinga</path>
@@ -235,7 +235,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
 
 
@@ -287,7 +287,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
 
 <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
@@ -340,7 +340,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e108(drr)_f01(unpaved)_c15_422_MaxInfiltration" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c15_422_MaxInfiltration</path>
@@ -364,6 +364,6 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
     </testCases>

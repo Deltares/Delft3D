@@ -18,7 +18,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
 
         <testCase name="part_default">
@@ -47,7 +47,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
 
         <testCase name="plct_default">
@@ -68,7 +68,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
 
         <testCase name="dwaq_opl">
@@ -87,6 +87,6 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
     </defaultTestCases>

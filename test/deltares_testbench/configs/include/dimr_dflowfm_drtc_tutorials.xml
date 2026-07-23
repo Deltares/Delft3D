@@ -14,7 +14,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f02_c02_multiple_controlled_parameters" ref="dimr_trunk">
             <path version="2026-07-09T15:59:34.448000">e105_dflowfm-drtc/f02_tutorials/c02_multiple_controlled_parameters</path>
@@ -28,7 +28,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f02_c03_multiple_controlled_structures" ref="dimr_trunk">
             <path version="2026-07-09T15:59:40.800000">e105_dflowfm-drtc/f02_tutorials/c03_multiple_controlled_structures</path>
@@ -42,6 +42,6 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
     </testCases>

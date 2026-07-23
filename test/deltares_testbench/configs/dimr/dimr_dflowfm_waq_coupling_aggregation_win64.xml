@@ -95,7 +95,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="dflowfm_platform_specific_refs">
       <location ref="dsctestbench-cases" type="input">
@@ -106,7 +106,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
   </defaultTestCases>
     <!--

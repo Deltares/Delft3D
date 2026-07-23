@@ -118,7 +118,7 @@
 				<from>win64</from>
 			</location>
 			
-			<!-- seconds -->
+
 		</testCase>
         <testCase name="container_postproc">
             <location ref="reference_results" type="reference">

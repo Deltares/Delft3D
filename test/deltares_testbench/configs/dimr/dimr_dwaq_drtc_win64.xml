@@ -91,7 +91,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="dummy">
             <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro -->
@@ -103,7 +103,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
     </defaultTestCases>
     <!--

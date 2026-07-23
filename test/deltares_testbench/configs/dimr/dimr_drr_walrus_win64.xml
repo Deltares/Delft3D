@@ -79,7 +79,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="drr_windowsref">
             <programs>
@@ -96,7 +96,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
     </defaultTestCases>
     <!--

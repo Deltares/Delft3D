@@ -80,7 +80,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="dflowfm_config">
     <programs>
@@ -98,7 +98,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
     <testCase name="platform_specific">
     <programs>
@@ -116,7 +116,7 @@
         <from>win64</from>
       </location>
       
-      <!-- seconds -->
+
     </testCase>
   </defaultTestCases>
   <!--

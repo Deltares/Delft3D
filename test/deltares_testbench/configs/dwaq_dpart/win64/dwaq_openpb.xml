@@ -26,7 +26,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="waqpb_export">
             <programs>
@@ -57,7 +57,7 @@
                 <from>.</from>
             </location>
             
-            <!-- seconds -->
+
         </testCase>
     </defaultTestCases>
 

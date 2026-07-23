@@ -14,7 +14,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c02_restart_of_c01_at_2nd_day" ref="dimr_trunk">
             <path version="2025-10-15T15:06:56.419000">e105_dflowfm-drtc/f05_restart/c02_restart_of_c01_at_2nd_day</path>
@@ -28,7 +28,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c03_multiple_controlled_structures" ref="dimr_trunk">
             <path version="2025-10-15T15:06:57.782000">e105_dflowfm-drtc/f05_restart/c03_multiple_controlled_structures</path>
@@ -42,7 +42,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c04_restart_of_c03_at_2nd_day" ref="dimr_trunk">
             <path version="2025-10-15T15:06:59.221000">e105_dflowfm-drtc/f05_restart/c04_restart_of_c03_at_2nd_day</path>
@@ -56,7 +56,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c05_multiple_controlled_parameters_refdate_2006_12_31" ref="dimr_trunk">
             <path version="2025-10-15T15:07:00.554000">e105_dflowfm-drtc/f05_restart/c05_multiple_controlled_parameters_refdate_2006_12_31</path>
@@ -70,7 +70,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c06_f03_c20_171_PIDCntrl-1" ref="dimr_trunk">
             <path version="2025-10-15T15:07:02.341000">e105_dflowfm-drtc/f05_restart/c06_f03_c20_171_PIDCntrl-1</path>
@@ -84,7 +84,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c07_f03_c20_171_PIDCntrl-1_restart" ref="dimr_trunk">
             <path version="2025-10-15T15:07:04.079000">e105_dflowfm-drtc/f05_restart/c07_f03_c20_171_PIDCntrl-1_restart</path>
@@ -98,7 +98,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c08_f01_c071_closing_at_sill" ref="dimr_trunk">
             <path version="2026-07-08T11:54:31.352000">e105_dflowfm-drtc/f05_restart/c08_f01_c071_closing_at_sill</path>
@@ -110,7 +110,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c09_f01_c071_closing_at_sill_refdate_2006_12_31" ref="dimr_trunk">
             <path version="2026-07-08T11:54:35.790000">e105_dflowfm-drtc/f05_restart/c09_f01_c071_closing_at_sill_refdate_2006_12_31</path>
@@ -122,7 +122,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c10_f01_c071_closing_at_sill_restart_2007_01_03" ref="dimr_trunk">
             <path version="2026-07-08T11:54:40.746000">e105_dflowfm-drtc/f05_restart/c10_f01_c071_closing_at_sill_restart_2007_01_03</path>
@@ -134,7 +134,7 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
         <testCase name="e105_f05_c11_f01_c071_closing_at_sill_restart_2007_01_03_refdate_2006_12_31" ref="dimr_trunk">
             <path version="2026-07-08T11:54:45.438000">e105_dflowfm-drtc/f05_restart/c11_f01_c071_closing_at_sill_restart_2007_01_03_refdate_2006_12_31</path>
@@ -146,6 +146,6 @@
                 </file>
             </checks>
             
-            <!-- seconds -->
+
         </testCase>
     </testCases>

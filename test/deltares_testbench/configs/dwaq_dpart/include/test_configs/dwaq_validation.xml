@@ -627,7 +627,7 @@
             <from>.</from>
         </location>
         
-        <!-- seconds -->
+
         <checks>
             <file name="channel3d_option17.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -654,7 +654,7 @@
             <from>.</from>
         </location>
         
-        <!-- seconds -->
+
         <checks>
             <file name="channel3d_option18.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
