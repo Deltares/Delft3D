@@ -300,6 +300,10 @@ BInt4 Get_element(BInt4 set, BText grp_name, BText elm_name, BInt4* usr_index, B
             nefis_errno = RT_retrieve_var(set, &grp_pointer, v, &var_file_offset);
             if (nefis_errno != 0)
             {
+                if (nefis_errno != 1)
+                {
+                    return nefis_errno;
+                }
                 nefis_errcnt += 1;
                 nefis_errno = 3006;
                 sprintf(error_text, "Variable dimension %ld not found for:\n group \"%s\", element \"%s\"\n", v + 1,
