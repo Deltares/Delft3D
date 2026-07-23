@@ -1,85 +1,121 @@
 """Locating and loading the native dflowfm_io_api library.
 
-Importing this module loads the shared library once and exposes it as :data:`lib`.
+Importing this module loads the shared library once and exposes it as :data:`lib` — a single
+process-wide :class:`Lib` handle that every other module (``bindings``, ``errors``, ``mdu``)
+shares. See :class:`LibLoader` for the search order.
 """
 
 import ctypes
-import os
 import platform
 from pathlib import Path
 
 
-def _find_project_root():
-    """Walk up from this file to find the top-level project root (contains CMakeLists.txt)."""
-    d = os.path.dirname(os.path.abspath(__file__))
-    result = None
-    while True:
-        if os.path.isfile(os.path.join(d, "CMakeLists.txt")):
-            result = d
-        parent = os.path.dirname(d)
-        if parent == d:
-            break
-        d = parent
-    return result
+def _platform_library_name() -> str:
+    """Return the native library filename for the current platform."""
+    names = {
+        "Windows": "dflowfm_io_api.dll",
+        "Darwin": "libdflowfm_io_api.dylib",
+    }
+    return names.get(platform.system(), "libdflowfm_io_api.so")
 
 
-class DLLFinder:
+class LibLoader:
     """Locate and load the native dflowfm_io_api library.
 
-    Search order:
-      1. bundled next to this package (``_lib/`` — the installed wheel case),
-      2. the ``DFLOWFM_IO_LIB_DIR`` environment variable (explicit override),
-      3. common CMake build output directories under the project root (developer tree).
+    Search order (first match wins):
+      1. an explicit override — the ``dll_dir`` argument, else the ``DFLOWFM_IO_LIB_DIR``
+         environment variable — so a developer can always point at a specific build;
+      2. the copy bundled next to this package (``_lib/`` — the installed-wheel case);
+      3. common CMake build-output directories under the project root (the developer tree).
+
+    The explicit override deliberately outranks the bundled copy: if you set it, you mean it.
     """
 
     def __init__(self, dll_dir: str | None = None):
-        self.dll_name = (
-            "dflowfm_io_api.dll"
-            if platform.system() == "Windows"
-            else "libdflowfm_io_api.so"
-        )
+        self.dll_name = _platform_library_name()
         self.dll_dir = dll_dir
+        self._loaded: ctypes.CDLL | None = None
 
-    def _bundled_lib(self) -> Path | None:
-        # The native library is bundled at the package root (dflowfm_io/_lib), one level up from
-        # this base subpackage.
-        candidate = Path(__file__).parents[1] / "_lib" / self.dll_name
-        return candidate if candidate.is_file() else None
+    @staticmethod
+    def _project_root() -> Path | None:
+        """Walk up from this file to the top-most directory that contains a ``CMakeLists.txt``."""
+        directory = Path(__file__).resolve().parent
+        root: Path | None = None
+        for candidate in (directory, *directory.parents):
+            if (candidate / "CMakeLists.txt").is_file():
+                root = candidate
+        return root
 
-    def _env_lib(self) -> Path | None:
-        directory = self.dll_dir or os.environ.get("DFLOWFM_IO_LIB_DIR", "")
-        if not directory:
-            return None
-        candidate = Path(directory) / self.dll_name
-        return candidate if candidate.is_file() else None
+    def _override_dir(self) -> str | None:
+        """The explicit library directory, if any: constructor argument or environment variable."""
+        import os
 
-    def _cmake_lib(self) -> Path | None:
-        root = _find_project_root()
-        if not root:
-            return None
-        for sub in ("build", "build/Debug", "build/Release", "build/RelWithDebInfo", "build/MinSizeRel"):
-            candidate = Path(root) / sub / self.dll_name
-            if candidate.is_file():
-                return candidate
-        return None
+        return self.dll_dir or os.environ.get("DFLOWFM_IO_LIB_DIR") or None
+
+    def _candidate_dirs(self) -> list[Path]:
+        """The directories to search, in precedence order."""
+        dirs: list[Path] = []
+
+        override = self._override_dir()
+        if override:
+            dirs.append(Path(override))
+
+        # Bundled at the package root (dflowfm_io/_lib), one level up from this base subpackage.
+        dirs.append(Path(__file__).resolve().parents[1] / "_lib")
+
+        root = self._project_root()
+        if root:
+            for sub in ("build", "build/Debug", "build/Release", "build/RelWithDebInfo", "build/MinSizeRel"):
+                dirs.append(root / sub)
+
+        return dirs
 
     def find(self) -> Path:
-        for finder in (self._bundled_lib, self._env_lib, self._cmake_lib):
-            path = finder()
-            if path is not None:
-                return path
-        raise RuntimeError(
-            f"Could not find {self.dll_name}. Searched: bundled package _lib/, "
-            f"DFLOWFM_IO_LIB_DIR, and CMake build directories."
-        )
+        """Return the path to the native library, or raise if it cannot be found."""
+        searched = [directory / self.dll_name for directory in self._candidate_dirs()]
+        found = next((candidate for candidate in searched if candidate.is_file()), None)
+        if found is None:
+            locations = "\n  ".join(str(path) for path in searched)
+            raise RuntimeError(f"Could not find {self.dll_name}. Searched:\n  {locations}")
+        return found
 
     def load(self) -> ctypes.CDLL:
-        path = self.find()
-        # Ensure any sibling runtime DLLs next to the library are discoverable (Windows).
-        if platform.system() == "Windows" and hasattr(os, "add_dll_directory"):
-            os.add_dll_directory(str(path.parent))
-        return ctypes.CDLL(str(path))
+        """Load the native library (once) and return the shared :class:`ctypes.CDLL` handle."""
+        if self._loaded is None:
+            path = self.find()
+            # Make sibling runtime DLLs next to the library discoverable (Windows).
+            if platform.system() == "Windows":
+                import os
+
+                if hasattr(os, "add_dll_directory"):
+                    os.add_dll_directory(str(path.parent))
+            self._loaded = ctypes.CDLL(str(path))
+        return self._loaded
 
 
-dll_finder = DLLFinder()
-lib = dll_finder.load()
+class Lib:
+    """The loaded native dflowfm_io_api library.
+
+    A thin wrapper over the underlying :class:`ctypes.CDLL`: attribute access forwards to it, so
+    ``lib.mdu_get_int(...)`` calls the C function and ``lib.mdu_get_int.argtypes = [...]`` configures
+    it — exactly as on a raw ``CDLL``. Instances *are* the library, hence ``lib = Lib()``.
+    """
+
+    def __init__(self, loader: LibLoader | None = None):
+        self.loader = loader or LibLoader()
+        self._cdll = self.loader.load()
+
+    @property
+    def cdll(self) -> ctypes.CDLL:
+        """The underlying ctypes handle."""
+        return self._cdll
+
+    def __getattr__(self, name: str):
+        # Reached only for names not found on the wrapper itself (the C symbols); forward to the CDLL.
+        # Guard `_cdll` to avoid infinite recursion before it is assigned in __init__.
+        if name == "_cdll":
+            raise AttributeError(name)
+        return getattr(self._cdll, name)
+
+
+lib = Lib()
