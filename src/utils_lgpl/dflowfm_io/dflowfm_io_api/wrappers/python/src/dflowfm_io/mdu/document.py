@@ -55,7 +55,12 @@ class MduDocument:
 
     def __del__(self):
         if hasattr(self, "_ref") and self._ref.handle:
-            lib.mdu_destroy(ctypes.byref(self._ref.handle))
+            try:
+                lib.mdu_destroy(ctypes.byref(self._ref.handle))
+            except Exception:
+                # At interpreter shutdown the module globals (lib, ctypes) may already be torn
+                # down to None; swallow so the finalizer doesn't raise noisily.
+                pass
             self._ref.handle = None
 
     @property
