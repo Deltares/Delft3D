@@ -1534,6 +1534,9 @@ contains
       end if
 
       call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      if (kmx <= 1) then
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! turn off 3D-only setting
+      end if
       if (jawave == WAVE_NC_OFFLINE .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
          call mess(LEVEL_ERROR, 'Wavemodelnr = 7 does not support 3Dwavebreakerturbulence. Set 3Dwavebreakerturbulence = 0.')
          istat = DFM_WRONGINPUT

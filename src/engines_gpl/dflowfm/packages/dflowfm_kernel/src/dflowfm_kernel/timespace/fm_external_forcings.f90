@@ -445,8 +445,8 @@ contains
    subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
       use m_waves
       use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
-                    WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
-                    WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+                WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
 
       integer, intent(in) :: number_of_links !< number of links
       integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links

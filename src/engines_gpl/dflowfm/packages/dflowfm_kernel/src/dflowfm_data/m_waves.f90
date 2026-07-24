@@ -121,6 +121,8 @@ contains
       fbreak = 1.0_dp
       fwavpendep = 1.5_dp ! best setting based on sensitivity
 
+      offline_wave_input_requirements = 0
+      offline_wave_input_providers = 0
       call reset_waves()
    end subroutine default_waves
 
@@ -128,8 +130,6 @@ contains
 !! Upon loading of new model/MDU, call default_waves() instead.
    subroutine reset_waves()
       extfor_wave_initialized = .false. !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
-      offline_wave_input_requirements = 0
-      offline_wave_input_providers = 0
    end subroutine reset_waves
 
 !> Record that an external-forcing provider was configured for an offline wave quantity.

@@ -176,7 +176,10 @@ contains
                                            ndx, 1, hwav, twav, &
                                            ag, .true., forcing_for_transformation, &
                                            JONSWAPgamma0, sbxwav, sbywav, ierror)
-            hwav = min(hwav, gammax * hs)
+            ! Wave-7 receives a wave field already computed by the external
+            ! wave model. Preserve its converted RMS height here; applying the
+            ! local FLOW depth limiter a second time changes that field and
+            ! breaks the established offline-coupling result in shallow cells.
             call wave_uorbrlabda()
 
             if (kmx == 0 .and. .not. flow_without_waves) then

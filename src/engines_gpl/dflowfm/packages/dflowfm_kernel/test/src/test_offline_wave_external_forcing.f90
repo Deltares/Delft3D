@@ -207,4 +207,26 @@ contains
    end subroutine test_radiation_stress_detects_missing_active_force_provider
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_wave_requirements_survive_flow_state_reset, test_wave_requirements_survive_flow_state_reset,
+   subroutine test_wave_requirements_survive_flow_state_reset() bind(C)
+      use m_waveconst, only: WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_PERIOD
+      use m_waves, only: default_waves, reset_waves, offline_wave_input_requirements
+
+      integer :: expected_requirements
+
+      expected_requirements = ior(WAVE_INPUT_PERIOD, ior(WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y))
+
+      call default_waves()
+      offline_wave_input_requirements = expected_requirements
+      call reset_waves()
+
+      call f90_expect_eq(offline_wave_input_requirements, expected_requirements, &
+                         'flow-state reset must retain offline wave requirements derived from the MDU')
+
+      call default_waves()
+      call f90_expect_eq(offline_wave_input_requirements, 0, &
+                         'full model reset must clear offline wave requirements')
+   end subroutine test_wave_requirements_survive_flow_state_reset
+   !$f90tw)
+
 end module test_offline_wave_external_forcing
