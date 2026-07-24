@@ -10,6 +10,18 @@
 namespace ini
 {
 
+    using time_point = std::chrono::system_clock::time_point;
+    using path = std::filesystem::path;
+
+    static const std::vector<std::pair<TimePointFormat, std::string>> timePointFormats = {
+        {TimePointFormat::IsoDateTime, "%Y-%m-%d %H:%M:%S"},
+        {TimePointFormat::SlashDateTime, "%Y/%m/%d %H:%M:%S"},
+        {TimePointFormat::IsoDate, "%Y-%m-%d"},
+        {TimePointFormat::SlashDate, "%Y/%m/%d"},
+        {TimePointFormat::CompactDateTime, "%Y%m%d%H%M%S"},
+        {TimePointFormat::CompactDateOnly, "%Y%m%d"},
+    };
+
     std::string IniValueConverter::BoolToString(bool value, BoolFormat format)
     {
         switch (format)
@@ -24,21 +36,21 @@ namespace ini
         }
     }
 
-    std::string IniValueConverter::TimePointToString(std::chrono::system_clock::time_point value, TimePointFormat format)
+    std::string IniValueConverter::TimePointToString(time_point value, TimePointFormat format)
     {
         auto truncated = std::chrono::floor<std::chrono::seconds>(value);
-
-        switch (format)
+        for (const auto& [fmt, formatString] : timePointFormats)
         {
-            case TimePointFormat::DateTime:
-                return std::format("{:%Y%m%d%H%M%S}", truncated);
-            case TimePointFormat::DateOnly:
-            default:
-                return std::format("{:%Y%m%d}", truncated);
+            if (fmt == format)
+            {
+                return std::vformat("{:" + formatString + "}", std::make_format_args(truncated));
+            }
         }
+
+        throw std::invalid_argument("Unknown TimePointFormat.");
     }
 
-    std::string IniValueConverter::PathToString(const std::filesystem::path& value) { return value.string(); }
+    std::string IniValueConverter::PathToString(const path& value) { return value.string(); }
 
     bool IniValueConverter::BoolFromString(const std::string& value)
     {
@@ -58,22 +70,18 @@ namespace ini
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid boolean.");
     }
 
-    std::chrono::system_clock::time_point IniValueConverter::TimePointFromString(const std::string& value)
+    time_point IniValueConverter::TimePointFromString(const std::string& value, std::optional<TimePointFormat> format)
     {
-        static constexpr std::array formats = {
-            "%Y-%m-%d %H:%M:%S", // 2020-01-30 12:00:00
-            "%Y/%m/%d %H:%M:%S", // 2020/01/30 12:00:00
-            "%Y-%m-%d",          // 2020-01-30
-            "%Y/%m/%d",          // 2020/01/30
-            "%Y%m%d%H%M%S",      // 20200130120000
-            "%Y%m%d",            // 20200130
-        };
-
-        for (const auto* fmt : formats)
+        for (const auto& [fmt, formatString] : timePointFormats)
         {
-            std::chrono::system_clock::time_point result;
+            if (format.has_value() && fmt != *format)
+            {
+                continue;
+            }
+
+            time_point result;
             std::istringstream iss(value);
-            if (iss >> std::chrono::parse(fmt, result))
+            if (iss >> std::chrono::parse(formatString, result))
             {
                 // Ensure the entire string was consumed (no trailing characters)
                 char remaining;
@@ -85,11 +93,6 @@ namespace ini
         }
 
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid date/time.");
-    }
-
-    std::filesystem::path IniValueConverter::PathFromString(const std::string& value)
-    {
-        return std::filesystem::path(value);
     }
 
 } // namespace ini

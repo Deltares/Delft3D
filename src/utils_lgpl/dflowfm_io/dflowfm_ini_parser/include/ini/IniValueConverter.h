@@ -31,14 +31,21 @@ namespace ini
     /// @brief Describes the string format for date/time values.
     enum class TimePointFormat
     {
-        DateOnly,
-        DateTime
+        CompactDateOnly, // 20200130
+        CompactDateTime, // 20200130120000
+        IsoDate,         // 2020-01-30
+        IsoDateTime,     // 2020-01-30 12:00:00
+        SlashDate,       // 2020/01/30
+        SlashDateTime,   // 2020/01/30 12:00:00
     };
 
     /// @brief Provides methods for converting values from and to string representations suitable for INI files.
     class IniValueConverter
     {
     public:
+        using time_point = std::chrono::system_clock::time_point;
+        using path = std::filesystem::path;
+
         /// @brief Converts a value of the specified type @p T to its INI string representation.
         /// @tparam T The type of the value to convert.
         /// @param value The value to convert.
@@ -54,11 +61,11 @@ namespace ini
             {
                 return FloatingPointToString(value);
             }
-            else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
+            else if constexpr (std::is_same_v<T, time_point>)
             {
                 return TimePointToString(value);
             }
-            else if constexpr (std::is_same_v<T, std::filesystem::path>)
+            else if constexpr (std::is_same_v<T, path>)
             {
                 return PathToString(value);
             }
@@ -89,7 +96,7 @@ namespace ini
         /// @param value The time_point value to convert.
         /// @param format The date/time string format to apply to the value.
         /// @return The string representation of the time_point value.
-        static std::string ToString(std::chrono::system_clock::time_point value, TimePointFormat format)
+        static std::string ToString(time_point value, TimePointFormat format)
         {
             return TimePointToString(value, format);
         }
@@ -132,10 +139,9 @@ namespace ini
         /// @param format The date/time string format to apply to each value.
         /// @param separator Character used to separate values. Default is a whitespace.
         /// @return Delimited string representation of @p values in the requested @p format.
-        static std::string ToMultiValueString(const std::vector<std::chrono::system_clock::time_point>& values,
-                                              TimePointFormat format, char separator = ' ')
+        static std::string ToMultiValueString(const std::vector<time_point>& values, TimePointFormat format, char separator = ' ')
         {
-            return JoinValues(values, separator, [format](std::chrono::system_clock::time_point value) {
+            return JoinValues(values, separator, [format](time_point value) {
                 return ToString(value, format);
             });
         }
@@ -162,11 +168,11 @@ namespace ini
             {
                 return FloatingPointFromString<T>(trimmed);
             }
-            else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
+            else if constexpr (std::is_same_v<T, time_point>)
             {
                 return TimePointFromString(trimmed);
             }
-            else if constexpr (std::is_same_v<T, std::filesystem::path>)
+            else if constexpr (std::is_same_v<T, path>)
             {
                 return PathFromString(trimmed);
             }
@@ -174,6 +180,16 @@ namespace ini
             {
                 return DefaultFromString<T>(trimmed);
             }
+        }
+
+        /// @brief Converts a string to a time_point value, restricting parsing to formats matching @p format.
+        /// @param value The string representation of the time_point value.
+        /// @param format The expected date/time string format of @p value.
+        /// @return The converted time_point value.
+        /// @throws std::invalid_argument When @p value is empty or does not match the expected format.
+        static time_point FromString(const std::string& value, TimePointFormat format)
+        {
+            return TimePointFromString(trim(value), format);
         }
 
         /// @brief Converts a delimited string to a collection of values of type @p T.
@@ -213,8 +229,8 @@ namespace ini
 
     private:
         static std::string BoolToString(bool value, BoolFormat format = BoolFormat::TrueFalse);
-        static std::string TimePointToString(std::chrono::system_clock::time_point value, TimePointFormat format = TimePointFormat::DateTime);
-        static std::string PathToString(const std::filesystem::path& value);
+        static std::string TimePointToString(time_point value, TimePointFormat format = TimePointFormat::CompactDateTime);
+        static std::string PathToString(const path& value);
 
         template <std::floating_point T>
         static std::string FloatingPointToString(T value, FloatFormat format = FloatFormat::General)
@@ -229,7 +245,8 @@ namespace ini
                 default: {
                     std::string result = std::format("{:.7g}", value);
 
-                    if (result.find('.') == std::string::npos && result.find('e') == std::string::npos &&
+                    if (result.find('.') == std::string::npos && 
+                        result.find('e') == std::string::npos &&
                         result.find('E') == std::string::npos)
                     {
                         result += ".0";
@@ -264,8 +281,8 @@ namespace ini
         }
 
         static bool BoolFromString(const std::string& value);
-        static std::chrono::system_clock::time_point TimePointFromString(const std::string& value);
-        static std::filesystem::path PathFromString(const std::string& value);
+        static time_point TimePointFromString(const std::string& value, std::optional<TimePointFormat> format = std::nullopt);
+        static path PathFromString(const std::string& value) { return path(value); }
 
         template <std::floating_point T>
         static T FloatingPointFromString(const std::string& value)

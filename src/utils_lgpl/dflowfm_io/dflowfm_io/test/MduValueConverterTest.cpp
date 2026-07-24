@@ -45,7 +45,7 @@ namespace dflowfm_io::test
     } // namespace
 
     // -------------------------------------------------------------------------
-    // FromString — scalar types
+    // FromString — String
     // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, FromString_String_ReturnsCorrectValue)
@@ -56,6 +56,10 @@ namespace dflowfm_io::test
         ASSERT_TRUE(result.has_value());
         EXPECT_EQ(std::get<std::string>(*result), "hello");
     }
+
+    // -------------------------------------------------------------------------
+    // FromString — Int
+    // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, FromString_Int_ReturnsCorrectValue)
     {
@@ -73,6 +77,10 @@ namespace dflowfm_io::test
 
         EXPECT_FALSE(result.has_value());
     }
+
+    // -------------------------------------------------------------------------
+    // FromString — Float
+    // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, FromString_Float_ReturnsCorrectValue)
     {
@@ -100,6 +108,10 @@ namespace dflowfm_io::test
         EXPECT_FALSE(result.has_value());
     }
 
+    // -------------------------------------------------------------------------
+    // FromString — IntBool
+    // -------------------------------------------------------------------------
+
     TEST(MduValueConverterTest, FromString_IntBool_Zero_ReturnsFalse)
     {
         auto schema = MakeSchema(ValueType::IntBool);
@@ -126,6 +138,10 @@ namespace dflowfm_io::test
         EXPECT_FALSE(result.has_value());
     }
 
+    // -------------------------------------------------------------------------
+    // FromString — Path
+    // -------------------------------------------------------------------------
+
     TEST(MduValueConverterTest, FromString_Path_ReturnsCorrectValue)
     {
         auto schema = MakeSchema(ValueType::Path);
@@ -135,9 +151,26 @@ namespace dflowfm_io::test
         EXPECT_EQ(std::get<std::filesystem::path>(*result), std::filesystem::path("some/path/file.txt"));
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_ReturnsCorrectValue)
+    // -------------------------------------------------------------------------
+    // FromString — DateTime
+    // -------------------------------------------------------------------------
+
+    TEST(MduValueConverterTest, FromString_DateTime_CompactDateTime_ReturnsCorrectValue)
     {
         auto schema = MakeSchema(ValueType::DateTime);
+        auto result = MduValueConverter::FromString(schema, "20200130120000");
+
+        const auto expected =
+            std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
+            std::chrono::hours{12};
+
+        ASSERT_TRUE(result.has_value());
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), expected);
+    }
+
+    TEST(MduValueConverterTest, FromString_DateTime_DateFormat_ReturnsCorrectValue)
+    {
+        auto schema = MakeSchema(ValueType::DateTime, FormatType::Date);
         auto result = MduValueConverter::FromString(schema, "20200130");
 
         const auto expected =
@@ -145,6 +178,24 @@ namespace dflowfm_io::test
 
         ASSERT_TRUE(result.has_value());
         EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), expected);
+    }
+
+    TEST(MduValueConverterTest, FromString_DateTime_DateFormat_WithTimeComponent_ReturnsNullopt)
+    {
+        // Schema expects CompactDateOnly, but the value carries a time component.
+        auto schema = MakeSchema(ValueType::DateTime, FormatType::Date);
+        auto result = MduValueConverter::FromString(schema, "20200130120000");
+
+        EXPECT_FALSE(result.has_value());
+    }
+
+    TEST(MduValueConverterTest, FromString_DateTime_CompactDateTime_DateOnlyValue_ReturnsNullopt)
+    {
+        // Schema expects CompactDateTime, but the value only carries a date.
+        auto schema = MakeSchema(ValueType::DateTime);
+        auto result = MduValueConverter::FromString(schema, "20200130");
+
+        EXPECT_FALSE(result.has_value());
     }
 
     TEST(MduValueConverterTest, FromString_DateTime_InvalidValue_ReturnsNullopt)
@@ -156,7 +207,7 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // FromString — list types
+    // FromString — List types
     // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, FromString_StringList_ReturnsCorrectValues)
@@ -198,7 +249,7 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // FromString — enum types
+    // FromString — Enum types
     // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, FromString_Enum_ValidName_ReturnsCorrectValue)
@@ -253,7 +304,7 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // ToString — scalar types
+    // ToString — String
     // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, ToString_String_ReturnsCorrectValue)
@@ -264,6 +315,10 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "hello");
     }
 
+    // -------------------------------------------------------------------------
+    // ToString — Int
+    // -------------------------------------------------------------------------
+
     TEST(MduValueConverterTest, ToString_Int_ReturnsCorrectValue)
     {
         auto schema = MakeSchema(ValueType::Int);
@@ -271,6 +326,10 @@ namespace dflowfm_io::test
 
         EXPECT_EQ(result, "42");
     }
+
+    // -------------------------------------------------------------------------
+    // ToString — Float
+    // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, ToString_Float_ReturnsCorrectValue)
     {
@@ -296,6 +355,10 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "1.234500e+03");
     }
 
+    // -------------------------------------------------------------------------
+    // ToString — IntBool
+    // -------------------------------------------------------------------------
+
     TEST(MduValueConverterTest, ToString_IntBool_False_ReturnsZero)
     {
         auto schema = MakeSchema(ValueType::IntBool);
@@ -312,6 +375,10 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "1");
     }
 
+    // -------------------------------------------------------------------------
+    // ToString — Path
+    // -------------------------------------------------------------------------
+
     TEST(MduValueConverterTest, ToString_Path_ReturnsCorrectValue)
     {
         auto schema = MakeSchema(ValueType::Path);
@@ -319,6 +386,10 @@ namespace dflowfm_io::test
 
         EXPECT_EQ(result, "some/path");
     }
+
+    // -------------------------------------------------------------------------
+    // ToString — DateTime
+    // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, ToString_DateTime_ReturnsCorrectValue)
     {
@@ -345,7 +416,7 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // ToString — list types
+    // ToString — List types
     // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, ToString_StringList_ReturnsSpaceSeparated)
@@ -385,7 +456,7 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // ToString — enum types
+    // ToString — Enum types
     // -------------------------------------------------------------------------
 
     TEST(MduValueConverterTest, ToString_Enum_ReturnsEnumName)
@@ -467,6 +538,35 @@ namespace dflowfm_io::test
 
         ASSERT_TRUE(result.has_value());
         EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+    }
+
+    TEST(MduValueConverterTest, RoundTrip_DateTime_CompactDateTime)
+    {
+        auto schema = MakeSchema(ValueType::DateTime, FormatType::DateTime);
+        const auto timePoint = std::chrono::system_clock::time_point{
+            std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
+            std::chrono::hours{12}};
+        const Value original = timePoint;
+
+        auto raw = MduValueConverter::ToString(schema, original);
+        auto result = MduValueConverter::FromString(schema, raw);
+
+        ASSERT_TRUE(result.has_value());
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), timePoint);
+    }
+
+    TEST(MduValueConverterTest, RoundTrip_DateTime_DateFormat)
+    {
+        auto schema = MakeSchema(ValueType::DateTime, FormatType::Date);
+        const auto timePoint = std::chrono::system_clock::time_point{
+            std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}}};
+        const Value original = timePoint;
+
+        auto raw = MduValueConverter::ToString(schema, original);
+        auto result = MduValueConverter::FromString(schema, raw);
+
+        ASSERT_TRUE(result.has_value());
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), timePoint);
     }
 
 } // namespace dflowfm_io::test

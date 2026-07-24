@@ -15,10 +15,37 @@ namespace dflowfm_io
 
     namespace
     {
+        ini::FloatFormat GetFloatFormat(const PropertySchema& schema)
+        {
+            if (schema.format == FormatType::Fixed)
+            {
+                return ini::FloatFormat::Fixed;
+            }
+            if (schema.format == FormatType::Scientific)
+            {
+                return ini::FloatFormat::Scientific;
+            }
+            return ini::FloatFormat::General;
+        }
+
+        ini::TimePointFormat GetTimePointFormat(const PropertySchema& schema)
+        {
+            return (schema.format.has_value() && schema.format.value() == FormatType::Date)
+                       ? ini::TimePointFormat::CompactDateOnly
+                       : ini::TimePointFormat::CompactDateTime;
+        }
+
         template <typename T>
         std::optional<Value> TryFromString(const std::string& raw)
         {
             try { return ini::IniValueConverter::FromString<T>(raw); }
+            catch (const std::exception&) { return std::nullopt; }
+        }
+
+        std::optional<Value> TryFromDateTimeString(const PropertySchema& schema, const std::string& raw)
+        {
+            const auto format = GetTimePointFormat(schema);
+            try { return ini::IniValueConverter::FromString(raw, format); }
             catch (const std::exception&) { return std::nullopt; }
         }
 
@@ -45,26 +72,6 @@ namespace dflowfm_io
             for (const auto& ev : schema.enum_values)
                 if (ev.value == number) return EnumValue{ev.value};
             return std::nullopt;
-        }
-
-        ini::FloatFormat GetFloatFormat(const PropertySchema& schema)
-        {
-            if (schema.format == FormatType::Fixed)
-            {
-                return ini::FloatFormat::Fixed;
-            }
-            if (schema.format == FormatType::Scientific)
-            {
-                return ini::FloatFormat::Scientific;
-            }
-            return ini::FloatFormat::General;
-        }
-
-        ini::TimePointFormat GetTimePointFormat(const PropertySchema& schema)
-        {
-            return (schema.format.has_value() && schema.format.value() == FormatType::Date)
-                       ? ini::TimePointFormat::DateOnly
-                       : ini::TimePointFormat::DateTime;
         }
 
         template <typename T>
@@ -135,7 +142,7 @@ namespace dflowfm_io
             case ValueType::Path:
                 return TryFromString<std::filesystem::path>(raw);
             case ValueType::DateTime:
-                return TryFromString<std::chrono::system_clock::time_point>(raw);
+                return TryFromDateTimeString(schema, raw);
             case ValueType::StringList:
                 return TryFromMultiValueString<std::string>(raw);
             case ValueType::PathList:
