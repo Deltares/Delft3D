@@ -208,15 +208,13 @@ void STDCALL BMI_GET_VAR_POINTER(int64_t* sharedDLLHandle, char* var_name, void*
 
 void STDCALL BMI_GET_VAR_SHAPE(int64_t* sharedDLLHandle, char* var_name, int* values, int var_name_len)
 {
-    typedef void*(STDCALL * MyProc)(char*, double**);
+    typedef void*(STDCALL * MyProc)(char*, int*);
     MyProc proc = (MyProc)GetDllProcedure(sharedDLLHandle, "get_var_shape");
 
-    int i;           // vs2102 and lower do not support typedefs in combination
-    int* bmi_values; // with local variable declaration, hence declare at start of function
     char* c_var_name = strFcpy(var_name, var_name_len);
     if (proc != NULL)
     {
-        (void*)(*proc)(var_name, values);
+        (void*)(*proc)(c_var_name, values);
     }
 
     free(c_var_name);
