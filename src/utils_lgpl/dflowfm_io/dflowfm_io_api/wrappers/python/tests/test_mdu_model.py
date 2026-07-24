@@ -228,6 +228,14 @@ class TestMduModel(unittest.TestCase):
         doc.model.set_datetime("time.refdate", new_dt)
         self.assertEqual(doc.model.get_datetime("time.refdate"), new_dt)
 
+    def test_pre_1970_datetime_round_trips(self):
+        # datetime.fromtimestamp raises OSError on Windows for negative epochs; the getter must
+        # build from the epoch instead so historical reference dates read back.
+        doc = _loaded_doc()
+        early = datetime(1900, 1, 1, tzinfo=timezone.utc)
+        doc.model.set_datetime("time.refdate", early)
+        self.assertEqual(doc.model.get_datetime("time.refdate"), early)
+
     def test_set_naive_datetime_is_treated_as_utc(self):
         # A naive datetime must round-trip against the UTC-aware get_datetime, not shift by the
         # local offset.

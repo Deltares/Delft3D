@@ -54,7 +54,13 @@ GET_SCALAR = {
     "enum_name": ("ctypes.c_char_p", "str", 'value.value.decode("utf-8")'),
     "string": ("ctypes.c_char_p", "str", 'value.value.decode("utf-8")'),
     "path": ("ctypes.c_char_p", "Path", 'Path(value.value.decode("utf-8"))'),
-    "datetime": ("ctypes.c_int64", "datetime", "datetime.fromtimestamp(value.value, tz=timezone.utc)"),
+    # Build from the epoch rather than datetime.fromtimestamp: the latter raises OSError on Windows
+    # for negative (pre-1970) epochs, which are realistic MDU reference dates (e.g. 19000101).
+    "datetime": (
+        "ctypes.c_int64",
+        "datetime",
+        "datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=value.value)",
+    ),
 }
 
 # list getter: suffix -> (element ctypes type, Python return type, expression converting `array_out[i]`)
@@ -237,7 +243,7 @@ def render_model(functions) -> tuple[str, int]:
         '"""',
         "",
         "import ctypes",
-        "from datetime import datetime, timezone",
+        "from datetime import datetime, timedelta, timezone",
         "from pathlib import Path",
         "",
         "from dflowfm_io.base import HandleRef, check_result, lib",

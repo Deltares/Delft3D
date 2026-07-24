@@ -5,7 +5,7 @@ value marshalling. Regenerated from the C header, so the accessors cannot drift 
 """
 
 import ctypes
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from dflowfm_io.base import HandleRef, check_result, lib
@@ -45,7 +45,7 @@ class MduModel:
     def get_datetime(self, key: str) -> datetime:
         value = ctypes.c_int64()
         check_result(lib.mdu_get_datetime(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
-        return datetime.fromtimestamp(value.value, tz=timezone.utc)
+        return datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=value.value)
 
     def get_enum(self, key: str) -> int:
         value = ctypes.c_int32()
