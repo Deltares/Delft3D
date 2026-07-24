@@ -128,12 +128,12 @@ contains
       real(kind=dp) :: humidity_at_wind_height ! specific humidity at wind sensor's height
       real(kind=dp) :: temperature_at_wind_height ! air temperature at wind sensor's height
       real(kind=dp) :: temperature_pfactor, humidity_pfactor
-      real(kind=dp) :: psi_momentum, psi_heat, psi_humidity
+      real(kind=dp) :: psi_diff_momentum, psi_diff_heat, psi_diff_humidity
       real(kind=dp) :: obukhov_length, richardson_number
       real(kind=dp) :: z0_momentum, z0_heat, z0_humidity
       real(kind=dp) :: u_star, t_star, q_star
       real(kind=dp) :: convergence_error
-      real(kind=dp) :: log_denominator_momentum, log_denominator_heat, log_denominator_humidity
+      real(kind=dp) :: log_denominator_momentum, log_denominator_heat, log_denominator_humidity, log_nominator_heat
       real(kind=dp) :: heat_profile_correction, humidity_profile_correction
       real(kind=dp) :: convective_velocity_scale
       real(kind=dp) :: inverse_obukhov_length
@@ -176,9 +176,9 @@ contains
          u_star = 0.04_dp * delta_wind_speed
          t_star = 0.04_dp * delta_temperature
          q_star = 0.04_dp * delta_specific_humidity
-         psi_momentum = 0.0_dp
-         psi_heat = 0.0_dp
-         psi_humidity = 0.0_dp
+         psi_diff_momentum = 0.0_dp
+         psi_diff_heat = 0.0_dp
+         psi_diff_humidity = 0.0_dp
          obukhov_length = 0.0_dp
          richardson_number = 0.0_dp
 
@@ -196,20 +196,16 @@ contains
                                                              temperature_at_wind_height, air_pressure, humidity_at_wind_height, &
                                                              salt_saturation_humidity_reduction_factor, sensor_height_wind_velocity)
 
-               log_denominator_momentum = log(sensor_height_wind_velocity) - log(z0_momentum) - psi_momentum
-               log_denominator_momentum = sign(max(abs(log_denominator_momentum), EPS8), log_denominator_momentum)
-               log_denominator_heat = log(sensor_height_wind_velocity) - log(z0_heat) - psi_heat
+               log_denominator_momentum = safe_log_denominator(log(sensor_height_wind_velocity) - log(z0_momentum) - psi_diff_momentum)
+               log_nominator_heat = log(sensor_height_wind_velocity) - log(z0_heat) - psi_diff_heat
 
-               obukhov_length = (sensor_height_wind_velocity / richardson_number) * log_denominator_heat / log_denominator_momentum**2
+               obukhov_length = (sensor_height_wind_velocity / richardson_number) * log_nominator_heat / log_denominator_momentum**2
                obukhov_length = sign(min(abs(obukhov_length), OBUKHOV_LENGTH_LIMIT), obukhov_length)
                inverse_obukhov_length = 1.0_dp / obukhov_length
 
-               psi_momentum = stability_profile_momentum((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
-                              stability_profile_momentum(z0_momentum * inverse_obukhov_length)
-               psi_heat = stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
-                          stability_profile_heat_humidity(z0_heat * inverse_obukhov_length)
-               psi_humidity = stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
-                              stability_profile_heat_humidity(z0_humidity * inverse_obukhov_length)
+               call compute_psi_stability_corrections(sensor_height_wind_velocity, sensor_height_wind_velocity, &
+                                                   sensor_height_wind_velocity, z0_momentum, z0_heat, z0_humidity, &
+                                                   inverse_obukhov_length, psi_diff_momentum, psi_diff_heat, psi_diff_humidity)
 
                if (abs(sensor_height_wind_velocity - sensor_height_air_temperature) > 0.01_dp) then
                   heat_profile_correction = log(sensor_height_wind_velocity) - log(sensor_height_air_temperature) &
@@ -227,22 +223,18 @@ contains
                   delta_specific_humidity = humidity_at_wind_height - surface_humidity
                end if
 
-               log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum) - psi_momentum
-               log_denominator_heat = log(sensor_height_wind_velocity + z0_momentum) - log(z0_heat) - psi_heat
-               log_denominator_humidity = log(sensor_height_wind_velocity + z0_momentum) - log(z0_humidity) - psi_humidity
+               log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum) - psi_diff_momentum
+               log_denominator_heat = log(sensor_height_wind_velocity + z0_momentum) - log(z0_heat) - psi_diff_heat
+               log_denominator_humidity = log(sensor_height_wind_velocity + z0_momentum) - log(z0_humidity) - psi_diff_humidity
             else
                log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum)
                log_denominator_heat = log(sensor_height_air_temperature + z0_momentum) - log(z0_heat)
                log_denominator_humidity = log(sensor_height_humidity + z0_momentum) - log(z0_humidity)
             end if
 
-            log_denominator_momentum = sign(max(abs(log_denominator_momentum), EPS8), log_denominator_momentum)
-            log_denominator_heat = sign(max(abs(log_denominator_heat), EPS8), log_denominator_heat)
-            log_denominator_humidity = sign(max(abs(log_denominator_humidity), EPS8), log_denominator_humidity)
-
-            result%u_star = vonkarw * delta_wind_speed / log_denominator_momentum
-            result%t_star = vonkarw * delta_temperature / log_denominator_heat
-            result%q_star = vonkarw * delta_specific_humidity / log_denominator_humidity
+            result%u_star = vonkarw * delta_wind_speed / safe_log_denominator(log_denominator_momentum)
+            result%t_star = vonkarw * delta_temperature / safe_log_denominator(log_denominator_heat)
+            result%q_star = vonkarw * delta_specific_humidity / safe_log_denominator(log_denominator_humidity)
 
             convergence_error = sqrt(((result%u_star - u_star) / max(abs(u_star), EPS8))**2 + &
                                      ((result%t_star - t_star) / max(abs(t_star), EPS8))**2 + &
@@ -271,25 +263,14 @@ contains
 
          ! compute bulk transfer coefficients Cd, Ch, and Ce, at the respective sensor heights:
          if (options%include_stability) then
-            psi_momentum = stability_profile_momentum((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
-                           stability_profile_momentum(z0_momentum * inverse_obukhov_length)
-            psi_heat = stability_profile_heat_humidity((sensor_height_air_temperature + z0_momentum) * inverse_obukhov_length) - &
-                       stability_profile_heat_humidity(z0_heat * inverse_obukhov_length)
-            psi_humidity = stability_profile_heat_humidity((sensor_height_humidity + z0_momentum) * inverse_obukhov_length) - &
-                           stability_profile_heat_humidity(z0_humidity * inverse_obukhov_length)
-         else
-            psi_momentum = 0.0_dp
-            psi_heat = 0.0_dp
-            psi_humidity = 0.0_dp
+            call compute_psi_stability_corrections(sensor_height_wind_velocity, sensor_height_air_temperature, &
+                                                   sensor_height_humidity, z0_momentum, z0_heat, z0_humidity, &
+                                                   inverse_obukhov_length, psi_diff_momentum, psi_diff_heat, psi_diff_humidity)
          end if
          
-         log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum) - psi_momentum
-         log_denominator_heat = log(sensor_height_air_temperature + z0_momentum) - log(z0_heat) - psi_heat
-         log_denominator_humidity = log(sensor_height_humidity + z0_momentum) - log(z0_humidity) - psi_humidity
-         
-         log_denominator_momentum = sign(max(abs(log_denominator_momentum), EPS8), log_denominator_momentum)
-         log_denominator_heat = sign(max(abs(log_denominator_heat), EPS8), log_denominator_heat)
-         log_denominator_humidity = sign(max(abs(log_denominator_humidity), EPS8), log_denominator_humidity)
+         log_denominator_momentum = safe_log_denominator(log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum) - psi_diff_momentum)
+         log_denominator_heat = safe_log_denominator(log(sensor_height_air_temperature + z0_momentum) - log(z0_heat) - psi_diff_heat)
+         log_denominator_humidity = safe_log_denominator(log(sensor_height_humidity + z0_momentum) - log(z0_humidity) - psi_diff_humidity)
          
          result%c_d = vonkarw**2/log_denominator_momentum/log_denominator_momentum
          result%c_h = vonkarw**2/log_denominator_momentum/log_denominator_heat
@@ -745,6 +726,49 @@ contains
       richardson_number = CONST_GRAVITY * virtual_temperature_difference * sensor_height_wind_velocity / &
                           (air_virtual_temperature * lower_clipped_wind_speed * lower_clipped_wind_speed)
    end function compute_richardson_number
+
+   !> Ensure log denominator is not too close to zero while preserving sign.
+   !! Applies a minimum absolute value threshold (EPS8) to prevent numerical issues in divisions.
+   pure function safe_log_denominator(value) result(safe_value)
+      real(kind=dp), intent(in) :: value !< Input log denominator value.
+      real(kind=dp) :: safe_value !< Safe value with minimum magnitude EPS8.
+      
+      safe_value = sign(max(abs(value), EPS8), value)
+   end function safe_log_denominator
+
+   !> Compute stability corrections (psi) for momentum, heat and humidity at sensor heights.
+   !! Calculates the difference between profile corrections at sensor height and roughness length.
+   pure subroutine compute_psi_stability_corrections(sensor_height_wind_velocity, sensor_height_air_temperature, &
+                                                     sensor_height_humidity, z0_momentum, z0_heat, z0_humidity, &
+                                                     inverse_obukhov_length, psi_diff_momentum, psi_diff_heat, psi_diff_humidity)
+      real(kind=dp), intent(in) :: sensor_height_wind_velocity !< Height of wind velocity sensor [m].
+      real(kind=dp), intent(in) :: sensor_height_air_temperature !< Height of air temperature sensor [m].
+      real(kind=dp), intent(in) :: sensor_height_humidity !< Height of humidity sensor [m].
+      real(kind=dp), intent(in) :: z0_momentum !< Momentum roughness length [m].
+      real(kind=dp), intent(in) :: z0_heat !< Heat roughness length [m].
+      real(kind=dp), intent(in) :: z0_humidity !< Humidity roughness length [m].
+      real(kind=dp), intent(in) :: inverse_obukhov_length !< Inverse Obukhov length [1/m].
+      real(kind=dp), intent(out) :: psi_diff_momentum !< Stability correction for momentum [-].
+      real(kind=dp), intent(out) :: psi_diff_heat !< Stability correction for heat [-].
+      real(kind=dp), intent(out) :: psi_diff_humidity !< Stability correction for humidity [-].
+      
+      real(kind=dp) :: zeta_m_top, zeta_m_z0, zeta_h_top, zeta_h_z0, zeta_q_top, zeta_q_z0
+
+      ! Dimensionless heights z/L for stability parameter (each sensor height is specific to its variable)
+      zeta_m_top = (sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length
+      zeta_m_z0 = z0_momentum * inverse_obukhov_length
+      
+      zeta_h_top = (sensor_height_air_temperature + z0_momentum) * inverse_obukhov_length
+      zeta_h_z0 = z0_heat * inverse_obukhov_length
+      
+      zeta_q_top = (sensor_height_humidity + z0_momentum) * inverse_obukhov_length
+      zeta_q_z0 = z0_humidity * inverse_obukhov_length
+
+      ! Compute stability corrections as profile differences
+      psi_diff_momentum = stability_profile_momentum(zeta_m_top) - stability_profile_momentum(zeta_m_z0)
+      psi_diff_heat = stability_profile_heat_humidity(zeta_h_top) - stability_profile_heat_humidity(zeta_h_z0)
+      psi_diff_humidity = stability_profile_heat_humidity(zeta_q_top) - stability_profile_heat_humidity(zeta_q_z0)
+   end subroutine compute_psi_stability_corrections
 
    !> Stability profile for heat and humidity (ECMWF_Psi).
    pure function stability_profile_heat_humidity(stability_parameter) result(stability_correction)
