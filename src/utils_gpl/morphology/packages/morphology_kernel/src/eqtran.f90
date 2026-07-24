@@ -227,6 +227,8 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    logical :: equi_conc ! equilibrium concentration given (instead of susp. transport rate)
    logical :: sbc_total ! total bed load given (instead of m,n components)
    logical :: sus_total ! total suspended load given (instead of m,n components)
+   !
+   real(fp), parameter :: CHEZY_MIN = 1.0e-6_fp ! minimum Chezy value
 !
 !! executable statements -------------------------------------------------------
 !
@@ -242,7 +244,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    umod = real(realpar(RP_VELCH), fp)
    zumod = real(realpar(RP_ZVLCH), fp)
    h1 = real(realpar(RP_DEPTH), fp)
-   chezy = real(realpar(RP_CHEZY), fp)
+   chezy = max(real(realpar(RP_CHEZY), fp), CHEZY_MIN)
    hrms = real(realpar(RP_HRMS), fp)
    tp = real(realpar(RP_TPEAK), fp)
    teta = real(realpar(RP_TETA), fp)
@@ -370,7 +372,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       !
       ! Engelund-Hansen
       !
-      call tranb1(utot, di50, chezy, h1, npar, &
+      call tranb1(utot, di50, chezy, npar, &
                 & par, sbot, ssus)
       !
       sbc_total = .true.
@@ -388,8 +390,13 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       !
       ! Ackers-White
       !
-      call tranb3(utot, d90, chezy, h1, npar, &
-                & par, sbot, ssus)
+      errmsg = 'Ackers-White method is disabled'
+      call write_error(errmsg, unit=lundia)
+      error = .true.
+      return
+      !
+      ! call tranb3(utot, d35, chezy, h1, npar, &
+      !           & par, sbot, ssus)
       !
       sbc_total = .true.
       sus_total = .true.

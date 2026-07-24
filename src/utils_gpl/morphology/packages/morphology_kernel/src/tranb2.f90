@@ -51,7 +51,7 @@ contains
       real(fp), intent(in) :: d90
       real(fp), intent(in) :: h
       real(fp), intent(in) :: hidexp !< hiding & exposure factor
-      real(fp), dimension(npar), intent(in) :: par
+      real(fp), dimension(npar), intent(inout) :: par
       real(fp), intent(in) :: utot
       !
       real(fp), intent(out) :: sbot
@@ -59,12 +59,16 @@ contains
 !
 ! Local variables
 !
-      real(fp) :: acal
-      real(fp) :: ag !       gravity acceleration
-      real(fp) :: amurs
-      real(fp) :: cgrain
-      real(fp) :: delta !   relative density of sediment particle
-      real(fp) :: y
+      real(fp) :: acal ! user-specified calibration coefficient
+      real(fp) :: ag ! gravity acceleration
+      real(fp) :: mu_ripple ! ripple factor
+      real(fp) :: chezy_limited ! Chezy value restricted to values larger than CHEZY_MIN
+      real(fp) :: chezy_grain ! grain related Chezy value
+      real(fp) :: delta ! relative density of sediment particle
+      real(fp) :: theta ! dimensionless shear stress
+      real(fp) :: excess_theta ! excess dimensionless shear stress
+      
+      real(fp), parameter :: THETA_CRITICAL = 0.047_fp ! critical dimensionless shear stress
 !
 !! executable statements -------------------------------------------------------
 !
@@ -77,23 +81,21 @@ contains
       !
       !     bed load transport
       !
-      if (chezy < 1.0e-6) then
-         return
-      end if
-      if ((12.0 * h / d90) < 1.0e-6) then
-         amurs = 1.0_fp
-      else
-         cgrain = 18.0 * log10(12.0 * h / d90)
-         amurs = (cgrain / chezy)**1.5
-         amurs = max(amurs, 1.0_fp)
-      end if
-      y = (utot / chezy)**2 / amurs / delta / d50
-      y = max(y - hidexp * 0.047, 0.0_fp)
-      if (y < 1.0e-6) then
-         return
-      end if
-      sbot = acal * 8.0 * sqrt(ag * delta * d50 * y) * d50 * y
+      chezy_grain = 18.0_fp * log10(max(12.0_fp * h / d90, 1.0_fp))
+      mu_ripple = (chezy_limited / chezy_grain)**1.5_fp
+      mu_ripple = min(mu_ripple, 1.0_fp)
+      theta = (utot / chezy_limited)**2 / delta / d50
+      excess_theta = max(mu_ripple * theta - hidexp * THETA_CRITICAL, 0.0_fp)
+      !
+      sbot = acal * 8.0_fp * sqrt(ag * delta * d50 * excess_theta) * d50 * excess_theta
       ssus = 0.0_fp
+      !
+      ! Meyer-Peter-Muller specific output
+      par = missing_value
+      par(1) = chezy
+      par(2) = theta
+      par(3) = excess_theta
+
    end subroutine tranb2
 
 end module m_tranb2

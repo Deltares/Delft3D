@@ -1311,10 +1311,26 @@ contains
          pardef(2) = 1.0_fp
          parkeyw(3) = 'SusFac'
          pardef(3) = 0.0_fp
+         if (present(noutpar)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+         end if
       elseif (iform == 2) then
          name = 'Meyer-Peter-Mueller (1948)'
          nparreq = 1
          parkeyw(1) = 'ACal'
+         if (present(noutpar)) then
+            noutpar = 3
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+            outpar_name(3) = 'excess_theta'
+            outpar_longname(3) = 'Excess Shields parameter' ! -
+         end if
       elseif (iform == 3) then
          name = 'Swanby / Ackers-White'
          nparreq = 1
@@ -1322,6 +1338,13 @@ contains
          nparopt = 1
          parkeyw(2) = 'RouKs'
          pardef(2) = 1.0_fp
+         if (present(noutpar)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'u_star'
+            outpar_longname(2) = 'Shear velocity' ! m/s
+         end if
       elseif (iform == 4) then
          name = 'General formula'
          nparreq = 5
@@ -1341,6 +1364,13 @@ contains
          pardef(9) = 1.0_fp
          parkeyw(10) = 'SusThetaC'
          pardef(10) = 0.0_fp
+         if (present(noutpar)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+         end if
       elseif (iform == 5) then
          name = 'Bijker (1971)'
          nparreq = 9

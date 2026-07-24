@@ -1,9 +1,9 @@
-module m_tranb1
+-module m_tranb1
    implicit none
 
 contains
 
-   subroutine tranb1(utot, d50, c, h, npar, &
+   subroutine tranb1(utot, d50, chezy, npar, &
                    & par, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
@@ -46,10 +46,9 @@ contains
 ! Arguments
 !
       integer, intent(in) :: npar !< length of transport parameter array
-      real(fp), intent(in) :: c !< Chezy value
+      real(fp), intent(in) :: chezy !< Chezy value
       real(fp), intent(in) :: d50 !< mean diameter
-      real(fp), intent(in) :: h !< water depth
-      real(fp), dimension(npar), intent(in) :: par !< transport parameter array
+      real(fp), dimension(npar), intent(inout) :: par !< transport parameter array
       real(fp), intent(in) :: utot !< velocity magnitude
       !
       real(fp), intent(out) :: sbot !< bed load transport
@@ -61,8 +60,8 @@ contains
       real(fp) :: ag ! gravity acceleration
       real(fp) :: delta ! relative density of sediment particle
       real(fp) :: suspfac ! user-specified suspended sediment factor
-      real(fp) :: temp ! total transport (not yet split into bedload and suspended load)
-      real(fp) :: th ! Shields number
+      real(fp) :: total ! total transport (not yet split into bedload and suspended load)
+      real(fp) :: theta ! Shields number
 !
 !! executable statements -------------------------------------------------------
 !
@@ -72,18 +71,24 @@ contains
       ag = par(1)
       delta = par(4)
       acal = par(11)
-      !rk      = par(12) ! obsolete
+      !rk = par(12) ! obsolete
       suspfac = par(13)
       !
-      ! bed load
+      ! total transport
       !
-      th = (utot / c)**2 / (delta * d50)
-      temp = 0.05_fp * acal * (c**2 / ag) * d50**1.5_fp * sqrt(ag * delta) * th**2.5_fp
-      sbot = (1.0_fp - suspfac) * temp
+      theta = (utot / chezy)**2 / (delta * d50)
+      total = 0.05_fp * acal * (chezy**2 / ag) * d50**1.5_fp * sqrt(ag * delta) * theta**2.5_fp
       !
-      ! suspended sediment transport
+      ! split into bedload and suspended load
       !
-      ssus = suspfac * temp
+      sbot = (1.0_fp - suspfac) * total
+      ssus = suspfac * total
+      !
+      ! Engelund-Hansen specific output
+      par = missing_value
+      par(1) = chezy
+      par(2) = theta
+
    end subroutine tranb1
 
 end module m_tranb1

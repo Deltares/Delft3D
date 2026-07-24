@@ -3,7 +3,7 @@ module m_tranb4
 
 contains
 
-   subroutine tranb4(utot, d, chezy, npar, par, &
+   subroutine tranb4(utot, d50, chezy, npar, par, &
                    & hidexp, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
@@ -48,7 +48,7 @@ contains
 !
       integer, intent(in) :: npar !< length of par array
       real(fp), intent(in) :: chezy !< Chezy value
-      real(fp), intent(in) :: d !< grain diameter
+      real(fp), intent(in) :: d50 !< grain diameter
       real(fp), intent(in) :: hidexp !< hiding & exposure factor
       real(fp), dimension(npar), intent(in) :: par !< sediment transport formula parameters
       real(fp), intent(in) :: utot !< depth averaged velocity magnitude
@@ -58,20 +58,20 @@ contains
 !
 ! Local variables
 !
-      real(fp) :: acal ! calibration factor for bedload
-      real(fp) :: acals ! calibration factor for suspended load
+      real(fp) :: acal_bed ! calibration factor for bedload
+      real(fp) :: acal_sus ! calibration factor for suspended load
       real(fp) :: ag ! gravity acceleration
-      real(fp) :: b ! exponent of Shields number for bedload
-      real(fp) :: bs ! exponent of Shields number for suspended load
-      real(fp) :: cc ! exponent of excess Shields number for bedload
-      real(fp) :: ccs ! exponent of excess Shields number for suspended load
+      real(fp) :: b_bed ! exponent of Shields number for bedload
+      real(fp) :: b_sus ! exponent of Shields number for suspended load
+      real(fp) :: cc_bed ! exponent of excess Shields number for bedload
+      real(fp) :: cc_sus ! exponent of excess Shields number for suspended load
       real(fp) :: delta ! relative density of sediment particle
-      real(fp) :: f ! help variable for excess Shields number
-      real(fp) :: rmu ! ripple factor for bedload
-      real(fp) :: rmus ! ripple factor for suspended load
-      real(fp) :: th ! Shields number
-      real(fp) :: thcr ! critical Shields number for bedload
-      real(fp) :: thcrs ! critical Shields number for suspended load
+      real(fp) :: theta_excess ! help variable for excess Shields number
+      real(fp) :: rmu_bed ! ripple factor for bedload
+      real(fp) :: rmu_sus ! ripple factor for suspended load
+      real(fp) :: theta ! Shields number
+      real(fp) :: theta_cr_bed ! critical Shields number for bedload
+      real(fp) :: theta_cr_sus ! critical Shields number for suspended load
 !
 !! executable statements -------------------------------------------------------
 !
@@ -80,27 +80,29 @@ contains
       !
       ag = par(1)
       delta = par(4)
-      acal = par(11)
-      b = par(12)
-      cc = par(13)
-      rmu = par(14)
-      thcr = par(15)
-      acals = par(16)
-      bs = par(17)
-      ccs = par(18)
-      rmus = par(19)
-      thcrs = par(20)
+      acal_bed = par(11)
+      b_bed = par(12)
+      cc_bed = par(13)
+      rmu_bed = par(14)
+      theta_cr_bed = par(15)
+      acal_sus = par(16)
+      b_sus = par(17)
+      cc_sus = par(18)
+      rmu_sus = par(19)
+      theta_cr_sus = par(20)
       !
-      if ((chezy < 1.0e-6) .or. (utot < 1.0e-6)) then
-         return
-      end if
-      th = (utot / chezy)**2 / (delta * d)
+      theta = (utot / chezy)**2 / (delta * d50)
       !
-      f = rmu * th - hidexp * thcr
-      if (f > 1.0e-8) sbot = acal * d**1.5 * sqrt(ag * delta) * th**b * f**cc
+      theta_excess = rmu_bed * theta - hidexp * theta_cr_bed
+      sbot = acal_bed * d50**1.5 * sqrt(ag * delta) * theta**b_bed * theta_excess**cc_bed
       !
-      f = rmus * th - hidexp * thcrs
-      if (f > 1.0e-8) ssus = acals * d**1.5 * sqrt(ag * delta) * th**bs * f**ccs
+      theta_excess = rmu_sus * theta - hidexp * theta_cr_sus
+      ssus = acal_sus * d50**1.5 * sqrt(ag * delta) * theta**b_sus * theta_excess**cc_sus
+      !
+      ! general formula specific output
+      par = missing_value
+      par(1) = chezy
+      par(2) = theta
    end subroutine tranb4
 
 end module m_tranb4
