@@ -47,6 +47,26 @@ namespace dflowfm_io
             return std::nullopt;
         }
 
+        ini::FloatFormat GetFloatFormat(const PropertySchema& schema)
+        {
+            if (schema.format == FormatType::Fixed)
+            {
+                return ini::FloatFormat::Fixed;
+            }
+            if (schema.format == FormatType::Scientific)
+            {
+                return ini::FloatFormat::Scientific;
+            }
+            return ini::FloatFormat::General;
+        }
+
+        ini::TimePointFormat GetTimePointFormat(const PropertySchema& schema)
+        {
+            return (schema.format.has_value() && schema.format.value() == FormatType::Date)
+                       ? ini::TimePointFormat::DateOnly
+                       : ini::TimePointFormat::DateTime;
+        }
+
         template <typename T>
         std::string ValueToString(const Value& value)
         {
@@ -56,13 +76,32 @@ namespace dflowfm_io
         template <>
         std::string ValueToString<bool>(const Value& value)
         {
-            return std::get<bool>(value) ? "1" : "0";
+            return ini::IniValueConverter::ToString(std::get<bool>(value), ini::BoolFormat::ZeroOne);
+        }
+
+        std::string FloatToString(const PropertySchema& schema, const Value& value)
+        {
+            return ini::IniValueConverter::ToString(std::get<double>(value), GetFloatFormat(schema));
+        }
+
+        std::string DateTimeToString(const PropertySchema& schema, const Value& value)
+        {
+            const auto& timePoint = std::get<std::chrono::system_clock::time_point>(value);
+            const auto format = GetTimePointFormat(schema);
+            return ini::IniValueConverter::ToString(timePoint, format);
         }
 
         template <typename T>
         std::string MultiValueToString(const Value& value)
         {
             return ini::IniValueConverter::ToMultiValueString(std::get<std::vector<T>>(value));
+        }
+
+        std::string FloatListToString(const PropertySchema& schema, const Value& value)
+        {
+            const auto& values = std::get<std::vector<double>>(value);
+            const auto format = GetFloatFormat(schema);
+            return ini::IniValueConverter::ToMultiValueString(values, format);
         }
 
         std::string EnumToString(const PropertySchema& schema, const Value& value)
@@ -122,19 +161,19 @@ namespace dflowfm_io
             case ValueType::Int:
                 return ValueToString<int>(value);
             case ValueType::Float:
-                return ValueToString<double>(value);
+                return FloatToString(schema, value);
             case ValueType::IntBool:
                 return ValueToString<bool>(value);
             case ValueType::Path:
                 return ValueToString<std::filesystem::path>(value);
             case ValueType::DateTime:
-                return ValueToString<std::chrono::system_clock::time_point>(value);
+                return DateTimeToString(schema, value);
             case ValueType::StringList:
                 return MultiValueToString<std::string>(value);
             case ValueType::PathList:
                 return MultiValueToString<std::filesystem::path>(value);
             case ValueType::FloatList:
-                return MultiValueToString<double>(value);
+                return FloatListToString(schema, value);
             case ValueType::Enum:
                 return EnumToString(schema, value);
             case ValueType::IntEnum:

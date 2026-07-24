@@ -178,7 +178,7 @@ namespace dflowfm_io::test
             tStart.key = "tStart";
             tStart.required = false;
             tStart.value_type = ValueType::DateTime;
-            tStart.default_value = "20000101000010";
+            tStart.default_value = "20000101000000";
             tStart.format = FormatType::DateTime;
             tStart.description = "Start time w.r.t. `refDate`.";
             time.properties.push_back(tStart);

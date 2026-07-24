@@ -118,7 +118,7 @@ def render_enum_value(value, label, status, indent):
     return f"{pad}EnumValueSchema {{\n{body}\n{pad}}}"
 
 
-def render_property(prop, indent):
+def render_property(prop, indent, default_float_format):
     """Render a single PropertySchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
@@ -138,8 +138,12 @@ def render_property(prop, indent):
     if "default_value" in prop:
         dvs = default_value_str(prop["default_value"])
         field_blocks.append(field(".default_value", f'"{dvs}"'))
-    if "format" in prop:
-        format_type = FORMAT_TYPE_MAP[prop["format"]]
+
+    format_key = prop.get("format")
+    if format_key is None and prop["value_type"] in ("float", "list[float]"):
+        format_key = default_float_format
+    if format_key is not None:
+        format_type = FORMAT_TYPE_MAP[format_key]
         field_blocks.append(field(".format", f"FormatType::{format_type}"))
         
     field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
@@ -159,7 +163,7 @@ def render_property(prop, indent):
     return f"{pad}PropertySchema {{\n{body}\n{pad}}}"
 
 
-def render_section(section, indent):
+def render_section(section, indent, default_float_format):
     """Render a single SectionSchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
@@ -180,7 +184,7 @@ def render_section(section, indent):
         field_blocks.append(field(".required", "true"))
     field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
 
-    prop_blocks = [render_property(p, indent + 8) for p in properties]
+    prop_blocks = [render_property(p, indent + 8, default_float_format) for p in properties]
     props_body = ",\n".join(prop_blocks)
     field_blocks.append(field(".properties", f"{{\n{props_body}\n{inner}}}"))
 
@@ -191,7 +195,8 @@ def render_section(section, indent):
 def generate_schema_file(spec):
     """Generate the full C++ source from the parsed JSON specification."""
     sections = spec.get("ini_sections", [])
-    section_blocks = [render_section(s, 16) for s in sections]
+    default_float_format = spec.get("default_float_format", "general")
+    section_blocks = [render_section(s, 16, default_float_format) for s in sections]
 
     description = spec.get("description", "")
     body = ",\n".join(section_blocks)

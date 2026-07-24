@@ -22,19 +22,24 @@ namespace dflowfm_io::test
             return schema;
         }
 
+        PropertySchema MakeSchema(ValueType type, FormatType format, const std::string& key = "TestProperty")
+        {
+            PropertySchema schema = MakeSchema(type, key);
+            schema.format = format;
+            return schema;
+        }
+
         PropertySchema MakeEnumSchema(std::vector<std::pair<int, std::string>> enumValues)
         {
             PropertySchema schema = MakeSchema(ValueType::Enum);
-            for (auto& [value, label] : enumValues)
-                schema.enum_values.push_back({value, label});
+            for (auto& [value, label] : enumValues) schema.enum_values.push_back({value, label});
             return schema;
         }
 
         PropertySchema MakeIntEnumSchema(std::vector<int> enumValues)
         {
             PropertySchema schema = MakeSchema(ValueType::IntEnum);
-            for (int value : enumValues)
-                schema.enum_values.push_back({value});
+            for (int value : enumValues) schema.enum_values.push_back({value});
             return schema;
         }
     } // namespace
@@ -275,6 +280,22 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "3.14");
     }
 
+    TEST(MduValueConverterTest, ToString_Float_FixedFormat_ReturnsFixedNotation)
+    {
+        auto schema = MakeSchema(ValueType::Float, FormatType::Fixed);
+        auto result = MduValueConverter::ToString(schema, Value{1234.5});
+
+        EXPECT_EQ(result, "1234.500000");
+    }
+
+    TEST(MduValueConverterTest, ToString_Float_ScientificFormat_ReturnsScientificNotation)
+    {
+        auto schema = MakeSchema(ValueType::Float, FormatType::Scientific);
+        auto result = MduValueConverter::ToString(schema, Value{1234.5});
+
+        EXPECT_EQ(result, "1.234500e+03");
+    }
+
     TEST(MduValueConverterTest, ToString_IntBool_False_ReturnsZero)
     {
         auto schema = MakeSchema(ValueType::IntBool);
@@ -299,6 +320,30 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "some/path");
     }
 
+    TEST(MduValueConverterTest, ToString_DateTime_ReturnsCorrectValue)
+    {
+        auto schema = MakeSchema(ValueType::DateTime);
+
+        const auto timePoint =
+            std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
+
+        auto result = MduValueConverter::ToString(schema, Value{std::chrono::system_clock::time_point{timePoint}});
+
+        EXPECT_EQ(result, "20200130000000");
+    }
+
+    TEST(MduValueConverterTest, ToString_DateTime_DateFormat_ReturnsDateOnly)
+    {
+        auto schema = MakeSchema(ValueType::DateTime, FormatType::Date);
+
+        const auto timePoint =
+            std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
+
+        auto result = MduValueConverter::ToString(schema, Value{std::chrono::system_clock::time_point{timePoint}});
+
+        EXPECT_EQ(result, "20200130");
+    }
+
     // -------------------------------------------------------------------------
     // ToString — list types
     // -------------------------------------------------------------------------
@@ -319,6 +364,24 @@ namespace dflowfm_io::test
         auto result = MduValueConverter::ToString(schema, v);
 
         EXPECT_EQ(result, "1.0 2.0 3.0");
+    }
+
+    TEST(MduValueConverterTest, ToString_FloatList_FixedFormat_ReturnsFixedNotation)
+    {
+        auto schema = MakeSchema(ValueType::FloatList, FormatType::Fixed);
+        Value v = std::vector<double>{1.0, 2.5};
+        auto result = MduValueConverter::ToString(schema, v);
+
+        EXPECT_EQ(result, "1.000000 2.500000");
+    }
+
+    TEST(MduValueConverterTest, ToString_FloatList_ScientificFormat_ReturnsScientificNotation)
+    {
+        auto schema = MakeSchema(ValueType::FloatList, FormatType::Scientific);
+        Value v = std::vector<double>{1.0, 2.5};
+        auto result = MduValueConverter::ToString(schema, v);
+
+        EXPECT_EQ(result, "1.000000e+00 2.500000e+00");
     }
 
     // -------------------------------------------------------------------------

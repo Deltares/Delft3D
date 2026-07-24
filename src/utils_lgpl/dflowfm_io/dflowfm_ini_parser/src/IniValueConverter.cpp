@@ -10,18 +10,32 @@
 namespace ini
 {
 
-    std::string IniValueConverter::BoolToString(bool value) { return value ? "True" : "False"; }
+    std::string IniValueConverter::BoolToString(bool value, BoolFormat format)
+    {
+        switch (format)
+        {
+            case BoolFormat::ZeroOne:
+                return value ? "1" : "0";
+            case BoolFormat::YesNo:
+                return value ? "yes" : "no";
+            case BoolFormat::TrueFalse:
+            default:
+                return value ? "True" : "False";
+        }
+    }
 
-    std::string IniValueConverter::TimePointToString(std::chrono::system_clock::time_point value)
+    std::string IniValueConverter::TimePointToString(std::chrono::system_clock::time_point value, TimePointFormat format)
     {
         auto truncated = std::chrono::floor<std::chrono::seconds>(value);
-        auto dayTruncated = std::chrono::floor<std::chrono::days>(truncated);
 
-        if (truncated == dayTruncated)
+        switch (format)
         {
-            return std::format("{:%Y%m%d}", truncated);
+            case TimePointFormat::DateTime:
+                return std::format("{:%Y%m%d%H%M%S}", truncated);
+            case TimePointFormat::DateOnly:
+            default:
+                return std::format("{:%Y%m%d}", truncated);
         }
-        return std::format("{:%Y%m%d%H%M%S}", truncated);
     }
 
     std::string IniValueConverter::PathToString(const std::filesystem::path& value) { return value.string(); }

@@ -233,7 +233,7 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Structural invariants
+    // MDU_SCHEMA sanity checks
     // -------------------------------------------------------------------------
 
     TEST(MduSchemaTest, Schema_HasAtLeastOneSection)
@@ -263,6 +263,15 @@ namespace dflowfm_io::test
                         << "Enum property has no values: " << section.name << "." << prop.key;
     }
 
+    TEST(MduSchemaTest, Schema_NonEnumPropertiesHaveNoEnumValues)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& prop : section.properties)
+                if (prop.value_type != ValueType::Enum && prop.value_type != ValueType::IntEnum)
+                    EXPECT_TRUE(prop.enum_values.empty())
+                        << "Non-enum property has enum values: " << section.name << "." << prop.key;
+    }
+
     TEST(MduSchemaTest, Schema_AllSectionNamesAreUnique)
     {
         std::vector<std::string> names;
@@ -278,7 +287,8 @@ namespace dflowfm_io::test
         for (const auto& section : MDU_SCHEMA.Sections())
         {
             std::vector<std::string> keys;
-            for (const auto& prop : section.properties) keys.push_back(prop.key);
+            for (const auto& prop : section.properties)
+                keys.push_back(prop.key);
 
             const auto uniqueEnd = std::unique(keys.begin(), keys.end());
             EXPECT_EQ(uniqueEnd, keys.end()) << "Duplicate property keys in section: " << section.name;
@@ -323,6 +333,37 @@ namespace dflowfm_io::test
                         EXPECT_FALSE(enumValue.status.since.empty())
                             << "Obsolete enum value missing since: " << section.name << "." << prop.key
                             << " (value=" << enumValue.value << ")";
+    }
+
+    TEST(MduSchemaTest, Schema_FormatOnlySetForApplicableValueTypes)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& prop : section.properties)
+                if (prop.format.has_value())
+                    EXPECT_TRUE(prop.value_type == ValueType::Float ||
+                                prop.value_type == ValueType::FloatList ||
+                                prop.value_type == ValueType::DateTime)
+                        << "Format set for unsupported value type: " << section.name << "." << prop.key;
+    }
+
+    TEST(MduSchemaTest, Schema_DateTimeValueTypeUsesDateOrDateTimeFormat)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& prop : section.properties)
+                if (prop.value_type == ValueType::DateTime && prop.format.has_value())
+                    EXPECT_TRUE(*prop.format == FormatType::Date || *prop.format == FormatType::DateTime)
+                        << "DateTime property has non-date format: " << section.name << "." << prop.key;
+    }
+
+    TEST(MduSchemaTest, Schema_FloatOrFloatListValueTypeDoesNotUseDateFormat)
+    {
+        for (const auto& section : MDU_SCHEMA.Sections())
+            for (const auto& prop : section.properties)
+                if ((prop.value_type == ValueType::Float || prop.value_type == ValueType::FloatList) && prop.format.has_value())
+                    EXPECT_TRUE(*prop.format == FormatType::General ||
+                                *prop.format == FormatType::Fixed ||
+                                *prop.format == FormatType::Scientific)
+                        << "Float/FloatList property has a date-related format: " << section.name << "." << prop.key;
     }
 
 } // namespace dflowfm_io::test
