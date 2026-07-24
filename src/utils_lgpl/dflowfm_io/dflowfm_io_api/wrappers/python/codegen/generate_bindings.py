@@ -5,7 +5,7 @@ from the DLL:
 
 * ``src/dflowfm_io/base/bindings.py`` — the ctypes ABI mirror: enum constants, the ``mdu_issue_t``
   struct, and ``argtypes``/``restype`` for every exported function, applied to the loaded ``lib``.
-* ``src/dflowfm_io/mdu_model.py`` — the typed :class:`MduModel`, one get/set method per
+* ``src/dflowfm_io/mdu/model.py`` — the typed :class:`MduModel`, one get/set method per
   ``mdu_get_*``/``mdu_set_*`` function, with the per-type value marshalling.
 
 Run:
@@ -24,7 +24,7 @@ HERE = Path(__file__).resolve().parent  # .../dflowfm_io_api/wrappers/python/cod
 HEADER = HERE.parents[2] / "include" / "dflowfm_io_api" / "dflowfm_io_api.h"
 SRC = HERE.parent / "src" / "dflowfm_io"
 OUTPUT_BINDINGS = SRC / "base" / "bindings.py"
-OUTPUT_MODEL = SRC / "mdu_model.py"
+OUTPUT_MODEL = SRC / "mdu" / "model.py"
 
 # C base type -> ctypes expression. `char` is handled specially (char* is c_char_p, not POINTER(c_char)).
 BASE_TYPES = {
@@ -200,7 +200,7 @@ def _accessor_method(kind: str, suffix: str, is_list: bool, cname: str) -> list[
 
 
 def render_model(functions) -> tuple[str, int]:
-    """Render the typed MduModel (mdu_model.py). Returns (source, method_count)."""
+    """Render the typed MduModel (mdu/model.py). Returns (source, method_count)."""
     lines = [
         f'"""GENERATED from {HEADER.name} by codegen/generate_bindings.py - do not edit.',
         "",

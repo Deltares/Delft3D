@@ -1,15 +1,16 @@
 """The MDU document (:class:`MduDocument`) and its validation issues (:class:`MduReport`).
 
-The typed property access (:class:`MduModel`) is generated from the C header (see ``mdu_model.py``)
-and re-exported here. The document lifecycle and the report stay hand-written: they encode Python
-design (handle ownership, ``__del__``, convenience methods) with no 1:1 C-function counterpart.
+The typed property access (:class:`MduModel`) is generated from the C header (see
+:mod:`dflowfm_io.mdu.model`) and re-exported here. The document lifecycle and the report stay
+hand-written: they encode Python design (handle ownership, ``__del__``, convenience methods) with
+no 1:1 C-function counterpart.
 """
 
 import ctypes
 
 from dflowfm_io.base import HandleRef, check_result, lib
 from dflowfm_io.issues import Issue, MduIssue, Severity
-from dflowfm_io.mdu_model import MduModel
+from dflowfm_io.mdu.model import MduModel
 
 __all__ = ["MduModel", "MduReport", "MduDocument"]
 

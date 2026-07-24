@@ -24,7 +24,7 @@ cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/codegen/generate_bindings.py")
 set(DFLOWFM_IO_GENERATED
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu_model.py")
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/model.py")
 
 add_custom_command(
 	OUTPUT ${DFLOWFM_IO_GENERATED}
