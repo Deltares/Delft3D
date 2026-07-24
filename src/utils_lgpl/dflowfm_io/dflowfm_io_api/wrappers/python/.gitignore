@@ -7,8 +7,7 @@ dist/
 *.egg-info/
 
 # The native dflowfm_io_api library is a build artifact: CMake builds it and stages it into
-# src/dflowfm_io/_lib/ (bundled by the wheel; also located for tests via DFLOWFM_IO_LIB_DIR).
-# Never commit it.
+# src/dflowfm_io/_lib/, from where the loader and the wheel pick it up. Never commit it.
 *.dll
 *.so
 *.dylib
