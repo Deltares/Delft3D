@@ -1046,7 +1046,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1054,7 +1054,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1080,7 +1080,7 @@ contains
          end if
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
-            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
             end if
