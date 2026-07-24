@@ -17,8 +17,18 @@ class TriangleConan(ConanFile):
     topics = ("triangle", "delaunay", "triangulation", "mesh")
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = {"shared": False}
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
+    }
+    default_options = {
+        "shared": False,
+        "fPIC": True,
+    }
+
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
 
     def validate(self):
         if self.options.shared:
