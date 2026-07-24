@@ -15,22 +15,25 @@ option(
 	OFF
 )
 
-# Regenerate the ctypes binding layer (src/dflowfm_io/base/bindings.py) from the C header, so the
-# Python bindings can never drift from the dflowfm_io_api ABI. The generated file is committed, but
-# rebuilt here whenever the header or the generator changes.
+# Regenerate the ABI-coupled Python code from the C header, so it can never drift from the
+# dflowfm_io_api ABI: the ctypes bindings (base/bindings.py) and the typed MduModel accessors
+# (mdu_model.py). The generated files are committed, but rebuilt here whenever the header or the
+# generator changes.
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
 set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/codegen/generate_bindings.py")
-set(DFLOWFM_IO_BINDINGS "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py")
+set(DFLOWFM_IO_GENERATED
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu_model.py")
 
 add_custom_command(
-	OUTPUT "${DFLOWFM_IO_BINDINGS}"
+	OUTPUT ${DFLOWFM_IO_GENERATED}
 	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_BINDINGS_GENERATOR}"
 	DEPENDS "${DFLOWFM_IO_BINDINGS_GENERATOR}" "${DFLOWFM_IO_HEADER}"
-	COMMENT "Generating dflowfm_io Python ctypes bindings from dflowfm_io_api.h"
+	COMMENT "Generating dflowfm_io Python bindings and typed model from dflowfm_io_api.h"
 	VERBATIM
 )
-add_custom_target(dflowfm_io_bindings DEPENDS "${DFLOWFM_IO_BINDINGS}")
+add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED})
 
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
 
