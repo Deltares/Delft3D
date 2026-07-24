@@ -65,6 +65,31 @@ class TestMduSchema(unittest.TestCase):
         doc = _loaded_doc()
         self.assertTrue(hasattr(doc.schema, "external_forcing"))
 
+    def test_multi_word_section_key_round_trips(self):
+        # The [external forcing] section has a space; the dotted key must keep it.
+        doc = _loaded_doc()
+        doc.schema.external_forcing.extForceFileNew = ["a.ext", "b.ext"]
+        self.assertEqual(doc.schema.external_forcing.extForceFileNew, [Path("a.ext"), Path("b.ext")])
+
+    def test_list_property_reads_as_list_of_paths(self):
+        doc = _loaded_doc()
+        value = doc.schema.external_forcing.extForceFileNew
+        self.assertIsInstance(value, list)
+        self.assertTrue(all(isinstance(item, Path) for item in value))
+
+    def test_intenum_property_reads_name_and_round_trips(self):
+        # bedLevType is an intenum; Layer 2 surfaces it by name, like the string enum.
+        doc = _loaded_doc()
+        name = doc.schema.geometry.bedLevType
+        self.assertIsInstance(name, str)
+        doc.schema.geometry.bedLevType = name
+        self.assertEqual(doc.schema.geometry.bedLevType, name)
+
+    def test_digit_leading_key_is_sanitised_to_an_accessible_attribute(self):
+        # 1D2DLinkFile is not a valid identifier; attr_name prefixes an underscore.
+        doc = _loaded_doc()
+        self.assertTrue(hasattr(type(doc.schema.geometry), "_1D2DLinkFile"))
+
 
 if __name__ == "__main__":
     unittest.main()
