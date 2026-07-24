@@ -55,6 +55,9 @@ internal static class NativeMduApi
     public static extern int mdu_get_enum(SafeMduHandle handle, byte[] key, out int enumOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int mdu_get_enum_name(SafeMduHandle handle, byte[] key, out IntPtr nameOut);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_get_string_list(SafeMduHandle handle, byte[] key, out IntPtr stringListOut, out ulong sizeOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -83,6 +86,9 @@ internal static class NativeMduApi
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_set_enum(SafeMduHandle handle, byte[] key, int enumValue);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int mdu_set_enum_name(SafeMduHandle handle, byte[] key, byte[] name);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_set_string_list(SafeMduHandle handle, byte[] key, IntPtr stringList, ulong size);

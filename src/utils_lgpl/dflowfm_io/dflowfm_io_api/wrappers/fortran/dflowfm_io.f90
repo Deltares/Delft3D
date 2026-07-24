@@ -40,6 +40,7 @@ module dflowfm_io
         procedure :: get_path         => mdu_get_path_f
         procedure :: get_datetime     => mdu_get_datetime_f
         procedure :: get_enum         => mdu_get_enum_f
+        procedure :: get_enum_name    => mdu_get_enum_name_f
         procedure :: get_string_list  => mdu_get_string_list_f
         procedure :: get_path_list    => mdu_get_path_list_f
         procedure :: get_double_list  => mdu_get_double_list_f
@@ -51,6 +52,7 @@ module dflowfm_io
         procedure :: set_path         => mdu_set_path_f
         procedure :: set_datetime     => mdu_set_datetime_f
         procedure :: set_enum         => mdu_set_enum_f
+        procedure :: set_enum_name    => mdu_set_enum_name_f
         procedure :: set_string_list  => mdu_set_string_list_f
         procedure :: set_path_list    => mdu_set_path_list_f
         procedure :: set_double_list  => mdu_set_double_list_f
@@ -160,6 +162,14 @@ module dflowfm_io
             integer(c_int32_t) :: res
         end function
 
+        function c_mdu_get_enum_name(handle, key, out_value) result(res) bind(C, name="mdu_get_enum_name")
+            import :: c_ptr, c_char, c_int32_t
+            type(c_ptr), value, intent(in) :: handle
+            character(kind=c_char), intent(in) :: key(*)
+            type(c_ptr), intent(out) :: out_value
+            integer(c_int32_t) :: res
+        end function
+
         function c_mdu_get_string_list(handle, key, out_list, out_size) result(res) bind(C, name="mdu_get_string_list")
             import :: c_ptr, c_char, c_int32_t, c_int64_t
             type(c_ptr), value, intent(in) :: handle
@@ -240,6 +250,14 @@ module dflowfm_io
             type(c_ptr), value, intent(in) :: handle
             character(kind=c_char), intent(in) :: key(*)
             integer(c_int32_t), value, intent(in) :: value
+            integer(c_int32_t) :: res
+        end function
+
+        function c_mdu_set_enum_name(handle, key, value) result(res) bind(C, name="mdu_set_enum_name")
+            import :: c_ptr, c_char, c_int32_t
+            type(c_ptr), value, intent(in) :: handle
+            character(kind=c_char), intent(in) :: key(*)
+            character(kind=c_char), intent(in) :: value(*)
             integer(c_int32_t) :: res
         end function
 
@@ -456,6 +474,19 @@ contains
         value = int(c_value)
     end subroutine
 
+    subroutine mdu_get_enum_name_f(self, key, value, result_code)
+        class(MduModel), intent(in) :: self
+        character(len=*), intent(in) :: key
+        character(len=:), allocatable, intent(out) :: value
+        integer, intent(out) :: result_code
+        type(c_ptr) :: cptr
+
+        result_code = int(c_mdu_get_enum_name(self%handle, f_to_c_string(key), cptr))
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+            value = c_string_to_f(cptr)
+        end if
+    end subroutine
+
     !---------------------------------------------------------------------------
     ! List getters
     !---------------------------------------------------------------------------
@@ -572,6 +603,15 @@ contains
         integer, intent(out) :: result_code
 
         result_code = int(c_mdu_set_enum(self%handle, f_to_c_string(key), int(value, c_int32_t)))
+    end subroutine
+
+    subroutine mdu_set_enum_name_f(self, key, value, result_code)
+        class(MduModel), intent(in) :: self
+        character(len=*), intent(in) :: key
+        character(len=*), intent(in) :: value
+        integer, intent(out) :: result_code
+
+        result_code = int(c_mdu_set_enum_name(self%handle, f_to_c_string(key), f_to_c_string(value)))
     end subroutine
 
     !---------------------------------------------------------------------------

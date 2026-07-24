@@ -52,6 +52,11 @@ class MduModel:
         check_result(lib.mdu_get_enum(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
         return value.value
 
+    def get_enum_name(self, key: str) -> str:
+        value = ctypes.c_char_p()
+        check_result(lib.mdu_get_enum_name(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
+        return value.value.decode("utf-8")
+
     def get_string_list(self, key: str) -> list[str]:
         array_out = ctypes.POINTER(ctypes.c_char_p)()
         size_out = ctypes.c_uint64()
@@ -90,6 +95,9 @@ class MduModel:
 
     def set_enum(self, key: str, value: int) -> None:
         check_result(lib.mdu_set_enum(self._ref.handle, key.encode("utf-8"), ctypes.c_int32(value)))
+
+    def set_enum_name(self, key: str, value: str) -> None:
+        check_result(lib.mdu_set_enum_name(self._ref.handle, key.encode("utf-8"), value.encode("utf-8")))
 
     def set_string_list(self, key: str, values: list[str]) -> None:
         encoded = [v.encode("utf-8") for v in values]

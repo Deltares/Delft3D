@@ -51,6 +51,7 @@ DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_string(mdu_handle_t handle, co
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_path(mdu_handle_t handle, const char* key, const char** path_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_datetime(mdu_handle_t handle, const char* key, int64_t* epoch_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_enum(mdu_handle_t handle, const char* key, int32_t* enum_out);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_enum_name(mdu_handle_t handle, const char* key, const char** name_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_string_list(mdu_handle_t handle, const char* key, const char*** string_list_out, uint64_t* size_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_path_list(mdu_handle_t handle, const char* key, const char*** path_list_out, uint64_t* size_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_double_list(mdu_handle_t handle, const char* key, const double** double_list_out, uint64_t* size_out);
@@ -62,6 +63,7 @@ DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_string(mdu_handle_t handle, co
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_path(mdu_handle_t handle, const char* key, const char* value);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_datetime(mdu_handle_t handle, const char* key, int64_t epoch);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_enum(mdu_handle_t handle, const char* key, int32_t enum_value);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_enum_name(mdu_handle_t handle, const char* key, const char* name);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_string_list(mdu_handle_t handle, const char* key, const char** string_list, uint64_t size);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_path_list(mdu_handle_t handle, const char* key, const char** path_list, uint64_t size);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_set_double_list(mdu_handle_t handle, const char* key, const double* double_list, uint64_t size);

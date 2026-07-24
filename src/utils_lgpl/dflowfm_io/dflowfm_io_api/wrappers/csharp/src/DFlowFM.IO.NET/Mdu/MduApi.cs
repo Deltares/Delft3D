@@ -157,6 +157,13 @@ internal sealed class MduApi : IDisposable
         return value;
     }
 
+    public string GetEnumName(string key)
+    {
+        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        ThrowIfError(NativeMduApi.mdu_get_enum_name(_handle, keyBytes, out IntPtr ptr));
+        return NativeInterop.PtrToStringUtf8(ptr);
+    }
+
     /// <summary>
     /// Gets a list of string property values by its fully-qualified key.
     /// </summary>
@@ -281,6 +288,13 @@ internal sealed class MduApi : IDisposable
     {
         byte[] keyBytes = NativeInterop.StringToUtf8(key);
         ThrowIfError(NativeMduApi.mdu_set_enum(_handle, keyBytes, value));
+    }
+
+    public void SetEnumName(string key, string value)
+    {
+        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] valueBytes = NativeInterop.StringToUtf8(value);
+        ThrowIfError(NativeMduApi.mdu_set_enum_name(_handle, keyBytes, valueBytes));
     }
 
     /// <summary>

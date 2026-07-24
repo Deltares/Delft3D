@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <functional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -248,6 +249,33 @@ dflowfm_io_result_t mdu_get_enum(mdu_handle_t handle, const char* key, int32_t* 
     });
 }
 
+dflowfm_io_result_t mdu_get_enum_name(mdu_handle_t handle, const char* key, const char** name_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(name_out);
+
+    static std::string stored_name;
+
+    return exceptionToResult([&]()
+    {
+        const int value = asDocument(handle)->GetValue<dflowfm_io::EnumValue>(key).value;
+        const dflowfm_io::PropertySchema* property = dflowfm_io::GetMduSchema().FindProperty(key);
+        if (property == nullptr)
+        {
+            throw std::invalid_argument("Unknown property key: " + std::string(key));
+        }
+        const auto entry = property->enum_values.find(value);
+        if (entry == property->enum_values.end())
+        {
+            throw std::invalid_argument(
+                "No enum name for value " + std::to_string(value) + " of key '" + std::string(key) + "'");
+        }
+        stored_name = entry->second;
+        *name_out = stored_name.c_str();
+    });
+}
+
 dflowfm_io_result_t mdu_get_string_list(mdu_handle_t handle, const char* key, const char*** string_list_out, uint64_t* size_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
@@ -373,6 +401,32 @@ dflowfm_io_result_t mdu_set_enum(mdu_handle_t handle, const char* key, int32_t e
     return exceptionToResult([&]()
     {
         asDocument(handle)->SetValue(key, dflowfm_io::EnumValue{enum_value});
+    });
+}
+
+dflowfm_io_result_t mdu_set_enum_name(mdu_handle_t handle, const char* key, const char* name)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(name);
+
+    return exceptionToResult([&]()
+    {
+        const dflowfm_io::PropertySchema* property = dflowfm_io::GetMduSchema().FindProperty(key);
+        if (property == nullptr)
+        {
+            throw std::invalid_argument("Unknown property key: " + std::string(key));
+        }
+        for (const auto& [value, enum_name] : property->enum_values)
+        {
+            if (enum_name == name)
+            {
+                asDocument(handle)->SetValue(key, dflowfm_io::EnumValue{value});
+                return;
+            }
+        }
+        throw std::invalid_argument(
+            "Unknown enum name '" + std::string(name) + "' for key '" + std::string(key) + "'");
     });
 }
 
