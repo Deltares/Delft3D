@@ -97,11 +97,11 @@ contains
       rn = 1.0_fp - 0.2432_fp * log(dgr)
       rm = 9.66_fp / dgr + 1.34_fp
       !
-      f = utot**(10.0_fp-rn) * u_star**rn / chezy_grain**(1.0_fp-rn) / ag**(rn / 2.0_fp) / sqrt(delta * d35)
+      f = utot**(1.0_fp-rn) * u_star**rn / chezy_grain**(1.0_fp-rn) / ag**(rn / 2.0_fp) / sqrt(delta * d35)
       a = 0.23_fp / sqrt(dgr) + 0.14_fp
       fwc = max((f - a) / a, 0.0_fp)
       !
-      sbot = acal * utot * d35 * (utot / u_star)**rn * ccc * fwc**rm
+      sbot = acal * utot * d35 * (utot / max(u_star, 1.0e-12_fp))**rn * ccc * fwc**rm
       ssus = 0.0_fp
       !
       ! Swanby (Ackers-White) specific output

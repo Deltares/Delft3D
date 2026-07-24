@@ -92,10 +92,10 @@ contains
       !
       theta = (utot / chezy)**2 / (delta * d50)
       !
-      theta_excess = rmu_bed * theta - hidexp * theta_cr_bed
+      theta_excess = max(rmu_bed * theta - hidexp * theta_cr_bed, 0.0_fp)
       sbot = acal_bed * d50**1.5 * sqrt(ag * delta) * theta**b_bed * theta_excess**cc_bed
       !
-      theta_excess = rmu_sus * theta - hidexp * theta_cr_sus
+      theta_excess = max(rmu_sus * theta - hidexp * theta_cr_sus, 0.0_fp)
       ssus = acal_sus * d50**1.5 * sqrt(ag * delta) * theta**b_sus * theta_excess**cc_sus
       !
       ! general formula specific output

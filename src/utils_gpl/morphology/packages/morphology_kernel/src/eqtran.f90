@@ -398,8 +398,8 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       ! call tranb3(utot, d35, chezy, h1, npar, &
       !           & par, sbot, ssus)
       !
-      sbc_total = .true.
-      sus_total = .true.
+      !sbc_total = .true.
+      !sus_total = .true.
    elseif (iform == 4) then
       !
       ! general relation for bed load
@@ -435,8 +435,8 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       !          & dzdvv     ,npar      ,par       ,sbcu      ,sbcv      , &
       !          & sscu      ,sscv      )
       !
-      sbc_total = .false.
-      sus_total = .false.
+      !sbc_total = .false.
+      !sus_total = .false.
    elseif (iform == 7) then
       !
       ! Van Rijn (1984, modified)
