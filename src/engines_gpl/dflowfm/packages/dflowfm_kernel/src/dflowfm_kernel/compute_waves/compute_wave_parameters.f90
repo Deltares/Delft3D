@@ -189,8 +189,9 @@ contains
             ! FlowWithoutWaves passes wave information to D-WAQ only. Its
             ! orbital-velocity calculation needs significant height and period,
             ! but not wave direction or the full wave-physics transformation.
+            ! Wavemodelnr=6 files use the SWAN peak-period field (tps), so converting it as a mean period would apply the JONSWAP factor a second time.
             hwav = min(hwavcom / sqrt2_hp, gammax * hs)
-            call transform_wave_period_hp(twavcom, ndx, 1, JONSWAPgamma0, twav, ierror)
+            twav = twavcom
             call wave_uorbrlabda()
          else
             hwav = 0.0_dp

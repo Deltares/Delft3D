@@ -722,21 +722,7 @@ contains
    !> Read only the offline wave quantities required by the active configuration.
    subroutine set_offline_wave_parameters()
 
-      hwavcom(:) = 0.0_dp
-      twavcom(:) = 0.0_dp
-      twav(:) = 0.0_dp
-      phiwav(:) = 270.0_dp
-      sxwav(:) = 0.0_dp
-      sywav(:) = 0.0_dp
-      sbxwav(:) = 0.0_dp
-      sbywav(:) = 0.0_dp
-      dsurf(:) = 0.0_dp
-      dwcap(:) = 0.0_dp
-      distot(:) = 0.0_dp
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
+      ! The ec module decides which wave quantities are required based on the active configuration. Only those quantities are read from the offline wave file.
       call get_required_offline_wave_value(WAVE_INPUT_SIGNIFICANT_HEIGHT, item_hrms)
       call get_required_offline_wave_value(WAVE_INPUT_PERIOD, item_tp)
       call get_required_offline_wave_value(WAVE_INPUT_DIRECTION, item_dir)
