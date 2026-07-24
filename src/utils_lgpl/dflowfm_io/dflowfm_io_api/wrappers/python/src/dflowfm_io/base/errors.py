@@ -13,4 +13,6 @@ def check_result(result):
     if result != DFLOWFM_IO_RESULT_SUCCESS:
         lib.dflowfm_io_get_last_error.restype = ctypes.c_char_p
         error_message = lib.dflowfm_io_get_last_error()
-        raise RuntimeError(error_message.decode("utf-8"))
+        # The C side may return NULL when no message is set; don't mask the failure with an
+        # AttributeError from decoding None.
+        raise RuntimeError((error_message or b"unknown dflowfm_io error").decode("utf-8"))
