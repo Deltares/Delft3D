@@ -828,7 +828,7 @@ contains
       use messagehandling, only: mess, LEVEL_WARN
       use m_flow, only: sa1
       use m_flowparameters, only: jasal
-      use m_transport, only: const_names, ISED1
+      use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
       use m_fm_wq_processes, only: wqbotnames, wqbot
