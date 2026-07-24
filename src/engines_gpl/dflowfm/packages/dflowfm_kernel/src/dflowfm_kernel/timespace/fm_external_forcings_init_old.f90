@@ -833,8 +833,8 @@ contains
 
                if (jaspacevarcharn == 1) then
                   if (.not. allocated(ec_pwxwy_c)) then
-                     allocate (ec_pwxwy_c(ndx), wcharnock%values(lnx), stat=ierr)
-                     call aerr('ec_pwxwy_c(ndx), wcharnock%values(lnx)', ierr, ndx + lnx)
+                     call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
+                     call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
                      ec_pwxwy_c = 0.0_dp
                   end if
                end if
@@ -857,8 +857,7 @@ contains
                   ec_charnock(:) = 0.0_dp
                end if
                if (.not. allocated(wcharnock%values)) then
-                  allocate (wcharnock%values(lnx), stat=ierr)
-                  call aerr('wcharnock%values(lnx)', ierr, lnx)
+                  call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
                end if
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname)
                if (success) then

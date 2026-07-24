@@ -179,7 +179,7 @@ contains
       wy = 0.0_dp
       wdsu_x = 0.0_dp
       wdsu_y = 0.0_dp
-      if (jaspacevarcharn > 0) then
+      if (allocated(ec_pwxwy_c) .or. allocated(ec_charnock)) then
          wcharnock%values = 0.0_dp
       end if
       call initialize_array_with_zero(ec_pwxwy_x)

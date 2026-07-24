@@ -161,6 +161,7 @@ contains
       jastresstowind = 0 !< if jawindstressgiven==1, convert stress to wind yes/no 1/0
       ja_computed_airdensity = 0
       wcharnock%scalar = 0.018_dp !< ecmwf default value of charnock coefficient when wave is not used
+      if (allocated(wcharnock%values)) deallocate (wcharnock%values)
       ! Remaining of variables is handled in reset_wind()
       call reset_wind()
    end subroutine default_wind
