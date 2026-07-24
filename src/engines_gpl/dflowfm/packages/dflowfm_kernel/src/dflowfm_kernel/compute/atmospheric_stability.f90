@@ -137,7 +137,6 @@ contains
       real(kind=dp) :: heat_profile_correction, humidity_profile_correction
       real(kind=dp) :: convective_velocity_scale
       real(kind=dp) :: inverse_obukhov_length
-      real(kind=dp) :: denom_d, denom_h, denom_e
       integer :: iteration
       integer, parameter :: MINIMUM_ITERATION = 5
       integer, parameter :: MAXIMUM_ITERATION = 50
@@ -228,13 +227,13 @@ contains
                   delta_specific_humidity = humidity_at_wind_height - surface_humidity
                end if
 
-               log_denominator_momentum = log(sensor_height_wind_velocity) - log(z0_momentum) - psi_momentum
-               log_denominator_heat = log(sensor_height_wind_velocity) - log(z0_heat) - psi_heat
-               log_denominator_humidity = log(sensor_height_wind_velocity) - log(z0_humidity) - psi_humidity
+               log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum) - psi_momentum
+               log_denominator_heat = log(sensor_height_wind_velocity + z0_momentum) - log(z0_heat) - psi_heat
+               log_denominator_humidity = log(sensor_height_wind_velocity + z0_momentum) - log(z0_humidity) - psi_humidity
             else
-               log_denominator_momentum = log(sensor_height_wind_velocity) - log(z0_momentum)
-               log_denominator_heat = log(sensor_height_air_temperature) - log(z0_heat)
-               log_denominator_humidity = log(sensor_height_humidity) - log(z0_humidity)
+               log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum)
+               log_denominator_heat = log(sensor_height_air_temperature + z0_momentum) - log(z0_heat)
+               log_denominator_humidity = log(sensor_height_humidity + z0_momentum) - log(z0_humidity)
             end if
 
             log_denominator_momentum = sign(max(abs(log_denominator_momentum), EPS8), log_denominator_momentum)
@@ -258,26 +257,45 @@ contains
             end if
          end do
 
+         result%u_star = u_star
+         result%t_star = t_star
+         result%q_star = q_star
+         result%w_star = convective_velocity_scale
+         result%obukhov_length = obukhov_length
+         result%richardson_number = richardson_number
+         result%z0_momentum = z0_momentum
+         result%z0_heat = z0_heat
+         result%z0_humidity = z0_humidity
+         
+         result%relative_humidity = vapor_pressure / saturated_vapor_pressure * 100.0_dp
+
+         ! compute bulk transfer coefficients Cd, Ch, and Ce, at the respective sensor heights:
+         if (options%include_stability) then
+            psi_momentum = stability_profile_momentum((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) - &
+                           stability_profile_momentum(z0_momentum * inverse_obukhov_length)
+            psi_heat = stability_profile_heat_humidity((sensor_height_air_temperature + z0_momentum) * inverse_obukhov_length) - &
+                       stability_profile_heat_humidity(z0_heat * inverse_obukhov_length)
+            psi_humidity = stability_profile_heat_humidity((sensor_height_humidity + z0_momentum) * inverse_obukhov_length) - &
+                           stability_profile_heat_humidity(z0_humidity * inverse_obukhov_length)
+         else
+            psi_momentum = 0.0_dp
+            psi_heat = 0.0_dp
+            psi_humidity = 0.0_dp
+         end if
+         
+         log_denominator_momentum = log(sensor_height_wind_velocity + z0_momentum) - log(z0_momentum) - psi_momentum
+         log_denominator_heat = log(sensor_height_air_temperature + z0_momentum) - log(z0_heat) - psi_heat
+         log_denominator_humidity = log(sensor_height_humidity + z0_momentum) - log(z0_humidity) - psi_humidity
+         
+         log_denominator_momentum = sign(max(abs(log_denominator_momentum), EPS8), log_denominator_momentum)
+         log_denominator_heat = sign(max(abs(log_denominator_heat), EPS8), log_denominator_heat)
+         log_denominator_humidity = sign(max(abs(log_denominator_humidity), EPS8), log_denominator_humidity)
+         
+         result%c_d = vonkarw**2/log_denominator_momentum/log_denominator_momentum
+         result%c_h = vonkarw**2/log_denominator_momentum/log_denominator_heat
+         result%c_e = vonkarw**2/log_denominator_momentum/log_denominator_humidity
+         
       end associate
-
-      result%u_star = u_star
-      result%t_star = t_star
-      result%q_star = q_star
-      result%w_star = convective_velocity_scale
-      result%obukhov_length = obukhov_length
-      result%richardson_number = richardson_number
-      result%z0_momentum = z0_momentum
-      result%z0_heat = z0_heat
-      result%z0_humidity = z0_humidity
-
-      denom_d = max(wind_velocity_magnitude, EPS8)
-      denom_h = max(abs(delta_temperature), EPS8)
-      denom_e = max(abs(delta_specific_humidity), EPS8)
-      result%c_d = (u_star / denom_d)**2
-      result%c_h = abs((u_star / denom_d) * (t_star / denom_h))
-      result%c_e = abs((u_star / denom_d) * (q_star / denom_e))
-
-      result%relative_humidity = vapor_pressure / saturated_vapor_pressure * 100.0_dp
    end function compute_scaling_parameters
 
    !> Compute arrays of scaling parameters and bulk surface fluxes.
