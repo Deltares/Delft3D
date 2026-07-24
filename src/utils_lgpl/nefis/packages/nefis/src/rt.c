@@ -367,13 +367,16 @@ BInt4 RT_retrieve_var(BInt4 set, BUInt8* grp_pointer, BInt4 var_index, BUInt8* v
     }
 
     error = RT_update_var_array(set, gd, grp_pointer);
-    if (error == 0 && var_index < retrieve_var[set][gd][1])
+    if (error == 0) // don't overwrite error codes
     {
-        *var_pointer = retrieve_var[set][gd][var_index + 3];
-    }
-    else
-    {
-        error = 1; /*  var_index (c-numbering; retrieve_var (fortran-numbering) */
+        if (var_index < retrieve_var[set][gd][1])
+        {
+            *var_pointer = retrieve_var[set][gd][var_index + 3];
+        }
+        else
+        {
+            error = 1; /*  var_index (c-numbering; retrieve_var (fortran-numbering) */
+        }
     }
 
     return error;
