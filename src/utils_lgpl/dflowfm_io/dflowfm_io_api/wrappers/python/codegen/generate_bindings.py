@@ -73,7 +73,12 @@ SET_SCALAR = {
     "enum_name": ("str", 'value.encode("utf-8")'),
     "string": ("str", 'value.encode("utf-8")'),
     "path": ("Path | str", 'str(value).encode("utf-8")'),
-    "datetime": ("datetime", "ctypes.c_int64(int(value.timestamp()))"),
+    # get_datetime returns UTC-aware; treat a naive input as UTC too, so round-trips are symmetric
+    # (a naive datetime's .timestamp() would otherwise be interpreted in local time).
+    "datetime": (
+        "datetime",
+        "ctypes.c_int64(int((value if value.tzinfo else value.replace(tzinfo=timezone.utc)).timestamp()))",
+    ),
 }
 
 # list setter: suffix -> (Python argument type, element ctypes type, expression encoding each `v` — None = identity)

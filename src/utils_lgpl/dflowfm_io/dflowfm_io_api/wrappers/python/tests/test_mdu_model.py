@@ -228,6 +228,16 @@ class TestMduModel(unittest.TestCase):
         doc.model.set_datetime("time.refdate", new_dt)
         self.assertEqual(doc.model.get_datetime("time.refdate"), new_dt)
 
+    def test_set_naive_datetime_is_treated_as_utc(self):
+        # A naive datetime must round-trip against the UTC-aware get_datetime, not shift by the
+        # local offset.
+        doc = _loaded_doc()
+        doc.model.set_datetime("time.refdate", datetime(2020, 1, 2, 3, 4, 5))
+        self.assertEqual(
+            doc.model.get_datetime("time.refdate"),
+            datetime(2020, 1, 2, 3, 4, 5, tzinfo=timezone.utc),
+        )
+
     # --- set: nonexisting key raises ---
 
     def test_set_nonexisting_key_int(self):

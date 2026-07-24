@@ -91,7 +91,7 @@ class MduModel:
         check_result(lib.mdu_set_path(self._ref.handle, key.encode("utf-8"), str(value).encode("utf-8")))
 
     def set_datetime(self, key: str, value: datetime) -> None:
-        check_result(lib.mdu_set_datetime(self._ref.handle, key.encode("utf-8"), ctypes.c_int64(int(value.timestamp()))))
+        check_result(lib.mdu_set_datetime(self._ref.handle, key.encode("utf-8"), ctypes.c_int64(int((value if value.tzinfo else value.replace(tzinfo=timezone.utc)).timestamp()))))
 
     def set_enum(self, key: str, value: int) -> None:
         check_result(lib.mdu_set_enum(self._ref.handle, key.encode("utf-8"), ctypes.c_int32(value)))
