@@ -64,9 +64,10 @@ def _check_result(result):
         raise RuntimeError(error_message.decode('utf-8'))
 
 class Severity(IntEnum):
-    INFO = 0
-    WARNING = 1
-    ERROR = 2
+    DEBUG = 0
+    INFO = 1
+    WARNING = 2
+    ERROR = 3
 
 
 class _MduIssue(ctypes.Structure):

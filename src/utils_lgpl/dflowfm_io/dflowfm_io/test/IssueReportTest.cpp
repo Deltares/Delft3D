@@ -22,21 +22,21 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        EXPECT_FALSE(report.HasInfos());
+        EXPECT_FALSE(report.HasInfo());
     }
 
     TEST(IssueReportTest, DefaultConstructed_HasNoWarnings)
     {
         IssueReport report;
 
-        EXPECT_FALSE(report.HasWarnings());
+        EXPECT_FALSE(report.HasWarning());
     }
 
     TEST(IssueReportTest, DefaultConstructed_HasNoErrors)
     {
         IssueReport report;
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
     }
 
     TEST(IssueReportTest, DefaultConstructed_FormatReturnsEmptyString)
@@ -59,7 +59,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(report.size(), 1);
     }
 
-    TEST(IssueReportTest, AddError_IssueHasErrorSeverity)
+    TEST(IssueReportTest, AddError_IssueHasErroreverity)
     {
         IssueReport report;
 
@@ -108,7 +108,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(report.size(), 1);
     }
 
-    TEST(IssueReportTest, AddWarning_IssueHasWarningSeverity)
+    TEST(IssueReportTest, AddWarning_IssueHasWarningeverity)
     {
         IssueReport report;
 
@@ -157,7 +157,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(report.size(), 1);
     }
 
-    TEST(IssueReportTest, AddInfo_IssueHasInfoSeverity)
+    TEST(IssueReportTest, AddInfo_IssueHasInfoeverity)
     {
         IssueReport report;
 
@@ -194,6 +194,62 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
+    // AddDebug (no line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, DefaultConstructed_HasNoDebugs)
+    {
+        IssueReport report;
+
+        EXPECT_FALSE(report.HasDebug());
+    }
+
+    TEST(IssueReportTest, AddDebug_AddsOneIssue)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_EQ(report.size(), 1);
+    }
+
+    TEST(IssueReportTest, AddDebug_IssueHasDebugeverity)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_EQ(report[0].severity, Severity::Debug);
+    }
+
+    TEST(IssueReportTest, AddDebug_IssueHasCorrectMessage)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_EQ(report[0].message, "A debug message");
+    }
+
+    TEST(IssueReportTest, AddDebug_IssueHasNoLineNumber)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_FALSE(report[0].lineNumber.has_value());
+    }
+
+    TEST(IssueReportTest, AddDebug_WithFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddDebug("Debug value: {}", 7);
+
+        EXPECT_EQ(report[0].message, "Debug value: 7");
+    }
+
+    // -------------------------------------------------------------------------
     // AddError (with line number)
     // -------------------------------------------------------------------------
 
@@ -207,7 +263,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(*report[0].lineNumber, 10);
     }
 
-    TEST(IssueReportTest, AddError_WithLineNumber_IssueHasErrorSeverity)
+    TEST(IssueReportTest, AddError_WithLineNumber_IssueHasErroreverity)
     {
         IssueReport report;
 
@@ -239,7 +295,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(*report[0].lineNumber, 20);
     }
 
-    TEST(IssueReportTest, AddWarning_WithLineNumber_IssueHasWarningSeverity)
+    TEST(IssueReportTest, AddWarning_WithLineNumber_IssueHasWarningeverity)
     {
         IssueReport report;
 
@@ -271,7 +327,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(*report[0].lineNumber, 30);
     }
 
-    TEST(IssueReportTest, AddInfo_WithLineNumber_IssueHasInfoSeverity)
+    TEST(IssueReportTest, AddInfo_WithLineNumber_IssueHasInfoeverity)
     {
         IssueReport report;
 
@@ -287,6 +343,38 @@ namespace dflowfm_io::test
         report.AddInfo(30, "Processed {} items", 5);
 
         EXPECT_EQ(report[0].message, "Processed 5 items");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddDebug (with line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddDebug_WithLineNumber_IssueHasLineNumber)
+    {
+        IssueReport report;
+
+        report.AddDebug(40, "A debug message");
+
+        ASSERT_TRUE(report[0].lineNumber.has_value());
+        EXPECT_EQ(*report[0].lineNumber, 40);
+    }
+
+    TEST(IssueReportTest, AddDebug_WithLineNumber_IssueHasDebugeverity)
+    {
+        IssueReport report;
+
+        report.AddDebug(40, "A debug message");
+
+        EXPECT_EQ(report[0].severity, Severity::Debug);
+    }
+
+    TEST(IssueReportTest, AddDebug_WithLineNumberAndFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddDebug(40, "Debug value: {}", 7);
+
+        EXPECT_EQ(report[0].message, "Debug value: 7");
     }
 
     // -------------------------------------------------------------------------
@@ -334,55 +422,71 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // HasInfos / HasWarnings / HasErrors
+    // HasDebug / HasInfo / HasWarning / HasError
     // -------------------------------------------------------------------------
 
-    TEST(IssueReportTest, HasErrors_AfterAddingError_ReturnsTrue)
+    TEST(IssueReportTest, HasError_AfterAddingError_ReturnsTrue)
     {
         IssueReport report;
         report.AddError("An error");
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
     }
 
-    TEST(IssueReportTest, HasErrors_AfterAddingOnlyWarning_ReturnsFalse)
+    TEST(IssueReportTest, HasError_AfterAddingOnlyWarning_ReturnsFalse)
     {
         IssueReport report;
         report.AddWarning("A warning");
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
     }
 
-    TEST(IssueReportTest, HasWarnings_AfterAddingWarning_ReturnsTrue)
+    TEST(IssueReportTest, HasWarning_AfterAddingWarning_ReturnsTrue)
     {
         IssueReport report;
         report.AddWarning("A warning");
 
-        EXPECT_TRUE(report.HasWarnings());
+        EXPECT_TRUE(report.HasWarning());
     }
 
-    TEST(IssueReportTest, HasWarnings_AfterAddingOnlyError_ReturnsFalse)
+    TEST(IssueReportTest, HasWarning_AfterAddingOnlyError_ReturnsFalse)
     {
         IssueReport report;
         report.AddError("An error");
 
-        EXPECT_FALSE(report.HasWarnings());
+        EXPECT_FALSE(report.HasWarning());
     }
 
-    TEST(IssueReportTest, HasInfos_AfterAddingInfo_ReturnsTrue)
+    TEST(IssueReportTest, HasInfo_AfterAddingInfo_ReturnsTrue)
     {
         IssueReport report;
         report.AddInfo("An info");
 
-        EXPECT_TRUE(report.HasInfos());
+        EXPECT_TRUE(report.HasInfo());
     }
 
-    TEST(IssueReportTest, HasInfos_AfterAddingOnlyError_ReturnsFalse)
+    TEST(IssueReportTest, HasInfo_AfterAddingOnlyError_ReturnsFalse)
     {
         IssueReport report;
         report.AddError("An error");
 
-        EXPECT_FALSE(report.HasInfos());
+        EXPECT_FALSE(report.HasInfo());
+    }
+
+    TEST(IssueReportTest, HasDebug_AfterAddingDebug_ReturnsTrue)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+
+        EXPECT_TRUE(report.HasDebug());
+    }
+
+    TEST(IssueReportTest, HasDebug_AfterAddingOnlyError_ReturnsFalse)
+    {
+        IssueReport report;
+        report.AddError("An error");
+
+        EXPECT_FALSE(report.HasDebug());
     }
 
     // -------------------------------------------------------------------------
@@ -419,6 +523,16 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "Info: Something happened\n");
     }
 
+    TEST(IssueReportTest, Format_SingleDebugWithoutLineNumber_ReturnsFormattedString)
+    {
+        IssueReport report;
+        report.AddDebug("Some detail");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Debug: Some detail\n");
+    }
+
     TEST(IssueReportTest, Format_SingleErrorWithLineNumber_ReturnsFormattedStringWithLineNumber)
     {
         IssueReport report;
@@ -427,6 +541,36 @@ namespace dflowfm_io::test
         const std::string result = report.Format();
 
         EXPECT_EQ(result, "Error on line 42: Something went wrong\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleWarningWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddWarning(25, "Something is suspicious");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Warning on line 25: Something is suspicious\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleInfoWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddInfo(30, "Something happened");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Info on line 30: Something happened\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleDebugWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddDebug(15, "Some detail");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Debug on line 15: Some detail\n");
     }
 
     TEST(IssueReportTest, Format_MultipleIssues_ReturnsAllFormattedLines)
@@ -438,6 +582,82 @@ namespace dflowfm_io::test
         const std::string result = report.Format();
 
         EXPECT_EQ(result, "Error: An error\nWarning on line 5: A warning\n");
+    }
+
+    // -------------------------------------------------------------------------
+    // Format (minSeverity)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, Format_MinSeverityDebug_IncludesAllIssues)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Debug);
+
+        EXPECT_EQ(result,
+                  "Debug: A debug\n"
+                  "Info: An info\n"
+                  "Warning: A warning\n"
+                  "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityInfo_ExcludesDebug)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Info);
+
+        EXPECT_EQ(result,
+                  "Info: An info\n"
+                  "Warning: A warning\n"
+                  "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityWarning_ExcludesDebugAndInfo)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Warning);
+
+        EXPECT_EQ(result,
+                  "Warning: A warning\n"
+                  "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityError_IncludesOnlyErrors)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Error);
+
+        EXPECT_EQ(result, "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityExcludesAll_ReturnsEmptyString)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+
+        const std::string result = report.Format(Severity::Warning);
+
+        EXPECT_EQ(result, "");
     }
 
     // -------------------------------------------------------------------------

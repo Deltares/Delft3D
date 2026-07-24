@@ -17,11 +17,13 @@ namespace dflowfm_io
         issues.emplace(it, severity, std::move(message), lineNumber);
     }
 
-    bool IssueReport::HasInfos() const { return HasSeverity(Severity::Info); }
+    bool IssueReport::HasDebug() const { return HasSeverity(Severity::Debug); }
 
-    bool IssueReport::HasWarnings() const { return HasSeverity(Severity::Warning); }
+    bool IssueReport::HasInfo() const { return HasSeverity(Severity::Info); }
 
-    bool IssueReport::HasErrors() const { return HasSeverity(Severity::Error); }
+    bool IssueReport::HasWarning() const { return HasSeverity(Severity::Warning); }
+
+    bool IssueReport::HasError() const { return HasSeverity(Severity::Error); }
 
     bool IssueReport::HasSeverity(Severity severity) const
     {
@@ -29,14 +31,22 @@ namespace dflowfm_io
                            [severity](const Issue& issue) { return issue.severity == severity; });
     }
 
-    std::string IssueReport::Format() const
+    std::string IssueReport::Format(Severity minSeverity) const
     {
         std::ostringstream oss;
         for (const auto& issue : issues)
         {
+            if (issue.severity < minSeverity)
+            {
+                continue;
+            }
+
             std::string severityStr;
             switch (issue.severity)
             {
+                case Severity::Debug:
+                    severityStr = "Debug";
+                    break;
                 case Severity::Info:
                     severityStr = "Info";
                     break;

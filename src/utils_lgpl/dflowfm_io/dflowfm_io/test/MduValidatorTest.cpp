@@ -30,14 +30,14 @@ namespace dflowfm_io::test
     {
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
     }
 
     TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoWarnings)
     {
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_FALSE(report.HasWarnings());
+        EXPECT_FALSE(report.HasWarning());
     }
 
     // -------------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace dflowfm_io::test
     {
         const IssueReport report = MduValidator::Validate(ini::IniData{}, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ErrorMentionsSectionName)
@@ -70,7 +70,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndProperty)
@@ -95,7 +95,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
     }
 
     TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndProperty)
@@ -111,21 +111,21 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Validate — missing optional property with default value
+    // Validate — optional property present but without a value
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_ReturnsInfo)
+    TEST_F(MduValidatorTest, Validate_OptionalPropertyWithoutValue_ReturnsInfo)
     {
-        iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
+        iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "");
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasInfos());
+        EXPECT_TRUE(report.HasInfo());
     }
 
-    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_InfoMentionsSectionAndPropertyAndDefault)
+    TEST_F(MduValidatorTest, Validate_OptionalPropertyWithoutValue_InfoMentionsSectionAndPropertyAndDefault)
     {
-        iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
+        iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "");
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -134,6 +134,32 @@ namespace dflowfm_io::test
         EXPECT_NE(info->message.find("geometry"), std::string::npos);
         EXPECT_NE(info->message.find("bedLevUni"), std::string::npos);
         EXPECT_NE(info->message.find("-5.0"), std::string::npos);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validate — missing optional property with default value
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_ReturnsDebug)
+    {
+        iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        EXPECT_TRUE(report.HasDebug());
+    }
+
+    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_DebugMentionsSectionAndPropertyAndDefault)
+    {
+        iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* debug = FirstIssue(report, Severity::Debug);
+        ASSERT_NE(debug, nullptr);
+        EXPECT_NE(debug->message.find("geometry"), std::string::npos);
+        EXPECT_NE(debug->message.find("bedLevUni"), std::string::npos);
+        EXPECT_NE(debug->message.find("-5.0"), std::string::npos);
     }
 
     // -------------------------------------------------------------------------
@@ -146,7 +172,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarnings());
+        EXPECT_TRUE(report.HasWarning());
     }
 
     TEST_F(MduValidatorTest, Validate_UnknownSection_WarningMentionsSectionName)
@@ -170,7 +196,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarnings());
+        EXPECT_TRUE(report.HasWarning());
     }
 
     TEST_F(MduValidatorTest, Validate_UnknownProperty_WarningMentionsSectionAndProperty)
@@ -195,7 +221,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarnings());
+        EXPECT_TRUE(report.HasWarning());
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
@@ -221,7 +247,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarnings());
+        EXPECT_TRUE(report.HasWarning());
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
@@ -248,7 +274,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
     }
 
     TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ErrorMentionsSectionAndPropertyAndSinceRelease)
@@ -275,7 +301,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
     }
 
     TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ErrorMentionsSectionAndPropertyAndValueAndSinceRelease)

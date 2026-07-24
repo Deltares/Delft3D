@@ -39,7 +39,7 @@ namespace dflowfm_io::test
 
         doc.Load(stream);
 
-        EXPECT_FALSE(doc.GetReport().HasErrors());
+        EXPECT_FALSE(doc.GetReport().HasError());
     }
 
     TEST_F(MduDocumentTest, Load_ValidStream_PopulatesMduData)

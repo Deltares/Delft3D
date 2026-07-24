@@ -40,8 +40,8 @@ namespace dflowfm_io
                     if (propertySchema.required)
                         report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
                     else if (!propertySchema.default_value.empty())
-                        report.AddInfo("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
-                                       propertySchema.key, propertySchema.default_value);
+                        report.AddDebug("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
+                                        propertySchema.key, propertySchema.default_value);
                     continue;
                 }
 

@@ -29,7 +29,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_FullyCompliantInput_ReportHasNoWarnings)
@@ -38,7 +38,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasWarnings());
+        EXPECT_FALSE(report.HasWarning());
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_FullyCompliantInput_MduDataIsNotEmpty)
@@ -61,7 +61,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         EXPECT_NE(error->message.find("general"), std::string::npos);
@@ -75,25 +75,39 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarnings());
+        EXPECT_TRUE(report.HasWarning());
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
         EXPECT_NE(warning->message.find("general"), std::string::npos);
         EXPECT_NE(warning->message.find("unknownProperty_XYZ"), std::string::npos);
     }
 
-    TEST_F(MduDataConverterTest, ConvertIniData_MissingOptionalProperty_ReportHasInfo)
+    TEST_F(MduDataConverterTest, ConvertIniData_OptionalPropertyValueIsEmpty_ReportHasInfo)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("geometry").SetPropertyValue("useCaching", "");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        EXPECT_TRUE(report.HasInfo());
+        const Issue* info = FirstIssue(report, Severity::Info);
+        ASSERT_NE(info, nullptr);
+        EXPECT_NE(info->message.find("geometry"), std::string::npos);
+        EXPECT_NE(info->message.find("useCaching"), std::string::npos);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_MissingOptionalProperty_ReportHasDebug)
     {
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").RemoveAllProperties("useCaching");
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasInfos());
-        const Issue* error = FirstIssue(report, Severity::Info);
-        ASSERT_NE(error, nullptr);
-        EXPECT_NE(error->message.find("geometry"), std::string::npos);
-        EXPECT_NE(error->message.find("useCaching"), std::string::npos);
+        EXPECT_TRUE(report.HasDebug());
+        const Issue* debug = FirstIssue(report, Severity::Debug);
+        ASSERT_NE(debug, nullptr);
+        EXPECT_NE(debug->message.find("geometry"), std::string::npos);
+        EXPECT_NE(debug->message.find("useCaching"), std::string::npos);
     }
 
     // -------------------------------------------------------------------------
@@ -123,7 +137,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         EXPECT_NE(error->message.find(target.section), std::string::npos);
@@ -156,7 +170,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         for (const auto& ev : targetProperty->enum_values)
@@ -174,7 +188,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         for (const auto& ev : targetProperty->enum_values)
@@ -189,7 +203,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         EXPECT_NE(error->message.find("yyyymmddhhmmss"), std::string::npos)
@@ -203,7 +217,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_TRUE(report.HasErrors());
+        EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         EXPECT_NE(error->message.find("yyyymmdd"), std::string::npos)
@@ -301,7 +315,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("general", "fileVersion");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<std::string>(key), "some_string");
@@ -314,7 +328,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("numerics", "maxNonLinearIterations");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<int>(key), 42);
@@ -327,7 +341,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("geometry", "bedLevUni");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_DOUBLE_EQ(mduData.getValueAs<double>(key), 3.14);
@@ -340,7 +354,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("geometry", "useCaching");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_TRUE(mduData.getValueAs<bool>(key));
@@ -353,7 +367,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("geometry", "netFile");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<std::filesystem::path>(key), std::filesystem::path("some/path/file.nc"));
@@ -366,7 +380,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("numerics", "verticalAdvectionType");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
@@ -379,7 +393,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("numerics", "timeStepType");
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 2);
@@ -392,7 +406,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("geometry", "structureFile");
         EXPECT_TRUE(mduData.hasValue(key));
         const auto& paths = mduData.getValueAs<std::vector<std::filesystem::path>>(key);
@@ -409,7 +423,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("geometry", "activeProcesses");
         EXPECT_TRUE(mduData.hasValue(key));
         const auto& paths = mduData.getValueAs<std::vector<std::string>>(key);
@@ -426,7 +440,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("geometry", "stretchCoef");
         EXPECT_TRUE(mduData.hasValue(key));
         const auto& values = mduData.getValueAs<std::vector<double>>(key);
@@ -443,7 +457,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(report.HasErrors());
+        EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("time", "tStart");
         EXPECT_TRUE(mduData.hasValue(key));
         const auto expected =
@@ -573,7 +587,7 @@ namespace dflowfm_io::test
         const ini::IniData original = TestIniData();
 
         const auto [mduData, report] = MduDataConverter::Convert(original, schema);
-        ASSERT_FALSE(report.HasErrors());
+        ASSERT_FALSE(report.HasError());
 
         const ini::IniData roundTripped = MduDataConverter::Convert(mduData, schema);
 

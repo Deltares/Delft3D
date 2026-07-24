@@ -5,7 +5,8 @@
 /// </summary>
 public enum IssueSeverity
 {
-    Info = 0,
-    Warning = 1,
-    Error = 2
+    Debug = 0,
+    Info = 1,
+    Warning = 2,
+    Error = 3
 }

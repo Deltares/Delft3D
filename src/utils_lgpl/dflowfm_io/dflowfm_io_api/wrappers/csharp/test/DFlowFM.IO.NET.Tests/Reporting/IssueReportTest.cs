@@ -28,9 +28,10 @@ public class IssueReportTests
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(report.Errors, Is.Empty);
-            Assert.That(report.Warnings, Is.Empty);
-            Assert.That(report.Infos, Is.Empty);
+            Assert.That(report.ErrorIssues, Is.Empty);
+            Assert.That(report.WarningIssues, Is.Empty);
+            Assert.That(report.InfoIssues, Is.Empty);
+            Assert.That(report.DebugIssues, Is.Empty);
         }
     }
 
@@ -76,7 +77,23 @@ public class IssueReportTests
             Assert.That(report.HasIssues, Is.True);
             Assert.That(report.HasErrors, Is.False);
             Assert.That(report.HasWarnings, Is.False);
-            Assert.That(report.Infos, Has.Count.EqualTo(1));
+            Assert.That(report.InfoIssues, Has.Count.EqualTo(1));
+        }
+    }
+
+    [Test]
+    public void Constructor_WithDebugs_DoesNotSetHasErrorsOrWarnings()
+    {
+        List<Issue> issues = [new(IssueSeverity.Debug, "debug message")];
+
+        IssueReport report = new(issues);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(report.HasIssues, Is.True);
+            Assert.That(report.HasErrors, Is.False);
+            Assert.That(report.HasWarnings, Is.False);
+            Assert.That(report.DebugIssues, Has.Count.EqualTo(1));
         }
     }
 
@@ -88,17 +105,19 @@ public class IssueReportTests
             new(IssueSeverity.Error, "error 1"),
             new(IssueSeverity.Error, "error 2"),
             new(IssueSeverity.Warning, "warning 1"),
-            new(IssueSeverity.Info, "info 1")
+            new(IssueSeverity.Info, "info 1"),
+            new(IssueSeverity.Debug, "debug 1")
         ];
 
         IssueReport report = new(issues);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(report.Issues, Has.Count.EqualTo(4));
-            Assert.That(report.Errors, Has.Count.EqualTo(2));
-            Assert.That(report.Warnings, Has.Count.EqualTo(1));
-            Assert.That(report.Infos, Has.Count.EqualTo(1));
+            Assert.That(report.Issues, Has.Count.EqualTo(5));
+            Assert.That(report.ErrorIssues, Has.Count.EqualTo(2));
+            Assert.That(report.WarningIssues, Has.Count.EqualTo(1));
+            Assert.That(report.InfoIssues, Has.Count.EqualTo(1));
+            Assert.That(report.DebugIssues, Has.Count.EqualTo(1));
         }
     }
 
@@ -108,7 +127,9 @@ public class IssueReportTests
         List<Issue> issues =
         [
             new(IssueSeverity.Error, "error 1"),
-            new(IssueSeverity.Warning, "warning 1")
+            new(IssueSeverity.Warning, "warning 1"),
+            new(IssueSeverity.Info, "info 1"),
+            new(IssueSeverity.Debug, "debug 1")
         ];
 
         IssueReport report = new(issues);
@@ -116,6 +137,8 @@ public class IssueReportTests
 
         Assert.That(result, Does.Contain("error 1"));
         Assert.That(result, Does.Contain("warning 1"));
+        Assert.That(result, Does.Contain("info 1"));
+        Assert.That(result, Does.Contain("debug 1"));
     }
 
     [Test]

@@ -14,13 +14,14 @@ public sealed class IssueReport
         Issues = issues;
 
         ILookup<IssueSeverity, Issue> lookup = issues.ToLookup(i => i.Severity);
-        Errors = lookup[IssueSeverity.Error].ToArray();
-        Warnings = lookup[IssueSeverity.Warning].ToArray();
-        Infos = lookup[IssueSeverity.Info].ToArray();
+        DebugIssues = [.. lookup[IssueSeverity.Debug]];
+        ErrorIssues = [.. lookup[IssueSeverity.Error]];
+        WarningIssues = [.. lookup[IssueSeverity.Warning]];
+        InfoIssues = [.. lookup[IssueSeverity.Info]];
 
         HasIssues = Issues.Count > 0;
-        HasErrors = Errors.Count > 0;
-        HasWarnings = Warnings.Count > 0;
+        HasErrors = ErrorIssues.Count > 0;
+        HasWarnings = WarningIssues.Count > 0;
     }
 
     /// <summary>
@@ -51,17 +52,22 @@ public sealed class IssueReport
     /// <summary>
     /// Gets all issues with <see cref="IssueSeverity.Error" /> severity.
     /// </summary>
-    public IReadOnlyList<Issue> Errors { get; }
+    public IReadOnlyList<Issue> ErrorIssues { get; }
 
     /// <summary>
     /// Gets all issues with <see cref="IssueSeverity.Warning" /> severity.
     /// </summary>
-    public IReadOnlyList<Issue> Warnings { get; }
+    public IReadOnlyList<Issue> WarningIssues { get; }
 
     /// <summary>
     /// Gets all issues with <see cref="IssueSeverity.Info" /> severity.
     /// </summary>
-    public IReadOnlyList<Issue> Infos { get; }
+    public IReadOnlyList<Issue> InfoIssues { get; }
+
+    /// <summary>
+    /// Gets all issues with <see cref="IssueSeverity.Debug" /> severity.
+    /// </summary>
+    public IReadOnlyList<Issue> DebugIssues { get; }
 
     /// <inheritdoc />
     public override string ToString()

@@ -72,6 +72,9 @@ namespace
         case dflowfm_io::Severity::Error:
             return MDU_SEVERITY_ERROR;
         case dflowfm_io::Severity::Info:
+            return MDU_SEVERITY_INFO;
+        case dflowfm_io::Severity::Debug:
+            return MDU_SEVERITY_DEBUG;
         default:
             return MDU_SEVERITY_INFO;
         }

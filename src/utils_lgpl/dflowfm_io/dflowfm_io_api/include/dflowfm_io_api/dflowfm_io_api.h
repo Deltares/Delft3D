@@ -23,9 +23,10 @@ typedef void* mdu_handle_t;
 
 typedef enum mdu_severity_t
 {
-    MDU_SEVERITY_INFO = 0,
-    MDU_SEVERITY_WARNING = 1,
-    MDU_SEVERITY_ERROR = 2
+    MDU_SEVERITY_DEBUG = 0,
+    MDU_SEVERITY_INFO = 1,
+    MDU_SEVERITY_WARNING = 2,
+    MDU_SEVERITY_ERROR = 3
 } mdu_severity_t;
 
 typedef struct mdu_issue_t
