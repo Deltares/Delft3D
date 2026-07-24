@@ -41,7 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      implicit none
+      use morphology_data_module, only: missing_value
 !
 ! Arguments
 !
@@ -62,7 +62,6 @@ contains
       real(fp) :: acal ! user-specified calibration coefficient
       real(fp) :: ag ! gravity acceleration
       real(fp) :: mu_ripple ! ripple factor
-      real(fp) :: chezy_limited ! Chezy value restricted to values larger than CHEZY_MIN
       real(fp) :: chezy_grain ! grain related Chezy value
       real(fp) :: delta ! relative density of sediment particle
       real(fp) :: theta ! dimensionless shear stress
@@ -82,9 +81,9 @@ contains
       !     bed load transport
       !
       chezy_grain = 18.0_fp * log10(max(12.0_fp * h / d90, 1.0_fp))
-      mu_ripple = (chezy_limited / chezy_grain)**1.5_fp
+      mu_ripple = (chezy / chezy_grain)**1.5_fp
       mu_ripple = min(mu_ripple, 1.0_fp)
-      theta = (utot / chezy_limited)**2 / delta / d50
+      theta = (utot / chezy)**2 / delta / d50
       excess_theta = max(mu_ripple * theta - hidexp * THETA_CRITICAL, 0.0_fp)
       !
       sbot = acal * 8.0_fp * sqrt(ag * delta * d50 * excess_theta) * d50 * excess_theta

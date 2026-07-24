@@ -1,4 +1,4 @@
--module m_tranb1
+module m_tranb1
    implicit none
 
 contains
@@ -41,7 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      implicit none
+      use morphology_data_module, only: missing_value
 !
 ! Arguments
 !

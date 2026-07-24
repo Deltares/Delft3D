@@ -1118,7 +1118,7 @@ contains
          pardef(12) = 1.0_fp
          parkeyw(13) = 'SL_effects'
          pardef(13) = 1.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 24
             outpar_name(1) = 'uwc'
             outpar_longname(1) = 'orbital velocity at crest' ! m/s
@@ -1211,7 +1211,7 @@ contains
          parkeyw(9) = 'Wform'
          pardef(9) = 1.0_fp
          ! NOTE PARAMETERS ADDED HERE MUST BE COPIED TO SANTOSS FORMULA -4: Numbers/parameters must match!
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 17
             outpar_name(1) = 'tauc'
             outpar_longname(1) = 'bed shear stress due to currents' ! kg/(m s2)
@@ -1267,7 +1267,7 @@ contains
          pardef(7) = 0.0_fp ! false
          parkeyw(8) = 'BetaM'
          pardef(8) = 3.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 16
             outpar_name(1) = 'tauc'
             outpar_longname(1) = 'bed shear stress due to currents' ! kg/(m s2)
@@ -1311,7 +1311,7 @@ contains
          pardef(2) = 1.0_fp
          parkeyw(3) = 'SusFac'
          pardef(3) = 0.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 2
             outpar_name(1) = 'chezy'
             outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
@@ -1322,7 +1322,7 @@ contains
          name = 'Meyer-Peter-Mueller (1948)'
          nparreq = 1
          parkeyw(1) = 'ACal'
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 3
             outpar_name(1) = 'chezy'
             outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
@@ -1338,7 +1338,7 @@ contains
          nparopt = 1
          parkeyw(2) = 'RouKs'
          pardef(2) = 1.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 2
             outpar_name(1) = 'chezy'
             outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
@@ -1364,7 +1364,7 @@ contains
          pardef(9) = 1.0_fp
          parkeyw(10) = 'SusThetaC'
          pardef(10) = 0.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 2
             outpar_name(1) = 'chezy'
             outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
@@ -1453,7 +1453,7 @@ contains
          nparopt = 1
          parkeyw(1) = 'ACal'
          pardef(1) = 1.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 6
             outpar_name(1) = 'wistar'
             outpar_longname(1) = 'dimensionless bedload transport rate' ! -

@@ -41,8 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      !
-      implicit none
+      use morphology_data_module, only: missing_value
 !
 ! Arguments
 !
@@ -50,7 +49,7 @@ contains
       real(fp), intent(in) :: chezy !< Chezy value
       real(fp), intent(in) :: d50 !< grain diameter
       real(fp), intent(in) :: hidexp !< hiding & exposure factor
-      real(fp), dimension(npar), intent(in) :: par !< sediment transport formula parameters
+      real(fp), dimension(npar), intent(inout) :: par !< sediment transport formula parameters
       real(fp), intent(in) :: utot !< depth averaged velocity magnitude
       !
       real(fp), intent(out) :: sbot !< bedload transport rate

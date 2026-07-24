@@ -41,7 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      implicit none
+      use morphology_data_module, only: missing_value
 !
 ! Arguments
 !
@@ -49,7 +49,7 @@ contains
       real(fp), intent(in) :: chezy
       real(fp), intent(in) :: d35
       real(fp), intent(in) :: water_depth
-      real(fp), dimension(npar), intent(in) :: par
+      real(fp), dimension(npar), intent(inout) :: par
       real(fp), intent(in) :: utot
       !
       real(fp), intent(out) :: sbot

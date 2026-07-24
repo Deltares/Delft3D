@@ -50,7 +50,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module
+      use morphology_data_module, only: missing_value
       use sediment_basics_module, only: dsand, dgravel
       !
       implicit none
