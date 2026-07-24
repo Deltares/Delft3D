@@ -62,10 +62,12 @@ def docstring(text: str) -> str:
 
 
 def render_property(section: str, prop: dict) -> list[str]:
-    """Render one typed get/set property (4-space indented) for a keyword, or [] if unsupported."""
+    """Render one typed get/set property (4-space indented) for a keyword.
+
+    Raises KeyError (via the ACCESSORS lookup) if the value_type is unknown; callers rely on this
+    being fail-closed so a new mdu.json type cannot silently vanish from the typed API.
+    """
     value_type = prop["value_type"]
-    if value_type not in ACCESSORS:
-        return []
     get_fn, set_fn, get_type, set_type = ACCESSORS[value_type]
     key = prop["key"]
     attr = attr_name(key)
@@ -86,6 +88,16 @@ def render_property(section: str, prop: dict) -> list[str]:
 def main() -> None:
     spec = json.loads(MDU_JSON.read_text(encoding="utf-8"))
     sections = spec["ini_sections"]
+
+    # Fail closed: a value_type we do not map would otherwise vanish from the typed API silently.
+    unsupported = [
+        (s["name"], p["key"], p["value_type"])
+        for s in sections
+        for p in s["ini_properties"]
+        if p["value_type"] not in ACCESSORS
+    ]
+    if unsupported:
+        raise ValueError(f"mdu.json has value_type(s) not mapped in ACCESSORS: {unsupported}")
 
     lines = [
         f'"""GENERATED from {MDU_JSON.name} by codegen/generate_schema.py - do not edit.',
@@ -133,7 +145,7 @@ def main() -> None:
         lines.append(f"        self.{attr} = {cls}(model)")
 
     OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    total = sum(1 for s in sections for p in s["ini_properties"] if render_property(s["name"], p))
+    total = sum(len(s["ini_properties"]) for s in sections)
     print(f"Wrote {len(sections)} sections, {total} typed properties to {OUTPUT}")
 
 
