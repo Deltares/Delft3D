@@ -329,8 +329,8 @@ contains
    end subroutine test_validate_nonlegacy_operand_does_not_warn
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_radiation_stress_direct_only, test_offline_wave_requirements_radiation_stress_direct_only,
-   subroutine test_offline_wave_requirements_radiation_stress_direct_only() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_radiation_stress, test_offline_wave_requirements_radiation_stress,
+   subroutine test_offline_wave_requirements_radiation_stress() bind(C)
       use m_waveconst
 
       integer :: requirements
@@ -349,7 +349,7 @@ contains
                             "direct radiation-stress forcing does not require wave height")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
                             "direct radiation-stress forcing does not require direction")
-   end subroutine test_offline_wave_requirements_radiation_stress_direct_only
+   end subroutine test_offline_wave_requirements_radiation_stress
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_stokes_adds_kinematics, test_offline_wave_requirements_stokes_adds_kinematics,
@@ -371,8 +371,8 @@ contains
    end subroutine test_offline_wave_requirements_stokes_adds_kinematics
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_flow_without_waves_needs_height_and_period_only, test_offline_wave_requirements_flow_without_waves_needs_height_and_period_only,
-   subroutine test_offline_wave_requirements_flow_without_waves_needs_height_and_period_only() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_flow_without_waves, test_offline_wave_requirements_flow_without_waves,
+   subroutine test_offline_wave_requirements_flow_without_waves() bind(C)
       use m_waveconst
 
       integer :: requirements
@@ -387,11 +387,11 @@ contains
                            "FlowWithoutWaves requires wave period for D-WAQ orbital velocity")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
                             "FlowWithoutWaves does not require wave direction")
-   end subroutine test_offline_wave_requirements_flow_without_waves_needs_height_and_period_only
+   end subroutine test_offline_wave_requirements_flow_without_waves
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_disabled_forces_need_no_input, test_offline_wave_requirements_disabled_forces_need_no_input,
-   subroutine test_offline_wave_requirements_disabled_forces_need_no_input() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_disabled_forces, test_offline_wave_requirements_disabled_forces,
+   subroutine test_offline_wave_requirements_disabled_forces() bind(C)
       use m_waveconst
 
       integer :: requirements
@@ -401,7 +401,7 @@ contains
                                                           .false., .false.)
 
       call f90_expect_eq(requirements, 0, "no active wave consumer should require no offline wave input")
-   end subroutine test_offline_wave_requirements_disabled_forces_need_no_input
+   end subroutine test_offline_wave_requirements_disabled_forces
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_3d_dissipation, test_offline_wave_requirements_3d_dissipation,
