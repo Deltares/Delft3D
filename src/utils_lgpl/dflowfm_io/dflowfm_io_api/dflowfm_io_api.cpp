@@ -259,12 +259,12 @@ dflowfm_io_result_t mdu_get_enum_name(mdu_handle_t handle, const char* key, cons
 
     return exceptionToResult([&]()
     {
-        const int value = asDocument(handle)->GetValue<dflowfm_io::EnumValue>(key).value;
         const dflowfm_io::PropertySchema* property = dflowfm_io::GetMduSchema().FindProperty(key);
         if (property == nullptr)
         {
             throw std::invalid_argument("Unknown property key: " + std::string(key));
         }
+        const int value = asDocument(handle)->GetValue<dflowfm_io::EnumValue>(key).value;
         const auto entry = property->enum_values.find(value);
         if (entry == property->enum_values.end())
         {
