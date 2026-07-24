@@ -17,7 +17,7 @@ option(
 
 # Regenerate the ABI-coupled Python code from the C header, so it can never drift from the
 # dflowfm_io_api ABI: the ctypes bindings (base/bindings.py) and the typed MduModel accessors
-# (mdu_model.py). The generated files are committed, but rebuilt here whenever the header or the
+# (mdu/model.py). The generated files are committed, but rebuilt here whenever the header or the
 # generator changes.
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
