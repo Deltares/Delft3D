@@ -56,9 +56,12 @@ def attr_name(key: str) -> str:
 
 
 def docstring(text: str) -> str:
-    """Collapse a description to one safe line for a property docstring."""
-    line = " ".join((text or "").split())
-    return line.replace("\\", "\\\\").replace('"""', "'''")
+    """Collapse a description to one safe line for a triple-quoted property docstring."""
+    line = " ".join((text or "").split()).replace("\\", "\\\\").replace('"""', "'''")
+    # A trailing double-quote would merge with the closing delimiter (""""); separate it.
+    if line.endswith('"'):
+        line += " "
+    return line
 
 
 def render_property(section: str, prop: dict) -> list[str]:
