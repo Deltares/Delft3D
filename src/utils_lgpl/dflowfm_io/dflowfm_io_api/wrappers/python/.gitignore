@@ -1,6 +1,11 @@
 __pycache__/
 *.pyc
 
+# Local scratch / spike scripts under tests/ — not part of the committed test suite.
+tests/spike_*.py
+tests/parity_*.py
+tests/compare_*.py
+
 # Wheel build outputs.
 build/
 dist/
