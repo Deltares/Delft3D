@@ -116,10 +116,17 @@ def main() -> None:
     ]
 
     section_attrs = []
+    seen_classes: set[str] = set()
+    seen_section_attrs: set[str] = set()
     for section in sections:
         name = section["name"]
         cls = class_name(name)
         attr = re.sub(r"[^0-9a-zA-Z]+", "_", name).strip("_").lower()
+        # A collision would make one class/section silently shadow another; fail closed instead.
+        if cls in seen_classes or attr in seen_section_attrs:
+            raise ValueError(f"Section name collision for '{name}' (class {cls!r}, attr {attr!r})")
+        seen_classes.add(cls)
+        seen_section_attrs.add(attr)
         section_attrs.append((attr, cls))
         lines += [
             "",
@@ -130,11 +137,14 @@ def main() -> None:
             "    def __init__(self, model: MduModel):",
             "        self._model = model",
         ]
+        seen_props: set[str] = set()
         for prop in section["ini_properties"]:
-            rendered = render_property(name, prop)
-            if rendered:
-                lines.append("")
-                lines += rendered
+            member = attr_name(prop["key"])
+            if member in seen_props:
+                raise ValueError(f"Property name collision '{member}' in section '{name}'")
+            seen_props.add(member)
+            lines.append("")
+            lines += render_property(name, prop)
 
     lines += [
         "",
