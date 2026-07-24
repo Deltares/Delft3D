@@ -100,7 +100,7 @@ module swan_input
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
-   integer,parameter::SWAN_GRID_STRUCTURED=0
+   integer, parameter :: SWAN_GRID_STRUCTURED = 0
    integer, parameter :: SWAN_GRID_UNSTRUCTURED = 1
    integer, parameter :: SWAN_UNSTRUC_TRIANGLE = 1
    integer, parameter :: SWAN_UNSTRUC_EASYMESH = 2
@@ -133,8 +133,8 @@ module swan_input
       integer :: mxc
       integer :: myc
       integer :: vegetation !> corresponds with idrag in SWAN: 1: Suzuki, 2: Jacobsen. "true" is allowed for backwards compatibility, corresponding to idrag=1
-                            !> Behaviour is changed with introducing the separate parameter veg_from_flow for keyword VegSVNPlants:
-                            !> It used to be: vegetation=1: Suzuki, vegetation=2:VegSVNPlants
+      !> Behaviour is changed with introducing the separate parameter veg_from_flow for keyword VegSVNPlants:
+      !> It used to be: vegetation=1: Suzuki, vegetation=2:VegSVNPlants
       integer :: ice = 0
       integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
@@ -892,7 +892,7 @@ contains
          end select
       elseif (sr%inputtemplatefile /= '') then
          call read_template_coordinate_system(sr%inputtemplatefile, sr%sferic)
-      endif
+      end if
       !
       sr%deltc = -999.0
       sr%nonstat_interval = -999.0
@@ -1458,7 +1458,7 @@ contains
 
       enable_num_accur = .false.
       enable_num_stopc = .false.
-      
+
       sr%tolerance_relative = -1.0 ! Default value will be set after checking whether "num accur" or "num stopc" is used
       sr%tolerance_absolute = DEFAULT_TOLERANCE_ABSOLUTE_STOPC
       sr%tolerance_absolute_wave_height = DEFAULT_TOLERANCE_ACCUR
@@ -1487,21 +1487,21 @@ contains
       call prop_get(mdw_ptr, 'Numerics', 'FreqSpaceCSS', sr%css)
       !
       ! "num stopc" parameters
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DRelHinc', sr%tolerance_relative, 0.0, 1.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'DRelHinc', sr%tolerance_relative, 0.0, 1.0)) then
          enable_num_stopc = .true.
       end if
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DAbsHinc', sr%tolerance_absolute, 0.0, 100.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'DAbsHinc', sr%tolerance_absolute, 0.0, 100.0)) then
          enable_num_stopc = .true.
       end if
       !
       ! "num accur" parameters
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChHsTm01', sr%tolerance_relative, 0.0, 1.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChHsTm01', sr%tolerance_relative, 0.0, 1.0)) then
          enable_num_accur = .true.
       end if
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanHs', sr%tolerance_absolute_wave_height, 0.0, 100.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanHs', sr%tolerance_absolute_wave_height, 0.0, 100.0)) then
          enable_num_accur = .true.
       end if
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanTm01', sr%tolerance_absolute_wave_period, 0.0, 100.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanTm01', sr%tolerance_absolute_wave_period, 0.0, 100.0)) then
          enable_num_accur = .true.
       end if
       !
@@ -1813,10 +1813,10 @@ contains
          !
          call prop_get(tmp_ptr, '*', 'Grid', dom%curlif)
          if (count_words(dom%curlif) > 1) then
-            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif) ,'" contains spaces which is not permitted.'
-            call replace_char(dom%curlif,32,95)  ! replace ' ' by '_'
-            call replace_char(dom%curlif,9,95)   ! replace tab by '_'
-            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif) ,'" and adjust input accordingly.'
+            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif), '" contains spaces which is not permitted.'
+            call replace_char(dom%curlif, 32, 95) ! replace ' ' by '_'
+            call replace_char(dom%curlif, 9, 95) ! replace tab by '_'
+            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif), '" and adjust input accordingly.'
             call handle_errors_mdw(sr)
          end if
          if (dom%curlif == '') then
@@ -1825,11 +1825,11 @@ contains
          end if
          if (sr%swangridtype == SWAN_GRID_STRUCTURED) then
             call readgriddims(dom%curlif, dom%mxc, dom%myc)
-         !
-         ! poles? No, fences!
-         !
-         dom%mxc = dom%mxc - 1
-         dom%myc = dom%myc - 1
+            !
+            ! poles? No, fences!
+            !
+            dom%mxc = dom%mxc - 1
+            dom%myc = dom%myc - 1
          else
             dom%mxc = -999
             dom%myc = -999
@@ -1840,7 +1840,7 @@ contains
          dom%depfil = ''
          call prop_get(tmp_ptr, '*', 'BedLevelGrid', dom%depfil)
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
-         if (dom%depfil /= '') then
+            if (dom%depfil /= '') then
                write (*, *) 'SWAN_INPUT: BedLevelGrid is not supported for unstructured SWAN grids. Use BedLevel values on the unSWAN vertices.'
                call handle_errors_mdw(sr)
             end if
@@ -1882,7 +1882,7 @@ contains
             end if
          end if
          call prop_get(tmp_ptr, '*', 'VegSVNPlants', dom%veg_from_flow)
-         if (dom%veg_from_flow .and. dom%vegetation<=0) then
+         if (dom%veg_from_flow .and. dom%vegetation <= 0) then
             ! Backwards compatibility:
             ! If VegSVNPlants is true and Vegetation is not specified by the user, set Vegetation=1
             dom%vegetation = 1
@@ -1892,7 +1892,7 @@ contains
             call prop_get(tmp_ptr, '*', 'VegDiamtr', dom%veg_diamtr)
             call prop_get(tmp_ptr, '*', 'VegDrag', dom%veg_drag)
          end if
-         if (.not.dom%veg_from_flow) then
+         if (.not. dom%veg_from_flow) then
             ! When veg_from_flow is true, VegNstems will be set by flow
             ! When veg_from_flow is false, the user has to define VegNstems or provide a related map file
             call prop_get(tmp_ptr, '*', 'VegNstems', dom%veg_nstems)
@@ -1900,7 +1900,7 @@ contains
             ! Read vegetation map
             !
             call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
-            if (dom%vegetation> 0 .and. dom%vegfil == '') then
+            if (dom%vegetation > 0 .and. dom%vegfil == '') then
                write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
             end if
          end if
@@ -1911,9 +1911,9 @@ contains
          end if
          select case (dom%vegetation)
          case (1)
-            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
+            write (*, '(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
          case (2)
-            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
+            write (*, '(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
          case default
          end select
          !
@@ -2288,11 +2288,11 @@ contains
             if (sr%swangridtype /= SWAN_GRID_UNSTRUCTURED) then
                write (*, *) 'SWAN_INPUT: boundary marker definition is only valid for unstructured SWAN grids'
                call handle_errors_mdw(sr)
-            endif
+            end if
             if (bnd%marker_id <= 0) then
                write (*, *) 'SWAN_INPUT: missing or invalid boundary MarkerId'
                call handle_errors_mdw(sr)
-            endif
+            end if
             !
          case ('fromsp2file')
             bnd%bndtyp = 4
@@ -2767,6 +2767,28 @@ contains
          call wavestop(1, 'Unable to find file '//trim(filnam))
       end if
       !
+      call scan_template_swanout_files(old_input, has_swanout1, has_swanout2, has_swanout3)
+      if (has_swanout1 .neqv. has_swanout2) then
+         call wavestop(1, 'INPUTTemplateFile must contain both SWANOUT1 and SWANOUT2, or neither')
+      end if
+      if (allocated(sr%add_out_names)) then
+         if (has_swanout1 .and. has_swanout2 .and. .not. has_swanout3) then
+            call wavestop(1, 'INPUTTemplateFile must contain SWANOUT3 when AdditionalOutput is used')
+         end if
+      end if
+      insert_swanout = .not. has_swanout1
+      inserted_swanout = .false.
+      if (insert_swanout) then
+         write (*, '(a)') 'INPUTTemplateFile does not contain SWANOUT1/SWANOUT2; inserting D-Waves output requests'
+      end if
+      !
+      run_start = wavedata%time%timsec
+      if (sr%modsim == 3) then
+         run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+      else
+         run_end = run_start
+      end if
+      !
       open (newunit=new_input, file='INPUT', form='formatted', status='replace')
 
       read (old_input, '(a)', iostat=ierr) rec
@@ -2805,13 +2827,13 @@ contains
             ! SPEC for netcdf hotfiles, with format hot_inest_date_time.nc
             call create_hotfile_line(fname, inest, line, sr, wavedata)
          end if
-         
+
          call replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
-         
+
          if (insert_swanout .and. .not. inserted_swanout .and. is_swan_compute_or_stop(line)) then
             call write_template_swanout_requests(new_input, calccount, sr, wavedata)
             inserted_swanout = .true.
-         endif
+         end if
          write (new_input, '(a)') line
          line = ' '
          line(1:2) = ' $ '
@@ -2820,7 +2842,7 @@ contains
       end do
       if (insert_swanout .and. .not. inserted_swanout) then
          call write_template_swanout_requests(new_input, calccount, sr, wavedata)
-      endif
+      end if
       close (old_input)
       close (new_input)
 
@@ -2832,21 +2854,21 @@ contains
       use string_module
       implicit none
 
-      character(*), intent(in)    :: filnam
-      logical     , intent(inout) :: sferic
+      character(*), intent(in) :: filnam
+      logical, intent(inout) :: sferic
 
-      integer        :: ierr
-      integer        :: old_input
+      integer :: ierr
+      integer :: old_input
       character(256) :: rec
       character(256) :: line
 
-      open(newunit=old_input, file=filnam, form='formatted', status='old', iostat=ierr)
+      open (newunit=old_input, file=filnam, form='formatted', status='old', iostat=ierr)
       if (ierr /= 0) then
          write (*, '(2a)') '*** ERROR: Unable to find file ', trim(filnam)
          call wavestop(1, 'Unable to find file '//trim(filnam))
-      endif
+      end if
 
-      read(old_input, '(a)', iostat=ierr) rec
+      read (old_input, '(a)', iostat=ierr) rec
       do while (ierr == 0)
          line = adjustl(rec)
          if (line(1:1) /= '$' .and. line(1:1) /= '!' .and. line(1:1) /= '*') then
@@ -2854,11 +2876,11 @@ contains
             if (index(line, 'coord') > 0) then
                if (index(line, 'spher') > 0 .or. index(line, 'sphe') > 0) sferic = .true.
                if (index(line, 'cart') > 0) sferic = .false.
-            endif
-         endif
-         read(old_input, '(a)', iostat=ierr) rec
-      enddo
-      close(old_input)
+            end if
+         end if
+         read (old_input, '(a)', iostat=ierr) rec
+      end do
+      close (old_input)
    end subroutine read_template_coordinate_system
 !
 !
@@ -2867,29 +2889,29 @@ contains
       use string_module, only: str_toupper
       implicit none
 
-      integer, intent(in)  :: luninp
+      integer, intent(in) :: luninp
       logical, intent(out) :: has_swanout1
       logical, intent(out) :: has_swanout2
       logical, intent(out) :: has_swanout3
 
-      integer        :: ierr
+      integer :: ierr
       character(256) :: rec
       character(256) :: line
 
       has_swanout1 = .false.
       has_swanout2 = .false.
       has_swanout3 = .false.
-      rewind(luninp)
+      rewind (luninp)
       do
-         read(luninp, '(a)', iostat=ierr) rec
+         read (luninp, '(a)', iostat=ierr) rec
          if (ierr /= 0) exit
          if (is_swan_comment(rec)) cycle
          line = str_toupper(rec)
          if (index(line, 'SWANOUT1') > 0) has_swanout1 = .true.
          if (index(line, 'SWANOUT2') > 0) has_swanout2 = .true.
          if (index(line, 'SWANOUT3') > 0) has_swanout3 = .true.
-      enddo
-      rewind(luninp)
+      end do
+      rewind (luninp)
    end subroutine scan_template_swanout_files
 !
 !
@@ -2906,8 +2928,8 @@ contains
          if (line(i:i) /= ' ') then
             is_swan_comment = line(i:i) == '$' .or. line(i:i) == '!'
             return
-         endif
-      enddo
+         end if
+      end do
    end function is_swan_comment
 !
 !
@@ -2930,11 +2952,11 @@ contains
       character(*), intent(in) :: line
       character(*), intent(in) :: command
 
-      integer                    :: first
-      integer                    :: last
-      integer                    :: ncmd
-      character(len=len(line))   :: upper
-      character(1)               :: next
+      integer :: first
+      integer :: last
+      integer :: ncmd
+      character(len=len(line)) :: upper
+      character(1) :: next
 
       starts_with_swan_command = .false.
       upper = str_toupper(line)
@@ -2943,19 +2965,19 @@ contains
       first = 1
       do while (first <= last .and. (upper(first:first) == ' ' .or. upper(first:first) == char(9)))
          first = first + 1
-      enddo
+      end do
       if (first > last) return
       if (upper(first:first) == '$' .or. upper(first:first) == '!') return
 
       ncmd = len_trim(command)
       if (last - first + 1 < ncmd) return
-      if (upper(first:first+ncmd-1) /= command(1:ncmd)) return
-      if (first+ncmd > len(upper)) then
+      if (upper(first:first + ncmd - 1) /= command(1:ncmd)) return
+      if (first + ncmd > len(upper)) then
          starts_with_swan_command = .true.
       else
-         next = upper(first+ncmd:first+ncmd)
+         next = upper(first + ncmd:first + ncmd)
          starts_with_swan_command = next == ' ' .or. next == char(9)
-      endif
+      end if
    end function starts_with_swan_command
 !
 !
@@ -2965,10 +2987,10 @@ contains
       use wave_data
       implicit none
 
-      integer, intent(in)          :: luninp
-      integer, intent(in)          :: calccount
-      type(swan_type), intent(in)  :: sr
-      type(wave_data_type)         :: wavedata
+      integer, intent(in) :: luninp
+      integer, intent(in) :: calccount
+      type(swan_type), intent(in) :: sr
+      type(wave_data_type) :: wavedata
 
       integer :: i
       character(7), dimension(20) :: varnam1
@@ -2992,22 +3014,22 @@ contains
       write (luninp, '(1X,A)') '$ D-Waves output requests'
       do i = 1, size(varnam1)
          write (luninp, '(1X,3A)') 'QUANTITY ', varnam1(i), ' excv=-999.0'
-      enddo
+      end do
       do i = 1, size(varnam2)
          write (luninp, '(1X,3A)') 'QUANTITY ', varnam2(i), ' excv=-999.0'
-      enddo
+      end do
       if (allocated(sr%add_out_names)) then
          do i = 1, size(sr%add_out_names)
             write (luninp, '(1X,3A)') 'QUANTITY ', sr%add_out_names(i), ' excv=-999.0'
-         enddo
-      endif
+         end do
+      end if
       call write_template_swanout_table(luninp, 'SWANOUT1', varnam1, calccount, sr%modsim, outfirst, .false.)
       call write_template_swanout_table(luninp, 'SWANOUT2', varnam2, calccount, sr%modsim, outfirst, .true.)
       if (allocated(sr%add_out_names)) then
          write (luninp, '(1X,A)') 'TABLE ''COMPGRID''    NOHEAD    ''SWANOUT3''   _'
          write (luninp, '(6(2X,A7),''_'')') sr%add_out_names
          write (luninp, '(1X,A)') '$ '
-      endif
+      end if
    end subroutine write_template_swanout_requests
 !
 !
@@ -3015,17 +3037,17 @@ contains
    subroutine write_template_swanout_table(luninp, filnam, varnames, calccount, modsim, outfirst, spaced_continuation)
       implicit none
 
-      integer, intent(in)                         :: luninp
-      integer, intent(in)                         :: calccount
-      integer, intent(in)                         :: modsim
-      character(*), intent(in)                    :: filnam
-      character(7), dimension(:), intent(in)      :: varnames
-      character(*), intent(in)                    :: outfirst
-      logical, intent(in)                         :: spaced_continuation
+      integer, intent(in) :: luninp
+      integer, intent(in) :: calccount
+      integer, intent(in) :: modsim
+      character(*), intent(in) :: filnam
+      character(7), dimension(:), intent(in) :: varnames
+      character(*), intent(in) :: outfirst
+      logical, intent(in) :: spaced_continuation
 
-      integer       :: j
-      integer       :: m
-      integer       :: n
+      integer :: j
+      integer :: m
+      integer :: n
       character(60) :: lijn
 
       write (luninp, '(1X,5A)') 'TABLE ''', 'COMPGRID', '''    NOHEAD    ''', trim(filnam), '''   _'
@@ -3037,17 +3059,17 @@ contains
                write (lijn, '(A,I1.1,A)') "(", m, "(2X,A),' _')"
             else
                write (lijn, '(A,I1.1,A)') "(", m, "(2X,A),'_')"
-            endif
+            end if
             write (luninp, lijn) (varnames(n), n=(j - 1) * 6 + 1, min(j * 6, size(varnames)))
-         enddo
+         end do
          write (luninp, '(2A)') "  ", trim(outfirst)
       else
          if (spaced_continuation) then
             write (luninp, '(6(2X,A),'' _'')') varnames
          else
             write (luninp, '(6(2X,A),''_'')') varnames
-         endif
-      endif
+         end if
+      end if
       write (luninp, '(1X,A)') '$ '
    end subroutine write_template_swanout_table
 !
@@ -3400,11 +3422,11 @@ contains
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
          line(7:18) = 'UNSTRUCTURED'
       else
-      line(7:11) = 'CURV '
-      write (line(12:21), '(2(I4,1X))') dom%mxc, dom%myc
-      ! Write missing values in exactly the same format as used when writing the grid
-      write (line(22:80), '(A,2(E25.17,1X))') 'EXCEPT ', xymiss, xymiss
-      endif
+         line(7:11) = 'CURV '
+         write (line(12:21), '(2(I4,1X))') dom%mxc, dom%myc
+         ! Write missing values in exactly the same format as used when writing the grid
+         write (line(22:80), '(A,2(E25.17,1X))') 'EXCEPT ', xymiss, xymiss
+      end if
       line(82:83) = ' _'
       write (luninp, '(1X,A)') line
       line = ' '
@@ -3439,19 +3461,19 @@ contains
          end select
          write (luninp, '(1X,A)') trim(line)
       else
-      line(1:13) = 'READ COOR 1. '
-      ind = index(curlif, ' ')
-      i = 14
-      line(i:i) = ''''''
-      line(15:14 + ind) = curlif
-      line(14 + ind:14 + ind) = ''''''
-      line(15 + ind:16 + ind) = ' _'
-      line(17 + ind:) = ' '
-      write (luninp, '(1X,A)') line
-      line = ' '
-      line(1:) = ' 4   0   1 FREE'
-      write (luninp, '(1X,A)') line
-      endif
+         line(1:13) = 'READ COOR 1. '
+         ind = index(curlif, ' ')
+         i = 14
+         line(i:i) = ''''''
+         line(15:14 + ind) = curlif
+         line(14 + ind:14 + ind) = ''''''
+         line(15 + ind:16 + ind) = ' _'
+         line(17 + ind:) = ' '
+         write (luninp, '(1X,A)') line
+         line = ' '
+         line(1:) = ' 4   0   1 FREE'
+         write (luninp, '(1X,A)') line
+      end if
       line = ' '
       line(1:2) = '$ '
       write (luninp, '(1X,A)') line
@@ -3466,9 +3488,9 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:19) = 'BOTTOM UNSTRUCTURED'
          else
-         line(1:18) = 'BOTTOM CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxb, dom%myb
-         endif
+            line(1:18) = 'BOTTOM CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxb, dom%myb
+         end if
          write (luninp, '(1X,A)') line
       else
          fname = dom%depfil
@@ -3520,9 +3542,9 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:19) = 'CURREN UNSTRUCTURED'
          else
-         line(1:18) = 'CURREN CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
-         endif
+            line(1:18) = 'CURREN CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         end if
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -3555,9 +3577,9 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:18) = 'AICE UNSTRUCTURED'
          else
-         line(1:18) = 'AICE CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
-         endif
+            line(1:18) = 'AICE CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         end if
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -3578,9 +3600,9 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:18) = 'MUDL UNSTRUCTURED'
          else
-         line(1:18) = 'MUDL CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
-         endif
+            line(1:18) = 'MUDL CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         end if
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -3596,16 +3618,16 @@ contains
       !     Vegetation map
       !
       if (dom%vegetation >= 1) then
-         if (.not.dom%veg_from_flow) then
+         if (.not. dom%veg_from_flow) then
             if (dom%vegfil /= '') then
                write (luninp, '(1X,A)') '$'
                lijn = 'INPGRID _'
                if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
                   line(1:22) = 'NPLANTS UNSTRUCTURED'
                else
-               line(1:19) = 'NPLANTS CURV 0. 0. '
-               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
-               endif
+                  line(1:19) = 'NPLANTS CURV 0. 0. '
+                  write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+               end if
                write (luninp, '(1X,A)') lijn
                write (luninp, '(1X,A)') trim(line)
                line = ' '
@@ -3627,9 +3649,9 @@ contains
             if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
                line(1:22) = 'NPLANTS UNSTRUCTURED'
             else
-            line(1:19) = 'NPLANTS CURV 0. 0. '
-            write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
-            endif
+               line(1:19) = 'NPLANTS CURV 0. 0. '
+               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+            end if
             write (luninp, '(1X,A)') lijn
             write (luninp, '(1X,A)') trim(line)
             line = ' '
@@ -3754,16 +3776,16 @@ contains
          if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
             line(1:18) = 'FRIC UNSTRUCTURED'
          else
-         line(1:18) = 'FRIC CURV 0. 0.   '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
-         if (sr%excval > -998.99 .or. sr%excval < -999.01) then
-            line(29:37) = ' EXCVAL '
-            write (line(38:49), '(F12.4)') sr%excval
-            line(50:) = ' '
-         else
-            line(29:) = ' '
+            line(1:18) = 'FRIC CURV 0. 0.   '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+            if (sr%excval > -998.99 .or. sr%excval < -999.01) then
+               line(29:37) = ' EXCVAL '
+               write (line(38:49), '(F12.4)') sr%excval
+               line(50:) = ' '
+            else
+               line(29:) = ' '
+            end if
          end if
-         endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -3813,7 +3835,7 @@ contains
                cycle
             elseif (bnd%bndtyp == 5) then
                line = ' '
-               line(1:9) = 'BOUN WW3 '       ! manual p54
+               line(1:9) = 'BOUN WW3 ' ! manual p54
                line = trim(line)//' '''//trim(sr%specfile)//''''//' FREE OPEN'
                write (luninp, '(1X,A)') line
                cycle
@@ -3854,32 +3876,53 @@ contains
             line(1:) = 'BOUN'
             nsect = bnd%nsect
             convar = bnd%convar
-            if (bnd%bndtyp == 6) then
+            if (bnd%bndtyp == 1 .or. bnd%bndtyp == 6) then
                !              Side
                line(6:) = 'SIDE'
-               orient = bnd%orient
-               if (orient == 1) then
-                  line(11:) = 'N'
-               elseif (orient == 2) then
-                  line(11:) = 'NW'
-               elseif (orient == 3) then
-                  line(11:) = 'W'
-               elseif (orient == 4) then
-                  line(11:) = 'SW'
-               elseif (orient == 5) then
-                  line(11:) = 'S'
-               elseif (orient == 6) then
-                  line(11:) = 'SE'
-               elseif (orient == 7) then
-                  line(11:) = 'E'
-               elseif (orient == 8) then
-                  line(11:) = 'NE'
+               if (bnd%bndtyp == 6) then
+                  if (sr%swangridtype /= SWAN_GRID_UNSTRUCTURED) then
+                     write (*, *) 'SWAN_INPUT: boundary marker definition is only valid for unstructured SWAN grids'
+                     call wavestop(1, 'Boundary marker definition is only valid for unstructured SWAN grids')
+                  end if
+                  if (dom%unstructured_grid_generator /= SWAN_UNSTRUC_TRIANGLE .and. &
+                      dom%unstructured_grid_generator /= SWAN_UNSTRUC_EASYMESH) then
+                     write (*, *) 'SWAN_INPUT: boundary marker definition requires a Triangle or Easymesh unSWAN grid'
+                     call wavestop(1, 'Boundary marker definition requires a Triangle or Easymesh unSWAN grid')
+                  end if
+                  if (.not. allocated(dom%unstructured_boundary_markers)) then
+                     write (*, *) 'SWAN_INPUT: unSWAN boundary markers are not available'
+                     call wavestop(1, 'unSWAN boundary markers are not available')
+                  end if
+                  if (.not. any(dom%unstructured_boundary_markers == bnd%marker_id)) then
+                     write (*, '(a,i0)') 'SWAN_INPUT: boundary MarkerId not found in unSWAN grid file: ', bnd%marker_id
+                     call wavestop(1, 'Boundary MarkerId not found in unSWAN grid file')
+                  end if
+                  write (line(11:), '(I0)') bnd%marker_id
                else
-               end if
-               if (bnd%turn == 1) then
-                  line(14:) = 'CCW'
-               else
-                  line(14:) = 'CLOCKW'
+                  orient = bnd%orient
+                  if (orient == 1) then
+                     line(11:) = 'N'
+                  elseif (orient == 2) then
+                     line(11:) = 'NW'
+                  elseif (orient == 3) then
+                     line(11:) = 'W'
+                  elseif (orient == 4) then
+                     line(11:) = 'SW'
+                  elseif (orient == 5) then
+                     line(11:) = 'S'
+                  elseif (orient == 6) then
+                     line(11:) = 'SE'
+                  elseif (orient == 7) then
+                     line(11:) = 'E'
+                  elseif (orient == 8) then
+                     line(11:) = 'NE'
+                  else
+                  end if
+                  if (bnd%turn == 1) then
+                     line(14:) = 'CCW'
+                  else
+                     line(14:) = 'CLOCKW'
+                  end if
                end if
                line(22:) = '_'
                write (luninp, '(1X,A)') line
@@ -3920,7 +3963,7 @@ contains
                      call handle_errors_mdw(sr)
                   end if
                   line(26:30) = 'FILE '
-                  line(i + 1:i + 1) = ''''''
+                  line = trim(line)//' '''//trim(active_specfile)//''' 1'
                end if
                write (luninp, '(1X,A)') line
                rindx = rindx + 5
@@ -4827,7 +4870,7 @@ contains
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
          line = "SPEC 'COMPGRID' RELATIVE '"//trim(fname)//"'"
       else
-      line = "SPEC 'COMPGRID' RELATIVE '"//trim(fname)//"' MDGRID"
+         line = "SPEC 'COMPGRID' RELATIVE '"//trim(fname)//"' MDGRID"
       end if
 
    end subroutine create_hotfile_line
@@ -5012,14 +5055,14 @@ contains
       real, intent(in) :: lower_bound
       real, intent(in) :: upper_bound
       logical :: success
-      
+
       call prop_get(mdw_ptr, group, key, value_out, success)
       if (success) then
          if (value_out < lower_bound .or. value_out > upper_bound) then
             write (*, *) 'SWAN_INPUT: parameter ', key, ' (', value_out, ') is out of bounds [', lower_bound, ',', upper_bound, ']'
             call handle_errors_mdw(sr)
          end if
-      end if  
+      end if
    end function prop_get_checked
 
 end module swan_input

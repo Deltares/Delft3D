@@ -80,16 +80,16 @@ subroutine write_bnd(xc        ,yc        ,mc        ,nc        , &
        write (fname(13:15),'(I3.3)') inest
        open (newunit=lunbot, file=fname(1:15))
        do i=1,mc
-          if (xc(i,1)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(i,1) ,yc(i,1)
+          if (xc(i,1)/=0.) write(lunbot,'(2(E25.17,3X))')  xc(i,1) ,yc(i,1)
        enddo
        do j=2,nc
-          if (xc(mc,j)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(mc,j),yc(mc,j)
+          if (xc(mc,j)/=0.) write(lunbot,'(2(E25.17,3X))')  xc(mc,j),yc(mc,j)
        enddo
        do i=mc-1,1,-1
-          if (xc(i,nc)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(i,nc),yc(i,nc)
+          if (xc(i,nc)/=0.) write(lunbot,'(2(E25.17,3X))')  xc(i,nc),yc(i,nc)
        enddo
        do j=nc-1,2,-1
-          if (xc(1,j)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(1,j) ,yc(1,j)
+          if (xc(1,j)/=0.) write(lunbot,'(2(E25.17,3X))')  xc(1,j) ,yc(1,j)
        enddo
        close(lunbot)
     endif
@@ -123,7 +123,9 @@ character(37) :: fname
    if (inest <= 1) return
    nedge = 3*sg%ncell
    allocate(ea(nedge), eb(nedge), adj(2,sg%mmax), degree(sg%mmax), visited(sg%mmax), stat=ierr)
-   if (ierr /= 0) call wavestop(1, 'Allocation problem while writing unSWAN nest boundary.')
+   if (ierr /= 0) then
+      call wavestop(1, 'Allocation problem while writing unSWAN nest boundary.')
+   end if
    do i = 1, sg%ncell
       call set_edge(3*i-2, sg%kvertc(1,i), sg%kvertc(2,i))
       call set_edge(3*i-1, sg%kvertc(2,i), sg%kvertc(3,i))
@@ -166,7 +168,7 @@ character(37) :: fname
       prev = 0
       cur = start
       do
-         write(lunbot,'(2(F15.6,3X))') sg%x(cur,1), sg%y(cur,1)
+         write(lunbot,'(2(E25.17,3X))') sg%x(cur,1), sg%y(cur,1)
          visited(cur) = .true.
          next = 0
          do i = 1, degree(cur)
@@ -190,7 +192,7 @@ character(37) :: fname
    enddo
    if (nbedge == 0 .and. associated(sg%vmark)) then
       do i = 1, sg%mmax
-         if (sg%vmark(i) /= 0) write(lunbot,'(2(F15.6,3X))') sg%x(i,1), sg%y(i,1)
+         if (sg%vmark(i) /= 0) write(lunbot,'(2(E25.17,3X))') sg%x(i,1), sg%y(i,1)
       enddo
    endif
    close(lunbot)
