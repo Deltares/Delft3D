@@ -185,6 +185,13 @@ contains
             if (kmx == 0 .and. .not. flow_without_waves) then
                call wave_comp_stokes_velocities()
             end if
+         else if (flow_without_waves) then
+            ! FlowWithoutWaves passes wave information to D-WAQ only. Its
+            ! orbital-velocity calculation needs significant height and period,
+            ! but not wave direction or the full wave-physics transformation.
+            hwav = min(hwavcom / sqrt2_hp, gammax * hs)
+            call transform_wave_period_hp(twavcom, ndx, 1, JONSWAPgamma0, twav, ierror)
+            call wave_uorbrlabda()
          else
             hwav = 0.0_dp
             twav = 0.0_dp

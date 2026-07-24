@@ -76,10 +76,18 @@ contains
 
       requirements = 0
 
+      if (flow_without_waves) then
+         ! D-WAQ needs wave height and period to derive orbital velocity, but
+         ! the direction is not used when wave effects are disabled in FLOW.
+         requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+         requirements = ior(requirements, WAVE_INPUT_PERIOD)
+         return
+      end if
+
       wave_kinematics_required = stokes_drift > NO_STOKES_DRIFT .or. &
                                  wave_streaming > WAVE_STREAMING_OFF .or. &
                                  wave_boundary_layer > WAVE_BOUNDARYLAYER_OFF .or. &
-                                 bottom_shear .or. flow_without_waves
+                                 bottom_shear
 
       if (wave_kinematics_required) then
          requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
