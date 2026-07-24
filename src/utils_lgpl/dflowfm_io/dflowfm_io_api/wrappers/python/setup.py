@@ -11,7 +11,7 @@ from pathlib import Path
 from setuptools import setup
 
 LIB_DIR = Path(__file__).parent / "src" / "dflowfm_io" / "_lib"
-LIB_PATTERNS = ("*.dll", "*.so", "*.dylib")
+LIB_PATTERNS = ("*.dll", "*.so", "*.dylib", "*.pyd")
 
 
 def find_lib():
