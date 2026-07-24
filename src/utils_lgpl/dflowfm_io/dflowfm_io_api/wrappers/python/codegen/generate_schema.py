@@ -137,7 +137,8 @@ def main() -> None:
             "    def __init__(self, model: MduModel):",
             "        self._model = model",
         ]
-        seen_props: set[str] = set()
+        # Seed with the section class's own backing field so no property can shadow it.
+        seen_props: set[str] = {"_model"}
         for prop in section["ini_properties"]:
             member = attr_name(prop["key"])
             if member in seen_props:
