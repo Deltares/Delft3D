@@ -33,7 +33,22 @@ add_custom_command(
 	COMMENT "Generating dflowfm_io Python bindings and typed model from dflowfm_io_api.h"
 	VERBATIM
 )
-add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED})
+
+# Regenerate the typed per-keyword MDU schema (Layer 2, mdu/schema.py) from mdu.json, the same
+# single source the C++ core is generated from.
+set(DFLOWFM_IO_SCHEMA_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/codegen/generate_schema.py")
+cmake_path(SET DFLOWFM_IO_MDU_JSON NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../../json/mdu.json")
+set(DFLOWFM_IO_SCHEMA "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/schema.py")
+
+add_custom_command(
+	OUTPUT "${DFLOWFM_IO_SCHEMA}"
+	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_SCHEMA_GENERATOR}"
+	DEPENDS "${DFLOWFM_IO_SCHEMA_GENERATOR}" "${DFLOWFM_IO_MDU_JSON}"
+	COMMENT "Generating dflowfm_io typed MDU schema (Layer 2) from mdu.json"
+	VERBATIM
+)
+
+add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
 
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
 

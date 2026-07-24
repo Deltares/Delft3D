@@ -6,5 +6,6 @@ lifecycle and report in :mod:`dflowfm_io.mdu.document` are hand-written.
 
 from dflowfm_io.mdu.document import MduDocument, MduReport
 from dflowfm_io.mdu.model import MduModel
+from dflowfm_io.mdu.schema import MduSchema
 
-__all__ = ["MduModel", "MduReport", "MduDocument"]
+__all__ = ["MduModel", "MduReport", "MduDocument", "MduSchema"]

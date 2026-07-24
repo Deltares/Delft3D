@@ -11,8 +11,9 @@ import ctypes
 from dflowfm_io.base import HandleRef, check_result, lib
 from dflowfm_io.issues import Issue, MduIssue, Severity
 from dflowfm_io.mdu.model import MduModel
+from dflowfm_io.mdu.schema import MduSchema
 
-__all__ = ["MduModel", "MduReport", "MduDocument"]
+__all__ = ["MduModel", "MduReport", "MduDocument", "MduSchema"]
 
 
 class MduReport:
@@ -50,6 +51,7 @@ class MduDocument:
         self._ref = HandleRef(handle, self)
         self._model = MduModel(self._ref)
         self._report = MduReport(self._ref)
+        self._schema = MduSchema(self._model)
 
     def __del__(self):
         if hasattr(self, "_ref") and self._ref.handle:
@@ -63,6 +65,11 @@ class MduDocument:
     @property
     def report(self) -> MduReport:
         return self._report
+
+    @property
+    def schema(self) -> MduSchema:
+        """Typed, per-keyword access to the MDU sections (Layer 2), e.g. ``doc.schema.geometry.netFile``."""
+        return self._schema
 
     def load_from_file(self, filename: str) -> None:
         check_result(lib.mdu_load_from_file(self._ref.handle, filename.encode("utf-8")))
