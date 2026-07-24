@@ -112,10 +112,31 @@ def parse_params(param_str: str) -> list[str]:
     return argtypes
 
 
+def parse_enum(enum_body: str) -> list[tuple[str, int]]:
+    """Parse enum members, honouring implicit ordinals and hex; raise on an unrecognised form.
+
+    Fail-closed on purpose: a member shape we cannot parse (a value referencing another constant,
+    an unexpected token) breaks the build rather than silently dropping the constant.
+    """
+    members: list[tuple[str, int]] = []
+    next_value = 0
+    for raw in enum_body.split(","):
+        member = raw.strip()
+        if not member:  # trailing comma or blank line
+            continue
+        match = re.fullmatch(r"(\w+)\s*(?:=\s*(0[xX][0-9a-fA-F]+|\d+))?", member)
+        if not match:
+            raise ValueError(f"Cannot parse enum member: {member!r}")
+        value = int(match.group(2), 0) if match.group(2) is not None else next_value
+        members.append((match.group(1), value))
+        next_value = value + 1
+    return members
+
+
 def parse_header(text: str):
     """Return (enum_members, struct_fields, functions) parsed from the header text."""
     enum_body = re.search(r"typedef\s+enum\s+\w+\s*\{(.*?)\}", text, re.S).group(1)
-    enum_members = re.findall(r"(\w+)\s*=\s*(\d+)", enum_body)
+    enum_members = parse_enum(enum_body)
 
     struct_body = re.search(r"typedef\s+struct\s+mdu_issue_t\s*\{(.*?)\}", text, re.S).group(1)
     struct_fields = []
