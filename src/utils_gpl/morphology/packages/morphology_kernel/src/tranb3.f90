@@ -41,7 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module, only: missing_value
+      use morphology_data_module, only: MISSING_VALUE
 !
 ! Arguments
 !
@@ -105,7 +105,7 @@ contains
       ssus = 0.0_fp
       !
       ! Swanby (Ackers-White) specific output
-      par = missing_value
+      par = MISSING_VALUE
       par(1) = chezy
       par(2) = u_star
    end subroutine tranb3

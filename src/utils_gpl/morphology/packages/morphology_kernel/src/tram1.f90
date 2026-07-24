@@ -50,7 +50,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module, only: missing_value
+      use morphology_data_module ! for MISSING_VALUE and various RP_* parameters
       !
       implicit none
 !
@@ -356,13 +356,13 @@ contains
          if (error) return
       else
          error = .false.
-         uon = missing_value
-         uoff = missing_value
-         vcr = missing_value
+         uon = MISSING_VALUE
+         uoff = MISSING_VALUE
+         vcr = MISSING_VALUE
       end if
 
       ! van Rijn (1993) specific output
-      par = missing_value
+      par = MISSING_VALUE
       par(1) = tauc
       par(2) = tauwav
       par(3) = taubcw

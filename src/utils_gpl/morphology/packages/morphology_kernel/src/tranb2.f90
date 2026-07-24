@@ -41,7 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module, only: missing_value
+      use morphology_data_module, only: MISSING_VALUE
 !
 ! Arguments
 !
@@ -90,7 +90,7 @@ contains
       ssus = 0.0_fp
       !
       ! Meyer-Peter-Muller specific output
-      par = missing_value
+      par = MISSING_VALUE
       par(1) = chezy
       par(2) = theta
       par(3) = excess_theta

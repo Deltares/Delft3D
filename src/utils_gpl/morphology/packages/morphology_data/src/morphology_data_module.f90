@@ -79,7 +79,7 @@ module morphology_data_module
    public get_one_transport_parameter
 
 ! define a missing value consistent with netCDF _fillvalue
-   real(fp), parameter, public :: missing_value = 9.9692099683868690e+36_fp
+   real(fp), parameter, public :: MISSING_VALUE = 9.9692099683868690e+36_fp
 
    integer, parameter, public :: CHARLEN = 40
 

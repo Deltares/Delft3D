@@ -41,7 +41,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module, only: missing_value
+      use morphology_data_module, only: MISSING_VALUE
 !
 ! Arguments
 !
@@ -99,7 +99,7 @@ contains
       ssus = acal_sus * d50**1.5 * sqrt(ag * delta) * theta**b_sus * theta_excess**cc_sus
       !
       ! general formula specific output
-      par = missing_value
+      par = MISSING_VALUE
       par(1) = chezy
       par(2) = theta
    end subroutine tranb4
