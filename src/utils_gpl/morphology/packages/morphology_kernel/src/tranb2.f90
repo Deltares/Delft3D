@@ -3,7 +3,7 @@ module m_tranb2
 
 contains
 
-   subroutine tranb2(utot, d50, d90, chezy, h, &
+   subroutine tranb2(utot, d50, d90, chezy, water_depth, &
                    & npar, par, hidexp, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
@@ -49,7 +49,7 @@ contains
       real(fp), intent(in) :: chezy
       real(fp), intent(in) :: d50
       real(fp), intent(in) :: d90
-      real(fp), intent(in) :: h
+      real(fp), intent(in) :: water_depth
       real(fp), intent(in) :: hidexp !< hiding & exposure factor
       real(fp), dimension(npar), intent(inout) :: par
       real(fp), intent(in) :: utot
@@ -80,7 +80,7 @@ contains
       !
       !     bed load transport
       !
-      chezy_grain = 18.0_fp * log10(max(12.0_fp * h / d90, 1.0_fp))
+      chezy_grain = 18.0_fp * log10(12.0_fp * max(water_depth / d90, 1.0_fp))
       mu_ripple = (chezy / chezy_grain)**1.5_fp
       mu_ripple = min(mu_ripple, 1.0_fp)
       theta = (utot / chezy)**2 / delta / d50

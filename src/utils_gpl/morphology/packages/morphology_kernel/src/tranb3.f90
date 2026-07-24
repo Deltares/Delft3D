@@ -72,8 +72,6 @@ contains
       real(fp) :: rm
       real(fp) :: rn
       real(fp) :: u_star
-      !
-      real(fp), parameter :: MIN_DEPTH = 0.001_fp
 !
 !
 !! executable statements -------------------------------------------------------
@@ -88,7 +86,7 @@ contains
       !
       cf = ag / chezy / chezy
       u_star = sqrt(cf) * utot
-      chezy_grain = 18.0_fp * log10(12.0_fp * max(water_depth, MIN_DEPTH) / d35)
+      chezy_grain = 18.0_fp * log10(12.0_fp * max(water_depth / d35, 1.0_fp))
       !
       dgr = 25300.0_fp * d35
       ccc = log(dgr)
