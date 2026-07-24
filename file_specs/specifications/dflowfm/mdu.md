@@ -431,12 +431,12 @@ This section contains the setting for sediment transport and morphology.
 <a id="supported-keywords-and-values-sedtrails"></a>
 ## [sedtrails]
 
-
+Section for configuring the Sedtrails output
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `sedTrailsGrid` 🔬 | Grid file for sedtrails output locations on corners. |  |  |  |  |
-| `sedtrailsAnalysis` 🔬 | Sedtrails analysis. |  | <ul><li>**`all`**: </li><li>**`transport`**: </li><li>**`flowvelocity`**: </li><li>**`soulsby`**: </li></ul> |  |  |
+| `sedtrailsAnalysis` 🔬 | Option for writing sedtrails to the output file. |  | <ul><li>**`all`**: write all quantities</li><li>**`transport`**: write bedload and suspended-load transport vectors per sediment fraction</li><li>**`flowvelocity`**: write depth-averaged velocity components at grid corners</li><li>**`soulsby`**: write quantities for the Soulsby sediment mobility method</li></ul> |  |  |
 | `sedtrailsInterval` 🔬 | Sedtrails output, given as 'interval' 'start period' 'end period'. |  |  |  |  |
 | `sedtrailsOutputFile` 🔬 | Sedtrails time-averaged output file. |  |  |  |  |
 
@@ -1162,7 +1162,7 @@ The keywords and keyword values listed below are no longer supported and will ca
 | `[numerics] sobekdfm_umin_method` | Use `[numerics] lateral_fixedweir_umin_method` instead. |
 | `[numerics] thinDykeContraction` | Use `[numerics] fixedWeirContraction` instead. |
 | `[numerics] wridia_viscosity_diffusivity_limit` | Keyword no longer supported. |
-| `[output] heatFluxesOnOutput` | Use `[output] wriHis_heat_fluxes` and `wriMap_heat_fluxes` instead. |
+| `[output] heatFluxesOnOutput` | Use `[output] wriHis_heat_fluxes` and `[output] wriMap_heat_fluxes` instead. |
 | `[output] s1incInterval` | Use `[output] classMapFile` instead. |
 | `[output] snapshotdir` | Keyword no longer supported. |
 | `[output] waqFileBase` | Keyword no longer supported. |

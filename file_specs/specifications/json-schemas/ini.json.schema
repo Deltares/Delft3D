@@ -2,6 +2,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "definitions": {
+        "non_empty_string": {
+            "type": "string",
+            "minLength": 1
+        },
         "float_format": {
             "type": "string",
             "enum": [
@@ -24,7 +28,7 @@
                     "default": "GA"
                 },
                 "comment": {
-                    "type": "string"
+                    "$ref": "#/definitions/non_empty_string"
                 },
                 "since_release": {
                     "type": "number"
@@ -71,14 +75,373 @@
                 }
             ],
             "additionalProperties": false
+        },
+        "ini_property_validation": {
+            "type": "object",
+            "properties": {
+                "min_length": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "max_length": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "is_required": {
+                    "type": "boolean"
+                },
+                "range": {
+                    "type": "object",
+                    "properties": {
+                        "min_inclusive": {
+                            "type": "number"
+                        },
+                        "max_inclusive": {
+                            "type": "number"
+                        },
+                        "min_exclusive": {
+                            "type": "number"
+                        },
+                        "max_exclusive": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "ini_property": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "$ref": "#/definitions/non_empty_string"
+                },
+                "default_value": {},
+                "value_type": {
+                    "type": "string",
+                    "enum": [
+                        "string",
+                        "int",
+                        "float",
+                        "intbool",
+                        "path",
+                        "enum",
+                        "intenum",
+                        "list[path]",
+                        "list[string]",
+                        "list[float]",
+                        "datetime"
+                    ]
+                },
+                "description": {
+                    "$ref": "#/definitions/non_empty_string"
+                },
+                "status": {
+                    "$ref": "#/definitions/status"
+                },
+                "validation": {
+                    "$ref": "#/definitions/ini_property_validation"
+                },
+                "enum_values": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/non_empty_string"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "$ref": "#/definitions/non_empty_string"
+                                    },
+                                    "status": {
+                                        "$ref": "#/definitions/status"
+                                    }
+                                },
+                                "required": [
+                                    "description",
+                                    "status"
+                                ],
+                                "additionalProperties": false
+                            }
+                        ]
+                    }
+                },
+                "unit": {
+                    "$ref": "#/definitions/non_empty_string"
+                },
+                "format": {
+                    "$ref": "#/definitions/non_empty_string"
+                }
+            },
+            "required": [
+                "key",
+                "value_type",
+                "description"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "enum"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "enum_values"
+                        ],
+                        "properties": {
+                            "default_value": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "string"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "int"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "float"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "number"
+                            },
+                            "format": {
+                                "$ref": "#/definitions/float_format"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "intbool"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "path"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "intenum"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "enum_values"
+                        ],
+                        "properties": {
+                            "default_value": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "list[path]"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "list[string]"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "list[float]"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "default_value": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "format": {
+                                "$ref": "#/definitions/float_format"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "const": "datetime"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "format"
+                        ],
+                        "properties": {
+                            "default_value": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "enum": [
+                                    "date",
+                                    "datetime"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "$comment": "The 'format' property is only allowed for value types 'float', 'list[float]' and 'datetime'.",
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "enum": [
+                                    "float",
+                                    "list[float]",
+                                    "datetime"
+                                ]
+                            }
+                        }
+                    },
+                    "then": true,
+                    "else": {
+                        "not": {
+                            "required": [
+                                "format"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$comment": "The 'enum_values' property is only allowed for value types 'enum' and 'intenum'.",
+                    "if": {
+                        "properties": {
+                            "value_type": {
+                                "enum": [
+                                    "enum",
+                                    "intenum"
+                                ]
+                            }
+                        }
+                    },
+                    "then": true,
+                    "else": {
+                        "not": {
+                            "required": [
+                                "enum_values"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "additionalProperties": false
         }
     },
     "properties": {
         "file_version": {
-            "type": "string"
+            "$ref": "#/definitions/non_empty_string"
         },
         "file_format_version": {
-            "type": "string"
+            "$ref": "#/definitions/non_empty_string"
         },
         "file_format_type": {
             "type": "string",
@@ -87,7 +450,7 @@
             ]
         },
         "description": {
-            "type": "string"
+            "$ref": "#/definitions/non_empty_string"
         },
         "default_float_format": {
             "$ref": "#/definitions/float_format"
@@ -98,10 +461,10 @@
                 "type": "object",
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "$ref": "#/definitions/non_empty_string"
                     },
                     "description": {
-                        "type": "string"
+                        "$ref": "#/definitions/non_empty_string"
                     },
                     "is_unique": {
                         "type": "boolean"
@@ -109,386 +472,7 @@
                     "ini_properties": {
                         "type": "array",
                         "items": {
-                            "type": "object",
-                            "properties": {
-                                "key": {
-                                    "type": "string"
-                                },
-                                "default_value": {},
-                                "value_type": {
-                                    "type": "string",
-                                    "enum": [
-                                        "string",
-                                        "int",
-                                        "float",
-                                        "intbool",
-                                        "path",
-                                        "enum",
-                                        "intenum",
-                                        "list[path]",
-                                        "list[string]",
-                                        "list[float]",
-                                        "datetime"
-                                    ]
-                                },
-                                "description": {
-                                    "type": "string"
-                                },
-                                "status": {
-                                    "$ref": "#/definitions/status"
-                                },
-                                "validation": {
-                                    "type": "object",
-                                    "properties": {
-                                        "min_length": {
-                                            "type": "integer"
-                                        },
-                                        "max_length": {
-                                            "type": "integer"
-                                        },
-                                        "length_dependency": {
-                                            "type": "string"
-                                        },
-                                        "is_required": {
-                                            "type": "boolean"
-                                        },
-                                        "range": {
-                                            "type": "object",
-                                            "properties": {
-                                                "min_inclusive": {
-                                                    "type": "number"
-                                                },
-                                                "max_inclusive": {
-                                                    "type": "number"
-                                                },
-                                                "min_exclusive": {
-                                                    "type": "number"
-                                                },
-                                                "max_exclusive": {
-                                                    "type": "number"
-                                                }
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                },
-                                "enum_values": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "description": {
-                                                        "type": "string"
-                                                    },
-                                                    "status": {
-                                                        "$ref": "#/definitions/status"
-                                                    }
-                                                },
-                                                "allOf": [
-                                                    {
-                                                        "if": {
-                                                            "required": [
-                                                                "status"
-                                                            ],
-                                                            "properties": {
-                                                                "status": {
-                                                                    "required": [
-                                                                        "value"
-                                                                    ],
-                                                                    "properties": {
-                                                                        "value": {
-                                                                            "const": "obsolete"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        },
-                                                        "then": true,
-                                                        "else": {
-                                                            "required": [
-                                                                "description"
-                                                            ]
-                                                        }
-                                                    }
-                                                ],
-                                                "additionalProperties": false
-                                            }
-                                        ]
-                                    }
-                                },
-                                "unit": {
-                                    "type": "string"
-                                },
-                                "format": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "key",
-                                "value_type"
-                            ],
-                            "allOf": [
-                                {
-                                    "$comment": "Obsolete keywords only need 'key', 'value_type' and 'status'; all other keywords must additionally define 'description'.",
-                                    "if": {
-                                        "required": [
-                                            "status"
-                                        ],
-                                        "properties": {
-                                            "status": {
-                                                "required": [
-                                                    "value"
-                                                ],
-                                                "properties": {
-                                                    "value": {
-                                                        "const": "obsolete"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    "then": true,
-                                    "else": {
-                                        "required": [
-                                            "description"
-                                        ]
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "enum"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "required": [
-                                            "enum_values"
-                                        ],
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "string"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "int"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "float"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "number"
-                                            },
-                                            "format": {
-                                                "$ref": "#/definitions/float_format"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "intbool"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "path"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "intenum"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "required": [
-                                            "enum_values"
-                                        ],
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "list[path]"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "list[string]"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "list[float]"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "number"
-                                                }
-                                            },
-                                            "format": {
-                                                "$ref": "#/definitions/float_format"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "const": "datetime"
-                                            }
-                                        }
-                                    },
-                                    "then": {
-                                        "required": [
-                                            "format"
-                                        ],
-                                        "properties": {
-                                            "default_value": {
-                                                "type": "string"
-                                            },
-                                            "format": {
-                                                "enum": [
-                                                    "date",
-                                                    "datetime"
-                                                ]
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "$comment": "The 'format' property is only allowed for value types 'float', 'list[float]' and 'datetime'.",
-                                    "if": {
-                                        "properties": {
-                                            "value_type": {
-                                                "enum": [
-                                                    "float",
-                                                    "list[float]",
-                                                    "datetime"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "then": true,
-                                    "else": {
-                                        "not": {
-                                            "required": [
-                                                "format"
-                                            ]
-                                        }
-                                    }
-                                }
-                            ],
-                            "additionalProperties": false
+                            "$ref": "#/definitions/ini_property"
                         }
                     }
                 },

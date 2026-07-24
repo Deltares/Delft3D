@@ -106,7 +106,6 @@ class Validation:
 
     min_length: Optional[int] = None
     max_length: Optional[int] = None
-    length_dependency: Optional[str] = None
     is_required: Optional[bool] = None
     range: Optional[Range] = None
 
@@ -116,7 +115,6 @@ class Validation:
         return cls(
             min_length=data.get("min_length"),
             max_length=data.get("max_length"),
-            length_dependency=data.get("length_dependency"),
             is_required=data.get("is_required"),
             range=Range.from_dict(range_data) if range_data is not None else None,
         )
