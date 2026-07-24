@@ -41,7 +41,7 @@ set(oss_dependencies_general
                             rr_kernel_c
                             rr_kernel_f
                             rr_rtc_tools
-                            triangle_c
+                            triangle::triangle
                             wl_openmi_support
                             netCDF::netcdff
                             esmfsm
