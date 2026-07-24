@@ -805,12 +805,12 @@ contains
          jaspacevarcharn = merge(1, 0, str_tolower(quantity) == 'airpressure_windx_windy_charnock')
          if (jaspacevarcharn == 1) then
             call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
-            call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+            call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
          end if
 
       case ('charnock')
          call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
-         call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+         call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
 
       case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
          target_location_type = UNC_LOC_U

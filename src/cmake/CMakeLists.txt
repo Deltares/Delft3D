@@ -54,6 +54,7 @@ find_package(TIFF CONFIG REQUIRED)
 find_package(PROJ CONFIG REQUIRED)
 find_package(GDAL CONFIG REQUIRED)
 find_package(PETSc CONFIG REQUIRED)
+find_package(triangle CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
@@ -221,6 +222,11 @@ set(testbench-qp_configuration "QP-TESTBENCH")
 # For products that we release
 set(fm-suite_configuration "FM-SUITE")
 set(d3d4-suite_configuration "D3D4-SUITE")
+
+# Research branches do not specify a product scope, so build and test everything.
+if(${configuration_type} STREQUAL "RESEARCH-TESTBENCH")
+    set(configuration_type ${testbench-all_configuration})
+endif()
 
 # Determine the configuration to make
 if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
