@@ -1335,7 +1335,6 @@ contains
       call prop_get(md_ptr, 'sediment', 'inMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
       call prop_get(md_ptr, 'sediment', 'morCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
       call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-      call prop_get(md_ptr, 'sediment', 'masBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
@@ -1426,6 +1425,9 @@ contains
       call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
       call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity)
+      call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
+      call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
+      call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -1700,6 +1702,26 @@ contains
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+
+      if (allocated(extfile_new_list)) then
+         deallocate(extfile_new_list)
+      end if
+
+      if (len_trim(md_extfile_new) > 0) then        
+         call strsplit(md_extfile_new, 1, extfile_new_list, 1)
+      end if
+
+      if (.not. allocated(extfile_new_list)) then
+         ! If no new external forcing files were specified, allocate an empty list so functions can still 'loop' over this list.
+         allocate(extfile_new_list(0))
+      end if
+      
+      ! IniFieldFile is treated entirely by ExtForceFileNew code (during deprecation phase)
+      if (len_trim(md_inifieldfile) > 0) then
+         call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
+         extfile_new_list(size(extfile_new_list)) = md_inifieldfile
+      end if
+
       call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
       if (jarain > 0) then
          jaqin = 1
@@ -3130,9 +3152,7 @@ contains
       if (writeall .or. locsaltmax /= 10.0_dp) then
          call prop_set(prop_ptr, 'numerics', 'LocSaltMax', locsaltmax, 'maximum salinity for case of lock exchange')
       end if
-      if (writeall .or. numlimdt_baorg > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
-      end if
+      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
       if (writeall .or. baorgfracmin > 0) then
          call prop_set(prop_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin, 'Cell area = max(orgcellarea*Baorgfracmin, cutcell area) ')
       end if
@@ -3169,7 +3189,6 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
-      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
 
       ! Physics
       call prop_set(prop_ptr, 'physics', 'unifFrictCoef', frcuni, 'Uniform friction coefficient [the unit depends on unifFrictType].')
@@ -3309,6 +3328,14 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
+      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air water interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
+      call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
+      call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
+      call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity, 'Salinity reduction factor for saturation humidity in bulk formulae.')      
+      call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
+      call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
+      call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
+      
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
          call prop_set(prop_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')

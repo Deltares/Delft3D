@@ -17,18 +17,19 @@ object WindowsConanPackages : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Conan packages"
     buildNumberPattern = "%build.vcs.number%"
-
     allowExternalStatus = true
 
     params {
         param("container.tag", "vs2022-intel2024-ltsc2025")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
+        param("conan_build_option", "--build-missing")
         param("env.CONAN_HOME", "C:/conan-cache")
     }
 
@@ -42,12 +43,20 @@ object WindowsConanPackages : BuildType({
         script {
             name = "Build and upload all packages"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                rem TODO: Remove this compatibility block after the grace period and call C:\set-env.cmd directly.
+                if exist C:\set-env.cmd (
+                    call C:\set-env.cmd
+                ) else (
+                    call C:\set-env-vs2022.cmd
+                )
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                python run_conan.py install --rebuild-packages --ci --output-folder build
+                conan remote disable deltares-conan-center-proxy
+                if %%errorlevel%% neq 0 exit /b %%errorlevel%%
+
+                python run_conan.py install %conan_build_option% --ci --output-folder build
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
                 python run_conan.py upload --remote=delft3d-conan-dev --ci
@@ -55,7 +64,12 @@ object WindowsConanPackages : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "-e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
+            dockerRunParameters = """
+                --memory %teamcity.agent.hardware.memorySizeMb%m
+                --cpus %teamcity.agent.hardware.cpuCount%
+                --env CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username%
+                --env CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%
+                """.trimIndent()
             dockerPull = true
         }
     }
@@ -70,6 +84,9 @@ object WindowsConanPackages : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
+            buildParams {
+                param("conan_build_option", "--rebuild-packages")
+            }
         }
     }
 

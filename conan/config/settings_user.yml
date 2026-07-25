@@ -1,6 +1,11 @@
 compiler:
     intel-cc:
-        version: ["2024.2"]
+        version: ["2024.2", "2026.1"]
 os:
     Linux:
         distro: ["Alma8", "Alma9", "Alma10"]
+
+fortran_compiler:
+    null:
+    ifx:
+        version: ["2024.2", "2026.1"]
