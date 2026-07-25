@@ -260,6 +260,7 @@
           </parameters>
         </file> 
       </checks>
+    </testCase>
     <testCase name="e02_f022_c111_sand_settling_Inifield" ref="dflowfm_default">
       <path version="2026-07-25T15:00:00">e02_dflowfm/f022_morphology_2D/c111_sand_settling_Inifield</path>
       <maxRunTime>20.0</maxRunTime>
@@ -272,6 +273,7 @@
           </parameters>
         </file> 
       </checks>
+    </testCase>
     <testCase name="e02_f022_c112_sand_settling_NewExtForce" ref="dflowfm_default">
       <path version="2026-07-25T15:00:00">e02_dflowfm/f022_morphology_2D/c112_sand_settling_NewExtForce</path>
       <maxRunTime>20.0</maxRunTime>
@@ -282,7 +284,7 @@
             <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.00001" />
             <parameter name="mesh2d_bodsed" toleranceAbsolute="0.001" />
           </parameters>
-        </file> 
+        </file>
       </checks>
     </testCase>
   </testCases>
