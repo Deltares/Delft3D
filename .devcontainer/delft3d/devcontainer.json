@@ -30,7 +30,13 @@
             "type": "volume",
             "source": "delft3d-home-config",
             "target": "/home/dev/.config",
-        }
+        },
+        // The ~/.vscode-server hosts Copilot chat sessions, amongst other things.
+        {
+            "type": "volume",
+            "source": "delft3d-vscode-server",
+            "target": "/home/dev/.vscode-server",
+        },
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],
     "customizations": {

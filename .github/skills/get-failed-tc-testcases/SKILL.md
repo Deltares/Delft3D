@@ -28,7 +28,7 @@ If the `platform` is not specified, get the failed tests for both Linux and Wind
 2. The _GitHub CLI tool_ `gh` *must* be installed. If not ask users to install it.
 3. `jq` is used in the steps below. This is to avoid having to read very large responses from the cli tools.
 
-## Steps:
+## Steps
 1. Look up if the given `branch-name` has an associated GitHub PR with failed checks.
    Use the `gh` to list the required checks for the PR:
 
