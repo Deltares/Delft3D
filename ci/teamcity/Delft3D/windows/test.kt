@@ -143,6 +143,12 @@ object WindowsTest : BuildType({
                 call C:\venv\Scripts\activate.bat
                 uv pip sync pip/win-requirements.txt
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
+
+                rem Desperate attempt to fix the accursed, unutterable "Exit code -1073741819" problem.
+                echo "Effe wachten..."
+                timeout /t 3 /nobreak >nul
+                echo "...Python!"
+
                 python TestBench.py %%argsList%%
             """.trimIndent()
 
