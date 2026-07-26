@@ -43,7 +43,7 @@ in all test cases.
 ## Preconditions
 
 1. The working directory must be `/test/deltares_testbench/`. *Always* run `TestBench.py` from this directory.
-2. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`
+2. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`.
 3. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
    in an activated venv. Or if `uv` is not installed: `pip install -r pip/win-requirements.txt`.
 4. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
@@ -87,4 +87,4 @@ see if you can find any errors or stacktraces and let the user know if you find 
 a _NetCDF_ file (with `.nc` extension), it's usually a difference above tolerance in a certain variable. In Linux you
 can use `ncdump` to inspect the values (the `-v` flag is useful for this). `TestBench.py` also has `NetCDF4`, `numpy`
 and `matplotlib` installed. So, if requested, you may write a script to plot results, provided you run it in the 
-activated venv.
+activated `venv`.

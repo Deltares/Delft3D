@@ -66,14 +66,15 @@ If there is no such build target, or only a description is given: Use
 python build.py [--config CONFIG] [--build-type {Debug,Release,RelWithDebInfo}] [--build] [--keep-build]
 ```
 
-- **`--config`**: What "product" to build. The default is `fm-suite`, which includes most software and
+- **`--config`**: What `config` to build. The default is `fm-suite`, which includes most software and
   should be chosen if not explicitly specified. Other options can be found by invoking `python build.py --help`
 - **`--build-type`**: The build type passed to `CMake`. The default is `Debug` which is clearly preferred
-  for development because it adds debug symbols and turns off optimizations for faster builds. `RelWithDebInfo` is sometimes useful if developers want to run models that run too slow with `Debug` binaries.
+  for development because it adds debug symbols and turns off optimizations for faster builds. `RelWithDebInfo`
+  is sometimes useful if developers want to run models that run too slow with `Debug` binaries.
 - **`--build`**: By default `python build.py` only runs the `conan` install and the `cmake` configure.
   It skips the actual `cmake` build (which takes the longest). But the `--build` flag tells `build.py` to
   also run the _build_ and _install_ phases.
-- **`--keep-build`**: By default build.py removes the _build_ and _install_ directories. So it runs a
-  "clean build". Builds can take pretty long, so this is actually kind of wasteful. If the build and
+- **`--keep-build`**: By default `build.py` removes the _build_ and _install_ directories. So it runs a
+  "clean" build. Builds can take pretty long, so this is actually kind of wasteful. If the build and
   install directories exist, please default to passing the `--keep-build` flag unless explicitly told
   not to.

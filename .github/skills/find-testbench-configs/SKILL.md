@@ -30,9 +30,9 @@ On Linux, use `rg` in `/test/deltares_testbench/configs` to find an XML file con
 of the matches. If `rg` isn't installed, you need to fall back to `grep` or `powershell`.
 
 You'll most likely find matches in `/test/deltares_testbench/configs/include/<include-filename>.xml`. 
-These XML files are not complete configs, but config snippets included with `<xi:include>` in the complete
-configs. To find the complete config file, search again in `/test/deltares_testbench/configs/dimr/` with the 
+These XML files are not complete configs, but config snippets included with `<xi:include>`. 
+To find the actual config file, search again in `/test/deltares_testbench/configs/dimr/` with the 
 `<include-filename>` found earlier. You will most likely find multiple configs. If the `platform` is not
-specified, choose the config with `lnx64` on Linux, and the one with `win64` on Windows. You may find more 
-than two configs, because some test cases have duplicates in different configs. Show all configs you find to
-the user.
+specified, choose the config with `lnx64` on Linux, and the one with `win64` on Windows. 
+You may still find more than two configs, because some test cases are included in multiple configs. 
+In this case report all configs you find to the user.

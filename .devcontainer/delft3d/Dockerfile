@@ -42,7 +42,7 @@ WORKDIR /home/dev
 
 # Create mount points for bash history, MinIO credentials, and Conan in the user's home directory.
 RUN <<"EOF"
-mkdir ~/.history ~/.aws ~/.conan2 ~/.config
+mkdir ~/.history ~/.aws ~/.conan2 ~/.config ~/.vscode-server
 touch ~/.history/.bash_history
 EOF
 

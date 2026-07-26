@@ -8,7 +8,7 @@ argument-hint: '[partial-testcase-name ...] [config-path]'
 
 ## When to use
 
-- "Get test case X"
+- "Download test case X"
 - "Get test cases X, Y, Z, ..."
 
 ## What this skill does
