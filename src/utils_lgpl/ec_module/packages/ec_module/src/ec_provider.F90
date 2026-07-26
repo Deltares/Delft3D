@@ -3527,7 +3527,8 @@ contains
             success = .true.
          end if
       case (provFile_datavalue)
-         ! Do something... Or maybe nothing.
+         ! Time independent: a single scalar value provided directly (no file, no time axis).
+         ! The ec timeframe params were already defaulted to the kernel's timeframe params (above).
          success = .true.
       case default
          call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unknown file type.")

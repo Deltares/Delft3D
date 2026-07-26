@@ -241,7 +241,7 @@ contains
       case ('1dfield')
          method = JUSTUPDATE
       case ('datavalue')
-         method = METHOD_CONSTANT
+         method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
       end select

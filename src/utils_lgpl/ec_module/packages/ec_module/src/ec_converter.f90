@@ -1096,6 +1096,8 @@ contains
          success = ecConverterQhtable(connection)
       case (convType_samples)
          success = ecConverterSamples(connection, timesteps%mjd())
+      case (convType_datavalue)
+         success = ecConverterDataValue(connection, timesteps%mjd())
       case default
          call set_ec_message("ERROR: ec_converter::ecConverterPerformConversions: Unknown Converter type requested.")
       end select
@@ -4132,6 +4134,62 @@ contains
       return
 
    end subroutine ConvertToSparseIndices
+
+   !> Converter for the 'datavalue' provider (UNST-8900).
+   !!
+   !! The source item holds a single, time- and space-independent scalar value.
+   !! This converter broadcasts that scalar to every element of every target item,
+   !! applying the configured operand (typically multiply) and honouring the
+   !! optional target mask. It handles the common case where the target has
+   !! multiple components (e.g. windx + windy for the 'windxy' quantity), which
+   !! ecConverterUniform does not support for a scalar source.
+   function ecConverterDataValue(connection, timesteps) result(success)
+      logical :: success !< function status
+      type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
+      real(dp), intent(in) :: timesteps !< target time (kernel timesteps since reference date)
+      !
+      real(dp) :: data_value !< the scalar source value
+      integer :: i, j !< loop counters
+      integer :: jmin, jmax !< target element range
+      type(tEcField), pointer :: targetField
+      integer, dimension(:), pointer :: targetMask
+      logical :: status
+      !
+      success = .false.
+      targetField => null()
+      targetMask => null()
+      !
+      data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
+      !
+      do i = 1, connection%nTargetItems
+         targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+         targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
+         !
+         if (connection%converterPtr%targetIndex /= ec_undef_int) then
+            jmin = connection%converterPtr%targetIndex
+            jmax = connection%converterPtr%targetIndex
+         else
+            jmin = 1
+            jmax = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
+         end if
+         !
+         call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
+         if (.not. status) return
+         !
+         do j = jmin, jmax
+            if (associated(targetMask)) then
+               if (targetMask(j) == 0) cycle
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), data_value)
+         end do
+         !
+         targetField%timesteps = timesteps
+      end do
+      !
+      success = .true.
+   end function ecConverterDataValue
+
+   ! =======================================================================
 
    !> Applies the specified operand to the given target value with the provided value.
    elemental subroutine apply_operand(operand, target_value, provided_value)
