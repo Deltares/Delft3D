@@ -18,17 +18,16 @@ pain.
 - Check that `intent(in)`, `intent(out)`, `intent(inout)` is declared on every
   dummy argument, and that `intent(out)` arguments are actually assigned on
   every code path.
-- Watch for uninitialized locals, especially arrays and derived-type
-  components. Do not rely on compiler zero-initialization.
+- Watch for uninitialized locals, especially arrays and derived-type components. 
+  Do not rely on compiler zero-initialization.
 
 ## Numerical
 
 - Flag division without a guard against zero or near-zero denominators.
-- Flag equality comparisons between floating-point values; use `compare_real`
+- Flag equality comparisons between floating-point values; use `comparereal`
   from the `precision_basics` module.
-- Flag mixed-mode arithmetic (integer / real) that can truncate unexpectedly.
-- Flag loss-of-significance patterns such as subtracting nearly equal
-  quantities without reformulation.
+- Flag mixed-mode arithmetic (integer / real).
+- Flag loss-of-significance patterns such as subtracting nearly equal quantities.
 
 ## Modules
 
@@ -39,7 +38,8 @@ pain.
 ## Documentation
 
 - Flag missing docstrings for *new* public functions, submodules, module variables, types,
-  and interfaces. Use Fortran [Doxygen](https://www.doxygen.nl/manual/docblocks.html#fortranblocks)
+  interfaces and dummy arguments. Use Fortran 
+  [Doxygen](https://www.doxygen.nl/manual/docblocks.html#fortranblocks)
   style docstrings. E.g. `!>` before procedures, and `!<` after dummy arguments.
 
 ## Backward compatibility
@@ -52,4 +52,5 @@ pain.
   break existing user input.
 
 ## What NOT to comment on
-- Do not request docstring or comment additions on code that was not changed.
+
+- Do not request docstring or comment additions on code that was not changed by the author.
