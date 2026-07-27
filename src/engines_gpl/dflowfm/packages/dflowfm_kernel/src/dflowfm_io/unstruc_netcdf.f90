@@ -15645,7 +15645,7 @@ contains
       integer, allocatable :: tmpvar3di(:, :, :), tmpvar2di(:, :)
       integer :: strucDimErr, i, nLinks, nStru, ierr, iStru, nfuru, numlinks, strucVarErr, L, L0, nstages, maxNumStages
       integer :: id_culvert_openh, id_longculvert_valveopen, &
-                 id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
+                 id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
                  id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
                  id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
                  id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
@@ -15759,6 +15759,19 @@ contains
                   genstr => network%sts%struct(istru)%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
+               end do
+            end if
+
+            ! read general_structure_gate_height
+            call realloc(tmpvar, nStru, stat=ierr, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, 'general_structure_gate_height', id_genstru_gateh)
+            ierr = nf90_get_var(ncid, id_genstru_gateh, tmpvar, start=[1, it_read], count=[nStru, 1])
+            call check_error(ierr, '"general_structure_gate_height", The simulation will continue but the results may not be reliable.', LEVEL_WARN)
+            if (ierr == 0) then
+               do i = 1, nStru
+                  istru = network%sts%generalStructureIndices(i)
+                  genstr => network%sts%struct(istru)%generalst
+                  genstr%gateDoorHeight = tmpvar(i)
                end do
             end if
 
