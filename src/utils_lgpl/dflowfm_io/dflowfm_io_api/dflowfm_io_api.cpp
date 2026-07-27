@@ -282,6 +282,13 @@ dflowfm_io_result_t mdu_get_enum_name(mdu_handle_t handle, const char* key, cons
             throw std::invalid_argument(
                 "No enum name for value " + std::to_string(value) + " of key '" + std::string(key) + "'");
         }
+        if (entry->label.empty())
+        {
+            // Only string Enums carry a label; IntEnum entries have none. Fail loudly instead of
+            // returning an empty string, so a misuse is caught rather than silently swallowed.
+            throw std::invalid_argument(
+                "Property '" + std::string(key) + "' has no enum labels (intenum); use mdu_get_enum instead");
+        }
         stored_name = entry->label;
         *name_out = stored_name.c_str();
     });
@@ -423,6 +430,13 @@ dflowfm_io_result_t mdu_set_enum_name(mdu_handle_t handle, const char* key, cons
 
     return exceptionToResult([&]()
     {
+        if (name[0] == '\0')
+        {
+            // An empty name would otherwise match a label-less IntEnum entry; reject it so the
+            // caller uses mdu_set_enum for integer enums rather than silently setting the first value.
+            throw std::invalid_argument(
+                "Empty enum name for key '" + std::string(key) + "'; use mdu_set_enum for label-less (intenum) properties");
+        }
         const dflowfm_io::PropertySchema* property = dflowfm_io::GetMduSchema().FindProperty(key);
         if (property == nullptr)
         {

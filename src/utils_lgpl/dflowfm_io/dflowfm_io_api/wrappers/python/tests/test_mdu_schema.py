@@ -35,6 +35,17 @@ class TestMduModelEnumName(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             doc.model.set_enum_name("time.tunit", "not-a-valid-name")
 
+    def test_get_enum_name_on_intenum_raises(self):
+        # intenum entries have no label; the C ABI fails loudly rather than returning "".
+        doc = _loaded_doc()
+        with self.assertRaises(RuntimeError):
+            doc.model.get_enum_name("geometry.bedlevtype")
+
+    def test_set_empty_enum_name_raises(self):
+        doc = _loaded_doc()
+        with self.assertRaises(RuntimeError):
+            doc.model.set_enum_name("geometry.bedlevtype", "")
+
 
 class TestMduSchema(unittest.TestCase):
     """The generated Layer-2 typed per-keyword access (MduSchema)."""
