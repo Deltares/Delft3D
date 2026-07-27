@@ -98,6 +98,12 @@ class TestSchemaRenderer(unittest.TestCase):
         self.assertIn("class MduSchema:", source)
         self.assertIn("        self.time = TimeSection(model)", source)
 
+    def test_render_emits_known_properties_registry(self):
+        section = {"name": "geometry", "ini_properties": [{"key": "netFile", "value_type": "path"}]}
+        source, _ = self.renderer.render([section])
+        self.assertIn("KNOWN_PROPERTIES = frozenset({", source)
+        self.assertIn('    "geometry.netfile",', source)
+
 
 class TestSchemaGenerator(unittest.TestCase):
     """The fail-closed value_type gate."""

@@ -121,6 +121,7 @@ class SchemaRenderer:
 
         section_attrs = self._render_sections(builder, sections)
         self._render_facade(builder, section_attrs)
+        self._render_registry(builder, sections)
 
         total = sum(len(section["ini_properties"]) for section in sections)
         return builder.render(), total
@@ -175,6 +176,20 @@ class SchemaRenderer:
         builder.line("    def __init__(self, model: MduModel):")
         for attr, cls in section_attrs:
             builder.line(f"        self.{attr} = {cls}(model)")
+
+    def _render_registry(self, builder: SourceBuilder, sections: list[dict]) -> None:
+        """Emit the flat frozenset of known dotted keys, for schema-existence queries by consumers
+        (e.g. hydrolib-core) without loading a document or probing the native library."""
+        keys = sorted(
+            f"{section['name']}.{prop['key']}".lower()
+            for section in sections
+            for prop in section["ini_properties"]
+        )
+        builder.blank(2)
+        builder.line('#: Every property key ("section.property", lower-cased) the MDU schema defines.')
+        builder.line("KNOWN_PROPERTIES = frozenset({")
+        builder.extend([f'    "{key}",' for key in keys])
+        builder.line("})")
 
 
 class SchemaGenerator(Generator):

@@ -76,6 +76,15 @@ class TestMduSchema(unittest.TestCase):
         doc = _loaded_doc()
         self.assertTrue(hasattr(doc.schema, "external_forcing"))
 
+    def test_known_properties_registry(self):
+        # The generated dotted-key set consumers use for schema-existence queries.
+        from dflowfm_io.mdu.schema import KNOWN_PROPERTIES
+
+        self.assertIsInstance(KNOWN_PROPERTIES, frozenset)
+        self.assertIn("geometry.netfile", KNOWN_PROPERTIES)
+        self.assertIn("external forcing.extforcefilenew", KNOWN_PROPERTIES)
+        self.assertNotIn("bogus.key", KNOWN_PROPERTIES)
+
     def test_multi_word_section_key_round_trips(self):
         # The [external forcing] section has a space; the dotted key must keep it.
         doc = _loaded_doc()
