@@ -10,13 +10,13 @@
 file(MAKE_DIRECTORY "${LIB_DIR}")
 
 file(GLOB _stale_libraries
-    "${LIB_DIR}/*.dll"
-    "${LIB_DIR}/*.so"
-    "${LIB_DIR}/*.dylib"
-    "${LIB_DIR}/*.pyd"
+	"${LIB_DIR}/*.dll"
+	"${LIB_DIR}/*.so"
+	"${LIB_DIR}/*.dylib"
+	"${LIB_DIR}/*.pyd"
 )
 if(_stale_libraries)
-    file(REMOVE ${_stale_libraries})
+	file(REMOVE ${_stale_libraries})
 endif()
 
 file(COPY "${LIB_FILE}" DESTINATION "${LIB_DIR}")
