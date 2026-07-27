@@ -414,5 +414,5 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
 # Install proj.db only if PROJ library is found and being used
 if(TARGET PROJ::proj)
     install(FILES "$<IF:$<CONFIG:Debug>,${proj_PACKAGE_FOLDER_DEBUG},$<IF:$<CONFIG:RelWithDebInfo>,${proj_PACKAGE_FOLDER_RELWITHDEBINFO},${proj_PACKAGE_FOLDER_RELEASE}>>/res/proj.db" 
-            DESTINATION share)
+            DESTINATION share/proj)
 endif()
