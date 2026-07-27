@@ -91,6 +91,7 @@ module m_source_sink
    contains
 
       procedure :: initialize => initialize_source_sinks
+      procedure :: clear => clear_source_sinks
       procedure :: resize => resize_source_sinks
       procedure :: resize_xy => resize_xy_source_sinks
 
@@ -107,6 +108,23 @@ contains
 
    ! SourceSinks type-bound procedures.
    ! ====================================================================================================
+
+   !> Deallocates and resets all source/sink administration.
+   subroutine clear_source_sinks(self)
+      class(SourceSinks), intent(inout) :: self
+
+      select type (self)
+      type is (SourceSinks)
+         self = SourceSinks()
+      end select
+
+      if (allocated(source_sink_all_discharges)) then
+         deallocate (source_sink_all_discharges)
+      end if
+      if (allocated(source_sink_reduction)) then
+         deallocate (source_sink_reduction)
+      end if
+   end subroutine clear_source_sinks
 
    !> Allocates and initializes the SourceSinks attributes to size.
    subroutine initialize_source_sinks(self, size)

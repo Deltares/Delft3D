@@ -50,7 +50,7 @@ contains
       use m_physcoef
       use m_turbulence
       use m_flow
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: default_fm_external_forcing_data, kbndz, mext
       use m_flowparameters
       use m_flowgeom
       use m_modelbounds
@@ -89,6 +89,8 @@ contains
       use m_sediment, only: deallocgrains, default_sediment
       use m_flow_validatestate, only: default_flow_validatestate
       use m_prefetch, only: cleanup_prefetch_arrays
+      use m_source_sink, only: source_sinks
+      use m_filez, only: doclose
 
       implicit none
 
@@ -144,7 +146,9 @@ contains
 
       call default_modelbounds()
 
+      call doclose(mext)
       call default_fm_external_forcing_data()
+      call source_sinks%clear()
 
       call default_channel_flow()
 
@@ -188,10 +192,6 @@ contains
 
       if (allocated(kbndz)) then
          deallocate(kbndz)
-      end if
-
-      if (allocated(extfile_new_list)) then
-         deallocate(extfile_new_list)
       end if
 
       call cleanup_prefetch_arrays()

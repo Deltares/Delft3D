@@ -529,7 +529,55 @@ contains
       call readyy('geominit-NODELINKS         ', 0.5_dp)
 
       if (allocated(ln)) then
-         deallocate (ln, lncn, bob, bob0, dx, dxi, wu, wui, kcu, csu, snu, acl, iadv, teta, wu_mor, wu1D2D, hh1D2D)
+         deallocate (ln)
+      end if
+      if (allocated(lncn)) then
+         deallocate (lncn)
+      end if
+      if (allocated(bob)) then
+         deallocate (bob)
+      end if
+      if (allocated(bob0)) then
+         deallocate (bob0)
+      end if
+      if (allocated(dx)) then
+         deallocate (dx)
+      end if
+      if (allocated(dxi)) then
+         deallocate (dxi)
+      end if
+      if (allocated(wu)) then
+         deallocate (wu)
+      end if
+      if (allocated(wui)) then
+         deallocate (wui)
+      end if
+      if (allocated(kcu)) then
+         deallocate (kcu)
+      end if
+      if (allocated(csu)) then
+         deallocate (csu)
+      end if
+      if (allocated(snu)) then
+         deallocate (snu)
+      end if
+      if (allocated(acl)) then
+         deallocate (acl)
+      end if
+      if (allocated(iadv)) then
+         deallocate (iadv)
+      end if
+      if (allocated(teta)) then
+         deallocate (teta)
+      end if
+      if (allocated(wu_mor)) then
+         deallocate (wu_mor)
+      end if
+      if (allocated(wu1D2D)) then
+         deallocate (wu1D2D)
+      end if
+      if (allocated(hh1D2D)) then
+         deallocate (hh1D2D)
       end if
       if (allocated(ibot)) then
          deallocate (ibot)
