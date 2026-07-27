@@ -54,80 +54,80 @@ contains
 !
 ! Arguments
 !
-      logical, intent(in)   :: scour
-      logical, intent(in)   :: wave
-      integer, intent(in)   :: num_layers_grid
-      integer, intent(in)   :: ltur     !  Description and declaration in iidim.f90
-      integer, intent(in)   :: npar
-      integer, intent(in)   :: numrealpar
-      real(fp), intent(in)   :: bed
-      real(fp), intent(in)   :: bedw
-      real(fp), intent(in)   :: camax
-      real(fp), dimension(0:num_layers_grid), intent(in)   :: dicww    !  Description and declaration in rjdim.f90
-      real(fp), intent(in)   :: eps
-      real(fp), intent(in)   :: frac     !  Description and declaration in rjdim.f90
-      real(fp), dimension(num_layers_grid), intent(in)   :: sig      !  Description and declaration in rjdim.f90
-      real(fp), intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
-      real(fp), intent(in)   :: susw
-      real(fp), intent(in)   :: tauadd
-      real(fp), intent(in)   :: taucr0
-      real(fp), dimension(num_layers_grid), intent(in)   :: thick    !  Description and declaration in rjdim.f90
-      real(fp), dimension(0:num_layers_grid), intent(in)   :: ws       !  Description and declaration in rjdim.f90
-      real(fp), dimension(npar), intent(inout):: par
+      logical, intent(in) :: scour
+      logical, intent(in) :: wave
+      integer, intent(in) :: num_layers_grid
+      integer, intent(in) :: ltur !  Description and declaration in iidim.f90
+      integer, intent(in) :: npar
+      integer, intent(in) :: numrealpar
+      real(fp), intent(in) :: bed
+      real(fp), intent(in) :: bedw
+      real(fp), intent(in) :: camax
+      real(fp), dimension(0:num_layers_grid), intent(in) :: dicww !  Description and declaration in rjdim.f90
+      real(fp), intent(in) :: eps
+      real(fp), intent(in) :: frac !  Description and declaration in rjdim.f90
+      real(fp), dimension(num_layers_grid), intent(in) :: sig !  Description and declaration in rjdim.f90
+      real(fp), intent(in) :: sigmol !  Description and declaration in rjdim.f90
+      real(fp), intent(in) :: susw
+      real(fp), intent(in) :: tauadd
+      real(fp), intent(in) :: taucr0
+      real(fp), dimension(num_layers_grid), intent(in) :: thick !  Description and declaration in rjdim.f90
+      real(fp), dimension(0:num_layers_grid), intent(in) :: ws !  Description and declaration in rjdim.f90
+      real(fp), dimension(npar), intent(inout) :: par
       !
-      real(hp), dimension(numrealpar), intent(inout):: realpar
+      real(hp), dimension(numrealpar), intent(inout) :: realpar
       !
-      logical, intent(out)  :: error
-      integer, intent(out)  :: kmaxsd
-      real(fp), intent(out)  :: aks
-      real(fp), intent(out)  :: caks
-      real(fp), intent(out)  :: conc2d
-      real(fp), dimension(num_layers_grid), intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
-      real(fp), intent(out)  :: sbcu
-      real(fp), intent(out)  :: sbcv
-      real(fp), intent(out)  :: sbwu
-      real(fp), intent(out)  :: sbwv
-      real(fp), dimension(0:num_layers_grid), intent(out)  :: seddif   !  Description and declaration in rjdim.f90
-      real(fp), intent(out)  :: sswu
-      real(fp), intent(out)  :: sswv
-      real(fp), intent(out)  :: taurat
-      character(*), intent(out)  :: message     ! Contains error message
+      logical, intent(out) :: error
+      integer, intent(out) :: kmaxsd
+      real(fp), intent(out) :: aks
+      real(fp), intent(out) :: caks
+      real(fp), intent(out) :: conc2d
+      real(fp), dimension(num_layers_grid), intent(out) :: rsedeq !  Description and declaration in rjdim.f90
+      real(fp), intent(out) :: sbcu
+      real(fp), intent(out) :: sbcv
+      real(fp), intent(out) :: sbwu
+      real(fp), intent(out) :: sbwv
+      real(fp), dimension(0:num_layers_grid), intent(out) :: seddif !  Description and declaration in rjdim.f90
+      real(fp), intent(out) :: sswu
+      real(fp), intent(out) :: sswv
+      real(fp), intent(out) :: taurat
+      character(*), intent(out) :: message ! Contains error message
 !
 ! Local variables
 !
       integer :: iopsus
-      real(fp):: aksfac
-      real(fp):: rwave
-      real(fp):: rdc
-      real(fp):: rdw
+      real(fp) :: aksfac
+      real(fp) :: rwave
+      real(fp) :: rdc
+      real(fp) :: rdw
       integer :: iopkcw
       logical :: epspar
       !
-      real(fp):: ag
-      real(fp):: chezy
-      real(fp):: d10
-      real(fp):: d90
-      real(fp):: di50
-      real(fp):: dstar
-      real(fp):: h1
-      real(fp):: hidexp
-      real(fp):: hrms
-      real(fp):: mudfrac
-      real(fp):: rhosol
-      real(fp):: rhowat
-      real(fp):: rlabda
-      real(fp):: salinity
-      real(fp):: teta
-      real(fp):: tp
-      real(fp):: umod
-      real(fp):: uorb
-      real(fp):: uuu
-      real(fp):: vicmol
-      real(fp):: vonkar
-      real(fp):: vvv
-      real(fp):: z0cur
-      real(fp):: z0rou
-      real(fp):: zumod
+      real(fp) :: ag
+      real(fp) :: chezy
+      real(fp) :: d10
+      real(fp) :: d90
+      real(fp) :: di50
+      real(fp) :: dstar
+      real(fp) :: h1
+      real(fp) :: hidexp
+      real(fp) :: hrms
+      real(fp) :: mudfrac
+      real(fp) :: rhosol
+      real(fp) :: rhowat
+      real(fp) :: rlabda
+      real(fp) :: salinity
+      real(fp) :: teta
+      real(fp) :: tp
+      real(fp) :: umod
+      real(fp) :: uorb
+      real(fp) :: uuu
+      real(fp) :: vicmol
+      real(fp) :: vonkar
+      real(fp) :: vvv
+      real(fp) :: z0cur
+      real(fp) :: z0rou
+      real(fp) :: zumod
       !
       integer  :: kmaxsd2
       integer  :: k
@@ -168,7 +168,7 @@ contains
       real(fp) :: vcr
       real(fp) :: z
       real(fp) :: zusus
-      logical  :: difvr
+      logical :: difvr
 !
 !! executable statements -------------------------------------------------------
 !
@@ -231,19 +231,19 @@ contains
       !
       ! Adjust caks for presence of multiple sediment fractions.
       !
-      caks = caks*frac
+      caks = caks * frac
       !
       ! Calculate vertical sediment diffusion coefficient
       !
       if (tp > 0.0_fp .and. wave) then
-         hs = hrms*sqrt(2.0_fp)
+         hs = hrms * sqrt(2.0_fp)
          !
          ! calculate sediment mixing due to waves following Van Rijn 1993
          !
-         deltas = 3.0_fp*delr
+         deltas = 3.0_fp * delr
          deltas = min(max(0.05_fp, deltas), 0.2_fp)
-         epsbed = 0.004_fp*dstar*deltas*uwb
-         epsmax = 0.035_fp*h1*hs/tp
+         epsbed = 0.004_fp * dstar * deltas * uwb
+         epsmax = 0.035_fp * h1 * hs / tp
       else
          deltas = 0.05_fp
          epsbed = 0.0_fp
@@ -261,7 +261,7 @@ contains
       ! integration.
       ! set background diffusion and effective beta factor
       !
-      bakdif = vicmol/sigmol
+      bakdif = vicmol / sigmol
       !
       ! Use simple expression based on upwind approximation for
       ! concentration and fall velocity, and central difference for
@@ -280,7 +280,7 @@ contains
             !
             ! Calculate level of lower cell interface
             !
-            lci = (1.0_fp + sig(k) - thick(k)/2.0_fp)*h1
+            lci = (1.0_fp + sig(k) - thick(k) / 2.0_fp) * h1
             if (lci >= aks) then
                kmaxsd = k
                if (k > 1) then
@@ -289,8 +289,8 @@ contains
                   ! if aks is close to the lower interface of the previous layer, then set alphak equal to 1
                   ! if aks is close to the lower interface of this layer, then set alphak equal to 0
                   !
-                  lci2 = (1.0_fp + sig(kmaxsd + 1) - thick(kmaxsd + 1)/2.0_fp)*h1
-                  alphak = (lci - aks)/(lci - lci2)
+                  lci2 = (1.0_fp + sig(kmaxsd + 1) - thick(kmaxsd + 1) / 2.0_fp) * h1
+                  alphak = (lci - aks) / (lci - lci2)
                   ! else use the default kmaxsd2 and alphak
                end if
                exit
@@ -299,26 +299,26 @@ contains
          !
          ! Put concentration for alphak in kmaxsd cell and for 1-alphak in kmaxsd2 cell
          !
-         dz = h1*(1.0_fp + sig(kmaxsd)) - aks
+         dz = h1 * (1.0_fp + sig(kmaxsd)) - aks
          diffbt = seddif(kmaxsd) + bakdif
-         diffbt = max(diffbt, 0.1_fp*ws(kmaxsd)*dz)
-         fact1 = 1.0_fp + dz*ws(kmaxsd)/diffbt
-         rsedeq(kmaxsd) = alphak*caks/fact1*rhosol
+         diffbt = max(diffbt, 0.1_fp * ws(kmaxsd) * dz)
+         fact1 = 1.0_fp + dz * ws(kmaxsd) / diffbt
+         rsedeq(kmaxsd) = caks / fact1 * rhosol
          !
          if (kmaxsd2 == kmaxsd - 1) then
-            dz = h1*(1.0_fp + sig(kmaxsd2)) - aks
+            dz = h1 * (1.0_fp + sig(kmaxsd2)) - aks
             diffbt = seddif(kmaxsd2) + bakdif
-            diffbt = max(diffbt, 0.1_fp*ws(kmaxsd2)*dz)
-            fact1 = 1.0_fp + dz*ws(kmaxsd2)/diffbt
-            rsedeq2 = (1.0_fp - alphak)*caks/fact1*rhosol
+            diffbt = max(diffbt, 0.1_fp * ws(kmaxsd2) * dz)
+            fact1 = 1.0_fp + dz * ws(kmaxsd2) / diffbt
+            rsedeq2 = (1.0_fp - alphak) * caks / fact1 * rhosol
             !
             ! Set diffusion coefficient at bottom of layer
             !
-            dz = h1*(sig(kmaxsd2) - sig(kmaxsd2 + 1))
+            dz = h1 * (sig(kmaxsd2) - sig(kmaxsd2 + 1))
             diffbt = seddif(kmaxsd2) + bakdif
-            diffbt = max(diffbt, 0.1_fp*ws(kmaxsd2)*dz)
-            fact1 = 1.0_fp + dz*ws(kmaxsd2)/diffbt
-            rsedeq(kmaxsd2) = rsedeq2 + rsedeq(kmaxsd2 + 1)/fact1
+            diffbt = max(diffbt, 0.1_fp * ws(kmaxsd2) * dz)
+            fact1 = 1.0_fp + dz * ws(kmaxsd2) / diffbt
+            rsedeq(kmaxsd2) = rsedeq2 + rsedeq(kmaxsd2 + 1) / fact1
             !
             rsedeq(kmaxsd) = rsedeq(kmaxsd) + rsedeq2
          end if
@@ -329,11 +329,11 @@ contains
             !
             ! Set diffusion coefficient at bottom of layer
             !
-            dz = h1*(sig(k) - sig(k + 1))
+            dz = h1 * (sig(k) - sig(k + 1))
             diffbt = seddif(k) + bakdif
-            diffbt = max(diffbt, 0.1_fp*ws(k)*dz)
-            fact1 = 1.0_fp + dz*ws(k)/diffbt
-            rsedeq(k) = rsedeq(k + 1)/fact1
+            diffbt = max(diffbt, 0.1_fp * ws(k) * dz)
+            fact1 = 1.0_fp + dz * ws(k) / diffbt
+            rsedeq(k) = rsedeq(k + 1) / fact1
          end do
          !
          ! And then work down
@@ -362,23 +362,23 @@ contains
       avgcu = 0.0_fp
       if (zumod > 0.0_fp) then
          do k = 1, num_layers_grid
-            z = (1.0_fp + sig(k))*h1
-            u = log(1.0_fp + z/z0rou)
-            avgu = avgu + u*thick(k)
-            avgcu = avgcu + u*rsedeq(k)*thick(k)
+            z = (1.0_fp + sig(k)) * h1
+            u = log(1.0_fp + z / z0rou)
+            avgu = avgu + u * thick(k)
+            avgcu = avgcu + u * rsedeq(k) * thick(k)
          end do
-         conc2d = avgcu/max(avgu, eps)
-         avgu = avgu*umod/log(1.0_fp + zumod/z0rou)
+         conc2d = avgcu / max(avgu, eps)
+         avgu = avgu * umod / log(1.0_fp + zumod / z0rou)
       else
          conc2d = 0.0_fp
       end if
       if (scour) then
-         utot = ustarc*chezy/sag
+         utot = ustarc * chezy / sag
       else
          utot = avgu
       end if
-      u = utot*uuu/(umod + eps)
-      v = utot*vvv/(umod + eps)
+      u = utot * uuu / (umod + eps)
+      v = utot * vvv / (umod + eps)
       !
       if (bed > 0.0_fp .or. bedw > 0.0_fp .or. susw > 0.0_fp) then
          call bedtr1993(uuu, vvv, utot, di50, d90, &
