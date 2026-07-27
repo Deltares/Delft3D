@@ -408,6 +408,7 @@ contains
       ! ARRANGE
 
       ndx2D = 0
+      call setup_minimal_grid()
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
@@ -415,7 +416,6 @@ contains
       tzone       = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
-      call setup_minimal_grid()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
