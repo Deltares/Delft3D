@@ -30,6 +30,14 @@ OUTPUT_BINDINGS = SRC / "base" / "bindings.py"
 OUTPUT_MODEL = SRC / "mdu" / "model.py"
 
 
+def trailing_identifier(declaration: str, context: str) -> str:
+    """Return the trailing identifier of a C declaration (the parameter/field name), or raise."""
+    match = re.search(r"(\w+)\s*$", declaration)
+    if match is None:
+        raise ValueError(f"No name found in {context}: {declaration!r}")
+    return match.group(1)
+
+
 @dataclass(frozen=True)
 class CFunction:
     """An exported C function: its return type, name, and raw comma-separated parameter string."""
@@ -78,7 +86,7 @@ class CTypeMapper:
             return []
         argtypes = []
         for param in param_str.split(","):
-            name = re.search(r"(\w+)\s*$", param).group(1)
+            name = trailing_identifier(param, "parameter")
             type_decl = param[: param.rfind(name)]
             argtypes.append(self.to_ctypes(type_decl))
         return argtypes
@@ -125,7 +133,7 @@ class HeaderParser:
             field = field.strip()
             if not field:
                 continue
-            name = re.search(r"(\w+)\s*$", field).group(1)
+            name = trailing_identifier(field, "struct field")
             fields.append((name, self._types.to_ctypes(field[: field.rfind(name)])))
         return fields
 
