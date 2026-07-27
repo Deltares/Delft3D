@@ -1185,7 +1185,7 @@ contains
                call mess(LEVEL_WARN, 'Dynamic vegetation roughness requires dRoot>0 and dStem>0. Switched off.')
                dynroughveg = 0
             else
-               call prop_get(md_ptr, 'physics', 'nManMin', frcumin)
+               call prop_get(md_ptr, 'physics', 'unifFrictCoefNoVeg', frcu_no_vegetation)
                call prop_get(md_ptr, 'physics', 'dynVegPol', md_dynvegpol, success)
             end if
          end if
@@ -3245,7 +3245,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'dynRoughVeg', dynroughveg, 'Switch for dynamic vegetation roughness. Default 0.')
       call prop_set(prop_ptr, 'physics', 'dRoot', droot, 'Root depth (m)')
       call prop_set(prop_ptr, 'physics', 'dStem', dstem, 'Stem height (m)')
-      call prop_set(prop_ptr, 'physics', 'nManMin', frcumin, 'Base Manning friction value (s/m^{1/3})')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoefNoVeg', frcu_no_vegetation, 'Uniform friction (Manning) coefficient without vegetation (s/m^{1/3})')
       call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
 
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')

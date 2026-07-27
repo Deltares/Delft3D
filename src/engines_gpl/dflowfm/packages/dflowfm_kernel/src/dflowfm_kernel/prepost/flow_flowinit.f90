@@ -230,7 +230,11 @@ contains
       end if
 
       call setFrictionForLongculverts()
-      call set_friction_coefficient_by_initial_fields()
+      call set_friction_coefficient_by_initial_fields(error)
+      if (is_error_at_any_processor(error)) then
+         return
+      end if
+
       call set_friction_uniform_value_on_links_where_friction_is_not_set()
       call set_internal_tides_friction_coefficient()
       call setupwslopes() ! set upwind slope pointers and weightfactors
@@ -677,7 +681,7 @@ contains
    end subroutine set_floodfill_water_levels_based_on_sample_file
 
 !> Insert friction coefficient by initial fields
-   subroutine set_friction_coefficient_by_initial_fields()
+   subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
@@ -689,6 +693,7 @@ contains
       integer, parameter :: MANNING = 1
 
       integer :: link
+      integer, intent(inout) :: error
 
       do link = 1, lnx
          if (frcu(link) == dmiss) then
@@ -718,15 +723,18 @@ contains
          end if
       end do
       
-      call init_dynamic_vegetation_roughness()
+      call init_dynamic_vegetation_roughness(error)
 
    end subroutine set_friction_coefficient_by_initial_fields
 
 !> initialize dynamic vegetation roughness   
-   subroutine init_dynamic_vegetation_roughness
+!! All links with friction coefficient larger than frcu_no_vegetation are considered dynamic vegetation roughness
+!! This assumption is not valid for Chezy roughness, hence the limitation to Manning friction coefficient only.
+   subroutine init_dynamic_vegetation_roughness(error)
+      use dfm_error, only: DFM_WRONGINPUT
       use m_flowgeom, only: lnx
       use m_flow, only: frcu, frcu0, dynveg
-      use m_physcoef, only: frcumin, dynroughveg
+      use m_physcoef, only: frcu_no_vegetation, dynroughveg
       use m_alloc
       use unstruc_model, only: md_dynvegpol
       use timespace_parameters, only: LOCTP_POLYGON_FILE
@@ -736,46 +744,50 @@ contains
 
       implicit none
 
+      integer, intent(inout) :: error
+      
       integer :: link
-      integer :: ierr
       integer :: k
       integer :: pointscount
       logical :: ex
 
       integer, dimension(:), allocatable :: kp
-      integer, dimension(:), allocatable :: kcsveg
    
       if (dynroughveg == 0) then
          return
       end if
    
-      inquire (file=trim(md_dynvegpol), exist=ex)
-      if (.not. ex) then
-         call mess(LEVEL_WARN, 'No polygon found for dynamic vegetation update. Process switched off.')
-         dynroughveg = 0
-         return
-      end if
-
       frcu0 = frcu
-      call realloc(kcsveg, lnx, stat=ierr, fill=0, keepExisting=.false.)
-      if (allocated(kp)) deallocate (kp)
-      allocate (kp(1:lnx))
-      kp = 0
-      ! find links inside polygon
-      call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
-      
-      do k = 1, pointscount
-         kcsveg(kp(k)) = 1
-      end do
-      call delpol()
-      !
-      do link = 1, lnx
-         if (frcu(link) > frcumin .and. kcsveg(link) > 0) then
-            dynveg(link) = .true.
-         else
-            dynveg(link) = .false.
-         end if
-      end do
+      dynveg(:) = .false.
+      if (md_dynvegpol == ' ') then
+         do link = 1, lnx
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+         
+      else
+         inquire (file=trim(md_dynvegpol), exist=ex)
+         if (.not. ex) then
+            call mess(LEVEL_ERROR, 'Unable to access dynamic vegetation polygon file "'//trim(md_dynvegpol)//'"')
+            error = DFM_WRONGINPUT
+            return
+         end if   
+
+         allocate (kp(1:lnx))
+         kp = 0
+         ! find links inside polygon
+         call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
+         call delpol()
+         !
+         dynveg(:) = .false.
+         do k = 1, pointscount
+            link = kp(k)
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+      end if
       
    end subroutine init_dynamic_vegetation_roughness
 

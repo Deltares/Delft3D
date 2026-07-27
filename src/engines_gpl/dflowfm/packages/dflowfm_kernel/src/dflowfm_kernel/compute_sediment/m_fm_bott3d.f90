@@ -299,10 +299,6 @@ contains
          call fm_blchg_no_cmpupd() !Compute bed level changes without actually updating the bed composition
          !
          call fm_apply_bed_boundary_condition(dtmor, timhr)
-         !
-         if (dynroughveg > 0) then
-            call determine_linkbased_cumblchg()
-         end if
 
       else
          !
@@ -312,6 +308,10 @@ contains
 
       end if ! time1<tmor
 
+      if (dynroughveg > 0) then
+         call determine_linkbased_cumblchg()
+      end if
+      
       call fm_update_bed_level(dtmor)
 
       !
@@ -1842,6 +1842,7 @@ contains
       use morphology_data_module, only: bedbndtype
       use fm_external_forcings_data, only: nopenbndsect
       use m_fm_dredge, only: fm_dredge
+      use m_physcoef, only: dynroughveg
 
       implicit none
 
@@ -1919,6 +1920,10 @@ contains
             do nm = 1, ndx
                blchg(nm) = bl_ave(nm) - bl_ave0(nm) ! get average bed level change
             end do
+            !
+            if (dynroughveg > 0) then
+               call determine_linkbased_cumblchg()
+            end if
             !
             call fm_update_crosssections(blchg) ! update 1d cross-sections after dredging (updates bl for 1D).
             !
