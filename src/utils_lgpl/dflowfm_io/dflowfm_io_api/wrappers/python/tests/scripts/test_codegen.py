@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
 
 from generate_bindings import BindingsGenerator, CTypeMapper, HeaderParser, ModelRenderer
 from generate_schema import NameSanitizer, SchemaGenerator, SchemaRenderer
