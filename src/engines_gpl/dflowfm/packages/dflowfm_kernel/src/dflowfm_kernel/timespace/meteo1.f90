@@ -3379,12 +3379,6 @@ contains
 
             call read_samples_from_arcinfo(filename, 0, 0)
 
-            if (ns <= 0) then
-               msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': no source samples available for averaging interpolation.'
-               call err_flush()
-               return
-            end if
-
          case (GEOTIFF)
 
             success = read_samples_from_geotiff(filename)
