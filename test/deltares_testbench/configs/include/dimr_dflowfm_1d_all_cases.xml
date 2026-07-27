@@ -986,7 +986,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c07_Compound" ref="dimr_default">
-		<path version="2026-05-12T09:07:08.462000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
+		<path version="2026-07-27T08:11:51.767000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
 		<checks>
 			<file name="DFM_OUTPUT_compound/compound_map.nc" type="netCDF">
 				<parameters>
