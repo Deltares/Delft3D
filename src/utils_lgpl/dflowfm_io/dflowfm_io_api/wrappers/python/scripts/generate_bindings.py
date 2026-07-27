@@ -61,10 +61,10 @@ class CTypeMapper:
         """Map a C type declaration (possibly with `const` and `*`) to a ctypes expression."""
         stars = decl.count("*")
         base = decl.replace("const", "").replace("*", "").strip()
-        if base == "char":  # char* -> c_char_p; each extra * wraps once more
+        if base == "char" and stars >= 1:  # char* -> c_char_p; each extra * wraps once more
             result = "ctypes.c_char_p"
             wraps = stars - 1
-        else:
+        else:  # bare char -> c_char; everything else via the base-type table
             result = self.BASE_TYPES[base]
             wraps = stars
         for _ in range(wraps):

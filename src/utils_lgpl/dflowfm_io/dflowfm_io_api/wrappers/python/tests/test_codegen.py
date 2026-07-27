@@ -40,6 +40,9 @@ class TestCTypeMapper(unittest.TestCase):
     def test_char_pointer_is_c_char_p(self):
         self.assertEqual(self.types.to_ctypes("const char*"), "ctypes.c_char_p")
 
+    def test_bare_char_is_c_char(self):
+        self.assertEqual(self.types.to_ctypes("char"), "ctypes.c_char")
+
     def test_pointer_wraps(self):
         self.assertEqual(self.types.to_ctypes("int32_t*"), "ctypes.POINTER(ctypes.c_int32)")
 
