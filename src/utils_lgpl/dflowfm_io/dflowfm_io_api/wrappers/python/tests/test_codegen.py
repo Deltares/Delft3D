@@ -82,6 +82,17 @@ class TestSchemaRenderer(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.renderer.render_property("geometry", {"key": "foo", "value_type": "uint"})
 
+    def test_case_only_key_collision_raises(self):
+        section = {
+            "name": "geometry",
+            "ini_properties": [
+                {"key": "NetFile", "value_type": "path"},
+                {"key": "netFile", "value_type": "path"},
+            ],
+        }
+        with self.assertRaises(ValueError):
+            self.renderer.render([section])
+
 
 class TestGeneratedFilesInSync(unittest.TestCase):
     """The committed generated files must equal a fresh regeneration — guards against generator drift."""

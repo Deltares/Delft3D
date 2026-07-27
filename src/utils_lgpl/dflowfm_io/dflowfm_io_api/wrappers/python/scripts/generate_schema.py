@@ -149,12 +149,17 @@ class SchemaRenderer:
             builder.line("    def __init__(self, model: MduModel):")
             builder.line("        self._model = model")
 
-            seen_props: set[str] = {"_model"}  # the backing field a property must not shadow
+            seen_props: set[str] = {"_model"}  # attribute names — the backing field must not be shadowed
+            seen_keys: set[str] = set()  # lower-cased keys — the underlying Layer-1 key is lower-cased
             for prop in section["ini_properties"]:
                 member = self._names.attribute(prop["key"])
+                lower_key = prop["key"].lower()
                 if member in seen_props:
                     raise ValueError(f"Property name collision '{member}' in section '{name}'")
+                if lower_key in seen_keys:  # two keys differing only by case alias the same Layer-1 key
+                    raise ValueError(f"Case-only key collision '{prop['key']}' in section '{name}'")
                 seen_props.add(member)
+                seen_keys.add(lower_key)
                 builder.blank()
                 builder.extend(self.render_property(name, prop))
         return section_attrs
