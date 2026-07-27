@@ -1,5 +1,0 @@
-You can use the m-file "test_mexnc.m" to run all the tests.  Be sure that
-your path is set correctly and will pick up the new version of mexnc.
-"text_mexnc" will prompt you for confirmation on this.
-
-

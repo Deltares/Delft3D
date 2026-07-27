@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_reathd2pli
 contains
 
    subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
-      use m_grid
+      use m_grid, only: xc, yc
       use m_filez, only: doclose
 
       integer :: mthd, mout
@@ -58,7 +58,8 @@ contains
 
       if (index(rec, 'u') > 0 .or. index(rec, 'U') > 0) then
 
-         nn = min(n, n2); nx = max(n, n2)
+         nn = min(n, n2)
+         nx = max(n, n2)
          write (mout, *) xc(m, nn - 1), yc(m, nn - 1)
          do i = nn, nx
             write (mout, *) xc(m, i), yc(m, i)
@@ -66,7 +67,8 @@ contains
 
       else
 
-         mn = min(m, m2); mx = max(m, m2)
+         mn = min(m, m2)
+         mx = max(m, m2)
          write (mout, *) xc(mn - 1, n), yc(mn - 1, n)
          do i = mn, mx
             write (mout, *) xc(i, n), yc(i, n)

@@ -91,10 +91,11 @@ parameter (dmwaof =  18,&
 &dmbuf2 =   4,&
 &dmsecv =   8,&
 &dmbuffer = 33,&
-&dmgrnd = 1200&
+&dmgrnd = 1200,&
+&dmstrpar = 21 &
 &)
 !
-common /dimens/nrcoefs,dmstrpar
+common /dimens/nrcoefs
 !     ------------------------------------------------------------
 !     Codes for array dimensions in salt module
 !     ------------------------------------------------------------

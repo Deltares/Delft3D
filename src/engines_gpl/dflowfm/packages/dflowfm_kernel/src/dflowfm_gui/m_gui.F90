@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module m_gui
    implicit none
 
 #ifndef HAVE_DISPLAY
-#define HAVE_DISPLAY 1
+#define HAVE_DISPLAY 0
 #endif
 #if HAVE_DISPLAY==1
    integer :: jaGUI = 1 !< GUI (1) or not (0)

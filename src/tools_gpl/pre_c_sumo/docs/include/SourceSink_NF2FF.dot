@@ -1,0 +1,85 @@
+// Data structure for the NF2FF (NearField-to-FarField) source/sink point cloud
+// exchanged from preC-SUMO adapter to D-Flow FM via preCICE.
+//
+// Design note (Constituents):
+//   Constituent values are always ABSOLUTE concentrations [kg/m3 or degC].
+//   When the near-field model uses an "excess" operator the preC-SUMO adapter
+//   first reads ambient concentrations from FM (via a separate preCICE read-data on
+//   the IntakeMesh), applies the delta itself, and then sends the resulting absolute
+//   values here.  FM therefore never needs to know whether the operator was
+//   "absolute" or "excess".
+//
+// Design note (discharge):
+//   The per-point discharge is the fully-weighted value ready for FM to accumulate:
+//     - discharge source  : Q_total * weight_fraction
+//     - discharge entrainment: (IS[i] - IS[i-1]) * Q_total * weight_fraction
+//     - discharge intake  : Q_intake * weight_fraction  (negative, i.e. withdrawal)
+//   FM does NOT need to know the dilution S-factor or weight formula.
+
+digraph SourceSinkUML {
+    graph [
+        splines=polyline,
+        nodesep=1,
+        ranksep=1
+    ];
+
+    node [
+        shape=record,
+        fontname="Helvetica",
+        fontsize=10
+    ];
+
+    Endpoint [
+        label="{Endpoint|
+            id : int\l
+            connected_id : int\l
+            // id of paired Sink (for Source) or Source (for Sink);\l
+            // 0 = unpaired (standalone source injection or standalone intake)\l
+            coordinate_x : double\l
+            coordinate_y : double\l
+            vertical_boundary_lower : double\l
+            // lower z-limit [m], bed-positive (negated depth convention)\l
+            vertical_boundary_upper : double\l
+            // upper z-limit [m]; equals lower for a point, differs for a slab\l
+            discharge : double\l
+            // fully-weighted discharge [m3/s]; negative = withdrawal (sink/intake)\l
+        }"
+    ];
+
+    Momentum [
+        label="{Momentum (optional)|
+            velocity_magnitude : double\ [m/s]\l
+            velocity_direction_deg : double\ [deg, 0=North 90=East]\l
+        }"
+    ];
+
+    Constituents [
+        label="{Constituents (absolute values, optional)|
+            temperature : double\ [degC]\l
+            salinity : double\ [ppt]\l
+            additional_constituents : array\<double, 5\>\l
+            // fixed-size additional tracer slots [kg/m3]\l
+        }"
+    ];
+
+    Source [
+        label="{Source|
+            // Momentum and Constituents as optional fields\l
+        }"
+    ];
+
+    Sink [
+        label="{Sink|
+            (no additional fields)\l
+            // Withdrawal only; constituents not needed\l
+        }"
+    ];
+
+    // Inheritance
+    Endpoint -> Source [arrowhead="empty"];
+    Endpoint -> Sink   [arrowhead="empty"];
+
+    // Composition (optional)
+    Source -> Momentum     [style="dashed", label="optional"];
+    Source -> Constituents [style="dashed", label="optional"];
+}

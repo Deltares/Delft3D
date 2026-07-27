@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,11 +50,9 @@ contains
       use precision, only: dp
       use m_averagediff, only: averagediff
       use m_accumulatedistance, only: accumulatedistance
-      use M_POLYGON
-      use M_MISSING
-      use m_ec_triangle
-      use M_SAMPLES
-      use m_alloc
+      use M_POLYGON, only: savepol, npl, xpl, ypl, zpl, dxuni, maxpol
+      use M_MISSING, only: dmiss, dxymis
+      use m_alloc, only: aerr, realloc
 
       integer :: i1, i2
       integer, intent(in) :: jauniform !< use uniform spacing (1) or not (0)
@@ -79,7 +77,8 @@ contains
       integer :: NX, JDLA
 
       JDLA = 1
-      THIRD = 1d0 / 3d0; TWOTHIRD = 1d0 - THIRD
+      THIRD = 1.0_dp / 3.0_dp
+      TWOTHIRD = 1.0_dp - THIRD
 
       call SAVEPOL()
 
@@ -111,9 +110,13 @@ contains
       end if
 
       if (jauniform /= 1) then
-         if (NO < 4) return
+         if (NO < 4) then
+            return
+         end if
       else
-         if (NO < 2) return
+         if (NO < 2) then
+            return
+         end if
       end if
 
       NPLO = NPL ! Back up current poly length
@@ -128,7 +131,10 @@ contains
          ZPLO(kk - i1 + 1) = ZPL(kk)
       end do
 
-      allocate (XH(NX), YH(NX), ZH(NX), STAT=IERR); XH = DXYMIS; YH = DXYMIS; ZH = dxymis
+      allocate (XH(NX), YH(NX), ZH(NX), STAT=IERR)
+      XH = DXYMIS
+      YH = DXYMIS
+      ZH = dxymis
       call AERR('XH(NX), YH(NX) , ZH(NX)', IERR, 2 * NX)
       allocate (DPLA(NX), DXA(NX), DXS(NX), STAT=IERR)
       call AERR('DPLA(NX), DXA(NX), DXS(NX)', IERR, 3 * NX)
@@ -137,8 +143,8 @@ contains
       call averageDiff(DPL, DXA, NO) ! OORSPRONKELIJKE SEGMENTSIZE
 
       if (jauniform /= 1) then
-         DXS1 = 1d0 * DXA(1) ! Start segment
-         DXS2 = 1d0 * DXA(NO) ! Eind segment
+         DXS1 = 1.0_dp * DXA(1) ! Start segment
+         DXS2 = 1.0_dp * DXA(NO) ! Eind segment
       else
          DXS1 = min(dxuni, DPL(NO))
          DXS2 = DXS1
@@ -163,13 +169,16 @@ contains
                   DXS(N) = DXA(N)
                end if
             end do
-            TXS = sum(DXS(1:NPL)) - 0.5d0 * (DXS(1) + DXS(NPL)) ! Som van gewenste delta xjes
+            TXS = sum(DXS(1:NPL)) - 0.5_dp * (DXS(1) + DXS(NPL)) ! Som van gewenste delta xjes
 
             call SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH WEIGHTFACTOR DESIRED
          end do
 
-         RMN = 1e9; NMN = 0
-         RMX = -1e9; NMX = 0; DXSM = 1e30
+         RMN = 1e9
+         NMN = 0
+         RMX = -1e9
+         NMX = 0
+         DXSM = 1e30
          do N = 1, NPL - 1 ! CHECK SMALLEST AND LARGEST RATIOS OF ACTUAL VS DESIRED
             DXSM = min(DXS(N), DXSM)
 
@@ -177,15 +186,17 @@ contains
 
             if (N > 1) then
                if (RMA < RMN) then ! ZOEK BESTE WEGGOOIER
-                  NMN = N; RMN = RMA ! POTENTIEEL WEGGOOIPUNT, KLEINE GRIDSIZE VS STREEFSIZE
+                  NMN = N
+                  RMN = RMA ! POTENTIEEL WEGGOOIPUNT, KLEINE GRIDSIZE VS STREEFSIZE
                end if
             end if
             if (RMA > RMX) then
-               NMX = N; RMX = RMA ! POTENTIEEL BIJZETPUNT, GROTE GRIDSIZE VS STREEFSIZE
+               NMX = N
+               RMX = RMA ! POTENTIEEL BIJZETPUNT, GROTE GRIDSIZE VS STREEFSIZE
             end if
          end do
 
-         if (NMN /= 0 .and. TXS - 1.5d0 * DXS(max(NMN, 1)) > TXA) then ! TOT STREEFLENGTE MIN KLEINSTE STREEF LENGTE GROTER DAN TOTLENGTE
+         if (NMN /= 0 .and. TXS - 1.5_dp * DXS(max(NMN, 1)) > TXA) then ! TOT STREEFLENGTE MIN KLEINSTE STREEF LENGTE GROTER DAN TOTLENGTE
             ! => KLEINSTE VERWIJDEREN
             NPL = NPL - 1
             do N = NMN, NPL
@@ -193,7 +204,7 @@ contains
             end do
             JA = 1
 
-         else if (TXS + 0.5d0 * DXA(NMX) < TXA) then ! TOT STREEFLENGTE PLUS HALVE GROOTSTE KLEINER DAN TOTLENGTE
+         else if (TXS + 0.5_dp * DXA(NMX) < TXA) then ! TOT STREEFLENGTE PLUS HALVE GROOTSTE KLEINER DAN TOTLENGTE
             ! => BIJZETTEN BIJ DE GROOTSTE
             NPL = NPL + 1
             if (NPL > NX) then
@@ -210,7 +221,7 @@ contains
                DPLA(N) = DPLA(N - 1)
             end do
 
-            DPLA(NMX + 1) = 0.5d0 * (DPLA(NMX) + DPLA(NMX + 2))
+            DPLA(NMX + 1) = 0.5_dp * (DPLA(NMX) + DPLA(NMX + 2))
 
             JA = 1
          else
@@ -224,9 +235,6 @@ contains
          call REALLOC(XPL, NX)
          call REALLOC(YPL, NX)
          call REALLOC(ZPL, NX)
-         call REALLOC(XPH, NX)
-         call REALLOC(YPH, NX)
-         call REALLOC(ZPH, NX)
          MAXPOL = NX
       end if
       do kk = nplo, i2 + 1, -1

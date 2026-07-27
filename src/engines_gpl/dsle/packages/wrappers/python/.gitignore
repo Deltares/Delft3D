@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+
+# C extensions
+*.c
+*.so
+*.dll
+
+# Distribution & Packaging
+.eggs
+build
+dist
+src/*.egg-info
+
+# Testing & Coverage
+.pytest_cache
+.tox
+.coverage

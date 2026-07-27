@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -106,7 +106,7 @@ contains
 
    subroutine ReallocCrosssectionSums(cs)
       use m_transport, only: NUMCONST
-      use m_alloc
+      use m_alloc, only: realloc
       use m_sediment, only: jased, stmpar
       implicit none
       type(tcrs), allocatable, intent(inout) :: cs(:) !< Array of cross sections
@@ -125,9 +125,9 @@ contains
       end if
 
       do i = 1, size(cs)
-         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0d0, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0_dp, keepExisting=.true.)
       end do
    end subroutine ReallocCrossSectionSums
 
@@ -137,7 +137,9 @@ contains
 
       integer :: i, n
 
-      if (.not. allocated(cs)) return
+      if (.not. allocated(cs)) then
+         return
+      end if
 
       n = size(cs)
       do i = 1, n
@@ -153,14 +155,16 @@ contains
 
 !> Copies array of crs into another array of crs.
    subroutine copyCrossSections(rfrom, rto)
-      use m_alloc
+
       type(tcrs), intent(inout) :: rfrom(:)
       type(tcrs), intent(inout) :: rto(:)
 
       integer :: i, n
 
       n = size(rfrom)
-      if (n > size(rto) .or. n == 0) return
+      if (n > size(rto) .or. n == 0) then
+         return
+      end if
 
       do i = 1, n
          !maxnp  = size(rfrom(i)%path%xp)
@@ -222,7 +226,7 @@ contains
          crs(ncrs)%name = ' '
          crs(ncrs)%name(1:m) = name(1:m)
       else ! No name given, generate one.
-         write (cdigits, '(i1)') max(2, int(floor(log10(dble(iUniq_)) + 1)))
+         write (cdigits, '(i1)') max(2, int(floor(log10(real(iUniq_, kind=dp)) + 1)))
          write (crs(ncrs)%name, '(a,i'//cdigits//'.'//cdigits//')') trim(defaultName_), iUniq_
          iUniq_ = iUniq_ + 1
       end if
@@ -288,9 +292,7 @@ contains
 !> Reads observation points from an *.pli file.
 ! Typically called via loadObservCrossSections().
    subroutine loadObservCrossSections_from_pli(filename)
-      use messageHandling
-      use dfm_error
-      use m_polygon
+      use m_polygon, only: xpl, ypl, npl, nampli
       use m_reapol_nampli, only: reapol_nampli
       use m_filez, only: oldfil, doclose
 
@@ -310,20 +312,19 @@ contains
 !> Adds observation cross sections, that are read from *.ini file, to the normal cross section adm
    subroutine addObservCrsFromIni(network, filename)
       use precision, only: dp
-      use m_network
+      use m_network, only: t_network, mess, level_error
+      use odugrid, only: odu_get_xy_coordinates
+      use m_save_ugrid_state, only: meshgeom1d
+      use dfm_error, only: dfm_noerr
       use m_sferic, only: jsferic
-      use odugrid
-      use m_save_ugrid_state
-      use dfm_error
-      use m_missing
-      use m_ObservCrossSections
+      use m_observcrosssections, only: t_observcrosssection
       implicit none
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the cross section file
 
       integer :: nByBrch ! number of cross sections that are defined by branchID and chainage
       integer :: ierr, ncrsini, i, numv
-      type(t_observCrossSection), pointer :: pCrs
+      type(t_observcrosssection), pointer :: pCrs
       integer, allocatable :: branchIdx_tmp(:), ibrch2crs(:)
       real(kind=dp), allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
 
@@ -376,11 +377,21 @@ contains
          end if
       end do
 
-      if (allocated(branchIdx_tmp)) deallocate (branchIdx_tmp)
-      if (allocated(Chainage_tmp)) deallocate (Chainage_tmp)
-      if (allocated(ibrch2crs)) deallocate (ibrch2crs)
-      if (allocated(xx_tmp)) deallocate (xx_tmp)
-      if (allocated(yy_tmp)) deallocate (yy_tmp)
+      if (allocated(branchIdx_tmp)) then
+         deallocate (branchIdx_tmp)
+      end if
+      if (allocated(Chainage_tmp)) then
+         deallocate (Chainage_tmp)
+      end if
+      if (allocated(ibrch2crs)) then
+         deallocate (ibrch2crs)
+      end if
+      if (allocated(xx_tmp)) then
+         deallocate (xx_tmp)
+      end if
+      if (allocated(yy_tmp)) then
+         deallocate (yy_tmp)
+      end if
 
    end subroutine addObservCrsFromIni
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,14 +37,14 @@ module m_nod2liny
 
    private
 
-   public :: nod2liny
+   public :: nod2liny, nod2liny_fast
 
 contains
 
    real(kind=dp) function nod2liny(L, i12, ux, uy)
       use precision, only: dp
       use m_flowgeom, only: csb, snb
-      use m_sferic
+      use m_sferic, only: jsferic, jasfer3d
 
       integer, intent(in) :: L !< flowlink number
       integer, intent(in) :: i12 !< left (1) or right (2) neighboring cell
@@ -58,5 +58,17 @@ contains
 
       return
    end function nod2liny
+
+   !> fast version of nod2liny, for use in vectorized loops where jsferic=1 and jasfer3D=1 is guaranteed. Avoids indirect array access to csb and snb, which are expensive in vectorized loops.
+   elemental function nod2liny_fast(csb, snb, ux, uy)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flownode coordinate frame
+      real(kind=dp), intent(in) :: csb, snb !< cosine and sine of flowlink angle
+      real(kind=dp) :: nod2liny_fast
+
+      nod2liny_fast = -snb * ux + csb * uy
+
+   end function nod2liny_fast
 
 end module m_nod2liny

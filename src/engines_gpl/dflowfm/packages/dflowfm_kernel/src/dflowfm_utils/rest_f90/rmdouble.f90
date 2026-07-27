@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,11 +42,11 @@ contains
 
    subroutine RMDOUBLE(XS, YS, ZS, IPSAM, NS)
       use precision, only: dp
-      use m_missing
-      use m_sferic
+      use m_missing, only: dmiss, xymis
+      use m_sferic, only: jsferic
+      use kdtree2Factory, only: build_kdtree, treeglob, itree_empty, delete_kdtree2, make_queryvector_kdtree, kdtree2_r_count, realloc_results_kdtree, kdtree2_n_nearest
+      use m_wall_clock_time, only: wall_clock_time
       use messagehandling, only: LEVEL_INFO, mess
-      use kdtree2Factory
-      use m_wall_clock_time
 
       integer :: i
       integer :: j
@@ -72,7 +72,7 @@ contains
 
       character(len=128) :: txt
 
-      real(kind=dp), parameter :: dtol2 = 1d-8 ! sample-on-top of each other tolerance, squared
+      real(kind=dp), parameter :: dtol2 = 1.0e-8_dp ! sample-on-top of each other tolerance, squared
 
       character OUD * 8
       NSORG = NS
@@ -94,9 +94,9 @@ contains
          jsferic = 0
 !        get non-missing sample coordinates
          allocate (xx(NS))
-         xx = 0d0
+         xx = 0.0_dp
          allocate (yy(NS))
-         yy = 0d0
+         yy = 0.0_dp
          allocate (iperm(NS))
          iperm = 0
 
@@ -120,10 +120,14 @@ contains
 
          if (ierror /= 0) then
 !           deallocate permutation array
-            if (allocated(iperm)) deallocate (iperm)
+            if (allocated(iperm)) then
+               deallocate (iperm)
+            end if
 
 !           deallocate kdtree
-            if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+            if (treeglob%itreestat /= ITREE_EMPTY) then
+               call delete_kdtree2(treeglob)
+            end if
 
 !           disable kdtree
             jakdtree = 0
@@ -141,7 +145,9 @@ contains
          do ii = 1, num
             i = iperm(ii)
 
-            if (i == 0) cycle ! already merged
+            if (i == 0) then
+               cycle ! already merged
+            end if
 
 !           fill query vector
             call make_queryvector_kdtree(treeglob, xs(i), ys(i), jsferic)
@@ -226,7 +232,9 @@ contains
 !     set new number of samples
       NS = K
 
-      if (JADOUBLE == 1) goto 5
+      if (JADOUBLE == 1) then
+         goto 5
+      end if
 
       NUMWEG = NSORG - K
       if (NUMWEG >= 1) then
@@ -246,14 +254,20 @@ contains
 1234  continue
 
 !     deallocate
-      if (allocated(newnode)) deallocate (newnode)
+      if (allocated(newnode)) then
+         deallocate (newnode)
+      end if
 
       if (jakdtree == 1) then
 !         deallocate permutation array
-         if (allocated(iperm)) deallocate (iperm)
+         if (allocated(iperm)) then
+            deallocate (iperm)
+         end if
 
 !         deallocate kdtree
-         if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+         if (treeglob%itreestat /= ITREE_EMPTY) then
+            call delete_kdtree2(treeglob)
+         end if
       end if
 
 !     restore jsferic

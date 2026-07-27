@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xsdbin", "xsdbin-xerces2-7.1.vcproj", "{A3F6E060-D536-4A43-AF4B-89063F65DE91}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "embedded", "embedded-xerces2-7.1.vcproj", "{9C8C2AA4-DF31-4884-B3B9-A6A36F3CB429}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A3F6E060-D536-4A43-AF4B-89063F65DE91} = {A3F6E060-D536-4A43-AF4B-89063F65DE91}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{A3F6E060-D536-4A43-AF4B-89063F65DE91}.Debug.ActiveCfg = Debug|Win32
+		{A3F6E060-D536-4A43-AF4B-89063F65DE91}.Debug.Build.0 = Debug|Win32
+		{A3F6E060-D536-4A43-AF4B-89063F65DE91}.Release.ActiveCfg = Release|Win32
+		{A3F6E060-D536-4A43-AF4B-89063F65DE91}.Release.Build.0 = Release|Win32
+		{9C8C2AA4-DF31-4884-B3B9-A6A36F3CB429}.Debug.ActiveCfg = Debug|Win32
+		{9C8C2AA4-DF31-4884-B3B9-A6A36F3CB429}.Debug.Build.0 = Debug|Win32
+		{9C8C2AA4-DF31-4884-B3B9-A6A36F3CB429}.Release.ActiveCfg = Release|Win32
+		{9C8C2AA4-DF31-4884-B3B9-A6A36F3CB429}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

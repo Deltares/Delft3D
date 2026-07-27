@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_update_pumps_with_levels
 
+   use precision, only: dp
    implicit none
 
    private
@@ -57,27 +58,31 @@ contains
       if (nPumpsWithLevels > 0) then
 
          ! Initialize
-         pumpAveraging = 0.0d0
-         waterLevelsPumpLeft = 0.0d0
-         waterLevelsPumpRight = 0.0d0
+         pumpAveraging = 0.0_dp
+         waterLevelsPumpLeft = 0.0_dp
+         waterLevelsPumpRight = 0.0_dp
 
          ! Compute sumQuantitiesByWeight and sumWeights for the suction side
          !LC: TODO, do the average only over open links
-         ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
-         if (ierr /= 0) success = .false.
+         ierr = get_average_quantity_from_links(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
+         if (ierr /= 0) then
+            success = .false.
+         end if
 
          do n = 1, npumpsg
-            if (pumpAveraging(2, n) > 0.0d0) then
+            if (pumpAveraging(2, n) > 0.0_dp) then
                waterLevelsPumpLeft(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
             end if
          end do
 
          ! Compute sumQuantitiesByWeight and sumWeights for the delivery side
-         ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
-         if (ierr /= 0) success = .false.
+         ierr = get_average_quantity_from_links(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
+         if (ierr /= 0) then
+            success = .false.
+         end if
 
          do n = 1, npumpsg
-            if (pumpAveraging(2, n) > 0.0d0) then
+            if (pumpAveraging(2, n) > 0.0_dp) then
                waterLevelsPumpRight(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
             end if
          end do

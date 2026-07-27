@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,8 +45,8 @@ contains
 !! leaving the cell = +
    real(kind=dp) function QufPer(n12, L)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: qa, u1, v
+      use m_flowgeom, only: csu, snu, ln, nd
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
@@ -62,7 +62,7 @@ contains
 
       integer :: nn12
 
-      QufPer = 0d0
+      QufPer = 0.0_dp
       cs = csu(L)
       sn = snu(L)
 
@@ -71,16 +71,20 @@ contains
          LLL = nd(k12)%ln(LL)
          LLLL = abs(LLL)
 
-         if (qa(LLLL) == 0d0) then ! include own link
+         if (qa(LLLL) == 0.0_dp) then ! include own link
 
          else
 
-            csL = csu(LLLL); snL = snu(LLLL)
+            csL = csu(LLLL)
+            snL = snu(LLLL)
             ufx = csL * u1(LLLL) - snL * v(LLLL)
             ufy = csL * v(LLLL) + snL * u1(LLLL)
 !
 !       ucin = ufx*cs + ufy*sn  - u1(L)
-            nn12 = 1; if (LLL > 0) nn12 = 2
+            nn12 = 1
+            if (LLL > 0) then
+               nn12 = 2
+            end if
             ucinx = lin2nodx(LLLL, nn12, ufx, ufy)
             uciny = lin2nody(LLLL, nn12, ufx, ufy)
             ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn - u1(L)

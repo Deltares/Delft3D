@@ -1,5 +1,8 @@
 /*
-  Copyright © 2004, Rijkswaterstaat/RIZA & ®HKV Consultants, All Rights Reserved.
+  Copyright Â© 2026, Rijkswaterstaat, All Rights Reserved.
+
+  This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+  https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
 
   DESCRIPTION
     RIZA OpenMI Buffer implementation
@@ -20,29 +23,29 @@ extern MsgType Message;
 /// <param name="p">pointer to the unit</param>
 /// <param name="unitID">unit identification string</param>
 /// <returns>pointer to a unit</returns>
-static RobUnitPntr freeUnit (RobUnitPntr p, const char *unitID )
+static RobUnitPntr freeUnit(RobUnitPntr p, const char* unitID)
 {
-  RobUnitPntr retval;
+    RobUnitPntr retval;
 
-  if (p != NULL)
-  {
-    if ( RobStringCompare(unitID, p->unitID) == 0)
+    if (p != NULL)
     {
-      RobFree(p->unitDescription);
-      RobFree(p->unitID);
+        if (RobStringCompare(unitID, p->unitID) == 0)
+        {
+            RobFree(p->unitDescription);
+            RobFree(p->unitID);
+        }
+
+        retval = p->pNext;
+
+        RobFree(p);
+
+        return retval;
     }
-
-    retval = p->pNext;
-
-    RobFree(p);
-
-    return retval;
-  }
-  else
-  {
-    p->pNext = freeUnit(p->pNext, unitID);
-    return p;
-  }
+    else
+    {
+        p->pNext = freeUnit(p->pNext, unitID);
+        return p;
+    }
 }
 
 /// <summary>
@@ -50,31 +53,31 @@ static RobUnitPntr freeUnit (RobUnitPntr p, const char *unitID )
 /// </summary>
 void RobFreeUnits(void)
 {
-  while (RobUnits != NULL)
-  {
-    RobUnits = freeUnit(RobUnits, RobUnits->unitID );
-  }
+    while (RobUnits != NULL)
+    {
+        RobUnits = freeUnit(RobUnits, RobUnits->unitID);
+    }
 }
 
 /// <summary>
 /// dump all units to file
 /// </summary>
-void RobDumpUnits(FILE *stream)
+void RobDumpUnits(FILE* stream)
 {
-  RobUnitPntr p;
+    RobUnitPntr p;
 
-  p = RobUnits;
-  if (p != NULL)
-  {
-    while (p)
+    p = RobUnits;
+    if (p != NULL)
     {
-      fprintf (stream , "\tID                : %s\n", p->unitID);
-      fprintf (stream , "\tDescription       : %s\n", p->unitDescription);
-      fprintf (stream , "\tConversion factor : %f\n", p->conversionFactor);
-      fprintf (stream , "\tConversion offset : %f\n\n", p->conversionOffset);
-      p = p->pNext;
+        while (p)
+        {
+            fprintf(stream, "\tID                : %s\n", p->unitID);
+            fprintf(stream, "\tDescription       : %s\n", p->unitDescription);
+            fprintf(stream, "\tConversion factor : %f\n", p->conversionFactor);
+            fprintf(stream, "\tConversion offset : %f\n\n", p->conversionOffset);
+            p = p->pNext;
+        }
     }
-  }
 }
 
 /// <summary>
@@ -83,44 +86,40 @@ void RobDumpUnits(FILE *stream)
 /// <param name="p1">pointer to the units</param>
 /// <param name="p2">pointer to the current unit</param>
 /// <returns>pointer to the units</returns>
-static RobUnitPntr addUnit (RobUnitPntr p1, RobUnitPntr p2 )
+static RobUnitPntr addUnit(RobUnitPntr p1, RobUnitPntr p2)
 {
-  if (p1 == NULL)
-  {
-    p1 = p2;
-    p1->pNext = NULL;
-  }
-  else
-  {
-    p1->pNext = addUnit(p1->pNext , p2);
-  }
-  return p1;
-}
-
-
-static RobUnitPntr findUnit (RobUnitPntr p, const char *unitID )
-{
-  if (p != NULL)
-  {
-    if ( RobStringCompare(unitID, p->unitID) == 0)
+    if (p1 == NULL)
     {
-      return p;
+        p1 = p2;
+        p1->pNext = NULL;
     }
     else
     {
-      return (findUnit (p->pNext , unitID));
+        p1->pNext = addUnit(p1->pNext, p2);
     }
-  }
-  return(NULL);
+    return p1;
+}
+
+static RobUnitPntr findUnit(RobUnitPntr p, const char* unitID)
+{
+    if (p != NULL)
+    {
+        if (RobStringCompare(unitID, p->unitID) == 0)
+        {
+            return p;
+        }
+        else
+        {
+            return (findUnit(p->pNext, unitID));
+        }
+    }
+    return (NULL);
 }
 
 //
 // Check if this Unit exists
 //
-RobUnitPntr RobUnitFind ( const char *unitID)
-{
-  return (findUnit(RobUnits, unitID));
-}
+RobUnitPntr RobUnitFind(const char* unitID) { return (findUnit(RobUnits, unitID)); }
 
 /// <summary>
 /// Add a Unit
@@ -129,28 +128,28 @@ RobUnitPntr RobUnitFind ( const char *unitID)
 /// <param name="unitDescription">unit description string</param>
 /// <param name="conversionFactor">conversion factor</param>
 /// <param name="conversionOffset">conversion offset</param>
-int APIENTRY RobUnitAdd (const char *unitID, const char *unitDescription,
-                         double conversionFactor, double conversionOffset)
+int APIENTRY RobUnitAdd(const char* unitID, const char* unitDescription, double conversionFactor,
+                        double conversionOffset)
 {
-  RobUnitPntr p;
+    RobUnitPntr p;
 
-  p = RobUnitFind(unitID);
-  if (p == NULL)
-  {
-    p = (RobUnitPntr) RobMalloc(sizeof(RobUnit));
+    p = RobUnitFind(unitID);
+    if (p == NULL)
+    {
+        p = (RobUnitPntr)RobMalloc(sizeof(RobUnit));
 
-    p->unitID = RobCopyText( unitID );
-    p->unitDescription = RobCopyText( unitDescription );
-    p->conversionFactor = conversionFactor;
-    p->conversionOffset = conversionOffset;
+        p->unitID = RobCopyText(unitID);
+        p->unitDescription = RobCopyText(unitDescription);
+        p->conversionFactor = conversionFactor;
+        p->conversionOffset = conversionOffset;
 
-    RobUnits = addUnit(RobUnits, p);
+        RobUnits = addUnit(RobUnits, p);
 
-    return(0);
-  }
-  sprintf(Message.Description, "Unit %s already exists", unitID);
-  Message.Code = 1;
-  return (1);
+        return (0);
+    }
+    sprintf(Message.Description, "Unit %s already exists", unitID);
+    Message.Code = 1;
+    return (1);
 }
 
 /// <summary>
@@ -161,31 +160,31 @@ int APIENTRY RobUnitAdd (const char *unitID, const char *unitDescription,
 /// <param name="conversionFactor">conversion factorm>
 /// <param name="conversionOffset">conversion offset</param>
 /// <returns>return value</returns>
-int APIENTRY RobUnitGetInfo(const char *unitID, char *unitDescription, double *conversionFactor, double *conversionOffset)
+int APIENTRY RobUnitGetInfo(const char* unitID, char* unitDescription, double* conversionFactor,
+                            double* conversionOffset)
 {
-  RobUnitPntr p;
+    RobUnitPntr p;
 
-
-  p = RobUnits;
-  if (p != NULL)
-  {
-    while (p)
+    p = RobUnits;
+    if (p != NULL)
     {
-      if ( RobStringCompare(unitID, p->unitID) == 0)
-      {
-        int   l;
+        while (p)
+        {
+            if (RobStringCompare(unitID, p->unitID) == 0)
+            {
+                int l;
 
-        l = strlen(unitDescription);
-        strncpy(unitDescription, p->unitDescription, l);
+                l = strlen(unitDescription);
+                strncpy(unitDescription, p->unitDescription, l);
 
-        *conversionFactor = p->conversionFactor;
-        *conversionOffset = p->conversionOffset;
-      }
-      p = p->pNext;
+                *conversionFactor = p->conversionFactor;
+                *conversionOffset = p->conversionOffset;
+            }
+            p = p->pNext;
+        }
+        return 0;
     }
-    return 0;
-  }
-  sprintf(Message.Description, "Unit %s not found", unitID);
-  Message.Code = -1;
-  return -1;
+    sprintf(Message.Description, "Unit %s not found", unitID);
+    Message.Code = -1;
+    return -1;
 }

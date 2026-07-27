@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,23 +42,22 @@ contains
 
    subroutine fill_rho()
       use precision, only: dp
-      use m_transport
-      use m_flowgeom
-      use m_flow
-      use m_sediment
-      use m_transport
-      use m_sferic
-      use timers
-      use m_get_kbot_ktop
+      use m_transport, only: constituents, const_sour, const_sink
+      use m_flowgeom, only: ndx
+      use m_flow, only: ndkx, sa1, rho, vol1, sq
+      use timers, only: timon, timstrt, timstop
+      use m_get_kbot_ktop, only: getkbotktop
 
       implicit none
 
       integer :: kk, k, kb, kt
-      real(kind=dp) :: dvoli, dtol = 1d-8
+      real(kind=dp) :: dvoli, dtol = 1.0e-8_dp
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("fill_rho", ithndl)
+      if (timon) then
+         call timstrt("fill_rho", ithndl)
+      end if
 
       do k = 1, Ndkx
          sa1(k) = constituents(1, k)
@@ -69,13 +68,15 @@ contains
       do kk = 1, Ndx
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
-            dvoli = 1d0 / max(vol1(k), dtol)
+            dvoli = 1.0_dp / max(vol1(k), dtol)
             const_sour(1, k) = -rho(k) * sq(k) * dvoli
-            const_sink(1, k) = 0d0
+            const_sink(1, k) = 0.0_dp
          end do
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine fill_rho
 

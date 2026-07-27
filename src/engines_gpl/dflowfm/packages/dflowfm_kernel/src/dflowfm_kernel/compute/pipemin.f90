@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
 
    subroutine pipemin(hpr, dia, area, width) ! top minus part
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only: pi
       implicit none
       real(kind=dp), intent(in) :: dia, hpr
       real(kind=dp), intent(out) :: area, width
@@ -47,8 +47,8 @@ contains
 
       r = 0.5 * dia
       if (hpr < r) then
-         area = 0d0
-         width = 0d0
+         area = 0.0_dp
+         width = 0.0_dp
       else if (hpr < dia) then
          are = hpr - r
          fi = asin(are / r)
@@ -56,7 +56,7 @@ contains
          area = are * dia - fi * r * r - sq * are
          width = dia - 2 * sq
       else
-         area = (hpr - r) * dia - 0.5d0 * pi * r * r
+         area = (hpr - r) * dia - 0.5_dp * pi * r * r
          width = dia
       end if
    end subroutine pipemin

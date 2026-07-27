@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -60,14 +60,14 @@
 ! **********************************************************************
       Use ParameterModule
       Use FileModule
-      Use LanguageModule
+      Use LanguageModule_rtc
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
       Use MeasureModule
       Use OtherData
       Use SyncRtcFlow
-      Use ReadLib
+      Use ReadLib_rtc
       Use ExternalDLLModule
       Use system_utils, only: FILESEP
       Use time_module, only: mjd2date, jul2mjd, ymd2jul
@@ -154,7 +154,7 @@
   contains
 
     Subroutine Set_Commandline()
-!     Use ReadLib
+!     Use ReadLib_rtc
 
       implicit none
 

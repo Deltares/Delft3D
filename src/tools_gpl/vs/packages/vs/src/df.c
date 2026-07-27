@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,20 +40,20 @@
 
 /*  @@  allocate memory for a defintion structure
  */
-static VsDefData DF_alloc_memory_for_definition ( BVoid )
+static VsDefData DF_alloc_memory_for_definition(BVoid)
 {
-    int       i;
+    int i;
     VsDefData p;
-    p = (VsDefData) GEN_malloc ( sizeof( VsDef ));
+    p = (VsDefData)GEN_malloc(sizeof(VsDef));
 
     p->grpndm = -1;
-    strcpy (p->grpdef,"");
-    strcpy (p->celnam,"");
-    for ( i=0; i<MAX_DIM; i++)
+    strcpy(p->grpdef, "");
+    strcpy(p->celnam, "");
+    for (i = 0; i < MAX_DIM; i++)
     {
-      p->grpord[i] = -1;
+        p->grpord[i] = -1;
     }
-    p->left  = NULL;
+    p->left = NULL;
     p->right = NULL;
 
     return p;
@@ -65,95 +65,96 @@ static VsDefData DF_alloc_memory_for_definition ( BVoid )
  *      - allocate memory for a new defintion;
  *      - if memeory available, fill items of structure.
  */
-VsDefData DF_add_definition_to_tree (
-    VsDefData p,
-    const BText     grpdef
-    )
+VsDefData DF_add_definition_to_tree(VsDefData p, const BText grpdef)
 {
     BInt4 cond;
 
-    if ( p == NULL ) {
+    if (p == NULL)
+    {
         /* here we are at the right spot in the tree,
            so allocate memory */
-        p = DF_alloc_memory_for_definition ();
+        p = DF_alloc_memory_for_definition();
 
-        if ( p != NULL ) {
+        if (p != NULL)
+        {
             /* there is room, so place info in structure */
-            (BVoid)strcpy ( p->grpdef, grpdef );
-            p->left  = NULL;
+            (BVoid) strcpy(p->grpdef, grpdef);
+            p->left = NULL;
             p->right = NULL;
         }
-        else {
+        else
+        {
             /* no memory available */
-            (BVoid)GEN_message_to_errorfile ( 1 );
+            (BVoid) GEN_message_to_errorfile(1);
         }
     }
 
-    else {
-        cond = GEN_string_compare ( grpdef, p->grpdef );
+    else
+    {
+        cond = GEN_string_compare(grpdef, p->grpdef);
 
-        if (cond < 0 ) {
-            p->left = DF_add_definition_to_tree ( p->left, grpdef );
+        if (cond < 0)
+        {
+            p->left = DF_add_definition_to_tree(p->left, grpdef);
         }
 
-        else if ( cond > 0 ) {
-            p->right = DF_add_definition_to_tree ( p->right, grpdef );
+        else if (cond > 0)
+        {
+            p->right = DF_add_definition_to_tree(p->right, grpdef);
         }
 
-        else {
+        else
+        {
             /* DO NOTHING */
         }
     }
     return p;
 }
 
-
 /*  @@  find definition with name grpdef in tree of
  *      definition-structures.
  *      If found, return pointer to that structure, else NULL.
  */
-VsDefData DF_find_definition_in_tree (
-    VsDefData p,
-    const BText     grpdef
-    )
+VsDefData DF_find_definition_in_tree(VsDefData p, const BText grpdef)
 {
-    VsDefData retval=NULL;
+    VsDefData retval = NULL;
 
-    if ( p != NULL ) {
-
+    if (p != NULL)
+    {
         BInt4 cond;
 
-        cond = GEN_string_compare ( grpdef, p->grpdef );
+        cond = GEN_string_compare(grpdef, p->grpdef);
 
-        if (cond == 0 ) {
+        if (cond == 0)
+        {
             retval = p;
         }
 
-        else if ( cond < 0 ) {
+        else if (cond < 0)
+        {
             /* go to left branch */
-            retval = DF_find_definition_in_tree ( p->left, grpdef );
+            retval = DF_find_definition_in_tree(p->left, grpdef);
         }
 
-        else {
+        else
+        {
             /* go to right branch */
-            retval = DF_find_definition_in_tree ( p->right, grpdef );
+            retval = DF_find_definition_in_tree(p->right, grpdef);
         }
     }
     /* not found */
     return retval;
 }
 
-
 /*  @@  remove a complete branch of defintions,
  *      pointed at by p
  */
-BVoid DF_remove_definition_branche (
-    VsDefData p
-    )
+BVoid DF_remove_definition_branche(VsDefData p)
 {
-    if ( p != NULL ) {
-        DF_remove_definition_branche ( p->left );
-        DF_remove_definition_branche ( p->right );
-        GEN_free ( p );
+    if (p != NULL)
+    {
+        DF_remove_definition_branche(p->left);
+        DF_remove_definition_branche(p->right);
+        GEN_free(p);
     }
 }

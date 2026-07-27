@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<precice-configuration experimental="true" allow-remeshing="true">
+<!-- <precice-configuration> -->
+  <log>
+    <sink type="file" output="precice_debug_output.txt" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+    <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+  </log>
+
+  <profiling mode="fundamental" flush-every="50" directory="." synchronize="false"/>
+
+<!-- FF2NF -->
+  <data:scalar name="sea_floor_depth_below_sea_surface" />
+  <data:scalar name="sea_surface_height" />
+  <data:scalar name="sea_floor_depth_below_geoid" />
+  <data:scalar name="sea_water_potential_density" />
+
+<!-- NF2FF -->
+  <data:scalar name="sinks_x" />
+  <data:scalar name="sinks_y" />
+  <data:scalar name="sinks_z_min" />
+  <data:scalar name="sinks_z_max" />
+  <data:scalar name="sources_x" />
+  <data:scalar name="sources_y" />
+  <data:scalar name="sources_z_min" />
+  <data:scalar name="sources_z_max" />
+  <data:scalar name="sources_sinks_discharge" />
+  <data:scalar name="sources_momentum_magnitude" />
+  <data:scalar name="sources_momentum_direction" />
+
+<!-- FM side -->
+  <mesh name="fm_flow_cells" dimensions="2">
+    <use-data name="sea_floor_depth_below_sea_surface" />
+    <use-data name="sea_surface_height" />
+    <use-data name="sea_floor_depth_below_geoid" />
+  </mesh>
+  <mesh name="fm_flow_cells_3d" dimensions="3">
+    <use-data name="sea_water_potential_density" />
+  </mesh>
+
+<!-- C-SUMO side -->
+  <mesh name="csumo_2d_nodes" dimensions="2">
+    <use-data name="sea_floor_depth_below_sea_surface" />
+    <use-data name="sea_surface_height" />
+    <use-data name="sea_floor_depth_below_geoid" />
+  </mesh>
+  <mesh name="csumo_3d_nodes" dimensions="3">
+    <use-data name="sea_water_potential_density" />
+  </mesh>
+  <mesh name="sources_sinks_nodes" dimensions="2">
+    <use-data name="sinks_x" />
+    <use-data name="sinks_y" />
+    <use-data name="sinks_z_min" />
+    <use-data name="sinks_z_max" />
+    <use-data name="sources_x" />
+    <use-data name="sources_y" />
+    <use-data name="sources_z_min" />
+    <use-data name="sources_z_max" />
+    <use-data name="sources_sinks_discharge" />
+    <use-data name="sources_momentum_magnitude" />
+    <use-data name="sources_momentum_direction" />
+  </mesh>
+
+  <participant name="fm">
+    <provide-mesh name="fm_flow_cells" />
+    <provide-mesh name="fm_flow_cells_3d" />
+    <receive-mesh name="sources_sinks_nodes" from="preC-SUMO" api-access="true" />
+    <write-data name="sea_floor_depth_below_sea_surface" mesh="fm_flow_cells" />
+    <write-data name="sea_surface_height" mesh="fm_flow_cells" />
+    <write-data name="sea_floor_depth_below_geoid" mesh="fm_flow_cells" />
+    <write-data name="sea_water_potential_density" mesh="fm_flow_cells_3d" />
+    <read-data name="sinks_x" mesh="sources_sinks_nodes" />
+    <read-data name="sinks_y" mesh="sources_sinks_nodes" />
+    <read-data name="sinks_z_min" mesh="sources_sinks_nodes" />
+    <read-data name="sinks_z_max" mesh="sources_sinks_nodes" />
+    <read-data name="sources_x" mesh="sources_sinks_nodes" />
+    <read-data name="sources_y" mesh="sources_sinks_nodes" />
+    <read-data name="sources_z_min" mesh="sources_sinks_nodes" />
+    <read-data name="sources_z_max" mesh="sources_sinks_nodes" />
+    <read-data name="sources_sinks_discharge" mesh="sources_sinks_nodes" />
+    <export:vtu directory="precice-exports" />
+  </participant>
+
+  <participant name="preC-SUMO">
+    <provide-mesh name="csumo_2d_nodes" />
+    <provide-mesh name="csumo_3d_nodes" />
+    <provide-mesh name="sources_sinks_nodes" />
+    <receive-mesh name="fm_flow_cells" from="fm" />
+    <receive-mesh name="fm_flow_cells_3d" from="fm" />
+    <read-data name="sea_floor_depth_below_sea_surface" mesh="csumo_2d_nodes" />
+    <read-data name="sea_surface_height" mesh="csumo_2d_nodes" />
+    <read-data name="sea_floor_depth_below_geoid" mesh="csumo_2d_nodes" />
+    <read-data name="sea_water_potential_density" mesh="csumo_3d_nodes" />
+    <write-data name="sinks_x" mesh="sources_sinks_nodes" />
+    <write-data name="sinks_y" mesh="sources_sinks_nodes" />
+    <write-data name="sinks_z_min" mesh="sources_sinks_nodes" />
+    <write-data name="sinks_z_max" mesh="sources_sinks_nodes" />
+    <write-data name="sources_x" mesh="sources_sinks_nodes" />
+    <write-data name="sources_y" mesh="sources_sinks_nodes" />
+    <write-data name="sources_z_min" mesh="sources_sinks_nodes" />
+    <write-data name="sources_z_max" mesh="sources_sinks_nodes" />
+    <write-data name="sources_sinks_discharge" mesh="sources_sinks_nodes" />
+    <write-data name="sources_momentum_magnitude" mesh="sources_sinks_nodes" />
+    <write-data name="sources_momentum_direction" mesh="sources_sinks_nodes" />
+    <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells" to="csumo_2d_nodes" constraint="consistent" />
+    <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells_3d" to="csumo_3d_nodes" constraint="consistent" />
+    <export:vtu directory="precice-exports" />
+  </participant>
+
+  <m2n:sockets acceptor="fm" connector="preC-SUMO" exchange-directory=".." />
+
+  <coupling-scheme:parallel-explicit>
+    <time-window-size value="7200"/>
+    <max-time value="21600" />
+    <participants first="fm" second="preC-SUMO" />
+    <exchange data="sea_floor_depth_below_sea_surface" mesh="fm_flow_cells" from="fm" to="preC-SUMO" initialize="true" />
+    <exchange data="sea_surface_height" mesh="fm_flow_cells" from="fm" to="preC-SUMO" initialize="true" />
+    <exchange data="sea_floor_depth_below_geoid" mesh="fm_flow_cells" from="fm" to="preC-SUMO" initialize="true" />
+    <exchange data="sea_water_potential_density" mesh="fm_flow_cells_3d" from="fm" to="preC-SUMO" initialize="true" />
+    <exchange data="sinks_x" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sinks_y" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sinks_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sinks_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_x" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_y" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_sinks_discharge" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+
+  </coupling-scheme:parallel-explicit>
+</precice-configuration>

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,12 +41,12 @@ module m_comp_sinktot
 contains
 
    subroutine comp_sinktot()
-      use m_transport
+      use m_transport, only: ised1, isedn, sinksetot, constituents, sinkftot
+      use m_sediment, only: stm_included, mxgr, sedtra, stmpar
+      use timers, only: timon, timstrt, timstop
       use m_flow, only: vol1, kmx
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
-      use m_sediment
-      use timers
 
       implicit none
 
@@ -54,9 +54,15 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (.not. stm_included) return
-      if (mxgr == 0) return
-      if (timon) call timstrt("comp_sinktot", ithndl)
+      if (.not. stm_included) then
+         return
+      end if
+      if (mxgr == 0) then
+         return
+      end if
+      if (timon) then
+         call timstrt("comp_sinktot", ithndl)
+      end if
 
       if (kmx < 1) then ! 2D
          do k = 1, ndx
@@ -80,7 +86,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_sinktot
 
 end module m_comp_sinktot

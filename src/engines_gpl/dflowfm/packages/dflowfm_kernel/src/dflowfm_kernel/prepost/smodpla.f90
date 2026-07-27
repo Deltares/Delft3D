@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,7 +39,7 @@ contains
 
    subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
       use precision, only: dp
-      use M_ALLOC
+      use M_ALLOC, only: realloc
 
       integer :: npl
       real(kind=dp) :: DPLA(NPL), DXS(NPL)
@@ -56,8 +56,8 @@ contains
 
          DH = DPLA
          do N = 2, NPL - 1
-            a1 = 0.5d0 * (dxs(n - 1) + dxs(N))
-            a2 = 0.5d0 * (dxs(n + 1) + dxs(N))
+            a1 = 0.5_dp * (dxs(n - 1) + dxs(N))
+            a2 = 0.5_dp * (dxs(n + 1) + dxs(N))
             DPLA(N) = (a2 * DH(N - 1) + a1 * DH(N + 1)) / (a2 + a1)
          end do
 

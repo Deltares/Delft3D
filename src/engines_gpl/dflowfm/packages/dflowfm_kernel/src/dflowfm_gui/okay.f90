@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,12 +34,13 @@ module m_okay
 contains
 !
    subroutine OKAY(JA)
-      use m_devices
-      use m_gui
+      use m_gui, only: jagui
 
       integer, intent(in) :: ja
 
-      if (jaGUI /= 1) return
+      if (jaGUI /= 1) then
+         return
+      end if
 
       call ISCREENBELL('ON')
       if (JA == 1) then

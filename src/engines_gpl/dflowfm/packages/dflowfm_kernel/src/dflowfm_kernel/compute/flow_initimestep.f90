@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,6 +45,7 @@ module m_flow_initimestep
    use m_makeq1qaatstart
    use m_pillar_upd
    use m_heatu
+   use m_waveconst
 
    implicit none
 
@@ -66,23 +67,27 @@ contains
       use MessageHandling
       use m_partitioninfo
       use m_sethu
-      use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
-      use m_wind, only: update_wind_stress_each_time_step
+      use fm_external_forcings, only: calculate_wind_stresses, prepare_wind, prepare_air_pressure_temperature_dew_point_temperature, &
+                       compute_air_water_interaction_most_fluxes, set_external_forcings_boundaries
+      use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
+      use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
       implicit none
 
       integer, intent(in) :: jazws0
       logical, intent(in) :: set_hu !< Flag for updating `hu` (.true.) or not (.false.) in subroutine `calculate_hu_au_and_advection_for_dams_weirs` (`sethu`).
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
       integer :: ierror
-      real(kind=dp), parameter :: MMPHR_TO_MPS = 1d-3 / 3600d0
+      real(kind=dp), parameter :: MMPHR_TO_MPS = 1.0e-3_dp / 3600.0_dp
 
       iresult = DFM_GENERICERROR
 
       call timstrt('Initialise timestep', handle_inistep)
 
-      if (jazws0 == 0) s0 = s1 ! progress water levels
+      if (jazws0 == 0) then
+         s0 = s1 ! progress water levels
+      end if
 
       call bathyupdate() ! only if jamorf == 1
 
@@ -95,7 +100,7 @@ contains
       end if
 
 ! due to tolerance in poshcheck, hs may be smaller than 0 (but larger than -1e-10)
-      hs = max(hs, 0d0)
+      hs = max(hs, 0.0_dp)
 
       if (nshiptxy > 0) then ! quick fix only for ships
          call setdt()
@@ -108,9 +113,10 @@ contains
       call timstop(handle_extra(38)) ! End bnd
 
       if (iresult /= DFM_NOERR) then
-         write (msgbuf, *) ' Error found in EC-module '; call err_flush()
+         write (msgbuf, *) ' Error found in EC-module '
+         call err_flush()
          if (jampi == 1) then
-            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
+            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd
             call err_flush()
             ! Terminate all MPI processes
             call abort_all()
@@ -118,7 +124,7 @@ contains
          goto 888
       end if
 
-      if (tlfsmo > 0d0) then
+      if (tlfsmo > 0.0_dp) then
          alfsmo = (tim1bnd - tstart_tlfsmo_user) / tlfsmo
       end if
 
@@ -129,8 +135,8 @@ contains
       end if
       call timstop(handle_extra(42)) ! End u0u1
 
-      advi = 0d0
-      adve = 0d0
+      advi = 0.0_dp
+      adve = 0.0_dp
 
       call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
       call calculate_hu_au_and_advection_for_dams_weirs(jazws0, set_hu)
@@ -143,7 +149,20 @@ contains
       call timstop(handle_extra(43)) ! End setumod
 
       if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
-         call calculate_wind_stresses(time0, iresult)
+         if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            call prepare_air_pressure_temperature_dew_point_temperature(time0)
+         end if
+
+         call prepare_wind(time0, iresult)
+         if (iresult /= DFM_NOERR) then
+            return
+         end if
+
+         if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            call compute_air_water_interaction_most_fluxes(initialization=.false.)
+         end if
+
+         call calculate_wind_stresses(iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
@@ -158,13 +177,13 @@ contains
       end if
 
       ! Calculate max bed shear stress amplitude and z0rou without waves
-      if (jawave == 0) then
+      if (jawave == NO_WAVES) then
          call settaubxu_nowave(use_u1)
       end if
 
       ! Set wave parameters, adapted for present water depth/velocity fields
-      if (jawave > 0) then
-         taubxu = 0d0
+      if (jawave > NO_WAVES) then
+         taubxu = 0.0_dp
          call compute_wave_parameters()
       end if
 
@@ -186,7 +205,7 @@ contains
 
       ! Add wave model dependent wave force in RHS
       ! After setdt because surfbeat needs updated dts
-      if (jawave > 0 .and. .not. flowwithoutwaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call compute_wave_forcing_RHS()
       end if
 
@@ -211,17 +230,17 @@ contains
 
       if (jaimplicit == 1) then
          call fillsystem_advec(ierror)
-         if (ierror /= 0) goto 888
+         if (ierror /= 0) then
+            goto 888
+         end if
       end if
 
-      if (jatem > 1 .and. jaheat_eachstep == 1) then
-         call heatu(tim1bnd / 3600d0) ! from externalforcings
+      if (jaheat_eachstep == 1) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
+         end if
       end if
       call update_icecover()
-
-      if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
-         infiltcap0 = infiltcap / mmphr_to_mps
-      end if
 
       call timstop(handle_inistep)
 

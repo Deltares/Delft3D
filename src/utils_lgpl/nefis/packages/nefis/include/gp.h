@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,9 +31,9 @@
 
 #include "nef-tag.h"
 
-extern BInt4 DBG_nefis_tree ( BInt4   , BText);
+extern BInt4 DBG_nefis_tree(BInt4, BText);
 extern BInt4 nefis_errcnt;
 extern BInt4 nefis_errno;
-extern BChar error_text[LENGTH_ERROR_MESSAGE+1];
+extern BChar error_text[LENGTH_ERROR_MESSAGE + 1];
 
 #endif

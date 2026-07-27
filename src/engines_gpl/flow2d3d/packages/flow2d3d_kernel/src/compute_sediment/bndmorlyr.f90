@@ -2,7 +2,7 @@ subroutine bndmorlyr(lsedtot   ,timhr     ,nto       , &
                    & bc_mor_array         ,gdp  )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -49,6 +49,7 @@ subroutine bndmorlyr(lsedtot   ,timhr     ,nto       , &
     type (bedbndtype), dimension(:)      , pointer :: morbnd
     type (cmpbndtype), dimension(:)      , pointer :: cmpbnd
     integer                              , pointer :: julday
+    logical                              , pointer :: crslyr    
 !
 ! Global variables
 !
@@ -77,6 +78,7 @@ subroutine bndmorlyr(lsedtot   ,timhr     ,nto       , &
     morbnd              => gdp%gdmorpar%morbnd
     cmpbnd              => gdp%gdmorpar%cmpbnd
     julday              => gdp%gdinttim%julday
+    crslyr              => gdp%gdmorlyr%settings%crslyr
     !
     do jb = 1, nto
        icond = cmpbnd(jb)%icond
@@ -84,6 +86,15 @@ subroutine bndmorlyr(lsedtot   ,timhr     ,nto       , &
        ! If composition is fixed, nothing to do. So, we can
        ! continue with next boundary.
        !
+       if ((icond == 1) .and. crslyr) then 
+          do ib = 1, morbnd(jb)%npnt
+             !
+             alfa_dist = morbnd(jb)%alfa_dist(ib)
+             nm        = morbnd(jb)%nm(ib)
+             nxmx      = morbnd(jb)%nxmx(ib)
+             call copybedcomp(gdp%gdmorlyr, nxmx, nm)
+          enddo   
+       endif      
        if (icond == 1) cycle
        !
        ! In case of an open boundary with prescribed composition

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,10 +41,10 @@ module m_copypoltoldb
 contains
 
    subroutine COPYPOLTOLDB()
-      use m_polygon
-      use M_LANDBOUNDARY
-      use M_MISSING
-      use m_delpol
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use M_LANDBOUNDARY, only: mxlan, xlan, increaselan, ylan, zlan
+      use M_MISSING, only: xymis
+      use m_delpol, only: delpol
 
       integer :: k
       integer :: l
@@ -58,7 +58,9 @@ contains
 
       call INCREASELAN(L + NPL)
       if (L > 0) then
-         XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
+         XLAN(L) = XYMIS
+         YLAN(L) = XYMIS
+         ZLAN(L) = XYMIS
       end if
       do K = 1, NPL
          L = L + 1

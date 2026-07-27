@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,7 +67,9 @@ contains
          end if
       end if
 
-      if (JSFERIC == 1) X1T = X1T * cos(DG2RD * Y0)
+      if (JSFERIC == 1) then
+         X1T = X1T * cos(DG2RD * Y0)
+      end if
 
       if (NP /= NMAX) then
          X2P = X(MP, NP + 1)
@@ -84,7 +86,9 @@ contains
          end if
       end if
 
-      if (JSFERIC == 1) X2T = X2T * cos(DG2RD * Y0)
+      if (JSFERIC == 1) then
+         X2T = X2T * cos(DG2RD * Y0)
+      end if
 
       XN1 = sqrt(X1T * X1T + Y1T * Y1T)
       XN2 = sqrt(X2T * X2T + Y2T * Y2T)

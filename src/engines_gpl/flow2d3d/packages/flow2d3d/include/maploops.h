@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: maploops.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/maploops.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/maploops.h
+// $
 //------------------------------------------------------------------------------
 //  Mapper for DELFT3D-FLOW Domain Decomposition
 //  Loop Macro's for 1:n coupling (N = EVEN OR ODD); In november 2002
@@ -36,13 +38,9 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
-
 #include "map_debug.h"
-
-
 
 //
 // This source contains macros that are used for the coupling
@@ -83,8 +81,8 @@
 // int  oM,oN,oK      loop counters other Cntxt
 // int  l             loop counter constituents
 //
-//int   fM,fN,fK      loop counters for refined (hor. / vert.) loops
-//int   nHorRef       number of M or N points in a horizontally refined loop
+// int   fM,fN,fK      loop counters for refined (hor. / vert.) loops
+// int   nHorRef       number of M or N points in a horizontally refined loop
 //
 //
 //
@@ -211,23 +209,21 @@
 //
 //
 
-
 #define DO_LOOP_DEBUG 0
 
 #if DO_LOOP_DEBUG
 
-#define  DBCELLS(txt,e,oc,om,on,cc,cm,cn)  FMapLog(txt,e,oc,om,on,cc,cm,cn),
-#define  DBLAYER(txt,oc,ok,cc,ck)          FMapLog(txt,txt,oc,ok,cc,ck),
-#define  DBREFINE(txt,cc,cm,cn)            FMapLog(txt,cc,cm,cn),
+    #define DBCELLS(txt, e, oc, om, on, cc, cm, cn) FMapLog(txt, e, oc, om, on, cc, cm, cn),
+    #define DBLAYER(txt, oc, ok, cc, ck) FMapLog(txt, txt, oc, ok, cc, ck),
+    #define DBREFINE(txt, cc, cm, cn) FMapLog(txt, cc, cm, cn),
 
 #else
 
-#define  DBCELLS(txt,e,oc,om,on,cc,cm,cn)
-#define  DBLAYER(txt,oc,ok,cc,ck)
-#define  DBREFINE(txt,cc,cm,cn)
+    #define DBCELLS(txt, e, oc, om, on, cc, cm, cn)
+    #define DBLAYER(txt, oc, ok, cc, ck)
+    #define DBREFINE(txt, cc, cm, cn)
 
 #endif
-
 
 //
 //
@@ -282,7 +278,6 @@
 // Endif
 //
 
-
 //
 // In November 2002 the macro's have been changed for a 1-to-even coupling.
 //
@@ -314,32 +309,17 @@
 //
 //
 
-#define  START_OFFSET(type,cntxt,tang)                                    \
-       ( type ? ( ((tang)) ? Ref[cntxt]-1 : (Ref[cntxt]-1)/2 )            \
-              : 0                                                         \
-       )
+#define START_OFFSET(type, cntxt, tang) (type ? (((tang)) ? Ref[cntxt] - 1 : (Ref[cntxt] - 1) / 2) : 0)
 
-#define  OTHER_INDEX(type,ind,oInd,start,oStart,oEnd,e,tang)              \
-                                                                          \
-( type ? ( (Ref[ctx]>1) ? B_MIN(  oStart[ctx][e]                          \
-                  + (ind - start[ctx][e]                  \
-                     - ( ((tang)) ? (Ref[ctx]-1)/2    \
-                              : 0                 \
-                       )                              \
-                    ) / Ref[ctx]                          \
-                   ,                                          \
-                  ( ((tang)) ? oEnd[ctx][eq]-1 : oEnd[ctx][eq] )  \
-                   )                                          \
-               : (Ref[oCtx]>1) ? oStart[ctx][e]                   \
-                         + (ind-start[ctx][e])*Ref[oCtx]  \
-                         + ( ((tang)) ? Ref[oCtx]-1       \
-                              : (Ref[oCtx]-1)/2   \
-                           )                              \
-                       : oInd + 1                         \
-         )                                                                \
- : oInd + 1                                                               \
-)
-
+#define OTHER_INDEX(type, ind, oInd, start, oStart, oEnd, e, tang)                                                \
+                                                                                                                  \
+    (type ? ((Ref[ctx] > 1)                                                                                       \
+                 ? B_MIN(oStart[ctx][e] + (ind - start[ctx][e] - (((tang)) ? (Ref[ctx] - 1) / 2 : 0)) / Ref[ctx], \
+                         (((tang)) ? oEnd[ctx][eq] - 1 : oEnd[ctx][eq]))                                          \
+             : (Ref[oCtx] > 1) ? oStart[ctx][e] + (ind - start[ctx][e]) * Ref[oCtx] +                             \
+                                     (((tang)) ? Ref[oCtx] - 1 : (Ref[oCtx] - 1) / 2)                             \
+                               : oInd + 1)                                                                        \
+          : oInd + 1)
 
 //
 //
@@ -359,82 +339,67 @@
 // 'other-index' macro.
 //
 
+#define MAP_CELLS_LOOP(ctx, eq)                                                                         \
+                                                                                                        \
+    for (                                                                                               \
+                                                                                                        \
+        m = mStart[ctx][eq],                                                                            \
+                                                                                                        \
+       oM = mOthStart[ctx][eq] + START_OFFSET(b2t, oCtx, eq == Eq_U);                                   \
+                                                                                                        \
+        m <= mEnd[ctx][eq];                                                                             \
+                                                                                                        \
+        m++,                                                                                            \
+                                                                                                        \
+       oM = OTHER_INDEX(b2t, m, oM, mStart, mOthStart, mOthEnd, eq, eq == Eq_U)                         \
+                                                                                                        \
+    )                                                                                                   \
+                                                                                                        \
+        for (                                                                                           \
+                                                                                                        \
+            n = nStart[ctx][eq],                                                                        \
+                                                                                                        \
+           oN = nOthStart[ctx][eq] + START_OFFSET(l2r, oCtx, eq == Eq_V);                               \
+                                                                                                        \
+            n <= nEnd[ctx][eq];                                                                         \
+                                                                                                        \
+            DBCELLS("\t\tCellLoop(%d) did C%d(%3d,%3d) -> C%d(%3d,%3d)\n", eq, oCtx, oM, oN, ctx, m, n) \
+                                                                                                        \
+                n++,                                                                                    \
+                                                                                                        \
+           oN = OTHER_INDEX(l2r, n, oN, nStart, nOthStart, nOthEnd, eq, eq == Eq_V)                     \
+                                                                                                        \
+        )
 
-
-#define  MAP_CELLS_LOOP(ctx,eq)                                             \
-                                                                            \
-for (                                                                       \
-                                                                            \
- m =     mStart[ctx][eq],                                                   \
-                                                                            \
-oM =     mOthStart[ctx][eq] + START_OFFSET(b2t,oCtx,eq==Eq_U);              \
-                                                                            \
-                                                                            \
- m <= mEnd[ctx][eq] ;                                                       \
-                                                                            \
-                                                                            \
- m ++ ,                                                                     \
-                                                                            \
-oM  = OTHER_INDEX(b2t,m,oM,mStart,mOthStart,mOthEnd,eq,eq==Eq_U)            \
-                                                                            \
-)                                                                           \
-                                                                            \
-for (                                                                       \
-                                                                            \
- n =     nStart[ctx][eq],                                                   \
-                                                                            \
-oN =     nOthStart[ctx][eq] + START_OFFSET(l2r,oCtx,eq==Eq_V);              \
-                                                                            \
-                                                                            \
- n <= nEnd[ctx][eq] ;                                                       \
-                                                                            \
-                                                                            \
- DBCELLS("\t\tCellLoop(%d) did C%d(%3d,%3d) -> C%d(%3d,%3d)\n",             \
-                                       eq, oCtx, oM, oN, ctx, m, n )        \
-                                                                            \
- n ++ ,                                                                     \
-                                                                            \
-oN  = OTHER_INDEX(l2r,n,oN,nStart,nOthStart,nOthEnd,eq,eq==Eq_V)            \
-                                                                            \
-)
-
-
-
-#define  MAP_COARSE_CELLS_LOOP(ctx,eq)                                      \
-                                                                            \
-for (                                                                       \
-                                                                            \
- m = mStart   [ctx][eq] + START_OFFSET(b2t,ctx, eq==Eq_U),                  \
-                                                                            \
-oM = mOthStart[ctx][eq] + START_OFFSET(b2t,oCtx,eq==Eq_U);                  \
-                                                                            \
-                                                                            \
- m <= mEnd[ctx][eq] ;                                                       \
-                                                                            \
-                                                                            \
- m += b2t ? Ref[ctx] : 1 ,                                                  \
-                                                                            \
-oM  = OTHER_INDEX(b2t,m,oM,mStart,mOthStart,mOthEnd,eq,eq==Eq_U)            \
-                                                                            \
-)                                                                           \
-                                                                            \
-for (                                                                       \
-                                                                            \
- n = nStart   [ctx][eq] + START_OFFSET(l2r,ctx, eq==Eq_V),                  \
-                                                                            \
-oN = nOthStart[ctx][eq] + START_OFFSET(l2r,oCtx,eq==Eq_V);                  \
-                                                                            \
-                                                                            \
- n <= nEnd[ctx][eq] ;                                                       \
-                                                                            \
-                                                                            \
- DBCELLS("\t\tCrseLoop(%d) did C%d(%3d,%3d) -> C%d(%3d,%3d)\n",             \
-                                       eq, oCtx, oM, oN, ctx, m, n )        \
-                                                                            \
- n += l2r ? Ref[ctx] : 1 ,                                                  \
-                                                                            \
-oN  = OTHER_INDEX(l2r,n,oN,nStart,nOthStart,nOthEnd,eq,eq==Eq_V)            \
-)
+#define MAP_COARSE_CELLS_LOOP(ctx, eq)                                                                  \
+                                                                                                        \
+    for (                                                                                               \
+                                                                                                        \
+        m = mStart[ctx][eq] + START_OFFSET(b2t, ctx, eq == Eq_U),                                       \
+                                                                                                        \
+       oM = mOthStart[ctx][eq] + START_OFFSET(b2t, oCtx, eq == Eq_U);                                   \
+                                                                                                        \
+        m <= mEnd[ctx][eq];                                                                             \
+                                                                                                        \
+        m += b2t ? Ref[ctx] : 1,                                                                        \
+                                                                                                        \
+       oM = OTHER_INDEX(b2t, m, oM, mStart, mOthStart, mOthEnd, eq, eq == Eq_U)                         \
+                                                                                                        \
+    )                                                                                                   \
+                                                                                                        \
+        for (                                                                                           \
+                                                                                                        \
+            n = nStart[ctx][eq] + START_OFFSET(l2r, ctx, eq == Eq_V),                                   \
+                                                                                                        \
+           oN = nOthStart[ctx][eq] + START_OFFSET(l2r, oCtx, eq == Eq_V);                               \
+                                                                                                        \
+            n <= nEnd[ctx][eq];                                                                         \
+                                                                                                        \
+            DBCELLS("\t\tCrseLoop(%d) did C%d(%3d,%3d) -> C%d(%3d,%3d)\n", eq, oCtx, oM, oN, ctx, m, n) \
+                                                                                                        \
+                n += l2r ? Ref[ctx] : 1,                                                                \
+                                                                                                        \
+           oN = OTHER_INDEX(l2r, n, oN, nStart, nOthStart, nOthEnd, eq, eq == Eq_V))
 
 //
 //
@@ -447,37 +412,27 @@ oN  = OTHER_INDEX(l2r,n,oN,nStart,nOthStart,nOthEnd,eq,eq==Eq_V)            \
 //   (used for checking convergence)
 //
 
-#define MAP_LAYERS_LOOP(ctx)                            \
-    for ( k = 1 , oK = 1;                           \
-            k <= C[ctx]->kMax ;                     \
-            DBLAYER("\t\t\tLayer did C%d(%2d) -> C%d(%2d)\n",   \
-                             oCtx, oK, ctx, k)      \
-            k++, oK = (1+(k-1)*C[oCtx]->kMax/C[ctx]->kMax) )
+#define MAP_LAYERS_LOOP(ctx)                                                                                        \
+    for (k = 1, oK = 1; k <= C[ctx]->kMax; DBLAYER("\t\t\tLayer did C%d(%2d) -> C%d(%2d)\n", oCtx, oK, ctx, k) k++, \
+        oK = (1 + (k - 1) * C[oCtx]->kMax / C[ctx]->kMax))
 
-#define MAP_COARSE_LAYERS_LOOP(ctx)                     \
-    for ( k = 1 , oK = 1;                           \
-            k <= C[ctx]->kMax ;                     \
-            DBLAYER("\t\t\tCrsLayer did C%d(%2d) -> C%d(%2d)\n",\
-                             oCtx, oK, ctx, k)      \
-            k+=B_MAX(1,(C[ctx]->kMax/C[oCtx]->kMax) ),      \
-            oK = (1+(k-1)*C[oCtx]->kMax/C[ctx]->kMax) )
+#define MAP_COARSE_LAYERS_LOOP(ctx)                                                                                    \
+    for (k = 1, oK = 1; k <= C[ctx]->kMax; DBLAYER("\t\t\tCrsLayer did C%d(%2d) -> C%d(%2d)\n", oCtx, oK, ctx, k) k += \
+                                           B_MAX(1, (C[ctx]->kMax / C[oCtx]->kMax)),                                   \
+        oK = (1 + (k - 1) * C[oCtx]->kMax / C[ctx]->kMax))
 
-#define MAP_CELLS_AND_LAYERS_LOOP(ctx,eq)               \
-    MAP_CELLS_LOOP(ctx,eq)                      \
+#define MAP_CELLS_AND_LAYERS_LOOP(ctx, eq) \
+    MAP_CELLS_LOOP(ctx, eq)                \
     MAP_LAYERS_LOOP(ctx)
 
-#define MAP_COARSE_CELLS_AND_COARSE_LAYERS_LOOP(ctx,eq)         \
-    MAP_COARSE_CELLS_LOOP(ctx,eq)                   \
+#define MAP_COARSE_CELLS_AND_COARSE_LAYERS_LOOP(ctx, eq) \
+    MAP_COARSE_CELLS_LOOP(ctx, eq)                       \
     MAP_COARSE_LAYERS_LOOP(ctx)
 
-#define MAP_REFINED_LOOP(ctx,m,n)                   \
-for (nHorRef = 0 , fM = b2t ? (m) - (Ref[ctx]-1)/2 : (m) ;      \
-    fM <= (b2t ? (m) + Ref[ctx]/2 : (m)) ; fM++)            \
-        for (fN = l2r ? (n) - (Ref[ctx]-1)/2 : (n) ;        \
-            fN <= (l2r ? (n) + Ref[ctx]/2 : (n)) ;          \
-         DBREFINE("\t\t\t\tRefLoop did C%d(%3d,%3d)\n",                 \
-                                           ctx, fM, fN)                 \
-            fN++, nHorRef ++)
+#define MAP_REFINED_LOOP(ctx, m, n)                                                                            \
+    for (nHorRef = 0, fM = b2t ? (m) - (Ref[ctx] - 1) / 2 : (m); fM <= (b2t ? (m) + Ref[ctx] / 2 : (m)); fM++) \
+        for (fN = l2r ? (n) - (Ref[ctx] - 1) / 2 : (n); fN <= (l2r ? (n) + Ref[ctx] / 2 : (n));                \
+             DBREFINE("\t\t\t\tRefLoop did C%d(%3d,%3d)\n", ctx, fM, fN) fN++, nHorRef++)
 
 //
 //
@@ -485,46 +440,37 @@ for (nHorRef = 0 , fM = b2t ? (m) - (Ref[ctx]-1)/2 : (m) ;      \
 //
 //
 
-#define V_AVERAGE3D(ctx,m,n,k,var,result)               \
-    totThick  = 0.0;                            \
-    evalValue = 0.0;                            \
-    for (fK = k - C[ctx]->refDown ; fK <= k + C[ctx]->refUp ; fK++) \
-    {                                   \
-    layThick   = I1D(C[ctx]->thick, fK);                \
-    totThick  += layThick;                      \
-    evalValue += cI3D(ctx,m,n,fK,var) * layThick;           \
-        ON_DEBUG (DBLEV4,                                              \
-        FMapLog((char*)"\t\t\tVar C%d(k%2d-%d)(%2d,%2d):%12.6e\n",  \
-             ctx, k, fK, m, n, cI3D(ctx,m,n,fK,var));   \
-        )                               \
-    }                                   \
-    result = evalValue / totThick ;
+#define V_AVERAGE3D(ctx, m, n, k, var, result)                                                        \
+    totThick = 0.0;                                                                                   \
+    evalValue = 0.0;                                                                                  \
+    for (fK = k - C[ctx]->refDown; fK <= k + C[ctx]->refUp; fK++)                                     \
+    {                                                                                                 \
+        layThick = I1D(C[ctx]->thick, fK);                                                            \
+        totThick += layThick;                                                                         \
+        evalValue += cI3D(ctx, m, n, fK, var) * layThick;                                             \
+        ON_DEBUG(DBLEV4, FMapLog((char*)"\t\t\tVar C%d(k%2d-%d)(%2d,%2d):%12.6e\n", ctx, k, fK, m, n, \
+                                 cI3D(ctx, m, n, fK, var));)                                          \
+    }                                                                                                 \
+    result = evalValue / totThick;
 
+#define V_SUM3D(ctx, m, n, k, var, result)                                                            \
+    result = 0.0;                                                                                     \
+    for (fK = k - C[ctx]->refDown; fK <= k + C[ctx]->refUp; fK++)                                     \
+    {                                                                                                 \
+        result += cI3D(ctx, m, n, fK, var);                                                           \
+        ON_DEBUG(DBLEV4, FMapLog((char*)"\t\t\tVar C%d(k%2d-%d)(%2d,%2d):%12.6e\n", ctx, k, fK, m, n, \
+                                 cI3D(ctx, m, n, fK, var));)                                          \
+    }
 
-#define V_SUM3D(ctx,m,n,k,var,result)                   \
-    result = 0.0;                           \
-    for (fK = k - C[ctx]->refDown ; fK <= k + C[ctx]->refUp ; fK++) \
-    {                                   \
-    result += cI3D(ctx,m,n,fK,var);                 \
-        ON_DEBUG (DBLEV4,                                              \
-        FMapLog((char*)"\t\t\tVar C%d(k%2d-%d)(%2d,%2d):%12.6e\n",  \
-             ctx, k, fK, m, n, cI3D(ctx,m,n,fK,var));   \
-        )                               \
-    }                                   \
-
-
-#define V_AVERAGE4D(ctx,m,n,k,l,var,result)             \
-    totThick  = 0.0;                            \
-    evalValue = 0.0;                            \
-    for (fK = k - C[ctx]->refDown ; fK <= k + C[ctx]->refUp ; fK++) \
-    {                                   \
-    layThick   = I1D(C[ctx]->thick, fK);                \
-    totThick  += layThick;                      \
-    evalValue += cI4D(ctx,m,n,fK,l,var) * layThick;         \
-        ON_DEBUG (DBLEV4,                                              \
-        FMapLog((char*)"\t\t\tVar %d C%d(k%2d-%d)(%2d,%2d):%12.6e\n",   \
-             l, ctx, k, fK, m, n, cI4D(ctx,m,n,fK,l,var));  \
-        )                               \
-    }                                   \
-    result = evalValue / totThick ;
-
+#define V_AVERAGE4D(ctx, m, n, k, l, var, result)                                                           \
+    totThick = 0.0;                                                                                         \
+    evalValue = 0.0;                                                                                        \
+    for (fK = k - C[ctx]->refDown; fK <= k + C[ctx]->refUp; fK++)                                           \
+    {                                                                                                       \
+        layThick = I1D(C[ctx]->thick, fK);                                                                  \
+        totThick += layThick;                                                                               \
+        evalValue += cI4D(ctx, m, n, fK, l, var) * layThick;                                                \
+        ON_DEBUG(DBLEV4, FMapLog((char*)"\t\t\tVar %d C%d(k%2d-%d)(%2d,%2d):%12.6e\n", l, ctx, k, fK, m, n, \
+                                 cI4D(ctx, m, n, fK, l, var));)                                             \
+    }                                                                                                       \
+    result = evalValue / totThick;

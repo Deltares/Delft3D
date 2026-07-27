@@ -2,22 +2,22 @@
 
 #ifdef WIN32
 
-#include <windows.h>
+    #include <windows.h>
 
 class MemInfo
 {
-	public:
-		unsigned __int64 GetTotalMemSize();
+public:
+    unsigned __int64 GetTotalMemSize();
 };
 
 #else
 
-#include <unistd.h>
+    #include <unistd.h>
 
 class MemInfo
 {
-	public:
-		unsigned long long GetTotalMemSize();
+public:
+    unsigned long long GetTotalMemSize();
 };
 
 #endif

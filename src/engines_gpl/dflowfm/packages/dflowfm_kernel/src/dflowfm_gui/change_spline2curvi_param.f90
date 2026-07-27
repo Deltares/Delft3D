@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,15 +36,15 @@ contains
 
    subroutine change_spline2curvi_param(jacancelled)
       use m_gridsettings, only: mfac, nfac
-      use unstruc_colors
-      use unstruc_display_data
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_spline2curvi, only: daspect, dgrow, dwidth, jacurv, jaoutside, nfacunimax, dtollr, dtolcos, jacheckfrontcollision, dunigridsize
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
-      use m_spline2curvi
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
 
       implicit none
       integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.
@@ -73,20 +73,34 @@ contains
       jacancelled = 0
       NLEVEL = 4
 
-      OPTION(1) = 'MAXIMUM NUMBER OF GRIDCELLS ALONG SPLINE'; IT(1 * 2) = 2
-      OPTION(2) = 'MAXIMUM NUMBER OF GRIDCELLS PERP. SPLINE'; IT(2 * 2) = 2
-      OPTION(3) = 'ASPECT RATIO OF FIRST GRID LAYER        '; IT(3 * 2) = 6
-      OPTION(4) = 'GRID LAYER HEIGHT GROWTH FACTOR         '; IT(4 * 2) = 6
-      OPTION(5) = 'MAXIMUM GRID LENGTH ALONG CENTER SPLINE '; IT(5 * 2) = 6
-      OPTION(6) = 'CURVATURE-ADAPTED GRID SPACING     (0,1)'; IT(6 * 2) = 2
-      OPTION(7) = 'GROW GRID OUTSIDE FIRST PART       (0,1)'; IT(7 * 2) = 2
-      OPTION(8) = 'MAX. NUM. OF GRIDCELL PERP. IN UNI. PART'; IT(8 * 2) = 2
-      OPTION(9) = '                                        '; IT(9 * 2) = 2
-      OPTION(10) = 'GRIDPTS. ON TOP OF EACH OTHER TOLERANCE '; IT(10 * 2) = 6
-      OPTION(11) = 'MINIMUM ABS. SINE OF CROSSING ANGLES   '; IT(11 * 2) = 6
-      OPTION(12) = 'PREVENT COLL.S W/OTHER GRIDPARTS  (0,1) '; IT(12 * 2) = 2
-      OPTION(13) = '                                        '; IT(13 * 2) = 2
-      OPTION(14) = 'UNIFORM GRIDSIZE (NETBND2GRID ONLY) (m) '; IT(14 * 2) = 6
+      OPTION(1) = 'MAXIMUM NUMBER OF GRIDCELLS ALONG SPLINE'
+      IT(1 * 2) = 2
+      OPTION(2) = 'MAXIMUM NUMBER OF GRIDCELLS PERP. SPLINE'
+      IT(2 * 2) = 2
+      OPTION(3) = 'ASPECT RATIO OF FIRST GRID LAYER        '
+      IT(3 * 2) = 6
+      OPTION(4) = 'GRID LAYER HEIGHT GROWTH FACTOR         '
+      IT(4 * 2) = 6
+      OPTION(5) = 'MAXIMUM GRID LENGTH ALONG CENTER SPLINE '
+      IT(5 * 2) = 6
+      OPTION(6) = 'CURVATURE-ADAPTED GRID SPACING     (0,1)'
+      IT(6 * 2) = 2
+      OPTION(7) = 'GROW GRID OUTSIDE FIRST PART       (0,1)'
+      IT(7 * 2) = 2
+      OPTION(8) = 'MAX. NUM. OF GRIDCELL PERP. IN UNI. PART'
+      IT(8 * 2) = 2
+      OPTION(9) = '                                        '
+      IT(9 * 2) = 2
+      OPTION(10) = 'GRIDPTS. ON TOP OF EACH OTHER TOLERANCE '
+      IT(10 * 2) = 6
+      OPTION(11) = 'MINIMUM ABS. SINE OF CROSSING ANGLES   '
+      IT(11 * 2) = 6
+      OPTION(12) = 'PREVENT COLL.S W/OTHER GRIDPARTS  (0,1) '
+      IT(12 * 2) = 2
+      OPTION(13) = '                                        '
+      IT(13 * 2) = 2
+      OPTION(14) = 'UNIFORM GRIDSIZE (NETBND2GRID ONLY) (m) '
+      IT(14 * 2) = 6
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
       HELPM(1) = 'INTEGER VALUE <                                             '
@@ -110,10 +124,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 100
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 100
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 

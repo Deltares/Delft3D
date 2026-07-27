@@ -7,13 +7,13 @@
 #define COMPONENT_NAME "NEFIS"
 
 #include "version_definition.h"
-/*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
-
+/*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE
+ * ===================================================================== */
 
 extern "C" {
-    extern char * getfullversionstring_nefis(void);
-    extern char * getfileversionstring_nefis(void);
-    extern char * getcompanystring_nefis(void);
+extern char* getfullversionstring_nefis(void);
+extern char* getfileversionstring_nefis(void);
+extern char* getcompanystring_nefis(void);
 }
 
 #endif /* NEFIS_VERSION */

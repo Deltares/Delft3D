@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,187 +38,147 @@
 //
 //------------------------------------------------------------------------------
 
-
-
 #include "getputarray.h"
 
-#if defined(linux)
-#define Sleep usleep
-#define SEC 1000000.0
+#if defined(__linux__)
+    #define Sleep usleep
+    #define SEC 1000000.0
 #else
-#define SEC 1000.0
+    #define SEC 1000.0
 #endif
-
 
 //------------------------------------------------------------------------------
 //  API Functions
 
-int STDCALL
-CREATESTREAM (
-    char    *filen,
-    int     filen_length
-    ) {
+int STDCALL CREATESTREAM(char* filen, int filen_length)
+{
+    char* filename = new char[filen_length + 1];
 
-    char * filename = new char [filen_length+1];
-
-    fortstr2cstr (filen, filen_length, filename);
+    fortstr2cstr(filen, filen_length, filename);
 
     // Create a stream and write its handle to a file
 
-    Stream * stream = new Stream (Stream::DEFAULT, &StreamError, &StreamTrace);
+    Stream* stream = new Stream(Stream::DEFAULT, &StreamError, &StreamTrace);
 
-    FILE * handlefile;
-    if ((handlefile = fopen (filename, "w")) == NULL) {
-        fprintf (stderr, "ABORT: CreateStream cannot create file %s\n", filename);
-        exit (1);
-        }
+    FILE* handlefile;
+    if ((handlefile = fopen(filename, "w")) == NULL)
+    {
+        fprintf(stderr, "ABORT: CreateStream cannot create file %s\n", filename);
+        exit(1);
+    }
 
-    char * handle = stream->LocalHandle ();
-    fputs (handle, handlefile);
-    fclose (handlefile);
+    char* handle = stream->LocalHandle();
+    fputs(handle, handlefile);
+    fclose(handlefile);
 
     // printf ("CreateStream put handle \"%s\" into file \"%s\"\n", handle, filename);
-    fflush (stdout);
+    fflush(stdout);
 
     // Complete the connection to our peer
 
-    stream->Connect ();
+    stream->Connect();
     // printf ("CreateStream connected to peer on \"%s\"\n", handle);
-    fflush (stdout);
+    fflush(stdout);
 
-    if (++Maxstream >= MAXSTREAMS) {
-        fprintf (stderr, "ABORT: Too many streams in CreateStream\n");
-        exit (1);
-        }
-
-    Danostream [Maxstream] = stream;
-    return Maxstream;
+    if (++Maxstream >= MAXSTREAMS)
+    {
+        fprintf(stderr, "ABORT: Too many streams in CreateStream\n");
+        exit(1);
     }
 
+    Danostream[Maxstream] = stream;
+    return Maxstream;
+}
 
-int STDCALL
-GETSTREAM (
-    char    *filen,
-    int     filen_length
-    ) {
-
-    if (++Maxstream >= MAXSTREAMS) {
-        fprintf (stderr, "ABORT: Too many streams in CreateStream\n");
-        exit (1);
-        }
-    char * filename = new char [filen_length+1];
-    fortstr2cstr (filen, filen_length, filename);
+int STDCALL GETSTREAM(char* filen, int filen_length)
+{
+    if (++Maxstream >= MAXSTREAMS)
+    {
+        fprintf(stderr, "ABORT: Too many streams in CreateStream\n");
+        exit(1);
+    }
+    char* filename = new char[filen_length + 1];
+    fortstr2cstr(filen, filen_length, filename);
 
     // Wait for file to appear, then read stream handle and delete file
 
     // printf ("GetStream waiting for file \"%s\"...\n", filename);
-    fflush (stdout);
+    fflush(stdout);
 
-    char handle [BUFSIZE];
-    while (true) {
-        FILE * handlefile;
-        if ((handlefile = fopen (filename, "r")) != NULL) {
-            fgets (handle, BUFSIZE, handlefile);
-            fclose (handlefile);
+    char handle[BUFSIZE];
+    while (true)
+    {
+        FILE* handlefile;
+        if ((handlefile = fopen(filename, "r")) != NULL)
+        {
+            fgets(handle, BUFSIZE, handlefile);
+            fclose(handlefile);
 
-            if (unlink (filename) != 0) {
-                fprintf (stderr, "ABORT: GetStream cannot delete file %s\n", filename);
-                exit (1);
-                }
-
-            break;
+            if (unlink(filename) != 0)
+            {
+                fprintf(stderr, "ABORT: GetStream cannot delete file %s\n", filename);
+                exit(1);
             }
 
-        Sleep ( 1.0 * SEC );
+            break;
         }
 
+        Sleep(1.0 * SEC);
+    }
+
     // printf ("GetStream got handle \"%s\" from file \"%s\"\n", handle, filename);
-    fflush (stdout);
+    fflush(stdout);
 
     // Connect to stream
 
-    Stream * stream = new Stream (Stream::DEFAULT, handle, &StreamError, &StreamTrace);
+    Stream* stream = new Stream(Stream::DEFAULT, handle, &StreamError, &StreamTrace);
     // printf ("GetStream connected to handle \"%s\"\n", handle);
-    fflush (stdout);
+    fflush(stdout);
 
-    Danostream [Maxstream] = stream;
+    Danostream[Maxstream] = stream;
     return Maxstream;
-    }
+}
 
+void STDCALL GETARRAY(int* handleID, double* array, int* size)
+{
+    Stream* stream = Danostream[*handleID];
+    stream->Receive((char*)array, sizeof(double) * *size);
+}
 
-void STDCALL
-GETARRAY (
-    int *   handleID,
-    double * array,
-    int *   size
-    ) {
-
-    Stream * stream = Danostream [*handleID];
-    stream->Receive ((char *) array, sizeof (double) * *size);
-    }
-
-
-void STDCALL
-PUTARRAY (
-    int *   handleID,
-    double * array,
-    int *   size
-    ) {
-
-    Stream * stream = Danostream [*handleID];
-    stream->Send ((char *) array, sizeof (double) * *size);
-    }
-
-
-
+void STDCALL PUTARRAY(int* handleID, double* array, int* size)
+{
+    Stream* stream = Danostream[*handleID];
+    stream->Send((char*)array, sizeof(double) * *size);
+}
 
 //------------------------------------------------------------------------------
 //  Utility Functions
 
-
-void
-fortstr2cstr (
-    char *  fstr,
-    int     len,
-    char *  cstr
-    ) {
-
+void fortstr2cstr(char* fstr, int len, char* cstr)
+{
     // Function to convert a space-padded FORTRAN string to a
     // null-terminated C string.
 
-    int     i;
+    int i;
 
     //    Look for the last non-space character in the character array
 
-    for (i = len-2 ; i >= 0 ; i--)
-        if (fstr[i] != ' ')
-            break;
+    for (i = len - 2; i >= 0; i--)
+        if (fstr[i] != ' ') break;
 
     //    Copy backwards all the relevant characters
 
-    cstr[i+1] = '\0';
-    for ( ; i >= 0 ; i--)
-        cstr[i] = fstr[i];
-    }
+    cstr[i + 1] = '\0';
+    for (; i >= 0; i--) cstr[i] = fstr[i];
+}
 
-
-void
-StreamError (
-    char *  reason
-    ) {
-
-    printf ("GetPutArrayError: ABORT %s\n", reason);
+void StreamError(char* reason)
+{
+    printf("GetPutArrayError: ABORT %s\n", reason);
     exit(1);
-    }
+}
 
-
-void
-StreamTrace (
-    char *  reason
-    ) {
-
+void StreamTrace(char* reason)
+{
     // printf ("GetPutArrayTrace: %s\n", reason);
-    }
-
-
-
+}

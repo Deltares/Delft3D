@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,10 +40,10 @@ contains
    !> set wall to flowlinks and wall to flownode oientations
    subroutine setwallorientations()
       use precision, only: dp
-      use m_flowgeom
+      use m_flowgeom, only: csbw, snbw, csbwn, snbwn, mxwalls, lnx, walls, xu, yu, xz, yz
+      use m_sferic, only: jsferic, jasfer3d
+      use m_alloc, only: aerr
       use network_data, only: xk, yk
-      use m_sferic
-      use m_alloc
       use m_missing, only: dmiss
       use geometry_module, only: half, spher2locvec
 
@@ -55,22 +55,36 @@ contains
 
       integer :: ierr
 
-      if (allocated(csbw)) deallocate (csbw)
-      if (allocated(snbw)) deallocate (snbw)
+      if (allocated(csbw)) then
+         deallocate (csbw)
+      end if
+      if (allocated(snbw)) then
+         deallocate (snbw)
+      end if
 
-      if (allocated(csbwn)) deallocate (csbwn)
-      if (allocated(snbwn)) deallocate (snbwn)
+      if (allocated(csbwn)) then
+         deallocate (csbwn)
+      end if
+      if (allocated(snbwn)) then
+         deallocate (snbwn)
+      end if
 
-      if (jsferic == 0 .or. jasfer3D == 0) return
+      if (jsferic == 0 .or. jasfer3D == 0) then
+         return
+      end if
 
-      allocate (csbw(2, mxwalls), stat=ierr); csbw = 1d0
+      allocate (csbw(2, mxwalls), stat=ierr)
+      csbw = 1.0_dp
       call aerr('csbw(2,mxwalls)', ierr, 2 * Lnx)
-      allocate (snbw(2, mxwalls), stat=ierr); snbw = 0d0
+      allocate (snbw(2, mxwalls), stat=ierr)
+      snbw = 0.0_dp
       call aerr('snbw(2,mxwalls)', ierr, 2 * Lnx)
 
-      allocate (csbwn(mxwalls), stat=ierr); csbwn = 1d0
+      allocate (csbwn(mxwalls), stat=ierr)
+      csbwn = 1.0_dp
       call aerr('csbwn(mxwalls)', ierr, 2 * Lnx)
-      allocate (snbwn(mxwalls), stat=ierr); snbwn = 0d0
+      allocate (snbwn(mxwalls), stat=ierr)
+      snbwn = 0.0_dp
       call aerr('snbwn(mxwalls)', ierr, 2 * Lnx)
 
       do nw = 1, mxwalls
@@ -85,14 +99,14 @@ contains
 
 !      compute orientation of flowlinks w.r.t. wall mid point
          if (L1 > 0) then
-            call spher2locvec(xu(L1), yu(L1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(1, nw), snbw(1, nw), jsferic, jasfer3D, dmiss)
+            call spher2locvec(xu(L1), yu(L1), 1, [xh], [yh], [1.0_dp], [0.0_dp], csbw(1, nw), snbw(1, nw), jsferic, jasfer3D, dmiss)
          end if
          if (L2 > 0) then
-            call spher2locvec(xu(L2), yu(L2), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(2, nw), snbw(2, nw), jsferic, jasfer3D, dmiss)
+            call spher2locvec(xu(L2), yu(L2), 1, [xh], [yh], [1.0_dp], [0.0_dp], csbw(2, nw), snbw(2, nw), jsferic, jasfer3D, dmiss)
          end if
 
 !      compute orientation of flownode w.r.t. wall mid point
-         call spher2locvec(xz(k1), yz(k1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbwn(nw), snbwn(nw), jsferic, jasfer3D, dmiss)
+         call spher2locvec(xz(k1), yz(k1), 1, [xh], [yh], [1.0_dp], [0.0_dp], csbwn(nw), snbwn(nw), jsferic, jasfer3D, dmiss)
       end do
 
       return

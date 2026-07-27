@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,119 +31,102 @@
 //
 //  stef.hummel@deltares.nl
 //
-//  (c) Deltares, july 2002
+//  (c) Deltares, 2026
 //
-
 
 #include "dio_shm_sync.h"
 
-
 #if (defined(salford32))
-#include <bool.h>          // false
-#include <stddef.h>        // salford
-#include <dbos\lib.h>      // sleep for salford
+    #include <bool.h>     // false
+    #include <stddef.h>   // salford
+    #include <dbos\lib.h> // sleep for salford
 #elif (defined(WIN32))
-#include <windows.h>      // sleep for Windows
+    #include <windows.h> // sleep for Windows
 #else
-#include "dio-sync-ux.h"  // sleep for UX
+    #include "dio-sync-ux.h" // sleep for UX
 #endif
-
 
 //
 // Sleep time for synchronisation functions
 //
 
-static int DioSyncSleepTime   = 100     ;
+static int DioSyncSleepTime = 100;
 static int DioSyncTimeOutTime = 86400000;
-
 
 //
 // General Sleep function
 //
 
-void DioSleep(
-    int sleepTime       // sleep time in milliseconds
-    )
+void DioSleep(int sleepTime // sleep time in milliseconds
+)
 {
 #if (defined(salford32))
-        float &fSleepTime = (float) sleepTime; //  / 1000.0 // TODO check
-        sleep(fSleepTime);
+    float& fSleepTime = (float)sleepTime; //  / 1000.0 // TODO check
+    sleep(fSleepTime);
 #elif (defined(WIN32))
-        Sleep(sleepTime);
+    Sleep(sleepTime);
 #else
-        DIOSYNCcSLEEP(&sleepTime);
+    DIOSYNCcSLEEP(&sleepTime);
 #endif
 }
-
 
 //
 // Set sleep time for synchronisation functions
 //
 
-void DioSetSyncTimeOut(
-    int timeOutTime     // time out for loops
-    )
+void DioSetSyncTimeOut(int timeOutTime // time out for loops
+)
 {
     DioSyncTimeOutTime = timeOutTime;
 }
 
-
-void DioSetSyncSleepTime(
-    int sleepTime       // sleep time in milliseconds
-    )
+void DioSetSyncSleepTime(int sleepTime // sleep time in milliseconds
+)
 {
     DioSyncSleepTime = sleepTime;
 }
 
-
-int DioShmInfoAvailable(
-    DioShmSync sync
-    )
+int DioShmInfoAvailable(DioShmSync sync)
 {
     int retVal = (sync != NULL);
 
     if (sync)
     {
-		int timeWaited = 0;
-        while (! sync->infoAvailable )
-		{
-			DioSleep(DioSyncSleepTime);
-			timeWaited += DioSyncSleepTime;
-			if ( timeWaited > DioSyncTimeOutTime )
-			{
-				return false;
-			}
-		}
-		retVal = sync->infoAvailable;
+        int timeWaited = 0;
+        while (!sync->infoAvailable)
+        {
+            DioSleep(DioSyncSleepTime);
+            timeWaited += DioSyncSleepTime;
+            if (timeWaited > DioSyncTimeOutTime)
+            {
+                return false;
+            }
+        }
+        retVal = sync->infoAvailable;
     }
     return retVal;
 }
 
-
-int DioShmDataConsumed(
-    DioShmSync sync,
-    DioShmPart part,
-    DsStoreFlag flag
-    )
+int DioShmDataConsumed(DioShmSync sync, DioShmPart part, DsStoreFlag flag)
 {
     int retVal = (sync != NULL);
 
     if (sync)
     {
-        if ( flag == DsCheck )
+        if (flag == DsCheck)
         {
-			int timeWaited = 0;
+            int timeWaited = 0;
             while (sync->dataAvailable[part])
-			{
-				DioSleep(DioSyncSleepTime);
-				timeWaited += DioSyncSleepTime;
-				if ( timeWaited > DioSyncTimeOutTime )
-				{
-					return false;
-				}
-			}
+            {
+                DioSleep(DioSyncSleepTime);
+                timeWaited += DioSyncSleepTime;
+                if (timeWaited > DioSyncTimeOutTime)
+                {
+                    return false;
+                }
+            }
         }
-        else if ( flag == DsConfirm )
+        else if (flag == DsConfirm)
         {
             sync->dataAvailable[part] = false;
         }
@@ -155,36 +138,30 @@ int DioShmDataConsumed(
     return retVal;
 }
 
-
-int DioShmDataStored(
-    DioShmSync sync,
-    DioShmPart part,
-    DsStoreFlag flag
-    )
+int DioShmDataStored(DioShmSync sync, DioShmPart part, DsStoreFlag flag)
 {
     int retVal = (sync != NULL);
 
     if (sync)
     {
-        if ( flag == DsCheck )
+        if (flag == DsCheck)
         {
-			int timeWaited = 0;
-            while ( (! sync->dataAvailable[part] ) &&
-                    (! sync->putterDone          )    )
+            int timeWaited = 0;
+            while ((!sync->dataAvailable[part]) && (!sync->putterDone))
             {
                 DioSleep(DioSyncSleepTime);
-				timeWaited += DioSyncSleepTime;
-				if ( timeWaited > DioSyncTimeOutTime )
-				{
-					return false;
-				}
+                timeWaited += DioSyncSleepTime;
+                if (timeWaited > DioSyncTimeOutTime)
+                {
+                    return false;
+                }
             }
-            if ( (! sync->dataAvailable[part]) && sync->putterDone)
+            if ((!sync->dataAvailable[part]) && sync->putterDone)
             {
                 retVal = false;
             }
         }
-        else if ( flag == DsConfirm )
+        else if (flag == DsConfirm)
         {
             sync->dataAvailable[part] = true;
         }
@@ -196,12 +173,9 @@ int DioShmDataStored(
     return retVal;
 }
 
-
 //
 // Fortran to C interface for set time functions
 //
 
-
-void STDCALL DIOSETSYNCTIMEOUT_C  (int * timeOutTime) { DioSetSyncTimeOut(*timeOutTime); }
-void STDCALL DIOSETSYNCSLEEPTIME_C(int * sleepTime  ) { DioSetSyncSleepTime(*sleepTime); }
-
+void STDCALL DIOSETSYNCTIMEOUT_C(int* timeOutTime) { DioSetSyncTimeOut(*timeOutTime); }
+void STDCALL DIOSETSYNCSLEEPTIME_C(int* sleepTime) { DioSetSyncSleepTime(*sleepTime); }

@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -43,10 +43,10 @@
 
       Use ParameterModule
       Use FileModule
-      Use LanguageModule
+      Use LanguageModule_rtc
       Use OtherData
       Use SyncRtcFlow
-      Use ReadLib
+      Use ReadLib_rtc
 
       INTEGER       IOUT1, IECODE, ICODE
       CHARACTER*(*) NAMSUB

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,15 +26,10 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-! unstruc.f90
 module fm_external_forcings_data
-   use m_wind
-   use m_nudge
-   use m_bnd
+   use precision, only: dp
+   use m_bnd, only: bndtype
+
    implicit none
 
    logical :: success !< want je wil maar liever succes
@@ -42,7 +37,8 @@ module fm_external_forcings_data
    integer :: mhis !< unit nr external forcings history *.exthis
    integer :: kx, filetype, mext
    character(len=256) :: qid
-   character(len=1) :: operand
+   integer :: operand
+
    integer :: numbnp !< total nr of open boundary cells for network extension
    integer :: jaoldrstfile !< using old-version rst file, which does not contain boundary info
    ! For postprocessing, each boundary polyline is named as a open boundary section.
@@ -115,17 +111,11 @@ module fm_external_forcings_data
                                                         !! 1,* = index in s1 boundary point
                                                         !! 2,* = index in s1 first point on the inside
                                                         !! 3,* = index in u1 of their connecting link (always positive to the inside)
-                                                        !! 4,* = type indicator :
-                                                        !!                        1 = waterlevel boundary
-                                                        !!                        2 = waterlevel neumann
-                                                        !!                        3 = velocity   normal ingoing component
-                                                        !!                        4 = velocity   flux boundary
-                                                        !!                        5 = velocity   Riemann boundary
-                                                        !!                        6 = waterlevel outflow
+                                                        !! 4,* = type indicator (see m_boundary_condition_type)
                                                         !! 5,* = member of boundary number somuch of this type
                                                         !! 6,* = riemann relaxation time for this point (s)
    real(kind=dp), allocatable :: zkbndz(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
-   real(kind=dp) :: zbndzval1 = -999d0, zbndzval2 = -999d0
+   real(kind=dp) :: zbndzval1 = -999.0_dp, zbndzval2 = -999.0_dp
    integer, allocatable :: kbanz(:, :) !< ban pointer 2,*
 
    integer :: nubnd !< number of velocity boundary segments
@@ -147,7 +137,7 @@ module fm_external_forcings_data
    integer :: japartqbnd !< one or more of the discharge boundaries is partitioned (1) or not (0)
    real(kind=dp), allocatable :: huqbnd(:) !< hu used in normalised Manning discharge boundary condition, based on average water-level
    integer :: nqbnd !<
-   real(kind=dp) :: qbndhutrs = 0.1d0 !< only discharge bnd here if hu>qbndhutrs
+   real(kind=dp) :: qbndhutrs = 0.1_dp !< only discharge bnd here if hu>qbndhutrs
    real(kind=dp), allocatable :: zkbndu(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
    integer, allocatable :: kbanu(:, :) !< ban pointer 2,*
 
@@ -234,7 +224,7 @@ module fm_external_forcings_data
    real(kind=dp), allocatable :: xy2bnduxy(:, :) !< uxuyadvectionvelocity boundary 'external tolerance point'
    integer, allocatable :: kduxy(:) !< uxuyadvectionvelocity boundary points temp array
    integer, allocatable :: kbnduxy(:, :) !< uxuyadvectionvelocity boundary points index array, see lines above
-   real(kind=dp) :: zbnduxyval = -999d0
+   real(kind=dp) :: zbnduxyval = -999.0_dp
 
    integer :: nbndn !< norm.velocity boundary points dimension
    real(kind=dp), allocatable :: xbndn(:) !< norm.velocity boundary points xcor
@@ -349,53 +339,11 @@ module fm_external_forcings_data
    integer, allocatable :: pumpsWithLevels(:) !< -1 = legacy, not 1 = new pump
    character(len=128), allocatable, target :: pump_ids(:) !< the pumps ids
 
-   ! Dambreak
-   !time varying
-   real(kind=dp), allocatable, target :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
-   real(kind=dp), allocatable, target :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
-   real(kind=dp), allocatable, target :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable, target :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable :: normalVelocityDambreak(:) !< dambreak normal velocity
-   real(kind=dp), allocatable :: dambreakAveraging(:, :) !< to avoid allocations/deallocations
-   real(kind=dp), allocatable :: breachWidthDerivativeDambreak(:) !< breach width derivatives
-   real(kind=dp), allocatable :: waterLevelJumpDambreak(:) !< water level jumps
-   !constant in time
-   real(kind=dp), allocatable :: maximumDambreakWidths(:) !< the total dambreak width (from pli file)
-   real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
-   real(kind=dp), allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
-   integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
-   integer, parameter :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
-   integer, parameter :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
-   integer, parameter :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
-   integer :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
-   character(len=128) :: dambreakWideningString = 'symmetric-asymmetric' !< method for dambreak widening (string for input processing)
-   integer :: ndambreaklinks !< nr of dambreak links
-   integer :: ndambreaksignals !< nr of dambreak signals
-   integer, allocatable :: L1dambreaksg(:) !< first dambreak link for each signal
-   integer, allocatable :: L2dambreaksg(:) !< second dambreak link for each signal
-   integer, allocatable :: activeDambreakLinks(:) !< activeDambreakLinks, open dambreak links
-   integer, allocatable :: LStartBreach(:) !< the starting link, the closest to the breach point
-   integer, allocatable :: kdambreak(:, :) !< dambreak links index array
-   real(kind=dp), allocatable, target :: dambreakLevelsAndWidthsFromTable(:) !< dambreak widths and heights
-   character(len=128), allocatable, target :: dambreak_ids(:) !< the dambreak ids
-   ! Upstream water level
-   integer :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
-   integer, allocatable :: dambreakLocationsUpstreamMapping(:) !< mapping of dambreak locations upstream
-   integer, allocatable :: dambreakLocationsUpstream(:) !< store cell ids for water level locations upstream
-   integer :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
-   integer, allocatable :: dambreakAverigingUpstreamMapping(:) !< mapping of dambreak averaging upstream
-   ! Downstream water level
-   integer :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
-   integer, allocatable :: dambreakLocationsDownstreamMapping(:) !< mapping of dambreak locations downstream
-   integer, allocatable :: dambreakLocationsDownstream(:) !< store cell ids for water level locations downstream
-   integer :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
-   integer, allocatable :: dambreakAverigingDownstreamMapping(:) !< mapping of dambreak averaging in the dambreak arrays
-
    type polygon
       real(kind=dp), dimension(:), allocatable :: xp, yp
       integer :: np
    end type polygon
-   type(polygon), dimension(:), allocatable :: dambreakPolygons
+   type(polygon), dimension(:), allocatable, target :: dambreakPolygons
 
    integer :: nklep !< nr of kleps
    integer, allocatable :: Lklep(:) !< klep links index array, pos=allow 1->2, neg= allow 2->1
@@ -436,46 +384,26 @@ module fm_external_forcings_data
    integer :: nwbnd !< number of wave-energy boundaries
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
-   integer :: numsrc !< nr of point sources/sinks
-   integer :: numvalssrc !< nr of point constituents
-   integer :: numsrc_nf !< nr of sources/sinks added for nearfield
-   integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
-   integer, allocatable :: ksrc(:, :) !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
-   real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
-   real(kind=dp), allocatable :: sasrc(:) !< q*salinity    (ppt) (m3/s)  if ksrc 3,4 == 0, else delta salinity
-   real(kind=dp), allocatable :: tmsrc(:) !< q*temperature (degC) (m3/s) if ksrc 3,4 == 0, else delta temperature
-   real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc,numsrc), keeps sasrc, tmsrc etc
-   real(kind=dp), allocatable :: qcsrc(:, :) !< q*constituent (c) (m3/s)  )
-   real(kind=dp), allocatable :: vcsrc(:, :) !< v*constituent (c) (m3)    )
-   real(kind=dp), allocatable :: arsrc(:) !< pipe cross sectional area (m2). If 0, no net momentum
-   real(kind=dp), allocatable :: cssrc(:, :) !< (1:2,numsrc) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
-   real(kind=dp), allocatable :: snsrc(:, :) !< (1:2,numsrc) sine discharge dir pipe on start side (1) and end side (2) of pipe.
-   real(kind=dp), allocatable :: zsrc(:, :) !< vertical level (m) bot
-   real(kind=dp), allocatable :: zsrc2(:, :) !< vertical level (m) top (optional)
-   real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),numsrc, to be reduced
-   integer, allocatable :: jamess(:) !< issue message mess for from or to point, 0, 1, 2
-   real(kind=dp), allocatable, target :: qstss(:) !< array to catch multiple_uni_discharge_salinity_temperature
-   character(len=255), allocatable :: srcname(:) !< sources/sinks name (numsrc)
-   real(kind=dp), target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
-   real(kind=dp), allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
-   real(kind=dp), target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink
-   real(kind=dp), allocatable :: xsrc(:, :) !< x-coordinates of source/sink
-   real(kind=dp), allocatable :: ysrc(:, :) !< y-coordinates of source/sink
-   integer, allocatable :: nxsrc(:) !< mx nr of points in xsrc, ysrc
-   integer, allocatable :: ksrcwaq(:) !< index array, starting point in qsrcwaq
-   real(kind=dp), allocatable :: qsrcwaq(:) !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp), allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp) :: addksources = 0d0 !< Add k of sources to turkin 1/0
+   type t_Bubblescreen
+      character(len=255) :: id !< Bubble screen id
+      integer :: num_flowcells !< Number of flow cells in bubble screen
+      integer, dimension(:), allocatable :: flowcell_indices !< Indices of flow cells in bubble screen. {size=num_flowcells}
+      integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
+      real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
+      real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
+      character(len=:), allocatable  :: discharge_input !< filename or value for the bubble screen air discharge
+      logical, dimension(:), allocatable :: is_active !< True if computation is currently possible (min 3 layers above z-level). {size=num_flowcells}
+   end type t_Bubblescreen
+
+   type(t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< Array containing all bubble screens
+   real(kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< Array to catch bubble screen air discharges
 
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
 
-   integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in a loaded new external forcings file.
-   public :: have_laterals_in_external_forcings_file, set_lateral_count_in_external_forcings_file
+   integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in all new external forcings files.
+   public :: have_laterals_in_external_forcings_file, set_lateral_count
 
-   logical :: tair_available, dewpoint_available
    real(kind=dp), allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 
@@ -489,6 +417,9 @@ contains
 !> Resets external forcing variables intended for a restart of flow simulation.
 !! For external forcings it is equivalent with reset_flowexternalforcings().
    subroutine default_fm_external_forcing_data()
+
+      use m_dambreak_breach, only: reset_dambreak_counters
+
       jatimespace = 0 ! doen ja/nee 1/0
       mhis = 0 ! unit nr external forcings history *.exthis
       numbnp = 0 ! total nr of open boundary cells for network extension
@@ -518,16 +449,13 @@ contains
       ngenstru = 0 ! nr of real general structures in the generalstructure set
       npump = 0 ! npump dimension
       npumpsg = 0 ! nr of pump signals
-      ndambreaklinks = 0 ! nr of dambreak links
-      ndambreaksignals = 0 ! nr of dambreak signals
+      call reset_dambreak_counters()
       nklep = 0 ! nr of kleps
       nvalv = 0 ! nr of valves
       nqbnd = 0 ! nr of q bnd's
       ! JRE
       nzbnd = 0
       nubnd = 0
-      numsrc = 0
-      numsrc_nf = 0
 
    end subroutine default_fm_external_forcing_data
 
@@ -535,15 +463,15 @@ contains
    !! The underlying new external forcings file must have been read before calling this function.
    pure function have_laterals_in_external_forcings_file() result(have_laterals)
       logical :: have_laterals
-      
+
       have_laterals = num_lat_ini_blocks > 0
    end function have_laterals_in_external_forcings_file
 
    !> Sets the number of lateral forcing blocks in the new external forcings file.
-   subroutine set_lateral_count_in_external_forcings_file(num_lat)
+   subroutine set_lateral_count(num_lat)
       integer, intent(in) :: num_lat
 
       num_lat_ini_blocks = num_lat
-   end subroutine set_lateral_count_in_external_forcings_file
+   end subroutine set_lateral_count
 
 end module fm_external_forcings_data

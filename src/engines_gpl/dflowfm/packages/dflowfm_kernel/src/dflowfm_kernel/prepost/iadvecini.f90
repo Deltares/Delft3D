@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_iadvecini
 
+   use precision, only: dp
    implicit none
 
    private
@@ -41,15 +42,15 @@ module m_iadvecini
 contains
 
    subroutine iadvecini()
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: lnx, iadv, lnx1d
+      use m_flow, only: cflmx, iadvec, kmx, iadvec1d
       use messagehandling, only: LEVEL_INFO, mess
 
       integer :: L, jado
 
       jado = 0
       if (jado == 1) then
-         if (cflmx > 0.9d0) then
+         if (cflmx > 0.9_dp) then
             if (iadvec == 3) then
                iadvec = 5
             else if (iadvec == 4) then
@@ -58,7 +59,7 @@ contains
                iadvec = 5
             end if
             call mess(LEVEL_INFO, 'CFLMax > 0.9, Advectype switched to semi implicit Piaczek&Williams ')
-         else if (cflmx < 0.71d0) then
+         else if (cflmx < 0.71_dp) then
             if (iadvec == 5) then
                iadvec = 3
                call mess(LEVEL_INFO, 'CFLMax < 0.71 Advectype switched to explicit ')
@@ -69,12 +70,16 @@ contains
          end if
       end if
 
-      if (kmx > 0 .or. iadvec == 0) iadvec1D = iadvec ! for now, same if 3D
+      if (kmx > 0 .or. iadvec == 0) then
+         iadvec1D = iadvec ! for now, same if 3D
+      end if
       do L = 1, lnx
          if (iadv(L) /= -1) then
             iadv(L) = iadvec
             if (L <= Lnx1D) then
-               if (iadvec /= 0) iadv(L) = iadvec1D ! voorlopig altijd piacz impl 4 voor 1D
+               if (iadvec /= 0) then
+                  iadv(L) = iadvec1D ! voorlopig altijd piacz impl 4 voor 1D
+               end if
             end if
          end if
       end do

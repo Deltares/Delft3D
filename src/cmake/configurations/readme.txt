@@ -1,5 +1,3 @@
-Moving towards this new structure is a work in progress.
-
 ./suites/fm_configuration.cmake
     - For D-Flow FM release.
     - For 'fm-suite' testbenches.
@@ -8,7 +6,7 @@ Moving towards this new structure is a work in progress.
     - For Delft3D 4 release.
     - For 'd3d4-suite' testbenches.   
 
-./testbenches/<product>_configuration.cmake
+./testbench/<product>_configuration.cmake
     - For '<product>' pre-merge testbenches.
 
 ./components/*

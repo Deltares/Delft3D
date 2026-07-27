@@ -22,7 +22,9 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
 &lambda ,relstr ,dhstru ,omcfl  ,dhtyp  ,ker    ,omboun ,&
 &omqlat ,ibuf   ,lfrou  ,qtyp   ,indx   ,bicg   ,solbuf ,&
 &stdbq  ,nstdb                                          ,&
-&debug_wr)
+&debug_wr                                               ,&
+&fm1dimp                                                 &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -271,6 +273,9 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !
 !     Include constants for array dimensions
 !
@@ -353,7 +358,6 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    integer       nstmoz
 !
    double precision dbg1
-   real dbg2
    integer debug_wr
 !
 !      !DEC$ IF DEFINED (_DLL)
@@ -370,7 +374,6 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
 !     Calculate water level dependent hydraulic parameters
 !
 !     Debug variables FM1DIMP2DO: remove
-   dbg2=waoft(100,3)
 
 !      write(42,*) 'in FLOWIT'
 !      write(42,*) 'h1'
@@ -391,10 +394,11 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    &x       ,nexres  ,exres   ,lsalt  ,izwft   ,juer   ,&
    &prslot  ,psltvr  ,waoft   ,cpa    ,rpa     ,alfab  ,&
    &tauwi   ,ksi     ,a1m     ,ker    ,dt1     ,theta2 ,&
-   &exrstp  ,omalfa  ,omc     ,omr    ,omw    )
+   &exrstp  ,omalfa  ,omc     ,omr    ,omw             ,&
+   &fm1dimp                                            ,&
+   &)
 !
 !     Debug variables FM1DIMP2DO: remove
-   dbg2=waoft(100,3)
    if (debug_wr>0) then
       write(42,*) 'FLYPA'
       write(42,*) 'h1'
@@ -529,7 +533,7 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    &hp     ,qp     ,iterbc ,resid  ,delh   ,work  ,&
    &ker    ,steady ,nqlat  ,qlat   ,qltpar ,strhis,&
    &relstr ,theta  ,dt1    ,indx   ,juer   ,bicg  ,&
-   &debug_wr)
+   &dmstrh, debug_wr)
 
    dbg1=hp(1,1)
 

@@ -45,9 +45,6 @@
 [Numerics]
    DirSpaceCDD          =  5.0000000e-001              
    FreqSpaceCSS         =  5.0000000e-001              
-   RChHsTm01            =  2.0000000e-002              
-   RChMeanHs            =  2.0000000e-002              
-   RChMeanTm01          =  2.0000000e-002              
    PercWet              =  9.8000000e+001              
    MaxIter              = 15                           
 [Output]
@@ -56,7 +53,7 @@
    UseHotFile           = false                        
    WriteCOM             = true                         
    COMWriteInterval     =  1.000000000000000000e+001         
-   COMFile              = ../dflowfm/dflowfmoutput/f34_com.nc                
+   COMFile              = ../dflowfm/output/f34_com.nc                
    locationFile         = ../dflowfm/f34_obs.xyn
    writetable           = true
    MapWriteNetCDF       = true                         

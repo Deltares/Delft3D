@@ -342,6 +342,17 @@
 				</file>
 			</checks>
 		</testCase>
+		<testCase name="e01_f01_c44_parallel_bed_slope" ref="flow2d3d_default">
+			<path version="2025-12-08T05:42:43.151000">e01_d3dflow/f01_general/c44_parallel_bed_slope</path>
+			<maxRunTime>60</maxRunTime>
+			<checks>
+				<file name="trim-run01.dat" type="NEFIS">
+					<parameters name="map-sed-series">
+						<parameter name="DPS" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
 		<testCase name="e01_f02_c01-2dw" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f02_spillways/c01-2dw</path>
 			<maxRunTime>1.23500013351</maxRunTime>
@@ -678,49 +689,6 @@
 						<parameter name="U1" toleranceAbsolute="0.0001"/>
 						<parameter name="V1" toleranceAbsolute="0.0001"/>
 						<parameter name="VICUV" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-			</checks>
-		</testCase>
-		<testCase name="e01_f06_c04-l06" ref="flow2d3d_default">
-			<path version="2024-01-08T09:50:00">e01_d3dflow/f06_ols/c04-l06</path>
-			<maxRunTime>19.2969999313</maxRunTime>
-			<checks>
-				<file name="trih-000.dat" type="NEFIS">
-					<parameters name="his-series">
-						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
-						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
-						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trim-000.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trih-000.dat" type="NEFIS">
-					<parameters name="his-series">
-						<parameter name="MNSTAT" toleranceAbsolute="0.0001"/>
-						<parameter name="XYSTAT" toleranceAbsolute="0.0001"/>
-					</parameters>
-					<parameters name="his-const">
-						<parameter name="MNTRA" toleranceAbsolute="0.0001"/>
-						<parameter name="NAMTRA" toleranceAbsolute="0.0001"/>
-						<parameter name="XYTRA" toleranceAbsolute="0.0001"/>
-					</parameters>
-					<parameters name="his-series">
-						<parameter name="ATR" toleranceAbsolute="0.0001"/>
-						<parameter name="CTR" toleranceAbsolute="0.0001"/>
-						<parameter name="DTR" toleranceAbsolute="0.0001"/>
-						<parameter name="FLTR" toleranceAbsolute="0.0001"/>
-					</parameters>
-					<parameters name="his-sed-series">
-						<parameter name="SBTR" toleranceAbsolute="0.0001"/>
-						<parameter name="SBTRC" toleranceAbsolute="0.0001"/>
-						<parameter name="SSTR" toleranceAbsolute="0.0001"/>
-						<parameter name="SSTRC" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
 			</checks>

@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -84,7 +84,7 @@ Function ReadDioPlt (inDataSet, inName, IDEBUG, ITMSTP, IOUT1, &
 ! *** Read Dio dataset with RR data
 ! *********************************************************************
 
-    Use ReadLib
+    Use ReadLib_rtc
     Use Dh_Alloc
     use Dio_Plt_Rw
 
@@ -284,7 +284,7 @@ Function ReadDioPltExt (inDataSet, inName, IExtDataSet, &
 ! *********************************************************************
 
     use Dio_Plt_Rw
-    use ReadLib
+    use ReadLib_rtc
 
     implicit none
 
@@ -487,8 +487,8 @@ Function ReadDioPltExtSelection (Ievent, Itmstp, Idebug, Iout1, &
     Use DecisionModule
     Use MeasureModule
     Use OtherData
-    Use NewTables
-    Use ReadLib
+    Use NewTables_rtc
+    Use ReadLib_rtc
 
     implicit none
 
@@ -780,7 +780,7 @@ Function WriteDioPlt3B (outDataSet, Itmstp, NameFile, Iout1, Idebug) Result(RetV
     use LocationDataModule
     use MeasureModule
 
-    Use ReadLib
+    Use ReadLib_rtc
     Use Dh_Alloc
 
     use dio_plt_rw
@@ -883,7 +883,7 @@ Function WriteDioPltSbk (outDataSet, Itmstp, NameFile, Iout1, Idebug)  Result(Re
     use LocationDataModule
     use MeasureModule
 
-    Use ReadLib
+    Use ReadLib_rtc
     Use Dh_Alloc
     use dio_plt_rw
 

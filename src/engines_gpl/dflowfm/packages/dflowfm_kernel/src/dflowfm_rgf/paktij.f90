@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,7 +47,7 @@ contains
       integer :: mmax, nmax, imax, i1, i2, j1, j2, num
       real(kind=dp) :: T(MMAX, NMAX), TH(IMAX)
       integer :: i, j, k, ji1
-      TH = 0d0
+      TH = 0.0_dp
       K = 0
       JI1 = 0
       do I = I1, I2

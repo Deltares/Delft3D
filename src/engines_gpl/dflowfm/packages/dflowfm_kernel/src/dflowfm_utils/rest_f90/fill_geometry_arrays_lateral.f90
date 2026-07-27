@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,8 +45,8 @@ contains
    subroutine fill_geometry_arrays_lateral()
       use precision, only: dp
       use m_laterals, only: numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat, model_has_laterals_across_partitions
-      use m_alloc
-      use m_partitioninfo
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: is_ghost_node, any_structures_lie_across_multiple_partitions, jampi, reduce_int_sum, my_rank, ndomains, gather_int_data_mpi_same, gatherv_double_data_mpi_dif
       use m_cell_geometry, only: xz, yz
 
       integer, allocatable :: nodeCountLatGat(:), nlatndGat(:), displs(:)
@@ -59,8 +59,8 @@ contains
 
       ! Allocate and construct geometry variable arrays (on one subdomain)
       call realloc(nodeCountLat, numlatsg, keepExisting=.false., fill=0)
-      call realloc(geomXLat, nlatnd, keepExisting=.false., fill=0d0)
-      call realloc(geomyLat, nlatnd, keepExisting=.false., fill=0d0)
+      call realloc(geomXLat, nlatnd, keepExisting=.false., fill=0.0_dp)
+      call realloc(geomyLat, nlatnd, keepExisting=.false., fill=0.0_dp)
 
       ! Count number of nodes per lateral in current subdomain, exclude ghosts.
       jprev = 0
@@ -93,14 +93,14 @@ contains
          if (my_rank == 0) then
             ! Allocate history output arrays
             call realloc(nodeCountLatMPI, numlatsg, keepExisting=.false., fill=0)
-            call realloc(geomXLatMPI, nlatndMPI, keepExisting=.false., fill=0d0)
-            call realloc(geomyLatMPI, nlatndMPI, keepExisting=.false., fill=0d0)
+            call realloc(geomXLatMPI, nlatndMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomyLatMPI, nlatndMPI, keepExisting=.false., fill=0.0_dp)
 
             ! Allocate arrays that gather information from all subdomains
             ! Data on all subdomains will be gathered in a contiguous way
             call realloc(nodeCountLatGat, numlatsg * ndomains, keepExisting=.false., fill=0)
-            call realloc(xGat, nlatndMPI, keepExisting=.false., fill=0d0)
-            call realloc(yGat, nlatndMPI, keepExisting=.false., fill=0d0)
+            call realloc(xGat, nlatndMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(yGat, nlatndMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(displs, ndomains, keepExisting=.false., fill=0)
             call realloc(nlatndGat, ndomains, keepExisting=.false., fill=0)
          else
@@ -152,8 +152,8 @@ contains
             ! Copy the MPI-arrays to nodeCountLat, geomXLat and geomYLat for the his-output
             nNodesLat = nlatndMPI
             nodeCountLat(1:numlatsg) = nodeCountLatMPI(1:numlatsg)
-            call realloc(geomXLat, nNodesLat, keepExisting=.false., fill=0d0)
-            call realloc(geomyLat, nNodesLat, keepExisting=.false., fill=0d0)
+            call realloc(geomXLat, nNodesLat, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomyLat, nNodesLat, keepExisting=.false., fill=0.0_dp)
             geomXLat(1:nNodesLat) = geomXLatMPI(1:nNodesLat)
             geomYLat(1:nNodesLat) = geomYLatMPI(1:nNodesLat)
          end if

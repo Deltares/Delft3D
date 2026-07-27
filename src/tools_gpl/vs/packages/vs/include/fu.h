@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@
 // $HeadURL$
 
 #ifndef _FU_INCLUDED
-#   define _FU_INCLUDED
+#define _FU_INCLUDED
 
-    extern BVoid FU_BInt4rinsic ( BInt4, const BText, const BText, BRea8 * ) ;
-    extern BVoid FU_basics      ( BText, BText, BText, BText ) ;
-    extern BVoid FU_set_value   ( BText, BRea4 ) ;
-    extern BVoid FU_simple      ( BText, BText, BRea8 *, BText ) ;
+extern BVoid FU_BInt4rinsic(BInt4, const BText, const BText, BRea8*);
+extern BVoid FU_basics(BText, BText, BText, BText);
+extern BVoid FU_set_value(BText, BRea4);
+extern BVoid FU_simple(BText, BText, BRea8*, BText);
 
 #endif

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,24 +43,26 @@ contains
 
    subroutine samdif()
       use precision, only: dp
-      use m_polygon
-      use m_samples
+      use m_polygon, only: increasepol, npl, xpl, ypl, zpl
+      use m_samples, only: ns, ns3, xs3, ys3, savesam, xs, ys, zs, zs3
+      use kdtree2Factory, only: build_kdtree, treeglob, realloc_results_kdtree, make_queryvector_kdtree, kdtree2_n_nearest, itree_empty, delete_kdtree2
+      use m_missing, only: dmiss
+      use m_delpol, only: delpol
       use network_data, only: tooclose
-      use kdtree2Factory
-      use m_missing
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dbdistance
-      use m_delpol
 
       real(kind=dp) :: dist
 
       integer :: i, ipnt, ierror
       integer :: numnoval
 
-      real(kind=dp), parameter :: VAL_NOPNT = 1234d0
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: VAL_NOPNT = 1234.0_dp
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
-      if (NS < 1 .or. NS3 < 2) goto 1234
+      if (NS < 1 .or. NS3 < 2) then
+         goto 1234
+      end if
 
 !  build kdtree
       call build_kdtree(treeglob, NS3, xs3, ys3, ierror, jsferic, dmiss)
@@ -68,7 +70,9 @@ contains
 !  reallocate results vector (fixed size)
       call realloc_results_kdtree(treeglob, 1)
 
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       call savesam()
 
@@ -124,7 +128,9 @@ contains
 1234  continue
 
 !  deallocate kdtree if it was created
-      if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+      if (treeglob%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeglob)
+      end if
 
       return
    end subroutine samdif

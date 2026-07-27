@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,10 +45,10 @@ contains
    subroutine QucPer3Dsigmapiaczekteta(LL, Lb, Lt, cs, sn, ae, ai)
       use precision, only: dp
 
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: lbot, ltop, qa, vol1, ucxu, ucyu, u1
+      use m_flowgeom, only: acl, ln, nd
+      use m_sferic, only: jasfer3d
       use m_flowtimes, only: dts
-      use m_sferic
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
@@ -67,37 +67,45 @@ contains
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
 
-      ae = 0d0; ai = 0d0
+      ae = 0.0_dp
+      ai = 0.0_dp
 
       do n12 = 1, 2
          if (n12 == 1) then
             ac = acL(LL)
          else
-            ac = 1d0 - acL(LL)
+            ac = 1.0_dp - acL(LL)
          end if
          k12 = ln(n12, LL)
          do La = 1, nd(k12)%lnx ! loop over all attached links
             LLL = nd(k12)%ln(La)
-            nn12 = 1; if (LLL > 0) nn12 = 2
+            nn12 = 1
+            if (LLL > 0) then
+               nn12 = 2
+            end if
             LLLL = abs(LLL)
 
-            Lb2 = Lbot(LLLL); Lt2 = Ltop(LLLL)
+            Lb2 = Lbot(LLLL)
+            Lt2 = Ltop(LLLL)
             do Lk = LB2, LT2
 
                if (qa(Lk) /= 0) then ! include own link
-                  k1 = ln(1, Lb + Lk - Lb2); k2 = ln(2, Lb + Lk - Lb2)
-                  volu = acL(LL) * vol1(k1) + (1d0 - acl(LL)) * vol1(k2)
-                  if (volu > 0d0) then
+                  k1 = ln(1, Lb + Lk - Lb2)
+                  k2 = ln(2, Lb + Lk - Lb2)
+                  volu = acL(LL) * vol1(k1) + (1.0_dp - acl(LL)) * vol1(k2)
+                  if (volu > 0.0_dp) then
                      cfl = abs(qa(Lk)) * dts / volu
-                     if (nd(k12)%lnx == 3) cfl = 1.4d0 * cfl
-                     if (cfl > 0d0) then
-                        tet = max(0d0, 1d0 - 1d0 / cfl)
+                     if (nd(k12)%lnx == 3) then
+                        cfl = 1.4_dp * cfl
+                     end if
+                     if (cfl > 0.0_dp) then
+                        tet = max(0.0_dp, 1.0_dp - 1.0_dp / cfl)
                         if (jasfer3D == 0) then
-                           ucin = ucxu(Lk) * cs + ucyu(Lk) * sn - (1d0 - tet) * u1(Lb + Lk - Lb2)
+                           ucin = ucxu(Lk) * cs + ucyu(Lk) * sn - (1.0_dp - tet) * u1(Lb + Lk - Lb2)
                         else
                            ucinx = lin2nodx(LLLL, nn12, ucxu(Lk), ucyu(Lk))
                            uciny = lin2nody(LLLL, nn12, ucxu(Lk), ucyu(Lk))
-                           ucin = nod2linx(LL, n12, ucinx, uciny) * cs + nod2liny(LL, n12, ucinx, uciny) * sn - (1d0 - tet) * u1(Lb + Lk - Lb2)
+                           ucin = nod2linx(LL, n12, ucinx, uciny) * cs + nod2liny(LL, n12, ucinx, uciny) * sn - (1.0_dp - tet) * u1(Lb + Lk - Lb2)
                         end if
 
                         acq = ac * qa(Lk) / volu

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,13 +40,13 @@ contains
 
    subroutine comp_gridheights(mc, eheight, ierror)
       use precision, only: dp
-      use m_splines
-      use m_gridsettings
-      use m_spline2curvi
-      use m_alloc
-      use m_missing
-      use m_splint
-      use m_spline
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_gridsettings, only: mfac
+      use m_spline2curvi, only: nsubmax, splineprops, sg1
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_splint, only: splint
+      use m_spline, only: spline
       use m_splinelength_int, only: splinelength_int
 
       integer, intent(in) :: mc !< number of grid points
@@ -79,7 +79,7 @@ contains
       mfacmax = mfac
 
       eheight(1, :) = DMISS
-      eheight(2:Nsubmax, :) = 0d0
+      eheight(2:Nsubmax, :) = 0.0_dp
 
       allocate (hL(Nsubmax, mcs), hR(Nsubmax, mcs))
       allocate (hL2(mcs), hR2(mcs))
@@ -92,7 +92,9 @@ contains
       do is = 1, mcs
          mfac = splineprops(is)%mfac
 !      if ( mfac.lt.1 ) cycle
-         if (splineprops(is)%id /= 0) cycle
+         if (splineprops(is)%id /= 0) then
+            cycle
+         end if
 
          igL = splineprops(is)%iL
          igR = splineprops(is)%iR
@@ -100,7 +102,7 @@ contains
 
 !     reallocate if necessary
          if (ncs > ubound(nlistL, 1)) then
-            numnew = int(1.2d0 * dble(ncs)) + 1
+            numnew = int(1.2_dp * real(ncs, kind=dp)) + 1
             call realloc(nlistL, numnew)
             call realloc(nlistR, numnew)
             call realloc(nlist_loc, numnew)
@@ -110,13 +112,17 @@ contains
          NsubL = minval(splineprops(is)%NsubL(1:ncs))
          NsubR = minval(splineprops(is)%NsubR(1:ncs))
 
-         if (NsubL == 0) hgL(1, 1:mfac) = splineprops(is)%hmax
-         if (NsubR == 0) hgR(1, 1:mfac) = splineprops(is)%hmax
+         if (NsubL == 0) then
+            hgL(1, 1:mfac) = splineprops(is)%hmax
+         end if
+         if (NsubR == 0) then
+            hgR(1, 1:mfac) = splineprops(is)%hmax
+         end if
 
 !     interpolate the gridheight
 !     use default settings
-         hgL = 0d0
-         hgR = 0d0
+         hgL = 0.0_dp
+         hgR = 0.0_dp
          hgL(1, 1:mfac) = splineprops(is)%hmax
          hgR(1, 1:mfac) = splineprops(is)%hmax
 
@@ -142,26 +148,26 @@ contains
 
 !        reallocate if necessary
             if (num > ubound(xlist, 1)) then
-               numnew = int(1.2d0 * dble(num)) + 1
+               numnew = int(1.2_dp * real(num, kind=dp)) + 1
                call realloc(xlist, numnew)
                call realloc(ylist, numnew)
             end if
             xlist(1:num) = xsp(is, 1:num)
             ylist(1:num) = ysp(is, 1:num)
 
-            sc(1) = splinelength_int(num, xlist, ylist, 0d0, sg1(igL))
+            sc(1) = splinelength_int(num, xlist, ylist, 0.0_dp, sg1(igL))
             do i = 1, mfac
                sc(i + 1) = sc(i) + splinelength_int(num, xlist, ylist, sg1(igL + i - 1), sg1(igL + i))
             end do
 
 !        compute at edge center points
             do i = 1, mfac
-               sc(i) = 0.5d0 * (sc(i) + sc(i + 1)) ! sc(i+1) unaffected
+               sc(i) = 0.5_dp * (sc(i) + sc(i + 1)) ! sc(i+1) unaffected
             end do
             sc(mfac + 1) = DMISS
 
 !        compute center spline path length of cross splines
-            t(1) = splinelength_int(num, xlist, ylist, 0d0, splineprops(is)%t(1))
+            t(1) = splinelength_int(num, xlist, ylist, 0.0_dp, splineprops(is)%t(1))
             do i = 1, ncs - 1
                t(i + 1) = t(i) + splinelength_int(num, xlist, ylist, splineprops(is)%t(i), splineprops(is)%t(i + 1))
             end do
@@ -178,7 +184,7 @@ contains
 
 !              reallocate if necessary
                   if (ndx > ubound(hlist, 1)) then
-                     numnew = int(1.2d0 * dble(ndx)) + 1
+                     numnew = int(1.2_dp * real(ndx, kind=dp)) + 1
                      call realloc(hlist, numnew)
                   end if
                   hlist(1:ndx) = hL(j, idx(1:ndx))
@@ -197,17 +203,19 @@ contains
                         tL = tR
                         iR = iR + 1
                         tR = t(idx(iR))
-                        if (iR == ndx) exit
+                        if (iR == ndx) then
+                           exit
+                        end if
                      end do
 
-                     if (abs(tR - tL) > 1d-8) then
+                     if (abs(tR - tL) > 1.0e-8_dp) then
                         fac = (sc(i) - tL) / (tR - tL)
                      else
-                        fac = 0d0
+                        fac = 0.0_dp
                         iR = iL
                      end if
 
-                     fac = max(min(dble((iL)) + fac - 1d0, dble(ndx - 1)), 0d0)
+                     fac = max(min(real((iL), kind=dp) + fac - 1.0_dp, real(ndx - 1, kind=dp)), 0.0_dp)
 !
                      call splint(hlist, hL2, ndx, fac, hgL(j, i))
 
@@ -225,7 +233,7 @@ contains
 
 !              reallocate if necessary
                   if (ndx > ubound(hlist, 1)) then
-                     numnew = int(1.2d0 * dble(ndx)) + 1
+                     numnew = int(1.2_dp * real(ndx, kind=dp)) + 1
                      call realloc(hlist, numnew)
                   end if
                   hlist(1:ndx) = hR(j, idx(1:ndx))
@@ -245,17 +253,19 @@ contains
                         tL = tR
                         iR = iR + 1
                         tR = t(idx(iR))
-                        if (iR == ndx) exit
+                        if (iR == ndx) then
+                           exit
+                        end if
                      end do
 
-                     if (abs(tR - tL) > 1d-8) then
+                     if (abs(tR - tL) > 1.0e-8_dp) then
                         fac = (sc(i) - tL) / (tR - tL)
                      else
-                        fac = 0d0
+                        fac = 0.0_dp
                         iR = iL
                      end if
 
-                     fac = max(min(dble((iL)) + fac - 1d0, dble(ndx - 1)), 0d0)
+                     fac = max(min(real((iL), kind=dp) + fac - 1.0_dp, real(ndx - 1, kind=dp)), 0.0_dp)
 
 !                 spline interpolation between two original cross splines only
                      isL = splineprops(is)%ics(idx(iL))
@@ -304,14 +314,30 @@ contains
       mfac = mfacmax
 
 !  deallocate
-      if (allocated(hL)) deallocate (hL, hR)
-      if (allocated(hL2)) deallocate (hL2, hR2)
-      if (allocated(sc)) deallocate (sc)
-      if (allocated(hgL)) deallocate (hgL, hgR)
-      if (allocated(hgL_loc)) deallocate (hgL_loc, hgR_loc)
-      if (allocated(xlist)) deallocate (xlist, ylist, hlist, nlistL, nlistR, nlist_loc)
-      if (allocated(ics)) deallocate (ics, idx)
-      if (allocated(t)) deallocate (t)
+      if (allocated(hL)) then
+         deallocate (hL, hR)
+      end if
+      if (allocated(hL2)) then
+         deallocate (hL2, hR2)
+      end if
+      if (allocated(sc)) then
+         deallocate (sc)
+      end if
+      if (allocated(hgL)) then
+         deallocate (hgL, hgR)
+      end if
+      if (allocated(hgL_loc)) then
+         deallocate (hgL_loc, hgR_loc)
+      end if
+      if (allocated(xlist)) then
+         deallocate (xlist, ylist, hlist, nlistL, nlistR, nlist_loc)
+      end if
+      if (allocated(ics)) then
+         deallocate (ics, idx)
+      end if
+      if (allocated(t)) then
+         deallocate (t)
+      end if
 
       return
 

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,6 @@
 //
 //------------------------------------------------------------------------------
 
-
 #include "stream.h"
 
 #include <stdarg.h>
@@ -43,564 +42,469 @@
 #include <string.h>
 #include <sys/types.h>
 
-#if defined (WIN32)
-#include <windows.h>
-#include <process.h>
-#include <atltime.h>
+#if defined(WIN32)
+    #include <windows.h>
+    #include <process.h>
+    #include <atltime.h>
 #else
-#include <sys/time.h>
-#include <sys/wait.h>
+    #include <sys/time.h>
+    #include <sys/wait.h>
 #endif
 
-#define MAXSTR          1000
-
+#define MAXSTR 1000
 
 typedef long long Timestamp;
 
+void Abort(char*, ...);
+Timestamp GetTime(void);
+void Log(char*, ...);
+void MasterProcess(Stream*, int, int);
+void SlaveProcess(Stream::StreamType, char*, int, int, int);
+void StreamError(char*);
+void StreamTrace(char*);
+void Usage(char*);
 
-void        Abort               (char *, ...);
-Timestamp   GetTime             (void);
-void        Log                 (char *, ...);
-void        MasterProcess       (Stream *, int, int);
-void        SlaveProcess        (Stream::StreamType, char *, int, int, int);
-void        StreamError         (char *);
-void        StreamTrace         (char *);
-void        Usage               (char *);
-
-#if defined (WITH_MPI)
-void        StartMPI            (void);
+#if defined(WITH_MPI)
+void StartMPI(void);
 #endif
-void        StartTCPIP          (void);
-
+void StartTCPIP(void);
 
 //------------------------------------------------------------------------------
 
+int bufferSize = 10 * 1024;
+int numMessages = 128 * 1024;
+int verbose = 0;
+char* streamHandle = NULL;
+char* remoteHost = NULL;
+char hostname[MAXSTR + 1];
+bool mpi_initialized = false;
+char* remote_shell = "rsh";
+char* exePath = NULL;
 
-int     bufferSize      = 10 * 1024;
-int     numMessages     = 128 * 1024;
-int     verbose         = 0;
-char *  streamHandle    = NULL;
-char *  remoteHost      = NULL;
-char    hostname [MAXSTR+1];
-bool    mpi_initialized = false;
-char *  remote_shell    = "rsh";
-char *  exePath         = NULL;
-
-int
-main (
-    int     argc,
-    char    *argv[],
-    char    *envp[]
-    ) {
-
+int main(int argc, char* argv[], char* envp[])
+{
     // Parse command-line arguments
 
     Stream::StreamType streamtype = Stream::UNDEFINED;
     int c;
-        int optind;
-        char * s;
-        optind=1;
-    //while ((c = getopt (argc, argv, "b:Mm:n:r:SsTv?")) != -1) {
-    while ( optind < argc ) {
-                s = argv[optind];
+    int optind;
+    char* s;
+    optind = 1;
+    // while ((c = getopt (argc, argv, "b:Mm:n:r:SsTv?")) != -1) {
+    while (optind < argc)
+    {
+        s = argv[optind];
         if (*s == '-') s++;
-                c = int(*s);
-        switch (c) {
+        c = int(*s);
+        switch (c)
+        {
             case 'b':
-                                optind++;
-                bufferSize = atoi (argv[optind]);
-                                optind++;
+                optind++;
+                bufferSize = atoi(argv[optind]);
+                optind++;
                 break;
             case 'M':
-                                optind++;
-#if defined (WITH_MPI)
+                optind++;
+#if defined(WITH_MPI)
                 streamtype = Stream::MPI;
 #else
-                Abort ("MPI  mode not supported in this build");
+                Abort("MPI  mode not supported in this build");
 #endif
                 break;
             case 'm':
-                                optind++;
+                optind++;
                 streamtype = Stream::TCPIP;
-                streamHandle = new char [strlen (argv[optind])];
-                strcpy (streamHandle, argv[optind]);
-                                optind++;
+                streamHandle = new char[strlen(argv[optind])];
+                strcpy(streamHandle, argv[optind]);
+                optind++;
                 break;
             case 'n':
-                                optind++;
-                numMessages = atoi (argv[optind]);
-                                optind++;
+                optind++;
+                numMessages = atoi(argv[optind]);
+                optind++;
                 break;
             case 'r':
-                                optind++;
-#if defined (WIN32)
-                Abort ("Remote host is not supported on Windows");
+                optind++;
+#if defined(WIN32)
+                Abort("Remote host is not supported on Windows");
 #else
-                                streamtype = Stream::TCPIP;
-                remoteHost = new char [strlen (argv[optind])];
-                strcpy (remoteHost, argv[optind]);
-                                optind++;
+                streamtype = Stream::TCPIP;
+                remoteHost = new char[strlen(argv[optind])];
+                strcpy(remoteHost, argv[optind]);
+                optind++;
 #endif
-                                break;
+                break;
             case 'S':
-                                optind++;
+                optind++;
                 remote_shell = NULL;
                 break;
             case 's':
-                                optind++;
-#if defined (WIN32)
-                Abort ("Remote shell is not supported on Windows");
+                optind++;
+#if defined(WIN32)
+                Abort("Remote shell is not supported on Windows");
 #else
-                                remote_shell = "ssh";
+                remote_shell = "ssh";
 #endif
-                                break;
+                break;
             case 'T':
-                                optind++;
+                optind++;
                 streamtype = Stream::TCPIP;
                 break;
             case 'v':
-                                optind++;
+                optind++;
                 verbose++;
                 break;
             case '?':
-                Usage (argv[0]);
-                exit (0);
+                Usage(argv[0]);
+                exit(0);
 
             default:
-                Usage (argv[0]);
-                Abort ("Invalid command-line arguments");
-            }
+                Usage(argv[0]);
+                Abort("Invalid command-line arguments");
         }
+    }
 
-    if (optind < argc) {
-        Usage (argv[0]);
-        Abort ("Invalid command-line argument");
-        }
+    if (optind < argc)
+    {
+        Usage(argv[0]);
+        Abort("Invalid command-line argument");
+    }
 
-
-#if defined (WIN32)
-        // Always without remote_shell
-        remote_shell = NULL;
-    char * w32ExePath = new char [strlen (argv[0])];
-        exePath = w32ExePath;
+#if defined(WIN32)
+    // Always without remote_shell
+    remote_shell = NULL;
+    char* w32ExePath = new char[strlen(argv[0])];
+    exePath = w32ExePath;
 #else
-    if (gethostname (hostname, sizeof hostname) != 0)
-        Abort ("Cannot get hostname");
+    if (gethostname(hostname, sizeof hostname) != 0) Abort("Cannot get hostname");
 #endif
 
-    switch (streamtype) {
-#if defined (WITH_MPI)
+    switch (streamtype)
+    {
+#if defined(WITH_MPI)
         case Stream::MPI:
-            StartMPI ();
+            StartMPI();
             break;
 #endif
         case Stream::TCPIP:
-            StartTCPIP ();
+            StartTCPIP();
             break;
         default:
-            Abort ("Either TCP/IP (-T) or MPICH-2 (-M) must be specified");
-        }
-
-    exit (0);
+            Abort("Either TCP/IP (-T) or MPICH-2 (-M) must be specified");
     }
 
+    exit(0);
+}
 
 //------------------------------------------------------------------------------
 
-
-void
-StartTCPIP (
-    void
-    ) {
-
+void StartTCPIP(void)
+{
     // Play (remote) slave role if a stream handle was specified
 
-    if (streamHandle != NULL) {
-        if (remoteHost != NULL)
-            Abort ("Cannot specify both remote host and master handle");
+    if (streamHandle != NULL)
+    {
+        if (remoteHost != NULL) Abort("Cannot specify both remote host and master handle");
 
-        SlaveProcess (Stream::TCPIP, streamHandle, numMessages, bufferSize, verbose);
-        exit (0);
-        }
+        SlaveProcess(Stream::TCPIP, streamHandle, numMessages, bufferSize, verbose);
+        exit(0);
+    }
 
-#if defined (WIN32)
+#if defined(WIN32)
 #else
-        // Get full run-time path name for this executable
+    // Get full run-time path name for this executable
 
-    if ((exePath = getenv ("_")) == NULL)
-        Abort ("Cannot get executable name from environment ($_)");
+    if ((exePath = getenv("_")) == NULL) Abort("Cannot get executable name from environment ($_)");
 
-    if (exePath[0] != '/') {
-        char * pwd;
-        if ((pwd = getenv ("PWD")) == NULL)
-            Abort ("Cannot get working directory ($PWD) from environment");
+    if (exePath[0] != '/')
+    {
+        char* pwd;
+        if ((pwd = getenv("PWD")) == NULL) Abort("Cannot get working directory ($PWD) from environment");
 
-        char * buffer = new char [strlen (pwd) + strlen (exePath) + 2];
-        sprintf (buffer, "%s/%s", pwd, exePath);
+        char* buffer = new char[strlen(pwd) + strlen(exePath) + 2];
+        sprintf(buffer, "%s/%s", pwd, exePath);
         exePath = buffer;
-        }
+    }
 #endif
 
     // Create a stream
 
-    Stream * stream;
+    Stream* stream;
     if (verbose > 1)
-        stream = new Stream (Stream::TCPIP, &StreamError, &StreamTrace);
+        stream = new Stream(Stream::TCPIP, &StreamError, &StreamTrace);
     else
-        stream = new Stream (Stream::TCPIP, &StreamError);
+        stream = new Stream(Stream::TCPIP, &StreamError);
 
     if (verbose)
-        Log ("Master stream (TCP/IP): local=\"%s\", remote=\"%s\"",
-                    stream->LocalHandle (),
-                    stream->RemoteHandle ()
-                    );
+        Log("Master stream (TCP/IP): local=\"%s\", remote=\"%s\"", stream->LocalHandle(), stream->RemoteHandle());
 
     // Fork a remote shell process to run slave
 
-    char * command = new char [MAXSTR];
-    if (remote_shell == NULL) {
-        sprintf (command, "%s -b %d -n %d -m %s %s %s",
-                    exePath,
-                    bufferSize,
-                    numMessages,
-                    stream->LocalHandle (),
-                    (verbose > 0) ? "-v" : "",
-                    (verbose > 1) ? "-v" : ""
-                    );
-        }
-    else {
-        sprintf (command, "%s -n %s '%s -b %d -n %d -m %s %s %s'",
-                    remote_shell,
-                    (remoteHost == NULL) ? "localhost" : remoteHost,
-                    exePath,
-                    bufferSize,
-                    numMessages,
-                    stream->LocalHandle (),
-                    (verbose > 0) ? "-v" : "",
-                    (verbose > 1) ? "-v" : ""
-                    );
-        }
+    char* command = new char[MAXSTR];
+    if (remote_shell == NULL)
+    {
+        sprintf(command, "%s -b %d -n %d -m %s %s %s", exePath, bufferSize, numMessages, stream->LocalHandle(),
+                (verbose > 0) ? "-v" : "", (verbose > 1) ? "-v" : "");
+    }
+    else
+    {
+        sprintf(command, "%s -n %s '%s -b %d -n %d -m %s %s %s'", remote_shell,
+                (remoteHost == NULL) ? "localhost" : remoteHost, exePath, bufferSize, numMessages,
+                stream->LocalHandle(), (verbose > 0) ? "-v" : "", (verbose > 1) ? "-v" : "");
+    }
 
-
-#if defined (WIN32)
-    STARTUPINFO    si;
-    PROCESS_INFORMATION  pi;
+#if defined(WIN32)
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
 
     GetStartupInfo(&si);
 
-    CreateProcess(      NULL, (LPWSTR) command, // Name of app to launch
-                                        NULL,                                   // Default process security attributes
-                                        NULL,                                   // Default thread security attributes
-                                        FALSE,                                  // Don't inherit handles from the parent
-                                        0,                                              // Normal priority
-                                        NULL,                                   // Use the same environment as the parent
-                                        NULL,                                   // Launch in the current directory
-                                        &si,                                    // Startup Information
-                                        &pi);                                   // Process information stored upon return
+    CreateProcess(NULL, (LPWSTR)command, // Name of app to launch
+                  NULL,                  // Default process security attributes
+                  NULL,                  // Default thread security attributes
+                  FALSE,                 // Don't inherit handles from the parent
+                  0,                     // Normal priority
+                  NULL,                  // Use the same environment as the parent
+                  NULL,                  // Launch in the current directory
+                  &si,                   // Startup Information
+                  &pi);                  // Process information stored upon return
 #else
     int pid;
-    if ((pid = fork ()) == 0) {
-        if (system (command) == 0)
-            exit (0);
+    if ((pid = fork()) == 0)
+    {
+        if (system(command) == 0)
+            exit(0);
         else
-            Abort ("Trouble running \"%s\"", command);
-        }
+            Abort("Trouble running \"%s\"", command);
+    }
 #endif
 
-    if (verbose)
-        Log ("Master forked \"%s\"", command);
+    if (verbose) Log("Master forked \"%s\"", command);
 
     // Play master role
 
-    MasterProcess (stream, numMessages, bufferSize);
+    MasterProcess(stream, numMessages, bufferSize);
 
     // Wait for child to terminate
 
-#if defined (WIN32)
+#if defined(WIN32)
 #else
-    if (wait ((int *) NULL) != pid)
-        Abort ("Wait for child process %d fails\n", pid);
+    if (wait((int*)NULL) != pid) Abort("Wait for child process %d fails\n", pid);
 #endif
 
-    if (verbose)
-        Log ("Master terminating");
+    if (verbose) Log("Master terminating");
 
     return;
-    }
+}
 
+#if defined(WITH_MPI)
 
-#if defined (WITH_MPI)
+    #define MASTER 0
+    #define SLAVE 1
 
-#define MASTER  0
-#define SLAVE   1
-
-void
-StartMPI (
-    void
-    ) {
-
+void StartMPI(void)
+{
     // Initialize multi-threaded MPI environment
 
-#if defined (NO_CPP_MPI)
+    #if defined(NO_CPP_MPI)
     int argc;
-    char ** argv;
+    char** argv;
     int mpithreads = MPI_THREAD_MULTIPLE;
     int provided;
-    MPI_Init_thread (&argc, &argv, mpithreads, &provided);
-    if (provided != mpithreads)
-        Abort ("MPI does not support threading the way we need it to");
+    MPI_Init_thread(&argc, &argv, mpithreads, &provided);
+    if (provided != mpithreads) Abort("MPI does not support threading the way we need it to");
 
     int rank;
-    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     int size;
-    MPI_Comm_size (MPI_COMM_WORLD, &size);
-#else
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    #else
     int mpithreads = MPI::THREAD_MULTIPLE;
-    if (MPI::Init_thread (mpithreads) != mpithreads)
-        Abort ("MPI does not support threading the way we need it to");
+    if (MPI::Init_thread(mpithreads) != mpithreads) Abort("MPI does not support threading the way we need it to");
 
-    int rank = MPI::COMM_WORLD.Get_rank ();
-    int size = MPI::COMM_WORLD.Get_size ();
-#endif
+    int rank = MPI::COMM_WORLD.Get_rank();
+    int size = MPI::COMM_WORLD.Get_size();
+    #endif
 
     mpi_initialized = true;
 
-    if (size < 2)
-        Abort ("Too few MPI processes (need at least two)");
+    if (size < 2) Abort("Too few MPI processes (need at least two)");
 
-    if (rank == MASTER) {
-        Stream * stream;
+    if (rank == MASTER)
+    {
+        Stream* stream;
         if (verbose > 1)
-            stream = new Stream (Stream::MPI, &StreamError, &StreamTrace);
+            stream = new Stream(Stream::MPI, &StreamError, &StreamTrace);
         else
-            stream = new Stream (Stream::MPI, &StreamError);
+            stream = new Stream(Stream::MPI, &StreamError);
 
-        char * handle = stream->LocalHandle ();
-
-        if (verbose)
-            Log ("Master stream (MPI): local=\"%s\", remote=\"%s\"",
-                        stream->LocalHandle (),
-                        stream->RemoteHandle ()
-                        );
-
-#if defined (NO_CPP_MPI)
-        MPI_Send (handle, strlen (handle), MPI_CHAR, SLAVE, 0, MPI_COMM_WORLD);
-#else
-        MPI::COMM_WORLD.Send (handle, strlen (handle), MPI::CHAR, SLAVE, 0);
-#endif
-
-        MasterProcess (stream, numMessages, bufferSize);
+        char* handle = stream->LocalHandle();
 
         if (verbose)
-            Log ("Master terminating");
-        }
+            Log("Master stream (MPI): local=\"%s\", remote=\"%s\"", stream->LocalHandle(), stream->RemoteHandle());
 
-    else if (rank == SLAVE) {
-        char handle [Stream::MAXHANDLE];
-#if defined (NO_CPP_MPI)
-        MPI_Status status;
-        MPI_Recv (handle, Stream::MAXHANDLE, MPI_CHAR, MASTER, 0, MPI_COMM_WORLD, &status);
-#else
-        MPI::COMM_WORLD.Recv (handle, Stream::MAXHANDLE, MPI::CHAR, MASTER, 0);
-#endif
+    #if defined(NO_CPP_MPI)
+        MPI_Send(handle, strlen(handle), MPI_CHAR, SLAVE, 0, MPI_COMM_WORLD);
+    #else
+        MPI::COMM_WORLD.Send(handle, strlen(handle), MPI::CHAR, SLAVE, 0);
+    #endif
 
-        SlaveProcess (Stream::MPI, handle, numMessages, bufferSize, verbose);
-        }
+        MasterProcess(stream, numMessages, bufferSize);
 
-#if defined (NO_CPP_MPI)
-    MPI_Finalize ();
-#else
-    MPI::Finalize ();
-#endif
+        if (verbose) Log("Master terminating");
     }
 
-#endif
+    else if (rank == SLAVE)
+    {
+        char handle[Stream::MAXHANDLE];
+    #if defined(NO_CPP_MPI)
+        MPI_Status status;
+        MPI_Recv(handle, Stream::MAXHANDLE, MPI_CHAR, MASTER, 0, MPI_COMM_WORLD, &status);
+    #else
+        MPI::COMM_WORLD.Recv(handle, Stream::MAXHANDLE, MPI::CHAR, MASTER, 0);
+    #endif
 
+        SlaveProcess(Stream::MPI, handle, numMessages, bufferSize, verbose);
+    }
+
+    #if defined(NO_CPP_MPI)
+    MPI_Finalize();
+    #else
+    MPI::Finalize();
+    #endif
+}
+
+#endif
 
 //------------------------------------------------------------------------------
 
-
-void
-MasterProcess (
-    Stream * stream,
-    int     numMessages,
-    int     bufferSize
-    ) {
-
+void MasterProcess(Stream* stream, int numMessages, int bufferSize)
+{
     // Determine the current wall time
 
-    Timestamp startTime = GetTime ();
+    Timestamp startTime = GetTime();
 
-    stream->Connect ();
+    stream->Connect();
 
     // Read and write many messages
 
-    char * buffer = new char [bufferSize];
-    for (int i = 0 ; i < numMessages/2 ; i++) {
-        stream->Receive (buffer, bufferSize);
-        stream->Send (buffer, bufferSize);
-        }
+    char* buffer = new char[bufferSize];
+    for (int i = 0; i < numMessages / 2; i++)
+    {
+        stream->Receive(buffer, bufferSize);
+        stream->Send(buffer, bufferSize);
+    }
 
     // Print elapsed time
 
-    Timestamp duration = GetTime () - startTime;
-    Log ("Master %lld microsec per send/receive of %d bytes (%d in %lld sec)",
-                    duration / numMessages,
-                    bufferSize,
-                    numMessages,
-                    duration / 1000000
-                    );
-    }
+    Timestamp duration = GetTime() - startTime;
+    Log("Master %lld microsec per send/receive of %d bytes (%d in %lld sec)", duration / numMessages, bufferSize,
+        numMessages, duration / 1000000);
+}
 
-
-void
-SlaveProcess (
-    Stream::StreamType  streamtype,
-    char *  streamHandle,
-    int     numMessages,
-    int     bufferSize,
-    int     verbose
-    ) {
-
+void SlaveProcess(Stream::StreamType streamtype, char* streamHandle, int numMessages, int bufferSize, int verbose)
+{
     // Connect to stream
 
-    Stream * stream;
+    Stream* stream;
     if (verbose > 1)
-        stream = new Stream (streamtype, streamHandle, &StreamError, &StreamTrace);
+        stream = new Stream(streamtype, streamHandle, &StreamError, &StreamTrace);
     else
-        stream = new Stream (streamtype, streamHandle, &StreamError);
+        stream = new Stream(streamtype, streamHandle, &StreamError);
 
-    if (verbose)
-        Log ("Slave stream: local=\"%s\", remote=\"%s\"",
-                    stream->LocalHandle (),
-                    stream->RemoteHandle ()
-                    );
+    if (verbose) Log("Slave stream: local=\"%s\", remote=\"%s\"", stream->LocalHandle(), stream->RemoteHandle());
 
     // Determine the current wall time
 
-    Timestamp startTime = GetTime ();
+    Timestamp startTime = GetTime();
 
     // Write and read many messages
 
-    char * buffer = new char [bufferSize];
-    for (int i = 0 ; i < bufferSize ; i++)
-        buffer[i] = 0x55;
+    char* buffer = new char[bufferSize];
+    for (int i = 0; i < bufferSize; i++) buffer[i] = 0x55;
 
-    for (int i = 0 ; i < numMessages/2 ; i++) {
-        stream->Send (buffer, bufferSize);
-        stream->Receive (buffer, bufferSize);
-        }
+    for (int i = 0; i < numMessages / 2; i++)
+    {
+        stream->Send(buffer, bufferSize);
+        stream->Receive(buffer, bufferSize);
+    }
 
     // Print elapsed time
 
-    Timestamp duration = GetTime () - startTime;
-    Log ("Slave  %lld microsec per send/receive of %d bytes (%d in %lld sec)",
-                    duration / numMessages,
-                    bufferSize,
-                    numMessages,
-                    duration / 1000000
-                    );
+    Timestamp duration = GetTime() - startTime;
+    Log("Slave  %lld microsec per send/receive of %d bytes (%d in %lld sec)", duration / numMessages, bufferSize,
+        numMessages, duration / 1000000);
 
-    if (verbose)
-        Log ("Slave terminating");
-    }
-
+    if (verbose) Log("Slave terminating");
+}
 
 //------------------------------------------------------------------------------
 
-
-void
-Usage (
-    char * progname
-    ) {
-    printf ("Usage: %s <options>\n\
+void Usage(char* progname)
+{
+    printf(
+        "Usage: %s <options>\n\
     Options:\n\
         -b <size>   Buffer size in bytes\n\
         -m <handle> Run as slave and communicate with master through handle\n\
         -n <num>    Number of messages\n\
         -r <host>   Run slave on remote host\n\
         -v          Verbose mode (more -v more verbose)\n\
-        \n", progname);
-    }
+        \n",
+        progname);
+}
 
-
-Timestamp
-GetTime (
-    void
-    ) {
-#if defined (WIN32)
-        CTime t = CTime::GetCurrentTime();
-    return ((Timestamp) t.GetTime());
+Timestamp GetTime(void)
+{
+#if defined(WIN32)
+    CTime t = CTime::GetCurrentTime();
+    return ((Timestamp)t.GetTime());
 #else
-    struct timeval  tv;
+    struct timeval tv;
 
-    if (gettimeofday (&tv, NULL) != 0)
-        Abort ("Cannot get time of day");
+    if (gettimeofday(&tv, NULL) != 0) Abort("Cannot get time of day");
 
-    return ((Timestamp) tv.tv_sec * 1000000) + tv.tv_usec;
+    return ((Timestamp)tv.tv_sec * 1000000) + tv.tv_usec;
 #endif
-    }
+}
 
+void StreamError(char* message) { Abort(message); }
 
-void
-StreamError (
-    char * message
-    ) {
+void StreamTrace(char* message)
+{
+    printf("Stream: %s\n", message);
+    fflush(stdout);
+}
 
-    Abort (message);
-    }
+void Abort(char* reason, ...)
+{
+    va_list arguments;
+    char string[MAXSTR];
 
+    va_start(arguments, reason);
+    vsprintf(string, reason, arguments);
+    va_end(arguments);
 
-void
-StreamTrace (
-    char * message
-    ) {
-
-    printf ("Stream: %s\n", message);
-    fflush (stdout);
-    }
-
-
-void
-Abort (
-    char * reason,
-    ...
-    ) {
-
-    va_list     arguments;
-    char        string [MAXSTR];
-
-    va_start (arguments, reason);
-    vsprintf (string, reason, arguments);
-    va_end (arguments);
-
-    printf ("ABORT: %s\n", string);
-#if defined (WITH_MPI)
-#if defined (NO_CPP_MPI)
-    if (mpi_initialized) MPI_Finalize ();
-#else
-    if (mpi_initialized) MPI::Finalize ();
+    printf("ABORT: %s\n", string);
+#if defined(WITH_MPI)
+    #if defined(NO_CPP_MPI)
+    if (mpi_initialized) MPI_Finalize();
+    #else
+    if (mpi_initialized) MPI::Finalize();
+    #endif
 #endif
-#endif
-    exit (1);
-    }
+    exit(1);
+}
 
+void Log(char* reason, ...)
+{
+    va_list arguments;
+    char string[MAXSTR];
 
-void
-Log (
-    char * reason,
-    ...
-    ) {
+    va_start(arguments, reason);
+    vsprintf(string, reason, arguments);
+    va_end(arguments);
 
-    va_list     arguments;
-    char        string [MAXSTR];
-
-    va_start (arguments, reason);
-    vsprintf (string, reason, arguments);
-    va_end (arguments);
-
-    printf ("%s: %s\n", hostname, string);
-    fflush (stdout);
-    }
-
-
+    printf("%s: %s\n", hostname, string);
+    fflush(stdout);
+}

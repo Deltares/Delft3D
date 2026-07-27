@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,8 +32,10 @@
 
 !>  assign indices (i,j) to the curvi-linear grid
 module m_assignijgrid
+
    use m_grow_ijc, only: grow_ijc
 
+   use precision, only: dp
    implicit none
 
    private
@@ -74,12 +76,12 @@ contains
       lowold = lbound(ijc)
       uppold = ubound(ijc)
 
-      numiter_guess = sqrt(dble(nump)) * 10
+      numiter_guess = sqrt(real(nump, kind=dp)) * 10
 
-      call readyy('creating curvilinear grid', 0d0)
+      call readyy('creating curvilinear grid', 0.0_dp)
 
       do iter = 1, MAXITER
-         call readyy('creating curvilinear grid', min(dble(iter - 1) / dble(numiter_guess - 1), 1d0))
+         call readyy('creating curvilinear grid', min(real(iter - 1, kind=dp) / real(numiter_guess - 1, kind=dp), 1.0_dp))
 
          icount = 0
 
@@ -105,15 +107,19 @@ contains
 
 ! only one layer of cells will be added during the next iteration at maximum
          call grow_ijc(lowold, uppold, &
-                       (/minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1/), &
-                       (/maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1/), 0)
+                       [minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1], &
+                       [maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1], 0)
 
-         if (icount == 0) exit
+         if (icount == 0) then
+            exit
+         end if
       end do
 
-      if (iter == MAXITER) write (6, *) 'assignijgrid: iter=MAXITER'
+      if (iter == MAXITER) then
+         write (6, *) 'assignijgrid: iter=MAXITER'
+      end if
 
-      call readyy('creating curvilinear grid', -1d0)
+      call readyy('creating curvilinear grid', -1.0_dp)
 
    end subroutine assignijgrid
 

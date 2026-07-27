@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,10 +35,8 @@ contains
 !> sample a spline
    subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
       use precision, only: dp
-      use m_splines
-      use m_alloc
-      use m_splint
-      use m_spline
+      use m_splint, only: splint
+      use m_spline, only: spline
 
       integer, intent(in) :: num !< number of spline control points
       real(kind=dp), dimension(num), intent(in) :: xs, ys !< spline control points coordinates
@@ -57,7 +55,9 @@ contains
 
       Nr_in = Nr
 
-      if (num < 1) goto 1234
+      if (num < 1) then
+         goto 1234
+      end if
 
 !  compute the number of samples
       Nr = num + (num - 1) * numref
@@ -79,7 +79,7 @@ contains
       do i = 1, num - 1
          do j = 1, numref + 1
             Nr = Nr + 1
-            tn = (i - 1) + dble(j - 1) / dble(numref + 1)
+            tn = (i - 1) + real(j - 1, kind=dp) / real(numref + 1, kind=dp)
             call splint(xs, xh2, num, tn, xr(Nr))
             call splint(ys, yh2, num, tn, yr(Nr))
          end do
@@ -87,7 +87,7 @@ contains
 
 !  add last point
       Nr = Nr + 1
-      tn = dble(num - 1)
+      tn = real(num - 1, kind=dp)
       call splint(xs, xh2, num, tn, xr(Nr))
       call splint(ys, yh2, num, tn, yr(Nr))
 
@@ -95,8 +95,12 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(xh2)) deallocate (xh2)
-      if (allocated(yh2)) deallocate (yh2)
+      if (allocated(xh2)) then
+         deallocate (xh2)
+      end if
+      if (allocated(yh2)) then
+         deallocate (yh2)
+      end if
 
       return
    end subroutine sample_spline

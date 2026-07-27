@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: subdomGlobals.h 883 2011-10-07 16:32:16Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/subdomGlobals.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/subdomGlobals.h
+// $
 //------------------------------------------------------------------------------
 //  Mapper subdomain globals
 //
@@ -33,19 +35,17 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
+typedef struct
+{
+    bool dredgefirst;       // flag for first pass thru DredgeCommunicate
+    bool dredgecommunicate; // flag explicitly switched to false when no
+                            // dredge communication is needed (anymore) for
+                            // this subdomain
 
-typedef struct {
-    bool    dredgefirst;        // flag for first pass thru DredgeCommunicate
-    bool    dredgecommunicate;  // flag explicitly switched to false when no
-                                // dredge communication is needed (anymore) for
-                                // this subdomain
-
-    bool    rtcfirst;           // flag for first pass thru RtcCommunicate
-    bool    rtccommunicate;     // flag explicitly switched to false when no
-                                // rtc communication is needed (anymore) for
-                                // this subdomain
-    } SubdomGlobals;
-
+    bool rtcfirst;       // flag for first pass thru RtcCommunicate
+    bool rtccommunicate; // flag explicitly switched to false when no
+                         // rtc communication is needed (anymore) for
+                         // this subdomain
+} SubdomGlobals;

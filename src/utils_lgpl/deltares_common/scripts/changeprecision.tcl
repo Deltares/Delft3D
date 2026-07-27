@@ -36,7 +36,6 @@ lappend files [file join $rootdir "packages" "deltares_common" "src" "precision.
 lappend files [file join $rootdir "packages" "deltares_common" "include" "tri-dyn.igd"]
 lappend files [file join $rootdir "packages" "deltares_common_c" "include" "precision.h"]
 lappend files [file join $rootdir ".." ".." "engines_gpl" "flow2d3d" "packages" "flow2d3d" "CMakeLists.txt"]
-lappend files [file join $rootdir ".." ".." "cmake" "install_flow2d3d" "install_and_bundle.cmake"]
 
 # file types:
 # f: fortran

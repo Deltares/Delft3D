@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,23 +40,15 @@
 /* 4     9/09/05 14:44 Mooiman */
 
 #ifndef _GR_INCLUDED
-#   ifndef MSDOS
-#	ifndef __lint
-	static char GR_rcsid[] = "$Id$";
-#	endif
-#   endif
+    #ifndef MSDOS
+        #ifndef __lint
+static char GR_rcsid[] = "$Id$";
+        #endif
+    #endif
 
-    extern void            GR_remove_groups_from_chain(
-	    			struct St_grp * );
-    extern struct St_grp * GR_add_group_to_chain (
-	    		    struct St_grp *,
-                const BText,
-			        const BText,
-                const BInt4 [],
-			        struct attrib * );
-    extern struct St_grp * GR_find_group_in_chain (
-			    struct St_grp *,
-            const BText );
+extern void GR_remove_groups_from_chain(struct St_grp*);
+extern struct St_grp* GR_add_group_to_chain(struct St_grp*, const BText, const BText, const BInt4[], struct attrib*);
+extern struct St_grp* GR_find_group_in_chain(struct St_grp*, const BText);
 
-#   define _GR_INCLUDED
+    #define _GR_INCLUDED
 #endif

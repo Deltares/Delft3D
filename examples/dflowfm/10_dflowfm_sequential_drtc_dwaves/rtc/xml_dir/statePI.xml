@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<State xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.wldelft.nl/fews/PI" xsi:schemaLocation="http://www.wldelft.nl/fews/PI ../../../../xsd/pi_state.xsd" version="1.2">
+  <stateId>warm</stateId>
+  <timeZone>0.0</timeZone>
+  <dateTime date="2015-05-27" time="06:00:00"/>
+  <stateLoc type="file">
+    <readLocation>state_import.xml</readLocation>
+    <writeLocation>state_export.xml</writeLocation>
+  </stateLoc>
+</State>

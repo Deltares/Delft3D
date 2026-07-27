@@ -1,0 +1,16 @@
+# file      : examples/cxx/parser/library/library.map
+# author    : Boris Kolpackov <boris@codesynthesis.com>
+# copyright : not copyrighted - public domain
+
+namespace http://www.codesynthesis.com/library ::library
+{
+  include "library.hxx";
+
+  isbn    isbn isbn;
+  title   title;
+  genre   genre genre;
+  person  person;
+  author  author;
+  book    book;
+  catalog catalog;
+}

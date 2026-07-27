@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:transformCallback="Microsoft.Cpp.Dev10.ConvertPropertyCallback">
+  <Rule
+    Name="CXX_Parser_Mapping_Rule"
+    PageTemplate="tool"
+    DisplayName="C++/Parser Mapping"
+    Order="200">
+    <Rule.DataSource>
+      <DataSource
+        Persistence="ProjectFile"
+        ItemType="CXX_Parser_Mapping_Rule" />
+    </Rule.DataSource>
+    <Rule.Categories>
+      <Category
+        Name="General">
+        <Category.DisplayName>
+          <sys:String>General</sys:String>
+        </Category.DisplayName>
+      </Category>
+      <Category
+        Name="Command Line"
+        Subtype="CommandLine">
+        <Category.DisplayName>
+          <sys:String>Command Line</sys:String>
+        </Category.DisplayName>
+      </Category>
+    </Rule.Categories>
+    <StringListProperty
+      Name="Inputs"
+      Category="Command Line"
+      IsRequired="true"
+      Switch=" ">
+      <StringListProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType="CXX_Parser_Mapping_Rule"
+          SourceType="Item" />
+      </StringListProperty.DataSource>
+    </StringListProperty>
+    <BoolProperty
+      Name="ProprietaryLicense"
+      Subcategory="Licensing"
+      HelpContext="0"
+      DisplayName="Proprietary License"
+      Description="Indicate that the generated code is licensed under a proprietary license instead of the GPL."
+      Switch="--proprietary-license" />
+    <BoolProperty
+      Name="GenInline"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Generate Inline"
+      Description="Generate simple functions inline. This option triggers creation of the inline file."
+      Switch="--generate-inline" />
+    <BoolProperty
+      Name="GenValidation"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Generate Validation Code"
+      Description="Generate validation code which ensures that instance documents conform to the schema. This is the default for the Expat XML parser."
+      Switch="--generate-validation" />
+    <BoolProperty
+      Name="SupValidation"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Suppress Validation Code"
+      Description="Suppress generation of validation code. This is the default for the Xerces-C++ XML parser."
+      Switch="--suppress-validation" />
+    <BoolProperty
+      Name="GenPolymorphic"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Generate Polymorphic"
+      Description="Generate polymorphism-aware code. Specify this option if you use substitution groups or xsi:type."
+      Switch="--generate-polymorphic" />
+    <StringProperty
+      Name="OutDir"
+      Subcategory="Output"
+      HelpContext="0"
+      DisplayName="Output Directory"
+      Description="Output directory for the generated files"
+      Switch="--output-dir &quot;[value]&quot;" />
+    <StringProperty
+      Name="HeaderSuffix"
+      Subcategory="Output"
+      HelpContext="0"
+      DisplayName="C++ Header Suffix "
+      Description="Generated C++ header file suffix"
+      Switch="--hxx-suffix &quot;[value]&quot;" />
+    <StringProperty
+      Name="SourceSuffix"
+      Subcategory="Output"
+      HelpContext="0"
+      DisplayName="C++ Source Suffix"
+      Description="Generated C++ source file suffix"
+      Switch="--cxx-suffix &quot;[value]&quot;" />
+    <StringProperty
+      Name="InlineSuffix"
+      Subcategory="Output"
+      HelpContext="0"
+      DisplayName="C++ Inline Suffix"
+      Description="Generated C++ inline file suffix"
+      Switch="--ixx-suffix &quot;[value]&quot;" />
+    <StringProperty
+      Name="SkelFileSuffix"
+      Subcategory="Output"
+      HelpContext="0"
+      DisplayName="Parser Skeleton File Suffix"
+      Description="Use the provided suffix to construct the names of generated parser skeleton file."
+      Switch="--skel-file-suffix &quot;[value]&quot;" />
+    <StringListProperty
+      Name="NamespaceMap"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Namespace Map"
+      Description="Map XML Schema namespaces to C++ namespaces by specifying a semicolon-separated list of mapping rules in the form &lt;xml-ns&gt;=&lt;cxx-ns&gt; where &lt;xml-ns&gt; stands for an XML Schema namespace and &lt;cxx-ns&gt; - for a C++ namespace."
+      Switch="--namespace-map &quot;[value]&quot;" />
+    <StringListProperty
+      Name="TypeMap"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Type Map"
+      Description="Specify type map files as a semicolon-separated list."
+      Switch="--type-map &quot;[value]&quot;" />
+    <StringProperty
+      Name="SkelTypeSuffix"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Parser Skeleton Type Suffix"
+      Description="Use the provided suffix to construct the names of generated parser skeletons."
+      Switch="--skel-type-suffix &quot;[value]&quot;" />
+    <StringListProperty
+      Name="ExportSymbol"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Export Symbol"
+      Description="Insert the specified symbol in places where DLL export/import control statements (__declspec(dllexport/dllimport)) are necessary."
+      Switch="--export-symbol &quot;[value]&quot;" />
+    <StringListProperty
+      Name="HxxPrologue"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Header Prologue File"
+      Description="Insert the contents of the file specified at the beginning of the header file."
+      Switch="--hxx-prologue-file &quot;[value]&quot;" />
+    <StringListProperty
+      Name="HxxEpilogue"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Header Epilogue File"
+      Description="Insert the contents of the file specified at the end of the header file."
+      Switch="--hxx-epilogue-file &quot;[value]&quot;" />
+    <EnumProperty
+      Name="CharType"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Char Type"
+      Description="Character type to be used in the generated code.">
+      <EnumValue
+        Name="0"
+        DisplayName="char" />
+      <EnumValue
+        Name="1"
+        DisplayName="wchar_t"
+        Switch="--char-type wchar_t" />
+    </EnumProperty>
+    <EnumProperty
+      Name="CharEncoding"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Char Encoding"
+      Description="Character encoding to be used bu the generated code.">
+      <EnumValue
+        Name="0"
+        DisplayName="UTF-8 (char)/UTF-16 (wchar_t)" />
+      <EnumValue
+        Name="1"
+        DisplayName="ISO-8859-1"
+        Switch="--char-encoding iso8859-1" />
+      <EnumValue
+        Name="2"
+        DisplayName="Xerces-C++ local code page"
+        Switch="--char-encoding lcp" />
+      <EnumValue
+        Name="3"
+        DisplayName="Custom encoding"
+        Switch="--char-encoding custom" />
+    </EnumProperty>
+    <EnumProperty
+      Name="XMLParser"
+      Category="Code Generation"
+      HelpContext="0"
+      DisplayName="Underlying XML Parser"
+      Description="Use the specified parser as the underlying XML parser.">
+      <EnumValue
+        Name="0"
+        DisplayName="xerces" />
+      <EnumValue
+        Name="1"
+        DisplayName="expat"
+        Switch="--xml-parser expat" />
+    </EnumProperty>
+    <StringProperty
+      Name="CommandLineTemplate"
+      DisplayName="Command Line"
+      Visible="False"
+      IncludeInCommandLine="False" />
+    <DynamicEnumProperty
+      Name="CXX_Parser_Mapping_RuleBeforeTargets"
+      Category="General"
+      EnumProvider="Targets"
+      IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute Before</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run before.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^CXX_Parser_Mapping_RuleBeforeTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <DynamicEnumProperty
+      Name="CXX_Parser_Mapping_RuleAfterTargets"
+      Category="General"
+      EnumProvider="Targets"
+      IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute After</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run after.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^CXX_Parser_Mapping_RuleAfterTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <StringProperty
+      Name="ExecutionDescription"
+      DisplayName="Execution Description"
+      Visible="False"
+      IncludeInCommandLine="False" />
+    <StringListProperty
+      Name="AdditionalDependencies"
+      DisplayName="Additional Dependencies"
+      IncludeInCommandLine="False"
+      Visible="true" />
+    <StringProperty
+      Subtype="AdditionalOptions"
+      Name="AdditionalOptions"
+      Category="Command Line">
+      <StringProperty.DisplayName>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.DisplayName>
+      <StringProperty.Description>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.Description>
+    </StringProperty>
+  </Rule>
+  <ItemType
+    Name="CXX_Parser_Mapping_Rule"
+    DisplayName="C++/Parser Mapping" />
+  <FileExtension
+    Name="*.xsd"
+    ContentType="CXX_Parser_Mapping_Rule" />
+  <ContentType
+    Name="CXX_Parser_Mapping_Rule"
+    DisplayName="C++/Parser Mapping"
+    ItemType="CXX_Parser_Mapping_Rule" />
+</ProjectSchemaDefinitions>

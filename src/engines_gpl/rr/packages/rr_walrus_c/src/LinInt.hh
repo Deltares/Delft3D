@@ -2,13 +2,12 @@
 #define LinIntHH
 
 #include "LinInt.hh"
-using namespace std;
 
 #include <vector>
 
 class approxfun {
 public:
-  approxfun(const vector<double> &x, const vector<double> &y) {
+  approxfun(const std::vector<double> &x, const std::vector<double> &y) {
     this->x = x;
     this->y = y;
     this->Nxy = x.size();

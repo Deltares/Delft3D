@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,8 +51,7 @@ contains
       logical, intent(in) :: success !< Succes status of a prop_get/set() call.
 
       if (.not. success) then
-         call err('ERROR READING INI-FILE, RESTORE CORRECT FILE OR CALL Deltares.', &
-                  'NO VALUE FOUND FOR: ', '['//trim(chapter)//'] '//trim(prop_key))
+         call err('Error reading ini-file. No value found for: ', '['//trim(chapter)//'] '//trim(prop_key))
       end if
 
    end subroutine unstruc_ini_error_handler

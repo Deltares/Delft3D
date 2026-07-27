@@ -2101,8 +2101,11 @@ contains
   ! Type_Command_Line_Arguments_Group members
   if (allocated(rhs%group)) lhs%group = rhs%group
   if (allocated(rhs%cla  )) then
-    if (allocated(lhs%cla)) deallocate(lhs%cla) ; allocate(lhs%cla(1:size(rhs%cla,dim=1)),source=rhs%cla)
-  endif
+    if (allocated(lhs%cla)) then
+        deallocate(lhs%cla) 
+    end if
+    allocate(lhs%cla(1:size(rhs%cla,dim=1)),source=rhs%cla)
+  end if
   lhs%Na          = rhs%Na
   lhs%Na_required = rhs%Na_required
   lhs%Na_optional = rhs%Na_optional

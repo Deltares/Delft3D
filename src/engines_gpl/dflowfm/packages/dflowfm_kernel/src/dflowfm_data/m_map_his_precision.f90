@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,16 +26,16 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
 !> keeps parameters for map/his writing of data in double/single precision
 module m_map_his_precision
-   implicit none
+   implicit none(type, external)
+
    private
+   
    public netcdf_data_type
 
-   character(len=128), public :: md_nc_map_precision = 'double' !< NetCDF data precision in map files ('double', 'single' or 'float')
-   character(len=128), public :: md_nc_his_precision = 'double' !< NetCDF data precision in his files ('double', 'single' or 'float')
+   character(len=128), public :: md_nc_map_precision = 'single' !< NetCDF data precision in map files ('double', 'single' or 'float')
+   character(len=128), public :: md_nc_his_precision = 'single' !< NetCDF data precision in his files ('double', 'single' or 'float')
 
 contains
 

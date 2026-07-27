@@ -14,16 +14,6 @@ create_target(
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 
-if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-endif(UNIX)
-
-
 set(oss_dependencies    deltares_common
                         io_netcdf
                         io_netcdf_data
@@ -31,17 +21,9 @@ set(oss_dependencies    deltares_common
                         waq_hyd_data
                         waq_utils_f)
 
-target_link_libraries(${executable_name} ${oss_dependencies})
-
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
-    # Set linker properties
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 

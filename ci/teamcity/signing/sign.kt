@@ -1,10 +1,12 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object Sign : BuildType({
 
     name = "Sign"
+    description = "Sign all unsigned binaries (except tclkitsh852.exe)."
     buildNumberPattern = "%build.vcs.number%"
     artifactRules = "to_sign => oss_artifacts_x64_%build.vcs.number%.zip!x64"
 
@@ -14,13 +16,45 @@ object Sign : BuildType({
 
     steps {
         powerShell {
-            name = "Sign"
+            name = "Move already signed binaries"
             platform = PowerShellStep.Platform.x64
-            workingDir = "to_sign"
+            scriptMode = file {
+                path = "ci/teamcity/signing/move_signed_bins.ps1"
+            }
+            scriptArgs = "-source to_sign -destination signed"
+        }
+        powerShell {
+            name = "Move exception binary tclkitsh852.exe"
+            platform = PowerShellStep.Platform.x64
             scriptMode = script {
+                // We cannot sing this binary, see: https://wiki.tcl-lang.org/page/SDX+under+Windows
                 content = """
-                    Get-ChildItem -Path . -Recurse -Include *.exe,*.dll | Foreach { signtool sign /v /debug /fd SHA256 /tr "http://timestamp.acs.microsoft.com" /td SHA256 /dlib "C:\ProgramData\Microsoft\MicrosoftTrustedSigningClientTools\Azure.CodeSigning.Dlib.dll" /dmdf "C:\ProgramData\Microsoft\MicrosoftTrustedSigningClientTools\metadata.json" ${'$'}_.fullname }
+                    if (-Not (Test-Path -Path dont_sign\\bin)) {
+                        New-Item -ItemType Directory -Path dont_sign\\bin
+                    }
+                    Move-Item -Path to_sign\\bin\\tclkitsh852.exe -Destination dont_sign\\bin\\tclkitsh852.exe -Force
                 """.trimIndent()
+            }
+        }
+        step {
+            name = "Sign"
+            type = "AzureSigningTemplate2"
+            param("workingDir", "to_sign")
+            param("binaryPatterns", "*.exe,*.dll")
+        }
+        powerShell {
+            name = "Move back signed binaries"
+            platform = PowerShellStep.Platform.x64
+            scriptMode = file {
+                path = "ci/teamcity/signing/move_signed_bins.ps1"
+            }
+            scriptArgs = "-source signed -destination to_sign"
+        }
+        powerShell {
+            name = "Move back exception binary tclkitsh852.exe"
+            platform = PowerShellStep.Platform.x64
+            scriptMode = script {
+                content = """Move-Item -Path dont_sign\\bin\\tclkitsh852.exe -Destination to_sign\\bin\\tclkitsh852.exe -Force""".trimIndent()
             }
         }
     }
@@ -34,52 +68,55 @@ object Sign : BuildType({
             artifacts {
                 cleanDestination = true
                 artifactRules = """
-                    ?:*_x64_*.zip!/x64/**/delpar.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/delwaq.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/delwaq.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/dflowfm.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/dflowfm-cli.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/dfmoutput.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/dimr.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/dimr.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/ESMF_RegridWeightGen.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/FBCTools_BMI.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/gridgeom.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/mormerge.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/rr_dll.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/swan_omp.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/waq_plugin_wasteload.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/wave.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/wave.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/ec_module.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/plugin_culvert.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/dfm_volume_tool.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/maptonetcdf.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/waqmerge.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/waqpb_export.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/waqpb_import.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/cosumo_bmi.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/io_netcdf.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/plugin_delftflow_traform.dll => to_sign
-                    ?:*_x64_*.zip!/x64/**/agrhyd.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/ddcouple.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/swan_mpi.exe => to_sign
-                    ?:*_x64_*.zip!/x64/**/cosumo_bmi.dll => to_sign
+                    ?:*_x64_*.zip!/x64/bin/** => to_sign/bin
+                    ?:*_x64_*.zip!/x64/share/** => to_sign/share
+                """.trimIndent()
+            }
+        }
+        dependency(AbsoluteId("${DslContext.getParameter("delft3d_project_root")}_WindowsBuild2D3DSP")) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                cleanDestination = true
+                artifactRules = """
+                    ?:*_x64_*.zip!/x64/bin/flow2d3d_sp.dll => to_sign/bin
                 """.trimIndent()
             }
         }
     }
 
     features {
-        if (DslContext.getParameter("environment") == "production") {
+        if (DslContext.getParameter("enable_commit_status_publisher").lowercase() == "true") {
             commitStatusPublisher {
                 enabled = true
                 vcsRootExtId = "${DslContext.settingsRoot.id}"
-                publisher = gitlab {
+                publisher = github {
+                    githubUrl = "https://api.github.com"
                     authType = vcsRoot()
                 }
             }
         }
+        pullRequests {
+            provider = github {
+                authType = token {
+                    token = "%github_deltares-service-account_access_token%"
+                }
+                filterSourceBranch = "+:*"
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
+                ignoreDrafts = true
+            }
+        }
     }
 
+    failureConditions {
+        failOnText {
+            conditionType = BuildFailureOnText.ConditionType.CONTAINS
+            pattern = "SignTool Error"
+            failureMessage = "Signtool failed, terminating..."
+            reverse = false
+            stopBuildOnFailure = true
+        }
+    }
 })

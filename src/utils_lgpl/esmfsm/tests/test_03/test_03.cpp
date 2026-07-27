@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,33 +29,26 @@
 #include "esm.h"
 #include "morflow.h"
 
-
-int main (
-    int     argc,
-    char    *argv[],
-    char    *envp[]
-    )
+int main(int argc, char* argv[], char* envp[])
 {
-
     int fsm_flags = ESM_TRACE; // FSM flags for trisimtest (ESM_SILENT, ESM_TRACE)
-    ESM_Init (fsm_flags);
+    ESM_Init(fsm_flags);
 
     int context_id; // shared memory context ID
 
-    if ((context_id = ESM_Create (0,0)) == 0)
+    if ((context_id = ESM_Create(0, 0)) == 0)
     {
-        printf ("Cannot create memory context for FLOW process");
-                  return 1;
+        printf("Cannot create memory context for FLOW process");
+        return 1;
     }
 
-    TRISIMTEST (&context_id, &fsm_flags);
+    TRISIMTEST(&context_id, &fsm_flags);
 
-    if (ESM_Delete (context_id) != 0)
+    if (ESM_Delete(context_id) != 0)
     {
-        printf ("Cannot delete memory context for FLOW process");
-                  return 1;
+        printf("Cannot delete memory context for FLOW process");
+        return 1;
     }
 
     return 0;
 }
-

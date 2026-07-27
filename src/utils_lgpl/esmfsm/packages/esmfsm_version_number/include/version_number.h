@@ -10,12 +10,9 @@
 
 #define PRODUCT_NAME "ESMFSM"
 
-#define MOD_NAME       ESMFSM          /* Will be added to the function names */
+#define MOD_NAME ESMFSM /* Will be added to the function names */
 #if HAVE_CONFIG_H
-#   define F90_MOD_NAME   FC_FUNC(esmfsm, ESMFSM)
+    #define F90_MOD_NAME FC_FUNC(esmfsm, ESMFSM)
 #else
-#   define F90_MOD_NAME   MOD_NAME
+    #define F90_MOD_NAME MOD_NAME
 #endif
-
-
-

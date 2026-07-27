@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,6 +56,7 @@ contains
       use m_readyy
       use m_set_nod_adm
       use m_set_branch_lc
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
 
       integer :: K, KK, KM, K1, K2, KA, KB, kn3, L, LL, JA
       integer :: JADUM
@@ -93,11 +94,11 @@ contains
 
                ! KC(1D NODES) = 1 , KC(2D NODES) = 2
 
-               if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then
+               if (kn(3, LL) == LINK_1D .or. kn(3, LL) == LINK_1D_MAINBRANCH) then
                   itp = 1 ! "1D" netnode type
-               else if (kn(3, LL) == 3 .or. kn(3, LL) == 4 .or. kn(3, LL) == 5 .or. kn(3, LL) == 7) then
+               else if (kn(3, LL) == LINK_1D2D_INTERNAL .or. kn(3, LL) == LINK_1D2D_LONGITUDINAL .or. kn(3, LL) == LINK_1D2D_STREETINLET .or. kn(3, LL) == LINK_1D2D_ROOF) then
                   itp = kn(3, LL) ! 1d2d connections
-               else if (kn(3, LL) == 2) then
+               else if (kn(3, LL) == LINK_2D) then
                   itp = 2 ! "2D" netnode type
                else
                   itp = 0
@@ -113,12 +114,12 @@ contains
          call get_meshbounds(xboundmin, xboundmax)
       end if
 
-      call READYY(' ', 0.5d0)
+      call READYY(' ', 0.5_dp)
 
       kint = max(numk / 100, 1)
       if (tooclose > 0) then
 
-         call READYY('Merging nodes', 0d0)
+         call READYY('Merging nodes', 0.0_dp)
 
          jadone = 0
 
@@ -128,9 +129,9 @@ contains
 
 !       get coordinates of nodes in polygon
             allocate (xx(numk))
-            xx = 0d0
+            xx = 0.0_dp
             allocate (yy(numk))
-            yy = 0d0
+            yy = 0.0_dp
             allocate (iperm(numk))
             iperm = 0
 
@@ -163,10 +164,12 @@ contains
                do kk = 1, numk_inpoly
                   k = iperm(kk)
 
-                  if (k == 0) cycle ! already merged
+                  if (k == 0) then
+                     cycle ! already merged
+                  end if
 
                   if (mod(K, kint) == 0) then
-                     call READYY(' ', min(1d0, dble(k) / kint))
+                     call READYY(' ', min(1.0_dp, real(k, kind=dp) / kint))
                   end if
 
 !              fill query vector
@@ -218,17 +221,21 @@ contains
             end if
 
 !       deallocate permutation array
-            if (allocated(iperm)) deallocate (iperm)
+            if (allocated(iperm)) then
+               deallocate (iperm)
+            end if
 
 !       deallocate kdtree
-            if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+            if (treeglob%itreestat /= ITREE_EMPTY) then
+               call delete_kdtree2(treeglob)
+            end if
          end if
 
          if (jadone /= 1) then
 !       non-kdtree
             do K = 1, NUMK
                if (mod(K, kint) == 0) then
-                  call READYY(' ', min(1d0, dble(k) / kint))
+                  call READYY(' ', min(1.0_dp, real(k, kind=dp) / kint))
                end if
 
                if (KC(K) > 0) then
@@ -251,21 +258,21 @@ contains
             call rearrange_worldmesh(xboundmin, xboundmax)
          end if
 
-         call READYY(' ', -1d0)
+         call READYY(' ', -1.0_dp)
       end if
 
-      if (CONNECT1DEND > 0) then
+      if (connect1dend > 0) then
 
-         call READYY('Connecting 1D nodes', 0d0)
+         call READYY('Connecting 1D nodes', 0.0_dp)
 
          do K = 1, NUMK ! MERGE 1d ENDPOINTS TO 1d ENDPOINTS THAT ARE REALLY CLOSE
             if (mod(K, kint) == 0) then
-               call READYY(' ', .5d0 * min(1d0, dble(k) / kint))
+               call READYY(' ', 0.5_dp * min(1.0_dp, real(k, kind=dp) / kint))
             end if
             if (KC(K) == 1 .and. NMK(K) == 1) then
                do KK = K + 1, NUMK
                   if (KC(KK) == 1 .and. NMK(KK) == 1) then
-                     if (dbdistance(XK(K), yk(k), XK(KK), yk(kk), jsferic, jasfer3D, dmiss) < 0.2 * CONNECT1DEND) then
+                     if (dbdistance(XK(K), yk(k), XK(KK), yk(kk), jsferic, jasfer3D, dmiss) < 0.2 * connect1dend) then
                         call MERGENODES(K, KK, JA)
                         if (JA == 1) then
                            KC(K) = -1
@@ -279,13 +286,14 @@ contains
 
          call SETBRANCH_LC(nrl1d)
          if (nrl1d == 0) then
-            call READYY(' ', -1d0); netstat = NETSTAT_OK
+            call READYY(' ', -1.0_dp)
+            netstat = NETSTAT_OK
             return
          end if
 
          KC = 1
          do L = 1, NUML
-            if (KN(3, L) == 2) then ! KC(1D NODES) = 1 , KC(2D NODES) = 2
+            if (KN(3, L) == LINK_2D) then ! KC(1D NODES) = 1 , KC(2D NODES) = 2
                KC(KN(1, L)) = 2
                KC(KN(2, L)) = 2
             end if
@@ -293,21 +301,25 @@ contains
          Lint = max(NUML / 100, 1)
          do L = 1, NUML
             if (mod(L, Lint) == 0) then
-               call READYY(' ', .5d0 + .5d0 * min(1d0, dble(L) / Lint))
+               call READYY(' ', 0.5_dp + 0.5_dp * min(1.0_dp, real(L, kind=dp) / Lint))
             end if
-            if (KN(3, L) == 1 .or. KN(3, L) == 4) then
+            if (KN(3, L) == LINK_1D .or. KN(3, L) == LINK_1D2D_LONGITUDINAL) then
                kn3 = kn(3, L)
-               K1 = KN(1, L); K2 = KN(2, L)
+               K1 = KN(1, L)
+               K2 = KN(2, L)
                if (KC(K1) > 0 .and. KC(K2) > 0) then
                   KA = 0
                   if (NMK(K1) == 1 .and. NMK(K2) == 2) then
-                     KA = K1; KB = K2
+                     KA = K1
+                     KB = K2
                   else if (NMK(K2) == 1 .and. NMK(K1) == 2) then
-                     KA = K2; KB = K1
+                     KA = K2
+                     KB = K1
                   end if
 
                   if (KA /= 0) then
-                     DISMIN = 1d9; KM = 0
+                     DISMIN = 1.0e9_dp
+                     KM = 0
                      do K = 1, NUMK
                         if (KA /= K .and. KC(K) == 1) then
                            JADUM = 1
@@ -317,10 +329,11 @@ contains
                               cycle !  SKIP OWN BRANCH
                            end if
 
-                           if (dbdistance(XK(K), yk(k), XK(Ka), yk(ka), jsferic, jasfer3D, dmiss) < CONNECT1DEND) then
+                           if (dbdistance(XK(K), yk(k), XK(Ka), yk(ka), jsferic, jasfer3D, dmiss) < connect1dend) then
                               DIST = dbdistance(XK(KA), YK(KA), XK(K), YK(K), jsferic, jasfer3D, dmiss)
                               if (Dist < DISMIN) then
-                                 dismin = dist; KM = K
+                                 dismin = dist
+                                 KM = K
                               end if
                            end if
                         end if
@@ -347,7 +360,7 @@ contains
             end if
 
          end do
-         call READYY(' ', -1d0)
+         call READYY(' ', -1.0_dp)
          call setnodadm(0)
          netstat = NETSTAT_OK
       end if

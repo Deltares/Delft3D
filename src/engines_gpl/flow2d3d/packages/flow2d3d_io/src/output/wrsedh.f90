@@ -9,7 +9,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
                 & ntruvto   ,ntruvgl   ,order_tra ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -67,8 +67,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     real(fp)                             , pointer :: morfac
     real(fp)                             , pointer :: sus
     real(fp)                             , pointer :: bed
-    real(fp)      , dimension(:)         , pointer :: rhosol
-    real(fp)      , dimension(:)         , pointer :: cdryb
     type (moroutputtype)                 , pointer :: moroutput
     type (datagroup)                     , pointer :: group4
     type (datagroup)                     , pointer :: group5
@@ -122,7 +120,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     integer                                           :: filetype
     real(fp)        , dimension(:,:)  , allocatable   :: rbuff2
     real(fp)        , dimension(:,:,:), allocatable   :: rbuff3
-    real(fp)                                          :: rhol
     integer                                           :: ierror         ! Local error flag
     integer                                           :: istat
     integer                                           :: k
@@ -141,8 +138,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     integer                                           :: idatt_sta
     integer                                           :: idatt_tra
     !
-    character(2)                                      :: sedunit
-    character(10)                                     :: transpunit
+    character(10)                                     :: transpcrsunit
     character(16)                                     :: grnam4
     character(16)                                     :: grnam5
 !
@@ -164,8 +160,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     morfac      => gdp%gdmorpar%morfac
     sus         => gdp%gdmorpar%sus
     bed         => gdp%gdmorpar%bed
-    rhosol      => gdp%gdsedpar%rhosol
-    cdryb       => gdp%gdsedpar%cdryb
     moroutput   => gdp%gdmorpar%moroutput
     !
     kmaxout = size(shlay)
@@ -199,14 +193,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
        idatt_sta = addatt(gdp, lundia, FILOUT_HIS, 'coordinates','NAMST XSTAT YSTAT')
        idatt_tra = addatt(gdp, lundia, FILOUT_HIS, 'coordinates','NAMTRA')
        !
-       select case(moroutput%transptype)
-       case (0)
-          sedunit = 'kg'
-       case (1)
-          sedunit = 'm3'
-       case (2)
-          sedunit = 'm3'
-       end select
        !
        ! his-infsed-serie
        !
@@ -242,13 +228,12 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
          endif
          call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZDPS', ' ', io_prec       , 1, dimids=(/iddim_nostat/), longname='Morphological depth at station (zeta point)', unit='m', attribs=(/idatt_sta/) )
          if (lsedtot > 0) then
-            transpunit = sedunit // '/(s m)'
-            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSBU', ' ', io_prec       , 2, dimids=(/iddim_nostat, iddim_lsedtot/), longname='Bed load transport in u-direction at station (zeta point)', unit=transpunit, attribs=(/idatt_sta/) )
-            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSBV', ' ', io_prec       , 2, dimids=(/iddim_nostat, iddim_lsedtot/), longname='Bed load transport in v-direction at station (zeta point)', unit=transpunit, attribs=(/idatt_sta/) )
+            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSBU', ' ', io_prec       , 2, dimids=(/iddim_nostat, iddim_lsedtot/), longname='Bed load transport in u-direction at station (zeta point)', unit=moroutput%unit_transport_rate, attribs=(/idatt_sta/) )
+            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSBV', ' ', io_prec       , 2, dimids=(/iddim_nostat, iddim_lsedtot/), longname='Bed load transport in v-direction at station (zeta point)', unit=moroutput%unit_transport_rate, attribs=(/idatt_sta/) )
          endif
          if (lsed > 0) then
-           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSSU', ' ', io_prec     , 2, dimids=(/iddim_nostat, iddim_lsed/), longname='Susp. load transport in u-direction at station (zeta point)', unit=transpunit, attribs=(/idatt_sta/) )
-           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSSV', ' ', io_prec     , 2, dimids=(/iddim_nostat, iddim_lsed/), longname='Susp. load transport in v-direction at station (zeta point)', unit=transpunit, attribs=(/idatt_sta/) )
+           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSSU', ' ', io_prec     , 2, dimids=(/iddim_nostat, iddim_lsed/), longname='Susp. load transport in u-direction at station (zeta point)', unit=moroutput%unit_transport_rate, attribs=(/idatt_sta/) )
+           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZSSV', ' ', io_prec     , 2, dimids=(/iddim_nostat, iddim_lsed/), longname='Susp. load transport in v-direction at station (zeta point)', unit=moroutput%unit_transport_rate, attribs=(/idatt_sta/) )
            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'ZRCA', ' ', io_prec     , 2, dimids=(/iddim_nostat, iddim_lsed/), longname='Near-bed reference concentration of sediment at station', unit='kg/m3', attribs=(/idatt_sta/) )
            !
            if (moroutput%sourcesink) then
@@ -287,19 +272,17 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
        ! his-sed-series: cross-sections
        !
        if (ntruv > 0) then
-         transpunit = sedunit // '/s'
          if (lsedtot > 0) then
-            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SBTR', ' ', io_prec       , 2, dimids=(/iddim_ntruv, iddim_lsedtot/), longname='Instantaneous bed load transport through section', unit=transpunit, attribs=(/idatt_tra/) )
+            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SBTR', ' ', io_prec       , 2, dimids=(/iddim_ntruv, iddim_lsedtot/), longname='Instantaneous bed load transport through section', unit=moroutput%unit_transport_per_crs, attribs=(/idatt_tra/) )
          endif
          if (lsed > 0) then         
-           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SSTR', ' ', io_prec     , 2, dimids=(/iddim_ntruv, iddim_lsed/), longname='Instantaneous susp. load transport through section', unit=transpunit, attribs=(/idatt_tra/) )
+           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SSTR', ' ', io_prec     , 2, dimids=(/iddim_ntruv, iddim_lsed/), longname='Instantaneous susp. load transport through section', unit=moroutput%unit_transport_per_crs, attribs=(/idatt_tra/) )
          endif
-         transpunit = sedunit
          if (lsedtot > 0) then
-            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SBTRC', ' ', io_prec      , 2, dimids=(/iddim_ntruv, iddim_lsedtot/), longname='Cumulative bed load transport through section', unit=transpunit, attribs=(/idatt_tra/) )
+            call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SBTRC', ' ', io_prec      , 2, dimids=(/iddim_ntruv, iddim_lsedtot/), longname='Cumulative bed load transport through section', unit=moroutput%unit_sediment_amount, attribs=(/idatt_tra/) )
          endif
          if (lsed > 0) then
-           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SSTRC', ' ', io_prec    , 2, dimids=(/iddim_ntruv, iddim_lsed/), longname='Cumulative susp. load transport through section', unit=transpunit, attribs=(/idatt_tra/) )
+           call addelm(gdp, lundia, FILOUT_HIS, grnam5, 'SSTRC', ' ', io_prec    , 2, dimids=(/iddim_ntruv, iddim_lsed/), longname='Cumulative susp. load transport through section', unit=moroutput%unit_sediment_amount, attribs=(/idatt_tra/) )
          endif
        endif
        !
@@ -422,16 +405,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(nostat,lsedtot), stat=istat)
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zsbu(n, l)/rhol
+                   rbuff2(n, l) = zsbu(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -443,16 +418,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'ZSBV'
              !
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zsbv(n, l)/rhol
+                   rbuff2(n, l) = zsbv(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -469,16 +436,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(nostat, lsed), stat=istat)
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zssu(n, l)/rhol
+                   rbuff2(n, l) = zssu(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -490,16 +449,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'ZSSV'
              !
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zssv(n, l)/rhol
+                   rbuff2(n, l) = zssv(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -613,16 +564,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(ntruv, lsedtot), stat=istat)
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sbtr(n, l)/rhol
+                   rbuff2(n, l) = sbtr(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -634,16 +577,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'SBTRC'
              !
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sbtrc(n, l)/rhol
+                   rbuff2(n, l) = sbtrc(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -660,16 +595,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(ntruv, lsed), stat=istat)
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sstr(n, l)/rhol
+                   rbuff2(n, l) = sstr(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -681,16 +608,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'SSTRC'
              !
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sstrc(n, l)/rhol
+                   rbuff2(n, l) = sstrc(n, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &

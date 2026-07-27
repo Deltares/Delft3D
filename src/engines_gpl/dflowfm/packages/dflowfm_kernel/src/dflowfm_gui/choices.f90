@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -69,6 +69,7 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+
    use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
    use m_zerolan, only: zerolan
    use m_stopint, only: stopint
@@ -145,6 +146,7 @@ module m_choices
    use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
    use m_partition_to_idomain, only: partition_to_idomain
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -192,9 +194,11 @@ contains
       integer :: irerun ! orthogonalisenet: rerun
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
-      character(len=40) :: OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP)
 
-      if (netstat /= NETSTAT_OK) call setnodadm(0)
+      if (netstat /= NETSTAT_OK) then
+         call setnodadm(0)
+      end if
 
       if (NUM == 1) then
          !     load en save files
@@ -247,7 +251,7 @@ contains
             call REFINECELLSANDFACES2() !  REFINECELLSONLY()
          else if (NWHAT == 14) then
             call SAVENET()
-            call derefine_mesh(0d0, 0d0, .false.)
+            call derefine_mesh(0.0_dp, 0.0_dp, .false.)
          else if (NWHAT == 15) then
             call SAVENET()
             call connectcurvilinearquadsddtype()
@@ -268,7 +272,7 @@ contains
             call findcells(100) ! include folded cells
             call find1dcells()
 !         call findcells(0)          ! do not include folded cells
-            call delete_dry_points_and_areas()
+            call delete_dry_points_and_areas(update_blcell=.false.)
             call makenetnodescoding() ! killcell relies on node codes
          else if (NWHAT == 22) then
             call interpdivers(2) ! Network zk flow bathy
@@ -389,8 +393,6 @@ contains
          else if (NWHAT == 21) then !****     **
             call PLUSABSI(XK, YK, ZK, KN, NUMK, NUML, KEY, kn3typ)
          else if (NWHAT == 23) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY ... TO POLYGON                     '
             OPTION(1) = 'Copy land boundary  to polygon          '
             OPTION(2) = 'Copy net bounds     to polygon          '
             OPTION(3) = 'Copy cross sections to polygon          '
@@ -431,8 +433,6 @@ contains
             end if
             KEY = 3
          else if (NWHAT == 24) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY POLYGON TO ...                     '
             OPTION(1) = 'Copy polygon to land boundary           '
             OPTION(2) = 'Copy polygon to observation points      '
             OPTION(3) = 'Copy polygon to samples                 '
@@ -454,8 +454,6 @@ contains
             end if
             KEY = 3
          else if (NWHAT == 25) then
-            exp(1) = 'MENU                                    '
-            exp(2) = 'COPY ... TO SAMPLES                     '
             OPTION(1) = 'Copy polygon              to samples    '
             OPTION(2) = 'Copy values on network nodes to samples '
             OPTION(3) = 'Copy values on network links to samples '
@@ -544,7 +542,8 @@ contains
          else if (NWHAT == 4) then
             call CHANGEorthoparameters()
          else if (NWHAT == 5) then
-            call CHANGEGRIDPARAMETERS(); KEY = 3
+            call CHANGEGRIDPARAMETERS()
+            KEY = 3
          else if (NWHAT == 6) then
             call CHANGEINTERPOLATIONPARAMETERS()
          else if (NWHAT == 7) then
@@ -568,7 +567,8 @@ contains
          else if (NWHAT == 14) then
             call CHANGENUMERICALPARAMETERS4()
          else if (NWHAT == 15) then
-            call CHANGEcolournumbers(); KEY = 3
+            call CHANGEcolournumbers()
+            KEY = 3
          end if
          NUM = 0
       end if

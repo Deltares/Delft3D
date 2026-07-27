@@ -1,7 +1,7 @@
 module wave_main
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -122,23 +122,13 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    !
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
-   !
-   if (my_rank == master) then
-      !
-      ! master node does all the work ...
-      !
-      retval = wave_master_init(mode_in, mdw_file)
-   else
-      !
-      ! nothing to do for slave nodes
-      !
-   endif
+   retval = wave_init(mode_in, mdw_file)
 end function wave_main_init
 
 
 !
 ! ====================================================================================
-function wave_master_init(mode_in, mdw_file) result(retval)
+function wave_init(mode_in, mdw_file) result(retval)
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -167,7 +157,7 @@ function wave_master_init(mode_in, mdw_file) result(retval)
    integer                                      :: i_swan       ! counter
    integer                                      :: it01flow     ! reference date obtained from FLOW
    integer                                      :: mtdim
-   real                                         :: tscaleflow   ! basic time unit == flow time step (s)
+   real(hp)                                     :: tscaleflow   ! basic time unit == flow time step (s)
    real(fp)       , dimension(:,:), allocatable :: x_fp         ! Copy of x-coordinate of grid in flexible precision, needed for external forcing module
    real(fp)       , dimension(:,:), allocatable :: y_fp         ! Copy of y-coordinate of grid in flexible precision, needed for external forcing module
    character(60) , dimension(:), allocatable    :: extforce_quantities
@@ -192,6 +182,10 @@ function wave_master_init(mode_in, mdw_file) result(retval)
    if (wavedata%mode/=stand_alone .and. swan_run%flowgridfile/=' ') then
       swan_run%nttide = 1
    endif
+   !
+   ! All instances need to read the input, but the actual work is done by the master only
+   !
+   if (my_rank /= master) return
    !
    ! Initialisation from flow (write file runid(s))
    !
@@ -240,6 +234,7 @@ function wave_master_init(mode_in, mdw_file) result(retval)
       write(*,'(a)') '           Use Delft3D-WAVE-GUI version 4.90.00 or higher to create the mdw-file.'
       call wavestop(1, '*** ERROR: Reference date not set')
    endif
+   call register_boundary_spectrum_files(swan_run, wavedata%time%refdate)
    !
    ! Read wave grids and flow grids; make grid-maps
    !
@@ -364,7 +359,7 @@ function wave_master_init(mode_in, mdw_file) result(retval)
    ! ====================================================================================
    !
    call check_input(swan_run, wavedata)
-end function wave_master_init
+end function wave_init
 
 
 
@@ -468,7 +463,7 @@ function wave_master_step(stepsize) result(retval)
          if (swan_run%flowgridfile == ' ') then
             call settimtscale(wavedata%time, timtscale, swan_run%modsim, swan_run%nonstat_interval)
          else
-            call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,sp), swan_run%modsim, swan_run%nonstat_interval)
+            call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,hp), swan_run%modsim, swan_run%nonstat_interval)
          endif
          !
          ! Run n_swan nested SWAN runs
@@ -567,7 +562,6 @@ function wave_main_finish() result(retval)
       ! slave nodes only need to finalize MPI
       !
       retval = 0
-      call finalize_wave_mpi()
    endif
 end function wave_main_finish
 
@@ -577,6 +571,7 @@ end function wave_main_finish
 function wave_master_finish() result(retval)
    use swan_input
    use wave_mpi
+
    implicit none
 !
 ! return value
@@ -599,8 +594,9 @@ function wave_master_finish() result(retval)
       call deallocmeteo(swan_grids(i_swan)%grid_name)
    enddo
    !
+   call cleanup_boundary_spectrum_files()
+   !
    call dealloc_swan(swan_run)
-   call finalize_wave_mpi()
    write(*,'(a)') 'Delft3D-WAVE finished normally.'
 end function wave_master_finish
 

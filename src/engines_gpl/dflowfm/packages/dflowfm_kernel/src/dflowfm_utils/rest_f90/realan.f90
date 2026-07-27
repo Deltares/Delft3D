@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,12 +38,12 @@ contains
 
    module subroutine REALAN(MLAN, ANTOT)
       use precision, only: dp
-      use m_polygon
-      use M_landboundary
-      use M_MISSING
-      use m_readyy
-      use m_qn_read_error
-      use m_qn_eof_error
+      use m_polygon, only: xpl, ypl, npl
+      use M_landboundary, only: increaselan, maxlan, mxlan, xlan, ylan, zlan, nclan
+      use M_MISSING, only: dmiss
+      use m_readyy, only: readyy
+      use m_qn_read_error, only: qnreaderror
+      use m_qn_eof_error, only: qneoferror
       use m_filez, only: doclose
 
       implicit none
@@ -71,10 +71,12 @@ contains
          call increaselan(10000)
       end if
 
-      call READYY('READING land boundary', 0d0)
+      call READYY('READING land boundary', 0.0_dp)
 10    continue
       read (MLAN, '(A)', end=777, ERR=887) MATR
-      if (MATR(1:1) == '*') goto 10
+      if (MATR(1:1) == '*') then
+         goto 10
+      end if
 
       read (MLAN, '(A)', end=777) REC
       read (REC, *, ERR=666) NROW, NKOL
@@ -97,7 +99,7 @@ contains
 
          XLR = XL
 
-881      if (XL == 999.999d0 .or. XLR == 999.999d0) then
+881      if (XL == 999.999_dp .or. XLR == 999.999_dp) then
             XL = dmiss
             YL = dmiss
             ZL = dmiss
@@ -119,7 +121,7 @@ contains
             NCLAN(NTOT) = NCL
          end if
          if (mod(I, 1000) == 0) then
-            call READYY(' ', min(1d0, dble(I) / MAXLAN))
+            call READYY(' ', min(1.0_dp, real(I, kind=dp) / MAXLAN))
          end if
       end do
       NTOT = NTOT + 1
@@ -132,8 +134,8 @@ contains
 
 777   continue
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
 
       if (present(antot)) then
@@ -143,18 +145,22 @@ contains
       return
 
       n = 1 ! remove double points in lineseg oriented files
-      xpl(n) = xlan(1); ypl(n) = ylan(1)
+      xpl(n) = xlan(1)
+      ypl(n) = ylan(1)
       do k = 2, mxlan - 1
-         kd = k - 1; ku = k + 1
+         kd = k - 1
+         ku = k + 1
          if (xlan(k) == dmiss .and. xlan(kd) == xlan(ku) .and. ylan(kd) == ylan(ku)) then
 
          else
             n = n + 1
-            xpl(n) = xlan(k); ypl(n) = ylan(k)
+            xpl(n) = xlan(k)
+            ypl(n) = ylan(k)
          end if
       end do
       n = n + 1
-      xpl(n) = xlan(mxlan); ypl(n) = ylan(mxlan)
+      xpl(n) = xlan(mxlan)
+      ypl(n) = ylan(mxlan)
 
       npl = n
 
@@ -162,29 +168,29 @@ contains
 
 666   call QNREADERROR('SEARCHING NROWS,NCOLS, BUT GETTING', REC, MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 
 888   call QNREADERROR('SEARCHING COORDINATES, BUT GETTING', REC, MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 
 887   call QNREADERROR('EXPECTING 4 CHAR, BUT GETTING', MATR, MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 
 999   call QNEOFERROR(MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 

@@ -1109,7 +1109,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f06_c13-bijker_bailard" ref="flow2d3d_default">
-			<path version="2024-03-22T19:30:00">e01_d3dflow/f06_ols/c13-bijker_bailard</path>
+			<path version="2024-06-03T15:30:00">e01_d3dflow/f06_ols/c13-bijker_bailard</path>
 			<maxRunTime>287.086999893</maxRunTime>
 			<checks>
 				<file name="trih-t10.dat" type="NEFIS">
@@ -7340,7 +7340,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f01_c09-bijker_bailard_wave_wind" ref="flow2d3d_wave_default">
-			<path version="2024-02-22T14:50:00">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
+			<path version="2025-07-31T16:06:25.347000">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>

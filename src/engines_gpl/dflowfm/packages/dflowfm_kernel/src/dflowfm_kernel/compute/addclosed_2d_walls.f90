@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,9 +42,8 @@ contains
 
    subroutine addclosed_2D_walls()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_missing
+      use m_flowgeom, only: mxwalls, walls
+      use m_flow, only: s1, a1, vol1
 
       implicit none
 
@@ -57,7 +56,7 @@ contains
          aa1 = walls(17, n)
          hh1 = s1(k1) - bl1
          a1(k1) = a1(k1) + aa1
-         if (hh1 > 0d0) then
+         if (hh1 > 0.0_dp) then
             vol1(k1) = vol1(k1) + aa1 * hh1
          end if
       end do

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">
+   <UnstructuredGrid>
+      <Piece NumberOfPoints="35" NumberOfCells="0" > 
+         <Points> 
+            <DataArray type="Float64" Name="Position" NumberOfComponents="3" format="ascii"> 
+               550  350  -11  
+               550  350  -8  
+               550  350  -5  
+               550  350  -2  
+               550  350  1  
+               1500.6  1000.6  -11  
+               1500.6  1000.6  -8  
+               1500.6  1000.6  -5  
+               1500.6  1000.6  -2  
+               1500.6  1000.6  1  
+               823  344  -11  
+               823  344  -8  
+               823  344  -5  
+               823  344  -2  
+               823  344  1  
+               465  793  -11  
+               465  793  -8  
+               465  793  -5  
+               465  793  -2  
+               465  793  1  
+               587  509  -11  
+               587  509  -8  
+               587  509  -5  
+               587  509  -2  
+               587  509  1  
+               300.4  400.4  -11  
+               300.4  400.4  -8  
+               300.4  400.4  -5  
+               300.4  400.4  -2  
+               300.4  400.4  1  
+               1100.5  300.5  -11  
+               1100.5  300.5  -8  
+               1100.5  300.5  -5  
+               1100.5  300.5  -2  
+               1100.5  300.5  1  
+            </DataArray>
+         </Points> 
+
+         <Cells>
+            <DataArray type="Int32" Name="connectivity" NumberOfComponents="1" format="ascii">
+               
+            </DataArray> 
+            <DataArray type="Int32" Name="offsets" NumberOfComponents="1" format="ascii">
+               
+            </DataArray>
+            <DataArray type="UInt8"  Name="types" NumberOfComponents="1" format="ascii">
+               
+            </DataArray>
+         </Cells>
+         <PointData Scalars="Rank sea_water_potential_density " Vectors="">
+            <DataArray type="UInt32" Name="Rank" NumberOfComponents="1" format="ascii">
+               0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sea_water_potential_density" NumberOfComponents="1" format="ascii">
+               1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1000 1022.12 1022.12 1022.12 1022.12 1000 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1022.12 1000 1022.12 1022.12 1022.12 
+            </DataArray>
+         </PointData> 
+      </Piece>
+   </UnstructuredGrid> 
+</VTKFile>

@@ -1,0 +1,12 @@
+itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
+"Foo       ","x"," ",   -999.000    ,"(g/m3)              ","A substance named Foo                             ","volume    ","volume    ","x","Open                          "
+"RcDec20Foo","x"," ",    0.10000    ,"(1/d)               ","Decay rate of Foo at 20oC                         ","volume    ","volume    "," ","                              "
+"TcDecFoo  ","x"," ",    1.04000    ,"(-)                 ","temperature coefficient decay Foo                 ","volume    ","volume    "," ","                              "
+"Temp      ","x"," ",    15.0000    ,"(oC)                ","ambient water temperature                         ","volume    ","volume    "," ","                              "
+"RcDecFoo  ","x"," ",   -999.000    ,"(1/d)               ","Actual decay rate of Foo                          ","volume    ","volume    "," ","                              "
+"dDecFoo   ","x"," ",   -999.000    ,"(g/m3/d)            ","Description flux 1                                ","volume    ","volume    "," ","                              "
+"Boo       ","x"," ",   -999.000    ,"(g/m3)              ","A substance named Boo                             ","volume    ","volume    ","x","Open                          "
+"RcDec20Boo","x"," ",    0.20000    ,"(1/d)               ","Decay rate of Boo at 20oC                         ","volume    ","volume    "," ","                              "
+"TcDecBoo  ","x"," ",    1.04000    ,"(-)                 ","temperature coefficient decay Boo                 ","volume    ","volume    "," ","                              "
+"RcDecBoo  ","x"," ",   -999.000    ,"(1/d)               ","Actual decay rate of Boo                          ","volume    ","volume    "," ","                              "
+"dDecBoo   ","x"," ",   -999.000    ,"(g/m3/d)            ","Description flux 1                                ","volume    ","volume    "," ","                              "

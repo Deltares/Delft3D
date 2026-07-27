@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -36,25 +36,12 @@ module m_f1dimp_data
    ! Contains variables and parameters related to flow 1d implicit module
    !
    use precision
-   !use m_flowgeom, only: tnode !you cannot because <flow1d_implicit> project does not depend on <dflowfm_kernel>
+   use m_network, only: t_network
    
    implicit none
    
-   !public f1dimppar_type, tnode
    public f1dimppar_type
-   
-   !!FM1DIMP2DO: this is a copy of the <type> in <m_flowgeom>. It cannot be called the same, as both are available in <initialize_flow1d_implicit>
-   !type tnode_sre                                          !< node administration
-   !  integer                         :: lnx            !< max nr of links attached to this node
-   !  integer, allocatable            :: ln (:)         !< linknrs attached to this node, >0: to this flownode, <0: from this flownode
-   !
-   !  integer, allocatable            :: nod(:)         !< Mapping to net nodes
-   !  double precision, allocatable   :: x  (:)         !< for now, this is only for quick/aligned plotting, the corners of a cell
-   !  double precision, allocatable   :: y  (:)         !< for now, this is only for quick/aligned plotting, the corners of a cell
-   !  integer                         :: nwx            !< nr of walls attached
-   !  integer, allocatable            :: nw (:)         !< wallnrs attached to this node
-   !end type tnode_sre
- 
+    
    type f1dimppar_type
 
       ! 
@@ -95,8 +82,8 @@ module m_f1dimp_data
       
       integer                          :: istep                  !<  Current time step number (at t n+1 ) 
       !integer, dimension(2)            :: itim                   !<   Actual time level (at t n+1 ) expressed in date and time. Format:
-      !                                                               !– itim(1) = YYYYMMDD (year,month,day)
-      !                                                               !– itim(2) = HHMMSSHH (hour,minute,second, hundredth of a second)
+      !                                                               !â€“ itim(1) = YYYYMMDD (year,month,day)
+      !                                                               !â€“ itim(2) = HHMMSSHH (hour,minute,second, hundredth of a second)
       
       double precision                :: time                   !<  Actual time level (at t n+1 ) in seconds.
       double precision                :: dtf                    !<  Flow time step in seconds.     
@@ -116,6 +103,10 @@ module m_f1dimp_data
       integer                          :: maxtab                !< Maximum number of defined tables.
       integer                          :: nbrnod                !< Maximum number of connected branches to one node.
       integer                          :: table_length          !< Number of items in each table.
+      integer                          :: nstru                 !< Number of structures.
+      integer                          :: number_bc_tables      !< Number of boundary condition tables.
+      integer                          :: dmstrpar              !< Number of parameters for structures.
+      integer                          :: table_length_stru     !< Number of points in each structure table.
       
       !*******
       !dependent on branch
@@ -164,6 +155,10 @@ module m_f1dimp_data
       integer, allocatable, dimension(:,:)             :: grd_fmL_sre  !< Conversion between internal link in FM and SRE global flownodes. For <grd_fmL_sre(i)> one obtains the two flownodes in SRE associated to <i>
       integer, allocatable, dimension(:,:)             :: grd_fmLb_sre !< Conversion between boundary link <L> in FM and SRE global flownode (in position (k,1)) and the FM cell-centre (in position (k,2)), where  <k=[lnxi+1:lnx1Db]-lnxi+1>
       
+      integer, allocatable, dimension(:)               :: grid   ! grid(ngrid)       I  Grid cell type definition:
+                                                                 !                                    cgrdcl (1) : Normal grid cell
+                                                                 !                                    cstrcl (2) : Structure cell
+      
       real   , allocatable, dimension(:)               :: x      !  x-coordinate for each grid point.
       
       
@@ -183,6 +178,42 @@ module m_f1dimp_data
                                                                  !	 <bfricp(4,i)> Parameter for negative flow direction in sub sec 1 (depending on friction type). Same definition as <bfricp (3,1)>.
                                                                  !	 <bfricp(5,i)> Parameter for positive flow direction in sub sec 2 (depending on friction type). Same definition as <bfricp (3,i)>.
                                                                  !	 <bfricp(6,i)> Parameter for negative flow direction in sub sec 2 (depending on friction type). Same definition as <bfricp (3,i)>.
+      
+      real   , allocatable, dimension(:,:)             :: sectc !`sectc(:,1)` = `subsec` 
+                                                                ! subsec(ngrid)     I  Defines the number of sub sections for every
+                                                                !                      cross section:
+                                                                !                      c1sec (0) : Main section only (0 sub sections
+                                                                !                      c2sec (1) : 1 sub section
+                                                                !                      c3sec (2) : 2 sub sections
+                                                                !                      (For a circle cross section   : 0 ;
+                                                                !                       For a sedredge cross section : 1 )         
+                                                                !
+                                                                !`sectc(:,2)` = `wfh0` 
+                                                                ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
+                                                                !                      grid point.
+                                                                !
+                                                                !`sectc(:,3)` = `wfh1` 
+                                                                ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
+                                                                ! 
+      
+      real   , allocatable, dimension(:,:)             :: sectv !`sectv(1,2)` = `secth0`               
+                                                                ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
+                                                                !                         grid point.
+                                                                !`sectv(1,3)` = `secth1`         
+                                                                ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
+                                                                !                         point.
+                                                                !`sectv(1,4)` = `afh0`
+                                                                ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
+                                                                !                      grid point.
+                                                                !`sectv(1,5)` = `afh1`
+                                                                ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
+                                                                !                      grid point.   
+                                                                ! `sectv(1,6)` = `oh0`
+                                                                ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
+                                                                !                      every grid point.
+                                                                ! `sectv(1,7)` = `oh1`
+                                                                ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
+                                                                !                      every grid point.      
       
       real   , allocatable, dimension(:,:)             :: waoft ! <waoft>: P, double(<ngrid>,14): cross-sectional variables
       
@@ -266,22 +297,49 @@ module m_f1dimp_data
       integer, allocatable, dimension(:,:)   :: nodnod           ! Administration of nodal adminstration matrix. All elements (i,j) with index i contain the numbers of the nodes connected to node i, node i included.
       
       !*******
+      !dependent on structures
+      !*******
+      integer, allocatable, dimension(:,:)   :: strtyp           ! strtyp(10,nstru) Structure definitions:
+                                                                 !       (1,i) = Type of structure:
+                                                                 !               csweir (1) : Simple weir
+                                                                 !               caweir (2) : Advanced weir
+                                                                 !               csgate (3) : - not used, reserved for
+                                                                 !                              simple gate -
+                                                                 !               cpump  (4) : Pump
+                                                                 !               cgenst (5) : General Structure
+                                                                 !       (2,i) = Position of structure:
+                                                                 !               cstbra (1) : In branch
+                                                                 !               cstlat (2) : Lateral structure
+                                                                 !       (3,i) = Left gridpoint.
+                                                                 !       (4,i) = Right gridpoint.
+      
+      real, allocatable, dimension(:,:)      :: strpar           ! strpar(dmstrpar,nstru) Structure parameters
+                                                                 !       - Simple weir:
+                                                                 !       (1,j) = Crest height Zs.
+                                                                 !       (2,j) = Crest width Ws.
+                                                                 !            Positive flow:
+                                                                 !       (3,j) = Correction coefficient cw.
+                                                                 !       (4,j) = Submergence limit Slim.
+                                                                 !       (5,j) = Table pointer for drowned reduction
+                                                                 !               curve f(h2/h1).
+                                                                 !            Negative flow:
+                                                                 !       (6,j) = Correction coefficient cw.
+                                                                 !       (7,j) = Submergence limit Slim.
+                                                                 !       (8,j) = Table pointer for drowned reduction
+
+                                                                 !               curve f(h2/h1).
+      !*******
+      !network
+      !*******
+      type(t_network), pointer :: network
+      
+      !*******
       !debug variables
       !*******
       integer :: fm1dimp_debug_k1 
       integer :: debug_wr 
-
-      !*******
-      !stucture variable
-      !*******
-      !type(tnode_sre), allocatable :: nd_sre(:)
-      
-
       
    end type f1dimppar_type
    
-   !type nd_type
-   !    integer, allocatable, dimension(:) :: ln
-   !end type nd_type
       
 end module m_f1dimp_data

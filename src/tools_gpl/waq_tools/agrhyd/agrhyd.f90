@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,7 +33,7 @@ program agrhyd
     use time_module
     use io_ugrid
     use system_utils, only: makedir
-    use m_date_time_utils_external, only: write_date_time
+    use m_date_time_utils_external, only: fill_in_date_time
     use agrhyd_version_module, only: getfullversionstring_agrhyd
 
     implicit none
@@ -54,6 +54,7 @@ program agrhyd
     integer :: iend          ! end of file indicator
     character(len=256) :: input_file    ! base name of the input files
     logical :: exist_ini
+    logical :: exist_hyd
     logical :: exist_src
     character(len=256) :: name          ! base name of the output files
     integer :: output_start  ! output start time
@@ -121,9 +122,10 @@ program agrhyd
         read (*, '(a)') input_file
         write (*, *)
     end if
+
     if (input_file == ' ') then
         open (lunrep, file='agrhyd.rep', recl=132)
-        call write_date_time(rundat)
+        call fill_in_date_time(rundat)
         write (lunrep, '(a,a)') ' (c) ', trim(version)
         write (lunrep, '(a,a)') ' execution start: ', rundat
         write (lunrep, '(a)') ' error: no command line argument or interactive input with name of ini-filename'
@@ -135,7 +137,7 @@ program agrhyd
     inquire (file=input_file, exist=exist_ini)
     if (.not. exist_ini) then
         open (lunrep, file='agrhyd.rep', recl=132)
-        call write_date_time(rundat)
+        call fill_in_date_time(rundat)
         write (lunrep, '(a,a)') ' (c) ', trim(version)
         write (lunrep, '(a,a)') ' execution start: ', rundat
         write (lunrep, '(a,a)') ' error: ini-file not found: ', trim(input_file)
@@ -166,7 +168,7 @@ program agrhyd
     call set_log_unit_number(lunrep)
     call SetMessageHandling(lunMessages=lunrep)
     write (lunrep, '(a,a)') ' (c) ', trim(version)
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, '(2a)') ' execution start: ', rundat
     write (lunrep, *)
     write (lunrep, *) 'input file name          : ', trim(input_file)
@@ -208,6 +210,15 @@ program agrhyd
 
     write (lunrep, *) 'input hydrodynamics      : ', trim(input_hyd%file_hyd%name)
     write (*, *) 'input hydrodynamics      : ', trim(input_hyd%file_hyd%name)
+
+    inquire (file=input_hyd%file_hyd%name, exist=exist_hyd)
+    if (.not. exist_hyd) then
+        write (lunrep, '(a,a)') ' error: hyd-file not found: ', trim(input_hyd%file_hyd%name)
+        write (*, '(a,a)') ' error: hyd-file not found: ', trim(input_hyd%file_hyd%name)
+
+        call stop_with_error()
+    end if
+
     call read_hyd(input_hyd)
 
     ! read hydrodynamic description file patches, and check if they are there
@@ -479,7 +490,7 @@ program agrhyd
         allocate (ipnt_b(1), stat=ierr_alloc)
         ipnt_b(1) = 0
     end if
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
+    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error();
     end if
 
     call set_aggr_pnts(input_hyd, ipnt_h, ipnt_v, ipnt, ipnt_vdf, &
@@ -698,7 +709,7 @@ program agrhyd
 
     ! finished
 
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(a)') ' normal end of execution'
     write (lunrep, '(2a)') ' execution stop : ', rundat

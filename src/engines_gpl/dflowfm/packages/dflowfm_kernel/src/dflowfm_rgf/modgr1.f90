@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,13 +44,12 @@ contains
    !> This routine operates directly on active grid data from m_grid
    subroutine MODGR1(NPUT, MP, NP, IN, JN) !, NCOL)!XH, YH, mmax, nmax, MC, NC,
       use m_adjust, only: adjust
-      use precision, only: dp
-      use m_tekgrpt
-      use m_missing
-      use m_grid
-      use unstruc_colors
-      use m_okay
-      use m_increase_grid
+      use m_tekgrpt, only: tekgrpt
+      use m_missing, only: xymis
+      use m_grid, only: mmax, nmax, mc, xc, yc, nc
+      use unstruc_colors, only: ncoldg
+      use m_okay, only: okay
+      use m_increase_grid, only: increasegrid
 
       integer :: nput, mp, np, in, jn
 !      real(kind=dp) :: XH(MMAX,NMAX), YH(MMAX,NMAX)
@@ -82,7 +81,9 @@ contains
          end if
 
          if (IN == 1) then
-            if (MP == MC - 1) MC = MC + 1
+            if (MP == MC - 1) then
+               MC = MC + 1
+            end if
             if (Xc(MP + 2, NP) == XYMIS) then
                Xc(MP + 2, NP) = 2 * Xc(MP + 1, NP) - Xc(MP, NP)
                Yc(MP + 2, NP) = 2 * Yc(MP + 1, NP) - Yc(MP, NP)
@@ -109,7 +110,9 @@ contains
                JA = 1
             end if
          else if (JN == 1) then
-            if (NP == NC - 1) NC = NC + 1
+            if (NP == NC - 1) then
+               NC = NC + 1
+            end if
             if (Xc(MP, NP + 2) == XYMIS) then
                Xc(MP, NP + 2) = 2 * Xc(MP, NP + 1) - Xc(MP, NP)
                Yc(MP, NP + 2) = 2 * Yc(MP, NP + 1) - Yc(MP, NP)

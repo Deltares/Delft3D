@@ -4,7 +4,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
                 & mf        ,ml        ,nf        ,nl        ,iarrc     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -42,7 +42,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     use bedcomposition_module
     use globaldata
     use dfparall, only: nproc
-    use wrtarray, only: wrtarray_nml, wrtarray_nmll
+    use wrtarray, only: wrtarray_nml, wrtarray_nml_ptr, wrtarray_nmll, wrtarray_nm, wrtarray_nm_ptr
     use datagroups
     !
     implicit none
@@ -79,13 +79,17 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     integer                             , pointer :: iporos
     integer                             , pointer :: iunderlyr
     integer                             , pointer :: nlyr
+    logical                             , pointer :: crslyr
     real(prec)       , dimension(:,:)   , pointer :: bodsed
     real(fp)         , dimension(:)     , pointer :: cdryb
     real(fp)         , dimension(:)     , pointer :: rhosol
     real(fp)         , dimension(:)     , pointer :: dpsed
+    real(fp)         , dimension(:)     , pointer :: thtrlyr
+    real(fp)         , dimension(:,:)   , pointer :: thlyr
+    real(fp)         , dimension(:,:)   , pointer :: mobile
+    real(fp)         , dimension(:)     , pointer :: thclyr
     real(fp)         , dimension(:,:)   , pointer :: svfrac
     real(fp)         , dimension(:,:,:) , pointer :: msed
-    real(fp)         , dimension(:,:)   , pointer :: thlyr
     type (moroutputtype)                , pointer :: moroutput
     !
     integer                                       :: ierror      ! Local error flag
@@ -97,6 +101,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     integer                                       :: n
     integer                                       :: nm
     real(fp)                                      :: dens
+    real(fp)   , dimension(:,:)    , allocatable  :: rbuff2
     real(fp)   , dimension(:,:,:)  , allocatable  :: rbuff3
     real(fp)   , dimension(:,:,:,:), allocatable  :: rbuff4
     !
@@ -116,7 +121,8 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     moroutput           => gdp%gdmorpar%moroutput
     io_prec             => gdp%gdpostpr%io_prec
     !
-    istat = bedcomp_getpointer_integer(gdp%gdmorlyr,'iunderlyr',iunderlyr)
+    istat = bedcomp_getpointer_integer(gdp%gdmorlyr, 'iunderlyr', iunderlyr)
+    if (istat == 0) istat = bedcomp_getpointer_logical(gdp%gdmorlyr, 'CrsLyr', crslyr)
     if (istat/=0) then
        call prterr(lundia, 'U021', 'Memory problem in WRMORM')
        call d3stop(1, gdp)
@@ -132,6 +138,11 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'svfrac',svfrac)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'msed',msed)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'thlyr',thlyr)
+       if (crslyr) then
+          if (istat == 0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'ThTrLyr'  ,thtrlyr  )
+          if (istat == 0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'ThCLyr'  ,thclyr  )
+          if (istat == 0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'Mobile'  ,mobile  )
+       endif 
     case default
     end select
     if (istat/=0) then
@@ -173,6 +184,12 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        endif
        if (iporos>0 .and. moroutput%poros) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'EPSPOR', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Porosity coefficient', acl='z')
+       endif
+       if (crslyr) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THTRLYR', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Thickness of transport layer')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THCRSLYR', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Thickness of coarse layer')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THSED', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Total thickness of sediment')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MOBILITY', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Mobility of sediment')
        endif
     case (REQUESTTYPE_WRITE)
        !
@@ -307,6 +324,61 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
                         & ierror, lundia, rbuff3, 'EPSPOR')
           deallocate(rbuff3)
           if (ierror /= 0) goto 9999
+       endif
+       !
+       !
+       !
+       if (crslyr) then
+          !
+          ! element 'THTRLYR'
+          !
+          call wrtarray_nm_ptr(fds, filename, filetype, grpnam, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, thtrlyr, 'THTRLYR')
+          if (ierror /= 0) goto 9999
+          !
+          ! element 'THCRSLYR'
+          !
+          call wrtarray_nm_ptr(fds, filename, filetype, grpnam, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, thclyr, 'THCRSLYR')
+          if (ierror /= 0) goto 9999
+          !
+          ! element 'THSED'
+          !
+          allocate( rbuff2(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) )
+          rbuff2 = 0.0_fp
+          do m = 1, mmax
+             do n = 1, nmaxus
+                do k = 1, nlyr
+                    call n_and_m_to_nm(n, m, nm, gdp)
+                    rbuff2(n, m) = rbuff2(n, m) + thlyr(k, nm) 
+                enddo
+             enddo
+          enddo
+          call wrtarray_nm(fds, filename, filetype, grpnam, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, rbuff2, 'THSED')  
+          deallocate(rbuff2)
+          if (ierror /= 0) goto 9999
+          !
+          ! element 'MOBILITY'
+          !
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 1:lsedtot) )
+          rbuff3 = 0.0_fp
+          do l = 1, lsedtot
+             do m = 1, mmax
+                do n = 1, nmaxus
+                    call n_and_m_to_nm(n, m, nm, gdp)
+                    rbuff3(n, m, l) = mobile(l, nm) 
+                enddo
+             enddo
+          enddo
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
+                        & ierror, lundia, rbuff3, 'MOBILITY')
+          deallocate(rbuff3)
+          if (ierror /= 0) goto 9999       
        endif
        !
  9999  continue

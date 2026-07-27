@@ -10,7 +10,7 @@ subroutine FLSOEQ (lkalm  ,ngrid  ,nstru  ,nnc    ,nnm    ,nns   ,&
 &hp     ,qp     ,iterbc ,resid  ,delh   ,work  ,&
 &ker    ,steady ,nqlat  ,qlat   ,qltpar ,strhis,&
 &relstr ,theta  ,dt1    ,indx   ,juer   ,bicg  ,&
-&debug_wr)
+&dmstrh, debug_wr)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -209,6 +209,7 @@ subroutine FLSOEQ (lkalm  ,ngrid  ,nstru  ,nnc    ,nnm    ,nns   ,&
    integer branch(4,nbran), strtyp(10,nstru)
    integer hbdpar(3,*), qbdpar(3,*)
    integer iterbc
+   integer dmstrh
 
    real    qtyp ,theta
    real    hstat(*), qstat(*)
@@ -226,7 +227,8 @@ subroutine FLSOEQ (lkalm  ,ngrid  ,nstru  ,nnc    ,nnm    ,nns   ,&
    logical steady, bicg
 
    integer nqlat
-   real    qlat(nqlat,9), qltpar(9,nqlat), relstr, strhis(13,nstru)
+   real    qlat(nqlat,9), qltpar(9,nqlat), relstr
+   real    strhis(dmstrh,*)
    double precision dt1
    character(len=40) qlatnm(*)
 

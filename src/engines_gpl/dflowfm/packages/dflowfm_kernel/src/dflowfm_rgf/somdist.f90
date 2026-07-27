@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
 
    subroutine SOMDIST(A, B, C, D, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_missing
-      use m_isitu
+      use m_grid, only: mmax, nmax, ijc, ijyes
+      use m_missing, only: dmiss
+      use m_isitu, only: isitu
 
       integer :: i
       integer :: i2
@@ -78,7 +78,9 @@ contains
 20             continue
                K = K + II
                I2 = K
-               if (IJC(K, J) == 10) goto 20
+               if (IJC(K, J) == 10) then
+                  goto 20
+               end if
                do K = I, I2, II
                   IJC(K, J) = 21
                end do
@@ -144,7 +146,9 @@ contains
 120            continue
                L = L + JJ
                J2 = L
-               if (IJC(I, L) == 10) goto 120
+               if (IJC(I, L) == 10) then
+                  goto 120
+               end if
                do L = J, J2, JJ
                   IJC(I, L) = 22
                end do

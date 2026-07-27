@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
 !> this module contains the real flow times, only to be managed by setting times in module m_usertimes
 module m_flowtimes
    use precision, only: dp
+
    implicit none
 
    character(len=8) :: refdat !< Reference date (e.g., '20090101'). All times (tstart_user, tend_user, etc.) are w.r.t. to this date.
@@ -48,7 +49,20 @@ module m_flowtimes
    real(kind=dp) :: dt_max !< Computational timestep limit by user.
    real(kind=dp) :: dt_init !< dt of first timestep, if not specified, use dt_max, if that also not specified, use 1 s
 
-   integer :: ja_timestep_auto !< Use CFL-based dt (with dt_max as upper bound)
+   integer :: autotimestep !< Automatic timestepping control, limit timestep by CFL condition. Use one of the AUTO_TIMESTEP_<> parameters
+   ! Production parameters
+   integer, parameter :: AUTO_TIMESTEP_2D_OUT = 1 !< 2D-model; use outflows in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT = 3 !< 3D-model; use horizontal outflows (per cell-layer) in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_INOUT = 4 !< 3D-model; use horizontal in- and outflows (per cell-layer) in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_INOUT = 5 !< 3D-model; use in- or outflows (per cell-column) in CFL timestep limit
+   ! Research/hidden parameters
+   integer, parameter :: AUTO_TIMESTEP_OFF = 0 !< RESEARCH/HIDDEN - Use no CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_2D_INOUT = 2 !< RESEARCH/HIDDEN - 2D-model; use in- and outflows in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN = 6 !< RESEARCH/HIDDEN - 3D-model; use horizontal outflows (per cell-column) and total inflows (per cell-layer) in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_INOUT_BAROCLINE = 7 !< RESEARCH/HIDDEN - 3D-model; use in- and outflows (per cell-layer) including barocline effects in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_OUT_NOTOP = 8 !< RESEARCH/HIDDEN - 3D-model; use outflows (per cell-layer) excluding the top layer in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN_NOTOP = 10 !< RESEARCH/HIDDEN - 3D-models; use horizontal outflows (per cell-column) and total inflows (per cell-layer), excluding the top layer, in CFL timestep limit
+
    integer :: ja_timestep_auto_visc !< Use explicit time step restriction based on viscosity term
    integer :: ja_timestep_nostruct !< Exclude (structure) links without advection from the time step limitation
    integer :: ja_timestep_noqout !< Exclude negative qin term from timestep limitation.
@@ -59,21 +73,19 @@ module m_flowtimes
 
    real(kind=dp) :: dts !< internal computational timestep (s)
    real(kind=dp) :: dtsc !< max timstep of limiting point kkcflmx, zero if larger than dt_max
-   real(kind=dp) :: dtfacmax !< max dts increase factor
+   real(kind=dp) :: dt_fac_max !< max dts increase factor
    real(kind=dp) :: dti !< inverse  computational timestep (1/s)
    real(kind=dp) :: dtprev !< previous computational timestep (s)  (1s is a bit like sobek)
    real(kind=dp) :: dtmin !< dt < dtmin : surely crashed
-   real(kind=dp) :: dtminbreak !< smallest allowed timestep (in s), checked on a sliding average of several timesteps in validation routine.
    real(kind=dp) :: dtminhis !< smallest timestep within most recent his interval
    real(kind=dp) :: tfac !< time unit in seconds
-   real(kind=dp), allocatable :: tvalswindow(:) !< (NUMDTWINDOWSIZE) Time1 values in a moving time window to compute sliding average dt
-   integer, parameter :: NUMDTWINDOWSIZE = 100 !< Number of time steps to include in the sliding average, don't set this too optimistic to avoid too fast simulation breaks.
-   integer :: idtwindow_start !< Current start index in tvalswindow(:) array. This array is filled in a cyclic order, with never more than NUMDTWINDOWSIZE time values.
+
+   integer :: window_start !< Current start index in dtavg_window(:) array. This array is filled in a cyclic order, with never more than VALIDATESTATEWINDOWSIZE time values.
    real(kind=dp) :: time0 !< current   julian (s) of s0
    real(kind=dp) :: time1 !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
    real(kind=dp) :: tim1bnd !< last time boundary signals were given
    real(kind=dp) :: tim1fld !< last time field    signals were given
-   integer :: jatimestepanalysis = 0
+   integer :: ja_time_step_analysis = 0
    real(kind=dp), allocatable :: dtcell(:) !< time step per cell based on CFL (s), size:ndkx
    real(kind=dp), allocatable :: time_wetground(:) !< Cumulative time when water is above ground level, size: ndxi (now only for 1d, later also for 2d)
 
@@ -160,7 +172,6 @@ module m_flowtimes
    integer :: it_map !< Nr of snapshots presently in map file
    integer :: it_wav !< Nr of snapshots presently in time-avg'd wave output file JRE
    integer :: it_sed !< Nr of snapshots presently in time-avg'd sedmor output file JRE
-   integer :: it_map_tec !< Nr of snapshots presently in map file, Tecplot format
    integer :: it_his !< Nr of snapshots presently in his file
    integer :: it_inc !< Nr of lines     presently in inc file
    integer :: it_rst !< Nr of snapshots presently in rst file
@@ -187,19 +198,19 @@ module m_flowtimes
 
    character(len=20) :: rundat0 !< start and end date (wallclock) of computer run
    character(len=20) :: rundat2 !< start and end date (wallclock) of computer run format = _yymmddhhmmss
-   character(len=20) :: restartdatetime = ' ' !< desired time to be taken from restart map files
-   character(len=14) :: Startdatetime = ' ' !< optional replacement of Tstart_user
-   character(len=14) :: Stopdatetime = ' ' !< optional replacement of Tstop_user
+   character(len=20) :: restart_date_time = ' ' !< desired time to be taken from restart map files
+   character(len=14) :: start_date_time = ' ' !< optional replacement of Tstart_user
+   character(len=14) :: start_date_time_tlfsmo = ' ' !< optional replacement of TstartTlfsmo_user
+   character(len=14) :: stop_date_time = ' ' !< optional replacement of Tstop_user
    integer :: jarestart !< use restart yes/no, 1/0
 
-   real(kind=dp) :: tlfsmo = 0d0 !< fourier bnd smoothing times
-   real(kind=dp) :: alfsmo = 1d0 !< fourier bnd smoothing weight factor
-   integer :: keepstbndonoutflow = 0 !< keep them on outflow = 1
+   real(kind=dp) :: tlfsmo = 0.0_dp !< fourier bnd smoothing times
+   real(kind=dp) :: alfsmo = 1.0_dp !< fourier bnd smoothing weight factor
+   integer :: keepstbndonoutflow = 1 !< keep them on outflow = 1
 
-   real(kind=dp) :: Tspinupturblogprof = 0d0 !< From Tstart to Tstart+Tspinupturblogprof, Turbulent profiles based on log profiles
-   !< 0d0 = No
+   real(kind=dp) :: t_spinup_turb_log_prof = 0.0_dp !< From Tstart to Tstart+t_spinup_turb_log_prof, Turbulent profiles based on log profiles (<= 0: No)
    real(kind=dp) :: alfaspin
-   real(kind=dp) :: dt_UpdateRoughness !< Update interval for time dependent roughness values (from frictFile).
+   real(kind=dp) :: dt_update_roughness !< Update interval for time dependent roughness values (from frictFile).
    real(kind=dp) :: times_update_roughness(2) !< Time window for wich the current time dependent roughness values (from FrictFile) are valid.
 
 contains
@@ -209,21 +220,20 @@ contains
    subroutine default_flowtimes()
       refdat = '20010101' !< Reference date (e.g., '20090101'). All times (tstart_user, tend_user, etc.) are w.r.t. to this date.
       irefdate = 20010101
-      Tzone = 0d0
-      dt_user = 120d0 !< User specified time step (s) for external forcing update.
-      dt_nodal = 21600d0 !< User specified time step (s) for nodal factors update.
-      dt_max = 30d0 !< Computational timestep limit by user.
-      dtmin = 1d-4 !< dt < dtmin : surely crashed
-      dtminbreak = 0d0 !< smallest allowed timestep, otherwise break: off
-      dtminhis = 9d9 !< smallest timestep within most recent his interval
-      dt_init = 1d0
-      dt_trach = 1200d0 !< User specified DtTrt Trachytope roughness update time interval (s)
-      dtfacmax = 1.1d0 !< default setting
-      ja_timestep_auto = 1 !< Use CFL-based dt (with dt_max as upper bound)
+      Tzone = 0.0_dp
+      dt_user = 120.0_dp !< User specified time step (s) for external forcing update.
+      dt_nodal = 21600.0_dp !< User specified time step (s) for nodal factors update.
+      dt_max = 30.0_dp !< Computational timestep limit by user.
+      dtmin = 1.0e-4_dp !< dt < dtmin : surely crashed
+      dtminhis = 9.0e9_dp !< smallest timestep within most recent his interval
+      dt_init = 1.0_dp
+      dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)
+      dt_fac_max = 1.1_dp !< default setting
+      autotimestep = AUTO_TIMESTEP_2D_OUT !< Use CFL-based dt (with dt_max as upper bound)
       ja_timestep_auto_visc = 0 !< Use explicit time step restriction based on viscosity term
       ja_timestep_nostruct = 0 !< Exclude (structure) links without advection from the time step limitation
       ja_timestep_noqout = 1 !< Exclude negative qin terms from the time step limitation
-      tstart_user = 0d0 !< User specified time start (s) w.r.t. refdat
+      tstart_user = 0.0_dp !< User specified time start (s) w.r.t. refdat
       tstop_user = 100 * 24 * 3600 !< User specified time stop  (s) w.r.t. refdat
       time_user = tstart_user !< Next time of external forcings update (steps increment by dt_user).
       tstart_tlfsmo_user = tstart_user !< Start time of tlfsmo (s) w.r.t. refdat
@@ -231,48 +241,50 @@ contains
       dnt_user = 0 !< counter for nr of user steps    ( )
       dnt = 0 !< number of timesteps ( )
 
-      fhr = 1d0 / 3600d0 !< Factor sec hrs
-      fday = 1d0 / (3600d0 * 24d0) !< Factor sec day
+      fhr = 1.0_dp / 3600.0_dp !< Factor sec hrs
+      fday = 1.0_dp / (3600.0_dp * 24.0_dp) !< Factor sec day
 
-      ti_wav = 1200d0 !< wave avg'ing interval (s), 20 minutes okay default  JRE
-      ti_wavs = 0d0
-      ti_wave = 0d0
-      ti_map = 1200d0 !< map interval (s)
-      ti_maps = 0d0 !< Start map output (s)
-      ti_mape = 0d0 !< End   map output (s)
-      ti_his = 120d0 !< history interval (s)
-      ti_hiss = 0d0 !< Start history output (s)
-      ti_hise = 0d0 !< End   history output (s)
+      ti_wav = 1200.0_dp !< wave avg'ing interval (s), 20 minutes okay default  JRE
+      ti_wavs = 0.0_dp
+      ti_wave = 0.0_dp
+      ti_map = 0.0_dp !< map interval (s)
+      ti_maps = 0.0_dp !< Start map output (s)
+      ti_mape = 0.0_dp !< End   map output (s)
+      ti_his = 0.0_dp !< history interval (s)
+      ti_hiss = 0.0_dp !< Start history output (s)
+      ti_hise = 0.0_dp !< End   history output (s)
       ti_com = dt_user !< com interval (s)
-      ti_coms = 0d0 !< Start com output (s)
-      ti_come = 0d0 !< End com output (s)
-      ti_sed = 0d0 !< Time-avg'd output interval sedmor (s), (Default: off)
-      ti_seds = 0d0 !< Start time-avg'd output sedmor (s)
-      ti_sede = 0d0 !< End   time-avg'd output sedmor (s)
-      ti_st = 3600d0 !< Time-avg'd output interval sedtrails
-      ti_sts = 0d0 !< Start time-avg'd output sedtrails
-      ti_ste = 0d0 !< End   time-avg'd output sedtrails
-      ti_xls = 0d0 !< history interval (s) xls, (Default: off)
-      ti_rst = 24d0 * 3600d0 !< Restart interval (s)
-      ti_rsts = 0d0 !< Start restart output (s)
-      ti_rste = 0d0 !< End   restart output (s)
-      ti_mba = 0d0
-      ti_waq = 0d0 !< delwaq interval (s) (Default: off)
-      ti_waqproc = 0d0
-      ti_stat = -60d0 !< simulation statistics interval (s) (Default: off, will later default to dt_user), <0: use wc-time
-      ti_timings = 0d0 !< timings output interval
-      ti_split = 0d0 !< Time interval for time splitting of output files.
+      ti_coms = 0.0_dp !< Start com output (s)
+      ti_come = 0.0_dp !< End com output (s)
+      ti_sed = 0.0_dp !< Time-avg'd output interval sedmor (s), (Default: off)
+      ti_seds = 0.0_dp !< Start time-avg'd output sedmor (s)
+      ti_sede = 0.0_dp !< End   time-avg'd output sedmor (s)
+      ti_st = 3600.0_dp !< Time-avg'd output interval sedtrails
+      ti_sts = 0.0_dp !< Start time-avg'd output sedtrails
+      ti_ste = 0.0_dp !< End   time-avg'd output sedtrails
+      ti_xls = 0.0_dp !< history interval (s) xls, (Default: off)
+      ti_rst = 0.0_dp !< Restart interval (s)
+      ti_rsts = 0.0_dp !< Start restart output (s)
+      ti_rste = 0.0_dp !< End   restart output (s)
+      ti_mba = 0.0_dp
+      ti_waq = 0.0_dp !< delwaq interval (s) (Default: off)
+      ti_waqproc = 0.0_dp
+      ti_stat = -60.0_dp !< simulation statistics interval (s) (Default: off, will later default to dt_user), <0: use wc-time
+      ti_timings = 0.0_dp !< timings output interval
+      ti_split = 0.0_dp !< Time interval for time splitting of output files.
       ti_split_unit = 's' !< Unit for time partitioning interval
 
-      ti_classmap = 0d0 !< Class map interval (s), (Default: off)
-      ti_classmaps = 0d0 !< Start class map output (s)
-      ti_classmape = 0d0 !< End   class map output (s)
-      map_classes_ucdirstep = -999d0 !< default no step size given for classes of flow direction
-      if (allocated(map_classes_ucdir)) deallocate (map_classes_ucdir)
+      ti_classmap = 0.0_dp !< Class map interval (s), (Default: off)
+      ti_classmaps = 0.0_dp !< Start class map output (s)
+      ti_classmape = 0.0_dp !< End   class map output (s)
+      map_classes_ucdirstep = -999.0_dp !< default no step size given for classes of flow direction
+      if (allocated(map_classes_ucdir)) then
+         deallocate (map_classes_ucdir)
+      end if
 
-      tmini = -1d9 !< initial time for updating the 4 above
+      tmini = -1.0e9_dp !< initial time for updating the 4 above
 
-      dt_UpdateRoughness = 86400d0
+      dt_update_roughness = 86400.0_dp
 
       ! Wall clock timers are restarted here already, because some timers are started *prior* to flow_modelinit().
       call reset_timers()
@@ -284,14 +296,15 @@ contains
 !> Resets only flow times variables intended for a restart of flow simulation.
 !! Upon loading of new model/MDU, use default_flowtimes() instead.
    subroutine reset_flowtimes()
-      use Timers
+
+      implicit none
       dtprev = dt_init !< previous computational timestep (s)  (1s is a bit like sobek)
       dts = dt_init !< internal computational timestep (s)
-      dti = 1d0 / dts !< inverse  computational timestep (1/s)
-      time0 = 0d0 !< current   julian (s) of s0
-      time1 = 0d0 !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
-      tim1bnd = -9d9 !< last time bnd signals were given
-      tim1fld = -9d9 !< last time bnd signals were given
+      dti = 1.0_dp / dts !< inverse  computational timestep (1/s)
+      time0 = 0.0_dp !< current   julian (s) of s0
+      time1 = 0.0_dp !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
+      tim1bnd = -9.0e9_dp !< last time bnd signals were given
+      tim1fld = -9.0e9_dp !< last time bnd signals were given
 
       call setTUDUnitString()
 
@@ -310,27 +323,19 @@ contains
       time_waqset = tstart_user !< next time for reset the quantities for waq output
       time_waqproc = tstart_user + ti_waqproc !< next time for wq processes
       time_mba = tstart_user + ti_mba !< next time for balance update
-      if (ti_stat > 0d0) then
+      if (ti_stat > 0.0_dp) then
          time_stat = tstart_user !< next model time for simulation statistics output
       else
-         time_stat = 0d0 !< next wall-clock time for simulation statistics output
+         time_stat = 0.0_dp !< next wall-clock time for simulation statistics output
       end if
       time_timings = tstart_user !< next time for timing output
       time_split = tstart_user !< next time for a new time-split output file
       time_split0 = time_split !< Start time for the current time-split output file.
-      if (dtminbreak > 0d0) then
-         if (.not. allocated(tvalswindow)) then
-            allocate (tvalswindow(NUMDTWINDOWSIZE))
-         end if
-         idtwindow_start = 1 ! Start fresh, with first time0 on pos #1.
-         tvalswindow(idtwindow_start) = tstart_user
-      end if
 
       it_map = 0 !< Nr of snapshots presently in map file
       it_wav = 0 !< Nr of snapshots presently in time-avg'd file JRE
       it_sed = 0 !< Nr of snapshots presently in time-avg'd sed file JRE
       it_st = 0 !< Nr of snapshots presently in time-avg'd sedtrails file JRE
-      it_map_tec = 0 !< Nr of snapshots presently in map file
       it_his = 0 !< Nr of snapshots presently in his file
       it_inc = 0 !< Nr of lines     presently in inc file
       it_rst = 0 !< Nr of snapshots presently in rst file
@@ -343,16 +348,16 @@ contains
       debugtimeon = .false. !< timing yes or no
 
       dsetb = 0 !< number of setbacks ()
-      if (tlfsmo > 0d0) then !  Smoothing period
-         alfsmo = 0d0 !  Smoothing factor
+      if (tlfsmo > 0.0_dp) then !  Smoothing period
+         alfsmo = 0.0_dp !  Smoothing factor
       else
-         alfsmo = 1d0
+         alfsmo = 1.0_dp
       end if
 
    end subroutine reset_flowtimes
 
    subroutine reset_timers()
-      use Timers
+      use Timers, only: timini, timon, timstrt
 
       call timini()
       timon = .true.

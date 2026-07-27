@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,11 @@ contains
 
    subroutine read_samples_from_dem(filnam, jadoorladen)
       use precision, only: dp
-      use dem
-      use m_missing
-      use m_samples
-      use m_drawthis
-      use m_readyy
-      use m_get_samples_boundingbox
+      use dem, only: deminfo, read_dem_file, nodata
+      use m_samples, only: savesam, ns, increasesam, xs, ys, zs, ipsam, mxsam, mysam, ipstat, ipstat_ok
+      use m_drawthis, only: ndraw
+      use m_readyy, only: readyy
+      use m_get_samples_boundingbox, only: get_samples_boundingbox
       use m_filez, only: message
 
       character(len=*), intent(in) :: filnam
@@ -73,9 +72,9 @@ contains
       call increasesam(ns + dem_info%rows * dem_info%cols)
 
       write (TEX, '(I10)') dem_info%rows * dem_info%cols
-      call READYY('Filtering '//trim(TEX)//' Samples Points', 0d0)
+      call READYY('Filtering '//trim(TEX)//' Samples Points', 0.0_dp)
 
-      istep = int(dem_info%rows / 100d0)
+      istep = int(dem_info%rows / 100.0_dp)
       do i = 1, dem_info%rows
          do j = 1, dem_info%cols
             if (arr(i, j) == NODATA) then
@@ -84,27 +83,31 @@ contains
                ns = ns + 1
                xs(ns) = xarr(i, j)
                ys(ns) = yarr(i, j)
-               zs(ns) = dble(arr(i, j))
+               zs(ns) = real(arr(i, j), kind=dp)
             end if
          end do
          if (mod(i, istep) == 0) then
-            call READYY(' ', min(1d0, dble(i) / dem_info%rows))
+            call READYY(' ', min(1.0_dp, real(i, kind=dp) / dem_info%rows))
          end if
       end do
       deallocate (xarr, yarr, arr)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
-      if (NS > 100000) NDRAW(32) = 7 ! Squares (faster than circles)
-      if (NS > 500000) NDRAW(32) = 3 ! Small dots (fastest)
+      if (NS > 100000) then
+         NDRAW(32) = 7 ! Squares (faster than circles)
+      end if
+      if (NS > 500000) then
+         NDRAW(32) = 3 ! Small dots (fastest)
+      end if
 
       write (TEX, '(I10)') NS
-      call READYY('Sorting '//trim(TEX)//' Samples Points', 0d0)
+      call READYY('Sorting '//trim(TEX)//' Samples Points', 0.0_dp)
       if (NS > 1) then
          call TIDYSAMPLES(XS, YS, ZS, IPSAM, NS, MXSAM, MYSAM)
          call get_samples_boundingbox()
          IPSTAT = IPSTAT_OK
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
    end subroutine read_samples_from_dem
 
 end module m_read_samples_from_dem

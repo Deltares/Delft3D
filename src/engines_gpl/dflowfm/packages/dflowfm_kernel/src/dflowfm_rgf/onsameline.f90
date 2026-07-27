@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_onsameline
 contains
 
    subroutine ONSAMELINE(IPT, MP, NP, JA)
-      use m_grid_block
+      use m_grid_block, only: itype, mb, nb
 
       integer :: mp, np, ja, ipt
       integer :: md, nd
@@ -51,11 +51,15 @@ contains
          if (IPT == 1 .and. MB(2) /= 0) then
             MD = MP - MB(2)
             ND = NP - NB(2)
-            if (MD /= 0 .and. ND /= 0) JA = 0
+            if (MD /= 0 .and. ND /= 0) then
+               JA = 0
+            end if
          else if (IPT == 2) then
             MD = MP - MB(1)
             ND = NP - NB(1)
-            if (MD /= 0 .and. ND /= 0) JA = 0
+            if (MD /= 0 .and. ND /= 0) then
+               JA = 0
+            end if
          end if
       end if
       return

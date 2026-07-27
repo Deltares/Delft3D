@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: dictionary.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/dictionary.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/dictionary.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Dictionary Class - DEFINITIONS
@@ -34,36 +36,37 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
 #include "flow2d3d.h"
 
+class Dictionary
+{
+public:
+    Dictionary(const char* name);
+    ~Dictionary(void);
 
-class Dictionary {
-    public:
-        Dictionary (
-            const char * name
-            );
-        ~Dictionary (
-            void
-            );
+    void Insert(const char* key, void* value);
+    void* Lookup(const char* key);
 
-        void    Insert  (const char * key, void * value);
-        void *  Lookup  (const char * key);
+    enum
+    {
+        NOTFOUND = -1
+    }; // invalid value returned by Lookup
 
-        enum { NOTFOUND = -1 };  // invalid value returned by Lookup
+private:
+    // int hash (char *, int);
 
-    private:
-        //int hash (char *, int);
+    const char* name;
 
-        const char * name;
+    enum
+    {
+        SIZE = 3011
+    }; // number of slots, a prime number
 
-        enum { SIZE = 3011 };   // number of slots, a prime number
-
-        struct {
-            char *  key;
-            void *  value;
-            } table [SIZE];
-
-    };
+    struct
+    {
+        char* key;
+        void* value;
+    } table[SIZE];
+};

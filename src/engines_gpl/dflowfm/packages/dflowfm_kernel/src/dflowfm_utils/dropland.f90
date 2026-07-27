@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,7 +63,9 @@ contains
       integer :: kk, k, n, nn, in, ncol, j
       real(kind=dp) :: dropstep !< Amount to add (in meters, may be negative)
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       dropstep = idir * zkdropstep
 
@@ -75,7 +77,7 @@ contains
                zk(k) = zk(k) + dropstep
                if (jaceneqtr == 2 .and. jased > 0 .and. jased < 4) then
                   do j = 1, mxgr
-                     grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
+                     grainlay(j, k) = max(0.0_dp, grainlay(j, k) + dropstep / mxgr)
                   end do
                end if
                call isocol(zk(k), ncol)
@@ -94,7 +96,7 @@ contains
                   zk(k) = zk(k) + dropstep
                   if (jaceneqtr == 2 .and. jased > 0) then
                      do j = 1, mxgr
-                        grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
+                        grainlay(j, k) = max(0.0_dp, grainlay(j, k) + dropstep / mxgr)
                      end do
                   end if
                   call isocol(zk(k), ncol)
@@ -107,15 +109,18 @@ contains
       end if
 
       call setbobs()
-      s1 = max(bl, s1); s0 = s1; s00 = s1
+      s1 = max(bl, s1)
+      s0 = s1
+      s00 = s1
 
       hs = s1 - bl
       call volsur() ! dropland
       call flow_f0isf1() ! dropland
-      volerr = 0; volerrcum = 0
+      volerr = 0
+      volerrcum = 0
 
       if (kmx > 0) then
-         call setkbotktop(1) ! dropland
+         call set_kbot_ktop(jazws0=1) ! dropland
       end if
 
       ! NOTE: vol1tot cumulation now contains an error: new bl's have not been accounted for...

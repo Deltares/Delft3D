@@ -170,7 +170,6 @@ active-processes
      name  'Res_IM2'    'Resuspension 2th inorganic matter'
      name  'DynDepth'   'dynamic calculation of the depth'
      name  'Chloride'   'calculation of chloride concentration from salinit'
-     name  'CalcRadUV'  'UV-Radiation at segment upper and lower boundaries'
      name  'Daylength'  'Daylength calculation'
      name  'Extinc_UV'  'Extinction of ultraviolet-light (350-480nm)'
      name  'Veloc'      'horizontal stream velocity'

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
       use m_filez, only: doclose
 
       integer :: mthd, mout
-      real(kind=dp) :: z = 9999d0
+      real(kind=dp) :: z = 9999.0_dp
       character(len=132) :: rec
       integer :: m, n
 

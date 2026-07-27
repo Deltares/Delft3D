@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -32,7 +32,7 @@
 module m_ec_spatial_extrapolation
    use precision, only : hp
    use m_ec_typedefs, only : tEcField, tEcElementSet, tEcItem, tEcIndexWeight, tFlexibleIndexWeightFactor
-   use m_ec_message, only : setECMessage
+   use m_ec_message, only : set_ec_message
 
    use kdtree2Factory
    implicit none
@@ -41,7 +41,8 @@ module m_ec_spatial_extrapolation
 
    public :: extrapolate_missing, init_spatial_extrapolation, updateInterpolation, extrapolateValue
 
-   real(kind=hp) :: max_search_radius = 1.0e6_hp  !< in meter
+   real(kind=hp), parameter :: MAX_SEARCH_RADIUS_DEFAULT = 1.0e6_hp  !< in meter
+   real(kind=hp) :: max_search_radius = MAX_SEARCH_RADIUS_DEFAULT  !< in meter
    integer       :: jsferic           = 1
 
    contains
@@ -56,7 +57,9 @@ module m_ec_spatial_extrapolation
 
           if (rvalue > 0.0_hp) then
              max_search_radius = rvalue
-          endif
+          else
+             max_search_radius = MAX_SEARCH_RADIUS_DEFAULT
+          end if
           jsferic = ivalue
        end subroutine init_spatial_extrapolation
 
@@ -187,7 +190,7 @@ module m_ec_spatial_extrapolation
             Ns = dim1 * dim2
             allocate(xs(Ns), ys(Ns), stat=ierror)
             if (ierror /= 0) then
-               call setECMessage("Allocate error in nearest_sample_wrapper with size ", 4*Ns)
+               call set_ec_message("Allocate error in nearest_sample_wrapper with size ", 4*Ns)
                success = .false.
             else
                ii = 0

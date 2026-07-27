@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: node.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/node.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/node.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Domain Decomposition MultiNode Support - DEFINITIONS
@@ -34,84 +36,55 @@
 //  6 jun 11
 //------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
-
 
 //------------------------------------------------------------------------------
 //  Class Node represents a single node in a multi-node DD simulation
 
+class Node
+{
+public:
+    Node(int nodeID, const char* hostname);
 
-class Node {
-    public:
-        Node (
-            int nodeID,
-            const char * hostname
-            );
+    ~Node(void);
 
-        ~Node (
-            void
-            );
+    void AddIterator(Iterator* iterator);
 
-        void
-        AddIterator (
-            Iterator * iterator
-            );
+public:
+    int nodeID;           // ID of node (starting at 0)
+    const char* hostname; // short name, FQDN, or IP address
+    Stream* stream;       // stream with which to communicate with the node
+    pid_t remotePID;      // ID of remote shell process on master host
 
-    public:
-        int         nodeID;             // ID of node (starting at 0)
-        const char * hostname;          // short name, FQDN, or IP address
-        Stream *    stream;             // stream with which to communicate with the node
-        pid_t       remotePID;          // ID of remote shell process on master host
+    List* iterators;  // list of iterators hosted on this node
+    int numIterators; // number of   iterators
 
-        List *      iterators;          // list of iterators hosted on this node
-        int         numIterators;       // number of   iterators
-
-    private:
-
-    };
-
+private:
+};
 
 //------------------------------------------------------------------------------
 //  Class NodeSet represents all nodes in a multi-node DD simulation
 
+class NodeSet
+{
+public:
+    NodeSet(void);
 
-class NodeSet {
-    public:
-        NodeSet (
-            void
-            );
+    ~NodeSet(void);
 
-        ~NodeSet (
-            void
-            );
+    void AddNodesFromFile(const char* nodeListFileName);
 
-        void
-        AddNodesFromFile (
-            const char * nodeListFileName
-            );
+    void AddNodesFromString(const char* nodeListString);
 
-        void
-        AddNodesFromString (
-            const char * nodeListString
-            );
+    void CreateNodeTable(void);
 
-        void
-        CreateNodeTable (
-            void
-            );
+public:
+    Node** node;  // table of Node pointers (allocated by CreateNodeTable)
+    int numNodes; // number of nodes
 
-    public:
-        Node **     node;               // table of Node pointers (allocated by CreateNodeTable)
-        int         numNodes;           // number of nodes
+private:
+    void AddNode(const char* nodeSpecification);
 
-    private:
-        void
-        AddNode (
-            const char * nodeSpecification
-            );
-
-    private:
-        List *      nodeList;           // list of distributed nodes (initial phase)
-
-    };
+private:
+    List* nodeList; // list of distributed nodes (initial phase)
+};

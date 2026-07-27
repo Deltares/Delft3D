@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -85,7 +85,7 @@ contains
 !     get file basename
       len_basename = index(netfilename, '_net') - 1
       if (len_basename < 1) then
-         call qnerror('write domains: net filename error', ' ', ' ')
+         call qnerror('partition_write_domains: NetFile does not match expected format "*_net.nc"', ' ', ' ')
          goto 1234
       end if
 
@@ -123,15 +123,19 @@ contains
 
 !        make the domain by deleting other parts of the net, and s
          call partition_make_domain(idmn, numlay_cellbased, numlay_nodebased, jacells, ierror)
-         if (ierror /= DFM_NOERR) goto 1234
-
+         if (ierror /= DFM_NOERR) then
+            goto 1234
+         end if
+         
 !        write partitioning net files, including cell info. and idomain
          call unc_write_net(filename, janetcell=1, janetbnd=1, jaidomain=jacells, &
                             jaiglobal_s=jacells, iconventions=iconv, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
 
 !        restore network
+         call restorestructures()
          call restore()
          call restorecells() ! restore netcell, lne, lnn and idomain,xz, yz, xzw, yzw, ba
+
       end do
       call restore_1dugrid_state()
 

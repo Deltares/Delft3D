@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
 !> compute change in topology functional and get the nodes and cells involved
 module m_comp_ntopo
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -72,18 +73,24 @@ contains
       k1 = kn(1, L)
       k2 = kn(2, L)
 
-      if (lnn(L) /= 2) goto 1234 ! inner links only
+      if (lnn(L) /= 2) then
+         goto 1234 ! inner links only
+      end if
 
       icellL = lne(1, L)
       icellR = lne(2, L)
 
-      if (netcell(icellL)%N /= 3 .or. netcell(icellR)%N /= 3) goto 1234 ! triangles only
+      if (netcell(icellL)%N /= 3 .or. netcell(icellR)%N /= 3) then
+         goto 1234 ! triangles only
+      end if
 
 !  find the nodes that are connected to both k1 and k2
       kL = sum(netcell(icellL)%nod(1:3)) - k1 - k2
       kR = sum(netcell(icellR)%nod(1:3)) - k1 - k2
 
-      if (kL < 1 .or. kR < 1) goto 1234
+      if (kL < 1 .or. kR < 1) then
+         goto 1234
+      end if
 
 !  check if right nodes were found
 !  this might not be the case when the cell administration is out of date
@@ -94,7 +101,9 @@ contains
             exit
          end if
       end do
-      if (.not. Lproceed) goto 1234
+      if (.not. Lproceed) then
+         goto 1234
+      end if
 
       Lproceed = .false.
       do k = 1, netcell(icellR)%N
@@ -103,7 +112,9 @@ contains
             exit
          end if
       end do
-      if (.not. Lproceed) goto 1234
+      if (.not. Lproceed) then
+         goto 1234
+      end if
 
 !  compute the change in functional
       n1 = nmk(k1) - nmk_opt(k1)
@@ -128,8 +139,8 @@ contains
             call comp_nnow(kL, k1, k2, nL)
             call comp_nnow(kR, k1, k2, nR)
 
-            ntopo = (n1L - 1)**2 + (n1R - 1)**2 + (n2L - 1)**2 + (n2R - 1)**2 + 2d0 * ((nL + 1)**2 + (nR + 1)**2) - &
-                    (n1L**2 + n1R**2 + n2L**2 + n2R**2 + 2d0 * (nL**2 + nR**2))
+            ntopo = (n1L - 1)**2 + (n1R - 1)**2 + (n2L - 1)**2 + (n2R - 1)**2 + 2.0_dp * ((nL + 1)**2 + (nR + 1)**2) - &
+                    (n1L**2 + n1R**2 + n2L**2 + n2R**2 + 2.0_dp * (nL**2 + nR**2))
 
             if (n1L /= n1R .or. n2L /= n2R) then
                continue

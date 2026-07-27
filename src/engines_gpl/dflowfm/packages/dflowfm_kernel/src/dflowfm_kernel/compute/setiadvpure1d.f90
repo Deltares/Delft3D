@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,7 +39,7 @@ contains
 
 !> update iadvec flag if Pure1D is switched on
    subroutine setiadvpure1D(jaPure1D)
-      use m_flowgeom, only: lnx1d, lnxi, lnx, ln, kcu, iadv
+      use m_flowgeom, only: lnx1d, lnxi, lnx, ln, kcu, iadv, IADV_PURE1D_FM, IADV_PURE1D_SOBEK
       use m_flowparameters, only: iadvec1D
       use network_data, only: kc
 
@@ -55,12 +55,12 @@ contains
          return
 
       elseif (jaPure1D < 3) then
-         ! stay close to the default behaviour
-         iadv_Pure1D = 103
+         ! stay close to the default FM behaviour
+         iadv_Pure1D = IADV_PURE1D_FM
 
       else
          ! switch to SOBEK type 1D advection
-         iadv_Pure1D = 104
+         iadv_Pure1D = IADV_PURE1D_SOBEK
 
       end if
 
@@ -75,7 +75,8 @@ contains
       end do
 
       do L = 1, lnx1D
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
          if (iadv(L) == iadvec1D .or. &
              & (iadv(L) == 6 .and. kc(n1) == 2 .and. kc(n2) == 2)) then
             iadv(L) = iadv_Pure1D

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,10 @@ module m_help
    implicit none
 contains
    subroutine HELP(WRDKEY, NLEVEL)
-      use unstruc_colors
+      use unstruc_colors, only: hlpfor, hlpbck, ihs, iws, lblfor, lblbck, wndfor, wndbck
+      use m_helpc, only: maxhlp, numtxt, hlptxt
       use unstruc_display_data, only: npos
-      use m_devices, only: ihs, iws
       use dflowfm_version_module, only: company, product_name
-      use m_helpc
 
       integer :: i
       integer :: ih
@@ -186,7 +185,9 @@ contains
          call IWinSelect(NUMWNB)
          call ITEXTCOLOURN(HLPFOR, HLPBCK)
          call IWinOutStringXY(1, 2, 'top or bottom = Home/End; exit = Esc; search : F7)                               . ')
-         if (JATAB == 1) call ITEXTCOLOURN(WNDFOR, WNDBCK)
+         if (JATAB == 1) then
+            call ITEXTCOLOURN(WNDFOR, WNDBCK)
+         end if
       else if (JATAB == 1) then
 !        met tab wordt popup keyword window geopend of gesloten
          if (JAPOP == 0) then
@@ -224,7 +225,9 @@ contains
          end if
       end if
 
-      if (NUMCHC /= 0) goto 20
+      if (NUMCHC /= 0) then
+         goto 20
+      end if
 
       if (JAPOP == 1) then
          call IWinClose(1)

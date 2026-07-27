@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,20 +32,21 @@
 
 submodule(m_partition_METIS_to_idomain) m_partition_METIS_to_idomain_
 
+   use precision, only: dp
    implicit none
 
 contains
 
 !> generate partition numbering with METIS
 !!   1D links are supported now
-   module subroutine partition_METIS_to_idomain(Nparts, jacontiguous, method, iseed)
+   module subroutine partition_METIS_to_idomain(idomain, Nparts, jacontiguous, method, iseed)
       use network_data, only: netcell, nump1d2d, numk, numl, lne, lnn
-      use m_partitioninfo, only: idomain
       use m_metis, only: opts, metis_ok
       use m_alloc, only: realloc, aerr
       use MessageHandling, only: LEVEL_ERROR, LEVEL_INFO, LEVEL_WARN, mess
       use m_qnerror, only: qnerror
 
+      integer, intent(out), dimension(:), allocatable :: idomain !< cell-based domain number, dim(nump1d2d or ndx)
       integer, intent(in) :: Nparts !< number of partitions
       integer, intent(in) :: method !< partition method. 1: K-Way, 2: Recursive, 3: Mesh-dual
       integer, intent(in) :: jacontiguous !< enforce contiguous domains (1) or not (0)
@@ -83,7 +84,9 @@ contains
       Ne = nump1d2d
 
 !     deallocate
-      if (allocated(idomain)) deallocate (idomain)
+      if (allocated(idomain)) then
+         deallocate (idomain)
+      end if
 
 !     allocate
       allocate (idomain(Ne), stat=ierror)
@@ -108,28 +111,38 @@ contains
       if (jacontiguous == 1) then
          if (method == 1 .or. method == 0) then ! K-way (method = 1) is the default (method = 0) now
             ierror = metisopts(opts, "CONTIG", 1) ! enforce contiguous domains, observation: number of cells per domain becomes less homogeneous
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          else if (method == 2) then
             call mess(LEVEL_WARN, 'Contiguous option is not available for Recursive Bisection method (method = 2). To enforce contiguous option, use K-way partitioning (default) method (method = 1).')
          end if
       end if
       ierror = metisopts(opts, "DBGLVL", 1) ! output
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       ierror = metisopts(opts, "UFACTOR", 1) ! allowed load imbalance TODO, MJ: should be an integer x, and tolerance is (1+x)/1000 according to manual, but 1+x/1000 according to us and "macros.h"
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       ierror = metisopts(opts, "NITER", 100) ! observation: increasing this number will visually improve the partitioning
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       if (iseed /= 0) then
          ierror = metisopts(opts, "SEED", iseed) ! User-defined seed value, for reproducible partitionings.
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
       vwgt = 1 ! weights of vertices
       vsize = 1 ! size of vertices for computing the total communication volume
-      tpwgts = 1d0 / dble(Nparts) ! desired weight for each partition
+      tpwgts = 1.0_dp / real(Nparts, kind=dp) ! desired weight for each partition
 
 !!     make mesh
       if (method == 3) then
@@ -142,7 +155,7 @@ contains
             do k = 1, N
 !!              reallocate if necessary
                if (ipoint > icursize) then
-                  icursize = int(1.2d0 * ipoint) + 1
+                  icursize = int(1.2_dp * ipoint) + 1
                   call realloc(eind, icursize, keepExisting=.true.)
                end if
                eind(ipoint) = netcell(ic)%nod(k)

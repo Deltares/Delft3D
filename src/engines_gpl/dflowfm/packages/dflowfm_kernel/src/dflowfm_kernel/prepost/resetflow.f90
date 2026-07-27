@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_resetflow
    use m_reset_movobs, only: reset_movobs
+   use m_waveconst
 
    implicit none
 
@@ -41,7 +42,7 @@ module m_resetflow
 
 contains
 
-   !> Resets the current flow- and time-state, but keeps al active parameter settings.
+ !> Resets the current flow- and time-state, but keeps all active parameter settings.
  !! To be called upon flow_modelinit().
  !! Upon program startup and loading of new model/MDU, call resetFullFlowModel() instead.
    subroutine resetFlow()
@@ -55,6 +56,7 @@ contains
       use m_flowgeom
       use m_modelbounds
       use m_flowtimes
+      use m_fm_icecover, only: reset_fm_icecover
       use waq
       use m_waves
       use m_hydrology_data
@@ -64,6 +66,8 @@ contains
       use m_sedtrails_data
       use m_nearfield, only: reset_nearfieldData
       use m_laterals, only: reset_lateral
+      use m_flow_validatestate, only: reset_flow_validatestate
+
       implicit none
 
       ! Only reset counters and other scalars, allocatables should be
@@ -95,13 +99,15 @@ contains
 
       call reset_flow()
 
+      call reset_fm_icecover()
+
       call reset_waq()
 
       call reset_movobs()
 
       call reset_statistics()
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call xbeach_reset()
       end if
 
@@ -109,9 +115,9 @@ contains
 
       call reset_sedtra()
 
-      call reset_hydrology_data()
-
       call reset_nearfieldData()
+
+      call reset_flow_validatestate()
 
    end subroutine resetFlow
 

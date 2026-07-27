@@ -1,0 +1,44 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "THIRD_PARTY_LIBS_TAG": "oneapi-2024-ifx-release"
+        }
+    },
+    "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
+    "mounts": [
+        // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
+        // See: https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+        {
+            "type": "volume",
+            "source": "delft3d-history",
+            "target": "/home/dev/.history",
+        },
+        // Volume for the `~/.aws/` directory. You can store your MinIO credentials here.
+        {
+            "type": "volume",
+            "source": "delft3d-aws",
+            "target": "/home/dev/.aws",
+        },
+        {
+            "type": "volume",
+            "source": "delft3d-conan",
+            "target": "/home/dev/.conan2",
+        },
+    ],
+    "runArgs": ["--ulimit", "stack=-1:-1"],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-containers",
+                "ms-vscode.cmake-tools",
+                "fortran-lang.linter-gfortran",
+                "ms-vscode.cpptools",
+                "ms-python.python",
+                "ms-python.mypy-type-checker",
+                "charliermarsh.ruff",
+                "tamasfe.even-better-toml",
+            ]
+        }
+    }
+}

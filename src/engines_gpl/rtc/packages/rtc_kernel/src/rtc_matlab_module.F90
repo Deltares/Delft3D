@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -615,7 +615,7 @@ subroutine ProcessMatlabInputVars(this,IREQ,IDUM)
     use ParameterModule, only: CharIdLength, NSOBEK, NSobWq, ND3BID, NPRECP, NTIMS
     use LocationDataModule, only: ID_SLC, ID_SBR, ID_D3B, ID_SWQ, ID_PRE, ALRSBK, ALRSWQ, ALRS3B, ALRSPR, ResPre, CheckIdsMatlab
     use OtherData, only: RTC_TIMOLD, IHOUR, IMIN, ISEC, ITMSIZ, ToMatlab1D2DH, ToMatlab1D2DWD, ToMatlab1D2DBL, ToMatlab1D2DU, ToMatlab1D2DV, ToMatlab1D2DC, MatRR, MatRain, MatRainPredict, MatWindPredict, MatPredictMulti, MatWq, MatlabNrWqPar, MatlabWq, MatlabWqParId, NTIMHP
-    use ReadLib, only: IntCH8
+    use ReadLib_rtc, only: IntCH8
     !
     IMPLICIT NONE
     !

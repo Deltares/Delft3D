@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,8 @@ contains
 
    subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
       use precision, only: dp
-      use m_dscreens
-      use m_view_port
+      use m_dscreens, only: x1sc, y1sc, x2sc, y2sc
+      use m_view_port, only: viewport
       implicit none
       real(kind=dp) :: dx
       real(kind=dp) :: dxh
@@ -53,10 +53,10 @@ contains
       real(kind=dp) :: y2
 
       call viewport(real(X1SC(NSC)), real(Y1SC(NSC)), real(X2SC(NSC)), real(Y2SC(NSC)))
-      DX = (X2 - X1) * 0.1d0
-      DY = (Y2 - Y1) * 0.1d0
-      DXH = DX / 2d0
-      DYH = DY / 2d0
+      DX = (X2 - X1) * 0.1_dp
+      DY = (Y2 - Y1) * 0.1_dp
+      DXH = DX / 2.0_dp
+      DYH = DY / 2.0_dp
       !    CALL IGRUNITS( real(X1-DX),real(Y1-DY),real(X2+DX),real(Y2+DY) )
       call setwor(X1 - DX, Y1 - DY, X2 + DX, Y2 + DY)
 

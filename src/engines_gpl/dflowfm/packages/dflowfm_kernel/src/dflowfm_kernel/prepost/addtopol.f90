@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,16 +43,17 @@ contains
    !> add polygon to global polygons
    subroutine addtopol(XCRA, YCRA, NCRA)
       use precision, only: dp
-      use m_polygon
-      use m_alloc
-      use m_missing
+      use m_polygon, only: increasepol, npl, xpl, ypl, zpl
+      use m_missing, only: dmiss
 
       integer, intent(in) :: NCRA
       real(kind=dp), dimension(NCRA), intent(in) :: XCRA, YCRA
 
       integer :: i
 
-      if (NCRA <= 0) return
+      if (NCRA <= 0) then
+         return
+      end if
 
       call increasepol(NPL + NCRA + 1, 1)
 

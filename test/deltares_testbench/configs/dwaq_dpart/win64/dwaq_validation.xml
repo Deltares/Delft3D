@@ -30,6 +30,25 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
+
+        <!-- Configuration for DELWAQ steady-state options - dummy -->
+        <testCase name="dwaq_directly">
+            <programs>
+                <program ref="dwaq">
+                    <arguments>
+                        <argument>delwaq.inp</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
     </defaultTestCases>
 
     <!-- testCases -->

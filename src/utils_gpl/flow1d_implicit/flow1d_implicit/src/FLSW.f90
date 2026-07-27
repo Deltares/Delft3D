@@ -249,6 +249,7 @@ subroutine FLSW (g      ,il     ,ir     ,ngrid  ,istru  ,strclo ,&
 !
    fred1 = .10
    fred2 = .05
+!
    if (fred.lt.fred1) then
 !
 !        Degeneration ahead (reduction factor --> 0), so

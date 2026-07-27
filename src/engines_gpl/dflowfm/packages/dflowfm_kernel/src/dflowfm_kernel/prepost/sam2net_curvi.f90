@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -92,7 +92,9 @@ contains
 
       ja = 0
       call confrm('1D interpolation (no cross-sections)?', ja)
-      if (ja == 1) L1D = .true.
+      if (ja == 1) then
+         L1D = .true.
+      end if
 
 !  regularize the curvigrid
       call regularise_spline2curvigrid()
@@ -113,13 +115,13 @@ contains
       call disable_outside_curvigrid(numk, NS, xk, yk, xs, ys, imaskk, imasks)
 
 !  assign (xi,eta) to the grid nodes
-      etamin = huge(1d0)
+      etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, mc
-         xiloc = dble(i - 1)
+         xiloc = real(i - 1, kind=dp)
          do j = 1, nc
             ipoint = i + mmax * (j - 1)
-            etaloc = dble(j - 1)
+            etaloc = real(j - 1, kind=dp)
 
             xietac(1, ipoint) = xiloc
             xietac(2, ipoint) = etaloc
@@ -149,7 +151,9 @@ contains
          xiloc = xietas(1, i)
          etaloc = xietas(2, i)
 
-         if (xiloc == DMISS .or. etaloc == DMISS) cycle ! no (xi,eta) found
+         if (xiloc == DMISS .or. etaloc == DMISS) then
+            cycle ! no (xi,eta) found
+         end if
 
 !     note that current xiloc and etaloc serve as first iterate in call to bilin_interp_loc
          call bilin_interp_loc(mmax, nmax, mc, nc, 1, xc, yc, zc, xs(i), ys(i), xiloc, etaloc, zloc, ierror, dmiss, jsferic)
@@ -162,12 +166,16 @@ contains
 !  find network grid-coordinates
       jadl = 0
       jakdtree = 1
-      if (NPL > 0) call savegrd()
+      if (NPL > 0) then
+         call savegrd()
+      end if
 
       call TRIINTfast(xc, yc, xietac, mmax * nmax, 2, xk, yk, xietak, numk, jadl, jakdtree, &
                       jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef)
 
-      if (NPL > 0) call restoregrd()
+      if (NPL > 0) then
+         call restoregrd()
+      end if
 
       do k = 1, numk
 !     apply inside-curvigrid mask
@@ -183,7 +191,9 @@ contains
          xiloc = xietak(1, k)
          etaloc = xietak(2, k)
 
-         if (xiloc == DMISS .or. etaloc == DMISS) cycle ! no (xi,eta) found
+         if (xiloc == DMISS .or. etaloc == DMISS) then
+            cycle ! no (xi,eta) found
+         end if
 
 !     note that current xiloc and etaloc serve as first iterate in call to bilin_interp_loc
          call bilin_interp_loc(mmax, nmax, mc, nc, 1, xc, yc, zc, xk(k), yk(k), xiloc, etaloc, zloc, ierror, dmiss, jsferic)
@@ -258,15 +268,33 @@ contains
       end if
 
 !  deallocate
-      if (allocated(xietak)) deallocate (xietak)
-      if (allocated(xietas)) deallocate (xietas)
-      if (allocated(xietac)) deallocate (xietac)
-      if (allocated(xik)) deallocate (xik)
-      if (allocated(etak)) deallocate (etak)
-      if (allocated(xis)) deallocate (xis)
-      if (allocated(etas)) deallocate (etas)
-      if (allocated(imaskk)) deallocate (imaskk)
-      if (allocated(imasks)) deallocate (imasks)
+      if (allocated(xietak)) then
+         deallocate (xietak)
+      end if
+      if (allocated(xietas)) then
+         deallocate (xietas)
+      end if
+      if (allocated(xietac)) then
+         deallocate (xietac)
+      end if
+      if (allocated(xik)) then
+         deallocate (xik)
+      end if
+      if (allocated(etak)) then
+         deallocate (etak)
+      end if
+      if (allocated(xis)) then
+         deallocate (xis)
+      end if
+      if (allocated(etas)) then
+         deallocate (etas)
+      end if
+      if (allocated(imaskk)) then
+         deallocate (imaskk)
+      end if
+      if (allocated(imasks)) then
+         deallocate (imasks)
+      end if
 
       return
    end subroutine sam2net_curvi

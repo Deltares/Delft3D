@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,33 +57,37 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("diffusionimplicit2D", ithndl)
+      if (timon) then
+         call timstrt("diffusionimplicit2D", ithndl)
+      end if
 
       do i = 1, numconst
 
-         bbr = 0d0; ccr = 0d0
+         bbr = 0.0_dp
+         ccr = 0.0_dp
          do L = 1, lnx
-            if (dxiau(L) > 0d0) then
-               k1 = ln(1, L); k2 = ln(2, L)
+            if (dxiau(L) > 0.0_dp) then
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                if (jadiusp == 1) then
                   diuspL = diusp(L)
                else
                   diuspL = dicouv
                end if
                difcoeff = sigdifi(i) * viu(L) + difsedu(i) + diuspL
-               ddx = dxiau(L) * max(0d0, difcoeff) ! safety first...
+               ddx = dxiau(L) * max(0.0_dp, difcoeff) ! safety first...
                bbr(k1) = bbr(k1) + ddx
                bbr(k2) = bbr(k2) + ddx
                ccr(lv2(L)) = ccr(lv2(L)) - ddx
             end if
          end do
          do n = 1, ndx
-            if (bbr(n) > 0d0) then
-               diag = 0.5d0 * (vol0(n) + vol1(n)) * dti ! safety first...,  flooding : vol1 > 0, ebbing : vol0 > 0
+            if (bbr(n) > 0.0_dp) then
+               diag = 0.5_dp * (vol0(n) + vol1(n)) * dti ! safety first...,  flooding : vol1 > 0, ebbing : vol0 > 0
                bbr(n) = bbr(n) + diag
                ddr(n) = diag * constituents(i, n)
             else
-               bbr(n) = 1d0
+               bbr(n) = 1.0_dp
                ddr(n) = constituents(i, n)
             end if
             workx(n) = constituents(i, n)
@@ -95,7 +99,9 @@ contains
 
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine diffusionimplicit2D
 
 end module m_diffusionimplicit2d

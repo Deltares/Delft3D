@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,6 +45,12 @@ module m_observations_data
    real(kind=dp), allocatable :: cmxobs(:) !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
    integer, allocatable :: kobs(:) !< node nrs of ACTIVE observation points
    integer, allocatable :: lobs(:) !< flowlink nrs of active observation points
+   integer, allocatable :: intobs(:) !< interpolated station or not
+! For storing number and weights of stations wher you want to get interpolated values
+  
+   integer, allocatable       :: neighbour_nodes_obs(:,:) !< [3, numobs+nummovobs] List of nearby flow node numbers for each observation point
+   real(kind=dp), allocatable :: neighbour_weights_obs(:,:) !< [3, numobs+nummovobs] List of weights for the  nearby flow node numbers for each observation point
+   
    ! NOTE: kobs is not maintained here (so also not after deleteObservation, etc.) All done once by obs_on_flowgrid.
    character(len=IdLen), allocatable :: namobs(:) ! names of observation points
    integer, allocatable :: locTpObs(:) !< location type of observation points, determining to which flownodes to snap to (0=1d2d, 1=1d, 2=2d, 3=1d defined by branchID+chainage)
@@ -67,6 +73,13 @@ module m_observations_data
    integer :: IVAL_CMX
    integer :: IVAL_WX
    integer :: IVAL_WY
+   integer :: IVAL_WINDSTRESSX
+   integer :: IVAL_WINDSTRESSY
+   integer :: IVAL_WSTAR
+   integer :: IVAL_OBUKHOV_LENGTH
+   integer :: IVAL_TRANSFER_COEFF_MOMENTUM
+   integer :: IVAL_TRANSFER_COEFF_SENSIBLE_HEAT
+   integer :: IVAL_TRANSFER_COEFF_LATENT_HEAT
    integer :: IVAL_PATM
    integer :: IVAL_RAIN
    integer :: IVAL_INFILTCAP
@@ -109,14 +122,19 @@ module m_observations_data
    integer :: IVAL_TEPS
    integer :: IVAL_VIU
    integer :: IVAL_VICWWS
+   integer :: IVAL_VICWWS_TOTAL
+   integer :: IVAL_DIFWWS
+   integer :: IVAL_DIFWWS_TOTAL
    integer :: IVAL_VICWWU
    integer :: IVAL_WS1
    integer :: IVAL_WSN
    integer :: IVAL_SEDDIF1
    integer :: IVAL_SEDDIFN
    integer :: IVAL_RICH
+   integer :: IVAL_RICHS
    integer :: IVAL_TAIR
    integer :: IVAL_WIND
+   integer :: IVAL_RWIN
    integer :: IVAL_RHUM
    integer :: IVAL_CLOU
    integer :: IVAL_AIRDENSITY
@@ -127,6 +145,17 @@ module m_observations_data
    integer :: IVAL_QFRE
    integer :: IVAL_QFRC
    integer :: IVAL_QTOT
+
+   integer :: IVAL_ICE_S1
+   integer :: IVAL_ICE_ZMIN
+   integer :: IVAL_ICE_ZMAX
+   integer :: IVAL_ICE_AREA_FRACTION
+   integer :: IVAL_ICE_THICKNESS
+   integer :: IVAL_ICE_PRESSURE
+   integer :: IVAL_ICE_TEMPERATURE
+   integer :: IVAL_SNOW_THICKNESS
+   integer :: IVAL_SNOW_TEMPERATURE
+
    integer :: IVAL_RHOP
    integer :: IVAL_RHO
    integer :: IVAL_SBCX1
@@ -177,6 +206,13 @@ module m_observations_data
    integer :: IPNT_CMX
    integer :: IPNT_WX
    integer :: IPNT_WY
+   integer :: IPNT_WINDSTRESSX
+   integer :: IPNT_WINDSTRESSY
+   integer :: IPNT_WSTAR
+   integer :: IPNT_OBUKHOV_LENGTH
+   integer :: IPNT_TRANSFER_COEFF_MOMENTUM
+   integer :: IPNT_TRANSFER_COEFF_SENSIBLE_HEAT
+   integer :: IPNT_TRANSFER_COEFF_LATENT_HEAT
    integer :: IPNT_RAIN
    integer :: IPNT_INFILTCAP
    integer :: IPNT_INFILTACT
@@ -215,13 +251,18 @@ module m_observations_data
    integer :: IPNT_TEPS
    integer :: IPNT_VIU
    integer :: IPNT_VICWWS
+   integer :: IPNT_VICWWS_TOTAL
+   integer :: IPNT_DIFWWS
+   integer :: IPNT_DIFWWS_TOTAL
    integer :: IPNT_VICWWU
    integer :: IPNT_WS1
    integer :: IPNT_WSN
    integer :: IPNT_SEDDIF1
    integer :: IPNT_RICH
+   integer :: IPNT_RICHS
    integer :: IPNT_TAIR
    integer :: IPNT_WIND
+   integer :: IPNT_RWIN
    integer :: IPNT_RHUM
    integer :: IPNT_CLOU
    integer :: IPNT_AIRDENSITY
@@ -232,6 +273,17 @@ module m_observations_data
    integer :: IPNT_QFRE
    integer :: IPNT_QFRC
    integer :: IPNT_QTOT
+
+   integer :: IPNT_ICE_S1
+   integer :: IPNT_ICE_ZMIN
+   integer :: IPNT_ICE_ZMAX
+   integer :: IPNT_ICE_AREA_FRACTION
+   integer :: IPNT_ICE_THICKNESS
+   integer :: IPNT_ICE_PRESSURE
+   integer :: IPNT_ICE_TEMPERATURE
+   integer :: IPNT_SNOW_THICKNESS
+   integer :: IPNT_SNOW_TEMPERATURE
+
    integer :: IPNT_NUM
    integer :: IPNT_RHOP
    integer :: IPNT_RHO

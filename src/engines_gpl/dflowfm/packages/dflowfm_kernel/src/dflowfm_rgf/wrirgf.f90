@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,14 +56,14 @@ contains
       use m_wridep, only: wridep
       use m_ecrtab, only: ecrtab
       use precision, only: dp
-      use m_sferic
-      use m_grid
-      use m_missing
-      use m_arcinfo
-      use m_polygon
-      use m_readyy
-      use m_firstlin
-      use m_wripol
+      use m_sferic, only: jsferic
+      use m_grid, only: mc, nc, xc, mmax, nmax, yc, zc
+      use m_missing, only: xymis, dmiss
+      use m_arcinfo, only: x0, y0, dxa, dya
+      use m_polygon, only: savepol, xpl, ypl, npl, restorepol
+      use m_readyy, only: readyy
+      use m_firstlin, only: firstlin
+      use m_wripol, only: wripol
       use m_filez, only: doclose, newfil
 
       real(kind=dp) :: half
@@ -90,10 +90,10 @@ contains
       HALF = 0
       call READYY('Writing Grid File', HALF)
       call ECRTAB(Xc, MC, NC, MRGF, HALF, mmax, nmax)
-      HALF = 0.5d0
+      HALF = 0.5_dp
       call ECRTAB(Yc, MC, NC, MRGF, HALF, mmax, nmax)
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MRGF)
 
       write (NAME2(IPNT + 1:), '(A)') 'asc'
@@ -108,17 +108,28 @@ contains
 
       if (mc * nc < -1000) then ! save grd to polygon for partitioning
          call savepol()
-         n = 0; nfirst = 0
+         n = 0
+         nfirst = 0
          do i = 1, mc - 1
             do j = 1, nc - 1
                if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
                    xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
                   if (nfirst /= 0) then
-                     n = n + 1; xpl(n) = xc(i, j); ypl(n) = yc(i, j)
-                     n = n + 1; xpl(n) = xc(i + 1, j); ypl(n) = yc(i + 1, j)
-                     n = n + 1; xpl(n) = xc(i + 1, j + 1); ypl(n) = yc(i + 1, j + 1)
-                     n = n + 1; xpl(n) = xc(i, j + 1); ypl(n) = yc(i, j + 1)
-                     n = n + 1; xpl(n) = dmiss; ypl(n) = dmiss
+                     n = n + 1
+                     xpl(n) = xc(i, j)
+                     ypl(n) = yc(i, j)
+                     n = n + 1
+                     xpl(n) = xc(i + 1, j)
+                     ypl(n) = yc(i + 1, j)
+                     n = n + 1
+                     xpl(n) = xc(i + 1, j + 1)
+                     ypl(n) = yc(i + 1, j + 1)
+                     n = n + 1
+                     xpl(n) = xc(i, j + 1)
+                     ypl(n) = yc(i, j + 1)
+                     n = n + 1
+                     xpl(n) = dmiss
+                     ypl(n) = dmiss
                   else
                      nfirst = 1
                   end if

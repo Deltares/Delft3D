@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -54,10 +54,10 @@
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use MeasureModule
       Use OtherData
-      Use Readlib
+      Use Readlib_rtc
       Use DH_Alloc
       Use ExternalDLLModule
 
@@ -659,7 +659,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use MeasureModule
       Use OtherData
 
@@ -724,7 +724,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use ReservoirModule
-      Use NewTables
+      Use NewTables_rtc
       Use MeasureModule
       Use OtherData
 

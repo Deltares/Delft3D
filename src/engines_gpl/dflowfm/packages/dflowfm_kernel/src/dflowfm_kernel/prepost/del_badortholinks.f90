@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -86,7 +86,7 @@ contains
       end if
 
 !   take dry cells into account (after findcells)
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       call makenetnodescoding() ! need it for allocation nb
 
@@ -119,7 +119,7 @@ contains
                cycle
             end if
 
-            dorthosum = 0d0
+            dorthosum = 0.0_dp
             num = 0
 !         compute current orthogonality
             do kk = 1, 2
@@ -140,9 +140,9 @@ contains
 
             if (dorthosum > dmaxorthop) then
 !            store neighboring cell administration
-               call local_netstore((/k1, k2/))
-               xz_st = (/xz(k1), xz(k2)/)
-               yz_st = (/yz(k1), yz(k2)/)
+               call local_netstore([k1, k2])
+               xz_st = [xz(k1), xz(k2)]
+               yz_st = [yz(k1), yz(k2)]
 
 !            merge cells
                call mergecells(k1, k2, jatek)
@@ -153,7 +153,7 @@ contains
 
 !            compute new orthogonality
                numnew = 0
-               dorthosumnew = 0d0
+               dorthosumnew = 0.0_dp
                do kk = 1, 2
                   k = lne(kk, L)
                   do LL = 1, netcell(k)%N
@@ -189,9 +189,15 @@ contains
 !   deallocate
       call local_netdealloc()
 
-      if (allocated(linkmask)) deallocate (linkmask)
-      if (allocated(dortho)) deallocate (dortho)
-      if (allocated(iperm)) deallocate (iperm)
+      if (allocated(linkmask)) then
+         deallocate (linkmask)
+      end if
+      if (allocated(dortho)) then
+         deallocate (dortho)
+      end if
+      if (allocated(iperm)) then
+         deallocate (iperm)
+      end if
 
       return
    end subroutine del_badortholinks

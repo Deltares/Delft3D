@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -50,7 +50,7 @@
       Use ReservoirModule
       Use OtherData
       Use MeasureModule
-      Use ReadLib
+      Use ReadLib_rtc
       Use ExternalDLLModule
 
 ! voor gebruik current dir functie (PC only)

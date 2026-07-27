@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : documentation/custom-literals.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+This schema describes the XML format used to provide the custom string
+to C++ string literal mapping with the -custom-literals XSD compiler
+command line option. Here is a sample instance:
+
+<string-literal-map>
+  <entry>
+    <string>hello</string>
+    <literal>"hello"</literal>
+  </entry>
+  <entry>
+    <string>greeting</string>
+    <literal>"greeting"</literal>
+  </entry>
+</string-literal-map>
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:simpleType name="literal_t">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value='".+"'/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="entry_t">
+    <xsd:sequence>
+      <xsd:element name="string" type="xsd:string"/>
+      <xsd:element name="literal" type="literal_t"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="string_literal_map_t">
+    <xsd:sequence>
+      <xsd:element name="entry" type="entry_t" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="string-literal-map" type="string_literal_map_t"/>
+
+</xsd:schema>

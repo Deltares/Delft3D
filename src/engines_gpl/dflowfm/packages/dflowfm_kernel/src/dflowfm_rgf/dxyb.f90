@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
                    NC, II, JJ, IN, &
                    JN, DXY0)
       use precision, only: dp
-      use m_missing
+      use m_missing, only: xymis, dmiss
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
 
@@ -72,7 +72,7 @@ contains
             YD = Y(II - IN, JJ - JN)
             dxy1 = dbdistance(X(II, JJ), Y(II, JJ), XD, YD, jsferic, jasfer3D, dmiss)
             NUM = NUM + 1
-            DXY0 = (DXY0 + DXY1) / dble(NUM)
+            DXY0 = (DXY0 + DXY1) / real(NUM, kind=dp)
          end if
       end if
 

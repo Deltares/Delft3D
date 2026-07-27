@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,11 @@ contains
    !> get uniform curvilinear grid parameters in "makenet" from polygon
    subroutine pol2netparams()
       use precision, only: dp
-      use m_makenet
-      use m_polygon
-      use m_sferic
-      use m_missing
-      use geometry_module
+      use m_makenet, only: angle, x0, y0, nrx, dx0, nry, dy0
+      use m_polygon, only: npl, xpl, ypl
+      use m_sferic, only: dg2rd, jsferic, ra, rd2dg
+      use m_missing, only: dmiss
+      use geometry_module, only: getdxdy
 
       real(kind=dp) :: ximin, ximax
       real(kind=dp) :: etamin, etamax
@@ -61,18 +61,22 @@ contains
       ierror = 0
 
 !  check if polygon exists
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
       ierror = 1
 
 !  get reference point: first non-missing
-      i = 1; 
+      i = 1
       do while (i <= NPL .and. (xpl(i) == DMISS .or. ypl(i) == DMISS))
          i = i + 1
       end do
 
 !  check if point was found
-      if (i > NPL) goto 1234
+      if (i > NPL) then
+         goto 1234
+      end if
 
       xref = xpl(i)
       yref = ypl(i)
@@ -81,9 +85,9 @@ contains
       sna = sin(dg2rd * ANGLE)
 
 !  get polygon min/max in rotated (xi,eta) coordinaes
-      ximin = huge(1d0)
+      ximin = huge(1.0_dp)
       ximax = -ximin
-      etamin = huge(1d0)
+      etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, NPL
          if (xpl(i) /= DMISS) then

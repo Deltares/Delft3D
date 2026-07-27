@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,17 +39,17 @@ contains
    subroutine CHANGEGRIDPARAMETERS()
       use precision, only: dp
       use m_grid, only: mc, mmax, nmax, nc
-      use m_gridsettings
-      use m_sferic
-      use unstruc_colors
-      use unstruc_display_data
-      use m_polygon
+      use m_gridsettings, only: jdemo, mfac, nfac, itsmo, csmo, rfac, baas2, keepstartdir, splfac, splfac2, facmir, pil_rad, pil_x, pil_y
+      use m_sferic, only: jsferic, jsfertek, twopi
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_polygon, only: maxpol, increasepol, xpl, ypl, npl
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
       implicit none
 
       integer :: numpar, numfld, numparactual, numfldactual
@@ -249,21 +249,21 @@ contains
             KEEPSTARTDIR = min(1, KEEPSTARTDIR)
             !MFAC = MAX(1,MFAC)
             !NFAC = MAX(1,NFAC)
-            CSMO = max(0d0, CSMO)
-            RFAC = max(0d0, RFAC)
-            BAAS2 = max(0d0, min(BAAS2, 1d0))
-            SPLFAC = max(0d0, min(SPLFAC, 1d0))
-            SPLFAC2 = max(0d0, min(SPLFAC2, 1d0))
-            FACMIR = max(0.1d0, min(FACMIR, 10d0))
+            CSMO = max(0.0_dp, CSMO)
+            RFAC = max(0.0_dp, RFAC)
+            BAAS2 = max(0.0_dp, min(BAAS2, 1.0_dp))
+            SPLFAC = max(0.0_dp, min(SPLFAC, 1.0_dp))
+            SPLFAC2 = max(0.0_dp, min(SPLFAC2, 1.0_dp))
+            FACMIR = max(0.1_dp, min(FACMIR, 10.0_dp))
             jsferic = max(0, min(jsferic, 1))
 
-            if (pil_rad < 0d0) then ! cre
+            if (pil_rad < 0.0_dp) then ! cre
                if (maxpol < mfac + 1) then
                   call increasepol(mfac + 1, 0)
                end if
                pil_rad = abs(pil_rad)
                do k = 1, mfac + 1
-                  phi = twopi * (dble(k - 1) / dble(mfac))
+                  phi = twopi * (real(k - 1, kind=dp) / real(mfac, kind=dp))
                   xpl(k) = pil_x + pil_rad * cos(phi)
                   ypl(k) = pil_y + pil_rad * sin(phi)
                end do

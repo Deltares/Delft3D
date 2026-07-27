@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,13 +40,13 @@ contains
    subroutine plot_ridges(ierror)
       use precision, only: dp
 
-      use m_samples
-      use m_samples_refine
+      use m_samples, only: mxsam, mysam, xs, ys
+      use m_samples_refine, only: ihesstat, ihesstat_ok, zss
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      use m_comp_sampleDh, only: comp_sampledh
       use m_missing, only: dmiss
-      use m_set_col
-      use m_movabs
-      use m_lnabs
-      use m_comp_sampleDh
 
       integer, intent(out) :: ierror !< error (1) or not (0)
 
@@ -56,7 +56,9 @@ contains
 
       ierror = 1
 
-      if (iHesstat /= iHesstat_OK) goto 1234
+      if (iHesstat /= iHesstat_OK) then
+         goto 1234
+      end if
 
 !  plot ridge
       do i = 1, MXSAM
@@ -66,11 +68,13 @@ contains
 
             ip = i + (j - 1) * MXSAM
 
-            if (abs(zss(5, i, j)) > 0.5d0 * Dh .or. zss(4, i, j) > -1d-8 .or. zss(5, i, j) == DMISS) cycle
+            if (abs(zss(5, i, j)) > 0.5_dp * Dh .or. zss(4, i, j) > -1.0e-8_dp .or. zss(5, i, j) == DMISS) then
+               cycle
+            end if
 
             Dx = zss(3, i, j)
             Dy = -zss(2, i, j)
-            dum = Dh / sqrt(Dx**2 + Dy**2 + 1d-16)
+            dum = Dh / sqrt(Dx**2 + Dy**2 + 1.0e-16_dp)
             Dx = Dx * dum
             Dy = Dy * dum
 
@@ -78,10 +82,10 @@ contains
 
             x0 = xs(ip) + zss(2, i, j) * zss(5, i, j)
             y0 = ys(ip) + zss(3, i, j) * zss(5, i, j)
-            x1 = min(max(x0 - Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
-            y1 = min(max(y0 - Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
-            x2 = min(max(x0 + Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
-            y2 = min(max(y0 + Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
+            x1 = min(max(x0 - Dx, xs(ip) - 0.5_dp * Dh), xs(ip) + 0.5 * Dh)
+            y1 = min(max(y0 - Dy, ys(ip) - 0.5_dp * Dh), ys(ip) + 0.5 * Dh)
+            x2 = min(max(x0 + Dx, xs(ip) - 0.5_dp * Dh), xs(ip) + 0.5 * Dh)
+            y2 = min(max(y0 + Dy, ys(ip) - 0.5_dp * Dh), ys(ip) + 0.5 * Dh)
 
             call movabs(x1, y1)
             call lnabs(x2, y2)

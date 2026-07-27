@@ -1,6 +1,6 @@
 """Handler Factory.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import os
@@ -10,6 +10,7 @@ from typing import List, Optional
 from src.config.credentials import Credentials
 from src.config.types.handler_type import HandlerType
 from src.suite.program import Program
+from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.handlers.ftp_handler import FTPHandler
 from src.utils.handlers.http_handler import HTTPHandler
 from src.utils.handlers.i_handler import IHandler
@@ -62,6 +63,9 @@ class HandlerFactory(ABC):
         if handler_type == HandlerType.MINIO:
             logger.debug(f"using MinIO handler for {to_path}")
             handler = MinIOHandler()
+        if handler_type == HandlerType.DVC:
+            logger.debug(f"using DVC handler for {to_path}")
+            handler = DvcHandler()
         if handler_type == HandlerType.NONE:
             raise AttributeError("upload :: no type specified")
 
@@ -94,9 +98,14 @@ class HandlerFactory(ABC):
             Try to unzip file. Defaults to False.
         """
         rtp = Paths().rebuildToLocalPath(to_path)
-        os.makedirs(rtp, exist_ok=True)
 
         handler = cls.__get_handler(from_path, programs, logger, credentials)
+
+        # DVC manages file placement itself based on the .dvc file;
+        # creating to_path would leave an empty directory.
+        if not isinstance(handler, DvcHandler):
+            os.makedirs(rtp, exist_ok=True)
+
         handler.download(from_path, rtp, credentials, version, logger)
         if unzip:
             Unzipper().recursive(rtp, logger)

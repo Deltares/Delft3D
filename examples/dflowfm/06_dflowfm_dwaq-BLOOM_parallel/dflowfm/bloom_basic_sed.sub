@@ -353,7 +353,7 @@ parameter 'ExtVlBak'
    unit          '(1/m)'
    value          0.8000E-01
 end-parameter
-parameter 'RadSurf'
+parameter 'RadSurfAve'
    description   'irradiation at the water surface'
    unit          '(W/m2)'
    value          1.5000E+02
@@ -482,7 +482,7 @@ active-processes
    name  'Salinchlor' 'Conversion of salinity into chloride or vv'
    name  'Extinc_VLG' 'Extinction of visible-light (370-680nm) DLWQ-G'
    name  'EXTINABVLP' 'Extinction of light by algae (Bloom)'
-   name  'CalcRad' 'Radiation at segment upper and lower boundaries'
+   name  'CalcRadAve' 'Radiation at segment upper and lower boundaries'
    name  'DynDepth' 'dynamic calculation of the depth'
    name  'DepAve' 'Average depth for Bloom step'
    name  'Daylength' 'Daylength calculation'

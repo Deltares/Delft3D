@@ -6,7 +6,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 & iarrc     ,kfsmin    ,kfsmax    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -65,8 +65,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     logical                              , pointer :: scour
     logical                              , pointer :: lfsdu
     real(fp), dimension(:)               , pointer :: xx
-    real(fp), dimension(:)               , pointer :: rhosol
-    real(fp), dimension(:)               , pointer :: cdryb
     real(fp), dimension(:)               , pointer :: dm
     real(fp), dimension(:)               , pointer :: dg
     real(fp), dimension(:)               , pointer :: dgsd
@@ -75,9 +73,11 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp), dimension(:)               , pointer :: dzdvv
     real(fp), dimension(:,:)             , pointer :: fixfac
     real(fp), dimension(:,:)             , pointer :: frac
+    real(fp), dimension(:,:)             , pointer :: frac_he
     real(fp), dimension(:)               , pointer :: sdu_t0
     real(fp), dimension(:)               , pointer :: sdu_tn
     real(fp), dimension(:)               , pointer :: mudfrac
+    real(fp), dimension(:)               , pointer :: mudfrac_he
     real(fp), dimension(:)               , pointer :: sandfrac
     real(fp), dimension(:,:)             , pointer :: hidexp
     real(fp), dimension(:,:)             , pointer :: aks
@@ -146,7 +146,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
 !
 ! Local variables
 !
-    real(fp)                                      :: rhol
     real(fp)                                      :: tauadd
     integer                                       :: ierror     ! Local error flag
     integer                                       :: i
@@ -162,7 +161,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp)   , dimension(:,:)    , allocatable  :: rbuff2
     real(fp)   , dimension(:,:,:)  , allocatable  :: rbuff3
     character(3)                                  :: sednr
-    character(10)                                 :: transpunit
     character(16)                                 :: dxname
     character(256)                                :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 
     character(64)                                 :: dxdescr
@@ -188,8 +186,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     smlay          => gdp%gdpostpr%smlay
     moroutput      => gdp%gdmorpar%moroutput
     xx             => gdp%gdmorpar%xx
-    rhosol         => gdp%gdsedpar%rhosol
-    cdryb          => gdp%gdsedpar%cdryb
     scour          => gdp%gdscour%scour
     dm             => gdp%gderosed%dm
     dg             => gdp%gderosed%dg
@@ -199,7 +195,9 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     dzdvv          => gdp%gderosed%e_dzdt
     fixfac         => gdp%gderosed%fixfac
     frac           => gdp%gderosed%frac
+    frac_he        => gdp%gderosed%frac_he
     mudfrac        => gdp%gderosed%mudfrac
+    mudfrac_he     => gdp%gderosed%mudfrac_he
     sandfrac       => gdp%gderosed%sandfrac
     hidexp         => gdp%gderosed%hidexp
     aks            => gdp%gderosed%aks
@@ -268,14 +266,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
        !
        ! Define elements 
        !
-       select case(moroutput%transptype)
-       case (0)
-          transpunit = 'kg/(s m)'
-       case (1)
-          transpunit = 'm3/(s m)'
-       case (2)
-          transpunit = 'm3/(s m)'
-       end select
        if (lsed > 0) then
           if (moroutput%ws) then
               call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'WS', ' ', io_prec        , 4, dimids=(/iddim_n, iddim_m, iddim_kmaxout, iddim_lsed/), longname='Settling velocity per layer', unit='m/s', acl='z')
@@ -298,44 +288,44 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'USTAR', ' ', io_prec     , 2, dimids=(/iddim_n, iddim_m/), longname='Bed shear velocity U* (zeta point)', unit='m/s', acl='z')
        endif
        if (moroutput%sbcuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
        endif
        if (moroutput%sbcuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (moroutput%sbwuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
        endif
        if (moroutput%sbwuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (moroutput%sswuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport v-direction due to waves (zeta point)', unit=moroutput%unit_transport_rate, acl='z')
        endif
        if (moroutput%sswuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Suspended transport v-direction due to waves (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Suspended transport v-direction due to waves (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (lsedtot > 0 .and. moroutput%sbuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBUU', ' ', io_prec         , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBVV', ' ', io_prec         , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBUU', ' ', io_prec         , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBVV', ' ', io_prec         , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
        endif
        if (lsed > 0) then
           if (moroutput%seddif) then
              call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SEDDIF', ' ', io_prec      , 4, dimids=(/iddim_n , iddim_m, iddim_kmaxout, iddim_lsed/), longname='Vertical sediment diffusion (zeta point)', unit='m2/s', acl='z')
           endif
           if (moroutput%ssuuvv) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSUU', ' ', io_prec      , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSVV', ' ', io_prec      , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSUU', ' ', io_prec      , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Suspended-load transport u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSVV', ' ', io_prec      , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Suspended-load transport v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
           endif
           if (moroutput%suvcor) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SUCOR', ' ', io_prec  , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Near-bed transport correction u-direction (u point)', unit=transpunit, acl='u')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SVCOR', ' ', io_prec  , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Near-bed transport correction v-direction (v point)', unit=transpunit, acl='v')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SUCOR', ' ', io_prec  , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Near-bed transport correction u-direction (u point)', unit=moroutput%unit_transport_rate, acl='u')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SVCOR', ' ', io_prec  , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Near-bed transport correction v-direction (v point)', unit=moroutput%unit_transport_rate, acl='v')
           endif
           if (moroutput%sourcesink) then
              call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SOURSE', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Source term suspended sediment fractions', unit='kg/(m3 s)', acl='z')
@@ -528,18 +518,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcu(nm,l)/rhol
+                      rbuff3(n, m, l) = sbcu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -554,18 +536,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcv(nm,l)/rhol
+                      rbuff3(n, m, l) = sbcv(nm,l)/ moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -585,18 +559,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcuu(nm,l)/rhol
+                      rbuff3(n, m, l) = sbcuu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -611,18 +577,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcvv(nm,l)/rhol
+                      rbuff3(n, m, l) = sbcvv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -642,18 +600,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwu(nm,l)/rhol
+                      rbuff3(n, m, l) = sbwu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -668,18 +618,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwv(nm,l)/rhol
+                      rbuff3(n, m, l) = sbwv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -699,18 +641,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwuu(nm,l)/rhol
+                      rbuff3(n, m, l) = sbwuu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -725,18 +659,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwvv(nm,l)/rhol
+                      rbuff3(n, m, l) = sbwvv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -756,18 +682,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswu(nm,l)/rhol
+                      rbuff3(n, m, l) = sswu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -782,18 +700,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswv(nm,l)/rhol
+                      rbuff3(n, m, l) = sswv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -813,18 +723,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswuu(nm,l)/rhol
+                      rbuff3(n, m, l) = sswuu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -839,18 +741,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswvv(nm,l)/rhol
+                      rbuff3(n, m, l) = sswvv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -869,17 +763,9 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsedtot) )
           rbuff3(:, :, :) = -999.0_fp
           do l = 1, lsedtot
-             select case(moroutput%transptype)
-             case (0)
-                rhol = 1.0_fp
-             case (1)
-                rhol = cdryb(l)
-             case (2)
-                rhol = rhosol(l)
-             end select
              do m = 1, mmax
                 do n = 1, nmaxus
-                   rbuff3(n, m, l) = sbuu(n, m, l)/rhol
+                   rbuff3(n, m, l) = sbuu(n, m, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
           enddo
@@ -892,17 +778,9 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           !
           rbuff3(:, :, :) = -999.0_fp
           do l = 1, lsedtot
-             select case(moroutput%transptype)
-             case (0)
-                rhol = 1.0_fp
-             case (1)
-                rhol = cdryb(l)
-             case (2)
-                rhol = rhosol(l)
-             end select
              do m = 1, mmax
                 do n = 1, nmaxus
-                   rbuff3(n, m, l) = sbvv(n, m, l)/rhol
+                   rbuff3(n, m, l) = sbvv(n, m, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
           enddo
@@ -932,18 +810,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = ssuu(nm, l)/rhol
+                      rbuff3(n, m, l) = ssuu(nm, l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -958,18 +828,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           rbuff3(:, :, :) = -999.0_fp
           if (associated(sbcu)) then
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = ssvv(nm, l)/rhol
+                      rbuff3(n, m, l) = ssvv(nm, l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -986,18 +848,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
              allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsed) )
              rbuff3(:, :, :) = -999.0_fp
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sucor(nm,l)/rhol
+                      rbuff3(n, m, l) = sucor(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -1010,18 +864,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
              !
              rbuff3(:, :, :) = -999.0_fp
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = svcor(nm,l)/rhol
+                      rbuff3(n, m, l) = svcor(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo

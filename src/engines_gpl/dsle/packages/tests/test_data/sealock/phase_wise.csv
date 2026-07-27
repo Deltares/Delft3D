@@ -1,0 +1,3 @@
+time; routine; ship_volume_lake_to_sea; ship_volume_sea_to_lake; t_flushing; t_level; t_open_lake; t_open_sea; density_current_factor_lake; density_current_factor_sea; distance_door_bubble_screen_lake; distance_door_bubble_screen_sea; flushing_discharge_high_tide; flushing_discharge_low_tide; sill_height_lake; sill_height_sea 
+197001011200.0; 1; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0; 9.0; 10.0; 11.0; 12.0; 13.0; 14.0; 15.0
+197001021200.0; 16; 17.0; 18.0; 19.0; 20.0; 21.0; 22.0; 23.0; 24.0; 25.0; 26.0; 27.0; 28.0; 29.0; 30.0

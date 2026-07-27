@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,22 +32,23 @@
 
 module m_polyline
 
+   use precision, only: dp
    implicit none
 
 contains
 
    subroutine POLYLINE(XR, YR, N)
       use unstruc_opengl, only: InOpenGLRendering
-      use m_movabs_nop
-      use m_lnabs_nop
+      use m_movabs_nop, only: movabsnop
+      use m_lnabs_nop, only: lnabsnop
 
       integer :: n, I
       real xr(N), yr(N)
 
       if (InOpenGLRendering) then
-         call MOVABSNOP(dble(XR(1)), dble(YR(1)))
+         call MOVABSNOP(real(XR(1), kind=dp), real(YR(1), kind=dp))
          do I = 2, N
-            call LNABSNOP(dble(XR(I)), dble(YR(I)))
+            call LNABSNOP(real(XR(I), kind=dp), real(YR(I), kind=dp))
          end do
       else
          call IGRPOLYLINE(XR, YR, N)

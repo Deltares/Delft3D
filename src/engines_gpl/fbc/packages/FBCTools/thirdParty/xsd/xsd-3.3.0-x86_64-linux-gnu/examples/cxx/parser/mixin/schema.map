@@ -1,0 +1,8 @@
+# file      : examples/cxx/parser/mixin/schema.map
+# author    : Boris Kolpackov <boris@codesynthesis.com>
+# copyright : not copyrighted - public domain
+
+include "types.hxx";
+
+base ::base*;
+derived ::derived*;

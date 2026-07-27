@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,9 @@
 //  Irv.Elshoff@Deltares.NL
 //  29 jun 12
 //------------------------------------------------------------------------------
-
+/*
+ * @include{doc} dimr-mainpage.dox
+ */
 
 #pragma once
 
@@ -40,9 +42,8 @@
 #define HAVE_STRUCT_TIMESPEC
 
 #ifndef _WIN32
-#   include "config.h"
+    #include "config.h"
 #endif
-
 
 #include <assert.h>
 #include <errno.h>
@@ -58,8 +59,8 @@
 #include "clock.h"
 #include <ctime>
 #ifndef _WIN32
-#   include <sys/wait.h>
-#   include <unistd.h>
+    #include <sys/wait.h>
+    #include <unistd.h>
 // #else
 // #   include <sys/syscall.h>.
 #endif
@@ -71,17 +72,14 @@
 #include <mpi.h>
 #include <map>
 #include "dimr_control_block.h"
-#include "dimr_components.h" 
+#include "dimr_components.h"
 #include "dimr_coupler.h"
 #include "dimr_couplers.h"
-
-
 
 class Dimr;
 class Clock;
 class Exception;
 class Log;
-
 
 #include "clock.h"
 #include "component.h"
@@ -93,99 +91,102 @@ class Log;
 
 //------------------------------------------------------------------------------
 
+class Dimr
+{
+public:
+    static Dimr* GetInstance()
+    {
+        if (instance == NULL) instance = new Dimr();
+        return instance;
+    }
 
-class Dimr {
-    public:
-		static Dimr* GetInstance()
-		{
-			if (instance == NULL)
-				instance = new Dimr();
-			return instance;
+    void scanConfigFile(void);
+    void connectLibs(void);
 
-		}
-	
-		void           scanConfigFile(void);
-        void           connectLibs(void);
+    void printComponentVersionStrings(Level my_level);
 
-        void           printComponentVersionStrings (Level);
+    void freeLibs(void);
+    void barrier(const MPI_Comm comm, const bool use_mpi, const int mpi_barrier_sleep);
+    void processWaitFile(void);
+    void createDistributeMPISubGroupCommunicator(dimr_component* component);
+    void runControlBlock(dimr_control_block* cb, double tStep, int phase);
+    void runParallelInit(dimr_control_block* cb);
+    void runParallelFinish(dimr_control_block* cb);
+    void timersInit(void);
+    void timerStart(dimr_component* component);
+    void timerEnd(dimr_component* component);
+    void timersFinish(void);
+    void timerFinish(void);
+    void receive(const char* name, int compType, BMI_SETVAR dllSetVar, BMI_GETVAR dllGetVar, double* targetVarPtr,
+                 int* processes, int nProc, int targetProcess, const void* transferValuePtr);
+    void receive_ptr(const char* name, const char* sourceName, int compType, BMI_SETVAR dllSetVar, BMI_GETVAR dllGetVar,
+                     BMI_GETVARSHAPE dllGetVarShape, double* targetVarPtr, int* processes, int nProc, int targetProcess,
+                     double* sourceVarPtr);
+    void getAddress(const char* name, int compType, BMI_GETVAR dllGetVar, double** sourceVarPtr, int* processes,
+                    int nProc, double& transfer);
+    double* send(const char* name, int compType, double* sourceVarPtr, int* processes, int nProc, double* transfer);
 
-        void           freeLibs(void);
-        void           processWaitFile(void);
-        void           runControlBlock  (dimr_control_block *, double, int);
-        void           runParallelInit  (dimr_control_block *);
-        void           runParallelFinish(dimr_control_block *);
-        void           timersInit(void);
-        void           timerStart(dimr_component *);
-        void           timerEnd(dimr_component *);
-        void           timersFinish(void);
-		void           timerFinish(void);
-        void           receive(const char *, int, BMI_SETVAR, BMI_GETVAR, double *, int *, int, int, const void *);
-        void           receive_ptr(const char *, const char *, int, BMI_SETVAR, BMI_GETVAR, BMI_GETVARSHAPE , double *, int *, int, int, double *);
-        void           getAddress(const char * name, int compType, BMI_GETVAR dllGetVar, double ** sourceVarPtr, int * processes, int nProc, double& transfer);
-        double *       send(const char * name, int compType, double* sourceVarPtr, int* processes, int nProc, double* transfer);
-		
-    public:
-        bool                 ready;          // true means constructor succeeded and DH ready to run
-        char *               exePath;        // name of running dimr executable (argv[0])
-        char *               exeName;        // short name of executable
-        Clock *              clock;          // timing facility
-        Log *                log;            // logging facility
-        XmlTree *            config;         // top of entire XML configuration tree
-        char *               mainArgs;       // reassembled command-line arguments (argv[1...])
-        char *               slaveArg;       // command-line argument for slave mode
-        dimr_control_block * control;        // structure containing all information from the control block in the config.xml file
-        dimr_components      componentsList; // Array of all components
-        dimr_couplers        couplersList;   // Array of all couplers
-        bool                 use_mpi;        // Whether MPI-mode is active for this run.
-        int                  nc_mode;        // [3 or 4]   NetCDF creation mode: NetCDF3 (NF90_CLASSIC_MODEL) or NetCDF4 (NF90_NETCDF4)
-        int                  my_rank;        // Rank# of current process
-        int                  numranks;       // Total nr of MPI processes for dimr main.
-        Level                logLevel;
-        Level                feedbackLevel;
-        const char *         configfile;     // name of configuration file
-        bool                 done;           // set to true when it's time to stop
-        char *               redirectFile;   // Name of file to redirect stdout/stderr to
-                                             // Default: Off when started via dimr-exe, On otherwise
-		
-        char *               dimrWorkingDirectory; // File path where dimr configuration file is
-        const char *         dirSeparator;
-      // String constants; initialized below, outside class definition
-    private:
-		//static Dimr *m_pInstance;
-		static Dimr*    instance;
+public:
+    bool ready;                  // true means constructor succeeded and DH ready to run
+    char* exePath;               // name of running dimr executable (argv[0])
+    char* exeName;               // short name of executable
+    Clock* clock;                // timing facility
+    Log* log;                    // logging facility
+    XmlTree* config;             // top of entire XML configuration tree
+    char* mainArgs;              // reassembled command-line arguments (argv[1...])
+    char* slaveArg;              // command-line argument for slave mode
+    dimr_control_block* control; // structure containing all information from the control block in the config.xml file
+    dimr_components componentsList; // Array of all components
+    dimr_couplers couplersList;     // Array of all couplers
+    bool use_mpi;                   // Whether MPI-mode is active for this run
+    MPI_Group mpiGroupWorld;        // Overall MPI-group
+    int nc_mode;  // [3 or 4]   NetCDF creation mode: NetCDF3 (NF90_CLASSIC_MODEL) or NetCDF4 (NF90_NETCDF4)
+    int my_rank;  // Rank# of current process
+    int numranks; // Total nr of MPI processes for dimr main
+    Level logLevel;
+    Level feedbackLevel;
+    const char* configfile; // name of configuration file
+    bool done;              // set to true when it's time to stop
+    char* redirectFile;     // Name of file to redirect stdout/stderr to
+                            // Default: Off when started via dimr-exe, On otherwise
 
-		Dimr();
-		~Dimr();
-		Dimr(Dimr const&) = delete;         // Don't Implement.
-		void operator=(Dimr const&) = delete; // Don't implement
+    char* dimrWorkingDirectory; // File path where dimr configuration file is
+    const char* dirSeparator;
+    // String constants; initialized below, outside class definition
+private:
+    // static Dimr *m_pInstance;
+    static Dimr* instance;
 
-	
-		double         transferValue;
+    Dimr();
+    ~Dimr();
+    Dimr(Dimr const&) = delete;           // Don't Implement.
+    void operator=(Dimr const&) = delete; // Don't implement
 
-        // Additional destructor routine
-        void           deleteControlBlock (dimr_control_block);
+    double transferValue;
 
-        // Additional run routines
-        void           runStartBlock      (dimr_control_block *, double, int);
-        void           runParallelUpdate  (dimr_control_block *, double);
+    // Additional destructor routine
+    void deleteControlBlock(dimr_control_block cb);
 
+    // Additional run routines
+    void runStartBlock(dimr_control_block* cb, double tStep, int phase);
+    void runParallelUpdate(dimr_control_block* cb, double tStep);
 
-        void           scanControl        (XmlTree *, dimr_control_block *);
-        void           scanGlobalSettings (XmlTree *);
-        void           scanUnits          (XmlTree *);
-        void           scanComponent      (XmlTree *, dimr_component *);
-        void           scanCoupler        (XmlTree *, dimr_coupler *);
+    void scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBlock);
+    void scanGlobalSettings(XmlTree* rootXml);
+    void scanUnits(XmlTree* rootXml);
+    void scanComponent(XmlTree* xmlComponent, dimr_component* newComp);
+    void scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup);
 
-        dimr_component * getComponent     (const char *);
+    dimr_component* getComponent(const char* compName);
 
-        dimr_coupler *   getCoupler       (const char *);
+    dimr_coupler* getCoupler(const char* couplerName);
 
-        bool           IsCouplerItemTypePTR(int couplerItem);
+    bool IsCouplerItemTypePTR(int couplerItem);
 
-        void           char_to_ints       (char *, int **, int *);
+    void char_to_ints(const char* line, int** iarr, int* count);
 
-        map<string, int> ncfiles;
-		static void		   _log				  (Level, const char*); /* BMILogger function */
-		Clock::Timestamp  timerStartStamp;
-		Clock::Timestamp  timerSumStamp;
-    };
+    std::map<std::string, int> ncfiles;
+    static void _log(Level level, const char* msg); /* BMILogger function */
+    Clock::Timestamp timerStartStamp;
+    Clock::Timestamp timerSumStamp;
+};

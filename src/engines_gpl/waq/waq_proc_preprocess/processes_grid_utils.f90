@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -89,10 +89,12 @@ contains
         monoag(2) = 'STADAY'
         monoag(3) = 'STADPT'
         monoag(4) = 'STADSC'
-        monoag(5) = 'STAGEO'
-        monoag(6) = 'STAPRC'
-        monoag(7) = 'STAQTL'
-        nmnoag = 7
+        monoag(5) = 'STAMEA'
+        monoag(6) = 'STADEV'
+        monoag(7) = 'STAGEO'
+        monoag(8) = 'STAPRC'
+        monoag(9) = 'STAQTL'
+        nmnoag = 9
 
         inquire (file = 'procnoag.dat', exist = lexi)
         if (lexi) then

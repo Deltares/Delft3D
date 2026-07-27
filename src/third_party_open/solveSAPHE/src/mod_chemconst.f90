@@ -24,7 +24,7 @@
 MODULE MOD_CHEMCONST
 
 USE MOD_PRECISION
-USE PHYSICALCONSTS
+use physicalconsts, only: kelvin_to_celsius
 
 IMPLICIT NONE
 
@@ -56,11 +56,6 @@ PRIVATE AK_HF_PEFR87
 
 REAL(KIND=wp), PARAMETER, PRIVATE :: gasconst_bar_cm3_o_mol_k = 83.14510_wp ! libthdyct
 !REAL(KIND=wp), PARAMETER, PRIVATE :: gasconst_bar_cm3_o_mol_k = 83.14472_wp ! Handbook (2007)
-
-! 0 degrees centigrade in Kelvin
-! ------------------------------
-
-REAL(KIND=wp), PARAMETER, PRIVATE :: t_k_zerodegc = real(CtoKelvin, wp) ! Handbook (2007)
 
 
 ! --------------------------------------------------------------
@@ -318,7 +313,7 @@ zln_kc1_p0 =     2.18867_wp                                                    &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zds        = s - 34.8_wp
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -399,7 +394,7 @@ zln_kc2_p0 =    -0.84226_wp                                                    &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zds        = s - 34.8_wp
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -475,7 +470,7 @@ zlog10_kc1_p0 =   61.2172_wp                                                   &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zds        = s - 34.8_wp
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -551,7 +546,7 @@ zlog10_kc2_p0 =  -25.9290_wp                                                   &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zds        = s - 34.8_wp
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -636,7 +631,7 @@ zln_kc1_p0 =   -2307.1255_wp/t_k + 2.83655_wp - 1.5529413_wp*LOG(t_k)        &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zds        = s - 34.8_wp
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -717,7 +712,7 @@ zln_kc2_p0 =   -3351.6106_wp/t_k - 9.226508_wp - 0.2005743_wp*LOG(t_k)         &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zds        = s - 34.8_wp
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -801,7 +796,7 @@ zln_kb_p0  = ( -8966.90_wp                                                     &
 
 ! Pressure correction
 
-zt_degc   = t_k - t_k_zerodegc
+zt_degc   = kelvin_to_celsius(t_k)
 zds       = s - 34.8_wp
 zrt       = gasconst_bar_cm3_o_mol_k * t_k
 
@@ -875,7 +870,7 @@ zln_kw_p0 =    148.9802_wp                                                     &
 
 ! Pressure correction
 
-zt_degc = t_k - t_k_zerodegc
+zt_degc = kelvin_to_celsius(t_k)
 zrt     = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi    =  -20.02_wp + 0.1119_wp*zt_degc - 0.1409E-02_wp*zt_degc*zt_degc
@@ -948,7 +943,7 @@ zln_kp1_p0 =      115.54_wp - 4576.752_wp/t_k - 18.453_wp*LOG(t_k)     &
 
 ! Pressure correction
 
-zt_degc   = t_k - t_k_zerodegc
+zt_degc   = kelvin_to_celsius(t_k)
 zrt       = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi      =  -14.51_wp + 0.1211_wp*zt_degc - 0.321E-03*zt_degc*zt_degc
@@ -1022,7 +1017,7 @@ zln_kp2_p0 =   172.1033_wp                                                     &
 
 ! Pressure correction
 
-zt_degc    = t_k - t_k_zerodegc
+zt_degc    = kelvin_to_celsius(t_k)
 zrt        = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi       =  -23.12_wp + 0.1758_wp*zt_degc -2.647E-03_wp*zt_degc*zt_degc
@@ -1094,7 +1089,7 @@ zln_kp3_p0 =     -18.126_wp  -  3070.75_wp/t_k                        &
 
 ! Pressure correction
 
-zt_degc   = t_k - t_k_zerodegc
+zt_degc   = kelvin_to_celsius(t_k)
 zrt       = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi      =  -26.57_wp + 0.2020_wp*zt_degc -3.042E-03*zt_degc*zt_degc
@@ -1243,7 +1238,7 @@ zln_kh2s_p0  =    225.838_wp                                                    
 ! Pressure correction
 ! -------------------
 
-zt_degc      = t_k - t_k_zerodegc
+zt_degc      = kelvin_to_celsius(t_k)
 zrt          = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi         =  -14.80_wp + zt_degc*(0.0020_wp - zt_degc*0.400E-03_wp)
@@ -1320,7 +1315,7 @@ zln_knh4_p0  =    -0.25444_wp -  6285.33_wp/t_k + 0.0001635_wp*t_k             &
 ! Pressure correction
 ! -------------------
 
-zt_degc      = t_k - t_k_zerodegc
+zt_degc      = kelvin_to_celsius(t_k)
 zrt          = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi         =  -26.43_wp + zt_degc*(0.0889_wp - zt_degc*0.905E-03_wp)
@@ -1468,7 +1463,7 @@ zln_bhf_p0      = -1590.2_wp/t_k + 12.641_wp - 1.525_wp*SQRT(zionst)
 ! Pressure correction
 ! -------------------
 
-zt_degc      = t_k - t_k_zerodegc
+zt_degc      = kelvin_to_celsius(t_k)
 zrt          = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi         =   -9.78_wp + zt_degc*(-0.0090_wp - zt_degc*0.942E-03_wp)
@@ -1543,7 +1538,7 @@ zln_khf_p0   = 874._wp/t_k - 9.68_wp + 0.111_wp*SQRT(s)
 
 ! Pressure correction
 
-zt_degc      = t_k - t_k_zerodegc
+zt_degc      = kelvin_to_celsius(t_k)
 zrt          = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi         =   -9.78_wp + zt_degc*(-0.0090_wp - zt_degc*0.942E-03_wp)
@@ -1626,7 +1621,7 @@ zln_khso4_p0 =     -4276.1_wp/t_k + 141.328_wp -  23.093_wp*LOG(t_k)           &
 
 ! Pressure correction
 
-zt_degc      = t_k - t_k_zerodegc
+zt_degc      = kelvin_to_celsius(t_k)
 zrt          = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi         =  -18.03_wp + zt_degc*(0.0466_wp + zt_degc*0.316E-03_wp)
@@ -1702,7 +1697,7 @@ zlog10_kspcalc_p0 = &
 
 
 ! Pressure correction
-zt_degc   = t_k - t_k_zerodegc
+zt_degc   = kelvin_to_celsius(t_k)
 zrt       = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi      =  -48.76_wp + 0.5304_wp*zt_degc
@@ -1778,7 +1773,7 @@ zlog10_ksparag_p0 = &
 
 
 ! Pressure correction
-zt_degc   = t_k - t_k_zerodegc
+zt_degc   = kelvin_to_celsius(t_k)
 zrt       = gasconst_bar_cm3_o_mol_k * t_k
 
 zdvi      =  -48.76_wp + 0.5304_wp*zt_degc  + 2.8_wp

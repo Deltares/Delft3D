@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,9 +33,9 @@ module m_increase_grid
    implicit none
 contains
    subroutine INCREASEGRID(M, N)
-      use M_GRID
+      use M_GRID, only: mmax, nmax, mnmax, xc, yc, zc, ijc, ijyes
+      use m_alloc, only: realloc
       use M_MISSING, only: dxymis
-      use m_alloc
 
       integer :: m, n
 
@@ -46,11 +46,13 @@ contains
 !      if (allocated(xc)) deallocate (xc,yc,zc,ijc,ijyes)
 
 !      mmax = m ; nmax = n ; MNMAX = MAX(M,N)
-!      ibounds   = (/ mmax, nmax /)
-!      iboundsp1 = (/ mmax+1, nmax+1 /)
+!      ibounds   = [ mmax, nmax ]
+!      iboundsp1 = [ mmax+1, nmax+1 ]
 
-      mmax = m + 1; nmax = n + 1; MNMAX = max(M, N)
-      ibounds = (/mmax, nmax/)
+      mmax = m + 1
+      nmax = n + 1
+      MNMAX = max(M, N)
+      ibounds = [mmax, nmax]
       iboundsp1 = ibounds
 
       call realloc(xc, ibounds, fill=dxymis)

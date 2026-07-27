@@ -66,6 +66,7 @@ if(NOT TARGET esmfsm)
 endif()
 
 
+
 # Third party
 # ===========
 
@@ -74,27 +75,17 @@ if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
 
-# triangle
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
-# netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif()
-
 # kdtree2
 if(NOT TARGET kdtree2)
     add_subdirectory(${checkout_src_root}/${kdtree_module} kdtree2)
 endif()
 
+# kdtree_wrapper
 if(NOT TARGET kdtree_wrapper)
     add_subdirectory(${checkout_src_root}/${kdtree_wrapper_module} kdtree_wrapper)
 endif()
 
+# shp
 if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
@@ -104,13 +95,6 @@ if(NOT TARGET swan)
     add_subdirectory(${checkout_src_root}/${swan_mpi_lib_module} swan_mpi_lib)
     add_subdirectory(${checkout_src_root}/${swan_mpi_module} swan_mpi)
     add_subdirectory(${checkout_src_root}/${swan_omp_module} swan_omp)
-endif()
-
-
-
-if(UNIX)
-    # install
-    add_subdirectory(${checkout_src_root}/${install_wave_module} install_wave)
 endif()
 
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that

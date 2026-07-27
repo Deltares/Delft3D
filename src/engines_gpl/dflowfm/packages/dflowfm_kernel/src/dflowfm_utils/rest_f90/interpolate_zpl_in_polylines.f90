@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,11 @@ contains
 
    subroutine interpolate_zpl_in_polylines()
       use precision, only: dp
-      use m_polygon
-      use m_missing
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use m_missing, only: dmiss
+      use m_qnerror, only: qnerror
       use geometry_module, only: dbdistance, get_startend
       use m_sferic, only: jsferic, jasfer3D
-      use m_qnerror
 
       real(kind=dp), dimension(:), allocatable :: wfromLeft ! arc length from left
 
@@ -60,11 +60,13 @@ contains
       integer :: i, iL, iR
 
       integer :: ierror
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       ierror = 1
 
-      if (NPL < 2) goto 1234
+      if (NPL < 2) then
+         goto 1234
+      end if
 
 !  allocate
       allocate (wfromleft(NPL))
@@ -82,7 +84,7 @@ contains
          jend = jend + jpoint - 1
 
 !     compute arc lengths from left
-         wfromLeft(jstart) = 0d0
+         wfromLeft(jstart) = 0.0_dp
          do i = jstart, jend - 1
             wfromLeft(i + 1) = wfromLeft(i) + dbdistance(xpl(i), ypl(i), xpl(i + 1), ypl(i + 1), jsferic, jasfer3D, dmiss)
          end do
@@ -109,8 +111,14 @@ contains
          do i = jstart, jend
             iL = iLeft(i)
             iR = iRight(i)
-            wL = 0d0; if (iL > 0) wL = wfromLeft(iL)
-            wR = 0d0; if (iR > 0) wR = wfromLeft(iR)
+            wL = 0.0_dp
+            if (iL > 0) then
+               wL = wfromLeft(iL)
+            end if
+            wR = 0.0_dp
+            if (iR > 0) then
+               wR = wfromLeft(iR)
+            end if
 
             if (iL == iR .and. iL /= 0) then
 !           value prescibed
@@ -121,10 +129,10 @@ contains
 !           two-sided interpolation
                if (abs(wR - wL) > dtol) then
                   w = (wfromLeft(i) - wL) / (wR - wL)
-                  zpl(i) = (1d0 - w) * zpl(iL) + w * zpl(iR)
+                  zpl(i) = (1.0_dp - w) * zpl(iL) + w * zpl(iR)
                else
 !              left and right node on top
-                  zpl(i) = 0.5d0 * (zpl(iL) + zpl(iR))
+                  zpl(i) = 0.5_dp * (zpl(iL) + zpl(iR))
                end if
             else if (iL > 0) then
 !           one-sided interpolation
@@ -145,9 +153,15 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(wfromLeft)) deallocate (wfromLeft)
-      if (allocated(iLeft)) deallocate (iLeft)
-      if (allocated(iRight)) deallocate (iRight)
+      if (allocated(wfromLeft)) then
+         deallocate (wfromLeft)
+      end if
+      if (allocated(iLeft)) then
+         deallocate (iLeft)
+      end if
+      if (allocated(iRight)) then
+         deallocate (iRight)
+      end if
 
       return
    end subroutine interpolate_zpl_in_polylines

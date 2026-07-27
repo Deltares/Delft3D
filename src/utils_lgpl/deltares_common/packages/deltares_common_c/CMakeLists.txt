@@ -30,7 +30,6 @@ set(source  src/bmi_shared_lib_fortran_api.c
             src/cpuinfo.cpp
             src/cutil.c
             src/getcwd.c
-            src/getopt.cpp
             src/getputarray.cpp
             src/meminfo.cpp
             src/sems.cpp
@@ -48,3 +47,13 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_com
 
 #Set preprocessor definitions
 target_compile_definitions(${library_name} PRIVATE _LIB;_CRT_SECURE_NO_DEPRECATE)
+
+if (WIN32)
+    add_library(pthreadsVC2 SHARED IMPORTED GLOBAL)
+    set_target_properties(pthreadsVC2 PROPERTIES
+        IMPORTED_IMPLIB   "${checkout_src_root}/third_party_open/pthreads/bin/x64/pthreadVC2.lib"
+        IMPORTED_LOCATION "${checkout_src_root}/third_party_open/pthreads/bin/x64/pthreadVC2.dll"
+        INTERFACE_INCLUDE_DIRECTORIES "${pthreads_path}"
+    )
+    target_link_libraries(${library_name} PUBLIC pthreadsVC2)
+endif()

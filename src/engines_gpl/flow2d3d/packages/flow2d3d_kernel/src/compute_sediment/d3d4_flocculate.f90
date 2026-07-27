@@ -1,7 +1,9 @@
+module m_d3d4_flocculate
+contains
 subroutine d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, r0, kfs, kfsmn0, kfsmx0, dts, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -138,3 +140,5 @@ subroutine d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, r0, kfs, kfs
    deallocate(cfloc, stat = istat)
    
 end subroutine d3d4_flocculate
+
+end module m_d3d4_flocculate

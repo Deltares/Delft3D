@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/calendar/calendar.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:cal="http://www.codesynthesis.com/calendar"
+            targetNamespace="http://www.codesynthesis.com/calendar">
+
+  <xsd:complexType name="event">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="title" type="xsd:string" use="required"/>
+        <xsd:attribute name="date" type="xsd:date" use="required"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="events">
+    <xsd:sequence>
+      <xsd:element name="event" type="cal:event" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="events" type="cal:events"/>
+
+</xsd:schema>

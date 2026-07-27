@@ -1,7 +1,7 @@
 subroutine del_temp_files(n_swan_grids)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -40,7 +40,7 @@ subroutine del_temp_files(n_swan_grids)
 !
 ! Local parameters
 !
-    integer, parameter :: numtemp = 7
+    integer, parameter :: numtemp = 8
 !
 ! Global variables
 !
@@ -115,6 +115,7 @@ subroutine del_temp_files(n_swan_grids)
     tmpfiles(5) = 'CURNOW'
     tmpfiles(6) = 'WNDNOW'
     tmpfiles(7) = 'MUDNOW'
+    tmpfiles(8) = 'VEGNOW'
     do i=1,numtemp
        filnam = tmpfiles(i)
        inquire (file = trim(filnam), exist = ex, iostat = istat)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,12 +38,12 @@ contains
 
    subroutine inifcori()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_sferic
+      use m_flowgeom, only: lnx, yu, xu, ndx, yz, xz, llkkk, ln, nd
+      use m_flow, only: jacorioconstant, fcori, icorio, aerr, jasecflow, kmx, fcoris
+      use m_sferic, only: jsferic, omega, dg2rd, anglat, ra
+      use m_dbdistance_hk, only: dbdistancehk
       use network_data, only: ykmin, ykmax
       use messagehandling, only: LEVEL_INFO, mess
-      use m_dbdistance_hk
       use m_filez, only: doclose
       implicit none
       integer :: ierr, L, k, i, LL, LLL, LLLL, k1, k2, k3, n, j, mout
@@ -58,18 +58,21 @@ contains
             allocate (fcori(lnx), stat=ierr)
             call aerr('fcori(lnx)', ierr, lnx)
             do L = 1, lnx
-               fcori(L) = 2d0 * omega * sin(yu(L) * dg2rd)
+               fcori(L) = 2.0_dp * omega * sin(yu(L) * dg2rd)
             end do
             if (jacorioconstant == 2) then ! beta plane)
                if (jsferic == 0) then
                   y0 = anglat
                else
-                  y0 = 0.5d0 * (ykmin + ykmax)
+                  y0 = 0.5_dp * (ykmin + ykmax)
                end if
                beta = (cos(y0 * dg2rd)) / Ra
                do L = 1, lnx
-                  call dbdistancehk(xu(L), y0, xu(L), yu(L), dy); if (yu(L) < y0) dy = -dy
-                  fcori(L) = 2d0 * omega * (sin(anglat * dg2rd) + beta * dy)
+                  call dbdistancehk(xu(L), y0, xu(L), yu(L), dy)
+                  if (yu(L) < y0) then
+                     dy = -dy
+                  end if
+                  fcori(L) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
 
@@ -77,24 +80,27 @@ contains
             allocate (fcori(ndx), stat=ierr)
             call aerr('fcori(ndx)', ierr, ndx)
             do k = 1, ndx
-               fcori(k) = 2d0 * omega * sin(yz(k) * dg2rd)
+               fcori(k) = 2.0_dp * omega * sin(yz(k) * dg2rd)
             end do
             if (jacorioconstant == 2) then ! beta plane)
                if (jsferic == 0) then
                   y0 = anglat
                else
-                  y0 = 0.5d0 * (ykmin + ykmax)
+                  y0 = 0.5_dp * (ykmin + ykmax)
                end if
                beta = (cos(y0 * dg2rd)) / Ra
                do k = 1, ndx
-                  call dbdistancehk(xz(k), y0, xz(k), yz(k), dy); if (yu(L) < y0) dy = -dy
-                  fcori(k) = 2d0 * omega * (sin(anglat * dg2rd) + beta * dy)
+                  call dbdistancehk(xz(k), y0, xz(k), yz(k), dy)
+                  if (yu(L) < y0) then
+                     dy = -dy
+                  end if
+                  fcori(k) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
          end if
 
          if (jacorioconstant == 1) then
-            fcori = 2d0 * omega * sin(anglat * dg2rd)
+            fcori = 2.0_dp * omega * sin(anglat * dg2rd)
          end if
 
       end if
@@ -108,7 +114,7 @@ contains
          allocate (fcoris(ndx), stat=ierr)
          call aerr('fcoris(ndx)', ierr, ndx)
          do k = 1, ndx
-            fcoris(k) = 2d0 * omega * sin(yz(k) * dg2rd)
+            fcoris(k) = 2.0_dp * omega * sin(yz(k) * dg2rd)
          end do
       end if
 
@@ -120,7 +126,8 @@ contains
          n = 0
          do j = 1, 2 ! 1=count, 2=allocate and use
             if (j == 2) then
-               allocate (LLkkk(5, n), stat=ierr); LLkkk = 0
+               allocate (LLkkk(5, n), stat=ierr)
+               LLkkk = 0
             end if
             n = 0
             do L = 1, lnx
@@ -157,14 +164,17 @@ contains
       if (k > 0) then
          !call newfil(msgbu, trim(getoutputdir())//trim(md_ident)//'_Cdwcoeff.tek')
          !call newfil(mout,'fcori.xyz')
-         fcormin = huge(1d0); fcormax = -huge(1d0)
+         fcormin = huge(1.0_dp)
+         fcormax = -huge(1.0_dp)
          do i = 1, k
             fcormin = min(fcormin, real(fcori(i), dp))
             fcormax = max(fcormax, real(fcori(i), dp))
             if (icorio <= 6) then
-               xx = xu(i); yy = yu(i)
+               xx = xu(i)
+               yy = yu(i)
             else
-               xx = xz(i); yy = yz(i)
+               xx = xz(i)
+               yy = yz(i)
             end if
             !write(mout,*) xx,yy,fcori(i)
          end do

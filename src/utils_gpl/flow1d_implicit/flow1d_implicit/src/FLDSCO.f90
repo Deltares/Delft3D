@@ -220,7 +220,8 @@ subroutine FLDSCO(g      ,iter   ,dt1    ,steady ,psi    ,theta  ,&
       ind=nint(strhis(9,i))
       if (ind.gt.0)then
 !           No weir, add discharge
-         strhis(10,ind) = strhis(10,ind) + abs(strhis(4,i))
+         !strhis(10,ind) = strhis(10,ind) + abs(strhis(4,i)) !V: I do not get this. This looks like for compound structures. 
+         strhis(10,i) = strhis(10,i) + abs(strhis(4,i)) 
       else
 !           Weir, calculate and add area
          il = strtyp(3,i)

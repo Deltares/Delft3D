@@ -1,4 +1,0 @@
-#!/bin/sh
-cp ../test_06/nefis_ex.dat .
-cp ../test_06/nefis_ex.def .
-./test_07_dependent

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -425,10 +425,6 @@
       
       return
    end subroutine dbpinpol_tpolies
-
-
-end module m_tpoly
-
  
     !> Determines the orientation of a polygon.
     !! iorient = 1: Counter-clockwise, -1: clockwise
@@ -599,5 +595,8 @@ end module m_tpoly
 
    return
    end subroutine inwhichpolygon
+
+end module m_tpoly
+
 
 

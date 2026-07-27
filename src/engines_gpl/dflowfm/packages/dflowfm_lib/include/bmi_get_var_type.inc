@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -78,19 +78,9 @@ select case(var_name)
     type_name = "double"
   case("infilt")
     type_name = "double"
-  case("infiltcap0")
-    type_name = "double"
   case("infiltcap")
     type_name = "double"
-  case("HortonMinInfCap")
-    type_name = "double"
-  case("HortonMaxInfCap")
-    type_name = "double"
-  case("HortonDecreaseRate")
-    type_name = "double"
-  case("HortonRecoveryRate")
-    type_name = "double"
-  case("HortonState")
+  case("horton_state")
     type_name = "int"
   case("shx")
     type_name = "double"

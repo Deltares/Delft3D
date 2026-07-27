@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: mapper_statemachine.cpp 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/mapper_statemachine.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/mapper_statemachine.cpp
+// $
 //------------------------------------------------------------------------------
 //  Class: D3dFlowMapper
 //  Mapper for DELFT3D-FLOW Domain Decomposition
@@ -36,14 +38,11 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
 
-
-#define LOG_STEPS   0
-#define LOG_WANG_STEPS  0
-#define LOG_INIT    0
-
+#define LOG_STEPS 0
+#define LOG_WANG_STEPS 0
+#define LOG_INIT 0
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -52,16 +51,15 @@
 // Mapper for DELFT3D-FLOW Domain Decomposition
 //
 
-
 int D3dFlowMapper::DoMapping(void)
 {
-    int retVal = HY_OK;     // Return value
-    int transportUsed;      // boolean
-    int sedimentUsed;       // boolean
+    int retVal = HY_OK; // Return value
+    int transportUsed;  // boolean
+    int sedimentUsed;   // boolean
 
     MAPDBG_FUN("D3dFlowMapper::DoMapping");
 
-    if ( retVal != HY_ERR )
+    if (retVal != HY_ERR)
     {
         //
         // Labelling after adjust, so this means that in case of
@@ -75,8 +73,8 @@ int D3dFlowMapper::DoMapping(void)
 
         InitFlowVariables();
 
-        transportUsed  = (C[C_0]->lStsci > 0 && C[C_1]->lStsci > 0 );
-        sedimentUsed   = (C[C_0]->lSedtt > 0 && C[C_1]->lSedtt > 0 );
+        transportUsed = (C[C_0]->lStsci > 0 && C[C_1]->lStsci > 0);
+        sedimentUsed = (C[C_0]->lSedtt > 0 && C[C_1]->lSedtt > 0);
 
         //
         // Call time loop statemachine
@@ -88,31 +86,29 @@ int D3dFlowMapper::DoMapping(void)
     return retVal;
 }
 
-
-void D3dFlowMapper::StateMachineAdiOrWang(
-    int transportUsed,      // boolean calculate transport?
-    int sedimentUsed        // boolean Sediment or Not
-    )
+void D3dFlowMapper::StateMachineAdiOrWang(int transportUsed, // boolean calculate transport?
+                                          int sedimentUsed   // boolean Sediment or Not
+)
 {
-    int     thisMapperStep; // the step to be performed by the mapper
-    int     nextFlowStep;   // next step to be performed by FLOW
-    int     nMapIter;       // Max # 'resolve' iterations
-    int     tStep;          // time step counter
-    int     lSed;           // constituent
-    int     Stage;          // Stage = 1 or 2
-    int     notConverged;   // result of Proces
+    int thisMapperStep; // the step to be performed by the mapper
+    int nextFlowStep;   // next step to be performed by FLOW
+    int nMapIter;       // Max # 'resolve' iterations
+    int tStep;          // time step counter
+    int lSed;           // constituent
+    int Stage;          // Stage = 1 or 2
+    int notConverged;   // result of Proces
 
     MAPDBG_FUN("D3dFlowMapper::StateMachineAdiOrWang");
 
     // TRICOM: Init
-    SendDataToFlow(D3dFlowMap_Init,STEP_UNDEF);
+    SendDataToFlow(D3dFlowMap_Init, STEP_UNDEF);
 
     tStep = 0;
     while (1)
     {
         thisMapperStep = ReceiveDataFromFlow();
         nextFlowStep = STEP_UNDEF;
-        //printf("Mapper: %s (%d)\n",PrintNextStepName(thisMapperStep),thisMapperStep);
+        // printf("Mapper: %s (%d)\n",PrintNextStepName(thisMapperStep),thisMapperStep);
 
         switch (thisMapperStep)
         {
@@ -131,21 +127,21 @@ void D3dFlowMapper::StateMachineAdiOrWang(
             case D3dFlowMap_Build_V:
                 // UZD: Build_V
                 Stage = 1;
-                Build(Seq_V,0);
+                Build(Seq_V, 0);
                 nMapIter = 0;
                 lSed = 0;
                 break;
             case D3dFlowMap_Build_U:
                 // UZD: Build_U
                 Stage = 2;
-                Build(Seq_U,0);
+                Build(Seq_U, 0);
                 nMapIter = 0;
                 lSed = 0;
                 break;
             case D3dFlowMap_Check_V:
                 // UZD: Check_V (Solve_V)
                 nMapIter++;
-                if ( Proces(Seq_V,0) && ( nMapIter != MaxIter_Vel ) )
+                if (Proces(Seq_V, 0) && (nMapIter != MaxIter_Vel))
                     nextFlowStep = D3dFlow_Solve_V;
                 else
                     CopyFlowVariables(Seq_V);
@@ -153,7 +149,7 @@ void D3dFlowMapper::StateMachineAdiOrWang(
             case D3dFlowMap_Check_U:
                 // UZD: Check_U (Solve_U)
                 nMapIter++;
-                if ( Proces(Seq_U,0) && ( nMapIter != MaxIter_Vel ) )
+                if (Proces(Seq_U, 0) && (nMapIter != MaxIter_Vel))
                     nextFlowStep = D3dFlow_Solve_U;
                 else
                     CopyFlowVariables(Seq_U);
@@ -166,8 +162,7 @@ void D3dFlowMapper::StateMachineAdiOrWang(
                 break;
             case D3dFlowMap_Check_SUD_Dry:
                 // SUD: Check_SUD_Dry
-                if ( CheckForDry() )
-                    nextFlowStep = D3dFlow_Build_ADI_Zeta;
+                if (CheckForDry()) nextFlowStep = D3dFlow_Build_ADI_Zeta;
                 break;
             case D3dFlowMap_Finish_Wang:
                 // SUD: Finish_Wang
@@ -176,7 +171,7 @@ void D3dFlowMapper::StateMachineAdiOrWang(
                 break;
             case D3dFlowMap_Check_ADI_Dry:
                 // ADI: Check_ADI_Dry
-                if ( CheckForDry() )
+                if (CheckForDry())
                     nextFlowStep = D3dFlow_Build_ADI_Zeta;
                 else if (Stage == 1)
                 {
@@ -198,9 +193,9 @@ void D3dFlowMapper::StateMachineAdiOrWang(
                 // DIFU: Build_ADI_Conc
                 lSed++;
                 if (Stage == 1)
-                    Build(Seq_Conc_ADI_St1,lSed);
+                    Build(Seq_Conc_ADI_St1, lSed);
                 else
-                    Build(Seq_Conc_ADI_St2,lSed);
+                    Build(Seq_Conc_ADI_St2, lSed);
                 nMapIter = 0;
                 break;
             case D3dFlowMap_Check_ADI_Conc:
@@ -208,41 +203,40 @@ void D3dFlowMapper::StateMachineAdiOrWang(
                 nMapIter++;
                 LOG_ITER(nMapIter);
                 if (Stage == 1)
-                    notConverged = Proces(Seq_Conc_ADI_St1,lSed);
+                    notConverged = Proces(Seq_Conc_ADI_St1, lSed);
                 else
-                    notConverged = Proces(Seq_Conc_ADI_St2,lSed);
-                if ( notConverged && ( nMapIter != MaxIter_Conc ) )
+                    notConverged = Proces(Seq_Conc_ADI_St2, lSed);
+                if (notConverged && (nMapIter != MaxIter_Conc))
                     nextFlowStep = D3dFlow_Solve_ADI_Conc;
                 else if (lSed == C[C_0]->lStsci)
                     CopyFlowVariables(Seq_Conc);
                 break;
             case D3dFlowMap_Roller_UV:
                 // QKWCG: Roller_UV
-                Build(Seq_RolUV,0);
+                Build(Seq_RolUV, 0);
                 break;
             case D3dFlowMap_Build_2DAD:
                 // DIFUWE: Build_2DAD
-                Build(Seq_2DAD,0);
+                Build(Seq_2DAD, 0);
                 nMapIter = 0;
                 break;
             case D3dFlowMap_Check_2DAD:
                 // DIFUWE: Check_2DAD (Solve_2DAD)
                 nMapIter++;
-                notConverged = Proces(Seq_2DAD,0);
-                if ( notConverged && ( nMapIter != MaxIter_2DAD ) )
-                    nextFlowStep = D3dFlow_Solve_2DAD;
+                notConverged = Proces(Seq_2DAD, 0);
+                if (notConverged && (nMapIter != MaxIter_2DAD)) nextFlowStep = D3dFlow_Solve_2DAD;
                 break;
             case D3dFlowMap_Bottom3D:
                 // BOTT3D: Bottom3D
                 CopySediment(Seq_Zeta);
                 break;
             default:
-                throw new Exception (true, "D3dFlowMapper::StateMachineAdiOrWang: unexpected map request: %s (%d)",
-                            PrintNextStepName(nextFlowStep),nextFlowStep);
+                throw new Exception("D3dFlowMapper::StateMachineAdiOrWang: unexpected map request: %s (%d)",
+                                    PrintNextStepName(nextFlowStep), nextFlowStep);
         }
         if (thisMapperStep == D3dFlowMap_Finish)
             break;
         else
-            SendDataToFlow(thisMapperStep,nextFlowStep);
+            SendDataToFlow(thisMapperStep, nextFlowStep);
     }
 }

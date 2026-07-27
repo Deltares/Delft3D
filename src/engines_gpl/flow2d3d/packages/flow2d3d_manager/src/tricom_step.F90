@@ -1,7 +1,7 @@
-subroutine tricom_step(olv_handle, gdp)
+subroutine tricom_step(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -53,12 +53,9 @@ subroutine tricom_step(olv_handle, gdp)
     use sync_flowcouple
     use sync_flowwave
     use flow2d3d_timers
-    use D3DOnline
-    use D3DPublish
     use D3D_Sobek 
     use globaldata
     use dfparall
-    use d3d_olv_class
     !
     implicit none
     !
@@ -114,6 +111,7 @@ subroutine tricom_step(olv_handle, gdp)
     real(fp)          , dimension(:)    , pointer :: dm
     real(fp)          , dimension(:)    , pointer :: dg
     real(fp)          , dimension(:,:)  , pointer :: frac
+    real(fp)          , dimension(:,:)  , pointer :: frac_he
     real(fp)                            , pointer :: cp
     real(fp)                            , pointer :: sarea
     real(fp)                            , pointer :: fclou
@@ -340,7 +338,6 @@ subroutine tricom_step(olv_handle, gdp)
     integer                                       :: iofset        ! Shift of inner part of matrix to remove strips
     integer                                       :: lunfil
     integer                            , external :: modlen
-    integer                            , external :: newlun
     integer                                       :: nhystp
     integer                                       :: nst           ! Current time step counter 
     integer                                       :: nst2go        ! Number of timesteps left 
@@ -352,7 +349,6 @@ subroutine tricom_step(olv_handle, gdp)
     logical                                       :: ex            ! Help flag = TRUE when file is found
     real(fp)                                      :: zini
     character(80)                                 :: txtput        ! Text to be print
-    type(olvhandle)                               :: olv_handle
 !
 !! executable statements -------------------------------------------------------
 !
@@ -402,6 +398,7 @@ subroutine tricom_step(olv_handle, gdp)
     dm                  => gdp%gderosed%dm
     dg                  => gdp%gderosed%dg
     frac                => gdp%gderosed%frac
+    frac_he              => gdp%gderosed%frac_he
     cp                  => gdp%gdheat%cp
     sarea               => gdp%gdheat%sarea
     fclou               => gdp%gdheat%fclou
@@ -627,7 +624,6 @@ subroutine tricom_step(olv_handle, gdp)
     !
     ! Simulation time loop
     !
-    call setRunningFlag(olv_handle, 0, itstrt)    !status is: started
 
     do nst = itstrt, itstop - 1, 1
        call timer_start(timer_timeintegr, gdp)
@@ -643,12 +639,6 @@ subroutine tricom_step(olv_handle, gdp)
        call vsemnefis
        call timer_stop(timer_step2screen, gdp)
 
-       call FLOWOL_Timestep (nst)
-
-       !
-       ! Status is: simulation is running / iteration
-       !
-       call setRunningFlag(olv_handle, 1, nst)
        !
        ! Set timsec and current date and time.
        !
@@ -909,10 +899,6 @@ subroutine tricom_step(olv_handle, gdp)
        call timer_stop(timer_timeintegr, gdp)
     enddo
     
-    ! The sequence of the 2 next calls is important for the OLV client.
-    !
-    call FLOWOL_Timestep (nst)
-    !
     call timer_stop(timer_simulation, gdp)
     !
     ! Synchronisation point 3

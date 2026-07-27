@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,12 +44,12 @@ contains
    subroutine ATPPAR(X, Y, M1, N1, M2, N2, &
                      ATP, A, B, C, D, E)
       use precision, only: dp
-      use m_grid, not1 => xc, not2 => yc
-      use M_GRIDSETTINGS
-      use m_orthosettings
-      use M_MISSING
-      use m_drawthis
-      use m_planedistance
+      use m_grid, only: mmax, nmax, ijyes, ijc
+      use M_GRIDSETTINGS, only: mdesign
+      use m_orthosettings, only: atpf
+      use M_MISSING, only: dxymis, dmiss
+      use m_drawthis, only: ndraw
+      use m_planedistance, only: planedistance
 
       real(kind=dp) :: af
       real(kind=dp) :: cy
@@ -74,9 +74,14 @@ contains
       real(kind=dp) :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
       save NDRAW8
 
-      A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS
+      A = DXYMIS
+      B = DXYMIS
+      C = DXYMIS
+      D = DXYMIS
+      E = DXYMIS
+      ATP = DXYMIS
 
-      DG2RD = (acos(-1d0)) / 180d0
+      DG2RD = (acos(-1.0_dp)) / 180.0_dp
 !     A,B = METRISCH EN SOM, ATP,E = STUUR, C,D = SOM ATP EN E
 !     A,ATP EN C IN M-RICHTING
       do I = M1, M2
@@ -152,7 +157,11 @@ contains
       end do
       !     CALL TEKSHOW(X, Y, M2, N2, ATP, 2,'FINAL ATP')
 
-      A = 0d0; B = 0d0; C = 0d0; D = 0d0; E = 0d0
+      A = 0.0_dp
+      B = 0.0_dp
+      C = 0.0_dp
+      D = 0.0_dp
+      E = 0.0_dp
       do I = M1 + 1, M2
          do J = N1 + 1, N2
             if (IJC(I, J) == 10) then
@@ -169,8 +178,8 @@ contains
 
                A(I, J) = (ATP(I, J - 1) + ATP(I, J))
                B(I, J) = (ATP(I - 1, J - 1) + ATP(I - 1, J))
-               C(I, J) = (1d0 / ATP(I - 1, J) + 1d0 / ATP(I, J))
-               D(I, J) = (1d0 / ATP(I - 1, J - 1) + 1d0 / ATP(I, J - 1))
+               C(I, J) = (1.0_dp / ATP(I - 1, J) + 1.0_dp / ATP(I, J))
+               D(I, J) = (1.0_dp / ATP(I - 1, J - 1) + 1.0_dp / ATP(I, J - 1))
 
                E(I, J) = -(A(I, J) + B(I, J) + C(I, J) + D(I, J))
             end if

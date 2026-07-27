@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,7 +43,7 @@ module processes_input
     character(20), allocatable :: syunit(:)       !< substance names
     character(20), allocatable :: coname(:)       !< constant names
     character(20), allocatable :: paname(:)       !< parameter names
-    real(KIND = real_wp), allocatable :: painp(:, :)      !< parameter input
+    real(KIND = real_wp), allocatable, target :: painp(:, :)      !< parameter input
     character(20), allocatable :: funame(:)       !< function names
     real(kind = dp), pointer :: funinp(:, :)     !< function input
     character(20), allocatable :: sfunname(:)     !< segm.func. names
@@ -77,7 +77,6 @@ module processes_input
     ! num_velocity_arrays is from block 4 (can be deleted?), num_velocity_arrays_new is from processes
 
     integer(KIND = int_wp) :: num_velocity_arrays_new
-    real   (KIND = real_wp), allocatable :: velonw(:, :)     !< New velocity array
     integer(KIND = int_wp), allocatable :: ivpnt (:)      !< pointer to original velo
     real   (KIND = real_wp), allocatable :: velo  (:, :)     !< Original velocities
     integer(KIND = int_wp) :: num_velocity_arrays_extra           !< Nr. of calculated velocities

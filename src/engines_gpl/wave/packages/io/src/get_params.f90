@@ -1,7 +1,7 @@
 subroutine get_params(tscale, rho, filnam)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,6 +32,8 @@ subroutine get_params(tscale, rho, filnam)
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+    use precision
+   
     implicit none
 !
 ! Local parameters
@@ -40,7 +42,7 @@ subroutine get_params(tscale, rho, filnam)
 !
 ! Global variables
 !
-    real, intent(out)               :: tscale
+    real(hp), intent(out)           :: tscale
     real, intent(out)               :: rho
     character(256)                  :: filnam  ! filename com-file
 !
@@ -72,7 +74,7 @@ subroutine get_params(tscale, rho, filnam)
 !! executable statements -------------------------------------------------------
 !
     rho    = -999.0
-    tscale = -999.0
+    tscale = -999.0_hp
     allocate(rbuff(1))
     wrswch = .false.
     ielem  = 1
@@ -106,7 +108,7 @@ subroutine get_params(tscale, rho, filnam)
               & elmqty    ,elmunt    ,elmdes    ,elmtps    ,nbytsg    , &
               & elmnms(ielem)        ,celidt    ,wrswch    ,error     ,rbuff     )
     if (error /= 0) goto 200
-    tscale = rbuff(1)
+    tscale = real(rbuff(1),hp)
   200 continue
     if (error /= 0) then
        write(*,'(5a)') '*** ERROR: Reading file "', trim(filnam), '.dat" or "', trim(filnam), '.def"'

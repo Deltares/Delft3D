@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,34 +30,34 @@
 #define __NEFIS_TAG__
 extern struct nefis_tag
 {
-  BInt4   array_retrieve_ptrs;
-  BInt4   file_retrieve      ;
-  BInt4   exist              ;
-  BInt4   dat_fds            ;
-  BInt4   def_fds            ;
-  BInt4   daf_fds            ;
-  BInt4   dat_neutral        ;
-  BInt4   def_neutral        ;
-  BInt4   daf_neutral        ;
-  BInt4   one_file           ;
-  File_Version file_version  ;
-  union
-  {
-    BChar  str[SIZE_BINT8*(2+LHSHDT)];
-    BUInt8 fds[           (2+LHSHDT)];
-  } dat;
-  union
-  {
-    BChar  str[SIZE_BINT8*(2+LHSHDF)];
-    BUInt8 fds[           (2+LHSHDF)];
-  } def;
-  union
-  {
-    BChar  str[SIZE_BINT8*(2+LHSHDAF)];
-    BUInt8 fds[           (2+LHSHDAF)];
-  } daf;
-  BChar   dat_name [FILENAME_MAX];
-  BChar   def_name [FILENAME_MAX];
-  BChar   daf_name [FILENAME_MAX];
+    BInt4 array_retrieve_ptrs;
+    BInt4 file_retrieve;
+    BInt4 exist;
+    BInt4 dat_fds;
+    BInt4 def_fds;
+    BInt4 daf_fds;
+    BInt4 dat_neutral;
+    BInt4 def_neutral;
+    BInt4 daf_neutral;
+    BInt4 one_file;
+    File_Version file_version;
+    union
+    {
+        BChar str[SIZE_BINT8 * (2 + LHSHDT)];
+        BUInt8 fds[(2 + LHSHDT)];
+    } dat;
+    union
+    {
+        BChar str[SIZE_BINT8 * (2 + LHSHDF)];
+        BUInt8 fds[(2 + LHSHDF)];
+    } def;
+    union
+    {
+        BChar str[SIZE_BINT8 * (2 + LHSHDAF)];
+        BUInt8 fds[(2 + LHSHDAF)];
+    } daf;
+    BChar dat_name[FILENAME_MAX];
+    BChar def_name[FILENAME_MAX];
+    BChar daf_name[FILENAME_MAX];
 } nefis[MAX_NEFIS_FILES];
 #endif

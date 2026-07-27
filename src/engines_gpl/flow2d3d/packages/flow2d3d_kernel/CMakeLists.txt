@@ -63,7 +63,6 @@ set(oss_dependencies    deltares_common
                         delftio
                         ec_module
                         flow2d3d_data
-                        flow2d3d_io_dol_f
                         flow2d3d_kernel_dd_f
                         morphology_data
                         morphology_kernel) 

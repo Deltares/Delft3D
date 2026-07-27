@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -106,30 +106,74 @@ contains
 
       cache_success = .false.
 
-      if (allocated(cache_xobs)) deallocate (cache_xobs)
-      if (allocated(cache_yobs)) deallocate (cache_yobs)
-      if (allocated(cache_xpl_fixed)) deallocate (cache_xpl_fixed)
-      if (allocated(cache_ypl_fixed)) deallocate (cache_ypl_fixed)
-      if (allocated(cache_dsl_fixed)) deallocate (cache_dsl_fixed)
-      if (allocated(cache_locTpObs)) deallocate (cache_locTpObs)
-      if (allocated(cache_kobs)) deallocate (cache_kobs)
-      if (allocated(cache_lobs)) deallocate (cache_lobs)
-      if (allocated(cache_ilink_fixed)) deallocate (cache_ilink_fixed)
-      if (allocated(cache_ipol_fixed)) deallocate (cache_ipol_fixed)
-      if (allocated(cache_linklist)) deallocate (cache_linklist)
-      if (allocated(cache_ipol)) deallocate (cache_ipol)
-      if (allocated(cached_lne_dry)) deallocate (cached_lne_dry)
-      if (allocated(cached_lnn_dry)) deallocate (cached_lnn_dry)
-      if (allocated(cached_xzw_dry)) deallocate (cached_xzw_dry)
-      if (allocated(cached_yzw_dry)) deallocate (cached_yzw_dry)
-      if (allocated(cached_bottom_area_dry)) deallocate (cached_bottom_area_dry)
-      if (allocated(cached_xz_dry)) deallocate (cached_xz_dry)
-      if (allocated(cached_yz_dry)) deallocate (cached_yz_dry)
-      if (allocated(cached_netcell_dry)) deallocate (cached_netcell_dry)
+      if (allocated(cache_xobs)) then
+         deallocate (cache_xobs)
+      end if
+      if (allocated(cache_yobs)) then
+         deallocate (cache_yobs)
+      end if
+      if (allocated(cache_xpl_fixed)) then
+         deallocate (cache_xpl_fixed)
+      end if
+      if (allocated(cache_ypl_fixed)) then
+         deallocate (cache_ypl_fixed)
+      end if
+      if (allocated(cache_dsl_fixed)) then
+         deallocate (cache_dsl_fixed)
+      end if
+      if (allocated(cache_locTpObs)) then
+         deallocate (cache_locTpObs)
+      end if
+      if (allocated(cache_kobs)) then
+         deallocate (cache_kobs)
+      end if
+      if (allocated(cache_lobs)) then
+         deallocate (cache_lobs)
+      end if
+      if (allocated(cache_ilink_fixed)) then
+         deallocate (cache_ilink_fixed)
+      end if
+      if (allocated(cache_ipol_fixed)) then
+         deallocate (cache_ipol_fixed)
+      end if
+      if (allocated(cache_linklist)) then
+         deallocate (cache_linklist)
+      end if
+      if (allocated(cache_ipol)) then
+         deallocate (cache_ipol)
+      end if
+      if (allocated(cached_lne_dry)) then
+         deallocate (cached_lne_dry)
+      end if
+      if (allocated(cached_lnn_dry)) then
+         deallocate (cached_lnn_dry)
+      end if
+      if (allocated(cached_xzw_dry)) then
+         deallocate (cached_xzw_dry)
+      end if
+      if (allocated(cached_yzw_dry)) then
+         deallocate (cached_yzw_dry)
+      end if
+      if (allocated(cached_bottom_area_dry)) then
+         deallocate (cached_bottom_area_dry)
+      end if
+      if (allocated(cached_xz_dry)) then
+         deallocate (cached_xz_dry)
+      end if
+      if (allocated(cached_yz_dry)) then
+         deallocate (cached_yz_dry)
+      end if
+      if (allocated(cached_netcell_dry)) then
+         deallocate (cached_netcell_dry)
+      end if
 
-      if (allocated(cache_cross_sections)) call deallocCrossSections(cache_cross_sections)
+      if (allocated(cache_cross_sections)) then
+         call deallocCrossSections(cache_cross_sections)
+      end if
 
-      if (allocated(cached_thin_dams)) deallocate (cached_thin_dams)
+      if (allocated(cached_thin_dams)) then
+         deallocate (cached_thin_dams)
+      end if
 
       md5current = ''
 
@@ -140,9 +184,28 @@ contains
       cache_retrieved = cache_success
    end function cache_retrieved
 
-!> Load the information from the caching file - if any.
+!> Load the information from the caching file - if any - and synchronize across partitions.
    subroutine load_caching_file(base_name, net_file, use_caching)
+      use m_partitioninfo, only: logical_and_across_partitions
+      use messagehandling, only: LEVEL_WARN, mess
 
+      character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
+      character(len=*), intent(in) :: net_file !< Full name of the network file
+      logical, intent(inout) :: use_caching !< Use the cache file if true. Might be reset to false if some errors forbid the use of caching.
+
+      logical :: all_cache_success
+
+      call load_caching_file_single_partition(base_name, net_file, use_caching)
+
+      call logical_and_across_partitions(cache_success, all_cache_success)
+      if (cache_success .and. .not. all_cache_success) then
+         call mess(LEVEL_WARN, 'Some partitions failed to load cache file. Proceeding with normal initialization.')
+         cache_success = .false.
+      end if
+   end subroutine load_caching_file
+
+!> Load the information from the caching file - if any.
+   subroutine load_caching_file_single_partition(base_name, net_file, use_caching)
       use MessageHandling, only: LEVEL_INFO, LEVEL_WARN, mess
 
       character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
@@ -189,7 +252,7 @@ contains
       ! Apparently there is no caching file, so return without further processing
       !
       if (ierr /= 0) then
-         call mess(LEVEL_INFO, 'No cache file available initially. Proceeding with normal initialization.')
+         call mess(LEVEL_WARN, 'No cache file available initially. Proceeding with normal initialization.')
          return
       end if
 
@@ -366,9 +429,9 @@ contains
       !
       close (lun)
       cache_success = .true.
-      call mess(LEVEL_INFO, 'Succesfully read cache file: '//trim(file_name))
+      call mess(LEVEL_INFO, 'Successfully read cache file: '//trim(file_name))
 
-   end subroutine load_caching_file
+   end subroutine load_caching_file_single_partition
 
 !> Load cached thin dams from a caching file
    subroutine load_thin_dams(lun, number_thin_dams, thin_dams, ierr)
@@ -455,7 +518,7 @@ contains
       integer :: i, np, nlink
 
       ! If there is nothing to be cached, do not even try to read (D3DFMIQ-2193)
-      if (size(linklist) == 0) then
+      if (size(sections) == 0) then
          ierr = 0
          return
       end if
@@ -621,8 +684,10 @@ contains
             number_polyline_points = size(thin_dams(i)%xp)
             write (lun) number_flow_links, number_polyline_points
             write (lun) thin_dams(i)%np, thin_dams(i)%lnx
-            write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
-               thin_dams(i)%zp(1:number_polyline_points)
+            if (number_polyline_points > 0) then
+               write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
+                  thin_dams(i)%zp(1:number_polyline_points)
+            end if
             if (thin_dams(i)%lnx > 0) then
                write (lun) thin_dams(i)%ln(1:number_flow_links), thin_dams(i)%indexp(1:number_flow_links), &
                   thin_dams(i)%wfp(1:number_flow_links), thin_dams(i)%xk(1:2, 1:number_flow_links), &
@@ -742,7 +807,9 @@ contains
                success = .false.
                exit
             end if
-            if (np == 0) cycle
+            if (np == 0) then
+               cycle
+            end if
             if (any(cache_cross_sections(i)%path%xp(1:np) /= crs(i)%path%xp(1:np)) .or. &
                 any(cache_cross_sections(i)%path%yp(1:np) /= crs(i)%path%yp(1:np))) then
                success = .false.

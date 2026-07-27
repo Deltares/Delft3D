@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,23 +39,32 @@ contains
       use M_NETW
       use m_okay
       use m_set_nod_adm
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer :: NRL1D, NRL, NRLO, L, K, K1, K2, K3, IBR, N, JASTOP, JASTART, IERR, IBX, KS, KK, KE, ja
       integer :: NRL1D6, KN316, NRL1D16, J
 
       call setnodadm(0)
 
-      if (allocated(NMK0)) deallocate (NMK0); allocate (NMK0(NUMK)); NMK0 = 0
+      if (allocated(NMK0)) then
+         deallocate (NMK0)
+      end if
+      allocate (NMK0(NUMK))
+      NMK0 = 0
 
-      LC = 0; NRL1D = 0; NRL1D6 = 0
+      LC = 0
+      NRL1D = 0
+      NRL1D6 = 0
       do L = 1, NUML
-         if (KN(3, L) == 1 .or. KN(3, L) == 6) then
-            K1 = KN(1, L); K2 = KN(2, L); K3 = KN(3, L)
+         if (KN(3, L) == LINK_1D .or. KN(3, L) == LINK_1D_MAINBRANCH) then
+            K1 = KN(1, L)
+            K2 = KN(2, L)
+            K3 = KN(3, L)
             NMK0(K1) = NMK0(K1) + 1
             NMK0(K2) = NMK0(K2) + 1
-            if (KN(3, L) == 1) then
+            if (KN(3, L) == LINK_1D) then
                NRL1D = NRL1D + 1 ! count 1D links
-            else if (KN(3, L) == 6) then
+            else if (KN(3, L) == LINK_1D_MAINBRANCH) then
                NRL1D6 = NRL1D6 + 1
             end if
          else
@@ -64,20 +73,30 @@ contains
       end do
 
       if (NRL1D + NRL1D6 == 0) then
-         netstat = NETSTAT_OK; return
+         netstat = NETSTAT_OK
+         return
       end if
 
-      if (allocated(IBN)) deallocate (IBN, LIB, K1BR, NRLB)
-      allocate (IBN(NUML), LIB(NUML), K1BR(NUML), NRLB(NUML)); IBN = 0; LIB = 0; K1BR = 0; NRLB = 0
+      if (allocated(IBN)) then
+         deallocate (IBN, LIB, K1BR, NRLB)
+      end if
+      allocate (IBN(NUML), LIB(NUML), K1BR(NUML), NRLB(NUML))
+      IBN = 0
+      LIB = 0
+      K1BR = 0
+      NRLB = 0
 
-      IBR = 0; NRL = 0
+      IBR = 0
+      NRL = 0
 
       do J = 1, 2
 
          if (J == 1) then
-            KN316 = 6; NRL1D16 = NRL1D6
+            KN316 = 6
+            NRL1D16 = NRL1D6
          else
-            KN316 = 1; NRL1D16 = NRL1D6 + NRL1D
+            KN316 = 1
+            NRL1D16 = NRL1D6 + NRL1D
          end if
 
          do while (NRL < NRL1D16)
@@ -98,8 +117,12 @@ contains
                do L = 1, NUML
                   if (LC(L) == 0 .and. KN316 == KN(3, L)) then
                      IBR = IBR + 1
-                     LC(L) = IBR; NRL = NRL + 1
-                     LIB(NRL) = L; K1BR(NRL) = KN(1, L); IBN(NRL) = IBR; NRLB(L) = NRL
+                     LC(L) = IBR
+                     NRL = NRL + 1
+                     LIB(NRL) = L
+                     K1BR(NRL) = KN(1, L)
+                     IBN(NRL) = IBR
+                     NRLB(L) = NRL
                   end if
                end do
             end if
@@ -108,9 +131,12 @@ contains
 
       end do
 
-      IBX = IBR; MXNETBR = IBR
+      IBX = IBR
+      MXNETBR = IBR
 
-      if (allocated(NETBR)) deallocate (NETBR)
+      if (allocated(NETBR)) then
+         deallocate (NETBR)
+      end if
       allocate (NETBR(IBX), STAT=IERR)
       call AERR('NETBR(IBX)', IERR, NUML)
 

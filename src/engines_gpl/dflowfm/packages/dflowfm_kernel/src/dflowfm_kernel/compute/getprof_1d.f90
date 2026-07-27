@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,13 +39,14 @@ module m_get_prof_1D
 contains
    subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: bndwidth1d, lnxbnd, dmiss, u1, q1, s1, frcu, frcu_mor, u_to_umain, q1_main, cfuhi, ag, hu, ifrcutp, v, frcuni1dgrounlay
+      use m_flowgeom, only: lnxi, lbnd1d, kcu, ln, wu, acl, prof1d, profiles1d, jagrounlay, grounlay, argr, pergr, wigr
+      use unstruc_channel_flow, only: network, getcsparstotal, cscalculationoption, getcsparsflow
+      use m_cross_helper, only: getconveyance, getcrossdischarge
       use m_flowtimes, only: time1, times_update_roughness
-      use unstruc_channel_flow
-      use m_cross_helper
-      use precision_basics
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
+      use m_roughness, only: getchezy
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer :: L, japerim, calcConv
       real(kind=dp) :: hprL !< hoogte in profiel
@@ -62,7 +63,7 @@ contains
 
       real(kind=dp) :: frcn, cz, cf, conv, af_sub(3), perim_sub(3), cz_sub(3)
       real(kind=dp) :: q_sub(3) ! discharge per segment
-      integer :: LL, ka, kb, itp, itpa, ifrctyp, ibndsect
+      integer :: LL, ka, kb, itp, itpa, friction_type, ibndsect
       integer :: k1, k2
       integer :: jacustombnd1d
       real(kind=dp) :: u1L, q1L, s1L, dpt, factor, maxflowwidth
@@ -75,7 +76,7 @@ contains
       hpr = hprL
 
       jacustombnd1d = 0
-      if (kcu(L) == -1 .and. allocated(bndWidth1D)) then
+      if (kcu(L) == LINK_1D_BOUNDARY .and. allocated(bndWidth1D)) then
          ibndsect = lnxbnd(L - lnxi)
          if (ibndsect > 0) then
             if (bndWidth1D(ibndsect) /= dmiss) then
@@ -94,8 +95,8 @@ contains
 
          if ((japerim == 1) .and. (calcConv == 1)) then
             hydrad = area / perim
-            perim_sub = (/perim, 0d0, 0d0/)
-            af_sub = (/area, 0d0, 0d0/)
+            perim_sub = [perim, 0.0_dp, 0.0_dp]
+            af_sub = [area, 0.0_dp, 0.0_dp]
             !
             ! Calculate the conveyance and Chezy value, using the friction parameters on the internal link, using the
             ! local water depth on this boundary link.
@@ -103,53 +104,61 @@ contains
             !       using the cross sectional profile of this YZ-cross section. In that case we need the Chezy value
             !       for computing the conveyance based on the rectangular.
             if (network%rgs%timeseries_defined) then
-               factor = max(0d0, (time1 - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1)))
+               factor = max(0.0_dp, (time1 - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1)))
             else
-               factor = 1d0
+               factor = 1.0_dp
             end if
             call getconveyance(network, hpr, u1(L), q1(L), s1(k2), LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
             frcu(L) = cz
             frcu_mor(L) = cz
-            u_to_umain(L) = 1d0
+            u_to_umain(L) = 1.0_dp
             q1_main(L) = q1(L)
             wu(L) = width
 
-            if (hydrad > 0d0 .and. cz > 0d0) then
+            if (hydrad > 0.0_dp .and. cz > 0.0_dp) then
                cfuhi(L) = ag / (hydrad * cz * cz)
             else
-               cfuhi(L) = 0d0
+               cfuhi(L) = 0.0_dp
             end if
          end if
 
          return
 
-      else if (abs(kcu(ll)) == 1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
-         cz = 0d0
+      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. (network%loaded .or. has_flow1d_cross_section(LL))) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+         cz = 0.0_dp
 
          if (japerim == 0) then ! calculate total area and volume
             call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CSCalculationOption, network%adm%hysteresis_for_summerdike(:, LL))
          else ! japerim = 1: calculate flow area, conveyance and perimeter.
-            cz = 0d0
+            cz = 0.0_dp
             call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub)
 
             if (calcConv == 1) then
                u1L = u1(LL)
                q1L = q1(LL)
-               k1 = ln(1, LL)
-               k2 = ln(2, LL)
-               s1L = acl(L) * s1(k1) + (1d0 - acl(L)) * s1(k2)
                dpt = hu(L)
-               cz = 0d0
+               cz = 0.0_dp
                if (network%rgs%timeseries_defined) then
-                  factor = max(0d0, (time1 - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1)))
+                  factor = max(0.0_dp, (time1 - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1)))
                else
-                  factor = 1d0
+                  factor = 1.0_dp
                end if
-               call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+               if (abs(kcu(ll)) == 1) then
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
+                  s1L = acl(L) * s1(k1) + (1.0_dp - acl(L)) * s1(k2)
+                  call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+               else ! 1D2Dlink
+                  frcn = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictionvaluepos(1) !>
+                  friction_type = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictiontypepos(1)
+                  cz = getchezy(friction_type, frcn, area / perim, dpt, u1(LL))
+                  cz_sub(1) = cz
+                  conv = cz_sub(1) * af_sub(1) * sqrt(af_sub(1) / perim_sub(1))
+               end if
 
                ! For sediment transport the discharge in the main channel is required:
                ! Qmain/ QT = Kmain/KT -> u_main = Kmain/KT * (AT/Amain)
-               if (conv > 0d0) then
+               if (conv > 0.0_dp) then
                   u_to_umain(L) = area * cz_sub(1) * sqrt(af_sub(1) / perim_sub(1)) / conv
                   cfuhi(L) = ag / (conv / area)**2
                   frcu(L) = cz
@@ -157,30 +166,32 @@ contains
                   call getCrossDischarge(perim_sub, af_sub, cz_sub, q1(L), q_sub)
                   q1_main(L) = q_sub(1)
                else
-                  u_to_umain(L) = 1d0
-                  cfuhi(L) = 0d0
+                  u_to_umain(L) = 1.0_dp
+                  cfuhi(L) = 0.0_dp
                end if
             end if
 
-            wu(L) = max(0.01d0, maxflowwidth)
+            wu(L) = max(0.01_dp, maxflowwidth)
 
          end if
          ! finished for 1d network from flow1d
          return
       end if
 
-! No flow1d cross input, OR a 1d2d link. Proceed with conventional prof1D approach.
+! No flow1d cross input Proceed with conventional prof1D approach.
       if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
-         ka = 0; kb = 0 ! do not use profiles
+         ka = 0
+         kb = 0 ! do not use profiles
          profw = prof1D(1, LL)
          profh = prof1D(2, LL)
          itp = prof1D(3, LL)
          if (japerim == 1) then
             frcn = frcu(LL)
-            ifrctyp = ifrcutp(LL)
+            friction_type = ifrcutp(LL)
          end if
       else
-         ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+         ka = -prof1D(1, LL)
+         kb = -prof1D(2, LL)
          profw = profiles1D(ka)%width
          profh = profiles1D(ka)%height
          itp = profiles1D(ka)%ityp
@@ -190,11 +201,11 @@ contains
          if (japerim == 1) then
             if (profiles1D(ka)%frccf /= dmiss .and. profiles1D(kb)%frccf /= dmiss .and. &
                 profiles1D(ka)%frctp == profiles1D(kb)%frctp) then
-               frcn = (1d0 - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
-               ifrctyp = profiles1D(ka)%frctp
+               frcn = (1.0_dp - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
+               friction_type = profiles1D(ka)%frctp
             else
                frcn = frcu(LL)
-               ifrctyp = ifrcutp(LL)
+               friction_type = ifrcutp(LL)
             end if
          end if
 
@@ -212,7 +223,7 @@ contains
       else if (abs(itp) == 3) then ! rectan, peri=wu
          call rectan2D(hpr, profw, profh, area, width, japerim, perim)
       else if (abs(itp) == 100 .or. abs(itp) == 101) then !                          itp >= 100, yzprof
-         call yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, cf)
+         call yzprofile(hpr, ka, itp, area, width, japerim, frcn, friction_type, perim, cf)
       end if
 
       if (ka /= 0 .and. kb /= ka) then ! interpolate in profiles
@@ -224,10 +235,10 @@ contains
             ! doe hier backup cf
             if (frcn > 0) then
                hydrad = area / perim ! hydraulic radius
-               call getcz(hydrad, frcn, ifrctyp, cz, L)
+               cz = get_chezy(hydrad, frcn, u1(L), v(L), friction_type)
                cf = ag / (hydrad * cz * cz) ! see note on 2D conveyance in sysdoc5
             else
-               cf = 0d0
+               cf = 0.0_dp
             end if
          end if
 
@@ -238,16 +249,16 @@ contains
          else if (abs(itp) == 3) then ! rectan, peri=wu
             call rectan2D(hpr, profw, profh, area2, width2, japerim, perim2)
          else if (abs(itp) == 100 .or. abs(itp) == 101) then ! >= 10, conveyance approach
-            call yzprofile(hpr, kb, itp, area2, width2, japerim, frcn, ifrctyp, perim2, cf2)
+            call yzprofile(hpr, kb, itp, area2, width2, japerim, frcn, friction_type, perim2, cf2)
          end if
-         area = (1d0 - alfa) * area + alfa * area2
-         width = (1d0 - alfa) * width + alfa * width2
+         area = (1.0_dp - alfa) * area + alfa * area2
+         width = (1.0_dp - alfa) * width + alfa * width2
 
          if (japerim == 1) then
             if (abs(itp) == 101) then ! 1D conveyance
-               cf = (1d0 - alfa) * cf + alfa * cf2
+               cf = (1.0_dp - alfa) * cf + alfa * cf2
             else
-               perim = (1d0 - alfa) * perim + alfa * perim2
+               perim = (1.0_dp - alfa) * perim + alfa * perim2
             end if
          end if
       end if
@@ -271,17 +282,17 @@ contains
 
             if (frcn > 0) then
                hydrad = area / perim ! hydraulic radius
-               call getcz(hydrad, frcn, ifrctyp, cz, L)
+               cz = get_chezy(hydrad, frcn, u1(L), v(L), friction_type)
                cfuhi(L) = ag / (hydrad * cz * cz) ! see note on 2D conveyance in sysdoc5
             else
-               cfuhi(L) = 0d0
+               cfuhi(L) = 0.0_dp
             end if
 
             if (jagrounlay > 0) then
                if (grounlay(LL) > 0) then
-                  call getcz(hydrad, frcuni1Dgrounlay, ifrctyp, czg, L)
+                  czg = get_chezy(hydrad, frcuni1Dgrounlay, u1(L), v(L), friction_type)
                   alfg = wigr(LL) / perim
-                  cfuhi(L) = (ag / hydrad) * (alfg / czg**2 + (1d0 - alfg) / cz**2)
+                  cfuhi(L) = (ag / hydrad) * (alfg / czg**2 + (1.0_dp - alfg) / cz**2)
                end if
             end if
 
@@ -290,4 +301,23 @@ contains
       end if
 
    end subroutine getprof_1D
+
+   !> Returns true if the given link has a flow1d cross section, so that the 1D flow solver may be used even if no network is loaded.
+   ! For now, the only links that can have this property are long culvert links.
+   function has_flow1d_cross_section(L) result(res)
+      use unstruc_channel_flow, only: network
+      use m_longculverts_data, only: newculverts
+      integer, intent(in) :: L
+      logical :: res
+
+      res = .false.
+      ! For now this check is only valid for long culverts. Once
+      if (associated(network%adm%line2cross) .and. newculverts) then
+         if (L > 0 .and. L <= size(network%adm%line2cross, 1)) then
+            res = (network%adm%line2cross(L, 2)%c1 > 0)
+         end if
+      end if
+
+   end function has_flow1d_cross_section
+
 end module m_get_prof_1D

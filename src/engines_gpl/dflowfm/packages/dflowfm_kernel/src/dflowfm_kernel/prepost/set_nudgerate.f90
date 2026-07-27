@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,6 +38,7 @@
 !!  caution: will overwrite nudge_rate in 1/s
 module m_set_nudgerate
 
+   use precision, only: dp
    implicit none
 
    private
@@ -49,8 +50,8 @@ contains
    subroutine set_nudgerate()
       use m_flowgeom, only: Ndx
       use m_flowparameters, only: Tnudgeuni
-      use m_nudge
-      use m_missing
+      use m_nudge, only: nudge_time, nudge_rate, nudge_rate_unit_to_seci
+      use m_missing, only: dmiss
 
       integer :: k
 
@@ -58,15 +59,15 @@ contains
          if (nudge_time(k) == DMISS) then
             if (nudge_rate(k) /= DMISS) then
                nudge_rate(k) = NUDGE_RATE_UNIT_TO_SECI * nudge_rate(k)
-            else if (Tnudgeuni > 0d0) then
-               nudge_rate(k) = 1d0 / Tnudgeuni
+            else if (Tnudgeuni > 0.0_dp) then
+               nudge_rate(k) = 1.0_dp / Tnudgeuni
             else
-               nudge_rate(k) = 0d0
+               nudge_rate(k) = 0.0_dp
             end if
-         else if (nudge_time(k) > 0d0) then
-            nudge_rate(k) = 1d0 / nudge_time(k)
+         else if (nudge_time(k) > 0.0_dp) then
+            nudge_rate(k) = 1.0_dp / nudge_time(k)
          else
-            nudge_rate(k) = 0d0
+            nudge_rate(k) = 0.0_dp
          end if
       end do
 

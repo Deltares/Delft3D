@@ -4,7 +4,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
                       & epsmax    ,epsmxc    ,seddif    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -94,7 +94,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
     if (ltur==0 .or. ltur==1 .or. difvr) then
        !
        ! if algebraic or K-L turbulence model or difvr = .true. then
-       ! calculate sediment mixing according to Van Rijn based on his
+       ! calculate sediment mixing according to Van Rijn, using Coleman's
        ! parabolic-linear mixing distribution for current-related mixing
        !
        ! set vertical sediment mixing values for waves and currents at water surface

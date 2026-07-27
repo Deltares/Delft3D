@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,15 +44,15 @@ contains
       use precision, only: dp
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
       use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, lnx1D, kcs
-      use m_flow, only: hs, hu, zws, kmx, au, q1, lnkx, ndkx
-      use m_flowparameters, only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
+      use m_flow, only: hs, q1, au, kmx, hu, zws, lnkx, ndkx
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
+      use m_flowparameters, only: jacstbnd, epshs, EPS10, flow_solver, FLOW_SOLVER_FM
       use m_sediment, only: stmpar
       use m_turbulence, only: ln0
       use m_CrossSections, only: GetCSParsFlow
       use unstruc_channel_flow, only: network
       use m_f1dimp, only: f1dimppar
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
 
       implicit none
       real(kind=dp), dimension(lnkx), intent(in) :: u1
@@ -77,9 +77,9 @@ contains
       do k = 1, ndx
          hs_mor(k) = hs(k)
          if (kcs(k) == 1) then
-            ucxq_mor(k) = 0d0
-            ucyq_mor(k) = 0d0
-            area(k) = 0d0
+            ucxq_mor(k) = 0.0_dp
+            ucyq_mor(k) = 0.0_dp
+            area(k) = 0.0_dp
          else
             ucxq_mor(k) = ucxq(k)
             ucyq_mor(k) = ucyq(k)
@@ -138,7 +138,7 @@ contains
             do k = 1, ndx
                if (kcs(k) == 1) then
                   ucxq_mor(k) = ucxq_mor(k) / area(k)
-                  ucyq_mor(k) = 0d0
+                  ucyq_mor(k) = 0.0_dp
                else
                   ucxq_mor(k) = ucxq(k)
                   ucyq_mor(k) = ucyq(k)
@@ -148,7 +148,8 @@ contains
             deallocate (area)
 
          else ! 2D/3D
-            ucxq_mor = 0d0; ucyq_mor = 0d0; 
+            ucxq_mor = 0.0_dp
+            ucyq_mor = 0.0_dp
             if (.not. maximumwaterdepth) then
                if (kmx == 0) then
                   do k = 1, ndx
@@ -169,8 +170,11 @@ contains
 
             if (kmx == 0) then
                do L = 1, lnx
-                  if (u1(L) == 0d0) cycle
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  if (u1(L) == 0.0_dp) then
+                     cycle
+                  end if
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   wcxu = wcx1(L) * u1(L)
                   ucxq_mor(k1) = ucxq_mor(k1) + wcxu * hu(L)
                   wcyu = wcy1(L) * u1(L)
@@ -182,9 +186,11 @@ contains
                end do
 
                do L = lnxi + 1, lnx
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   if (jacstbnd == 0) then
-                     cs = csu(L); sn = snu(L)
+                     cs = csu(L)
+                     sn = snu(L)
                      uin = ucxq_mor(k2) * cs + ucyq_mor(k2) * sn
                      ucxq_mor(k1) = uin * cs
                      ucyq_mor(k1) = uin * sn
@@ -207,17 +213,22 @@ contains
                      ucxq_mor(k) = ucxq_mor(k) / hs_mor(k)
                      ucyq_mor(k) = ucyq_mor(k) / hs_mor(k)
                   else
-                     ucxq_mor(k) = 0d0
-                     ucyq_mor(k) = 0d0
+                     ucxq_mor(k) = 0.0_dp
+                     ucyq_mor(k) = 0.0_dp
                   end if
                end do
             else ! 3D, max waterdepth
                do LL = 1, lnx
-                  if (abs(u1(LL)) < eps10) cycle
+                  if (abs(u1(LL)) < EPS10) then
+                     cycle
+                  end if
                   call getLbotLtop(LL, Lb, Lt)
-                  if (Lt < Lb) cycle
+                  if (Lt < Lb) then
+                     cycle
+                  end if
                   do L = Lb, Lt
-                     k1 = ln0(1, L); k2 = ln0(2, L)
+                     k1 = ln0(1, L)
+                     k2 = ln0(2, L)
                      huL = hu(L)
                      huL = huL - hu(L - 1)
                      ucxq_mor(k1) = ucxq_mor(k1) + wcx1(LL) * u1(L) * huL
@@ -228,10 +239,12 @@ contains
                end do
 
                do L = lnxi + 1, lnx
-                  cs = csu(L); sn = snu(L)
+                  cs = csu(L)
+                  sn = snu(L)
                   call getLbotLtop(L, Lb, Lt)
                   do LL = Lb, Lt
-                     k1 = ln0(1, LL); k2 = ln0(2, LL)
+                     k1 = ln0(1, LL)
+                     k2 = ln0(2, LL)
                      if (jacstbnd == 0) then
                         uin = ucxq_mor(k2) * cs + ucyq_mor(k2) * sn
                         ucxq_mor(k1) = uin * cs
@@ -260,9 +273,12 @@ contains
                ! This is potentially not consistent for Z/mixed sigma approach, to check JRE
                do LL = 1, lnx
                   call getLbotLtop(LL, Lb, Lt)
-                  if (Lt < Lb) cycle
+                  if (Lt < Lb) then
+                     cycle
+                  end if
                   do L = Lb, Lt
-                     k1 = ln0(1, L); k2 = ln0(2, L)
+                     k1 = ln0(1, L)
+                     k2 = ln0(2, L)
                      huL = hu(L) - hu(L - 1)
                      hs_mor(k1) = max(hs_mor(k1), huL)
                      hs_mor(k2) = max(hs_mor(k2), huL)

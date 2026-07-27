@@ -11,7 +11,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & r         ,phi_phase ,uwbih     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -394,14 +394,18 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
              !
              ! k-layer contains aks (take part above)
              !
-             if (concin(k-1)<1.0e-6_fp .or. concin(k)<1.0e-6_fp) then
-                ceavg    = ceavg + concin(k)*(1.0_fp-dif_aks/thick(k))*thick(k)*h1
+             if (dif_upp <= thick(k)) then ! this must be true if k = 1 since aks < 3*deltas < h1
+                ! k-layer contains also 3*deltas (take part below)
+                ceavg = ceavg + concin(k)*(dif_upp-dif_aks)*h1
+                exit
+             elseif (concin(k-1)<1.0e-6_fp .or. concin(k)<1.0e-6_fp) then
+                ceavg    = ceavg + concin(k)*(thick(k)-dif_aks)*h1
              else
                 rpower   = log(concin(k-1)/concin(k)) / log(  (h1*(1.0_fp+sig(k  ))*(h1-h1*(1.0_fp+sig(k-1)))) &
                 &                                           / (h1*(1.0_fp+sig(k-1))*(h1-h1*(1.0_fp+sig(k  )))) )
                 z        = ((1.0_fp+sig(k)+0.5_fp*thick(k))*h1 + aks) / 2.0_fp
                 ceavgtmp = concin(k) * ((h1*(1.0_fp+sig(k))*(h1-z))/(z*(h1-h1*(1.0_fp+sig(k)))))**rpower
-                ceavg    = ceavg + ceavgtmp*(1.0_fp-dif_aks/thick(k))*thick(k)*h1
+                ceavg    = ceavg + ceavgtmp*(thick(k)-dif_aks)*h1
              endif
           elseif (dif_aks<=0.0_fp .and. dif_upp>=0.0_fp) then
              !

@@ -36,7 +36,6 @@ set(oss_dependencies    deltares_common
                         ec_module
                         flow2d3d_data
                         flow2d3d_io
-                        flow2d3d_io_dol_f
                         flow2d3d_kernel) 
 
 target_link_libraries(${library_name} ${oss_dependencies})

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,8 +44,8 @@ module m_remove_unused_nodes_and_links
 contains
 
    subroutine remove_unused_nodes_and_links()
-      use network_data, only: numk, numl, nump, kc, kn, lne, lnn, netcell, nmk, nod, tnod, xk, yk, zk
-      use m_alloc
+      use network_data, only: numk, numl, nump, netcell, kn, nmk, nod, xk, yk, zk, kc, lnn, lne, tnod
+      use m_alloc, only: aerr, realloc
 
       ! local variables
       logical, dimension(:), allocatable :: nod_used !< flag specifying whether a node is used in the face definitions
@@ -176,9 +176,9 @@ contains
          ! adjust the size of the node arrays
          call realloc(lnn, numl_new)
          call aerr('lnn [realloc]', ierr, numl_new)
-         call realloc(lne, (/2, numl_new/))
+         call realloc(lne, [2, numl_new])
          call aerr('lne [realloc]', ierr, 2 * numl_new)
-         call realloc(kn, (/3, numl_new/))
+         call realloc(kn, [3, numl_new])
          call aerr('kn [realloc]', ierr, 3 * numl_new)
 
          ! update the arrays running over the number of faces/netcells

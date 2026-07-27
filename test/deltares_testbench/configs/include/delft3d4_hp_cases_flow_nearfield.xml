@@ -25,26 +25,6 @@
 				
 				-->
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-		<testCase name="e39_f01_c01_nf_2dis_simple_sigma" ref="flow2d3d_default">
-			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c01_nf_2dis_simple_sigma</path>
-			<maxRunTime>38.5610001087</maxRunTime>
-			<checks>
-				<file name="trih-2dis.dat" type="NEFIS">
-					<parameters name="his-series">
-						<parameter name="ZWL"   toleranceAbsolute="0.001"/>
-						<parameter name="ZCURU" toleranceAbsolute="0.001"/>
-						<parameter name="ZCURV" toleranceAbsolute="0.001"/>
-						<parameter name="GRO" toleranceAbsolute="0.01"/>
-					</parameters>
-				</file>
-				<file name="trim-2dis.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.001"/>
-						<parameter name="R1" toleranceAbsolute="0.01"/>
-					</parameters>
-				</file>
-			</checks>
-		</testCase>
 		<testCase name="e39_f01_c02_nf_2dis_simple_zlayers" ref="flow2d3d_default">
 			<path version="2024-04-19T06:00:00">e39_d3dflow-cosumo/f01_general/c02_nf_2dis_simple_zlayers</path>
 			<maxRunTime>38.5610001087</maxRunTime>

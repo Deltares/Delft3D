@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,13 +41,13 @@ module m_addopenbndsection
 contains
 
    !> Adds administration for an open boundary segment, intended
- !! for postprocessing.
- !!
- !! An open boundary section is associated with one polyline
- !! and consists of one or more netlink numbers.
+   !! for postprocessing.
+   !!
+   !! An open boundary section is associated with one polyline
+   !! and consists of one or more netlink numbers.
    subroutine addopenbndsection(nbnd, netlinknrs, plifilename, ibndtype)
-      use m_alloc
-      use fm_external_forcings_data
+      use m_alloc, only: realloc
+      use fm_external_forcings_data, only: nopenbndsect, nopenbndlin, openbndname, openbndfile, openbndtype, ibndtp_unknown, openbndlin
 
       integer, intent(in) :: nbnd !< Nr. of net links in this open bnd section.
       integer, intent(in) :: netlinknrs(nbnd) !< Net link nrs in this open bnd section (in any order)
@@ -95,3 +95,4 @@ contains
    end subroutine addopenbndsection
 
 end module m_addopenbndsection
+

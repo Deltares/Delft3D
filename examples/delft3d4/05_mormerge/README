@@ -11,7 +11,7 @@ Tcl is open source and can be downloaded from http://www.activestate.com
 Running the mormerge testcase
 =============================
 - Build the Delft3D open source code (release version) by running (at the top level) the build.bat (windows) or build.sh (linux) script with build configuration "all".
-  When this is finished, binaries will be installed in directory ".../build_all/x64" (windows) or ".../build_all/lnx64" (linux).
+  When this is finished, binaries will be installed in directory ".../install_all/x64" (windows) or ".../install_all/lnx64" (linux).
 - Go to subdirectory ".../examples/05_mormerge/merge" and
   execute script "run" with extension ".sh" (Linux) or ".bat" (Windows).
   Several processes are started in the background. They will disappear when the calculation is finished.

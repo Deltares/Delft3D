@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/messaging/deposit.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<p:deposit xmlns:p="http://www.codesynthesis.com/protocol"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.codesynthesis.com/protocol protocol.xsd">
+
+  <account>123456789</account>
+  <amount>1000000</amount>
+
+</p:deposit>

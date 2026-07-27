@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,8 +45,8 @@ contains
  !! If the current polyline was then saved to polname.pli, then
  !! polname_0001.cmp up to polname_xxxn.cmp will be saved (with n the nr 'npl' of polyline points).
    subroutine wricmps(fnam)
-      use m_polygon
-      use m_missing
+      use m_polygon, only: xpl
+      use m_missing, only: dmiss
       use m_filez, only: doclose, newfil
 
       character(len=*), intent(in) :: fnam !< Filename from .pli file (should have been saved just before)
@@ -89,7 +89,9 @@ contains
                   write (mou2, '(a)') '99999999.0  0.0 '
                   call doclose(mou2)
                end if
-               if (xpl(n) == dmiss) exit ! only for 1st polygon
+               if (xpl(n) == dmiss) then
+                  exit ! only for 1st polygon
+               end if
             end do
 
          end if

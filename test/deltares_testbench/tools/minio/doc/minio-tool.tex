@@ -1,6 +1,6 @@
 \documentclass{deltares_memo}
 \svnid{$Id: minio-tool.tex 31917 2023-10-23 13:24:19Z wierenga $}
-\svnid{$URL: https://git.deltares.nl/oss/delft3d/-/blob/main/test/deltares_testbench/tools/minio/doc/minio-tool.tex $}
+\svnid{$URL: https://github.com/Deltares/Delft3D/blob/main/test/deltares_testbench/tools/minio/doc/minio-tool.tex $}
 	
 \usepackage{dirtree}
 \usepackage {color}
@@ -142,10 +142,10 @@
 
 \newpage
 \section{Introduction}
-The 'Minio Tool' is a command line program used to update case and reference data in MinIO. The source code is hosted within the \href{https://git.deltares.nl/oss/delft3d/-/tree/main/test/deltares_testbench/tools/minio}{Delft3d git repository}.
+The 'Minio Tool' is a command line program used to update case and reference data in MinIO. The source code is hosted within the \href{https://github.com/Deltares/Delft3D/tree/main/test/deltares_testbench/tools/minio}{Delft3d git repository}.
 
 \section{Preliminaries: The testbench and config files}
-The \href{https://git.deltares.nl/oss/delft3d/-/tree/main/test/deltares_testbench}{deltares testbench} is a program that runs arbitrary programs on the input data of (one or more) test cases and compares the output of those programs to the reference data. The testbench requires a configuration file (a testbench config file), which tells the testbench: 
+The \href{https://github.com/Deltares/Delft3D/tree/main/test/deltares_testbench}{deltares testbench} is a program that runs arbitrary programs on the input data of (one or more) test cases and compares the output of those programs to the reference data. The testbench requires a configuration file (a testbench config file), which tells the testbench: 
 \newline
 \begin{itemize}
 	\item What test cases to run. 
@@ -186,10 +186,10 @@ This is configuration for the test case \texttt{e02\_f003\_c041\_thacker1d\_squa
 \end{itemize}
 If the version timestamp is not updated. The testbench will keep downloading the old data (by using the old version timestamp). Doing these two steps manually turns out to be quite cumbersome. The MinIO tool is designed to do this job for you.
 
-\href{https://git.deltares.nl/oss/delft3d/-/tree/main/test/deltares_testbench/configs}{There is a large collection of testbench config files in the delft3d git repository.} Some of these config files are used to run the pre-merge tests in \href{https://dpcbuild.deltares.nl/project/Dimr}{TeamCity} for the software hosted in the delft3d repository itself. The MinIO tool is built to work with the config files in the delft3d repository. The tool should make it easier to upload data for new test cases, and to update the data for existing test cases.
+\href{https://github.com/Deltares/Delft3D/tree/main/test/deltares_testbench/configs}{There is a large collection of testbench config files in the delft3d git repository.} Some of these config files are used to run the pre-merge tests in \href{https://dpcbuild.deltares.nl/project/Dimr}{TeamCity} for the software hosted in the delft3d repository itself. The MinIO tool is built to work with the config files in the delft3d repository. The tool should make it easier to upload data for new test cases, and to update the data for existing test cases.
 
 \section{Installing the MinIO tool}
-The Minio tool is a python program that's bundled with the deltares testbench. It is assumed you have the delft3d git repository checked out. You can make sure you have the latest version of the source code by doing a 'git pull' on the 'main' branch. In addition, the MinIO tool requires some python libraries to work properly. Since the tool is bundled with the deltares testbench code, and shares the same dependencies, you may already have all the required libraries installed if you've installed the testbench dependencies recently. If not, or if you want to ensure you have the latest versions, there are installation steps for both linux and windows that you can follow \href{https://git.deltares.nl/oss/delft3d/-/tree/main/test/deltares_testbench}{here}.
+The Minio tool is a python program that's bundled with the deltares testbench. It is assumed you have the delft3d git repository checked out. You can make sure you have the latest version of the source code by doing a 'git pull' on the 'main' branch. In addition, the MinIO tool requires some python libraries to work properly. Since the tool is bundled with the deltares testbench code, and shares the same dependencies, you may already have all the required libraries installed if you've installed the testbench dependencies recently. If not, or if you want to ensure you have the latest versions, there are installation steps for both linux and windows that you can follow \href{https://github.com/Deltares/Delft3D/tree/main/test/deltares_testbench}{here}.
 
 \section{Authenticating to MinIO}
 MinIO is an 'object storage' service hosted within Deltares. The case and reference data for all test cases is stored in the dsc-testbench bucket. You can browse the data in the bucket \href{https://s3-console.deltares.nl/browser/dsc-testbench}{here}. You will need permission to access the bucket to use the testbench and the MinIO tool. To run the testbench you need 'read' access to the bucket. To upload new data or update data in MinIO, you need 'write' access to the bucket. Either way, you will need to create access keys and store them on your computer to use either the testbench or the MinIO tool. If you know you have the required permissions on the dsc-testbench bucket, you can go to \href{https://s3-console.deltares.nl/access-keys}{this} page to create a key.
@@ -340,7 +340,7 @@ Optional:
 
 \textbf{Note:}
 \begin{itemize}
-	\item The 'issue-id' is mandatory. Every time you need to update the data in MinIO, you update the timestamp in the testbench config as well. These config files are tracked by git, so every change should be accompanied by a merge request in gitlab and an issue id in JIRA. The issue id is added to the updated files in MinIO as an 'object tag'. This tag is useful to keep track of why a certain file has been changed. The Jira issue can then be looked up to see who was responsible for changing the files in MinIO and why.
+	\item The 'issue-id' is mandatory. Every time you need to update the data in MinIO, you update the timestamp in the testbench config as well. These config files are tracked by git, so every change should be accompanied by a pull request in github and an issue id in JIRA. The issue id is added to the updated files in MinIO as an 'object tag'. This tag is useful to keep track of why a certain file has been changed. The Jira issue can then be looked up to see who was responsible for changing the files in MinIO and why.
 	\item You may be wondering what happens when multiple users are changing the data for a single test case at the same time (shortly after eachother). The MinIO tool always uses the 'version timestamp' for the test case in the config file to verify that there is no data uploaded after that date and time. It may happen that the 'version timestamp' is outdated, and changes have been made to the data by someone else that's working on the same test case. When this happens the MinIO tool will report this as a 'conflict'. When the MinIO tool reports these conflicts, the standard procedure should be to abort the operation, and to use the 'issue-id' tag of the conflicting file to find out who is responsible for changing the test case data.
 \end{itemize}
 
@@ -398,7 +398,7 @@ If provided, the xml configuration filter can be one of two things:
 e112_f01_c11_waardenburg, *_lnx64*
 e112_f01_c11_waardenburg, *_win64*
 # Strict xml filter allowing only 1 xml to match
-e112_f01_c11_waardenburg, configs/singularity/dimr/dimr_smoke_test_lnx64.xml
+e112_f01_c11_waardenburg, configs/apptainer/dimr/dimr_smoke_test_lnx64.xml
 # Update all configurations the data waardenburg is used in. 
 # Note: Fails if reference- or input path is different for the 
 # testcase between configurations!

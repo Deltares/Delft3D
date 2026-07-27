@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,20 +42,24 @@ contains
 
    subroutine GAANWESTOPPEN(K, KN316, JASTOP) !SET JASTOP = 1 ALS WE GAAN STOPPEN
       use M_NETW
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer :: KN316, JASTOP, N1, N6, KK, L, K
 
-      JASTOP = 0; N1 = 0; N6 = 0
+      JASTOP = 0
+      N1 = 0
+      N6 = 0
 
       if (NMK0(K) == 1) then
-         JASTOP = 1; return
+         JASTOP = 1
+         return
       end if
 
       do KK = 1, NMK(K)
          L = NOD(K)%LIN(KK)
-         if (KN(3, L) == 1) then
+         if (KN(3, L) == LINK_1D) then
             N1 = N1 + 1
-         else if (KN(3, L) == 6) then
+         else if (KN(3, L) == LINK_1D_MAINBRANCH) then
             N6 = N6 + 1
          end if
       end do

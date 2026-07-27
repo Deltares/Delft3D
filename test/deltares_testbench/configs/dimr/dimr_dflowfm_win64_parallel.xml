@@ -99,6 +99,29 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform independent results -->
+        <testCase name="generic">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform dependent results -->
+        <!-- check the actual testCase why the results are platform dependent -->
+        <testCase name="generic_platform_specific">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
         <testCase name="postproc">
             <location ref="reference_results" type="reference">
                 <from>win64</from>

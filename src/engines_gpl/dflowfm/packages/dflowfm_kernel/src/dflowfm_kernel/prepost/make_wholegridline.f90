@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,13 +44,13 @@ contains
    subroutine make_wholegridline(ierror)
       use m_make_gridline, only: make_gridline
       use precision, only: dp
-      use m_splines
-      use m_grid
-      use m_gridsettings
-      use m_spline2curvi
-      use m_alloc
-      use m_missing
-      use m_qnerror
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_grid, only: mc
+      use m_gridsettings, only: mfac
+      use m_spline2curvi, only: jacirc, xg1, yg1, sg1, splineprops, dwidth, jacurv
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_qnerror, only: qnerror
 
       integer, intent(out) :: ierror ! error (1) or not (0)
 
@@ -67,9 +67,15 @@ contains
       mfacmax = mfac ! from grid settings
 
 !  allocate
-      if (allocated(xg1)) deallocate (xg1)
-      if (allocated(yg1)) deallocate (yg1)
-      if (allocated(sg1)) deallocate (sg1)
+      if (allocated(xg1)) then
+         deallocate (xg1)
+      end if
+      if (allocated(yg1)) then
+         deallocate (yg1)
+      end if
+      if (allocated(sg1)) then
+         deallocate (sg1)
+      end if
       Nmaxsize = 2 * mfacmax + 1
       allocate (xg1(Nmaxsize), yg1(Nmaxsize), sg1(Nmaxsize))
       allocate (xlist(1), ylist(1))
@@ -78,7 +84,9 @@ contains
       ig = 0 ! index in gridline array
       numcentersplines = 0
       do is = 1, mcs
-         if (splineprops(is)%id /= 0) cycle ! center splines only
+         if (splineprops(is)%id /= 0) then
+            cycle ! center splines only
+         end if
          numcentersplines = numcentersplines + 1
 
 !     determine the number of control points in the spline
@@ -106,7 +114,7 @@ contains
 
 !     reallocate if necessary
          if (num > ubound(xlist, 1)) then
-            numnew = int(1.2d0 * dble(num)) + 1
+            numnew = int(1.2_dp * real(num, kind=dp)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if

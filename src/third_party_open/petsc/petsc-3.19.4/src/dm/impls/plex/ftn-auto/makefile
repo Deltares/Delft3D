@@ -1,4 +1,0 @@
-
-#requiresdefine   'PETSC_HAVE_FORTRAN'
-CPPFLAGS = ${NETCFD_INCLUDE} ${EXODUSII_INCLUDE}
-LIBBASE  = libpetscdm

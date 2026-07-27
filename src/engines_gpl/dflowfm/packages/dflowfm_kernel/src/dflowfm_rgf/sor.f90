@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,7 @@ contains
 
    subroutine SOR(A, B, C, D, E, U, RJAC, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
+      use m_grid, only: mmax, nmax, mc, nc, ijc
       use m_orthosettings, only: ITIN
 
       real(kind=dp) :: anorm
@@ -51,12 +50,12 @@ contains
       real(kind=dp) :: half
       integer :: j
       integer :: l
-      integer :: m1
-      integer :: m2
+      integer, intent(in) :: m1
+      integer, intent(in) :: m2
       integer :: maxits
       integer :: n
-      integer :: n1
-      integer :: n2
+      integer, intent(in) :: n1
+      integer, intent(in) :: n2
       real(kind=dp) :: one
       real(kind=dp) :: qtr
       real(kind=dp) :: rjac
@@ -64,7 +63,7 @@ contains
 !     IMPLICIT real(kind=dp) ::(A-H,O-Z)
       real(kind=dp) :: A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), D(MMAX, NMAX), E(MMAX, NMAX), U(MMAX, NMAX)
 
-      parameter(ZERO=0d0, HALF=.5d0, QTR=.25d0, ONE=1d0)
+      parameter(ZERO=0.0_dp, HALF=0.5_dp, QTR=0.25_dp, ONE=1.0_dp)
       real(kind=dp) :: RESID, OMEGA
 !     WRITE (MDIA,*) 'MEGS AVAILABLE SOR ', N4*4.096*0.001,
 !      (N1+N2)*4.096*0.001d0

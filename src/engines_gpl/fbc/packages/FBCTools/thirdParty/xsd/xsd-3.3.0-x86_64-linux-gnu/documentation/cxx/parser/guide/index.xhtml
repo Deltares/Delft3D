@@ -1,0 +1,4141 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+  <title>C++/Parser Mapping Getting Started Guide</title>
+
+  <meta name="copyright" content="&copy; 2005-2010 Code Synthesis Tools CC"/>
+  <meta name="keywords" content="xsd,xml,schema,c++,mapping,data,binding,parser,validation"/>
+  <meta name="description" content="C++/Parser Mapping Getting Started Guide"/>
+
+  <link rel="stylesheet" type="text/css" href="../../../default.css" />
+
+<style type="text/css">
+  pre {
+    padding    : 0 0 0 0em;
+    margin     : 0em 0em 0em 0;
+
+    font-size  : 102%
+  }
+
+  body {
+    min-width: 48em;
+  }
+
+  h1 {
+    font-weight: bold;
+    font-size: 200%;
+    line-height: 1.2em;
+  }
+
+  h2 {
+    font-weight : bold;
+    font-size   : 150%;
+
+    padding-top : 0.8em;
+  }
+
+  h3 {
+    font-size   : 140%;
+    padding-top : 0.8em;
+  }
+
+  /* Adjust indentation for three levels. */
+  #container {
+    max-width: 48em;
+  }
+
+  #content {
+    padding: 0 0.1em 0 4em;
+    /*background-color: red;*/
+  }
+
+  #content h1 {
+    margin-left: -2.06em;
+  }
+
+  #content h2 {
+    margin-left: -1.33em;
+  }
+
+  /* Title page */
+
+  #titlepage {
+    padding: 2em 0 1em 0;
+    border-bottom: 1px solid black;
+  }
+
+  #titlepage .title {
+    font-weight: bold;
+    font-size: 200%;
+    text-align: center;
+  }
+
+  #titlepage #first-title {
+    padding: 1em 0 0.4em 0;
+  }
+
+  #titlepage #second-title {
+    padding: 0.4em 0 2em 0;
+  }
+
+  /* Lists */
+  ul.list li {
+    padding-top      : 0.3em;
+    padding-bottom   : 0.3em;
+  }
+
+  ol.steps {
+    padding-left     : 1.8em;
+  }
+
+  ol.steps li {
+    padding-top      : 0.3em;
+    padding-bottom   : 0.3em;
+  }
+
+
+  div.img {
+    text-align: center;
+    padding: 2em 0 2em 0;
+  }
+
+  /*  */
+  dl dt {
+    padding   : 0.8em 0 0 0;
+  }
+
+  /* Built-in table */
+  #builtin {
+    margin: 2em 0 2em 0;
+
+    border-collapse   : collapse;
+    border            : 1px solid;
+    border-color      : #000000;
+
+    font-size        : 11px;
+    line-height      : 14px;
+  }
+
+  #builtin th, #builtin td {
+    border: 1px solid;
+    padding           : 0.9em 0.9em 0.7em 0.9em;
+  }
+
+  #builtin th {
+    background : #cde8f6;
+  }
+
+  #builtin td {
+    text-align: left;
+  }
+
+  /* XML Schema features table. */
+  #features {
+    margin: 2em 0 2em 0;
+
+    border-collapse   : collapse;
+    border            : 1px solid;
+    border-color      : #000000;
+
+    font-size        : 11px;
+    line-height      : 14px;
+  }
+
+  #features th, #features td {
+    border: 1px solid;
+    padding           : 0.6em 0.6em 0.6em 0.6em;
+  }
+
+  #features th {
+    background : #cde8f6;
+  }
+
+  #features td {
+    text-align: left;
+  }
+
+
+  /* TOC */
+  table.toc {
+    border-style      : none;
+    border-collapse   : separate;
+    border-spacing    : 0;
+
+    margin            : 0.2em 0 0.2em 0;
+    padding           : 0 0 0 0;
+  }
+
+  table.toc tr {
+    padding           : 0 0 0 0;
+    margin            : 0 0 0 0;
+  }
+
+  table.toc * td, table.toc * th {
+    border-style      : none;
+    margin            : 0 0 0 0;
+    vertical-align    : top;
+  }
+
+  table.toc * th {
+    font-weight       : normal;
+    padding           : 0em 0.1em 0em 0;
+    text-align        : left;
+    white-space       : nowrap;
+  }
+
+  table.toc * table.toc th {
+    padding-left      : 1em;
+  }
+
+  table.toc * td {
+    padding           : 0em 0 0em 0.7em;
+    text-align        : left;
+  }
+</style>
+
+
+</head>
+
+<body>
+<div id="container">
+  <div id="content">
+
+  <div class="noprint">
+
+  <div id="titlepage">
+    <div class="title" id="first-title">C++/Parser Mapping</div>
+    <div class="title" id="second-title">Getting Started Guide</div>
+
+  <p>Copyright &copy; 2005-2010 CODE SYNTHESIS TOOLS CC</p>
+
+  <p>Permission is granted to copy, distribute and/or modify this
+     document under the terms of the
+     <a href="http://www.codesynthesis.com/licenses/fdl-1.2.txt">GNU Free
+     Documentation License, version 1.2</a>; with no Invariant Sections,
+     no Front-Cover Texts and no Back-Cover Texts.
+  </p>
+
+  <p>This document is available in the following formats:
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/parser/guide/index.xhtml">XHTML</a>,
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/parser/guide/cxx-parser-guide.pdf">PDF</a>, and
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/cxx/parser/guide/cxx-parser-guide.ps">PostScript</a>.</p>
+
+  </div>
+
+  <h1>Table of Contents</h1>
+
+  <table class="toc">
+    <tr>
+      <th></th><td><a href="#0">Preface</a>
+        <table class="toc">
+          <tr><th></th><td><a href="#0.1">About This Document</a></td></tr>
+          <tr><th></th><td><a href="#0.2">More Information</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>1</th><td><a href="#1">Introduction</a>
+        <table class="toc">
+          <tr><th>1.1</th><td><a href="#1.1">Mapping Overview</a></td></tr>
+          <tr><th>1.2</th><td><a href="#1.2">Benefits</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>2</th><td><a href="#2">Hello World Example</a>
+        <table class="toc">
+          <tr><th>2.1</th><td><a href="#2.1">Writing XML Document and Schema</a></td></tr>
+          <tr><th>2.2</th><td><a href="#2.2">Translating Schema to C++</a></td></tr>
+          <tr><th>2.3</th><td><a href="#2.3">Implementing Application Logic</a></td></tr>
+          <tr><th>2.4</th><td><a href="#2.4">Compiling and Running</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>3</th><td><a href="#3">Parser Skeletons</a>
+        <table class="toc">
+          <tr><th>3.1</th><td><a href="#3.1">Implementing the Gender Parser</a></td></tr>
+          <tr><th>3.2</th><td><a href="#3.2">Implementing the Person Parser</a></td></tr>
+          <tr><th>3.3</th><td><a href="#3.3">Implementing the People Parser</a></td></tr>
+          <tr><th>3.4</th><td><a href="#3.4">Connecting the Parsers Together</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>4</th><td><a href="#4">Type Maps</a>
+        <table class="toc">
+          <tr><th>4.1</th><td><a href="#4.1">Object Model</a></td></tr>
+          <tr><th>4.2</th><td><a href="#4.2">Type Map File Format</a></td></tr>
+          <tr><th>4.3</th><td><a href="#4.3">Parser Implementations</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>5</th><td><a href="#5">Mapping Configuration</a>
+        <table class="toc">
+          <tr><th>5.1</th><td><a href="#5.1">Character Type and Encoding</a></td></tr>
+          <tr><th>5.2</th><td><a href="#5.2">Underlying XML Parser</a></td></tr>
+	  <tr><th>5.3</th><td><a href="#5.3">XML Schema Validation</a></td></tr>
+	  <tr><th>5.4</th><td><a href="#5.4">Support for Polymorphism</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>6</th><td><a href="#6">Built-In XML Schema Type Parsers</a>
+        <table class="toc">
+          <tr><th>6.1</th><td><a href="#6.1"><code>QName</code> Parser</a></td></tr>
+          <tr><th>6.2</th><td><a href="#6.2"><code>NMTOKENS</code> and <code>IDREFS</code> Parsers</a></td></tr>
+          <tr><th>6.3</th><td><a href="#6.3"><code>base64Binary</code> and <code>hexBinary</code> Parsers</a></td></tr>
+	  <tr><th>6.4</th><td><a href="#6.4">Time Zone Representation</a></td></tr>
+	  <tr><th>6.5</th><td><a href="#6.5"><code>date</code> Parser</a></td></tr>
+	  <tr><th>6.6</th><td><a href="#6.6"><code>dateTime</code> Parser</a></td></tr>
+	  <tr><th>6.7</th><td><a href="#6.7"><code>duration</code> Parser</a></td></tr>
+	  <tr><th>6.8</th><td><a href="#6.8"><code>gDay</code> Parser</a></td></tr>
+	  <tr><th>6.9</th><td><a href="#6.9"><code>gMonth</code> Parser</a></td></tr>
+	  <tr><th>6.10</th><td><a href="#6.10"><code>gMonthDay</code> Parser</a></td></tr>
+	  <tr><th>6.11</th><td><a href="#6.11"><code>gYear</code> Parser</a></td></tr>
+	  <tr><th>6.12</th><td><a href="#6.12"><code>gYearMonth</code> Parser</a></td></tr>
+	  <tr><th>6.13</th><td><a href="#6.13"><code>time</code> Parser</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th>7</th><td><a href="#7">Document Parser and Error Handling</a>
+        <table class="toc">
+          <tr><th>7.1</th><td><a href="#7.1">Xerces-C++ Document Parser</a></td></tr>
+          <tr><th>7.2</th><td><a href="#7.2">Expat Document Parser</a></td></tr>
+          <tr><th>7.3</th><td><a href="#7.3">Error Handling</a></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <th></th><td><a href="#A">Appendix A &mdash; Supported XML Schema Constructs</a></td>
+    </tr>
+
+  </table>
+  </div>
+
+  <h1><a name="0">Preface</a></h1>
+
+  <h2><a name="0.1">About This Document</a></h2>
+
+  <p>The goal of this document is to provide you with an understanding of
+     the C++/Parser programming model and allow you to efficiently evaluate
+     XSD against your project's technical requirements. As such, this
+     document is intended for C++ developers and software architects
+     who are looking for an XML processing solution. Prior experience
+     with XML and C++ is required to understand this document. Basic
+     understanding of XML Schema is advantageous but not expected
+     or required.
+  </p>
+
+
+  <h2><a name="0.2">More Information</a></h2>
+
+  <p>Beyond this guide, you may also find the following sources of
+     information useful:</p>
+
+  <ul class="list">
+    <li><a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+        Compiler Command Line Manual</a></li>
+
+    <li>The <code>examples/cxx/parser/</code> directory in the XSD
+        distribution contains a collection of examples and a README
+        file with an overview of each example.</li>
+
+    <li>The <code>README</code> file in the XSD distribution explains
+        how to compile the examples on various platforms.</li>
+
+    <li>The <a href="http://www.codesynthesis.com/mailman/listinfo/xsd-users">xsd-users</a>
+        mailing list is the place to ask technical questions about XSD and the C++/Parser mapping.
+        Furthermore, the <a href="http://www.codesynthesis.com/pipermail/xsd-users/">archives</a>
+        may already have answers to some of your questions.</li>
+
+  </ul>
+
+  <!-- Introduction -->
+
+  <h1><a name="1">1 Introduction</a></h1>
+
+  <p>Welcome to CodeSynthesis XSD and the C++/Parser mapping. XSD is a
+     cross-platform W3C XML Schema to C++ data binding compiler. C++/Parser
+     is a W3C XML Schema to C++ mapping that represents an XML vocabulary
+     as a set of parser skeletons which you can implement to perform XML
+     processing as required by your application logic.
+  </p>
+
+  <h2><a name="1.1">1.1 Mapping Overview</a></h2>
+
+  <p>The C++/Parser mapping provides event-driven, stream-oriented
+     XML parsing, XML Schema validation, and C++ data binding. It was
+     specifically designed and optimized for high performance and
+     small footprint. Based on the static analysis of the schemas, XSD
+     generates compact, highly-optimized hierarchical state machines
+     that combine data extraction, validation, and even dispatching
+     in a single step. As a result, the generated code is typically
+     2-10 times faster than general-purpose validating XML parsers
+     while maintaining the lowest static and dynamic memory footprints.
+  </p>
+
+  <p>To speed up application development, the C++/Parser mapping
+     can be instructed to generate sample parser implementations
+     and a test driver which can then be filled with the application
+     logic code. The mapping also provides a wide range of
+     mechanisms for controlling and customizing the generated code.</p>
+
+  <p>The next chapter shows how to create a simple application that uses
+     the C++/Parser mapping to parse, validate, and extract data from a
+     simple XML document. The following chapters show how to
+     use the C++/Parser mapping in more detail.</p>
+
+  <h2><a name="1.2">1.2 Benefits</a></h2>
+
+  <p>Traditional XML access APIs such as Document Object Model (DOM)
+     or Simple API for XML (SAX) have a number of drawbacks that
+     make them less suitable for creating robust and maintainable
+     XML processing applications. These drawbacks include:
+  </p>
+
+  <ul class="list">
+    <li>Generic representation of XML in terms of elements, attributes,
+        and text forces an application developer to write a substantial
+        amount of bridging code that identifies and transforms pieces
+        of information encoded in XML to a representation more suitable
+        for consumption by the application logic.</li>
+
+    <li>String-based flow control defers error detection to runtime.
+        It also reduces code readability and maintainability.</li>
+
+    <li>Lack of type safety because the data is represented
+        as text.</li>
+
+    <li>Resulting applications are hard to debug, change, and
+        maintain.</li>
+  </ul>
+
+  <p>In contrast, statically-typed, vocabulary-specific parser
+     skeletons produced by the C++/Parser mapping allow you to
+     operate in your domain terms instead of the generic elements,
+     attributes, and text. Static typing helps catch errors at
+     compile-time rather than at run-time. Automatic code generation
+     frees you for more interesting tasks (such as doing something
+     useful with the information stored in the XML documents) and
+     minimizes the effort needed to adapt your applications to
+     changes in the document structure. To summarize, the C++/Parser
+     mapping has the following key advantages over generic XML
+     access APIs:</p>
+
+  <ul class="list">
+    <li><b>Ease of use.</b> The generated code hides all the complexity
+        associated with recreating the document structure, maintaining the
+        dispatch state, and converting the data from the text representation
+        to data types suitable for manipulation by the application logic.
+        Parser skeletons also provide a convenient mechanism for building
+        custom in-memory representations.</li>
+
+    <li><b>Natural representation.</b> The generated parser skeletons
+        implement parser callbacks as virtual functions with names
+        corresponding to elements and attributes in XML. As a result,
+        you process the XML data using your domain vocabulary instead
+        of generic elements, attributes, and text.
+    </li>
+
+    <li><b>Concise code.</b> With a separate parser skeleton for each
+        XML Schema type, the application implementation is
+        simpler and thus easier to read and understand.</li>
+
+    <li><b>Safety.</b> The XML data is delivered to parser callbacks as
+        statically typed objects. The parser callbacks themselves are virtual
+        functions. This helps catch programming errors at compile-time
+        rather than at runtime.</li>
+
+    <li><b>Maintainability.</b> Automatic code generation minimizes the
+        effort needed to adapt the application to changes in the
+        document structure. With static typing, the C++ compiler
+        can pin-point the places in the application code that need to be
+        changed.</li>
+
+   <li><b>Efficiency.</b> The generated parser skeletons combine
+       data extraction, validation, and even dispatching in a single
+       step. This makes them much more efficient than traditional
+       architectures with separate stages for validation and data
+       extraction/dispatch.</li>
+  </ul>
+
+  <!-- Hello World Parser -->
+
+
+  <h1><a name="2">2 Hello World Example</a></h1>
+
+  <p>In this chapter we will examine how to parse a very simple XML
+     document using the XSD-generated C++/Parser skeletons.
+     The code presented in this chapter is based on the <code>hello</code>
+     example which can be found in the <code>examples/cxx/parser/</code>
+     directory of the XSD distribution.</p>
+
+  <h2><a name="2.1">2.1 Writing XML Document and Schema</a></h2>
+
+  <p>First, we need to get an idea about the structure
+     of the XML documents we are going to process. Our
+     <code>hello.xml</code>, for example, could look like this:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;hello>
+
+  &lt;greeting>Hello&lt;/greeting>
+
+  &lt;name>sun&lt;/name>
+  &lt;name>moon&lt;/name>
+  &lt;name>world&lt;/name>
+
+&lt;/hello>
+  </pre>
+
+  <p>Then we can write a description of the above XML in the
+     XML Schema language and save it into <code>hello.xsd</code>:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:complexType name="hello">
+    &lt;xs:sequence>
+      &lt;xs:element name="greeting" type="xs:string"/>
+      &lt;xs:element name="name" type="xs:string" maxOccurs="unbounded"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="hello" type="hello"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>Even if you are not familiar with XML Schema, it
+     should be easy to connect declarations in <code>hello.xsd</code>
+     to elements in <code>hello.xml</code>. The <code>hello</code> type
+     is defined as a sequence of the nested <code>greeting</code> and
+     <code>name</code> elements. Note that the term sequence in XML
+     Schema means that elements should appear in a particular order
+     as opposed to appearing multiple times. The <code>name</code>
+     element has its <code>maxOccurs</code> property set to
+     <code>unbounded</code> which means it can appear multiple times
+     in an XML document. Finally, the globally-defined <code>hello</code>
+     element prescribes the root element for our vocabulary. For an
+     easily-approachable introduction to XML Schema refer to
+     <a href="http://www.w3.org/TR/xmlschema-0/">XML Schema Part 0:
+     Primer</a>.</p>
+
+  <p>The above schema is a specification of our XML vocabulary; it tells
+     everybody what valid documents of our XML-based language should look
+     like. The next step is to compile this schema to generate
+     the object model and parsing functions.</p>
+
+  <h2><a name="2.2">2.2 Translating Schema to C++</a></h2>
+
+  <p>Now we are ready to translate our <code>hello.xsd</code> to C++ parser
+     skeletons. To do this we invoke the XSD compiler from a terminal
+     (UNIX) or a command prompt (Windows):
+  </p>
+
+  <pre class="terminal">
+$ xsd cxx-parser --xml-parser expat hello.xsd
+  </pre>
+
+  <p>The <code>--xml-parser</code> option indicates that we want to
+     use Expat as the underlying XML parser (see <a href="#5.2">Section
+     5.2, "Underlying XML Parser"</a>). The XSD compiler produces two
+     C++ files: <code>hello-pskel.hxx</code> and <code>hello-pskel.cxx</code>.
+     The following code fragment is taken from <code>hello-pskel.hxx</code>;
+     it should give you an idea about what gets generated:
+  </p>
+
+  <pre class="c++">
+class hello_pskel
+{
+public:
+  // Parser callbacks. Override them in your implementation.
+  //
+  virtual void
+  pre ();
+
+  virtual void
+  greeting (const std::string&amp;);
+
+  virtual void
+  name (const std::string&amp;);
+
+  virtual void
+  post_hello ();
+
+  // Parser construction API.
+  //
+  void
+  greeting_parser (xml_schema::string_pskel&amp;);
+
+  void
+  name_parser (xml_schema::string_pskel&amp;);
+
+  void
+  parsers (xml_schema::string_pskel&amp; /* greeting */,
+           xml_schema::string_pskel&amp; /* name */);
+
+private:
+  ...
+};
+  </pre>
+
+  <p>The first four member functions shown above are called parser
+     callbacks. You would normally override them in your implementation
+     of the parser to do something useful. Let's go through all of
+     them one by one.</p>
+
+  <p>The <code>pre()</code> function is an initialization callback. It is
+    called when a new element of type <code>hello</code> is about
+    to be parsed. You would normally use this function to allocate a new
+    instance of the resulting type or clear accumulators that are used
+    to gather information during parsing. The default implementation
+    of this function does nothing.</p>
+
+  <p>The <code>post_hello()</code> function is a finalization callback. Its
+     name is constructed by adding the parser skeleton name to the
+     <code>post_</code> prefix. The finalization callback is called when
+     parsing of the element is complete and the result, if any, should
+     be returned. Note that in our case the return type of
+     <code>post_hello()</code> is <code>void</code> which means there
+     is nothing to return. More on parser return types later.
+  </p>
+
+  <p>You may be wondering why the finalization callback is called
+     <code>post_hello()</code> instead of <code>post()</code> just
+     like <code>pre()</code>. The reason for this is that
+     finalization callbacks can have different return types and
+     result in function signature clashes across inheritance
+     hierarchies. To prevent this the signatures of finalization
+     callbacks are made unique by adding the type name to their names.</p>
+
+  <p>The <code>greeting()</code> and <code>name()</code> functions are
+     called when the <code>greeting</code> and <code>name</code> elements
+     have been parsed, respectively. Their arguments are of type
+     <code>std::string</code> and contain the data extracted from XML.</p>
+
+  <p>The last three functions are for connecting parsers to each other.
+     For example, there is a predefined parser for built-in XML Schema type
+     <code>string</code> in the XSD runtime. We will be using
+     it to parse the contents of <code>greeting</code> and
+     <code>name</code> elements, as shown in the next section.</p>
+
+  <h2><a name="2.3">2.3 Implementing Application Logic</a></h2>
+
+  <p>At this point we have all the parts we need to do something useful
+     with the information stored in our XML document. The first step is
+     to implement the parser:
+  </p>
+
+  <pre class="c++">
+#include &lt;iostream>
+#include "hello-pskel.hxx"
+
+class hello_pimpl: public hello_pskel
+{
+public:
+  virtual void
+  greeting (const std::string&amp; g)
+  {
+    greeting_ = g;
+  }
+
+  virtual void
+  name (const std::string&amp; n)
+  {
+    std::cout &lt;&lt; greeting_ &lt;&lt; ", " &lt;&lt; n &lt;&lt; "!" &lt;&lt; std::endl;
+  }
+
+private:
+  std::string greeting_;
+};
+  </pre>
+
+  <p>We left both <code>pre()</code> and <code>post_hello()</code> with the
+     default implementations; we don't have anything to initialize or
+     return. The rest is pretty straightforward: we store the greeting
+     in a member variable and later, when parsing names, use it to
+     say hello.</p>
+
+  <p>An observant reader my ask what happens if the <code>name</code>
+     element comes before <code>greeting</code>? Don't we need to
+     make sure <code>greeting_</code> was initialized and report
+     an error otherwise? The answer is no, we don't have to do
+     any of this. The <code>hello_pskel</code> parser skeleton
+     performs validation of XML according to the schema from which
+     it was generated. As a result, it will check the order
+     of the <code>greeting</code> and <code>name</code> elements
+     and report an error if it is violated.</p>
+
+  <p>Now it is time to put this parser implementation to work:</p>
+
+  <pre class="c++">
+using namespace std;
+
+int
+main (int argc, char* argv[])
+{
+  try
+  {
+    // Construct the parser.
+    //
+    xml_schema::string_pimpl string_p;
+    hello_pimpl hello_p;
+
+    hello_p.greeting_parser (string_p);
+    hello_p.name_parser (string_p);
+
+    // Parse the XML instance.
+    //
+    xml_schema::document doc_p (hello_p, "hello");
+
+    hello_p.pre ();
+    doc_p.parse (argv[1]);
+    hello_p.post_hello ();
+  }
+  catch (const xml_schema::exception&amp; e)
+  {
+    cerr &lt;&lt; e &lt;&lt; endl;
+    return 1;
+  }
+}
+  </pre>
+
+  <p>The first part of this code snippet instantiates individual parsers
+     and assembles them into a complete vocabulary parser.
+     <code>xml_schema::string_pimpl</code> is an implementation of a parser
+     for built-in XML Schema type <code>string</code>. It is provided by
+     the XSD runtime along with parsers for other built-in types (for
+     more information on the built-in parsers see <a href="#6">Chapter 6,
+     "Built-In XML Schema Type Parsers"</a>). We use <code>string_pimpl</code>
+     to parse the <code>greeting</code> and <code>name</code> elements as
+     indicated by the calls to <code>greeting_parser()</code> and
+     <code>name_parser()</code>.
+  </p>
+
+  <p>Then we instantiate a document parser (<code>doc_p</code>). The
+     first argument to its constructor is the parser for
+     the root element (<code>hello_p</code> in our case). The
+     second argument is the root element name.
+   </p>
+
+  <p>The final piece is the calls to <code>pre()</code>, <code>parse()</code>,
+     and <code>post_hello()</code>. The call to <code>parse()</code>
+     perform the actual XML parsing while the calls to <code>pre()</code> and
+     <code>post_hello()</code> make sure that the parser for the root
+     element can perform proper initialization and cleanup.</p>
+
+  <p>While our parser implementation and test driver are pretty small and
+     easy to write by hand, for bigger XML vocabularies it can be a
+     substantial effort. To help with this task XSD can automatically
+     generate sample parser implementations and a test driver from your
+     schemas. You can request the generation of a sample implementation with
+     empty function bodies by specifying the <code>--generate-noop-impl</code>
+     option. Or you can generate a sample implementation that prints the
+     data store in XML by using the <code>--generate-print-impl</code>
+     option. To request the generation of a test driver you can use the
+     <code>--generate-test-driver</code> option. For more information
+     on these options refer to the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a>. The <code>'generated'</code> example
+     in the XSD distribution shows the sample implementation generation
+     feature in action.</p>
+
+
+  <h2><a name="2.4">2.4 Compiling and Running</a></h2>
+
+  <p>After saving all the parts from the previous section in
+     <code>driver.cxx</code>, we are ready to compile our first
+     application and run it on the test XML document. On a UNIX
+     system this can be done with the following commands:
+  </p>
+
+  <pre class="terminal">
+$ c++ -I.../libxsd -c driver.cxx hello-pskel.cxx
+$ c++ -o driver driver.o hello-pskel.o -lexpat
+$ ./driver hello.xml
+Hello, sun!
+Hello, moon!
+Hello, world!
+  </pre>
+
+  <p>Here <code>.../libxsd</code> represents the path to the
+     <code>libxsd</code> directory in the XSD distribution.
+     We can also test the error handling. To test XML well-formedness
+     checking, we can try to parse <code>hello-pskel.hxx</code>:</p>
+
+  <pre class="terminal">
+$ ./driver hello-pskel.hxx
+hello-pskel.hxx:1:0: not well-formed (invalid token)
+  </pre>
+
+  <p>We can also try to parse a valid XML but not from our
+     vocabulary, for example <code>hello.xsd</code>:</p>
+
+  <pre class="terminal">
+$ ./driver hello.xsd
+hello.xsd:2:0: expected element 'hello' instead of
+'http://www.w3.org/2001/XMLSchema#schema'
+  </pre>
+
+
+  <!-- Chapater 3 -->
+
+
+  <h1><a name="3">3 Parser Skeletons</a></h1>
+
+  <p>As we have seen in the previous chapter, the XSD compiler generates
+     a parser skeleton class for each type defined in XML Schema. In
+     this chapter we will take a closer look at different functions
+     that comprise a parser skeleton as well as the way to connect
+     our implementations of these parser skeletons to create a complete
+     parser.</p>
+
+  <p>In this and subsequent chapters we will use the following schema
+     that describes a collection of person records. We save it in
+     <code>people.xsd</code>:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:simpleType name="gender">
+    &lt;xs:restriction base="xs:string">
+      &lt;xs:enumeration value="male"/>
+      &lt;xs:enumeration value="female"/>
+    &lt;/xs:restriction>
+  &lt;/xs:simpleType>
+
+  &lt;xs:complexType name="person">
+    &lt;xs:sequence>
+      &lt;xs:element name="first-name" type="xs:string"/>
+      &lt;xs:element name="last-name" type="xs:string"/>
+      &lt;xs:element name="gender" type="gender"/>
+      &lt;xs:element name="age" type="xs:short"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:complexType name="people">
+    &lt;xs:sequence>
+      &lt;xs:element name="person" type="person" maxOccurs="unbounded"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="people" type="people"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>A sample XML instance to go along with this schema is saved
+     in <code>people.xml</code>:</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;people>
+  &lt;person>
+    &lt;first-name>John&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>male&lt;/gender>
+    &lt;age>32&lt;/age>
+  &lt;/person>
+  &lt;person>
+    &lt;first-name>Jane&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>female&lt;/gender>
+    &lt;age>28&lt;/age>
+  &lt;/person>
+&lt;/people>
+  </pre>
+
+  <p>Compiling <code>people.xsd</code> with the XSD compiler results
+     in three parser skeletons being generated: <code>gender_pskel</code>,
+     <code>person_pskel</code>, and <code>people_pskel</code>. We are going
+     to examine and implement each of them in the subsequent sections.</p>
+
+  <h2><a name="3.1">3.1 Implementing the Gender Parser</a></h2>
+
+  <p>The generated <code>gender_pskel</code> parser skeleton looks like
+     this:</p>
+
+  <pre class="c++">
+class gender_pskel: public virtual xml_schema::string_pskel
+{
+public:
+  // Parser callbacks. Override them in your implementation.
+  //
+  virtual void
+  pre ();
+
+  virtual void
+  post_gender ();
+};
+  </pre>
+
+  <p>Notice that <code>gender_pskel</code> inherits from
+     <code>xml_schema::string_skel</code> which is a parser skeleton
+     for built-in XML Schema type <code>string</code> and is
+     predefined in the XSD runtime library. This is an example
+     of the general rule that parser skeletons follow: if a type
+     in XML Schema inherits from another then there will be an
+     equivalent inheritance between the corresponding parser
+     skeleton classes.</p>
+
+  <p>The <code>pre()</code> and <code>post_gender()</code> callbacks
+     should look familiar from the previous chapter. Let's now
+     implement the parser. Our implementation will simply print
+     the gender to <code>cout</code>:</p>
+
+
+  <pre class="c++">
+class gender_pimpl: public gender_pskel,
+                    public xml_schema::string_pimpl
+{
+public:
+  virtual void
+  post_gender ()
+  {
+    std::string s = post_string ();
+    cout &lt;&lt; "gender: " &lt;&lt; s &lt;&lt; endl;
+  }
+};
+  </pre>
+
+  <p>While the code is quite short, there is a lot going on. First,
+     notice that we are inheriting from <code>gender_pskel</code> <em>and</em>
+     from <code>xml_schema::string_pimpl</code>. We've encountered
+     <code>xml_schema::string_pimpl</code> already; it is an
+     implementation of the <code>xml_schema::string_pskel</code> parser
+     skeleton for built-in XML Schema type <code>string</code>.</p>
+
+  <p>This is another common theme in the C++/Parser programming model:
+     reusing implementations of the base parsers in the derived ones with
+     the C++ mixin idiom. In our case, <code>string_pimpl</code> will
+     do all the dirty work of extracting the data and we can just get
+     it at the end with the call to <code>post_string()</code>.</p>
+
+  <p>In case you are curious, here is what
+     <code>xml_schema::string_pskel</code> and
+     <code>xml_schema::string_pimpl</code> look like:</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class string_pskel: public simple_content
+  {
+  public:
+    virtual std::string
+    post_string () = 0;
+  };
+
+  class string_pimpl: public virtual string_pskel
+  {
+  public:
+    virtual void
+    _pre ();
+
+    virtual void
+    _characters (const xml_schema::ro_string&amp;);
+
+    virtual std::string
+    post_string ();
+
+  protected:
+    std::string str_;
+  };
+}
+  </pre>
+
+  <p>There are three new pieces in this code that we haven't seen yet.
+     They are the <code>simple_content</code> class as well as
+     the <code>_pre()</code> and <code>_characters()</code> functions.
+     The <code>simple_content</code> class is defined in the XSD
+     runtime and is a base class for all parser skeletons that conform
+     to the simple content model in XML Schema. Types with the
+     simple content model cannot have nested elements&mdash;only text
+     and attributes. There is also the <code>complex_content</code>
+     class which corresponds to the complex content mode (types with
+     nested elements, for example, <code>person</code> from
+     <code>people.xsd</code>).</p>
+
+  <p>The <code>_pre()</code> function is a parser callback. Remember we
+     talked about the <code>pre()</code> and <code>post_*()</code> callbacks
+     in the previous chapter? There are actually two more callbacks
+     with similar roles: <code>_pre()</code> and <code>_post ()</code>.
+     As a result, each parser skeleton has four special callbacks:</p>
+
+  <pre class="c++">
+  virtual void
+  pre ();
+
+  virtual void
+  _pre ();
+
+  virtual void
+  _post ();
+
+  virtual void
+  post_name ();
+  </pre>
+
+  <p><code>pre()</code> and <code>_pre()</code> are initialization
+     callbacks. They get called in that order before a new instance of the type
+     is about to be parsed. The difference between <code>pre()</code> and
+     <code>_pre()</code> is conventional: <code>pre()</code> can
+     be completely overridden by a derived parser. The derived
+     parser can also override <code>_pre()</code> but has to always call
+     the original version. This allows you to partition initialization
+     into customizable and required parts.</p>
+
+  <p>Similarly, <code>_post()</code> and <code>post_name()</code> are
+     finalization callbacks with exactly the same semantics:
+    <code>post_name()</code> can be completely overridden by the derived
+     parser while the original <code>_post()</code> should always be called.
+  </p>
+
+  <p>The final bit we need to discuss in this section is the
+     <code>_characters()</code> function. As you might have guessed, it
+     is also a callback. A low-level one that delivers raw character content
+     for the type being parsed. You will seldom need to use this callback
+     directly. Using implementations for the built-in parsers provided by
+     the XSD runtime is usually a simpler and more convenient
+     alternative.</p>
+
+  <p>At this point you might be wondering why some <code>post_*()</code>
+     callbacks, for example <code>post_string()</code>, return some data
+     while others, for example <code>post_gender()</code>, have
+     <code>void</code> as a return type. This is a valid concern
+     and it will be addressed in the next chapter.</p>
+
+  <h2><a name="3.2">3.2 Implementing the Person Parser</a></h2>
+
+  <p>The generated <code>person_pskel</code> parser skeleton looks like
+     this:</p>
+
+  <pre class="c++">
+class person_pskel: public xml_schema::complex_content
+{
+public:
+  // Parser callbacks. Override them in your implementation.
+  //
+  virtual void
+  pre ();
+
+  virtual void
+  first_name (const std::string&amp;);
+
+  virtual void
+  last_name (const std::string&amp;);
+
+  virtual void
+  gender ();
+
+  virtual void
+  age (short);
+
+  virtual void
+  post_person ();
+
+  // Parser construction API.
+  //
+  void
+  first_name_parser (xml_schema::string_pskel&amp;);
+
+  void
+  last_name_parser (xml_schema::string_pskel&amp;);
+
+  void
+  gender_parser (gender_pskel&amp;);
+
+  void
+  age_parser (xml_schema::short_pskel&amp;);
+
+  void
+  parsers (xml_schema::string_pskel&amp; /* first-name */,
+           xml_schema::string_pskel&amp; /* last-name */,
+           gender_pskel&amp;             /* gender */,
+           xml_schema::short_pskel&amp;  /* age */);
+};
+  </pre>
+
+
+  <p>As you can see, we have a parser callback for each of the nested
+     elements found in the <code>person</code> XML Schema type.
+     The implementation of this parser is straightforward:</p>
+
+  <pre class="c++">
+class person_pimpl: public person_pskel
+{
+public:
+  virtual void
+  first_name (const std::string&amp; n)
+  {
+    cout &lt;&lt; "first: " &lt;&lt; f &lt;&lt; endl;
+  }
+
+  virtual void
+  last_name (const std::string&amp; l)
+  {
+    cout &lt;&lt; "last: " &lt;&lt; l &lt;&lt; endl;
+  }
+
+  virtual void
+  age (short a)
+  {
+    cout &lt;&lt; "age: " &lt;&lt; a &lt;&lt; endl;
+  }
+};
+  </pre>
+
+  <p>Notice that we didn't override the <code>gender()</code> callback
+     because all the printing is done by <code>gender_pimpl</code>.</p>
+
+
+  <h2><a name="3.3">3.3 Implementing the People Parser</a></h2>
+
+  <p>The generated <code>people_pskel</code> parser skeleton looks like
+     this:</p>
+
+  <pre class="c++">
+class people_pskel: public xml_schema::complex_content
+{
+public:
+  // Parser callbacks. Override them in your implementation.
+  //
+  virtual void
+  pre ();
+
+  virtual void
+  person ();
+
+  virtual void
+  post_people ();
+
+  // Parser construction API.
+  //
+  void
+  person_parser (person_pskel&amp;);
+
+  void
+  parsers (person_pskel&amp; /* person */);
+};
+  </pre>
+
+  <p>The <code>person()</code> callback will be called after parsing each
+     <code>person</code> element. While <code>person_pimpl</code> does
+     all the printing, one useful thing we can do in this callback is to
+     print an extra newline after each person record so that our
+     output is more readable:</p>
+
+  <pre class="c++">
+class people_pimpl: public people_pskel
+{
+public:
+  virtual void
+  person ()
+  {
+    cout &lt;&lt; endl;
+  }
+};
+  </pre>
+
+  <p>Now it is time to put everything together.</p>
+
+
+  <h2><a name="3.4">3.4 Connecting the Parsers Together</a></h2>
+
+  <p>At this point we have all the individual parsers implemented
+     and can proceed to assemble them into a complete parser
+     for our XML vocabulary. The first step is to instantiate
+     all the individual parsers that we will need:</p>
+
+  <pre class="c++">
+xml_schema::short_pimpl short_p;
+xml_schema::string_pimpl string_p;
+
+gender_pimpl gender_p;
+person_pimpl person_p;
+people_pimpl people_p;
+  </pre>
+
+  <p>Notice that our schema uses two built-in XML Schema types:
+     <code>string</code> for the <code>first-name</code> and
+     <code>last-name</code> elements as well as <code>short</code>
+     for <code>age</code>. We will use predefined parsers that
+     come with the XSD runtime to handle these types. The next
+     step is to connect all the individual parsers. We do this
+     with the help of functions defined in the parser
+     skeletons and marked with the "Parser Construction API"
+     comment. One way to do it is to connect each individual
+     parser by calling the <code>*_parser()</code> functions:</p>
+
+  <pre class="c++">
+person_p.first_name_parser (string_p);
+person_p.last_name_parser (string_p);
+person_p.gender_parser (gender_p);
+person_p.age_parser (short_p);
+
+people_p.person_parser (person_p);
+  </pre>
+
+  <p>You might be wondering what happens if you do not provide
+     a parser by not calling one of the <code>*_parser()</code> functions.
+     In that case the corresponding XML content will be skipped,
+     including validation. This is an efficient way to ignore parts
+     of the document that you are not interested in.</p>
+
+
+  <p>An alternative, shorter, way to connect the parsers is by using
+     the <code>parsers()</code> functions which connects all the parsers
+     for a given type at once:</p>
+
+  <pre class="c++">
+person_p.parsers (string_p, string_p, gender_p, short_p);
+people_p.parsers (person_p);
+  </pre>
+
+  <p>The following figure illustrates the resulting connections. Notice
+     the correspondence between return types of the <code>post_*()</code>
+     functions and argument types of element callbacks that are connected
+     by the arrows.</p>
+
+  <!-- align=center is needed for html2ps -->
+  <div class="img" align="center"><img src="figure-1.png"/></div>
+
+  <p>The last step is the construction of the document parser and
+     invocation of the complete parser on our sample XML instance:</p>
+
+  <pre class="c++">
+xml_schema::document doc_p (people_p, "people");
+
+people_p.pre ();
+doc_p.parse ("people.xml");
+people_p.post_people ();
+  </pre>
+
+  <p>Let's consider <code>xml_schema::document</code> in
+     more detail. While the exact definition of this class
+     varies depending on the underlying parser selected,
+     here is the common part:</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class document
+  {
+  public:
+    document (xml_schema::parser_base&amp;,
+              const std::string&amp; root_element_name,
+              bool polymorphic = false);
+
+    document (xml_schema::parser_base&amp;,
+              const std::string&amp; root_element_namespace,
+              const std::string&amp; root_element_name,
+              bool polymorphic = false);
+
+    void
+    parse (const std::string&amp; file);
+
+    void
+    parse (std::istream&amp;);
+
+    ...
+
+  };
+}
+  </pre>
+
+   <p><code>xml_schema::document</code> is a root parser for
+     the vocabulary. The first argument to its constructors is the
+     parser for the type of the root element (<code>people_impl</code>
+     in our case). Because a type parser is only concerned with
+     the element's content and not with the element's name, we need
+     to specify the root element's name somewhere. That's
+     what is passed as the second and third arguments to the
+     <code>document</code>'s constructors.</p>
+
+   <p>There are also two overloaded <code>parse()</code> functions
+      defined in the <code>document</code> class (there are actually
+      more but the others are specific to the underlying XML parser).
+      The first version parses a local file identified by a name. The
+      second version reads the data from an input stream. For more
+      information on the <code>xml_schema::document</code> class
+      refer to <a href="#7">Chapter 7, "Document Parser and Error
+      Handling"</a>.</p>
+
+   <p>Let's now consider a step-by-step list of actions that happen
+      as we parse through <code>people.xml</code>. The content of
+      <code>people.xml</code> is repeated below for convenience.</p>
+
+  <pre class="xml">
+&lt;?xml version="1.0"?>
+&lt;people>
+  &lt;person>
+    &lt;first-name>John&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>male&lt;/gender>
+    &lt;age>32&lt;/age>
+  &lt;/person>
+  &lt;person>
+    &lt;first-name>Jane&lt;/first-name>
+    &lt;last-name>Doe&lt;/last-name>
+    &lt;gender>female&lt;/gender>
+    &lt;age>28&lt;/age>
+  &lt;/person>
+&lt;/people>
+  </pre>
+
+
+   <ol class="steps">
+     <li><code>people_p.pre()</code> is called from
+         <code>main()</code>. We did not provide any implementation
+         for this callback so this call is a no-op.</li>
+
+     <li><code>doc_p.parse("people.xml")</code> is called from
+         <code>main()</code>. The parser opens the file and starts
+         parsing its content.</li>
+
+     <li>The parser encounters the root element. <code>doc_p</code>
+         verifies that the root element is correct and calls
+         <code>_pre()</code> on <code>people_p</code> which is also
+         a no-op. Parsing is now delegated to <code>people_p</code>.</li>
+
+     <li>The parser encounters the <code>person</code> element.
+         <code>people_p</code> determines that <code>person_p</code>
+         is responsible for parsing this element. <code>pre()</code>
+         and <code>_pre()</code> callbacks are called on <code>person_p</code>.
+         Parsing is now delegated to <code>person_p</code>.</li>
+
+     <li>The parser encounters the <code>first-name</code> element.
+         <code>person_p</code> determines that <code>string_p</code>
+         is responsible for parsing this element. <code>pre()</code>
+         and <code>_pre()</code> callbacks are called on <code>string_p</code>.
+         Parsing is now delegated to <code>string_p</code>.</li>
+
+     <li>The parser encounters character content consisting of
+         <code>"John"</code>. The <code>_characters()</code> callback is
+         called on <code>string_p</code>.</li>
+
+     <li>The parser encounters the end of <code>first-name</code>
+         element. The <code>_post()</code> and <code>post_string()</code>
+         callbacks are called on <code>string_p</code>. The
+         <code>first_name()</code> callback is called on <code>person_p</code>
+         with the return value of <code>post_string()</code>. The
+         <code>first_name()</code> implementation prints
+         <code>"first: John"</code> to <code>cout</code>.
+         Parsing is now returned to <code>person_p</code>.</li>
+
+     <li>Steps analogous to 5-7 are performed for the <code>last-name</code>,
+         <code>gender</code>, and <code>age</code> elements.</li>
+
+     <li>The parser encounters the end of <code>person</code>
+         element. The <code>_post()</code> and <code>post_person()</code>
+         callbacks are called on <code>person_p</code>. The
+         <code>person()</code> callback is called on <code>people_p</code>.
+         The <code>person()</code> implementation prints a new line
+         to <code>cout</code>. Parsing is now returned to
+         <code>people_p</code>.</li>
+
+     <li>Steps 4-9 are performed for the second <code>person</code>
+         element.</li>
+
+     <li>The parser encounters the end of <code>people</code>
+         element. The <code>_post()</code> callback is called on
+         <code>people_p</code>. The <code>doc_p.parse("people.xml")</code>
+         call returns to <code>main()</code>.</li>
+
+     <li><code>people_p.post_people()</code> is called from
+         <code>main()</code> which is a no-op.</li>
+
+   </ol>
+
+
+  <!-- Chpater 4 -->
+
+
+  <h1><a name="4">4 Type Maps</a></h1>
+
+  <p>There are many useful things you can do inside parser callbacks as they
+     are right now. There are, however, times when you want to propagate
+     some information from one parser to another or to the caller of the
+     parser. One common task that would greatly benefit from such a
+     possibility is building a tree-like in-memory object model of the
+     data stored in XML. During execution, each individual sub-parser
+     would create a sub-tree and return it to its <em>parent</em> parser
+     which can then incorporate this sub-tree into the whole tree.</p>
+
+  <p>In this chapter we will discuss the mechanisms offered by the
+     C++/Parser mapping for returning information from individual
+     parsers and see how to use them to build an object model
+     of our people vocabulary.</p>
+
+  <h2><a name="4.1">4.1 Object Model</a></h2>
+
+  <p>An object model for our person record example could
+     look like this (saved in the <code>people.hxx</code> file):</p>
+
+  <pre class="c++">
+#include &lt;string>
+#include &lt;vector>
+
+enum gender
+{
+  male,
+  female
+};
+
+class person
+{
+public:
+  person (const std::string&amp; first,
+          const std::string&amp; last,
+          ::gender gender,
+          short age)
+    : first_ (first), last_ (last),
+      gender_ (gender), age_ (age)
+  {
+  }
+
+  const std::string&amp;
+  first () const
+  {
+    return first_;
+  }
+
+  const std::string&amp;
+  last () const
+  {
+    return last_;
+  }
+
+  ::gender
+  gender () const
+  {
+    return gender_;
+  }
+
+  short
+  age () const
+  {
+    return age_;
+  }
+
+private:
+  std::string first_;
+  std::string last_;
+  ::gender gender_;
+  short age_;
+};
+
+typedef std::vector&lt;person> people;
+  </pre>
+
+  <p>While it is clear which parser is responsible for which part of
+     the object model, it is not exactly clear how, for
+     example, <code>gender_pimpl</code> will deliver <code>gender</code>
+     to <code>person_pimpl</code>. You might have noticed that
+     <code>string_pimpl</code> manages to deliver its value to the
+     <code>first_name()</code> callback of <code>person_pimpl</code>. Let's
+     see how we can utilize the same mechanism to propagate our
+     own data.</p>
+
+  <p>There is a way to tell the XSD compiler that you want to
+     exchange data between parsers. More precisely, for each
+     type defined in XML Schema, you can tell the compiler two things.
+     First, the return type of the <code>post_*()</code> callback
+     in the parser skeleton generated for this type. And, second,
+     the argument type for callbacks corresponding to elements and
+     attributes of this type. For example, for XML Schema type
+     <code>gender</code> we can specify the return type for
+     <code>post_gender()</code> in the <code>gender_pskel</code>
+     skeleton and the argument type for the <code>gender()</code> callback
+     in the <code>person_pskel</code> skeleton. As you might have guessed,
+     the generated code will then pass the return value from the
+     <code>post_*()</code> callback as an argument to the element or
+     attribute callback.</p>
+
+  <p>The way to tell the XSD compiler about these XML Schema to
+     C++ mappings is with type map files. Here is a simple type
+     map for the <code>gender</code> type from the previous paragraph:</p>
+
+  <pre class="type-map">
+include "people.hxx";
+gender ::gender ::gender;
+  </pre>
+
+  <p>The first line indicates that the generated code must include
+     <code>people.hxx</code> in order to get the definition for the
+     <code>gender</code> type. The second line specifies that both
+     argument and return types for the <code>gender</code>
+     XML Schema type should be the <code>::gender</code> C++ enum
+     (we use fully-qualified C++ names to avoid name clashes).
+     The next section will describe the type map format in detail.
+     We save this type map in <code>people.map</code> and
+     then translate our schemas with the <code>--type-map</code>
+     option to let the XSD compiler know about our type map:</p>
+
+  <pre class="terminal">
+$ xsd cxx-parser --type-map people.map people.xsd
+  </pre>
+
+  <p>If we now look at the generated <code>people-pskel.hxx</code>,
+     we will see the following changes in the <code>gender_pskel</code> and
+     <code>person_pskel</code> skeletons:</p>
+
+  <pre class="c++">
+#include "people.hxx"
+
+class gender_pskel: public virtual xml_schema::string_pskel
+{
+  virtual ::gender
+  post_gender () = 0;
+
+  ...
+};
+
+class person_pskel: public xml_schema::complex_content
+{
+  virtual void
+  gender (::gender);
+
+  ...
+};
+  </pre>
+
+  <p>Notice that <code>#include "people.hxx"</code> was added to
+     the generated header file from the type map to provide the
+     definition for the <code>gender</code> enum.</p>
+
+  <h2><a name="4.2">4.2 Type Map File Format</a></h2>
+
+  <p>Type map files are used to define a mapping between XML Schema
+     and C++ types. The compiler uses this information
+     to determine return types of <code>post_*()</code>
+     callbacks in parser skeletons corresponding to XML Schema
+     types as well as argument types for callbacks corresponding
+     to elements and attributes of these types.</p>
+
+  <p>The compiler has a set of predefined mapping rules that map
+     the built-in XML Schema types to suitable C++ types (discussed
+     below) and all other types to <code>void</code>.
+     By providing your own type maps you can override these predefined
+     rules. The format of the type map file is presented below:
+  </p>
+
+  <pre class="type-map">
+namespace &lt;schema-namespace> [&lt;cxx-namespace>]
+{
+  (include &lt;file-name>;)*
+  ([type] &lt;schema-type> &lt;cxx-ret-type> [&lt;cxx-arg-type>];)*
+}
+  </pre>
+
+  <p>Both <code><i>&lt;schema-namespace></i></code> and
+     <code><i>&lt;schema-type></i></code> are regex patterns while
+     <code><i>&lt;cxx-namespace></i></code>,
+     <code><i>&lt;cxx-ret-type></i></code>, and
+     <code><i>&lt;cxx-arg-type></i></code> are regex pattern
+     substitutions. All names can be optionally enclosed in
+     <code>" "</code>, for example, to include white-spaces.</p>
+
+  <p><code><i>&lt;schema-namespace></i></code> determines XML
+     Schema namespace. Optional <code><i>&lt;cxx-namespace></i></code>
+     is prefixed to every C++ type name in this namespace declaration.
+     <code><i>&lt;cxx-ret-type></i></code> is a C++ type name that is
+     used as a return type for the <code>post_*()</code> callback.
+     Optional <code><i>&lt;cxx-arg-type></i></code> is an argument
+     type for callbacks corresponding to elements and attributes
+     of this type. If <code><i>&lt;cxx-arg-type></i></code> is not
+     specified, it defaults to <code><i>&lt;cxx-ret-type></i></code>
+     if <code><i>&lt;cxx-ret-type></i></code> ends with <code>*</code> or
+     <code>&amp;</code> (that is, it is a pointer or a reference) and
+     <code>const&nbsp;<i>&lt;cxx-ret-type></i>&amp;</code>
+     otherwise.
+     <code><i>&lt;file-name></i></code> is a file name either in the
+     <code>" "</code> or <code>&lt; ></code> format
+     and is added with the <code>#include</code> directive to
+     the generated code.</p>
+
+  <p>The <code><b>#</b></code> character starts a comment that ends
+     with a new line or end of file. To specify a name that contains
+     <code><b>#</b></code> enclose it in <code><b>" "</b></code>.
+     For example:</p>
+
+  <pre>
+namespace http://www.example.com/xmlns/my my
+{
+  include "my.hxx";
+
+  # Pass apples by value.
+  #
+  apple apple;
+
+  # Pass oranges as pointers.
+  #
+  orange orange_t*;
+}
+  </pre>
+
+  <p>In the example above, for the
+     <code>http://www.example.com/xmlns/my#orange</code>
+     XML Schema type, the <code>my::orange_t*</code> C++ type will
+     be used as both return and argument types.</p>
+
+  <p>Several namespace declarations can be specified in a single
+     file. The namespace declaration can also be completely
+     omitted to map types in a schema without a namespace. For
+     instance:</p>
+
+  <pre class="type-map">
+include "my.hxx";
+apple apple;
+
+namespace http://www.example.com/xmlns/my
+{
+  orange "const orange_t*";
+}
+  </pre>
+
+  <p>The compiler has a number of predefined mapping rules for
+     the built-in XML Schema types which can be presented as the
+     following map files. The string-based XML Schema types are
+     mapped to either <code>std::string</code> or
+     <code>std::wstring</code> depending on the character type
+     selected (see <a href="#5.1"> Section 5.1, "Character Type and
+     Encoding"</a> for more information).</p>
+
+  <pre class="type-map">
+namespace http://www.w3.org/2001/XMLSchema
+{
+  boolean bool bool;
+
+  byte "signed char" "signed char";
+  unsignedByte "unsigned char" "unsigned char";
+
+  short short short;
+  unsignedShort "unsigned short" "unsigned short";
+
+  int int int;
+  unsignedInt "unsigned int" "unsigned int";
+
+  long "long long" "long long";
+  unsignedLong "unsigned long long" "unsigned long long";
+
+  integer "long long" "long long";
+
+  negativeInteger "long long" "long long";
+  nonPositiveInteger "long long" "long long";
+
+  positiveInteger "unsigned long long" "unsigned long long";
+  nonNegativeInteger "unsigned long long" "unsigned long long";
+
+  float float float;
+  double double double;
+  decimal double double;
+
+  string std::string;
+  normalizedString std::string;
+  token std::string;
+  Name std::string;
+  NMTOKEN std::string;
+  NCName std::string;
+  ID std::string;
+  IDREF std::string;
+  language std::string;
+  anyURI std::string;
+
+  NMTOKENS xml_schema::string_sequence;
+  IDREFS xml_schema::string_sequence;
+
+  QName xml_schema::qname;
+
+  base64Binary std::auto_ptr&lt;xml_schema::buffer>
+               std::auto_ptr&lt;xml_schema::buffer>;
+  hexBinary std::auto_ptr&lt;xml_schema::buffer>
+            std::auto_ptr&lt;xml_schema::buffer>;
+
+  date xml_schema::date;
+  dateTime xml_schema::date_time;
+  duration xml_schema::duration;
+  gDay xml_schema::gday;
+  gMonth xml_schema::gmonth;
+  gMonthDay xml_schema::gmonth_day;
+  gYear xml_schema::gyear;
+  gYearMonth xml_schema::gyear_month;
+  time xml_schema::time;
+}
+  </pre>
+
+  <p>For more information about the mapping of the built-in XML Schema types
+     to C++ types refer to <a href="#6">Chapter 6, "Built-In XML Schema Type
+     Parsers"</a>. The last predefined rule maps anything that wasn't
+     mapped by previous rules to <code>void</code>:</p>
+
+  <pre class="type-map">
+namespace .*
+{
+  .* void void;
+}
+  </pre>
+
+
+  <p>When you provide your own type maps with the
+     <code>--type-map</code> option, they are evaluated first. This
+     allows you to selectively override any of the predefined rules.
+     Note also that if you change the mapping
+     of a built-in XML Schema type then it becomes your responsibility
+     to provide the corresponding parser skeleton and implementation
+     in the <code>xml_schema</code> namespace. You can include the
+     custom definitions into the generated header file using the
+     <code>--hxx-prologue-*</code> options.</p>
+
+  <h2><a name="4.3">4.3 Parser Implementations</a></h2>
+
+  <p>With the knowledge from the previous section, we can proceed
+     with creating a type map that maps types in the <code>people.xsd</code>
+     schema to our object model classes in
+     <code>people.hxx</code>. In fact, we already have the beginning
+     of our type map file in <code>people.map</code>. Let's extend
+     it with the rest of the types:</p>
+
+  <pre class="type-map">
+include "people.hxx";
+
+gender ::gender ::gender;
+person ::person;
+people ::people;
+  </pre>
+
+  <p>There are a few things to note about this type map. We did not
+     provide the argument types for <code>person</code> and
+     <code>people</code> because the default constant reference is
+     exactly what we need. We also did not provide any mappings
+     for built-in XML Schema types <code>string</code> and
+     <code>short</code> because they are handled by the predefined
+     rules and we are happy with the result. Note also that
+     all C++ types are fully qualified. This is done to avoid
+     potential name conflicts in the generated code. Now we can
+     recompile our schema and move on to implementing the parsers:</p>
+
+  <pre class="terminal">
+$ xsd cxx-parser --xml-parser expat --type-map people.map people.xsd
+  </pre>
+
+  <p>Here is the implementation of our three parsers in full. One
+     way to save typing when implementing your own parsers is
+     to open the generated code and copy the signatures of parser
+     callbacks into your code. Or you could always auto generate the
+     sample implementations and fill them with your code.</p>
+
+
+  <pre class="c++">
+#include "people-pskel.hxx"
+
+class gender_pimpl: public gender_pskel,
+                    public xml_schema::string_pimpl
+{
+public:
+  virtual ::gender
+  post_gender ()
+  {
+    return post_string () == "male" ? male : female;
+  }
+};
+
+class person_pimpl: public person_pskel
+{
+public:
+  virtual void
+  first_name (const std::string&amp; f)
+  {
+    first_ = f;
+  }
+
+  virtual void
+  last_name (const std::string&amp; l)
+  {
+    last_ = l;
+  }
+
+  virtual void
+  gender (::gender g)
+  {
+    gender_ = g;
+  }
+
+  virtual void
+  age (short a)
+  {
+    age_ = a;
+  }
+
+  virtual ::person
+  post_person ()
+  {
+    return ::person (first_, last_, gender_, age_);
+  }
+
+private:
+  std::string first_;
+  std::string last_;
+  ::gender gender_;
+  short age_;
+};
+
+class people_pimpl: public people_pskel
+{
+public:
+  virtual void
+  person (const ::person&amp; p)
+  {
+    people_.push_back (p);
+  }
+
+  virtual ::people
+  post_people ()
+  {
+    ::people r;
+    r.swap (people_);
+    return r;
+  }
+
+private:
+  ::people people_;
+};
+  </pre>
+
+  <p>This code fragment should look familiar by now. Just note that
+     all the <code>post_*()</code> callbacks now have return types instead
+     of <code>void</code>. Here is the implementation of the test
+     driver for this example:</p>
+
+  <pre class="c++">
+#include &lt;iostream>
+
+using namespace std;
+
+int
+main (int argc, char* argv[])
+{
+  // Construct the parser.
+  //
+  xml_schema::short_pimpl short_p;
+  xml_schema::string_pimpl string_p;
+
+  gender_pimpl gender_p;
+  person_pimpl person_p;
+  people_pimpl people_p;
+
+  person_p.parsers (string_p, string_p, gender_p, short_p);
+  people_p.parsers (person_p);
+
+  // Parse the document to obtain the object model.
+  //
+  xml_schema::document doc_p (people_p, "people");
+
+  people_p.pre ();
+  doc_p.parse (argv[1]);
+  people ppl = people_p.post_people ();
+
+  // Print the object model.
+  //
+  for (people::iterator i (ppl.begin ()); i != ppl.end (); ++i)
+  {
+    cout &lt;&lt; "first:  " &lt;&lt; i->first () &lt;&lt; endl
+         &lt;&lt; "last:   " &lt;&lt; i->last () &lt;&lt; endl
+         &lt;&lt; "gender: " &lt;&lt; (i->gender () == male ? "male" : "female") &lt;&lt; endl
+         &lt;&lt; "age:    " &lt;&lt; i->age () &lt;&lt; endl
+         &lt;&lt; endl;
+  }
+}
+  </pre>
+
+  <p>The parser creation and assembly part is exactly the same as in
+     the previous chapter. The parsing part is a bit different:
+     <code>post_people()</code> now has a return value which is the
+     complete object model. We store it in the
+     <code>ppl</code> variable. The last bit of the code simply iterates
+     over the <code>people</code> vector and prints the information
+     for each person. We save the last two code fragments to
+     <code>driver.cxx</code> and proceed to compile and test
+     our new application:</p>
+
+
+  <pre class="terminal">
+$ c++ -I.../libxsd -c driver.cxx people-pskel.cxx
+$ c++ -o driver driver.o people-pskel.o -lexpat
+$ ./driver people.xml
+first:  John
+last:   Doe
+gender: male
+age:    32
+
+first:  Jane
+last:   Doe
+gender: female
+age:    28
+  </pre>
+
+
+  <!-- Mapping Configuration -->
+
+
+  <h1><a name="5">5 Mapping Configuration</a></h1>
+
+  <p>The C++/Parser mapping has a number of configuration parameters that
+     determine the overall properties and behavior of the generated code.
+     Configuration parameters are specified with the XSD command line
+     options and include the character type that is used by the generated
+     code, the underlying XML parser, whether the XML Schema validation
+     is performed in the generated code, and support for XML Schema
+     polymorphism. This chapter describes these configuration
+     parameters in more detail. For more ways to configure the generated
+     code refer to the
+     <a href="http://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml">XSD
+     Compiler Command Line Manual</a>.
+  </p>
+
+  <h2><a name="5.1">5.1 Character Type and Encoding</a></h2>
+
+  <p>The C++/Parser mapping has built-in support for two character types:
+    <code>char</code> and <code>wchar_t</code>. You can select the
+    character type with the <code>--char-type</code> command line
+    option. The default character type is <code>char</code>. The
+    string-based built-in XML Schema types are returned as either
+    <code>std::string</code> or <code>std::wstring</code> depending
+    on the character type selected.</p>
+
+  <p>Another aspect of the mapping that depends on the character type
+     is character encoding. For the <code>char</code> character type
+     the default encoding is UTF-8. Other supported encodings are
+     ISO-8859-1, Xerces-C++ Local Code Page (LPC), as well as
+     custom encodings. You can select which encoding should be used
+     in the object model with the <code>--char-encoding</code> command
+     line option.</p>
+
+  <p>For the <code>wchar_t</code> character type the encoding is
+     automatically selected between UTF-16 and UTF-32/UCS-4 depending
+     on the size of the <code>wchar_t</code> type. On some platforms
+     (for example, Windows with Visual C++ and AIX with IBM XL C++)
+     <code>wchar_t</code> is 2 bytes long. For these platforms the
+     encoding is UTF-16. On other platforms <code>wchar_t</code> is 4 bytes
+     long and UTF-32/UCS-4 is used.</p>
+
+  <p>Note also that the character encoding that is used in the object model
+     is independent of the encodings used in input and output XML. In fact,
+     all three (object mode, input XML, and output XML) can have different
+     encodings.</p>
+
+  <h2><a name="5.2">5.2 Underlying XML Parser</a></h2>
+
+  <p>The C++/Parser mapping can be used with either Xerces-C++ or Expat
+     as the underlying XML parser. You can select the XML parser with
+     the <code>--xml-parser</code> command line option. Valid values
+     for this option are <code>xerces</code> and <code>expat</code>.
+     The default XML parser is Xerces-C++.</p>
+
+  <p>The generated code is identical for both parsers except for the
+     <code>xml_schema::document</code> class in which some of the
+     <code>parse()</code> functions are parser-specific as described
+     in <a href="#7">Chapter 7, "Document Parser and Error Handling"</a>.</p>
+
+
+  <h2><a name="5.3">5.3 XML Schema Validation</a></h2>
+
+  <p>The C++/Parser mapping provides support for validating a
+     commonly-used subset of W3C XML Schema in the generated code.
+     For the list of supported XML Schema constructs refer to
+     <a href="#A">Appendix A, "Supported XML Schema Constructs"</a>.</p>
+
+  <p>By default validation in the generated code is disabled if
+     the underlying XML parser is validating (Xerces-C++) and
+     enabled otherwise (Expat). See <a href="#5.2">Section 5.2,
+     "Underlying XML Parser"</a> for more information about
+     the underlying XML parser. You can override the default
+     behavior with the <code>--generate-validation</code>
+     and <code>--suppress-validation</code> command line options.</p>
+
+
+  <h2><a name="5.4">5.4 Support for Polymorphism</a></h2>
+
+  <p>By default the XSD compiler generates non-polymorphic code. If your
+     vocabulary uses XML Schema polymorphism in the form of <code>xsi:type</code>
+     and/or substitution groups, then you will need to compile your schemas
+     with the <code>--generate-polymorphic</code> option to produce
+     polymorphism-aware code as well as pass <code>true</code> as the last
+     argument to the <code>xml_schema::document</code>'s constructors.</p>
+
+  <p>When using the polymorphism-aware generated code, you can specify
+     several parsers for a single element by passing a parser map
+     instead of an individual parser to the parser connection function
+     for the element. One of the parsers will then be looked up and used
+     depending on the <code>xsi:type</code> attribute value or an element
+     name from a substitution group. Consider the following schema as an
+     example:</p>
+
+  <pre class="xml">
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  &lt;xs:complexType name="person">
+    &lt;xs:sequence>
+      &lt;xs:element name="name" type="xs:string"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;!-- substitution group root -->
+  &lt;xs:element name="person" type="person"/>
+
+  &lt;xs:complexType name="superman">
+    &lt;xs:complexContent>
+      &lt;xs:extension base="person">
+        &lt;xs:attribute name="can-fly" type="xs:boolean"/>
+      &lt;/xs:extension>
+    &lt;/xs:complexContent>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="superman"
+              type="superman"
+              substitutionGroup="person"/>
+
+  &lt;xs:complexType name="batman">
+    &lt;xs:complexContent>
+      &lt;xs:extension base="superman">
+        &lt;xs:attribute name="wing-span" type="xs:unsignedInt"/>
+      &lt;/xs:extension>
+    &lt;/xs:complexContent>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="batman"
+              type="batman"
+              substitutionGroup="superman"/>
+
+  &lt;xs:complexType name="supermen">
+    &lt;xs:sequence>
+      &lt;xs:element ref="person" maxOccurs="unbounded"/>
+    &lt;/xs:sequence>
+  &lt;/xs:complexType>
+
+  &lt;xs:element name="supermen" type="supermen"/>
+
+&lt;/xs:schema>
+  </pre>
+
+  <p>Conforming XML documents can use the <code>superman</code>
+     and <code>batman</code> types in place of the <code>person</code>
+     type either by specifying the type with the <code>xsi:type</code>
+     attributes or by using the elements from the substitution
+     group, for instance:</p>
+
+
+  <pre class="xml">
+&lt;supermen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  &lt;person>
+    &lt;name>John Doe&lt;/name>
+  &lt;/person>
+
+  &lt;superman can-fly="false">
+    &lt;name>James "007" Bond&lt;/name>
+  &lt;/superman>
+
+  &lt;superman can-fly="true" wing-span="10" xsi:type="batman">
+    &lt;name>Bruce Wayne&lt;/name>
+  &lt;/superman>
+
+&lt;/supermen>
+  </pre>
+
+  <p>To print the data stored in such XML documents we can implement
+     the parsers as follows:</p>
+
+  <pre class="c++">
+class person_pimpl: public virtual person_pskel
+{
+public:
+  virtual void
+  pre ()
+  {
+    cout &lt;&lt; "starting to parse person" &lt;&lt; endl;
+  }
+
+  virtual void
+  name (const std::string&amp; v)
+  {
+    cout &lt;&lt; "name: " &lt;&lt; v &lt;&lt; endl;
+  }
+
+  virtual void
+  post_person ()
+  {
+    cout &lt;&lt; "finished parsing person" &lt;&lt; endl;
+  }
+};
+
+class superman_pimpl: public virtual superman_pskel,
+                      public person_pimpl
+{
+public:
+  virtual void
+  pre ()
+  {
+    cout &lt;&lt; "starting to parse superman" &lt;&lt; endl;
+  }
+
+  virtual void
+  can_fly (bool v)
+  {
+    cout &lt;&lt; "can-fly: " &lt;&lt; v &lt;&lt; endl;
+  }
+
+  virtual void
+  post_person ()
+  {
+    post_superman ();
+  }
+
+  virtual void
+  post_superman ()
+  {
+    cout &lt;&lt; "finished parsing superman" &lt;&lt; endl
+  }
+};
+
+class batman_pimpl: public virtual batman_pskel,
+                    public superman_pimpl
+{
+public:
+  virtual void
+  pre ()
+  {
+    cout &lt;&lt; "starting to parse batman" &lt;&lt; endl;
+  }
+
+  virtual void
+  wing_span (unsigned int v)
+  {
+    cout &lt;&lt; "wing-span: " &lt;&lt; v &lt;&lt; endl;
+  }
+
+  virtual void
+  post_superman ()
+  {
+    post_batman ();
+  }
+
+  virtual void
+  post_batman ()
+  {
+    cout &lt;&lt; "finished parsing batman" &lt;&lt; endl;
+  }
+};
+  </pre>
+
+  <p>Note that because the derived type parsers (<code>superman_pskel</code>
+     and <code>batman_pskel</code>) are called via the <code>person_pskel</code>
+     interface, we have to override the <code>post_person()</code>
+     virtual function in <code>superman_pimpl</code> to call
+     <code>post_superman()</code> and the <code>post_superman()</code>
+     virtual function in <code>batman_pimpl</code> to call
+     <code>post_batman()</code>.</p>
+
+  <p>The following code fragment shows how to connect the parsers together.
+     Notice that for the <code>person</code> element in the <code>supermen_p</code>
+     parser we specify a parser map instead of a specific parser and we pass
+     <code>true</code> as the last argument to the document parser constructor
+     to indicate that we are parsing potentially-polymorphic XML documents:</p>
+
+  <pre class="c++">
+int
+main (int argc, char* argv[])
+{
+  // Construct the parser.
+  //
+  xml_schema::string_pimpl string_p;
+  xml_schema::boolean_pimpl boolean_p;
+  xml_schema::unsigned_int_pimpl unsigned_int_p;
+
+  person_pimpl person_p;
+  superman_pimpl superman_p;
+  batman_pimpl batman_p;
+
+  xml_schema::parser_map_impl person_map;
+  supermen_pimpl supermen_p;
+
+  person_p.parsers (string_p);
+  superman_p.parsers (string_p, boolean_p);
+  batman_p.parsers (string_p, boolean_p, unsigned_int_p);
+
+  // Here we are specifying a parser map which containes several
+  // parsers that can be used to parse the person element.
+  //
+  person_map.insert (person_p);
+  person_map.insert (superman_p);
+  person_map.insert (batman_p);
+
+  supermen_p.person_parser (person_map);
+
+  // Parse the XML document. The last argument to the document's
+  // constructor indicates that we are parsing polymorphic XML
+  // documents.
+  //
+  xml_schema::document doc_p (supermen_p, "supermen", true);
+
+  supermen_p.pre ();
+  doc_p.parse (argv[1]);
+  supermen_p.post_supermen ();
+}
+  </pre>
+
+  <p>When polymorphism-aware code is generated, each element's
+     <code>*_parser()</code> function is overloaded to also accept
+     an object of the <code>xml_schema::parser_map</code> type.
+     For example, the <code>supermen_pskel</code> class from the
+     above example looks like this:</p>
+
+  <pre class="c++">
+class supermen_pskel: public xml_schema::parser_complex_content
+{
+public:
+
+  ...
+
+  // Parser construction API.
+  //
+  void
+  parsers (person_pskel&amp;);
+
+  // Individual element parsers.
+  //
+  void
+  person_parser (person_pskel&amp;);
+
+  void
+  person_parser (const xml_schema::parser_map&amp;);
+
+  ...
+};
+  </pre>
+
+  <p>Note that you can specify both the individual (static) parser and
+     the parser map. The individual parser will be used when the static
+     element type and the dynamic type of the object being parsed are
+     the same. This is the case, for example, when there is no
+     <code>xsi:type</code> attribute and the element hasn't been
+     substituted. Because the individual parser for an element is
+     cached and no map lookup is necessary, it makes sense to specify
+     both the individual parser and the parser map when most of the
+     objects being parsed are of the static type and optimal
+     performance is important. The following code fragment shows
+     how to change the above example to set both the individual
+     parser and the parser map:</p>
+
+  <pre class="c++">
+int
+main (int argc, char* argv[])
+{
+  ...
+
+  person_map.insert (superman_p);
+  person_map.insert (batman_p);
+
+  supermen_p.person_parser (person_p);
+  supermen_p.person_parser (person_map);
+
+  ...
+}
+  </pre>
+
+
+  <p>The <code>xml_schema::parser_map</code> interface and the
+     <code>xml_schema::parser_map_impl</code> default implementation
+     are presented below:</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class parser_map
+  {
+  public:
+    virtual parser_base*
+    find (const ro_string* type) const = 0;
+  };
+
+  class parser_map_impl: public parser_map
+  {
+  public:
+    void
+    insert (parser_base&amp;);
+
+    virtual parser_base*
+    find (const ro_string* type) const;
+
+  private:
+    parser_map_impl (const parser_map_impl&amp;);
+
+    parser_map_impl&amp;
+    operator= (const parser_map_impl&amp;);
+
+    ...
+  };
+}
+  </pre>
+
+  <p>The <code>type</code> argument in the <code>find()</code> virtual
+     function is the type name and namespace from the xsi:type attribute
+     (the namespace prefix is resolved to the actual XML namespace)
+     or the type of an element from the substitution group in the form
+     <code>"&lt;name>&nbsp;&lt;namespace>"</code> with the space and the
+     namespace part absent if the type does not have a namespace.
+     You can obtain a parser's dynamic type in the same format
+     using the <code>_dynamic_type()</code> function. The static
+     type can be obtained by calling the static <code>_static_type()</code>
+     function, for example <code>person_pskel::_static_type()</code>.
+     Both functions return a C string (<code>const char*</code> or
+     <code>const wchar_t*</code>, depending on the character type
+     used) which is valid for as long as the application is running.
+     The following example shows how we can implement our own parser
+     map using <code>std::map</code>:</p>
+
+
+  <pre class="c++">
+#include &lt;map>
+#include &lt;string>
+
+class parser_map: public xml_schema::parser_map
+{
+public:
+ void
+ insert (xml_schema::parser_base&amp; p)
+ {
+   map_[p._dynamic_type ()] = &amp;p;
+ }
+
+ virtual xml_schema::parser_base*
+ find (const xml_schema::ro_string* type) const
+ {
+   map::const_iterator i = map_.find (type);
+   return i != map_.end () ? i->second : 0;
+ }
+
+private:
+  typedef std::map&lt;std::string, xml_schema::parser_base*> map;
+  map map_;
+};
+  </pre>
+
+  <p>Most of code presented in this section is taken from the
+     <code>polymorphism</code> example which can be found in the
+     <code>examples/cxx/parser/</code> directory of the XSD distribution.
+     Handling of <code>xsi:type</code> and substitution groups when used
+     on root elements requires a number of special actions as shown in
+     the <code>polyroot</code> example.</p>
+
+
+  <!-- Built-in XML Schema Type Parsers -->
+
+
+  <h1><a name="6">6 Built-In XML Schema Type Parsers</a></h1>
+
+  <p>The XSD runtime provides parser implementations for all built-in
+     XML Schema types as summarized in the following table. Declarations
+     for these types are automatically included into each generated
+     header file. As a result you don't need to include any headers
+     to gain access to these parser implementations. Note that some
+     parsers return either <code>std::string</code> or
+     <code>std::wstring</code> depending on the character type selected.</p>
+
+  <!-- border="1" is necessary for html2ps -->
+  <table id="builtin" border="1">
+    <tr>
+      <th>XML Schema type</th>
+      <th>Parser implementation in the <code>xml_schema</code> namespace</th>
+      <th>Parser return type</th>
+    </tr>
+
+    <tr>
+      <th colspan="3">anyType and anySimpleType types</th>
+    </tr>
+    <tr>
+      <td><code>anyType</code></td>
+      <td><code>any_type_pimpl</code></td>
+      <td><code>void</code></td>
+    </tr>
+    <tr>
+      <td><code>anySimpleType</code></td>
+      <td><code>any_simple_type_pimpl</code></td>
+      <td><code>void</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">fixed-length integral types</th>
+    </tr>
+    <!-- 8-bit -->
+    <tr>
+      <td><code>byte</code></td>
+      <td><code>byte_pimpl</code></td>
+      <td><code>signed&nbsp;char</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedByte</code></td>
+      <td><code>unsigned_byte_pimpl</code></td>
+      <td><code>unsigned&nbsp;char</code></td>
+    </tr>
+
+    <!-- 16-bit -->
+    <tr>
+      <td><code>short</code></td>
+      <td><code>short_pimpl</code></td>
+      <td><code>short</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedShort</code></td>
+      <td><code>unsigned_short_pimpl</code></td>
+      <td><code>unsigned&nbsp;short</code></td>
+    </tr>
+
+    <!-- 32-bit -->
+    <tr>
+      <td><code>int</code></td>
+      <td><code>int_pimpl</code></td>
+      <td><code>int</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedInt</code></td>
+      <td><code>unsigned_int_pimpl</code></td>
+      <td><code>unsigned&nbsp;int</code></td>
+    </tr>
+
+    <!-- 64-bit -->
+    <tr>
+      <td><code>long</code></td>
+      <td><code>long_pimpl</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>unsignedLong</code></td>
+      <td><code>unsigned_long_pimpl</code></td>
+      <td><code>unsigned&nbsp;long&nbsp;long</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">arbitrary-length integral types</th>
+    </tr>
+    <tr>
+      <td><code>integer</code></td>
+      <td><code>integer_pimpl</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>nonPositiveInteger</code></td>
+      <td><code>non_positive_integer_pimpl</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>nonNegativeInteger</code></td>
+      <td><code>non_negative_integer_pimpl</code></td>
+      <td><code>unsigned long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>positiveInteger</code></td>
+      <td><code>positive_integer_pimpl</code></td>
+      <td><code>unsigned long&nbsp;long</code></td>
+    </tr>
+    <tr>
+      <td><code>negativeInteger</code></td>
+      <td><code>negative_integer_pimpl</code></td>
+      <td><code>long&nbsp;long</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">boolean types</th>
+    </tr>
+    <tr>
+      <td><code>boolean</code></td>
+      <td><code>boolean_pimpl</code></td>
+      <td><code>bool</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">fixed-precision floating-point types</th>
+    </tr>
+    <tr>
+      <td><code>float</code></td>
+      <td><code>float_pimpl</code></td>
+      <td><code>float</code></td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>double_pimpl</code></td>
+      <td><code>double</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">arbitrary-precision floating-point types</th>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td><code>decimal_pimpl</code></td>
+      <td><code>double</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">string-based types</th>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>string_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+    <tr>
+      <td><code>normalizedString</code></td>
+      <td><code>normalized_string_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+    <tr>
+      <td><code>token</code></td>
+      <td><code>token_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+    <tr>
+      <td><code>Name</code></td>
+      <td><code>name_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+    <tr>
+      <td><code>NMTOKEN</code></td>
+      <td><code>nmtoken_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+    <tr>
+      <td><code>NCName</code></td>
+      <td><code>ncname_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+
+    <tr>
+      <td><code>language</code></td>
+      <td><code>language_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">qualified name</th>
+    </tr>
+    <tr>
+      <td><code>QName</code></td>
+      <td><code>qname_pimpl</code></td>
+      <td><code>xml_schema::qname</code><br/><a href="#6.1">Section 6.1,
+          "<code>QName</code> Parser"</a></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">ID/IDREF types</th>
+    </tr>
+    <tr>
+      <td><code>ID</code></td>
+      <td><code>id_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+    <tr>
+      <td><code>IDREF</code></td>
+      <td><code>idref_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">list types</th>
+    </tr>
+    <tr>
+      <td><code>NMTOKENS</code></td>
+      <td><code>nmtokens_pimpl</code></td>
+      <td><code>xml_schema::string_sequence</code><br/><a href="#6.2">Section
+          6.2, "<code>NMTOKENS</code> and <code>IDREFS</code> Parsers"</a></td>
+    </tr>
+    <tr>
+      <td><code>IDREFS</code></td>
+      <td><code>idrefs_pimpl</code></td>
+      <td><code>xml_schema::string_sequence</code><br/><a href="#6.2">Section
+          6.2, "<code>NMTOKENS</code> and <code>IDREFS</code> Parsers"</a></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">URI types</th>
+    </tr>
+    <tr>
+      <td><code>anyURI</code></td>
+      <td><code>uri_pimpl</code></td>
+      <td><code>std::string</code> or <code>std::wstring</code></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">binary types</th>
+    </tr>
+    <tr>
+      <td><code>base64Binary</code></td>
+      <td><code>base64_binary_pimpl</code></td>
+      <td><code>std::auto_ptr&lt;xml_schema::buffer></code><br/>
+          <a href="#6.3">Section 6.3, "<code>base64Binary</code> and
+          <code>hexBinary</code> Parsers"</a></td>
+    </tr>
+    <tr>
+      <td><code>hexBinary</code></td>
+      <td><code>hex_binary_pimpl</code></td>
+      <td><code>std::auto_ptr&lt;xml_schema::buffer></code><br/>
+          <a href="#6.3">Section 6.3, "<code>base64Binary</code> and
+          <code>hexBinary</code> Parsers"</a></td>
+    </tr>
+
+    <tr>
+      <th colspan="3">date/time types</th>
+    </tr>
+    <tr>
+      <td><code>date</code></td>
+      <td><code>date_pimpl</code></td>
+      <td><code>xml_schema::date</code><br/><a href="#6.5">Section 6.5,
+          "<code>date</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>dateTime</code></td>
+      <td><code>date_time_pimpl</code></td>
+      <td><code>xml_schema::date_time</code><br/><a href="#6.6">Section 6.6,
+          "<code>dateTime</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>duration</code></td>
+      <td><code>duration_pimpl</code></td>
+      <td><code>xml_schema::duration</code><br/><a href="#6.7">Section 6.7,
+          "<code>duration</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>gDay</code></td>
+      <td><code>gday_pimpl</code></td>
+      <td><code>xml_schema::gday</code><br/><a href="#6.8">Section 6.8,
+          "<code>gDay</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>gMonth</code></td>
+      <td><code>gmonth_pimpl</code></td>
+      <td><code>xml_schema::gmonth</code><br/><a href="#6.9">Section 6.9,
+          "<code>gMonth</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>gMonthDay</code></td>
+      <td><code>gmonth_day_pimpl</code></td>
+      <td><code>xml_schema::gmonth_day</code><br/><a href="#6.10">Section 6.10,
+          "<code>gMonthDay</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>gYear</code></td>
+      <td><code>gyear_pimpl</code></td>
+      <td><code>xml_schema::gyear</code><br/><a href="#6.11">Section 6.11,
+          "<code>gYear</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>gYearMonth</code></td>
+      <td><code>gyear_month_pimpl</code></td>
+      <td><code>xml_schema::gyear_month</code><br/><a href="#6.12">Section
+          6.12, "<code>gYearMonth</code> Parser"</a></td>
+    </tr>
+    <tr>
+      <td><code>time</code></td>
+      <td><code>time_pimpl</code></td>
+      <td><code>xml_schema::time</code><br/><a href="#6.13">Section 6.13,
+          "<code>time</code> Parser"</a></td>
+    </tr>
+
+  </table>
+
+  <h2><a name="6.1">6.1 <code>QName</code> Parser</a></h2>
+
+  <p>The return type of the <code>qname_pimpl</code> parser implementation
+     is <code>xml_schema::qname</code> which represents an XML qualified
+     name. Its interface is presented below.
+     Note that the <code>std::string</code> type in the interface becomes
+     <code>std::wstring</code> if the selected character type is
+     <code>wchar_t</code>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class qname
+  {
+  public:
+    explicit
+    qname (const std::string&amp; name);
+    qname (const std::string&amp; prefix, const std::string&amp; name);
+
+    const std::string&amp;
+    prefix () const;
+
+    void
+    prefix (const std::string&amp;);
+
+    const std::string&amp;
+    name () const;
+
+    void
+    name (const std::string&amp;);
+  };
+
+  bool
+  operator== (const qname&amp;, const qname&amp;);
+
+  bool
+  operator!= (const qname&amp;, const qname&amp;);
+}
+  </pre>
+
+
+  <h2><a name="6.2">6.2 <code>NMTOKENS</code> and <code>IDREFS</code> Parsers</a></h2>
+
+  <p>The return type of the <code>nmtokens_pimpl</code> and
+     <code>idrefs_pimpl</code> parser implementations is
+     <code>xml_schema::string_sequence</code> which represents a
+     sequence of strings. Its interface is presented below.
+     Note that the <code>std::string</code> type in the interface becomes
+     <code>std::wstring</code> if the selected character type is
+     <code>wchar_t</code>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class string_sequence: public std::vector&lt;std::string>
+  {
+  public:
+    string_sequence ();
+
+    explicit
+    string_sequence (std::vector&lt;std::string>::size_type n,
+                     const std::string&amp; x = std::string ());
+
+    template &lt;typename I>
+    string_sequence (const I&amp; begin, const I&amp; end);
+  };
+
+  bool
+  operator== (const string_sequence&amp;, const string_sequence&amp;);
+
+  bool
+  operator!= (const string_sequence&amp;, const string_sequence&amp;);
+}
+  </pre>
+
+
+  <h2><a name="6.3">6.3 <code>base64Binary</code> and <code>hexBinary</code> Parsers</a></h2>
+
+  <p>The return type of the <code>base64_binary_pimpl</code> and
+     <code>hex_binary_pimpl</code> parser implementations is
+     <code>std::auto_ptr&lt;xml_schema::buffer></code>. The
+     <code>xml_schema::buffer</code> type represents a binary buffer
+     and its interface is presented below.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class buffer
+  {
+  public:
+    typedef std::size_t size_t;
+
+    class bounds {}; // Out of bounds exception.
+
+  public:
+    explicit
+    buffer (size_t size = 0);
+    buffer (size_t size, size_t capacity);
+    buffer (const void* data, size_t size);
+    buffer (const void* data, size_t size, size_t capacity);
+    buffer (void* data,
+            size_t size,
+            size_t capacity,
+            bool assume_ownership);
+
+  public:
+    buffer (const buffer&amp;);
+
+    buffer&amp;
+    operator= (const buffer&amp;);
+
+    void
+    swap (buffer&amp;);
+
+  public:
+    size_t
+    capacity () const;
+
+    bool
+    capacity (size_t);
+
+  public:
+    size_t
+    size () const;
+
+    bool
+    size (size_t);
+
+  public:
+    const char*
+    data () const;
+
+    char*
+    data ();
+
+    const char*
+    begin () const;
+
+    char*
+    begin ();
+
+    const char*
+    end () const;
+
+    char*
+    end ();
+  };
+
+  bool
+  operator== (const buffer&amp;, const buffer&amp;);
+
+  bool
+  operator!= (const buffer&amp;, const buffer&amp;);
+}
+  </pre>
+
+  <p>If the <code>assume_ownership</code> argument to the constructor
+     is <code>true</code>, the instance assumes the ownership of the
+     memory block pointed to by the <code>data</code> argument and will
+     eventually release it by calling <code>operator delete()</code>. The
+     <code>capacity()</code> and <code>size()</code> modifier functions
+     return <code>true</code> if the underlying buffer has moved.
+  </p>
+
+  <p>The <code>bounds</code> exception is thrown if the constructor
+     arguments violate the <code>(size&nbsp;&lt;=&nbsp;capacity)</code>
+     constraint.</p>
+
+
+  <h2><a name="6.4">6.4 Time Zone Representation</a></h2>
+
+  <p>The <code>date</code>, <code>dateTime</code>, <code>gDay</code>,
+     <code>gMonth</code>, <code>gMonthDay</code>, <code>gYear</code>,
+     <code>gYearMonth</code>, and <code>time</code> XML Schema built-in
+     types all include an optional time zone component. The following
+     <code>xml_schema::time_zone</code> base class is used to represent
+     this information:</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class time_zone
+  {
+  public:
+    time_zone ();
+    time_zone (short hours, short minutes);
+
+    bool
+    zone_present () const;
+
+    void
+    zone_reset ();
+
+    short
+    zone_hours () const;
+
+    void
+    zone_hours (short);
+
+    short
+    zone_minutes () const;
+
+    void
+    zone_minutes (short);
+  };
+
+  bool
+  operator== (const time_zone&amp;, const time_zone&amp;);
+
+  bool
+  operator!= (const time_zone&amp;, const time_zone&amp;);
+}
+  </pre>
+
+  <p>The <code>zone_present()</code> accessor function returns <code>true</code>
+     if the time zone is specified. The <code>zone_reset()</code> modifier
+     function resets the time zone object to the <em>not specified</em>
+     state. If the time zone offset is negative then both hours and
+     minutes components are represented as negative integers.</p>
+
+
+  <h2><a name="6.5">6.5 <code>date</code> Parser</a></h2>
+
+ <p>The return type of the <code>date_pimpl</code> parser implementation
+     is <code>xml_schema::date</code> which represents a year, a day, and a month
+     with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class date
+  {
+  public:
+    date (int year, unsigned short month, unsigned short day);
+    date (int year, unsigned short month, unsigned short day,
+          short zone_hours, short zone_minutes);
+
+    int
+    year () const;
+
+    void
+    year (int);
+
+    unsigned short
+    month () const;
+
+    void
+    month (unsigned short);
+
+    unsigned short
+    day () const;
+
+    void
+    day (unsigned short);
+  };
+
+  bool
+  operator== (const date&amp;, const date&amp;);
+
+  bool
+  operator!= (const date&amp;, const date&amp;);
+}
+  </pre>
+
+  <h2><a name="6.6">6.6 <code>dateTime</code> Parser</a></h2>
+
+  <p>The return type of the <code>date_time_pimpl</code> parser implementation
+     is <code>xml_schema::date_time</code> which represents a year, a month, a day,
+     hours, minutes, and seconds with an optional time zone. Its interface
+     is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class date_time
+  {
+  public:
+    date_time (int year, unsigned short month, unsigned short day,
+               unsigned short hours, unsigned short minutes,
+               double seconds);
+
+    date_time (int year, unsigned short month, unsigned short day,
+               unsigned short hours, unsigned short minutes,
+               double seconds, short zone_hours, short zone_minutes);
+
+    int
+    year () const;
+
+    void
+    year (int);
+
+    unsigned short
+    month () const;
+
+    void
+    month (unsigned short);
+
+    unsigned short
+    day () const;
+
+    void
+    day (unsigned short);
+
+    unsigned short
+    hours () const;
+
+    void
+    hours (unsigned short);
+
+    unsigned short
+    minutes () const;
+
+    void
+    minutes (unsigned short);
+
+    double
+    seconds () const;
+
+    void
+    seconds (double);
+  };
+
+  bool
+  operator== (const date_time&amp;, const date_time&amp;);
+
+  bool
+  operator!= (const date_time&amp;, const date_time&amp;);
+}
+  </pre>
+
+  <h2><a name="6.7">6.7 <code>duration</code> Parser</a></h2>
+
+  <p>The return type of the <code>duration_pimpl</code> parser implementation
+     is <code>xml_schema::duration</code> which represents a potentially
+     negative duration in the form of years, months, days, hours, minutes,
+     and seconds. Its interface is presented below.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class duration
+  {
+  public:
+    duration (bool negative,
+              unsigned int years, unsigned int months, unsigned int days,
+              unsigned int hours, unsigned int minutes, double seconds);
+
+    bool
+    negative () const;
+
+    void
+    negative (bool);
+
+    unsigned int
+    years () const;
+
+    void
+    years (unsigned int);
+
+    unsigned int
+    months () const;
+
+    void
+    months (unsigned int);
+
+    unsigned int
+    days () const;
+
+    void
+    days (unsigned int);
+
+    unsigned int
+    hours () const;
+
+    void
+    hours (unsigned int);
+
+    unsigned int
+    minutes () const;
+
+    void
+    minutes (unsigned int);
+
+    double
+    seconds () const;
+
+    void
+    seconds (double);
+  };
+
+  bool
+  operator== (const duration&amp;, const duration&amp;);
+
+  bool
+  operator!= (const duration&amp;, const duration&amp;);
+}
+  </pre>
+
+
+  <h2><a name="6.8">6.8 <code>gDay</code> Parser</a></h2>
+
+  <p>The return type of the <code>gday_pimpl</code> parser implementation
+     is <code>xml_schema::gday</code> which represents a day of the month with
+     an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class gday
+  {
+  public:
+    explicit
+    gday (unsigned short day);
+    gday (unsigned short day, short zone_hours, short zone_minutes);
+
+    unsigned short
+    day () const;
+
+    void
+    day (unsigned short);
+  };
+
+  bool
+  operator== (const gday&amp;, const gday&amp;);
+
+  bool
+  operator!= (const gday&amp;, const gday&amp;);
+}
+  </pre>
+
+  <h2><a name="6.9">6.9 <code>gMonth</code> Parser</a></h2>
+
+  <p>The return type of the <code>gmonth_pimpl</code> parser implementation
+     is <code>xml_schema::gmonth</code> which represents a month of the year
+     with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class gmonth
+  {
+  public:
+    explicit
+    gmonth (unsigned short month);
+    gmonth (unsigned short month, short zone_hours, short zone_minutes);
+
+    unsigned short
+    month () const;
+
+    void
+    month (unsigned short);
+  };
+
+  bool
+  operator== (const gmonth&amp;, const gmonth&amp;);
+
+  bool
+  operator!= (const gmonth&amp;, const gmonth&amp;);
+}
+  </pre>
+
+  <h2><a name="6.10">6.10 <code>gMonthDay</code> Parser</a></h2>
+
+  <p>The return type of the <code>gmonth_day_pimpl</code> parser implementation
+     is <code>xml_schema::gmonth_day</code> which represents a day and a month
+     of the year with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class gmonth_day
+  {
+  public:
+    gmonth_day (unsigned short month, unsigned short day);
+    gmonth_day (unsigned short month, unsigned short day,
+                short zone_hours, short zone_minutes);
+
+    unsigned short
+    month () const;
+
+    void
+    month (unsigned short);
+
+    unsigned short
+    day () const;
+
+    void
+    day (unsigned short);
+  };
+
+  bool
+  operator== (const gmonth_day&amp;, const gmonth_day&amp;);
+
+  bool
+  operator!= (const gmonth_day&amp;, const gmonth_day&amp;);
+}
+  </pre>
+
+  <h2><a name="6.11">6.11 <code>gYear</code> Parser</a></h2>
+
+  <p>The return type of the <code>gyear_pimpl</code> parser implementation
+     is <code>xml_schema::gyear</code> which represents a year with
+     an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class gyear
+  {
+  public:
+    explicit
+    gyear (int year);
+    gyear (int year, short zone_hours, short zone_minutes);
+
+    int
+    year () const;
+
+    void
+    year (int);
+  };
+
+  bool
+  operator== (const gyear&amp;, const gyear&amp;);
+
+  bool
+  operator!= (const gyear&amp;, const gyear&amp;);
+}
+  </pre>
+
+  <h2><a name="6.12">6.12 <code>gYearMonth</code> Parser</a></h2>
+
+  <p>The return type of the <code>gyear_month_pimpl</code> parser implementation
+     is <code>xml_schema::gyear_month</code> which represents a year and a month
+     with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class gyear_month
+  {
+  public:
+    gyear_month (int year, unsigned short month);
+    gyear_month (int year, unsigned short month,
+                 short zone_hours, short zone_minutes);
+
+    int
+    year () const;
+
+    void
+    year (int);
+
+    unsigned short
+    month () const;
+
+    void
+    month (unsigned short);
+  };
+
+  bool
+  operator== (const gyear_month&amp;, const gyear_month&amp;);
+
+  bool
+  operator!= (const gyear_month&amp;, const gyear_month&amp;);
+}
+  </pre>
+
+
+  <h2><a name="6.13">6.13 <code>time</code> Parser</a></h2>
+
+ <p>The return type of the <code>time_pimpl</code> parser implementation
+     is <code>xml_schema::time</code> which represents hours, minutes,
+     and seconds with an optional time zone. Its interface is presented below.
+     For more information on the base <code>xml_schema::time_zone</code>
+     class refer to <a href="#6.4">Section 6.4, "Time Zone
+     Representation"</a>.</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class time
+  {
+  public:
+    time (unsigned short hours, unsigned short minutes, double seconds);
+    time (unsigned short hours, unsigned short minutes, double seconds,
+          short zone_hours, short zone_minutes);
+
+    unsigned short
+    hours () const;
+
+    void
+    hours (unsigned short);
+
+    unsigned short
+    minutes () const;
+
+    void
+    minutes (unsigned short);
+
+    double
+    seconds () const;
+
+    void
+    seconds (double);
+  };
+
+  bool
+  operator== (const time&amp;, const time&amp;);
+
+  bool
+  operator!= (const time&amp;, const time&amp;);
+}
+  </pre>
+
+
+  <!-- Error Handling -->
+
+
+  <h1><a name="7">7 Document Parser and Error Handling</a></h1>
+
+  <p>In this chapter we will discuss the <code>xml_schema::document</code>
+     type as well as the error handling mechanisms provided by the mapping
+     in more detail. As mentioned in <a href="#3.4">Section 3.4,
+     "Connecting the Parsers Together"</a>, the interface of
+     <code>xml_schema::document</code> depends on the underlying XML
+     parser selected (<a href="#5.2">Section 5.2, "Underlying XML
+     Parser"</a>). The following sections describe the
+     <code>document</code> type interface for Xerces-C++ and
+     Expat as underlying parsers.</p>
+
+  <h2><a name="7.1">7.1 Xerces-C++ Document Parser</a></h2>
+
+  <p>When Xerces-C++ is used as the underlying XML parser, the
+     <code>document</code> type has the following interface. Note that
+     if the character type is <code>wchar_t</code>, then the string type
+     in the interface becomes <code>std::wstring</code>
+     (see <a href="#5.1">Section 5.1, "Character Type and Encoding"</a>).</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class parser_base;
+  class error_handler;
+
+  class flags
+  {
+  public:
+    // Do not validate XML documents with the Xerces-C++ validator.
+    //
+    static const unsigned long dont_validate;
+
+    // Do not initialize the Xerces-C++ runtime.
+    //
+    static const unsigned long dont_initialize;
+
+    // Disable handling of subsequent imports for the same namespace
+    // in Xerces-C++ 3.1.0 and later.
+    //
+    static const unsigned long no_multiple_imports;
+  };
+
+  class properties
+  {
+  public:
+    // Add a location for a schema with a target namespace.
+    //
+    void
+    schema_location (const std::string&amp; namespace_,
+                     const std::string&amp; location);
+
+    // Add a location for a schema without a target namespace.
+    //
+    void
+    no_namespace_schema_location (const std::string&amp; location);
+  };
+
+  class document
+  {
+  public:
+    document (parser_base&amp; root,
+              const std::string&amp; root_element_name,
+	      bool polymorphic = false);
+
+    document (parser_base&amp; root,
+              const std::string&amp; root_element_namespace,
+              const std::string&amp; root_element_name,
+	      bool polymorphic = false);
+
+  public:
+    // Parse URI or a local file.
+    //
+    void
+    parse (const std::string&amp; uri,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse URI or a local file with a user-provided error_handler
+    // object.
+    //
+    void
+    parse (const std::string&amp; uri,
+           error_handler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse URI or a local file with a user-provided ErrorHandler
+    // object. Note that you must initialize the Xerces-C++ runtime
+    // before calling this function.
+    //
+    void
+    parse (const std::string&amp; uri,
+           xercesc::ErrorHandler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse URI or a local file using a user-provided SAX2XMLReader
+    // object. Note that you must initialize the Xerces-C++ runtime
+    // before calling this function.
+    //
+    void
+    parse (const std::string&amp; uri,
+           xercesc::SAX2XMLReader&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+  public:
+    // Parse std::istream.
+    //
+    void
+    parse (std::istream&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with a user-provided error_handler object.
+    //
+    void
+    parse (std::istream&amp;,
+           error_handler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with a user-provided ErrorHandler object.
+    // Note that you must initialize the Xerces-C++ runtime before
+    // calling this function.
+    //
+    void
+    parse (std::istream&amp;,
+           xercesc::ErrorHandler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream using a user-provided SAX2XMLReader object.
+    // Note that you must initialize the Xerces-C++ runtime before
+    // calling this function.
+    //
+    void
+    parse (std::istream&amp;,
+           xercesc::SAX2XMLReader&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+  public:
+    // Parse std::istream with a system id.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with a system id and a user-provided
+    // error_handler object.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           error_handler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with a system id and a user-provided
+    // ErrorHandler object. Note that you must initialize the
+    // Xerces-C++ runtime before calling this function.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           xercesc::ErrorHandler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with a system id using a user-provided
+    // SAX2XMLReader object. Note that you must initialize the
+    // Xerces-C++ runtime before calling this function.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           xercesc::SAX2XMLReader&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+  public:
+    // Parse std::istream with system and public ids.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with system and public ids and a user-provided
+    // error_handler object.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id,
+           error_handler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with system and public ids and a user-provided
+    // ErrorHandler object. Note that you must initialize the Xerces-C++
+    // runtime before calling this function.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id,
+           xercesc::ErrorHandler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse std::istream with system and public ids using a user-
+    // provided SAX2XMLReader object. Note that you must initialize
+    // the Xerces-C++ runtime before calling this function.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id,
+           xercesc::SAX2XMLReader&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+  public:
+    // Parse InputSource. Note that you must initialize the Xerces-C++
+    // runtime before calling this function.
+    //
+    void
+    parse (const xercesc::InputSource&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse InputSource with a user-provided error_handler object.
+    // Note that you must initialize the Xerces-C++ runtime before
+    // calling this function.
+    //
+    void
+    parse (const xercesc::InputSource&amp;,
+           error_handler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse InputSource with a user-provided ErrorHandler object.
+    // Note that you must initialize the Xerces-C++ runtime before
+    // calling this function.
+    //
+    void
+    parse (const xercesc::InputSource&amp;,
+           xercesc::ErrorHandler&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+
+    // Parse InputSource using a user-provided SAX2XMLReader object.
+    // Note that you must initialize the Xerces-C++ runtime before
+    // calling this function.
+    //
+    void
+    parse (const xercesc::InputSource&amp;,
+           xercesc::SAX2XMLReader&amp;,
+           flags = 0,
+           const properties&amp; = properties ());
+  };
+}
+  </pre>
+
+  <p>The <code>document</code> class is a root parser for
+     the vocabulary. The first argument to its constructors is the
+     parser for the type of the root element. The <code>parser_base</code>
+     class is the base type for all parser skeletons. The second and
+     third arguments to the <code>document</code>'s constructors are
+     the root element's name and namespace. The last argument,
+     <code>polymorphic</code>, specifies whether the XML documents
+     being parsed use polymorphism. For more information on support
+     for XML Schema polymorphism in the C++/Parser mapping refer
+     to <a href="#5.4">Section 5.4, "Support for Polymorphism"</a>.</p>
+
+  <p>The rest of the <code>document</code> interface consists of overloaded
+     <code>parse()</code> functions. The last two arguments in each of these
+     functions are <code>flags</code> and <code>properties</code>. The
+     <code>flags</code> argument allows you to modify the default behavior
+     of the parsing functions. The <code>properties</code> argument allows
+     you to override the schema location attributes specified in XML
+     documents. Note that the schema location paths are relative to an
+     XML document unless they are complete URIs. For example if you want
+     to use a local schema file then you will need to use a URI in the
+     form <code>file:///absolute/path/to/your/schema</code>.</p>
+
+  <p>A number of overloaded <code>parse()</code> functions have the
+     <code>system_id</code> and <code>public_id</code> arguments. The
+     system id is a <em>system</em> identifier of the resources being
+     parsed (for example, URI or a full file path). The public id is a
+     <em>public</em> identifier of the resource (for example, an
+     application-specific name or a relative file path). The system id
+     is used to resolve relative paths (for example, schema paths). In
+     diagnostics messages the public id is used if it is available.
+     Otherwise the system id is used.</p>
+
+  <p>The error handling mechanisms employed by the <code>document</code>
+     parser are described in <a href="#7.3">Section 7.3, "Error
+     Handling"</a>.</p>
+
+  <h2><a name="7.2">7.2 Expat Document Parser</a></h2>
+
+  <p>When Expat is used as the underlying XML parser, the
+     <code>document</code> type has the following interface. Note that
+     if the character type is <code>wchar_t</code>, then the string type
+     in the interface becomes <code>std::wstring</code>
+     (see <a href="#5.1">Section 5.1, "Character Type and Encoding"</a>).</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class parser_base;
+  class error_handler;
+
+  class document
+  {
+  public:
+    document (parser_base&amp;,
+              const std::string&amp; root_element_name,
+              bool polymorphic = false);
+
+    document (parser_base&amp;,
+              const std::string&amp; root_element_namespace,
+              const std::string&amp; root_element_name,
+              bool polymorphic = false);
+
+  public:
+    // Parse a local file. The file is accessed with std::ifstream
+    // in binary mode. The std::ios_base::failure exception is used
+    // to report io errors (badbit and failbit).
+    void
+    parse (const std::string&amp; file);
+
+    // Parse a local file with a user-provided error_handler
+    // object. The file is accessed with std::ifstream in binary
+    // mode. The std::ios_base::failure exception is used to report
+    // io errors (badbit and failbit).
+    //
+    void
+    parse (const std::string&amp; file, error_handler&amp;);
+
+  public:
+    // Parse std::istream.
+    //
+    void
+    parse (std::istream&amp;);
+
+    // Parse std::istream with a user-provided error_handler object.
+    //
+    void
+    parse (std::istream&amp;, error_handler&amp;);
+
+    // Parse std::istream with a system id.
+    //
+    void
+    parse (std::istream&amp;, const std::string&amp; system_id);
+
+    // Parse std::istream with a system id and a user-provided
+    // error_handler object.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           error_handler&amp;);
+
+    // Parse std::istream with system and public ids.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id);
+
+    // Parse std::istream with system and public ids and a user-provided
+    // error_handler object.
+    //
+    void
+    parse (std::istream&amp;,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id,
+           error_handler&amp;);
+
+  public:
+    // Parse a chunk of input. You can call these functions multiple
+    // times with the last call having the last argument true.
+    //
+    void
+    parse (const void* data, std::size_t size, bool last);
+
+    void
+    parse (const void* data, std::size_t size, bool last,
+           error_handler&amp;);
+
+    void
+    parse (const void* data, std::size_t size, bool last,
+           const std::string&amp; system_id);
+
+    void
+    parse (const void* data, std::size_t size, bool last,
+           const std::string&amp; system_id,
+           error_handler&amp;);
+
+    void
+    parse (const void* data, std::size_t size, bool last,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id);
+
+    void
+    parse (const void* data, std::size_t size, bool last,
+           const std::string&amp; system_id,
+           const std::string&amp; public_id,
+           error_handler&amp;);
+
+  public:
+    // Low-level Expat-specific parsing API.
+    //
+    void
+    parse_begin (XML_Parser);
+
+    void
+    parse_begin (XML_Parser, const std::string&amp; public_id);
+
+    void
+    parse_begin (XML_Parser, error_handler&amp;);
+
+    void
+    parse_begin (XML_Parser,
+                 const std::string&amp; public_id,
+                 error_handler&amp;);
+    void
+    parse_end ();
+  };
+}
+  </pre>
+
+  <p>The <code>document</code> class is a root parser for
+     the vocabulary. The first argument to its constructors is the
+     parser for the type of the root element. The <code>parser_base</code>
+     class is the base type for all parser skeletons. The second and
+     third arguments to the <code>document</code>'s constructors are
+     the root element's name and namespace. The last argument,
+     <code>polymorphic</code>, specifies whether the XML documents
+     being parsed use polymorphism. For more information on support
+     for XML Schema polymorphism in the C++/Parser mapping refer
+     to <a href="#5.4">Section 5.4, "Support for Polymorphism"</a>.</p>
+
+  <p>A number of overloaded <code>parse()</code> functions have the
+     <code>system_id</code> and <code>public_id</code> arguments. The
+     system id is a <em>system</em> identifier of the resources being
+     parsed (for example, URI or a full file path). The public id is a
+     <em>public</em> identifier of the resource (for example, an
+     application-specific name or a relative file path). The system id
+     is used to resolve relative paths. In diagnostics messages the
+     public id is used if it is available. Otherwise the system id
+     is used.</p>
+
+  <p>The <code>parse_begin()</code> and <code>parse_end()</code> functions
+     present a low-level, Expat-specific parsing API for maximum control.
+     A typical use-case would look like this (pseudo-code):</p>
+
+  <pre class="c++">
+xxx_pimpl root_p;
+document doc_p (root_p, "root");
+
+root_p.pre ();
+doc_p.parse_begin (xml_parser, "file.xml");
+
+while (more_data_to_parse)
+{
+  // Call XML_Parse or XML_ParseBuffer.
+
+  if (status == XML_STATUS_ERROR)
+    break;
+}
+
+// Call parse_end even in case of an error to translate
+// XML and Schema errors to exceptions or error_handler
+// calls.
+//
+doc.parse_end ();
+result_type result (root_p.post_xxx ());
+  </pre>
+
+  <p>Note that if your vocabulary uses XML namespaces, the
+     <code>XML_ParserCreateNS()</code> functions should be used to create
+     the XML parser. Space (<code>XML_Char (' ')</code>) should be used
+     as a separator (the second argument to <code>XML_ParserCreateNS()</code>).
+  </p>
+
+  <p>The error handling mechanisms employed by the <code>document</code>
+     parser are described in <a href="#7.3">Section 7.3, "Error
+     Handling"</a>.</p>
+
+
+  <h2><a name="7.3">7.3 Error Handling</a></h2>
+
+  <p>There are three categories of errors that can result from running
+     a parser on an XML document: System, XML, and Application.
+     The System category contains memory allocation and file/stream
+     operation errors. The XML category covers XML parsing and
+     well-formedness checking as well as XML Schema validation errors.
+     Finally, the Application category is for application logic errors
+     that you may want to propagate from parser implementations to the
+     caller of the parser.
+  </p>
+
+  <p>The System errors are mapped to the standard exceptions. The
+     out of memory condition is indicated by throwing an instance
+     of <code>std::bad_alloc</code>. The stream operation errors
+     are reported either by throwing an instance of
+     <code>std::ios_base::failure</code> if exceptions are enabled
+     or by setting the stream state.</p>
+
+  <p>Note that if you are parsing <code>std::istream</code> on
+     which exceptions are not enabled, then you will need to
+     check the stream state before calling the <code>post()</code>
+     callback, as shown in the following example:</p>
+
+  <pre class="c++">
+int
+main (int argc, char* argv[])
+{
+  ...
+
+  std::ifstream ifs (argv[1]);
+
+  if (ifs.fail ())
+  {
+    cerr &lt;&lt; argv[1] &lt;&lt; ": unable to open" &lt;&lt; endl;
+    return 1;
+  }
+
+  root_p.pre ();
+  doc_p.parse (ifs);
+
+  if (ifs.fail ())
+  {
+    cerr &lt;&lt; argv[1] &lt;&lt; ": io failure" &lt;&lt; endl;
+    return 1;
+  }
+
+  result_type result (root_p.post_xxx ());
+}
+  </pre>
+
+  <p>The above example can be rewritten to use exceptions
+     as shown below:</p>
+
+  <pre class="c++">
+int
+main (int argc, char* argv[])
+{
+  try
+  {
+    ...
+
+    std::ifstream ifs;
+    ifs.exceptions (std::ifstream::badbit | std::ifstream::failbit);
+    ifs.open (argv[1]);
+
+    root_p.pre ();
+    doc_p.parse (ifs);
+    result_type result (root_p.post_xxx ());
+  }
+  catch (const std::ifstream::failure&amp;)
+  {
+    cerr &lt;&lt; argv[1] &lt;&lt; ": unable to open or io failure" &lt;&lt; endl;
+    return 1;
+  }
+}
+  </pre>
+
+
+  <p>For reporting application errors from parsing callbacks, you
+     can throw any exceptions of your choice. They are propagated to
+     the caller of the parser without any alterations.</p>
+
+  <p>The XML errors can be reported either by throwing the
+     <code>xml_schema::parsing</code> exception or by a callback
+     to the <code>xml_schema::error_handler</code> object (and
+     <code>xercesc::ErrorHandler</code> object in case of Xerces-C++).</p>
+
+  <p>The <code>xml_schema::parsing</code> exception contains
+     a list of warnings and errors that were accumulated during
+     parsing. Note that this exception is thrown only if there
+     was an error. This makes it impossible to obtain warnings
+     from an otherwise successful parsing using this mechanism.
+     The following listing shows the definition of
+     <code>xml_schema::parsing</code> exception. Note that if the
+     character type is <code>wchar_t</code>, then the string type
+     and output stream type in the definition become
+     <code>std::wstring</code> and <code>std::wostream</code>,
+     respectively (see <a href="#5.1">Section 5.1, "Character Type
+     and Encoding"</a>).</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class exception: public std::exception
+  {
+  protected:
+    virtual void
+    print (std::ostream&amp;) const = 0;
+  };
+
+  inline std::ostream&amp;
+  operator&lt;&lt; (std::ostream&amp; os, const exception&amp; e)
+  {
+    e.print (os);
+    return os;
+  }
+
+
+  class severity
+  {
+  public:
+    enum value
+    {
+      warning,
+      error
+    };
+  };
+
+
+  class error
+  {
+  public:
+    error (xml_schema::severity,
+           const std::string&amp; id,
+           unsigned long line,
+           unsigned long column,
+           const std::string&amp; message);
+
+    xml_schema::severity
+    severity () const;
+
+    const std::string&amp;
+    id () const;
+
+    unsigned long
+    line () const;
+
+    unsigned long
+    column () const;
+
+    const std::string&amp;
+    message () const;
+  };
+
+  std::ostream&amp;
+  operator&lt;&lt; (std::ostream&amp;, const error&amp;);
+
+
+  class diagnostics: public std::vector&lt;error>
+  {
+  };
+
+  std::ostream&amp;
+  operator&lt;&lt; (std::ostream&amp;, const diagnostics&amp;);
+
+
+  class parsing: public exception
+  {
+  public:
+    parsing ();
+    parsing (const xml_schema::diagnostics&amp;);
+
+    const xml_schema::diagnostics&amp;
+    diagnostics () const;
+
+    virtual const char*
+    what () const throw ();
+
+  protected:
+    virtual void
+    print (std::ostream&amp;) const;
+  };
+}
+  </pre>
+
+  <p>The following example shows how we can catch and print this
+     exception. The code will print diagnostics messages one per line
+     in case of an error.</p>
+
+  <pre class="c++">
+int
+main (int argc, char* argv[])
+{
+  try
+  {
+    // Parse.
+  }
+  catch (const xml_schema::parsing&amp; e)
+  {
+    cerr &lt;&lt; e &lt;&lt; endl;
+    return 1;
+  }
+}
+  </pre>
+
+  <p>With the <code>error_handler</code> approach the diagnostics
+     messages are delivered as parsing progresses. The following
+     listing presents the definition of the <code>error_handler</code>
+     interface. Note that if the character type is <code>wchar_t</code>,
+     then the string type in the interface becomes <code>std::wstring</code>
+     (see <a href="#5.1">Section 5.1, "Character Type and Encoding"</a>).</p>
+
+  <pre class="c++">
+namespace xml_schema
+{
+  class error_handler
+  {
+  public:
+    class severity
+    {
+    public:
+      enum value
+      {
+        warning,
+        error,
+        fatal
+      };
+    };
+
+    virtual bool
+    handle (const std::string&amp; id,
+            unsigned long line,
+            unsigned long column,
+            severity,
+            const std::string&amp; message) = 0;
+  };
+}
+  </pre>
+
+  <p>The return value of the <code>handle()</code> function indicates whether
+     parsing should continue if possible. The error with the fatal severity
+     level terminates the parsing process regardless of the returned value.
+     At the end of the parsing process with an error that was reported via
+     the  <code>error_handler</code> object, an empty
+     <code>xml_schema::parsing</code> exception is thrown to indicate
+     the failure to the caller. You can alter this behavior by throwing
+     your own exception from the <code>handle()</code> function.</p>
+
+
+  <!-- Appendix A -->
+
+
+  <h1><a name="A">Appendix A &mdash; Supported XML Schema Constructs</a></h1>
+
+  <p>The C++/Parser mapping supports validation of the following W3C XML
+     Schema constructs in the generated code.</p>
+
+  <!-- border="1" is necessary for html2ps -->
+  <table id="features" border="1">
+    <tr><th>Construct</th><th>Notes</th></tr>
+    <tr><th colspan="2">Structure</th></tr>
+
+    <tr><td>element</td><td></td></tr>
+    <tr><td>attribute</td><td></td></tr>
+
+    <tr><td>any</td><td></td></tr>
+    <tr><td>anyAttribute</td><td></td></tr>
+
+    <tr><td>all</td><td></td></tr>
+    <tr><td>sequence</td><td></td></tr>
+    <tr><td>choice</td><td></td></tr>
+
+    <tr><td>complex type, empty content</td><td></td></tr>
+    <tr><td>complex type, mixed content</td><td></td></tr>
+    <tr><td>complex type, simple content extension</td><td></td></tr>
+    <tr><td>complex type, simple content restriction</td>
+        <td>Simple type facets are not validated.</td></tr>
+    <tr><td>complex type, complex content extension</td><td></td></tr>
+    <tr><td>complex type, complex content restriction</td><td></td></tr>
+
+    <tr><td>list</td><td></td></tr>
+
+    <tr><th colspan="2">Datatypes</th></tr>
+
+    <tr><td>byte</td><td></td></tr>
+    <tr><td>unsignedByte</td><td></td></tr>
+    <tr><td>short</td><td></td></tr>
+    <tr><td>unsignedShort</td><td></td></tr>
+    <tr><td>int</td><td></td></tr>
+    <tr><td>unsignedInt</td><td></td></tr>
+    <tr><td>long</td><td></td></tr>
+    <tr><td>unsignedLong</td><td></td></tr>
+    <tr><td>integer</td><td></td></tr>
+    <tr><td>nonPositiveInteger</td><td></td></tr>
+    <tr><td>nonNegativeInteger</td><td></td></tr>
+    <tr><td>positiveInteger</td><td></td></tr>
+    <tr><td>negativeInteger</td><td></td></tr>
+
+    <tr><td>boolean</td><td></td></tr>
+
+    <tr><td>float</td><td></td></tr>
+    <tr><td>double</td><td></td></tr>
+    <tr><td>decimal</td><td></td></tr>
+
+    <tr><td>string</td><td></td></tr>
+    <tr><td>normalizedString</td><td></td></tr>
+    <tr><td>token</td><td></td></tr>
+    <tr><td>Name</td><td></td></tr>
+    <tr><td>NMTOKEN</td><td></td></tr>
+    <tr><td>NCName</td><td></td></tr>
+    <tr><td>language</td><td></td></tr>
+    <tr><td>anyURI</td><td></td></tr>
+
+    <tr><td>ID</td><td>Identity constraint is not enforced.</td></tr>
+    <tr><td>IDREF</td><td>Identity constraint is not enforced.</td></tr>
+
+    <tr><td>NMTOKENS</td><td></td></tr>
+    <tr><td>IDREFS</td><td>Identity constraint is not enforced.</td></tr>
+
+    <tr><td>QName</td><td></td></tr>
+
+    <tr><td>base64Binary</td><td></td></tr>
+    <tr><td>hexBinary</td><td></td></tr>
+
+    <tr><td>date</td><td></td></tr>
+    <tr><td>dateTime</td><td></td></tr>
+    <tr><td>duration</td><td></td></tr>
+    <tr><td>gDay</td><td></td></tr>
+    <tr><td>gMonth</td><td></td></tr>
+    <tr><td>gMonthDay</td><td></td></tr>
+    <tr><td>gYear</td><td></td></tr>
+    <tr><td>gYearMonth</td><td></td></tr>
+    <tr><td>time</td><td></td></tr>
+  </table>
+
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -17,7 +17,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -26,22 +26,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -175,7 +173,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -184,22 +182,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -297,7 +293,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -306,22 +302,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -400,7 +394,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -409,22 +403,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -467,28 +459,28 @@
 !
 !     *** file unit reference numbers ***
 !
-! EXPORT [   ] not used
-! FUNHI  [CAL] highest free unit number
-!              =IUNMAX
-! FUNLO  [ 21] lowest free unit number
-! HIOPEN [   ] highest unit number of an open file
-! IMPORT [   ] not used
-! INPUTF [  3] unit number for the file with command input ('INPUT')
-!              set by file SWANINIT
-! ITMOPT [  1] time coding option
-!              =1; ????
-!              =3; ????
-!              set by file SWANINIT
-! IUNMIN [  0] minimum unit number
-! IUNMAX [ 99] maximum unit number
-!              set by file SWANINIT
-! PRINTF [  4] unit number for the file with standard output ('PRINT')
-!              set by file SWANINIT
-! PRTEST [CAL] unit number for the print file containing test output
-!              =PRINTF
-!              set by file SWANINIT
-! SCREEN [  6] unit number for the screen
-!              (is for batch-oriented systems equal to PRINTF)
+! EXPORT [     ] not used
+! FUNHI  [  CAL] highest free unit number
+!                =IUNMAX
+! FUNLO  [   21] lowest free unit number
+! HIOPEN [     ] highest unit number of an open file
+! IMPORT [     ] not used
+! INPUTF [    3] unit number for the file with command input ('INPUT')
+!                set by file SWANINIT
+! ITMOPT [    1] time coding option
+!                =1; ????
+!                =3; ????
+!                set by file SWANINIT
+! IUNMIN [    0] minimum unit number
+! IUNMAX [99999] maximum unit number
+!                set by file SWANINIT
+! PRINTF [    4] unit number for the file with standard output ('PRINT')
+!                set by file SWANINIT
+! PRTEST [  CAL] unit number for the print file containing test output
+!                =PRINTF
+!                set by file SWANINIT
+! SCREEN [    6] unit number for the screen
+!                (is for batch-oriented systems equal to PRINTF)
 !
       INTEGER EXPORT, FUNHI , FUNLO , HIOPEN
       INTEGER IMPORT, INPUTF, ITMOPT, IUNMAX
@@ -543,7 +535,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -552,22 +544,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -708,7 +698,9 @@
 !  (76) ['DISICE']
 !  (77) [  'AICE']
 !  (78) [  'HICE']
-!  (79) [ 'FHSWE']
+!  (79) [  'REDB']
+!  (80) [  'REDC']
+!  (81) [ 'FHSWE']
 ! OVSNAM(NMOVAR)   short name of output quantity
 !  ( 1) [    'Xp']
 !  ( 2) [    'Yp']
@@ -783,7 +775,9 @@
 !  (76) [  'Sice']
 !  (77) ['  aice']
 !  (78) ['  hice']
-!  (79) ['FHswel']
+!  (79) ['Sbragg']
+!  (80) [   'Sqc']
+!  (81) ['FHswel']
 ! OVLNAM(NMOVAR)   long name of output quantity
 !  ( 1) [                        'X user coordinate']
 !  ( 2) [                        'Y user coordinate']
@@ -858,7 +852,9 @@
 !  (76) [                      'Sea ice dissipation']
 !  (77) [             'ice concentration (fraction)']
 !  (78) [                            'ice thickness']
-!  (79) [                           'FEWS Hm0 swell']
+!  (79) [          'Total absolute Bragg scattering']
+!  (80) [             'Total absolute QC scattering']
+!  (81) [                           'FEWS Hm0 swell']
 ! OVUNIT(NMOVAR)   unit of of output quantity
 !  ( 1) [CALCULAT] =UL
 !  ( 2) [CALCULAT] =UL
@@ -933,7 +929,9 @@
 !  (76) [  'm2/s'] changes to 'W/m2' if INRHOG=1
 !  (77) [     ' ']
 !  (78) [     'm']
-!  (79) [    'UH']
+!  (79) [  'm2/s'] change to UDL ???, changed to 'W/m2', if INRHOG=1
+!  (80) [  'm2/s'] change to UDL ???, changed to 'W/m2', if INRHOG=1
+!  (81) [    'UH']
 ! SNAME [        ] name of output point set
 ! UAP   [  'W/m2'] unit of dissipation
 ! UD    [        ] not used
@@ -1053,7 +1051,9 @@
 !  (76)  [  1]   Sice
 !  (77)  [  1]   aice
 !  (78)  [  1]   hice
-!  (79)  [  1]   fhswe
+!  (79)  [  1]   Sbragg
+!  (80)  [  1]   Sqc
+!  (81)  [  1]   fhswe
 ! OVEXCV(NMOVAR)   exception value for output quantity
 !  ( 1)  [ -1.E10] Xp
 !  ( 2)  [ -1.E10] Yp
@@ -1126,7 +1126,9 @@
 !  (76)  [    -9.] Sice
 !  (77)  [    -9.] aice
 !  (78)  [    -9.] hice
-!  (79)  [   100.] fhswe
+!  (79)  [    -9.] Sbragg
+!  (80)  [    -9.] Sqc
+!  (81)  [   100.] fhswe
 ! OVLEXP(NMOVAR)   lower expected limit of output quantity
 !  ( 1)  [ -1.E10] Xp
 !  ( 2)  [ -1.E10] Yp
@@ -1199,7 +1201,9 @@
 !  (76)  [     0.] Sice
 !  (77)  [     0.] aice
 !  (78)  [     0.] hice
-!  (79)  [     0.] fhswell
+!  (79)  [     0.] Sbragg
+!  (80)  [     0.] Sqc
+!  (81)  [     0.] fhswell
 ! OVLLIM(NMOVAR)   lower limit of validity of output quantity
 !  ( 1)  [ -1.E10] Xp
 !  ( 2)  [ -1.E10] Yp
@@ -1272,7 +1276,9 @@
 !  (76)  [     0.] Sice
 !  (77)  [     0.] aice
 !  (78)  [     0.] hice
-!  (79)  [     0.] fhswell
+!  (79)  [     0.] Sbragg
+!  (80)  [     0.] Sqc
+!  (81)  [     0.] fhswell
 ! OVHEXP(NMOVAR)   upper expected limit of output quantity
 !  ( 1)  [  1.E10] Xp
 !  ( 2)  [  1.E10] Yp
@@ -1345,7 +1351,9 @@
 !  (76)  [    0.1] Sice
 !  (77)  [    1.0] aice
 !  (78)  [    10.] hice
-!  (79)  [    10.] fhswell
+!  (79)  [    0.1] Sbragg
+!  (80)  [    0.1] Sqc
+!  (81)  [    10.] fhswell
 ! OVULIM(NMOVAR)   upper limit of validity
 !  ( 1)  [  1.E10] Xp
 !  ( 2)  [  1.E10] Yp
@@ -1418,7 +1426,9 @@
 !  (76)  [  1000.] Sice
 !  (77)  [    1.0] aice
 !  (78)  [   100.] hice
-!  (79)  [   100.] fhswell
+!  (79)  [  1000.] Sbragg
+!  (80)  [  1000.] Sqc
+!  (81)  [   100.] fhswell
 ! SINCQ  [       ] sin of ALCQ
 ! SINPQ  [       ] sin of ALPQ
 ! SPCPOW [      1] power in expression for computation of average frequency
@@ -1468,7 +1478,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1477,22 +1487,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1527,10 +1535,10 @@
 !
 !  6. Parameter variables
 !
-!     NUMGRD [  15]  maximum number of input grids
+!     NUMGRD [  18]  maximum number of input grids
 !
       INTEGER NUMGRD
-      PARAMETER (NUMGRD = 15)
+      PARAMETER (NUMGRD = 18)
 !
 !  7. Local variables
 !
@@ -1552,6 +1560,9 @@
 ! grid(13): fluid mud layer
 ! grid(14): ice concentration (fraction)
 ! grid(15): ice thickness (m)
+! grid(16): sea-swell significant wave height
+! grid(17): sea-swell mean wave period
+! grid(18): sea-swell mean wave direction
 !
 ! ALPG(NUMGRD)  [    0.] direction of the x-axis w.r.t. user coordinates
 ! CCURV         [ FALSE] correction curvilinear grid
@@ -1605,6 +1616,9 @@
 ! VARWLV        [   FAL] water level is/is not variable over space
 ! VARAICE       [   FAL] ice concentration (fraction) is/is not variable over space
 ! VARHICE       [   FAL] ice thickness is/is not variable over space
+! VARHSS        [   FAL] sea-swell sig wave height is/is not variable over space
+! VARTSS        [   FAL] sea-swell mean wave period is/is not variable over space
+! VARDSS        [   FAL] sea-swell mean wave direction is/is not variable over space
 ! XPG(NUMGRD)   [    0.] x of origin
 ! XOFFS         [    0.] offset value in x
 !                        (from user coord. system to internal coord. system)
@@ -1630,6 +1644,7 @@
       LOGICAL VARNPL,      VARTUR,      VARMUD
       LOGICAL CCURV                                                       41.53
       LOGICAL VARAICE,     VARHICE
+      LOGICAL VARHSS,      VARTSS,      VARDSS
 !
 !     *** variables for input files ***
 !
@@ -1684,7 +1699,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1693,22 +1708,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1749,7 +1762,7 @@
 !     MMUD   [  10] dimension of array PMUD
 !     MNUMS  [  40] dimension of array PNUMS
 !     MQUAD  [  10] dimension of array PQUAD
-!     MREDS  [   2] dimension for redistribution arrays                   40.85
+!     MREDS  [   4] dimension for redistribution arrays                   41.90 41.80 40.85
 !     MSETUP [   2] dimension of array PSETUP
 !     MSHAPE [   5] dimension of array PSHAPE
 !     MSPPAR [   5] dimension of array SPPARM
@@ -1759,23 +1772,28 @@
 !     MTRIAD [  10] dimension of array PTRIAD
 !     MWCAP  [  15] dimension of array PWCAP
 !     MWIND  [  40] dimension of array PWIND
-!     MIC4M2 [   8] dimension of array PIC4M2
+!     MSICE  [   8] dimension of array PSICE
+!     MICE   [   2] dimension of array PICE
+!     MBRAG  [   5] dimension of array PBRAG                              41.80
+!     MSCAT  [  10] dimension of array PSCAT                              41.90
 !
       INTEGER             MBOT,        MNUMS,       MQUAD
       INTEGER             MSETUP,      MSHAPE,      MSPPAR,      MSURF
       INTEGER             MTRIAD,      MWCAP,       MWIND,       MTURBV
-      INTEGER             MIC4M2                                          41.75
+      INTEGER             MSICE,       MICE                               41.81 41.75
       INTEGER             MICMAX
       INTEGER             MDIFFR                                          40.21
       INTEGER             MMUD
       INTEGER             MDISP                                           40.67
       INTEGER             MGENR, MREDS, MTRNP                             40.85
+      INTEGER             MBRAG                                           41.80
+      INTEGER             MSCAT                                           41.90
 !
       PARAMETER           (MBOT   = 10)
       PARAMETER           (MDIFFR = 10)                                   40.21
       PARAMETER           (MDISP  =  8)                                   41.75 40.59 40.35 40.67
       PARAMETER           (MGENR  =  1)                                   40.85
-      PARAMETER           (MREDS  =  2)                                   40.85
+      PARAMETER           (MREDS  =  4)                                   41.90 41.80 40.85
       PARAMETER           (MTRNP  =  3)                                   40.85
       PARAMETER           (MICMAX = 13)
       PARAMETER           (MMUD   = 10)
@@ -1789,7 +1807,10 @@
       PARAMETER           (MWCAP  = 15)
       PARAMETER           (MWIND  = 40)
       PARAMETER           (MTURBV =  5)                                   40.35
-      PARAMETER           (MIC4M2 =  8)                                   41.75
+      PARAMETER           (MSICE  =  8)                                   41.81 41.75
+      PARAMETER           (MICE   =  2)                                   41.81 41.75
+      PARAMETER           (MBRAG  =  5)                                   41.80
+      PARAMETER           (MSCAT  = 10)                                   41.90
 !
 !  7. Local variables
 !
@@ -1800,6 +1821,7 @@
 ! JAOLD  [ 8+2*MDISP] within array SWMATR
 ! JASTD2 [  1] new air-sea temp. diff. within array COMPDA
 ! JASTD3 [  1] last read air-sea temp. diff. within array COMPDA
+! JBIPH  [ 29] parametrized biphase
 ! JBOTLV [ 28] bottom level within array COMPDA
 ! JCDRAG [  1] drag coefficient within array COMPDA,
 !              set by command WCAP JANS ...
@@ -1812,6 +1834,8 @@
 ! JDP1   [  7] old depth within array COMPDA
 ! JDP2   [  8] new depth within array COMPDA
 ! JDP3   [ 15] last read depth within array COMPDA
+! JDSS2  [   ] new sea-swell Dir within array COMPDA
+! JDSS3  [   ] last read sea-swell Dir within array COMPDA
 ! JDSXB  [  1] bottom friction dissipation within array COMPDA
 !              set by command TABLE/BLOCK
 ! JDSXL  [  1] swell dissipation within array COMPDA
@@ -1834,8 +1858,8 @@
 !              set by command READ FR ...
 ! JFRC3  [  1] friction coefficient within array COMPDA
 !              set by command READ FR ...
-! JGAMMA [  1] breaker parameter within array COMPDA,
-!              set by command BREAK NKD ...
+! JGAMMA [  1] breaker index within array COMPDA
+!              used with command BREAK BKD
 ! JGEN0  [   ] within array SWMATR
 ! JGEN1  [   ] within array SWMATR
 ! JGENR  [  1] total generation within array COMPDA
@@ -1844,6 +1868,8 @@
 !              set by command TABLE/BLOCK
 ! JHS    [  1] significant wave height Hs within array COMPDA
 ! JHSIBC [ 25] significant wave height from boundary condition in array COMPDA
+! JHSS2  [   ] new sea-swell Hs within array COMPDA
+! JHSS3  [   ] last read sea-swell Hs within array COMPDA
 ! JLEAK  [ 21] "leak" within array COMPDA
 !              (refractive energy tranport over sector boundaries)
 ! JLEK1  [  7+2*MDISP] within array SWMATR
@@ -1862,6 +1888,8 @@
 ! JHICE3 [   ] last read ice thickness within array COMPDA
 ! JNPLA2 [   ] new number of plants / m2 within array COMPDA
 ! JNPLA3 [   ] last read number of plants / m2 within array COMPDA
+! JTSS2  [   ] new sea-swell Tm within array COMPDA
+! JTSS3  [   ] last read sea-swell Tm within array COMPDA
 ! JTURB2 [   ] new turbulent viscosity within array COMPDA                40.35
 ! JTURB3 [   ] last read turbulent viscosity within array COMPDA          40.35
 ! JP4D   [  7] within array SWTSDA, quadruplet interactions (implicit part)
@@ -1874,6 +1902,8 @@
 ! JPTURB [ 10] within array SWTSDA, turbulent dissipation
 ! JPMUD  [ 11] within array SWTSDA, fluid mud dissipation
 ! JPICE  [ 13] within array SWTSDA, dissipation by sea ice
+! JPBRAG [ 14] within array SWTSDA, Bragg scattering
+! JPQCS  [ 15] within array SWTSDA, QC scattering
 ! JPWBRK [  5] within array SWTSDA, surf breaking
 ! JPWCAP [  3] within array SWTSDA, white capping
 ! JPWNDD [  2] within array SWTSDA, wind input term (implicit part)
@@ -1890,8 +1920,10 @@
 !              set by command TABLE/BLOCK
 ! JRSXT  [  1] triads within array COMPDA
 !              set by command TABLE/BLOCK
-! JRESPL [  1] response length within array COMPDA,
-!              set by command BREAK NKD ...
+! JRSXB  [  1] Bragg scattering within array COMPDA
+!              set by command TABLE/BLOCK
+! JRSXC  [  1] QC scattering within array COMPDA
+!              set by command TABLE/BLOCK
 ! JSETUP [  1] setup values within array COMPDA
 ! JSTP   [  5] steepness within array COMPDA
 ! JTAUW  [  1] TauW within array COMPDA,
@@ -1907,7 +1939,7 @@
 ! JTSXS  [  1] sigma-propagation within array COMPDA
 !              set by command TABLE/BLOCK
 ! JUBOT  [  3] bottom orbital velocity within array COMPDA
-! JURSEL [ 27] Ursell number as used in Triad computation
+! JURSEL [ 27] Ursell number as used in triad computation
 ! JUSTAR [  1] friction velocity within array COMPDA,
 !              set by command WCAP JANS ...
 ! JVX1   [  9] x of old current velocity within array COMPDA
@@ -1925,10 +1957,10 @@
 ! JWY3   [ 19] y of last read wind velocity within array COMPDA
 ! JZEL   [  1] roughness within array COMPDA,
 !              set by command WCAP JANS ...
-! MCMVAR [ 28] within array COMPDA,
+! MCMVAR [ 29] within array COMPDA,
 !              =MCMVAR+2, for command READ FR ... (add JFRC2, JFRC3)
 !              =MCMVAR+4, for command WCAP JANS ... (add JCDRAG, JTAUW, JUSTAR, JZEL)
-!              =MCMVAR+2, for command BREA NKD ... (add JGAMMA, JRESPL)
+!              =MCMVAR+1, for command BREAKING BKD (add JGAMMA)
 !              =MCMVAR+1, for command TABLE/BLOCK TMBOT (add JPBOT)
 !              =MCMVAR+1, for command TABLE/BLOCK DISB (add JDSXB)
 !              =MCMVAR+1, for command TABLE/BLOCK DISSU (add JDSXS)
@@ -1943,6 +1975,8 @@
 !              =MCMVAR+1, for command TABLE/BLOCK REDI (add JREDS)
 !              =MCMVAR+1, for command TABLE/BLOCK REDQ (add JRSXQ)
 !              =MCMVAR+1, for command TABLE/BLOCK REDT (add JRSXT)
+!              =MCMVAR+1, for command TABLE/BLOCK REDB (add JRSXB)
+!              =MCMVAR+1, for command TABLE/BLOCK REDC (add JRSXC)
 !              =MCMVAR+1, for command TABLE/BLOCK PROPA (add JTRAN)
 !              =MCMVAR+1, for command TABLE/BLOCK PROPX (add JTSXG)
 !              =MCMVAR+1, for command TABLE/BLOCK PROPT (add JTSXT)
@@ -1950,10 +1984,10 @@
 !              =MCMVAR+1, for command TABLE/BLOCK RADST (add JRADS)
 ! MLSWMAT [  2] within array LSWMAT
 ! MSWMATR [ 16] within array SWMATR
-! MTSVAR  [ 11] within array TESTDA
+! MTSVAR  [ 15] within array TESTDA
 !
       INTEGER             JABIN,       JABLK,       JAOLD
-      INTEGER             JASTD2,      JASTD3,      JGAMMA,      JRESPL
+      INTEGER             JASTD2,      JASTD3,      JGAMMA
       INTEGER             JCDRAG,      JDHS,        JDIS0
       INTEGER             JDIS1,       JDISS,       JDPSAV,      JDP1
       INTEGER             JDP2
@@ -1984,10 +2018,14 @@
       INTEGER             JWX2,        JWX3
       INTEGER             JWY2,        JWY3,        JZEL  ,      JPBOT
       INTEGER             MCMVAR,                   MTSVAR,      JURSEL
+      INTEGER             JBIPH                                           41.97
       INTEGER             JBOTLV,      MSWMATR,     MLSWMAT
       INTEGER             JPSWEL
       INTEGER             JAICE2,      JAICE3,      JHICE2,      JHICE3   41.75
       INTEGER             JPICE,       JDSXI                              41.75
+      INTEGER             JHSS2,       JHSS3,       JTSS2,       JTSS3    41.82
+      INTEGER             JDSS2,       JDSS3                              42.06
+      INTEGER             JPBRAG,      JRSXB,       JPQCS,       JRSXC    41.90 41.80
 !
 !     *** location and dimensions of computational grid ***
 !
@@ -2130,16 +2168,29 @@
 ! FSHAPE [     2] indicates option for computation of frequency distribution
 !                 in the spectrum (boundary spectra etc.)
 !                 =2: Jonswap(default set by subr SWINIT),
-!                 =1: Pierson-Moskowitz, =3: bin, =4: Gaussian (set by command
-!                 BOUNshape ..)
+!                 =1: Pierson-Moskowitz, =3: bin, =4: Gaussian, =5: TMA
+!                 (set by command BOUNshape ..)
 ! HSRERR [   0.1] The error margin allowed between pre-scribed and calculated Hs
 !                 at the up-wave boundary. If exceeded a warning is produced
+! IBIPH  [     1] indicates estimating biphase:
+!                 =1; based on Eldeberky (1996)
+!                 =2; based on Saprykina et al. (2017)
+!                 =3; based on De Wit (2022)
 ! IBOT   [     0] indicator bottom friction:
 !                 =0; no bottom friction dissipation
 !                 =1; set by command FRIC JON  ..., Jonswap bottom friction model
 !                 =2; for command FRIC COLL ..., Collins bottom friction model
 !                 =3; for command FRIC MAD  ..., Madsen bottom friction model
 !                 =5; for command FRIC RIP  .... roughness due to ripples and sediment
+! IBRAG  [     0] indicates computation of Bragg scattering term:
+!                 =0; source term is inactive
+!                 =1; source term is calculated per sweep direction;
+!                     bottom spectrum interpolated at k - k' a priori thus requiring storage
+!                 =2; source term is calculated per sweep direction;
+!                     bottom spectrum interpolated at k - k' per sweep (no storage)
+!                 =3; source term is calculated per iteration
+!                     bottom spectrum interpolated at k - k' per iteration (no storage)
+!                 =4; implicit integration according to Ardhuin and Herbers (2002)
 ! ICMAX  [     3] number of points in computational stencil
 ! ICOR   [      ] not used
 ! ICUR   [     0] indicates presence of currents:
@@ -2167,14 +2218,27 @@
 !                 =1; for command GEN1 ...,
 !                 =2; for command GEN2 ...,
 !                 =3; for command GEN3 ...,
+!                 =4; for command GEN4 ...,
 ! IICE   [      ] indicates how ice is to be handled within the model
 !                 =0; for no representation of sea ice (default)
 !                 =1; activated with keyword "CICE" in "INPUT" file.
 !                     Vestigial code: not in public release.
 !                 =2; activated with keyword "ADCICE" in "INPUT" file.
 !                     Vestigial code: not in public release.
-!                 =3; activated with keyword "IC4M2" in "INPUT" file.
-!                     Active code: dissipation by sea ice using method IC4M2
+!                 =3; v41.31: activated with keyword "IC4M2" in "INPUT" file.
+!                 =3; v41.41+ : activated with keyword "R19" in "INPUT" file.
+!                     Active code: dissipation by sea ice using method denoted
+!                        as "IC4M2" in Rogers (2019) (R19), since it is similar
+!                        (but not identical!) to IC4M2 in WW3
+!                 =4; v41.41+: "D15" method. This uses a formula from
+!                     Doble et al. (2015)
+!                 =5; v41.41+: "M18" method. This uses a formula from
+!                     Meylan et al. (2018) "model with order 3 power law"
+!                     also known as "M2" model in Liu et al. (2020)
+!                 =6; v41.41+: "R21B" method. This uses a formula from
+!                     Rogers et al. (2021) Tech report, based on combination
+!                     of Yu et al. (2019) normalization with monomial power
+!                     law empirical fitting.
 !CTGA 111003:  Full ice implementation.  Parameter read in swanpre1.ftn
 !CTGA! IICE   [      ] indicates how ice is to be handled within the model
 !CTGA!                 =1; for undefined command
@@ -2184,6 +2248,11 @@
 !                 =0; no dissipation due to fluid mud
 !                 =1; dissipation due to fluid mud according to Ng (2000)
 ! IPRE   [      ] not used
+! IQCM   [     0] indicates computation of QC scattering term:
+!                 =0; source term is inactive
+!                 =1; scattering due to depth and current variation
+!                 =2; wave-current interaction; Fourier transforms per grid point (no storage)
+!                 =3; wave-current interaction; Fourier transforms in pre-phase thus requiring storage
 ! IQUAD  [     2] indicates quadruplet interaction term:
 !                 =0; for command OFF QUAD
 !                 =0; for command GEN1 ...,
@@ -2246,6 +2315,7 @@
 !                 according to Battjes & Janssen (1978)
 !                 =5; for command WCAP KBJ ..., not documented in manual,
 !                 combined formulation of Komen (1) and Battjes & Janssen (4)
+! IWCCUR [     0] indicates enhanced whitecapping in counter current
 ! IWIND  [     0] indicates presence of wind, and type of source term used:
 !                 =0; no wind
 !                 =1; for command GEN1 ..., if wind is made active,
@@ -2270,6 +2340,8 @@
 !                 =2; setup is calculated with the boundary conditions from
 !                     a nest file
 ! LSPNAR [.fals.] indicates whether directional spread is too narrow or not
+! LSRFB  [.fals.] indicates whether surfbeat computation should be performed
+! MODGAM [.true.] if true modify breaker index for BKD during iteration process
 ! MXITST [    50] max. number of iterations in stationary computations
 ! MXITNS [     1] max. number of iterations in nonstationary computations
 ! NCOR   [     1] not used
@@ -2304,13 +2376,11 @@
 !  ( 3)  [0.0027] =viscm; set by command MUD ... [viscm] ...
 !  ( 4)  [  RHOW] =rhow; set by command MUD ... [rhow] ...
 !  ( 5)  [1.3E-6] =viscw; set by command MUD ... [viscw] ...
-! PIC4M2(MIC4M2)  coefficients for the dissipation by sea ice using simple
-!                 polynomial with integer powers. (Sice method=IC4M2)
-!                 ki= C0*f^0 + C1*f^1 ... C5*f^5 + C6*f^6
-!                 The first coefficient is reserved for ice concentration
-!                   but it used only if the user elects to treat ice concentration
-!                   as constant and uniform.
-!  ( 1)  [    0.] = ice concentration (as fraction between 0 and 1)
+! PSICE(MSICE)    coefficients for the dissipation by sea ice.
+!                 The meaning of PSICE depends on IICE as follows:
+!                 For case of IICE=3: simple polynomial with integer
+!                 powers, ki= C0*f^0 + C1*f^1 ... C5*f^5 + C6*f^6
+!  ( 1)  [    0.] = unused
 !  ( 2)  [    0.] = coefficient C0, for f^0 term
 !  ( 3)  [    0.] = coefficient C1, for f^1 term
 !  ( 4)  [    0.] = coefficient C2, for f^2 term
@@ -2318,6 +2388,19 @@
 !  ( 6)  [    0.] = coefficient C4, for f^4 term
 !  ( 7)  [    0.] = coefficient C5, for f^5 term
 !  ( 8)  [    0.] = coefficient C6, for f^6 term
+!                 For case of IICE=4 :
+!  ( 1)  [ 2.13 ] = coefficient Chf
+!  ( 2 to 8 )     = unused
+!                 For case of IICE= 5:
+!  ( 1)  [ 0.059 ] = coefficient Chf
+!  ( 2 to 8 )      = unused
+!                 For case of IICE= 6:
+!  ( 1)  [ 2.9 ]  = coefficient Chf
+!  ( 2)  [ 4.5 ]  = coefficient npf
+!  ( 3 to 8 )     = unused
+! PICE(MICE)      value of uniform ice fraction and thickness,  used only
+!                 if the user elects to treat ice fraction and thickness
+!                 as constant and uniform.
 ! PNUMS(MNUMS)    numerical coefficients
 !                 accuracy criterion:
 !  ( 1)  [  0.02] relative error in Hs and Tm01
@@ -2399,6 +2482,8 @@
 !                 =0. no limiter
 !                 =1. ctheta will be limited
 !  (36)   [  0.5] =upper limit of CFL restriction for ctheta
+!  (37)   [ 95. ] = required fraction of wet grid points with which modification
+!                   of BKD-computed breaker index stops
 ! PQUAD(MQUAD)    coefficients for quadruplet interaction
 !  ( 1)  [  0.25] lambda in eq. B29 of user manual
 !  ( 2)  [  3.E7] coefficient of interactions
@@ -2416,6 +2501,7 @@
 !                 =sigfr; set by command BOUN SHAPE .. GAU [sigfr]
 !                 after reading the value is converted to radians/second
 !                 by a 2 pi multiplication
+!  ( 3)  [      ] reference depth for TMA spectrum
 ! PSURF(MSURF)    surf breaking coefficients
 !  ( 1)  [   1.0] coef. for determining rate of dissipation, (Battjes Janssen),
 !                 =1.5; for command BRE VAR
@@ -2446,7 +2532,7 @@
 !  ( 3)  [  10.0] controls above which Ursell number the quadruplets (and
 !                 thus the limiter) are switched off
 !                 =ursell; set by command LIM ... [ursell]
-!  ( 4)  [   0.2] critical Ursell number appearing in the biphase expression
+!  ( 4)  [  0.63] critical Ursell number appearing in the biphase expression
 !                 =urcrit; set by command TRIAD ... [urcrit]
 !  ( 5)  [  0.01] controls below which Ursell number the triads are switched off
 !                 =urslim; set by command TRIAD ... [urslim]
@@ -2562,6 +2648,25 @@
 !                 Caveleri and Malanotte,
 !                 =0.0015; for command GEN3 ... AGROW
 !                 =a; set by command GEN3 ... AGROW [a]
+! PBRAG(MBRAG)    Bragg scattering coefficients
+!  ( 1)  [   ---] size of region of depth points around computational grid point
+!                 for computing bottom spectrum; set by command BRAGG [nreg]
+!  ( 2)  [    5.] =cutoff; set by command BRAGG [cutoff]
+! PSCAT(MSCAT)    QC scattering coefficients
+!  ( 1)  [    1.] multiple of mean wave number for truncating scattering wave number space
+!                 =alpha; set by command SCAT TRU [alpha]
+!  ( 2)  [   ---] maximum scattering wave number
+!                 =qmax;  set by command SCAT TRU [qmax]
+!  ( 3)  [   ---] origin of the wave number in x-direction;
+!                 set by command SCAT GRI K [kxlow]
+!  ( 4)  [   ---] origin of the wave number in y-direction;
+!                 set by command SCAT GRI K [kylow]
+!  ( 5)  [   ---] length of the wave number grid in x-direction;
+!                 set by command SCAT GRI K [kxlen]
+!  ( 6)  [   ---] length of the wave number grid in y-direction;
+!                 set by command SCAT GRI K [kylen]
+!  ( 7)  [    1.] resolution factor to determine the step size of the wave number grid;
+!                 set by command SCAT GRI WID [rfac]
 ! SIGMAG [   0.1] width of the Gaussian frequency spectrum in Hz
 !                 =0.01; for command BOU STAT ... GAU
 !                 =sigfr; set by command BOU STAT ... GAU [sigfr]
@@ -2588,14 +2693,17 @@
       INTEGER             IBOT,        ICOR,        ICUR
       INTEGER             IDBR,        IDIF,        IGEN,        IINC
       INTEGER             IPRE,        IQUAD,       IREFR,       ISURF
-      INTEGER             ITERMX,      ITFRE,       ITRIAD
+      INTEGER             ITERMX,      ITFRE,       ITRIAD,      IBIPH
       INTEGER             IWCAP,       IWIND,       LSETUP,      IDRAG
       INTEGER             MXITST,      MXITNS,                   NCOR
       INTEGER             NSTATC,      NSTATM,      NUMOBS,      NCOMPT   40.41
       INTEGER             IDIFFR                                          40.21
+      INTEGER             IWCCUR                                          42.04
       INTEGER             IMUD                                            40.59
       INTEGER             IVEG                                            40.55
       INTEGER             ITURBV                                          40.35
+      INTEGER             IBRAG                                           41.80
+      INTEGER             IQCM                                            41.90
       INTEGER             IFRSRF                                          41.06
       INTEGER             IDISRF                                          41.47
 !CTGA 111003:  Full ice implementation.  Parameter read in swanpre1.ftn
@@ -2612,7 +2720,10 @@
       REAL                PDIFFR(MDIFFR)                                  40.21
       REAL                PMUD(MMUD)                                      40.59
       REAL                PTURBV(MTURBV)                                  40.35
-      REAL                PIC4M2(MIC4M2)                                  41.75
+      REAL                PBRAG(MBRAG)                                    41.80
+      REAL                PSICE(MSICE)                                    41.81 41.75
+      REAL                PICE(MICE)                                      41.81 41.75
+      REAL                PSCAT(MSCAT)                                    41.90
 !CTGA 111003:  Full ice implementation.  Parameter read in swanpre1.ftn
       REAL                WBICETH
       LOGICAL             ACUPDA
@@ -2621,6 +2732,9 @@
       LOGICAL             LADDS                                           40.85
       LOGICAL             CSETUP
       LOGICAL             LSPNAR
+      LOGICAL             LSRFB                                           41.85
+      LOGICAL, SAVE ::    RUNMADE = .FALSE.                               41.79
+      LOGICAL, SAVE ::    MODGAM = .TRUE.                                 41.96
 ! parameters for Babanin physics and swell, see Rogers et al (JTECH, 2012)
       REAL                A1SDS, A2SDS, P1SDS, P2SDS, CDSV, FESWELL       40.88
       REAL                RDCOEF, B1Z, WNDSCL, CDFAC                      40.88
@@ -2658,7 +2772,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2667,22 +2781,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2812,7 +2924,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2821,22 +2933,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2892,10 +3002,6 @@
 !                  seconds since the reference day (REFDAY))
 !
       REAL*8 TINIC, DT, TFINC, TIMCO
-!COH!
-!COH! COH_TINIC [   6] Start date and time in vector format (year,month,day,hour,min,sec)
-!COH! COH_TFINC [   6] End date and time in vector format (year,month,day,hour,min,sec)
-!COH      INTEGER COH_TINIC(6), COH_TFINC(6)
 !
 !     *** Time related variables for nested runs ***
 !

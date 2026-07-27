@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,20 +42,20 @@ contains
 
    subroutine CUTFIELD(X, Y, mmax, nmax, MC, NC)
       use precision, only: dp
-      use m_missing
-      use m_grid_block
+      use m_missing, only: xymis
+      use m_grid_block, only: mb, nb
 
       integer :: mmax, nmax, mc, nc
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
       integer :: i, j
 
-      do I = 1, MC
-         do J = 1, NC
+      do J = 1, NC
+         do I = 1, MC
             if (I >= MB(3) .and. I <= MB(4) .and. J >= NB(3) .and. J <= NB(4)) then
 !               mooi houwen zo
             else
                X(I, J) = XYMIS
-               Y(I, J) = 0d0
+               Y(I, J) = 0.0_dp
             end if
          end do
       end do

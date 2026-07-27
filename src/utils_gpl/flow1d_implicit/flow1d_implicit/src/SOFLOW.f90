@@ -6,16 +6,19 @@ subroutine SOFLOW(&
 &time   , dtf    , steady                   ,&
 &ngrid  , ngridm , nbran  , maxlev , nnode  ,&
 &nhstat , nqstat , maxtab , ntabm  , nbrnod ,&
-&nlev                                       ,&
+&nlev   , nstru                             ,&
 &branch , bfrict                            ,&
 &bfricp , hpack  , qpack  ,x       ,waoft   ,&
+&grid   , sectc  , sectv                    ,&        
 &wft    , aft    ,wtt     ,att     , of     ,&
 &hlev                                       ,&
 &hbdpar , qbdpar                            ,&
 &table  , ntab                              ,&
 &node   , numnod ,nodnod                    ,&
+&strpar , strtyp                            ,&
 &debug_wr                                   ,&
-&juer&
+&juer                                       ,&
+&fm1dimp                                     &
 &)
 !*******
 !    BEGIN original interface
@@ -138,6 +141,9 @@ subroutine SOFLOW(&
 !c
 !c
 !c**********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !c
 !c     Parameters
 !c
@@ -250,7 +256,7 @@ subroutine SOFLOW(&
    double precision  dtf    , resid  , time
 
    integer  ngrid  , ngridm , nbran  , maxlev , nnode  ,&
-   &nhstat , nqstat , maxtab , flitmx
+   &nhstat , nqstat , maxtab , flitmx, nstru
 !
 !    Originally input but currently parameters
 !
@@ -497,9 +503,6 @@ subroutine SOFLOW(&
    parameter (nstdb=0)
 
 !      nstru  = ip (gtipnt ( 'NSTRU' ))
-!     set as parameter because needed for allocating
-   integer nstru
-   parameter (nstru=0)
 
 !      ntab   =     gtipnt ( 'NTAB'  )
    integer ntab(4,maxtab)
@@ -656,15 +659,15 @@ subroutine SOFLOW(&
 
 !      strhis =     gtrpnt ( 'STRHIS')
 !      real    strhis(dmstrh,*)
-   real    strhis(dmstrh)
+   real    strhis(dmstrh,nstru)
 
 !      strpar =     gtrpnt ( 'STRPAR')
 !      real    strpar(dmstrpar,*)
-   real    strpar(dmstrpar)
+   real    strpar(dmstrpar,nstru)
 
 !      strtyp =     gtipnt ( 'STRTYP')
 !      integer strtyp(10,*)
-   integer strtyp(10)
+   integer strtyp(10,nstru)
 
 !      table  =     gtrpnt ( 'TABLE' )
    real    table(ntabm)
@@ -727,32 +730,36 @@ subroutine SOFLOW(&
 !c     not used?
 !      storWidth = waoft + ngrid
 !
+   psltvr(:,:) = 0.0
 !
 !    summerdikes input (not used)
 !
    arexop(1)=0
    arexop(2)=0
 !
-!     structures input (not used)
+!     structures input 
 !
    ncontr=0
    nlags=1
    ncsrel=1
-   do kgrid=1,ngrid
-      grid(kgrid)=1
-   enddo
-!
-!    only main channel
-!
-   do kgrid=1,ngrid
-      sectc(kgrid,1)=0
+   
+   strhis=0
+   strhis(9,1)=1
 
-!    I think this may need to be moved outside and compute based
-!    on the actual water level? maybe only initialization?
+   
+   do kgrid=1,ngrid
+
+      ![SOFLOW] cpack -> [FLOW] cp -> [FLOWIT] cpa ->
+      !   [FLHYPA] c ->
+      !      c(1,1) -> [FLBOCH] c
+      !      c(1,2) -> [FLBOCK] cs 
+      !   [FLDSCO] cp -> [FLABCD] cp 
+      !      cp(1,1) -> [FLNORM] chz 
+      
       cpack(kgrid,1)=bfricp(1,kgrid)
       cpack(kgrid,2)=bfricp(1,kgrid)
-      cpack(kgrid,3)=bfricp(3,kgrid)
-      cpack(kgrid,4)=bfricp(5,kgrid)
+      cpack(kgrid,3)=bfricp(3,kgrid) !I do not see where is this used
+      cpack(kgrid,4)=bfricp(5,kgrid) !I do not see where is this used
 
       !waoft(kgrid,1)=wft(kgrid,1)
       !waoft(kgrid,2)=wtt(kgrid,1)
@@ -927,7 +934,9 @@ subroutine SOFLOW(&
    &triger,cnpflg,ker   ,qtyp  ,lfrou ,strbuf,&
    &ibuf  ,solbuf,buflag,indx  ,bicg  ,stdbq ,&
    &nstdb                                    ,&
-   &debug_wr)
+   &debug_wr                                 ,&
+   &fm1dimp                                   &
+   &)
 
 
 
@@ -1088,7 +1097,9 @@ subroutine SOFLOW(&
       &waoft ,grsize,engpar,scifri,&
       &pfa   ,juer  ,cpack ,rpack ,&
       &afwfqs,alfab ,&
-      &wtt   ,att   ,ker    )
+      &wtt   ,att   ,ker          ,&
+      &fm1dimp                     &
+      &)
    endif
 
 !     FM1DIMP2DO: remove debug

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,9 +50,13 @@ contains
 
       logical :: error
 
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       dad_included = len_trim(md_dredgefile) /= 0
-      if (.not. dad_included) return
+      if (.not. dad_included) then
+         return
+      end if
 
       call initdredge(dadpar)
       call fm_rddredge(dadpar, md_dredgefile, error)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -66,9 +66,13 @@ contains
       character(len=7) :: c_numnonglobal
       character(len=15) :: c_lts
 
-      if (jtextflow < 1) return
+      if (jtextflow < 1) then
+         return
+      end if
 
-      if (ndx < 1) return
+      if (ndx < 1) then
+         return
+      end if
 
 ! erase previous text
       if (trim(tex1) /= '@') then
@@ -86,13 +90,15 @@ contains
       solrest = 0
       tsteps = tim_get_wallclock(handle_steps)
       tsol = tim_get_wallclock(handle_sol)
-      if (tsteps - tsol /= 0) solrest = tsol / (tsteps - tsol)
+      if (tsteps - tsol /= 0) then
+         solrest = tsol / (tsteps - tsol)
+      end if
       tstepinc = tim_get_wallclock_inc(handle_steps)
-      cpuperstep = max(0d0, min(100d0, tstepinc))
+      cpuperstep = max(0.0_dp, min(100.0_dp, tstepinc))
 
       call seconds_to_datetimestring(tex, refdat, time1)
 
-      dtav = (time1 - tstart_user) / max(1d0, dnt)
+      dtav = (time1 - tstart_user) / max(1.0_dp, dnt)
 
       write (TEX(18:), '( A4, F8.3, A8, F7.3, A10, F7.3, A5, F8.1, A, E9.2, A8, E15.8, A8, E15.8)') &
          'dt: ', dts, ' Avg.dt: ', dtav, ' CPU/step: ', cpuperstep, ' Tot: ', tsteps, &
@@ -140,7 +146,7 @@ contains
       else
          call getlink1(nn, LL)
          write (TEX, '( A,i8,  A,I8,  A,I4,  A, F8.5, A, F8.5,  A,I4, A, I2.0, I1, I1, I1, I1, A, A, A14)') &
-            '#ndx: ', ndx, ' #lnx: ', lnx, ' #kmx : ', kmx, ' ustB ', min(ustb(LL), 1d2), ' ustW ', ustw(LL), &
+            '#ndx: ', ndx, ' #lnx: ', lnx, ' #kmx : ', kmx, ' ustB ', min(ustb(LL), 1.0e2_dp), ' ustW ', ustw(LL), &
             ' #s1it: ', min(9999, nums1it), ' iad: ', iadvec, limtypmom, limtypsa, javasal, javau, ' runid: '//trim(md_ident), ' ', c_lts
       end if
 

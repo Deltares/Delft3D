@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,30 +42,34 @@ contains
 
    !> fill initial salinity and temperature with nudge variables
    subroutine set_saltem_nudge()
-      use m_flowgeom
-      use m_flow ! , only: sa1, tem1, kmxn, layertype, keepzlayeringatbed, jabaroczlaybed, zws, zslay, numtopsig
-      use m_transport
-      use m_nudge
-      use m_missing
-      use m_get_kbot_ktop
+      use m_flowgeom, only: ndx
+      use m_flow, only: tem1, sa1, kmxn
+      use m_transport, only: itemp, isalt
+      use m_nudge, only: nudge_temperature, nudge_salinity
+      use m_missing, only: DMISS
+      use m_get_kbot_ktop, only: getkbotktop
 
       integer :: k, kk, KB, KT
 
       do kk = 1, Ndx
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
-            if (ITEMP > 0 .and. nudge_tem(k) /= DMISS) then
-               tem1(k) = nudge_tem(k)
+            if (ITEMP > 0 .and. nudge_temperature(k) /= DMISS) then
+               tem1(k) = nudge_temperature(k)
             end if
 
-            if (ISALT > 0 .and. nudge_sal(k) /= DMISS) then
-               sa1(k) = nudge_sal(k)
+            if (ISALT > 0 .and. nudge_salinity(k) /= DMISS) then
+               sa1(k) = nudge_salinity(k)
             end if
          end do
 
          do k = kt + 1, kb + kmxn(kk) - 1
-            if (ITEMP > 0) tem1(k) = tem1(kt)
-            if (ISALT > 0) sa1(k) = sa1(kt)
+            if (ITEMP > 0) then
+               tem1(k) = tem1(kt)
+            end if
+            if (ISALT > 0) then
+               sa1(k) = sa1(kt)
+            end if
          end do
 
       end do

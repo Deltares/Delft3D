@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -69,6 +69,7 @@ contains
         integer(kind = int_wp) :: in1, in2, in3, in4, in5
         integer(kind = int_wp) :: ikmrk
         real(kind = real_wp) :: volume
+        real(kind = real_wp), parameter :: missing_value = -999.0_real_wp
 
         !     work arrays
         real(kind = real_wp), allocatable :: cdepsum(:)
@@ -117,13 +118,13 @@ contains
         cdepsum = 0.0
         vdepsum = 0.0
         cdepavg = 0.0
-        cdepmax = 0.0
-        cdepmin = 0.0
+        cdepmax = -huge(0.0)
+        cdepmin =  huge(0.0)
 
         !     default output is the value from the segment itself
         do iseg = 1, num_cells
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk)
-            if (ikmrk /= 0) then
+            if (ikmrk /= 0 .and. process_space_real(ip1) /= missing_value) then
                 cdepsum(iseg) = process_space_real(ip1) * process_space_real(ip2)
                 vdepsum(iseg) = process_space_real(ip2)
                 cdepavg(iseg) = process_space_real(ip1)

@@ -1,6 +1,6 @@
 #! /bin/bash  
 # Specify Slurm SBATCH directives 
-#SBATCH --nodes=1              # Number of nodes.
+#SBATCH --nodes=1               # Number of nodes.
 #SBATCH --ntasks-per-node=1     # The number of tasks to be invoked on each node.
                                 # For sequential runs, the number of tasks should be '1'.
                                 # Note: SLURM_NTASKS is equal to "--nodes" multiplied by "--ntasks-per-node".
@@ -17,7 +17,7 @@ set -eo pipefail
 
 function print_usage_info {
     echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
-    echo "Run a dimr model on H7."
+    echo "Run a dimr model on Alma8."
     echo
     echo "Options:"
     echo "-d, --debug <D>"
@@ -35,16 +35,21 @@ if [[ ! -n $SLURM_JOB_ID ]]; then
 fi
 
 # Load the intelmpi module.
-module load intelmpi/2021.10.0
+module load intelmpi/2021.13.0
 
-# Set MPI options. 
+# Set MPI options.
 # Reference on intel MPI environment variables: 
 # https://www.intel.com/content/www/us/en/docs/mpi-library/developer-reference-linux/2021-8/environment-variable-reference.html
-# https://www.intel.com/content/www/us/en/developer/articles/technical/mpi-library-2019-over-libfabric.html 
+# https://www.intel.com/content/www/us/en/developer/articles/technical/mpi-library-2019-over-libfabric.html
 export I_MPI_DEBUG=5
 export I_MPI_FABRICS=ofi
 export I_MPI_OFI_PROVIDER=tcp
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi2.so
+
+# Pinning might be the default Slurm setting and blocks optimal usage
+# of the (possibly virtual) computational node. Pinning might be beneficial when sharing a node with other jobs.
+# The following line prevents pinning:
+export SLURM_CPU_BIND=none
 
 # Get the path to the script submitted using `sbatch`. `sbatch` copies the script to
 # a temporary directory before executing it, so we need `scontrol` to look up the original command.

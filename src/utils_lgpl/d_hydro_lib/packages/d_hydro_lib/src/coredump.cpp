@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: coredump.cpp 962 2011-10-31 21:52:47Z elshoff $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/coredump.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/coredump.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro - COREDUMP Function
 //  Cause a core dump for debugging purposes; callable from Fortran and C/C++
@@ -34,42 +36,35 @@
 //  29 oct 11
 //------------------------------------------------------------------------------
 
-
 #include "d_hydro.h"
 
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define D_Hydro_CoreDump FC_FUNC(d_hydro_coredump,D_HYDRO_COREDUMP)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define D_Hydro_CoreDump FC_FUNC(d_hydro_coredump, D_HYDRO_COREDUMP)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define D_Hydro_CoreDump D_HYDRO_COREDUMP
+    // WIN32
+    #define STDCALL /* nothing */
+    #define D_Hydro_CoreDump D_HYDRO_COREDUMP
 #endif
 
-
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 extern "C" {
 #endif
 
-void STDCALL
-D_Hydro_CoreDump (
-    void
-    ) {
-
+void STDCALL D_Hydro_CoreDump(void)
+{
     // ToDo: Check whether the core dump was actually requested.
     //       Only activate the printf statement when a core dump is actually requested
     // printf ("\n!! INTENDED CORE DUMP OF D_HYDRO FOR DEBUGGING PURPOSES !!\n\n");
-    fflush (stdout);
-    fflush (stderr);
+    fflush(stdout);
+    fflush(stderr);
 
     // When requested: generate a core dump:
     // int * null = NULL;
     // int never = *null;
+}
 
-    }
-
-
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 }
 #endif

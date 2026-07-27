@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -55,6 +55,7 @@ module process_registration
     use m_caltau
     use m_d40blo
     use m_consbl
+    use m_averad
     use m_dayrad
     use m_ddepth
     use m_covmac
@@ -88,7 +89,6 @@ module process_registration
     use m_dradio
     use m_dmvol
     use m_ebuch4
-    use m_dlalg
     use m_extina
     use m_dsptra
     use m_dredge_process
@@ -110,13 +110,11 @@ module process_registration
     use m_nh3fre
     use m_satoxy
     use m_refl
-    use m_radalg
     use m_veg3du
     use m_phcomp
     use m_wkcomp
     use m_sedhm
     use m_hdisp
-    use m_pprlim
     use m_ulfix
     use m_vbgro
     use m_sednu2
@@ -132,13 +130,14 @@ module process_registration
     use m_stageo
     use m_partmp
     use m_maxmac
-    use m_nutupt
     use m_mpbnut
     use m_macnut
     use m_vervlu
     use m_totdep
     use m_sulfox
     use m_stadsc
+    use m_stamea
+    use m_stadev
     use m_specfe
     use m_sedsod
     use m_resant
@@ -149,13 +148,13 @@ module process_registration
     use m_heatfl
     use m_sulpho
     use m_s12tra
-    use m_nutrel
     use m_radmac
     use m_satch4
     use m_vbupt
     use m_ironox
     use m_sulfid
-    use m_pripro
+	use m_dynamo
+	use m_dynpro
     use m_trase2
     use m_macrop
     use m_trcoef
@@ -164,7 +163,6 @@ module process_registration
     use m_vbxs12
     use m_macdis
     use m_phcomb
-    use m_tfalg
     use m_makpoc
     use m_tempermode
     use m_simph
@@ -187,8 +185,6 @@ module process_registration
     use m_sedaap
     use m_plastc
     use m_s12tim
-    use m_varsal
-    use m_respup
     use m_stox3d
     use m_mpbllm
     use m_sulfpr
@@ -266,9 +262,9 @@ contains
                             process_routine_info('EMERSI', EMERSI), &
                             process_routine_info('METEO', METEO), &
                             process_routine_info('HEATFL', HEATFL), &
+                            process_routine_info('AVERAD', AVERAD), &
                             process_routine_info('DAYRAD', DAYRAD), &
                             process_routine_info('TEMPER', TEMPER), &
-                            process_routine_info('VARSAL', VARSAL), &
                             process_routine_info('VELOC', VELOC), &
                             process_routine_info('RESTIM', RESTIM), &
                             process_routine_info('STOX3D', STOX3D), &
@@ -310,16 +306,11 @@ contains
                             process_routine_info('VIVIAN', VIVIAN), &
                             process_routine_info('DISSI', DISSI), &
                             process_routine_info('SEDOX', SEDOX), &
-                            process_routine_info('TFALG', TFALG), &
-                            process_routine_info('DLALG', DLALG), &
                             process_routine_info('NLALG', NLALG), &
-                            process_routine_info('RADALG', RADALG), &
                             process_routine_info('RDBALG', RDBALG), &
-                            process_routine_info('PRIPRO', PRIPRO), &
+							process_routine_info('DYNAMO', DYNAMO), &
                             process_routine_info('SDPPRO', SDPPRO), &
-                            process_routine_info('PPRLIM', PPRLIM), &
-                            process_routine_info('NUTUPT', NUTUPT), &
-                            process_routine_info('NUTREL', NUTREL), &
+							process_routine_info('DYNPRO', DYNPRO), &
                             process_routine_info('NRALGS', NRALGS), &
                             process_routine_info('OXYMIN', OXYMIN), &
                             process_routine_info('CSELAC', CSELAC), &
@@ -380,6 +371,8 @@ contains
                             process_routine_info('STADAY', STADAY), &
                             process_routine_info('STADPT', STADPT), &
                             process_routine_info('STADSC', STADSC), &
+                            process_routine_info('STAMEA', STAMEA), &
+                            process_routine_info('STADEV', STADEV), &
                             process_routine_info('STAGEO', STAGEO), &
                             process_routine_info('STAPRC', STAPRC), &
                             process_routine_info('STAQTL', STAQTL), &
@@ -399,7 +392,6 @@ contains
                             process_routine_info('DEBGRZ', DEBGRZ), &
                             process_routine_info('FLOCEQ', FLOCEQ), &
                             process_routine_info('DREDGE', dredge_process), &
-                            process_routine_info('RESPUP', RESPUP), &
                             process_routine_info('RESBUF', RESBUF), &
                             process_routine_info('SEDIM ', SEDIM), &
                             process_routine_info('S12TIM', S12TIM), &

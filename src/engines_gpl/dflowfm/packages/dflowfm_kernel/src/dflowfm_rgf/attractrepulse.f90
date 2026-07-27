@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,14 +43,14 @@ contains
 
    subroutine ATTRACTREPULSE(XH, YH, X, Y, mmax, nmax, MC, NC, NUMP, JA)
       use precision, only: dp
-      use m_missing
-      use m_gridsettings
-      use m_sferic
-      use m_wearelt
+      use m_missing, only: dmiss, xymis
+      use m_gridsettings, only: rfac
+      use m_sferic, only: jsferic, jasfer3d, rd2dg, ra
+      use m_wearelt, only: x1, y1, x2, y2
+      use m_tolocl, only: tolocl
+      use m_grid_block, only: mb, nb, npt
+      use m_smeerfunctie, only: smeerfunctie
       use geometry_module, only: dbdistance
-      use m_tolocl
-      use m_grid_block
-      use m_smeerfunctie
 
       integer :: mmax, nmax, mc, nc, nump, ja
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
@@ -100,15 +100,17 @@ contains
                            if (RN < RSX) then
                               FR = (RSX - RN) / RSX
                               if (IN == 1) then
-                                 TEKEN = dble(sign(1, II - I))
+                                 TEKEN = real(sign(1, II - I), kind=dp)
                               else if (JN == 1) then
-                                 TEKEN = dble(sign(1, JJ - J))
+                                 TEKEN = real(sign(1, JJ - J), kind=dp)
                               end if
                               call DXYB(X, Y, mmax, nmax, MC, &
                                         NC, II, JJ, IN, &
                                         JN, DXY0)
                               DXY = RFAC * TEKEN * FR * JANU * DXY0
-                              if (JSFERIC == 1) DXY = RD2DG * DXY / RA
+                              if (JSFERIC == 1) then
+                                 DXY = RD2DG * DXY / RA
+                              end if
                               DX = DXY * IN
                               DY = DXY * JN
                               call TOLOCL(DX, DY, X, Y, mmax, nmax, &
@@ -119,15 +121,17 @@ contains
                         else
                            call SMEERFUNCTIE(II, JJ, I, J, FR, IN, JN)
                            if (IN == 1) then
-                              TEKEN = dble(sign(1, II - I))
+                              TEKEN = real(sign(1, II - I), kind=dp)
                            else if (JN == 1) then
-                              TEKEN = dble(sign(1, JJ - J))
+                              TEKEN = real(sign(1, JJ - J), kind=dp)
                            end if
                            call DXYB(X, Y, mmax, nmax, MC, &
                                      NC, II, JJ, JN, &
                                      IN, DXY0)
                            DXY = RFAC * TEKEN * FR * JANU * DXY0
-                           if (JSFERIC == 1) DXY = RD2DG * DXY / RA
+                           if (JSFERIC == 1) then
+                              DXY = RD2DG * DXY / RA
+                           end if
                            DX = DXY * IN
                            DY = DXY * JN
                            call TOLOCL(DX, DY, X, Y, mmax, nmax, &

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,9 +51,11 @@ contains
       use m_addlink1d, only: addlink1D
       use m_addclosed_2d_walls, only: addclosed_2D_walls
       use m_flowgeom, only: ndx2d, ndx, lnx1d, kcu, wetlink2d, onlywetlinks, lnxi, lnx, wetlinkbnd, ja1d2dinternallinktype
-      use unstruc_channel_flow
-      use m_flow
-      use m_VolumeTables
+      use unstruc_channel_flow, only: usevolumetables, network, get_volume, get_surface
+      use m_flow, only: nonlin1d, nonlin2d, slotw1d, slotw2d, nonlin, vol1, s1, a1, s1m, a1m, nshiptxy, japressurehull, v1ship
+      use m_VolumeTables, only: vltb
+      use m_storage, only: t_storage
+      use network_data, only: LINK_1D_BOUNDARY, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
 
       implicit none
 
@@ -118,9 +120,9 @@ contains
                L = onlyWetLinks(i)
             end if
 
-            if (kcu(L) == 4) then
+            if (kcu(L) == LINK_1D2D_LONGITUDINAL) then
                call addlink1D2D(L, japerim) ! 1D2D lateral inherits 2D
-            else if (kcu(L) == 3) then
+            else if (kcu(L) == LINK_1D2D_INTERNAL) then
                if (ja1D2Dinternallinktype >= 1) then ! testing one two...
                   call addlink1D2Dinternal(L, japerim)
                else
@@ -144,13 +146,17 @@ contains
       end if
 
       do L = lnxi + 1, lnx
-         if (kcu(L) == -1) then
-            if (japerim == 0 .and. nonlin1D == 0) cycle
+         if (kcu(L) == LINK_1D_BOUNDARY) then
+            if (japerim == 0 .and. nonlin1D == 0) then
+               cycle
+            end if
             if (japerim == 1 .or. .not. useVolumeTables) then
                call addlink1D(L, japerim) ! 1D boundary links
             end if
          else
-            if (japerim == 0 .and. nonlin2D == 0) cycle
+            if (japerim == 0 .and. nonlin2D == 0) then
+               cycle
+            end if
             call addlink2D(L, japerim) ! 2D boundary links
          end if
       end do

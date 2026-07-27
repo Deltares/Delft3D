@@ -1,0 +1,1 @@
+{ "file-series-version" : "1.0", "files" : [ { "name" : "sources_sinks_nodes-fm.init.vtu", "time" : 0 }, { "name" : "sources_sinks_nodes-fm.dt1.vtu", "time" : 7200 }, { "name" : "sources_sinks_nodes-fm.dt2.vtu", "time" : 14400 }, { "name" : "sources_sinks_nodes-fm.dt3.vtu", "time" : 21600 } ] }

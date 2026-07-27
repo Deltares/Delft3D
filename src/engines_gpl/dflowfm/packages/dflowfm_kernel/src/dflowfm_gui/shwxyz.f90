@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,18 +41,18 @@ contains
    ! NOTE: japes is disabled [AvD]
    subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
       use precision, only: dp
-      use m_setxor
-      use m_orglocator
-      use m_dispos2
-      use m_disdep
-      use m_cir
-      use m_missing
-      use unstruc_colors
-      use m_locatora
-      use m_helpnow
-      use m_set_col
-      use m_movabs
-      use m_help
+      use m_setxor, only: setxor
+      use m_orglocator, only: orglocator
+      use m_dispos2, only: dispos2
+      use m_disdep, only: disdep
+      use m_cir, only: cir
+      use m_missing, only: xymis, dmiss
+      use unstruc_colors, only: x1, x2, y1, y2, ncoltx, rcir
+      use m_locatora, only: xlc, ylc
+      use m_helpnow, only: wrdkey, nlevel
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_help, only: help
 
       implicit none
 
@@ -63,7 +63,9 @@ contains
       integer :: jadraw, jonce, jplus, nlevo
       real(kind=dp) :: XL, YL, RDOL, FAC
 
-      if (MC == 0) return
+      if (MC == 0) then
+         return
+      end if
       OLDKEY = WRDKEY
       NLEVO = NLEVEL
       WRDKEY = 'TAB = DCURSOR;'
@@ -95,9 +97,12 @@ contains
          JADRAW = 0
       end if
       call INKEYEVENT(KEY)
-      if (KEY /= 27) JONCE = 0
-      if (KEY /= 45 .and. KEY /= 160 .and. &
-          KEY /= 43 .and. KEY /= 162) JPLUS = 0
+      if (KEY /= 27) then
+         JONCE = 0
+      end if
+      if (KEY /= 45 .and. KEY /= 160 .and. KEY /= 43 .and. KEY /= 162) then
+         JPLUS = 0
+      end if
 
       call DISPOS2(X(M, N), Y(M, N))
       call DISDEP(M, N, RD1(M, N))
@@ -120,16 +125,24 @@ contains
          call HELP(WRDKEY, 3)
       else if (KEY == 45 .or. KEY == 160) then
          if (X(M, N) /= XYMIS) then
-            if (JPLUS /= -1) FAC = 1.0
-            if (RD1(M, N) == DMISS) RD1(M, N) = 6.9
+            if (JPLUS /= -1) then
+               FAC = 1.0
+            end if
+            if (RD1(M, N) == DMISS) then
+               RD1(M, N) = 6.9
+            end if
             RD1(M, N) = RD1(M, N) - .01 * FAC
             FAC = FAC * 1.05
             JPLUS = -1
          end if
       else if (KEY == 43 .or. KEY == 162) then
          if (X(M, N) /= XYMIS) then
-            if (JPLUS /= 1) FAC = 1.0
-            if (RD1(M, N) == DMISS) RD1(M, N) = 6.9
+            if (JPLUS /= 1) then
+               FAC = 1.0
+            end if
+            if (RD1(M, N) == DMISS) then
+               RD1(M, N) = 6.9
+            end if
             RD1(M, N) = RD1(M, N) + .01 * FAC
             FAC = FAC * 1.05
             JPLUS = 1

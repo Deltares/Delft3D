@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,12 +41,12 @@ contains
 
    subroutine split_pol(Ni, Nj, NPLmax, MAXsplit)
       use precision, only: dp
-      use m_polygon
-      use m_tpoly
-      use m_alloc
-      use m_missing
+      use m_polygon, only: npl, savepol, zpl, restorepol, xpl, ypl
+      use m_tpoly, only: pol_to_tpoly, tpoly_to_pol, dealloc_tpoly, tpoly
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_wrildb, only: wrildb
       use messagehandling, only: LEVEL_WARN, mess
-      use m_wrildb
       use m_addtopol, only: addtopol
       use m_filez, only: doclose, newfil
 
@@ -80,7 +80,9 @@ contains
 
       integer, parameter :: MAXLRWK = 1e9
 
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
       call savepol()
 
@@ -112,14 +114,14 @@ contains
                xa = xmin
                do i = 1, Ni
                   xb = xa
-                  xa = xmin + dble(i) / dble(Ni) * (xmax - xmin)
-                  xccp = (/xa, xb, xb, xa, xa/)
+                  xa = xmin + real(i, kind=dp) / real(Ni, kind=dp) * (xmax - xmin)
+                  xccp = [xa, xb, xb, xa, xa]
 
                   ya = ymin
                   do j = 1, Nj
                      yb = ya
-                     ya = ymin + dble(j) / dble(Nj) * (ymax - ymin)
-                     yccp = (/ya, ya, yb, yb, ya/)
+                     ya = ymin + real(j, kind=dp) / real(Nj, kind=dp) * (ymax - ymin)
+                     yccp = [ya, ya, yb, yb, ya]
 
                      ierr = 1
                      do while (ierr /= 0 .and. lrwk <= MAXLRWK)
@@ -127,7 +129,7 @@ contains
                         call PPINPO(XCCP, YCCP, NCCP, pli(ipol)%x, pli(ipol)%y, pli(ipol)%len, rwrk, iwrk, lrwk, addtopol, ierr)
                         if (ierr /= 0) then
                            NPL = NPL_prev ! Restore the counter that was modified by callback addtopol().
-                           lrwk = int(1.2d0 * dble(lrwk)) + 1
+                           lrwk = int(1.2_dp * real(lrwk, kind=dp)) + 1
                            call realloc(rwrk, lrwk, keepExisting=.false.)
                            call realloc(iwrk, lrwk, keepExisting=.false.)
                         else
@@ -165,9 +167,9 @@ contains
 
       if (ierr /= 0) then ! fallback
 
-         xmin = huge(1d0)
+         xmin = huge(1.0_dp)
          xmax = -xmin
-         ymin = huge(1d0)
+         ymin = huge(1.0_dp)
          ymax = -ymin
          do i = 1, NPL
             if (xpl(i) /= DMISS .and. ypl(i) /= DMISS) then
@@ -181,7 +183,7 @@ contains
 !      this turned out to be based on the Sutherland-Hodgman polygon clipping algorithm
          do i = 1, Ni - 1
             call savepol()
-            xa = xmin + dble(i) / dble(Ni) * (xmax - xmin)
+            xa = xmin + real(i, kind=dp) / real(Ni, kind=dp) * (xmax - xmin)
             call split_pol_with_line(xa, ymin, xa, ymax, 1)
             call pol_to_tpoly(numpols, pli, keepExisting=.false.)
 
@@ -192,7 +194,7 @@ contains
 
          do j = 1, Nj - 1
             call savepol()
-            ya = ymin + dble(j) / dble(Nj) * (ymax - ymin)
+            ya = ymin + real(j, kind=dp) / real(Nj, kind=dp) * (ymax - ymin)
             call split_pol_with_line(xmin, ya, xmax, ya, 1)
             call pol_to_tpoly(numpols, pli, keepExisting=.false.)
 

@@ -27,10 +27,11 @@ list(REMOVE_ITEM source ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/nef-xdr.c)
 
 # Define library
 set(library_name nefis)
+add_subdirectory(test)
+
 add_library(${library_name} ${headers}
                             ${source}
                             ${ini_version_file})
-
 
 # Set additional dependencies
 target_include_directories(${library_name}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" ${version_include_dir})
@@ -40,7 +41,7 @@ if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "PTR8;linux;LINUX64;_IA64_;_LIB;_CRT_SECURE_NO_WARNINGS")    
 endif(UNIX)
 if (WIN32)
-    target_compile_definitions(${library_name} PRIVATE "W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS")
+    target_compile_definitions(${library_name} PRIVATE "W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_LIB;_CRT_SECURE_NO_WARNINGS")
 endif(WIN32)
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
@@ -63,6 +64,8 @@ endif ()
 ###############
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 if ( ${configuration_type} STREQUAL "DELFT3D4" OR 
+     ${configuration_type} STREQUAL "D3D4-TESTBENCH" OR
+     ${configuration_type} STREQUAL "D3D4-SUITE" OR
      ${configuration_type} STREQUAL "TOOLS" )    
     set(library_name nefis_dll)
 
@@ -76,7 +79,7 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
         target_compile_definitions(${library_name} PRIVATE "PTR8;linux;LINUX64;_IA64_;_LIB;_CRT_SECURE_NO_WARNINGS")    
     endif(UNIX)
     if (WIN32)
-        target_compile_definitions(${library_name} PRIVATE "NEFIS_DLL;W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS")
+        target_compile_definitions(${library_name} PRIVATE "NEFIS_DLL;W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_LIB;_CRT_SECURE_NO_WARNINGS")
     endif(WIN32)
   
   
@@ -85,8 +88,13 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
     source_group("Version Files" FILES ${ini_version_file})
   
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source} ${ini_version_file})
-    set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
+    set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME nefis)
+    if(UNIX)
+        set_target_properties(${library_name} PROPERTIES PREFIX "")
+    endif()
   
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME nefis.${library_suffix} DESTINATION lib)
+    install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                    LIBRARY DESTINATION lib
+    )
 endif()
-

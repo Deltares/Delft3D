@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,11 +40,11 @@ contains
 
    subroutine DISP3C(X, Y, Z, NCL, N, RCIR, NCOL)
       use precision, only: dp
-      use m_cir
-      use M_MISSING
-      use m_halt2
-      use m_jgrline8
-      use m_set_col
+      use m_cir, only: cir
+      use M_MISSING, only: dmiss
+      use m_halt2, only: halt2
+      use m_jgrline8, only: jgrline8
+      use m_set_col, only: setcol
       implicit none
       integer :: i
       integer :: istart
@@ -55,7 +55,9 @@ contains
       real(kind=dp) X(N), Y(N), Z(N)
       integer NCL(N), ja, jacol
 
-      if (N <= 0) return
+      if (N <= 0) then
+         return
+      end if
       call SETCOL(NCOL)
 
       jacol = 0
@@ -89,7 +91,9 @@ contains
             end if
             if (mod(I, 50) == 0) then
                call HALT2(ja)
-               if (ja == 1) return
+               if (ja == 1) then
+                  return
+               end if
             end if
          end do
 

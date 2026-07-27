@@ -1,7 +1,7 @@
 module m_fm_dredge
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -120,6 +120,9 @@ contains
       logical :: spinup
       real(fp), dimension(:), allocatable :: dz_dummy
       integer :: istat
+      real(kind=fp) :: dtmor 
+      real(kind=fp) :: sbtot(ndx,stmpar%lsedtot)
+      real(fp), dimension(:), pointer :: dunelength_tmp
       !
    !! executable statements -------------------------------------------------------
       !
@@ -162,12 +165,24 @@ contains
          if (stmpar%morpar%moroutput%morstats) then
             call morstats(dbodsd)
          end if
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy, mtd%messages) /= 0) then
+         !In case of coarse-layer (HANNEKE) model, we do not want to update coarse layer fluxes.
+         dtmor = 0 
+         sbtot = 0.0_fp
+         if (associated(bfmpar%dunelength)) then
+            dunelength_tmp => bfmpar%dunelength
+         else
+            allocate(dunelength_tmp(1:ndx))
+            dunelength_tmp = 1.0e10_fp
+         end if
+         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,dunelength_tmp, sbtot, dtmor, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
             return
          else
             call writemessages(mtd%messages, mdia)
+         end if
+         if (.not. associated(bfmpar%dunelength)) then
+            deallocate(dunelength_tmp)
          end if
          deallocate (dz_dummy, stat=istat)
       end if

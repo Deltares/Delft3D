@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,10 +43,10 @@ contains
 
    subroutine make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
       use precision, only: dp
-      use m_flowgeom, only: Ndxi, Ndx, ba ! static mesh information
+      use m_flowgeom, only: Ndxi, ba, ndx
+      use timers, only: timon, timstrt, timstop ! static mesh information
       use m_flowtimes, only: dts
       use m_flowparameters, only: epshu, testdryflood
-      use timers
 
       implicit none
 
@@ -73,14 +73,16 @@ contains
       integer :: kk, k, kb, kt
       integer :: j
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("make_rhs", ithndl)
+      if (timon) then
+         call timstrt("make_rhs", ithndl)
+      end if
 
       dt_loc = dts
-      rhs = 0d0
+      rhs = 0.0_dp
 
       if (kmx > 0) then
 !     add vertical fluxes, sources, storage term and time derivative to right-hand side
@@ -99,13 +101,15 @@ contains
             kb = kbot(kk)
             kt = ktop(kk)
             do k = kb, kt
-               dvoli = 1d0 / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1d0 / max(vol1(k), epshu * ba(kk))
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk))
+               end if
 
                do j = 1, NUMCONST
 
-                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1d0 - thetavert(j)) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
-                  sumhorflux(j, k) = 0d0
+                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1.0_dp - thetavert(j)) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  sumhorflux(j, k) = 0.0_dp
 
                end do
 
@@ -120,12 +124,14 @@ contains
             !$OMP PRIVATE(k,j,dvoli )
 
             do k = 1, Ndxi
-               dvoli = 1d0 / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1d0 / max(vol1(k), epshu * ba(k))
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               end if
 
                do j = 1, NUMCONST
                   rhs(j, k) = (sumhorflux(j, k) * dvoli + source(j, k)) * dts + sed(j, k)
-                  sumhorflux(j, k) = 0d0
+                  sumhorflux(j, k) = 0.0_dp
                end do
             end do
             !$OMP END PARALLEL DO
@@ -141,19 +147,23 @@ contains
                   dt_loc = dts * ndeltasteps(k)
                end if
 
-               dvoli = 1d0 / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1d0 / max(vol1(k), epshu * ba(k))
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               end if
 
                do j = 1, NUMCONST
                   rhs(j, k) = (sumhorflux(j, k) / ndeltasteps(k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
-                  sumhorflux(j, k) = 0d0
+                  sumhorflux(j, k) = 0.0_dp
                end do
             end do
             !$OMP END PARALLEL DO
          end if
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine make_rhs
 
 end module m_make_rhs

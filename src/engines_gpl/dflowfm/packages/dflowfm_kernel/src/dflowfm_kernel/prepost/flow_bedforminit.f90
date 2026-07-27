@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,6 +46,7 @@ contains
       use unstruc_model, only: md_bedformfile
       use m_flowparameters, only: jawave, modind
       use MessageHandling, only: mess, LEVEL_FATAL
+      use m_waveconst
 
       logical :: error
       integer, intent(in) :: stage
@@ -63,7 +64,9 @@ contains
 
       else if (stage == 2) then
 
-         if (.not. bfm_included) return
+         if (.not. bfm_included) then
+            return
+         end if
          !
          call fm_rdbedformpar(bfmpar, md_bedformfile, error)
          if (error) then
@@ -72,7 +75,7 @@ contains
          end if
          !
          ! safety: running waves with rouwav=vr04 can happen without sediment, or trachytopes for that matter
-         if (jawave > 0 .and. modind == 9) then
+         if (jawave > NO_WAVES .and. modind == 9) then
             bfmpar%lfbedfrmrou = .true.
          end if
       end if

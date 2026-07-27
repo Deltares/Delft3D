@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,17 +54,25 @@ contains
       real(kind=dp) :: XP, YP
       integer :: key, K1, K2
 
-      if (NDRAW(7) >= 2) call TEKLINKVALS(NDRAW(11))
+      if (NDRAW(7) >= 2) then
+         call TEKLINKVALS(NDRAW(11))
+      end if
 
-      if (NDRAW(8) >= 2) call TEKNODEVALS(NDRAW(19))
+      if (NDRAW(8) >= 2) then
+         call TEKNODEVALS(NDRAW(19))
+      end if
 
       call TEKNET(key)
 
       call TEKPREVIOUSNET(NCOLRN)
 
-      if (NDRAW(7) >= 2) call TEKLINKNUMS(NDRAW(11), NCOLLN)
+      if (NDRAW(7) >= 2) then
+         call TEKLINKNUMS(NDRAW(11), NCOLLN)
+      end if
 
-      if (NDRAW(8) >= 2) call TEKNODENUMS(NDRAW(19), NCOLDN)
+      if (NDRAW(8) >= 2) then
+         call TEKNODENUMS(NDRAW(19), NCOLDN)
+      end if
 
       call TEKNETCELLS(NDRAW(33), 0, 1)
 
@@ -79,8 +87,8 @@ contains
             K1 = KN(1, LINMAX)
             K2 = KN(2, LINMAX)
             if (K1 /= 0 .and. K2 /= 0) then
-               XP = 0.5d0 * (XK(K1) + XK(K2))
-               YP = 0.5d0 * (YK(K1) + YK(K2))
+               XP = 0.5_dp * (XK(K1) + XK(K2))
+               YP = 0.5_dp * (YK(K1) + YK(K2))
             end if
             call gtext('NETLINMax', XP, YP, 31)
          end if
@@ -88,8 +96,8 @@ contains
             K1 = KN(1, LINMIN)
             K2 = KN(2, LINMIN)
             if (K1 /= 0 .and. K2 /= 0) then
-               XP = 0.5d0 * (XK(K1) + XK(K2))
-               YP = 0.5d0 * (YK(K1) + YK(K2))
+               XP = 0.5_dp * (XK(K1) + XK(K2))
+               YP = 0.5_dp * (YK(K1) + YK(K2))
                call gtext('NETLINMin', XP, YP, 221)
             end if
          end if

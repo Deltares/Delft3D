@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,16 +38,16 @@ contains
 
    subroutine getverticallyaveraged(sal, mx)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_get_kbot_ktop
+      use m_flow, only: vol1
+      use m_flowgeom, only: ndx
+      use m_get_kbot_ktop, only: getkbotktop
       implicit none
       integer :: n, k, kb, kt, mx
       real(kind=dp) :: sal(mx)
 
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
-         sal(n) = 0d0
+         sal(n) = 0.0_dp
          if (vol1(n) > 0) then
             do k = kb, kt
                sal(n) = sal(n) + sal(k) * vol1(k)

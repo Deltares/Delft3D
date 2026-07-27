@@ -1,0 +1,31 @@
+Windows
+===
+
+Required:
+* CMake version 3.0.0 or newer
+* Visual Studio 2010 or newer
+
+Compilation instructions:
+* Run CMake and point it to the source folder,
+  i.e., the folder containing this file.
+* Point the build folder to a new folder called "build" inside the source folder.
+* Press "Configure", select your preferred version of Visual Studio, select a platform and press "Build".
+* Open the Visual Studio project file in the build folder, and compile all targets.
+* Binaries will be created in the "bin" folder.
+
+Linux
+===
+
+Required:
+* CMake version 3.0.0 or newer
+* C++ compiler with C++11 support (such as GCC version 4.7 or newer)
+* Boost version 1.53 or newer 
+* Curl 7.0 or newer
+
+Compilation instructions:
+* Create a new folder called "build" inside the source folder,
+  i.e., the folder containing this file.
+* Enter the "build" folder, and run "cmake ..". 
+  The dots point cmake to the parent folder, which contains the source code.
+* Run "make".
+* Binaries will be created in the "bin" folder.

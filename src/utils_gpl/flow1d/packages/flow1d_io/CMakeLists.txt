@@ -9,11 +9,9 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
                             gridgeom
                             ec_module
                             flow1d_core
-                            gridgeom
                             io_netcdf
                             io_netcdf_data
-                            netcdf4
-                            netcdff)
+    )
 
 
 target_link_libraries(${library_name} ${oss_dependencies})
@@ -24,3 +22,5 @@ if (WIN32)
 endif(WIN32)
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/flow1d_library)
+
+add_subdirectory(test)

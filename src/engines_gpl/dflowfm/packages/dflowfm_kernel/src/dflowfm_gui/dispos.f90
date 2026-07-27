@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,17 @@
 !
 !
 module m_dispos
+
+   use precision, only: dp
    implicit none
 contains
    subroutine DISPOS()
-      use m_devices
-      use m_sferic
-      use m_locatora
-      use m_disfor
-      use m_howtoview
-      use m_ktext
+      use m_devices, only: iws
+      use m_sferic, only: jsferic
+      use m_locatora, only: xlc, ylc
+      use m_disfor, only: xyform, disform
+      use m_howtoview, only: jview
+      use m_ktext, only: ktext
 
       integer :: ixmax, ixmin, ixy, ndec, nxy
       character POSITI * 25
@@ -51,8 +53,8 @@ contains
       end if
 
       if (jsferic == 1) then ! nou ja, laat maar even staan
-         IXMIN = int(log10(max(1d-6, min(abs(xlc), abs(ylc)))))
-         IXMax = int(log10(max(1d-6, max(abs(xlc), abs(ylc)))))
+         IXMIN = int(log10(max(1.0e-6_dp, min(abs(xlc), abs(ylc)))))
+         IXMax = int(log10(max(1.0e-6_dp, max(abs(xlc), abs(ylc)))))
 
          Ixy = abs(max(ixmin, ixmax))
          NXY = IXY + 3

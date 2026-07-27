@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
    subroutine CLOSPT(X, Y, mmax, nmax, MC, NC, &
                      XL, YL, MV, NV)
       use precision, only: dp
-      use m_missing
+      use m_missing, only: xymis
 
       integer :: mmax, nmax, mc, nc, mv, nv
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
@@ -51,7 +51,7 @@ contains
 
       real(kind=dp) :: rmin, r
       integer :: i, j
-      RMIN = 1d+20
+      RMIN = 1.0e+20_dp
 
       do I = 1, MC
          do J = 1, NC

@@ -41,7 +41,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -50,22 +50,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -553,7 +551,7 @@
 !****************************************************************
 !
       SUBROUTINE SVEG ( DEP2   ,IMATDA   ,ETOT   ,SMEBRK    ,
-     &                  KMESPC ,PLVEGT   ,
+     &                  KWAVE  ,KMESPC   ,PLVEGT ,
      &                  IDCMIN ,IDCMAX   ,ISSTOP ,DISSC1    ,
      &                  NPLA2  )
 !
@@ -570,7 +568,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -579,22 +577,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -602,12 +598,15 @@
 !     40.55: Bastiaan Burger, Martijn Meijer
 !     40.61: Marcel Zijlema
 !     40.58: Tomo Suzuki, Marcel Zijlema
+!     41.77: Jaime Ascencio
 !
 !  1. Updates
 !
 !     40.55, May. 05: implementation of vegetation dissipation formula
 !     40.61, Sep. 06: introduce DISVEG variable for output purposes
 !     40.58, Nov. 08: some modifications and corrections
+!     41.77, Feb. 20: adding Jacobsen vegetation formulation
+!     41.98, Sep. 22: speed up Jacobsen vegetation computation
 !
 !  2. Purpose
 !
@@ -668,6 +667,67 @@
 !
 !     and is linearized by means of the Picard iteration
 !
+!     Jacobsen et al. (2019) published a frequency-dependent
+!     dissipation model for waves propagating over a canopy
+!
+!     The dissipation per frequency is
+!
+!                              ----------
+!                              | 2 mu,0
+!     dv_spectral =   2 F Su   | -------
+!                              |   pi
+!                             \|
+!
+!     where
+!
+!     F = 1/2 * rho * alpha^3 * Cd * bv * Nv
+!
+!     The velocity spectrum Su is associated with the
+!     water surface spectral distribution Sn, as given by
+!
+!                                 2
+!               w * cosh k(h+z)
+!     Su =  (  ----------------- )   * Sn
+!                   sinh kh
+!
+!     where
+!
+!     dv_spectral =   dissipation per frequency and layer [kg^2/ms]
+!     F           =   canopy factor                        [kg/m^4]
+!     Su          =   velocity spectrum                     [m^2/s]
+!     mu,0        =   first moment velocity spectrum      [m^2/s^2]
+!     rho         =   water density                        [kg/m^3]
+!     Nv          =   vegetation density                [stems/m^2]
+!     bv          =   stem thickness                            [m]
+!     Cd          =   drag coefficient vegetation               [-]
+!     alpha = 1   =   velocity reduction factor by canopies     [-]
+!     w           =   radian frequency (per component)        [1/s]
+!     k           =   wave number (per component)             [1/m]
+!     z           =   elevation of still water level            [m]
+!                     (z = 0 at water surface)
+!     h           =   water depth                               [m]
+!     Sn          =   variance density spectrum             [m^2*s]
+!
+!     The depth-integrated and frequency-dependent dissipation is then
+!
+!
+!                   -h + ah
+!                   |\
+!                   |
+!     Sveg  =   -   |      dv_spectral dz / rho / g
+!                   |
+!                  \|
+!                   -h
+!
+!     where
+!
+!     ah =  canopy height (under water)                         [m]
+!
+!     The vertical integration is approximated using the Simpson's rule.
+!     A minimum number of integration points would be needed to reduce
+!     the error of the approximation; 21 points appeared to be sufficient
+!
+!     Note: current effects are not included in Jacobsen et al. (2019)
 !
 !  4. Argument variables
 !
@@ -680,6 +740,7 @@
 !     ISSTOP      maximum counter of wave component in frequency
 !                 space that is propagated
 !     KMESPC      mean average wavenumber according to the WAM-formulation
+!     KWAVE       wave number
 !     NPLA2       number of plants per square meter (depth-averaged)
 !     PLVEGT      array containing the vegetation source term for test-output
 !     SMEBRK      mean frequency according to first order moment
@@ -687,10 +748,19 @@
       INTEGER ISSTOP, IDCMIN(MSC), IDCMAX(MSC)
       REAL    DEP2(MCGRD)          ,
      &        IMATDA(MDC,MSC)      ,
+     &        KWAVE(MSC,MICMAX)    ,
      &        DISSC1(MDC,MSC,MDISP),
      &        PLVEGT(MDC,MSC,NPTST),
      &        NPLA2 (MCGRD)
       REAL    ETOT, SMEBRK, KMESPC
+!
+!  5. Parameter variables
+!
+!     ALFU        (orbital) velocity reduction factor by canopies
+!     NIP         total number of subintervals used by Simpson's rule
+!
+      INTEGER, PARAMETER :: NIP  = 20
+      REAL   , PARAMETER :: ALFU = 1.
 !
 !  6. Local variables
 !
@@ -698,15 +768,22 @@
 !     B     :     auxiliary variable
 !     C     :     auxiliary variable
 !     D     :     auxiliary variable
+!     DCIP  :     frequency-dependent dissipation for each integration point
+!     DZ    :     interval for vertical integration
+!     EKZ   :     exponential of k(h+z)
+!     FDD   :     factor with orbital velocity to determine Su from Sn
 !     ID    :     counter of the spectral direction
 !     IDDUM :     counter
 !     IENT  :     number of entries
 !     IK    :     counter
 !     IL    :     counter
 !     IS    :     counter of relative frequency band
+!     KC    :     wavenumber times canopy layer height
 !     KD    :     wavenumber times water depth
 !     KVEGH :     wavenumber times plant height
+!     KZ    :     wavenumber times z
 !     LAYPRT:     part of layer below water level
+!     MU    :     first order moment of velocity spectrum
 !     SINHK :     sinh(kh)
 !     SLAYH :     total sum of layer thicknesses
 !     SLAYH1:     sum of layer thicknesses below water level
@@ -715,10 +792,15 @@
 !     SVEG2 :     total sum of dissipation factor over layers
 !     SVEGET:     source term containing dissipation due to vegetation
 !                 to be stored in the array IMATDA
+!     ZDH   :     vertical point z between -depth to 0 or - value water clearance in water column
+!     ZH    :     cumulative layer thickness for velocities, bottom up
+!                 (z+d between 0 and vegetation height or depth value in water column)
 !
       INTEGER ID, IDDUM, IENT, IK, IL, IS
       REAL    A, B, C, D, KD, KVEGH, LAYPRT, SINHK, SLAYH,
-     &        SLAYH1, SLAYH2, SVEG1, SVEG2, SVEGET
+     &        SLAYH1, SLAYH2, SVEG1, SVEG2
+      REAL    DZ, EKZ, KC, KZ, MU, ZDH, ZH
+      REAL    DCIP(0:NIP,MSC), FDD(MSC), SVEGET(MSC)
 !
 !  9. Subroutines calling
 !
@@ -750,77 +832,45 @@
 !     With this summation the total dissipation due to vertical varying
 !     vegetation is calculated
 !
+!     Note: in Jacobsen et al. (2019) vegetation parameters are uniform
+!           distributed over the vertical
+!
 ! 13. Source text
 !
       SAVE IENT
       DATA IENT/0/
       IF (LTRACE) CALL STRACE (IENT,'SVEG')
 
-!     --- compute layer-independent vegetation dissipation factor
-
-      KD    = KMESPC * DEP2(KCGRD(1))
-      IF ( KD.GT.10. ) RETURN
-      C     = 3.*KMESPC*(COSH(KD))**3
-      SVEG1 = SQRT(2./PI) * GRAV**2 * (KMESPC/SMEBRK)**3 * SQRT(ETOT)/ C
-      IF ( VARNPL ) SVEG1 = SVEG1 * NPLA2(KCGRD(1))
-
-!     --- compute dissipation factor for each layer and summed up
+!     --- compute total sum of layer thicknesses
 
       SLAYH = 0.
       DO IL = 1, ILMAX
          SLAYH = SLAYH + LAYH(IL)
-      ENDDO
+      END DO
 
-      KVEGH = 0.
-      C     = 0.
-      D     = 0.
-      SVEG2 = 0.
+      IF ( IVEG.EQ.1 ) THEN
 
-      IF ( DEP2(KCGRD(1)).GT.SLAYH ) THEN
+!     --- Suzuki et al. (2011)
 
-         DO IL = 1, ILMAX
-            KVEGH = KVEGH + KMESPC * LAYH(IL)
-            SINHK = SINH(KVEGH)
-            A     = C
-            B     = D
-            C     = SINHK**3
-            D     = 3.*SINHK
-            A     = C - A
-            B     = D - B
-            SVEG2 = SVEG2 + VEGDRL(IL)*VEGDIL(IL)*VEGNSL(IL)*(A + B)
-         END DO
+!        --- compute layer-independent vegetation dissipation factor
 
-      ELSE IF ( DEP2(KCGRD(1)).LT.LAYH(1) ) THEN
+         KD    = KMESPC * DEP2(KCGRD(1))
+         IF ( KD.GT.10. ) RETURN
+         C     = 3.*KMESPC*(COSH(KD))**3
+         SVEG1 = SQRT(2./PI)*GRAV**2 * (KMESPC/SMEBRK)**3 * SQRT(ETOT)/C
+         IF ( VARNPL ) SVEG1 = SVEG1 * NPLA2(KCGRD(1))
 
-         SINHK = SINH(KD)
-         A     = SINHK**3
-         B     = 3.*SINHK
-         SVEG2 = VEGDRL(1)*VEGDIL(1)*VEGNSL(1)*(A + B)
+!        --- compute dissipation factor for each layer and summed up
 
-      ELSE
+         KVEGH = 0.
+         C     = 0.
+         D     = 0.
+         SVEG2 = 0.
 
-         SLAYH1 = 0.
-         SLAYH2 = 0.
-         LAYPRT = 0.
-         VGLOOP : DO IL = 1, ILMAX
-            SLAYH1 = SLAYH1 + LAYH(IL)
-            IF (DEP2(KCGRD(1)).LE.SLAYH1) THEN
-               DO IK = 1, IL-1
-                  SLAYH2 = SLAYH2 + LAYH(IK)
-               END DO
-               LAYPRT = DEP2(KCGRD(1)) - SLAYH2
-               DO IK = 1, IL-1
-                  KVEGH = KVEGH + KMESPC * LAYH(IK)
-                  SINHK = SINH(KVEGH)
-                  A     = C
-                  B     = D
-                  C     = SINHK**3
-                  D     = 3.*SINHK
-                  A     = C - A
-                  B     = D - B
-                  SVEG2 = SVEG2+VEGDRL(IK)*VEGDIL(IK)*VEGNSL(IK)*(A + B)
-               END DO
-               KVEGH = KVEGH + KMESPC * LAYPRT
+         IF ( DEP2(KCGRD(1)).GT.SLAYH ) THEN
+
+            DO IL = 1, ILMAX
+               KVEGH = KVEGH + KMESPC * LAYH(IL)
                SINHK = SINH(KVEGH)
                A     = C
                B     = D
@@ -829,20 +879,142 @@
                A     = C - A
                B     = D - B
                SVEG2 = SVEG2 + VEGDRL(IL)*VEGDIL(IL)*VEGNSL(IL)*(A + B)
-               EXIT VGLOOP
+            END DO
+
+         ELSE IF ( DEP2(KCGRD(1)).LT.LAYH(1) ) THEN
+
+            SINHK = SINH(KD)
+            A     = SINHK**3
+            B     = 3.*SINHK
+            SVEG2 = VEGDRL(1)*VEGDIL(1)*VEGNSL(1)*(A + B)
+
+         ELSE
+
+            SLAYH1 = 0.
+            SLAYH2 = 0.
+            LAYPRT = 0.
+            VGLOOP : DO IL = 1, ILMAX
+               SLAYH1 = SLAYH1 + LAYH(IL)
+               IF (DEP2(KCGRD(1)).LE.SLAYH1) THEN
+                  DO IK = 1, IL-1
+                     SLAYH2 = SLAYH2 + LAYH(IK)
+                  END DO
+                  LAYPRT = DEP2(KCGRD(1)) - SLAYH2
+                  DO IK = 1, IL-1
+                    KVEGH = KVEGH + KMESPC * LAYH(IK)
+                    SINHK = SINH(KVEGH)
+                    A     = C
+                    B     = D
+                    C     = SINHK**3
+                    D     = 3.*SINHK
+                    A     = C - A
+                    B     = D - B
+                    SVEG2 = SVEG2+VEGDRL(IK)*VEGDIL(IK)*VEGNSL(IK)*(A+B)
+                  END DO
+                  KVEGH = KVEGH + KMESPC * LAYPRT
+                  SINHK = SINH(KVEGH)
+                  A     = C
+                  B     = D
+                  C     = SINHK**3
+                  D     = 3.*SINHK
+                  A     = C - A
+                  B     = D - B
+                  SVEG2 = SVEG2 + VEGDRL(IL)*VEGDIL(IL)*VEGNSL(IL)*(A+B)
+                  EXIT VGLOOP
+               END IF
+            END DO VGLOOP
+
+         END IF
+
+!        --- compute total dissipation
+
+         SVEGET(1:MSC) = SVEG1 * SVEG2
+
+      ELSE IF ( IVEG.EQ.2 ) THEN
+
+!     --- Jacobsen et al. (2019)
+
+!        --- compute layer- and frequency-independent canopy dissipation factor
+
+         SVEG1 = SQRT(2./PI)*(1/GRAV) * ALFU**3 *
+     &                                 VEGDRL(1) * VEGDIL(1) * VEGNSL(1)
+         IF ( VARNPL ) SVEG1 = SVEG1 * NPLA2(KCGRD(1))
+
+         SVEGET = 0.
+         IF ( .NOT. SVEG1.NE.0. ) GOTO 90
+
+!        --- determine integration interval (submerged vegetation is assumed)
+
+         DZ = MIN( SLAYH, DEP2(KCGRD(1)) ) / REAL(NIP)
+
+!        --- integration from bottom to surface using Simpson's rule
+
+         DO IK = 0, NIP
+
+            ZH  = DZ * REAL(IK)
+            ZDH = ZH - DEP2(KCGRD(1))
+
+            MU = 0.
+
+            DO IS = 1, ISSTOP
+
+               KD = KWAVE(IS,1) * DEP2(KCGRD(1))
+               KC = KWAVE(IS,1) * ZH
+               KZ = KWAVE(IS,1) * ZDH
+
+               IF ( KD.LT.20. ) THEN
+                  ! for all wave-water regimes
+                  FDD(IS) = ( SPCSIG(IS) * COSH(KC)/SINH(KD) )**2                                 ! coshk/sinhk should be smaller than 1 but for large kd numbers, almost 1
+               ELSE
+                  !option A: deep water orbital velocity
+                  EKZ     = EXP(KZ)                                                               ! argument of exp is negative
+                  FDD(IS) = ( SPCSIG(IS) * EKZ )**2
+                  !option B: very small energy in very high frequencies, neglect its dissipation
+                  !FDD(IS) = 0.
+               END IF
+
+!              --- compute first order moment
+
+               DO ID = 1, MDC
+                 MU = MU + FDD(IS) * SPCSIG(IS)**2 * AC2(ID,IS,KCGRD(1))                          ! based on velocity spectrum Su
+               END DO
+
+            END DO
+
+!           --- integrate Su in frequencies and directions
+
+            MU = MU * DDIR * FRINTF
+
+!           --- determine weight coefficient for integration based on Simpson's rule
+
+            IF ( IK.EQ.0 .OR. IK.EQ.NIP ) THEN
+               C = 1. / 3.
+            ELSE IF ( MOD(IK,2).EQ.0 ) THEN
+               C = 2. / 3.
+            ELSE
+               C = 4. / 3.
             END IF
-         END DO VGLOOP
+
+!           --- compute frequency-distributed dissipation per integration point
+
+            DO IS = 1, ISSTOP
+               DCIP(IK,IS) = C * FDD(IS) * SQRT(MU)
+            END DO
+
+         END DO
+
+         ! --- compute dissipation per frequency
+
+         SVEGET = SVEG1 * SUM(DCIP,1) * DZ
+
+  90     CONTINUE
 
       END IF
-
-!     --- compute total dissipation
-
-      SVEGET = SVEG1 * SVEG2
 !
 !     *** test output ***
 !
       IF (TESTFL .AND. ITEST.GE.60) THEN
-         WRITE (PRTEST, 110) IVEG, KCGRD(1), DEP2(KCGRD(1)), SVEGET
+         WRITE (PRTEST, 110) IVEG, KCGRD(1), DEP2(KCGRD(1)), SVEGET(1)
  110     FORMAT (' SVEG :IVEG INDX DEP VEGFAC:', 2I5, 2E12.4)
       END IF
 
@@ -853,9 +1025,9 @@
 !           *** store the results in the array IMATDA ***
 !           *** if testfl store results in array for isoline plot ***
 
-            IMATDA(ID,IS) = IMATDA(ID,IS) + SVEGET
-            IF (TESTFL) PLVEGT(ID,IS,IPTST) = -1.* SVEGET
-            DISSC1(ID,IS,5) = DISSC1(ID,IS,5) + SVEGET
+            IMATDA(ID,IS) = IMATDA(ID,IS) + SVEGET(IS)
+            IF (TESTFL) PLVEGT(ID,IS,IPTST) = -1.* SVEGET(IS)
+            DISSC1(ID,IS,5) = DISSC1(ID,IS,5) + SVEGET(IS)
 
          END DO
       END DO
@@ -881,7 +1053,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -890,22 +1062,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1028,7 +1198,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1037,22 +1207,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1184,7 +1352,7 @@
 !****************************************************************
 !
       SUBROUTINE SICE ( IMATDA  , IDCMIN  , IDCMAX  , ISSTOP  ,
-     &                  DISSC1  , PLICE   , AICELOC ,
+     &                  DISSC1  , PLICE   , AICELOC , HICELOC ,
      &                  SPCSIG  , CG      )
 !
 !****************************************************************
@@ -1198,7 +1366,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1207,22 +1375,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1239,11 +1405,26 @@
 !
 !  3. Method
 !
-!     Compute sink term accounting for dissipation. We start with a
-!       polynomial parameterization loosely following
-!       Meylan et al. (2012) and Collins and Rogers (2017)
+!     Compute sink term accounting for dissipation.
 !
-!     Sice method=IC4M2, ki= C0*f^0 + C1*f^1 ... C5*f^5 + C6*f^6
+!          IICE=3; In 41.31, activated with keyword "IC4M2" in "INPUT" file.
+!                  In v41.32+, activated with keyword "R19" in "INPUT" file.
+!                  This is dissipation by sea ice using method denoted
+!                  as "IC4M2" in Rogers (2019) (R19), since it is similar
+!                  (but not identical!) to IC4M2 in WW3. It is
+!                  ki= C0*f^0 + C1*f^1 ... C5*f^5 + C6*f^6
+!                  It is a polynomial parameterization loosely following
+!                  Meylan et al. (2014). WW3's IC4 is documented in
+!                  Collins and Rogers (2017)
+!          IICE=4; v41.32+: "D15" method. This uses a formula from
+!                  Doble et al. (2015)
+!          IICE=5; v41.32+: "M18" method. This uses a formula from
+!                  Meylan et al. (2018) "model with order 3 power law"
+!                  also known as "M2" model in Liu et al. (2020)
+!          IICE=6; v41.32+: "R21B" method. This uses a formula from
+!                  Rogers et al. (2021) Tech report, based on combination
+!                  of Yu et al. (2019) normalization with monomial power
+!                  law empirical fitting.
 !
 !  4. Argument variables
 !
@@ -1261,7 +1442,7 @@
       REAL             :: IMATDA(1:MDC,1:MSC)
       REAL             :: DISSC1(1:MDC,1:MSC,1:MDISP)
       REAL             :: PLICE(MDC,MSC,NPTST)
-      REAL, INTENT(IN) :: AICELOC
+      REAL, INTENT(IN) :: AICELOC, HICELOC
       REAL, INTENT(IN) :: SPCSIG(MSC)
       REAL, INTENT(IN) :: CG(MSC,MICMAX) ! or just CG(:,:) ! "CGo" in calling routine
 
@@ -1279,7 +1460,7 @@
 !     SICEWD      source term containing wave dissipation by sea ice
 !                 "WD" denotes "frequency-direction"
 !     AICELOC     local ice fraction
-!     HICELOC     local ice thickness (omitted in this version)
+!     HICELOC     local ice thickness
 !     KI          spatial dissipation rate of amplitude (exponential)
 !
       INTEGER :: IENT
@@ -1287,14 +1468,16 @@
 
       REAL    :: KI(MSC)
       REAL    :: SICEWD
-      REAL    :: C0,C1,C2,C3,C4,C5,C6
+      REAL    :: C0,C1,C2,C3,C4,C5,C6 ! used by R19
+      REAL    :: CHF ! used by D15, M18, R21B
+      REAL    :: NPF, NPH ! used by R21B
       REAL    :: FREQ
 !
 !  7. Common blocks used
 !
 !     Modules SWCOMM3 SWCOMM4 OCPCOMM4 are used.
 !     Includes:
-!        SWCOMM3: PI2, IICE, PIC4M2
+!        SWCOMM3: PI2, IICE, PSICE
 !        SWCOMM4: TESTFL
 !        OCPCOMM4: ITEST
 !
@@ -1316,8 +1499,8 @@
 !     This is a conversion from spatial dissipation rate of amplitude to
 !     temporal dissipation rate of energy (exponential in both cases).
 !
-!     On implemenation of sea ice (i/o, IC4M2 source term, ....) :
-!       Work on the SWAN code thus far has been funded by NRL Core.
+!     On implementation of sea ice (i/o, ice source terms, ....) :
+!       Work on the SWAN code has been funded by NRL Core and ONR.
 !       It is part of a collaboration with U. Washington (UW).
 !       UW partners are Nirnimesh Kumar and Jim Thomson, funded
 !         separately by NSF.
@@ -1333,18 +1516,28 @@
       DATA IENT/0/
       IF (LTRACE) CALL STRACE (IENT,'SICE')
 !
-      IF ( IICE.EQ.3 ) THEN
+      IF ( IICE.EQ.3 ) THEN ! R19
 !     Rename variables, for more readable code
-         C0 = PIC4M2(2)
-         C1 = PIC4M2(3)
-         C2 = PIC4M2(4)
-         C3 = PIC4M2(5)
-         C4 = PIC4M2(6)
-         C5 = PIC4M2(7)
-         C6 = PIC4M2(8)
+         C0 = PSICE(2)
+         C1 = PSICE(3)
+         C2 = PSICE(4)
+         C3 = PSICE(5)
+         C4 = PSICE(6)
+         C5 = PSICE(7)
+         C6 = PSICE(8)
+      ELSEIF ( IICE.EQ.4 ) THEN ! D15
+         CHF = PSICE(1)
+      ELSEIF ( IICE.EQ.5 ) THEN ! M18
+         CHF = PSICE(1)
+      ELSEIF ( IICE.EQ.6 ) THEN ! R21B
+         CHF = PSICE(1)
+         NPF = PSICE(2) ! power on freq
+         NPH = 0.5*NPF-1.0 ! power on hice
       ELSE
          CALL MSGERR (3,'invalid IICE option')
       ENDIF
+
+      KI=0.0 ! initialize
 
       if_ice: IF ( AICELOC.GT.0. ) THEN
 
@@ -1352,10 +1545,16 @@
 !
             FREQ = SPCSIG(IS) / PI2
 
-            IF ( IICE.EQ.3 ) THEN
-!...for Sice method=IC4M2, ki= C0*f^0 + C1*f^1 ... C5*f^5 + C6*f^6
+            IF ( IICE.EQ.3 ) THEN ! R19
+!...for Sice method=IC4M2/R19, ki= C0*f^0 + C1*f^1 ... + C6*f^6
                KI(IS) = C0 + C1*FREQ    + C2*FREQ**2 + C3*FREQ**3
      &                     + C4*FREQ**4 + C5*FREQ**5 + C6*FREQ**6
+            ELSEIF ( IICE.EQ.4 ) THEN ! D15
+               KI(IS) = CHF * HICELOC * FREQ**2.13
+            ELSEIF ( IICE.EQ.5 ) THEN ! M18
+               KI(IS) = CHF * HICELOC * FREQ**3
+            ELSEIF ( IICE.EQ.6 ) THEN ! R21B
+               KI(IS) = CHF * (HICELOC**NPH) * (FREQ**NPF)
             ELSE
                CALL MSGERR (3,'invalid IICE option')
             ENDIF
@@ -1396,7 +1595,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1405,22 +1604,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1582,7 +1779,7 @@
       SUBROUTINE SSURF (ETOT    ,HM      ,QB      ,SMEBRK  ,KTETA   ,     41.47 30.81
      &                  KMESPC  ,SPCSIG  ,AC2     ,IMATRA  ,              30.81
      &                  IMATDA  ,IDCMIN  ,IDCMAX  ,PLWBRK  ,              30.81
-     &                  ISSTOP  ,DISSC0  ,DISSC1  )                       40.67 40.61 30.81 30.21
+     &                  ISSTOP  ,DISSC0  ,DISSC1  ,DISBK   ,ITER    )     41.91 40.67 40.61 30.81 30.21
 !
 !****************************************************************
 !
@@ -1596,7 +1793,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1605,22 +1802,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1636,6 +1831,7 @@
 !     41.06: Gerbrant van Vledder
 !     41.38: James Salmon
 !     41.47: James Salmon
+!     41.91: Marcel Zijlema
 !
 !  1. Updates
 !
@@ -1651,6 +1847,7 @@
 !     41.06, Mar. 09: extension to frequency dependent surf breaking
 !     41.38, Apr. 12: extension to nkd scaling
 !     41.47, Oct. 13: changes to nkd scaling (now called beta-kd model)
+!     41.91, Feb. 22: extension QCM with surf breaking
 !
 !  2. Purpose
 !
@@ -1788,6 +1985,7 @@
 !  4. Argument variables
 !
 !     AC2     input :   Action density array
+!     DISBK   output:   bulk dissipation per unit variance density (=Dtot/Etot)
 !     DISSC0  output:   Dissipation coefficient as explicit part
 !                       (meant for output)
 !     DISSC1  output:   Dissipation coefficient as implicit part
@@ -1800,6 +1998,7 @@
 !     IMATDA  output:   Coefficient of diagonal matrix (2D)
 !     IMATRA  output:   Coefficient of righthandside of matrix
 !     ISSTOP  input :   Maximum for counter IS
+!     ITER    input :   iteration counter
 !     KMESPC  input :   Mean average wavenumber according to the WAM-formulation
 !     KTETA   input :   number of directional partitions
 !     PLWBRK  output:   array containing the surf breaking source term
@@ -1808,7 +2007,7 @@
 !     SMEBRK  input :   Mean frequency according to first order moment
 !
       INTEGER        ISSTOP,
-     &         IDCMIN(MSC), IDCMAX(MSC)
+     &         IDCMIN(MSC), IDCMAX(MSC), ITER
 !
       REAL     AC2(MDC,MSC,MCGRD)   ,
      &         DISSC0(MDC,MSC,MDISP),                                     40.67
@@ -1818,7 +2017,7 @@
      &         PLWBRK(MDC,MSC,NPTST)                                      40.00
       REAL     SPCSIG(MSC)
 !
-      REAL     ETOT,  HM,  QB, SMEBRK, KMESPC, KTETA                      41.47 30.81
+      REAL     ETOT,  HM,  QB, SMEBRK, KMESPC, KTETA, DISBK               41.91 41.47 30.81
 !
 !  5. Parameter variables
 !
@@ -1895,7 +2094,9 @@
       SURFA0 = 0D0
       SURFA1 = 0D0
 !
-      IF ( ISURF.LE.3 .OR. ISURF.EQ.6 ) THEN                              41.38 41.03
+      WS = 0D0                                                            41.91
+!
+      IF ( ISURF.LE.3 .OR. ISURF.EQ.6 .OR. ISURF.EQ.7 ) THEN              41.97 41.38 41.03
 !
 !        --- Battjes and Janssen (1978)
 !
@@ -1984,6 +2185,14 @@
 !
       ENDIF
 !
+!     --- store bulk dissipation for QC surf breaking
+!
+      IF ( ETOT.GT.0. ) THEN                                              41.91
+         DISBK = -REAL(WS)                                                41.91
+      ELSE                                                                41.91
+         DISBK = 0.                                                       41.91
+      ENDIF                                                               41.91
+!
 !     *** store the results for surf wave breaking  ***
 !     *** in the matrices IMATDA and IMATRA         ***
 !
@@ -2006,6 +2215,10 @@
       END IF
       TEMP1 = SURFA0 * DBLE(KTETA)                                        41.47
       TEMP2 = SURFA1 * DBLE(KTETA)                                        41.47
+      IF ( IGEN.EQ.4 .AND. ITER.GT.1 ) THEN                               41.91
+         TEMP1 = 0D0
+         TEMP2 = 0D0
+      ENDIF
       DO 101 IS = 1, ISSTOP
         SURFA0 = TEMP1*FRFAC(IS)                                          41.06
         SURFA1 = TEMP2*FRFAC(IS)                                          41.06
@@ -2039,8 +2252,7 @@
       SUBROUTINE SWCAP  (SPCDIR  ,SPCSIG  ,KWAVE   ,AC2     ,             40.02
      &                   IDCMIN  ,IDCMAX  ,ISSTOP  ,                      40.02
      &                   ETOT    ,IMATDA  ,IMATRA  ,PLWCAP  ,             40.02
-     &                   CGO     ,UFRIC   ,                               40.53
-     &                   CAS     ,                                        41.11
+     &                   CGO     ,UFRIC   ,CAS     ,                      41.11 40.53
      &                   DEP2    ,DISSC1  ,DISSC0  )                      40.67 40.61 40.12
 !
 !****************************************************************
@@ -2056,7 +2268,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2065,22 +2277,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2183,6 +2393,7 @@
 !
 !     AC2   : Action density
 !     ACTOT : Total action density per gridpoint
+!     CAS   : Wave transport velocity in sigma-direction
 !     CGO   : Group velocity (excluding current!)
 !     DEP2  : Array containing water-depth
 !     DISSC0: Dissipation coefficient as explicit part (meant for output)
@@ -2252,11 +2463,11 @@
       REAL              :: A, C_BJ, HM, HRMS, N1, N2
       REAL              :: QB_WC, SIG0, STP_OV, STP_PM
 !
-      REAL, ALLOCATABLE :: C_K(:), C_LH(:), WCAP(:), WCIMPL(:)
-
       REAL              :: B, P, BRKD, FBR                                40.63 40.53
       REAL              :: PWCAP1, PWCAP2, PWCAP9, PWCAP10, PWCAP11       40.63
+      REAL              :: FAC1, FAC2                                     42.04
       REAL              :: EF(MSC)                                        40.53
+      REAL              :: C_K(MSC), C_LH(MSC), WCAP(MSC), WCIMPL(MSC)    42.04
       REAL              :: WCCUR(MDC,MSC)                                 41.11
 !
 !     8. REMARKS
@@ -2299,8 +2510,8 @@
       IF (ACTOT.LE.0.) RETURN
       IF (EDRKTOT.LE.0.) RETURN
 !
-      ALLOCATE (C_K(MSC), C_LH(MSC), WCAP(MSC), WCIMPL(MSC))
-      WCIMPL(1:MSC) = 0.
+      WCIMPL = 0.
+      WCCUR  = 0.                                                         41.11
       WCCUR(1:MDC,1:MSC) = 0.                                             41.11
 !
 ! Calculate coefficients
@@ -2385,6 +2596,8 @@
         C_K(:) = PWCAP1 * (1. - PWCAP10 +                                 40.63
      &           PWCAP10 * (KWAVE(:,1) / KM_WAM)**N1) *                   40.63
      &           (STP_OV / STP_PM)**N2                                    40.63
+!
+        BRKD = PWCAP(12)                                                  40.63
 !                                                                         40.53
 !  Loop to calculate B(k)                                                 40.53
 !                                                                         40.53
@@ -2392,40 +2605,41 @@
 !                                                                         40.53
 !  Calculate E(f)                                                         40.53
 !                                                                         40.53
-          EF(IS) = 0.                                                     40.53
-          DO ID = 1,MDC                                                   40.53
-            EF(IS) = EF(IS) + AC2(ID,IS,KCGRD(1))*SPCSIG(IS)*PI2*DDIR     40.53
-          END DO                                                          40.53
+           EF(IS) = 0.                                                    40.53
+           DO ID = 1,MDC                                                  40.53
+              EF(IS) = EF(IS) + AC2(ID,IS,KCGRD(1))*SPCSIG(IS)*PI2*DDIR   40.53
+           ENDDO                                                          40.53
 !                                                                         40.53
 !  Calculate saturation spectrum B(k) from E(f)                           40.53
 !                                                                         40.53
-          B = (1./PI2) * CGO(IS,1) * KWAVE(IS,1)**3 * EF(IS)              40.53
+           B = (1./PI2) * CGO(IS,1) * KWAVE(IS,1)**3 * EF(IS)             40.53
+!
+!  Calculate weighting factor between breaking and non-breaking           40.63
+!
+           FBR = 0.5 * (1. + TANH( 10.*( SQRT(B/BRKD) - 1.) ))            42.04 40.63
 !                                                                         40.53
-!  Calculate exponent P of the relative saturation (B/Br)                 40.53
+!  Calculate exponent P of the relative saturation B/Br                   40.53
 !                                                                         40.53
-          PWCAP(10)= 3. + TANH(25.76*(UFRIC*KWAVE(IS,1)/SPCSIG(IS)-0.1))  40.53
-          BRKD = PWCAP(12)*(GRAV*KWAVE(IS,1)/(SPCSIG(IS)**2))**0          40.63
-          P = PWCAP(10)                                                   40.63 40.53
-          FBR = 0.5*(1. + TANH( 10.*( (B/BRKD)**0.5 - 1.)))               40.63
+           P = 3. + TANH( 25.76 * (UFRIC*KWAVE(IS,1)/SPCSIG(IS)-0.1) )    42.04 40.53
 !                                                                         40.53
 !  Calculate WCAP(IS) from B(k) and P                                     40.53
+!
+           FAC1 = (B/BRKD)**(P/2.)                                        42.04
+           FAC2 = SQRT(GRAV*KWAVE(IS,1))                                  42.04
 !                                                                         40.53
-          STP_OV = KM_WAM * SQRT(ETOT)                                    40.53
-          WCAP(IS) = PWCAP(1)*FBR*(B/BRKD)**(P/2.) *                      40.63 40.53
-     &    STP_OV**PWCAP(9) * (KWAVE(IS,1)/KM_WAM)**PWCAP(11) *            40.53
-     &    (GRAV**(0.5)*KWAVE(IS,1)**(0.5)/SPCSIG(IS))**(PWCAP(10)/2-1) *  40.53
-     &    GRAV**(0.5)*KWAVE(IS,1)**(0.5)                                  40.53
-     &    + (1.-FBR) * C_K(IS) * SIGM_10 * (KWAVE(IS,1) / KM_WAM)         40.63
-!                                                                         41.11
-!  Calculate current-induced enhanced dissipation WCCUR(ID,IS)            41.11
-!                                                                         41.11
-          IF ( PWCAP(14).NE.0. ) THEN                                     41.11
-             DO ID = 1, MDC                                               41.11
-                WCCUR(ID,IS)=PWCAP(14)*MAX((CAS(ID,IS,1)/SPCSIG(IS)),0.)  41.11
-     &                       *(B/BRKD)**(P/2.)                            41.11
-             ENDDO                                                        41.11
-          ENDIF                                                           41.11
-                                                                          40.53
+           WCAP(IS) = FBR * PWCAP(1) * FAC1 *                             42.04 40.63 40.53
+     &     (FAC2/SPCSIG(IS))**(P/2.-1.) * FAC2 +                          42.04 40.53
+     &     (1.-FBR) * C_K(IS) * SIGM_10 * (KWAVE(IS,1) / KM_WAM)          40.63
+!                                                                         42.04
+!  Calculate enhanced current-induced dissipation WCCUR(ID,IS)            42.04
+!                                                                         42.04
+           IF ( ICUR.EQ.1 .AND. IWCCUR.EQ.1 ) THEN                        42.04
+              DO ID = 1, MDC                                              42.04
+                 WCCUR(ID,IS) = MAX( CAS(ID,IS,1)/SPCSIG(IS), 0. )        42.04
+              ENDDO                                                       42.04
+              WCCUR(:,IS) = PWCAP(14) * FAC1 * WCCUR(:,IS)                42.04
+           ENDIF                                                          42.04
+!
         END DO                                                            40.53
       END IF                                                              40.53
 !
@@ -2494,7 +2708,7 @@
 !
 ! Add extra dissipation on opposing current, if appropriate               41.11
 !
-      IF ( IWCAP.EQ.7 .AND. PWCAP(14).NE.0. ) THEN
+      IF ( IWCAP.EQ.7 .AND. IWCCUR.EQ.1 ) THEN
 !
          DO IS=1, ISSTOP
 !
@@ -2510,8 +2724,6 @@
          END DO
 !
       ENDIF
-!
-      DEALLOCATE (C_K, C_LH, WCAP, WCIMPL)
 !
       RETURN
       END SUBROUTINE SWCAP
@@ -2537,7 +2749,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2546,22 +2758,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2741,8 +2951,8 @@
 !****************************************************************
 !
       SUBROUTINE BRKPAR (BRCOEF  ,ECOS    ,ESIN    ,AC2     ,             40.22
-     &                   SPCSIG  ,DEP2    ,BOTLV   ,GAMBR   ,             41.38 41.03 30.72
-     &                   RESPL   ,RDX     ,RDY     ,KWAVE   ,             41.38 41.03
+     &                   SPCSIG  ,DEP2    ,BOTLV   ,                      41.03 30.72
+     &                   RDX     ,RDY     ,KWAVE   ,                      41.03
      &                   IDDLOW  ,IDDTOP  ,FDIR    ,KTETA   )             41.47 41.38
 !
 !****************************************************************
@@ -2757,7 +2967,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2766,22 +2976,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2793,6 +3001,7 @@
 !     41.03: Andre van der Westhuysen
 !     41.38: James Salmon
 !     41.47: James Salmon
+!     41.97: Marcel Zijlema
 !
 !  1. Updates
 !
@@ -2808,6 +3017,7 @@
 !     41.38, Apr. 12: extension to nkd scaling
 !     41.47, Oct. 13: changes to wave breaking model beta-kd,
 !                     add wave directionality
+!     41.97, Sep. 22: add breaker model based on asymmetry
 !
 !  2. Purpose
 !
@@ -2860,8 +3070,6 @@
       REAL, INTENT(IN)  :: ECOS(MDC), ESIN(MDC) ! Cos and Sin of Theta    40.22
       REAL, INTENT(IN)  :: DEP2(MCGRD)          ! depths at grid points   40.22
       REAL, INTENT(IN)  :: BOTLV(MCGRD)         ! bottom depth            41.38
-      REAL, INTENT(INOUT)  :: GAMBR(MCGRD)      ! breaker parameter       41.38
-      REAL, INTENT(INOUT)  :: RESPL(MCGRD)      ! response length         41.38
 !
 !     RDX, RDY:  coefficients to obtain spatial derivatives               40.22
       REAL, INTENT(IN)  :: RDX(MICMAX), RDY(MICMAX)                       40.08
@@ -2933,6 +3141,7 @@
 !
       INTEGER :: ID    ,IS      ! counters                                40.22
       INTEGER :: ISIGM                                                    41.03
+      INTEGER :: IS2                                                      41.97
 !
       INTEGER :: IDMIN ! minimum direction counter within sweep           41.38
       INTEGER :: IDMAX ! maximum direction counter within sweep           41.38
@@ -2942,6 +3151,7 @@
      &         EAD   ,SIGMA1,COSDIR,SINDIR,DDDX  ,                        40.22
      &         DDDY  ,DDDS  ,DETOT                                        40.22
       REAL  :: EMAX, ETD, KP, KPD                                         41.03
+      REAL  :: E1, E2, W1, W2, ED(1:MSC)                                  41.97
       REAL  :: DSPR  ! directional spread in radians                      41.38
       REAL  :: FAC1, FAC2                                                 41.47
 !
@@ -3074,6 +3284,53 @@
             BRCOEF = 0.
          ENDIF
 !
+      ELSE IF ( ISURF.EQ.7 ) THEN                                         41.97
+!
+!        calculate breaker index based on Saprykina et al. (2017)
+!
+!        --- first, compute E(sigma)
+         ED(:) = SUM(AC2(:,:,KCGRD(1)),DIM=1) * SPCSIG(:) * DDIR
+!
+!        --- next, compute peak frequency
+         EMAX = 0.
+         ISIGM = -1
+         DO IS = 1, MSC
+            IF ( ED(IS).GT.EMAX ) THEN
+               EMAX  = ED(IS)
+               ISIGM = IS
+            ENDIF
+         ENDDO
+!
+!        --- then obtain first and second harmonics
+         IF ( ISIGM.GT.0 ) THEN
+!           first harmonic
+            E1 = ED(ISIGM)
+!           second harmonic
+            IS2 = INT( LOG(2.) / FRINTF )
+            W2 = (2. - EXP(FRINTF)**IS2) /
+     &                         (EXP(FRINTF)**(IS2+1) - EXP(FRINTF)**IS2)
+            W1 = 1. - W2
+            IF ( ISIGM+IS2.LT.MSC ) THEN
+               E2 = W1 * ED(ISIGM+IS2) + W2 * ED(ISIGM+IS2+1)
+            ELSE
+               E2 = 0.
+            ENDIF
+         ENDIF
+!
+!        --- finally, compute the breaker index, as follows:
+!            if relative energy of the second harmonic is more than
+!            35% then breaker index is constant, otherwise
+!            the breaker index is related to the asymmetry of
+!            breaking waves and, in turn, the biphase;
+         IF ( ISIGM.EQ.0 ) THEN
+            BRCOEF = 0.
+         ELSEIF ( E2.GT.0.35*E1 ) THEN
+            BRCOEF = PSURF(4)
+         ELSE
+!           note: the actual breaker index is computed in routine SINTGRL
+            BRCOEF = -1.
+         ENDIF
+!
       ENDIF
 !
 !     take into account effect of wave directionality                     41.47
@@ -3131,6 +3388,7 @@
      &                   PLNL4D        ,PLTRI         ,
      &                   PLVEGT        ,PLTURB        ,                   40.35 40.55
      &                   PLMUD         ,PLICE         ,                   41.75 40.59
+     &                   PLBRAG        ,PLQCS         ,                   41.90 41.80
      &                   PLSWEL        ,                                  40.88
      &                   AC2           ,SPCSIG        ,                   40.00
      &                   DEP2          ,XYTST         ,
@@ -3149,7 +3407,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -3158,22 +3416,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !     0. AUTHORS
@@ -3214,6 +3470,8 @@
 !        PLICE    2D    SICEWD
 !        PLVEGT   2D    SVEGET
 !        PLTURB   2D    CVISC
+!        PLBRAG   2D    SBRAGG
+!        PLQCS    2D    SQC
 !        PLWBRK   2D    SURFA0/SURFA1
 !        PLNL4    2D    SWNL
 !        PLTRI    2D    STRI
@@ -3273,7 +3531,7 @@
      &            TRBV  ,                                                 40.35
      &            DMUD  ,                                                 40.59
      &            DICE  ,                                                 41.75
-     &            NL4S  ,NL4D  ,TRIA  ,ENERGY,ENRSIG
+     &            NL4S  ,NL4D  ,TRIA  ,BRAG  ,QC    ,ENERGY,ENRSIG
       REAL        SWEL                                                    40.88
 !
       INTEGER     XYTST(*),KGRPNT(MXC,MYC)                                40.80 30.21
@@ -3289,6 +3547,8 @@
      &            PLICE (MDC,MSC,NPTST)       ,                           41.75
      &            PLVEGT(MDC,MSC,NPTST)       ,                           40.55
      &            PLTURB(MDC,MSC,NPTST)       ,                           40.35
+     &            PLBRAG(MDC,MSC,NPTST)       ,                           41.80
+     &            PLQCS (MDC,MSC,NPTST)       ,                           41.90
      &            PLWBRK(MDC,MSC,NPTST)       ,
      &            PLSWEL(MDC,MSC,NPTST)       ,                           40.88
      &            PLNL4S(MDC,MSC,NPTST)       ,
@@ -3328,6 +3588,8 @@
           SWEL = 0.
           NL4  = 0.
           TRIA = 0.
+          BRAG = 0.
+          QC   = 0.
           DO 60 IS = 1, MSC
             DO 50 ID = 1, MDC
 !
@@ -3364,6 +3626,14 @@
                 NL4  = NL4  + ABS(PLNL4S(ID,IS,IPTST)) * SPCSIG(IS)**2    40.85 40.00
               END IF
 !
+!             Bragg scattering
+!
+              BRAG = BRAG + ABS(PLBRAG(ID,IS,IPTST)) * SPCSIG(IS)**2      41.80
+!
+!             QC scattering
+!
+              QC = QC + ABS(PLQCS(ID,IS,IPTST)) * SPCSIG(IS)**2           41.90
+!
   50        CONTINUE
   60      CONTINUE
 !
@@ -3381,28 +3651,30 @@
             SWEL   = SWEL   * FRINTF * DDIR                               40.88
             TRIA   = TRIA   * FRINTF * DDIR
             NL4    = NL4    * FRINTF * DDIR
+            BRAG   = BRAG   * FRINTF * DDIR
+            QC     = QC     * FRINTF * DDIR
 !
-            IF(IWCAP.NE.8)THEN ! See Remarks.
+            IF(JPSWEL.NE.12)THEN ! See Remarks.
             WRITE (IFPAR, 70) 4.*SQRT(ENERGY), PI2*ENERGY/ENRSIG,
      &               SWND, WCAP, BTFR, VEGT, TRBV, DMUD, DICE,
-     &               WBRK, TRIA, NL4                                      41.75 40.59 40.35 40.55 40.00
-  70        FORMAT(12(1X,E12.4))
+     &               WBRK, TRIA, NL4, BRAG, QC                            41.90 41.80 41.75 40.59 40.35 40.55 40.00
+  70        FORMAT(14(1X,E12.4))
             ELSE
             WRITE (IFPAR, 71) 4.*SQRT(ENERGY), PI2*ENERGY/ENRSIG,
      &               SWND, WCAP, SWEL, BTFR, VEGT, TRBV, DMUD, DICE,
-     &               WBRK, TRIA, NL4
-  71        FORMAT(13(1X,E12.4))
+     &               WBRK, TRIA, NL4, BRAG, QC
+  71        FORMAT(15(1X,E12.4))
             ENDIF
           ELSE
-            IF(IWCAP.NE.8)THEN ! See Remarks.
+            IF(JPSWEL.NE.12)THEN ! See Remarks.
             WRITE (IFPAR, 70) OVEXCV(10), OVEXCV(28), OVEXCV(7),          40.41
      &          OVEXCV(7), OVEXCV(7),                                     40.35 40.55
-     &          OVEXCV(7), OVEXCV(7),                                     40.59
+     &          OVEXCV(7), OVEXCV(7), OVEXCV(7), OVEXCV(7),               41.90 41.80 40.59
      &          OVEXCV(7), OVEXCV(7), OVEXCV(7), OVEXCV(7), OVEXCV(7)     41.75 40.00
             ELSE
             WRITE (IFPAR, 71) OVEXCV(10), OVEXCV(28), OVEXCV(7),
-     &          OVEXCV(7), OVEXCV(7),
      &          OVEXCV(7), OVEXCV(7), OVEXCV(7),
+     &          OVEXCV(7), OVEXCV(7), OVEXCV(7), OVEXCV(7),
      &          OVEXCV(7), OVEXCV(7), OVEXCV(7), OVEXCV(7), OVEXCV(7)
             ENDIF
           ENDIF
@@ -3431,6 +3703,8 @@
               NL4S = 0.
               NL4D = 0.
               TRIA = 0.
+              BRAG = 0.
+              QC   = 0.
               ENERGY = 0.
               DO 150 ID = 1, MDC
                 SIGACT = SPCSIG(IS) * AC2(ID,IS,INDX)
@@ -3461,6 +3735,10 @@
                   NL4D = NL4D + PLNL4D(ID,IS,IPTST) * SIGACT              40.00
                 END IF
 !
+                BRAG = BRAG + PLBRAG(ID,IS,IPTST) * SPCSIG(IS)            41.80
+!
+                QC = QC + PLQCS(ID,IS,IPTST) * SPCSIG(IS)                 41.90
+!
 !               *** energy density ***
 !
                 ENERGY = ENERGY + SIGACT                                  40.00
@@ -3471,16 +3749,18 @@
 !             instead of per rad/s.
 !             factor DDIR is due to integration over directions
               FAC = PI2 * DDIR
-              IF(IWCAP.NE.8)THEN
+              IF(JPSWEL.NE.12)THEN
               WRITE (IFS1D,170) ENERGY*FAC, SWND*FAC, WCAP*FAC,           40.00
      &                          BTFR*FAC, VEGT*FAC, TRBV*FAC, DMUD*FAC,   40.59 40.35 40.55 40.00
-     &                          DICE*FAC, WBRK*FAC, TRIA*FAC, NL4*FAC     41.75 40.00
- 170          FORMAT(11(1X,E12.4))                                        40.00
+     &                          DICE*FAC, WBRK*FAC, TRIA*FAC, NL4*FAC,    41.75 40.00
+     &                          BRAG*FAC, QC*FAC                          41.90 41.80
+ 170          FORMAT(13(1X,E12.4))                                        40.00
               ELSE
               WRITE (IFS1D,171) ENERGY*FAC, SWND*FAC, WCAP*FAC,SWEL*FAC,
      &                          BTFR*FAC, VEGT*FAC, TRBV*FAC, DMUD*FAC,
-     &                          DICE*FAC, WBRK*FAC, TRIA*FAC, NL4*FAC
- 171          FORMAT(12(1X,E12.4))
+     &                          DICE*FAC, WBRK*FAC, TRIA*FAC, NL4*FAC,
+     &                          BRAG*FAC, QC*FAC
+ 171          FORMAT(14(1X,E12.4))
               ENDIF
  160        CONTINUE
           ENDIF
@@ -3507,8 +3787,11 @@
                 PLICE (ID,IS,IPTST) = PLICE (ID,IS,IPTST) * SIGACT        41.75
                 PLWBRK(ID,IS,IPTST) = PLWBRK(ID,IS,IPTST) * SIGACT
                 PLSWEL(ID,IS,IPTST) = PLSWEL(ID,IS,IPTST) * SIGACT
+                PLTRI (ID,IS,IPTST) = PLTRI (ID,IS,IPTST) * SPCSIG(IS)
                 PLNL4S(ID,IS,IPTST) = PLNL4S(ID,IS,IPTST) * SPCSIG(IS)
      &                              + PLNL4D(ID,IS,IPTST) * SIGACT
+                PLBRAG(ID,IS,IPTST) = PLBRAG(ID,IS,IPTST) * SPCSIG(IS)
+                PLQCS (ID,IS,IPTST) = PLQCS (ID,IS,IPTST) * SPCSIG(IS)    41.90
 !               PLWNDD is used temporarily for energy density             40.00
                 PLWNDD(ID,IS,IPTST) = SIGACT
               ENDDO
@@ -3516,7 +3799,7 @@
             CALL WRSPEC (IFS2D, PLWNDD(1,1,IPTST))                        40.00
             CALL WRSPEC (IFS2D, PLWNDS(1,1,IPTST))
             CALL WRSPEC (IFS2D, PLWCAP(1,1,IPTST))
-            IF(IWCAP.EQ.8)
+            IF(JPSWEL.EQ.12)
      &      CALL WRSPEC (IFS2D, PLSWEL(1,1,IPTST))
             CALL WRSPEC (IFS2D, PLBTFR(1,1,IPTST))
             CALL WRSPEC (IFS2D, PLVEGT(1,1,IPTST))                        40.55
@@ -3526,6 +3809,8 @@
             CALL WRSPEC (IFS2D, PLWBRK(1,1,IPTST))
             CALL WRSPEC (IFS2D, PLTRI (1,1,IPTST))
             CALL WRSPEC (IFS2D, PLNL4S(1,1,IPTST))
+            CALL WRSPEC (IFS2D, PLBRAG(1,1,IPTST))                        41.80
+            CALL WRSPEC (IFS2D, PLQCS (1,1,IPTST))                        41.90
           ENDIF
         ENDIF
 !
@@ -3546,6 +3831,8 @@
             PLTRI (ID,IS,IPTST) = 0.
             PLNL4S(ID,IS,IPTST) = 0.
             PLNL4D(ID,IS,IPTST) = 0.
+            PLBRAG(ID,IS,IPTST) = 0.                                      41.80
+            PLQCS (ID,IS,IPTST) = 0.                                      41.90
  100      CONTINUE
  200    CONTINUE
 !

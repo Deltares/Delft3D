@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,7 +73,8 @@ contains
       do n = 1, numk
          if (KC(N) == 1) then
             k = k + 1
-            xs(k) = xk(n); ys(k) = yk(n)
+            xs(k) = xk(n)
+            ys(k) = yk(n)
             if (jarnod == 1) then
                zs(k) = rnod(n)
             else

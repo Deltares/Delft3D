@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,22 +37,27 @@ module m_alloc_jacobi
 contains
 
    subroutine alloc_jacobi(ndx, lnx)
-      use m_jacobi
-      use m_alloc
+      use m_jacobi, only: ndxjac, lnxjac, bbi, db, rr
+      use m_alloc, only: aerr
       integer :: ndx, lnx, ierr
 
-      if (ndx == ndxjac .and. lnx == lnxjac) return
+      if (ndx == ndxjac .and. lnx == lnxjac) then
+         return
+      end if
 
       if (allocated(bbi)) then
          deallocate (bbi, db, rr)
       end if
 
       allocate (bbi(ndx), stat=ierr)
-      call aerr('bbi  (ndx)', ierr, ndx); bbi = 0
+      call aerr('bbi  (ndx)', ierr, ndx)
+      bbi = 0
       allocate (db(ndx), stat=ierr)
-      call aerr('db   (ndx)', ierr, ndx); db = 0
+      call aerr('db   (ndx)', ierr, ndx)
+      db = 0
       allocate (rr(ndx), stat=ierr)
-      call aerr('rr   (ndx)', ierr, ndx); rr = 0
+      call aerr('rr   (ndx)', ierr, ndx)
+      rr = 0
 
    end subroutine alloc_jacobi
 

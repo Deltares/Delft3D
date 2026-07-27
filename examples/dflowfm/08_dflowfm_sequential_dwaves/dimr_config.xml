@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<dimrConfig xmlns="http://schemas.deltares.nl/dimrConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimrConfig http://content.oss.deltares.nl/schemas/d_hydro-1.00.xsd">
+<dimrConfig xmlns="http://schemas.deltares.nl/dimr" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimr http://content.oss.deltares.nl/schemas/dimr-1.2.xsd">
     <documentation>
         <fileVersion>1.00</fileVersion>
         <createdBy>Deltares, Coupling team</createdBy>
-        <creationDate>2015-05-20T07:56:32+01</creationDate>
+        <creationDate>2015-05-20T07:56:32</creationDate>
     </documentation>
     <control>
         <parallel>

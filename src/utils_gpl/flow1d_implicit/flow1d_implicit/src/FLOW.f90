@@ -21,7 +21,9 @@ subroutine sre_FLOW (time   ,dt1    ,steady ,iter   ,istep  ,itim,&
 &qp     ,delh   ,work   ,cnstrl ,strhis ,trcnrl ,triger ,&
 &cnpflg ,ker    ,qtyp   ,lfrou  ,strbuf ,ibuf   ,solbuf ,&
 &buflag ,indx   ,bicg   ,stdbq  ,nstdb                  ,&
-&debug_wr)
+&debug_wr                                               ,&
+&fm1dimp                                                 &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -295,6 +297,10 @@ subroutine sre_FLOW (time   ,dt1    ,steady ,iter   ,istep  ,itim,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
+
 !
 !     Include constants for array dimensions
 !
@@ -500,7 +506,9 @@ subroutine sre_FLOW (time   ,dt1    ,steady ,iter   ,istep  ,itim,&
    &lambda ,relstr ,dhstru ,omcfl  ,dhtyp  ,ker    ,omboun ,&
    &omqlat ,ibuf   ,lfrou  ,qtyp   ,indx   ,bicg   ,solbuf ,&
    &stdbq  ,nstdb                                          ,&
-   &debug_wr)
+   &debug_wr                                               ,&
+   &fm1dimp                                                ,&
+   &)
 !
    if (ker .eq. fatal) goto 1000
 !c

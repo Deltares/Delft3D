@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -72,7 +72,7 @@ contains
 !     reenable polygons
       NPL = NPL_save
 
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       call cosphiunetcheck(1)
 
@@ -95,7 +95,7 @@ contains
                call getint('Enforce contiguous domains? (0:no, 1:yes)', jacontiguous)
             end do
          end if
-         call partition_METIS_to_idomain(Ndomains, jacontiguous, method, 0)
+         call partition_METIS_to_idomain(idomain, Ndomains, jacontiguous, method, 0)
 
          japolygon = -1
          do while (japolygon /= 1 .and. japolygon /= 0)
@@ -115,7 +115,9 @@ contains
          end if
       end if
 
-      if (allocated(numndx)) deallocate (numndx)
+      if (allocated(numndx)) then
+         deallocate (numndx)
+      end if
       allocate (numndx(0:ndomains - 1))
 
 !     count and output number of cells

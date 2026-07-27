@@ -34,8 +34,8 @@
 
 echo "---Load modules..."
 module purge
-module load 2023
-module load intel/2023a
+module load 2025
+module load intel/2025b
 
 
 #---You will need to modify the input below this line---

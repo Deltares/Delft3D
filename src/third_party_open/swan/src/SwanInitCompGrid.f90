@@ -11,22 +11,20 @@ subroutine SwanInitCompGrid ( logcom )
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -45,7 +43,6 @@ subroutine SwanInitCompGrid ( logcom )
 !   Modules used
 !
     use ocpcomm4
-    use swcomm2
     use swcomm3
     use m_genarr
     use m_parall
@@ -55,11 +52,10 @@ subroutine SwanInitCompGrid ( logcom )
 !
 !   Argument variables
 !
-    logical, dimension(6), intent(inout) :: logcom ! give status of which command has been given
+    logical, dimension(7), intent(inout) :: logcom ! give status of which command has been given
 !
 !   Local variables
 !
-    integer       :: i        ! loop counter
     integer, save :: ient = 0 ! number of entries in this subroutine
     integer       :: istat    ! indicate status of allocation
 !
@@ -71,55 +67,9 @@ subroutine SwanInitCompGrid ( logcom )
 !
     if (ltrace) call strace (ient,'SwanInitCompGrid')
     !
-    ! compute coordinate offsets and reset grid coordinates
-    !
-    do i = 1, nverts
-       if ( .not.LXOFFS ) then
-          XOFFS = xcugrd(i)
-          YOFFS = ycugrd(i)
-          LXOFFS = .true.
-          xcugrd(i) = 0.
-          ycugrd(i) = 0.
-       else
-          xcugrd(i) = real(xcugrd(i) - dble(XOFFS))
-          ycugrd(i) = real(ycugrd(i) - dble(YOFFS))
-       endif
-    enddo
-    !
     ! check the grid
     !
     call SwanCheckGrid
-    !
-    ! compute XCGMIN, XCGMAX, YCGMIN, YCGMAX
-    !
-    XCGMIN =  1.e9
-    YCGMIN =  1.e9
-    XCGMAX = -1.e9
-    YCGMAX = -1.e9
-    do i = 1, nverts
-       if (xcugrd(i) < XCGMIN) XCGMIN = xcugrd(i)
-       if (ycugrd(i) < YCGMIN) YCGMIN = ycugrd(i)
-       if (xcugrd(i) > XCGMAX) XCGMAX = xcugrd(i)
-       if (ycugrd(i) > YCGMAX) YCGMAX = ycugrd(i)
-    enddo
-    !
-!PUN    XCGMIN = XCGMIN + XOFFS
-!PUN    YCGMIN = YCGMIN + YOFFS
-!PUN    XCGMAX = XCGMAX + XOFFS
-!PUN    YCGMAX = YCGMAX + YOFFS
-!PUN    !
-!PUN    call SwanMinOverNodes ( XCGMIN )
-!PUN    call SwanMinOverNodes ( YCGMIN )
-!PUN    call SwanMaxOverNodes ( XCGMAX )
-!PUN    call SwanMaxOverNodes ( YCGMAX )
-!PUN    !
-!PUN    XCGMIN = XCGMIN - XOFFS
-!PUN    YCGMIN = YCGMIN - YOFFS
-!PUN    XCGMAX = XCGMAX - XOFFS
-!PUN    YCGMAX = YCGMAX - YOFFS
-!PUN    !
-    XCLEN = XCGMAX - XCGMIN
-    YCLEN = YCGMAX - YCGMIN
     !
     istat = 0
     if(.not.allocated(ac2)) allocate(ac2(MDC,MSC,nverts), stat = istat)
@@ -132,7 +82,7 @@ subroutine SwanInitCompGrid ( logcom )
     !
     ! set number of vertices and cells in global domain in case of serial run
     !
-    if ( nvertsg == 0 ) then
+    if ( .not.logcom(7) ) then
        nvertsg = nverts
        ncellsg = ncells
     endif

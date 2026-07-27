@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,6 +46,7 @@ contains
       use precision, only: dp
       use network_data, only: numL, kn, lne, xk, yk
       use m_is_1d_boundary_candidate, only: is_1d_boundary_candidate
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D_MAINBRANCH
 
       integer, intent(in) :: Nx !< number of links
       real(kind=dp), dimension(Nx), intent(out) :: xe, ye !< inner cell center coordinates
@@ -64,13 +65,14 @@ contains
       ierror = 1
 
       do L = 1, numL ! candidate points and distance tolerance of closed (u) points
-         k3 = kn(1, L); k4 = kn(2, L)
+         k3 = kn(1, L)
+         k4 = kn(2, L)
 
 !      if ( abs(xk(k3)+11.5d0)+abs(xk(k4)+11.5d0) .lt. 1d-8 ) then
 !         continue
 !      end if
 
-         if (kn(3, L) == 2 .and. & ! 2D links
+         if (kn(3, L) == LINK_2D .and. & ! 2D links
              (lne(1, L) == 0 .and. lne(2, L) /= 0 .or. & ! boundary links
               lne(1, L) /= 0 .and. lne(2, L) == 0)) then
             ind = lne(1, L) + lne(2, L) ! i.e., the nonzero cell nr.
@@ -82,20 +84,21 @@ contains
             xyen(2, L) = yce2
             kce(L) = 1
             ke(L) = ind
-         else if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! 1D links
-            k1 = k3; k2 = k4
+         else if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then ! 1D links
+            k1 = k3
+            k2 = k4
             if (is_1d_boundary_candidate(L, 1)) then
                xe(L) = xk(k1)
                ye(L) = yk(k1)
-               xyen(1, L) = 2d0 * xk(k1) - xk(k2)
-               xyen(2, L) = 2d0 * yk(k1) - yk(k2)
+               xyen(1, L) = 2.0_dp * xk(k1) - xk(k2)
+               xyen(2, L) = 2.0_dp * yk(k1) - yk(k2)
                kce(L) = 1
                ke(L) = -lne(1, L)
             else if (is_1d_boundary_candidate(L, 2)) then
                xe(L) = xk(k2)
                ye(L) = yk(k2)
-               xyen(1, L) = 2d0 * xk(k2) - xk(k1)
-               xyen(2, L) = 2d0 * yk(k2) - yk(k1)
+               xyen(1, L) = 2.0_dp * xk(k2) - xk(k1)
+               xyen(2, L) = 2.0_dp * yk(k2) - yk(k1)
                kce(L) = 1
                ke(L) = -lne(2, L)
             end if

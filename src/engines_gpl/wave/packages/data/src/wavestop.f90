@@ -1,7 +1,7 @@
 subroutine wavestop(iexit, message)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -39,6 +39,8 @@ subroutine wavestop(iexit, message)
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+    use swan_input, only: cleanup_boundary_spectrum_files
+
     implicit none
 !
 ! Global variables
@@ -53,6 +55,7 @@ subroutine wavestop(iexit, message)
 !
     write(*,*) 'ERROR: ', trim(message)
     write(*,*) 'Wave exited abnormally'
+    call cleanup_boundary_spectrum_files()
     !
     ! Terminate now
     !

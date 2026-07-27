@@ -1,18 +1,42 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<dimrConfig xmlns="http://schemas.deltares.nl/dimrConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimrConfig http://content.oss.deltares.nl/schemas/d_hydro-1.00.xsd">
-    <documentation>
-        <fileVersion>1.00</fileVersion>
-        <createdBy>Deltares, Coupling team</createdBy>
-        <creationDate>2015-05-20T07:56:32+01</creationDate>
-    </documentation>
-    <control>
-        <start name="myNameDFlowFM"/>
-    </control>
-    <component name="myNameDFlowFM">
-        <library>dflowfm</library>
-        <process>0</process>
-        <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
-        <workingDir>dflowfm</workingDir>
-        <inputFile>f34.mdu</inputFile>
-    </component>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<dimrConfig xmlns="http://schemas.deltares.nl/dimr" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimr https://content.oss.deltares.nl/schemas/dimr-1.2.xsd">
+  <documentation>
+    <fileVersion>1.2</fileVersion>
+    <createdBy>Deltares, Coupling Team</createdBy>
+    <creationDate>2025-11-21T13:36:58.5425254Z</creationDate>
+  </documentation>
+  <!--<control>
+          The <control> specifies the workflow of the deltaresHydro executable.
+          It indicates which components are started in which order. If the data
+          transfer is to be arranged by the main program "d_hydro", then a coupler
+          should be included.
+          The main <control> block is a sequential block; this means that each
+          component is initialized, time stepped, and finalized before the next
+          component starts.
+      <parallel>
+          Within a <parallel> tag the components are started
+          concurrently (if the mpi process ids listed per component don't overlap)
+          or executed synchronously in sequence (first all initialize, then time
+          stepping, and to conclude all finalization calls).
+      <start>
+          A <parallel> block contains exactly one <start/> component, defining the
+          start and end time of the simulation. This is the component inside
+          the <parallel> block with the smallest time step. All other
+          components must be defined with a <startGroup>.
+      <startGroup>
+          A <startGroup> should be used if a component (possibly including couplers)
+          should only be executed at a subset of simulation time steps.
+
+      For each component/coupler there will be a corresponding component/coupler
+      specification block defined below.-->
+  <control>
+    <start name="DFlowFM" />
+  </control>
+  <component name="DFlowFM">
+    <library>dflowfm</library>
+    <process>0</process>
+    <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
+    <workingDir>dflowfm</workingDir>
+    <inputFile>f34.mdu</inputFile>
+  </component>
 </dimrConfig>

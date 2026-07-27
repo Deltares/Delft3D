@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/mixin/instance.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="schema.xsd">
+
+  <a>true</a>
+  <b>1</b>
+
+</root>

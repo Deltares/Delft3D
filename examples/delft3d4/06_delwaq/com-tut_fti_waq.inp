@@ -346,7 +346,7 @@ CONSTANTS
  'ACTIVE_EColiMrt'
  'ACTIVE_Extinc_VLG'
  'ACTIVE_Salinchlor'
- 'ACTIVE_CalcRadDay'
+ 'ACTIVE_CalcRad'
  'ACTIVE_DynDepth'
 DATA
  8.00000e-001 ; RcMrtEColi
@@ -367,7 +367,7 @@ DATA
  1.00000e+000 ; ACTIVE_EColiMrt
  1.00000e+000 ; ACTIVE_Extinc_VLG
  1.00000e+000 ; ACTIVE_Salinchlor
- 1.00000e+000 ; ACTIVE_CalcRadDay
+ 1.00000e+000 ; ACTIVE_CalcRad
  1.00000e+000 ; ACTIVE_DynDepth
 ;
 PARAMETERS
@@ -379,7 +379,7 @@ ALL
 BINARY_FILE  'com-tut_fti_waq.par'  ; binary file
 ; 1 - number of functions
 FUNCTIONS
-'DayRadSurf'
+'RadSurf'
 BLOCK
 DATA
 

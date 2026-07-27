@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,16 +38,17 @@ contains
 
    subroutine CIR(R)
       use precision, only: dp
-      use unstruc_opengl
-      use m_colnow
-      use m_krec5
+      use unstruc_opengl, only: inopenglrendering, xlast, ylast
+      use m_krec5, only: krec5
       implicit none
       real(kind=dp) :: r, Hr
 
-      if (r == 0d0) return
+      if (r == 0.0_dp) then
+         return
+      end if
       if (InOpenGLRendering) then
-         HR = 0.5d0 * R
-         call KREC5(dble(Xlast), dble(Ylast), HR, HR)
+         HR = 0.5_dp * R
+         call KREC5(real(Xlast, kind=dp), real(Ylast, kind=dp), HR, HR)
          !CALL SetPointSize(real(5))
          !CALL DrawPoint(xlast,ylast)
          !CALL SetPointSize(real(1))

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: threads.cpp 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/threads.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/threads.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Threads for Domain Decomposition
@@ -34,73 +36,66 @@
 //  4 jun 11
 //------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
 
-
-void
-DD::InitThreads (
-    void
-    ) {
-
+void DD::InitThreads(void)
+{
     static int id = this->ID_MAIN;
 
     // Create a thread-specific key for storing the object ID
 
-    if (pthread_key_create (&this->thiter, NULL) != 0)
-        throw new Exception (true, "Pthreads error: Cannot create thread-specific key: %s", strerror (errno));
-    if (pthread_setspecific (this->thiter, (void *) &id) != 0)
-        throw new Exception (true, "Pthreads error: Cannot set thread-specific key for main thread: %s", strerror (errno));
+    if (pthread_key_create(&this->thiter, NULL) != 0)
+        throw new Exception("Pthreads error: Cannot create thread-specific key: %s", strerror(errno));
+    if (pthread_setspecific(this->thiter, (void*)&id) != 0)
+        throw new Exception("Pthreads error: Cannot set thread-specific key for main thread: %s", strerror(errno));
 
     // Get thread attributes
 
-    if (pthread_attr_init (&this->thattr) != 0)
-        throw new Exception (true, "Pthreads error: Cannot initialize thread attributes: %s", strerror (errno));
+    if (pthread_attr_init(&this->thattr) != 0)
+        throw new Exception("Pthreads error: Cannot initialize thread attributes: %s", strerror(errno));
 
     // Set scheduling scope
 
-    if (pthread_attr_setscope (&this->thattr, PTHREAD_SCOPE_SYSTEM) != 0)
-        throw new Exception (true, "Pthreads error: Cannot set thread scope attribute: %s", strerror (errno));
+    if (pthread_attr_setscope(&this->thattr, PTHREAD_SCOPE_SYSTEM) != 0)
+        throw new Exception("Pthreads error: Cannot set thread scope attribute: %s", strerror(errno));
 
     // Set stack size if an explicit value (in MB) is requested via the config tree
 
     size_t initsize;
-    if (pthread_attr_getstacksize (&this->thattr, &initsize) != 0)
-        throw new Exception (true, "Pthreads error: Cannot get initial stack size: %s", strerror (errno));
+    if (pthread_attr_getstacksize(&this->thattr, &initsize) != 0)
+        throw new Exception("Pthreads error: Cannot get initial stack size: %s", strerror(errno));
 
-    size_t stacksize = this->config->GetIntegerAttrib ("Thread:StackSize");
-    if (stacksize > 0) {
-        if (stacksize > 100)
-            throw new Exception (true, "Senseless thread stack size (%d > 100 MB)", stacksize);
+    size_t stacksize = this->config->GetIntegerAttrib("Thread:StackSize");
+    if (stacksize > 0)
+    {
+        if (stacksize > 100) throw new Exception("Senseless thread stack size (%d > 100 MB)", stacksize);
 
-        stacksize *= 1024*1024;
-        if (pthread_attr_setstacksize (&this->thattr, stacksize) != 0)
-            throw new Exception (true, "Pthreads error: Cannot set stack size to %d bytes: %s", stacksize, strerror (errno));
+        stacksize *= 1024 * 1024;
+        if (pthread_attr_setstacksize(&this->thattr, stacksize) != 0)
+            throw new Exception("Pthreads error: Cannot set stack size to %d bytes: %s", stacksize, strerror(errno));
 
         size_t newsize;
-        if (pthread_attr_getstacksize (&this->thattr, &newsize) != 0)
-            throw new Exception (true, "Pthreads error: Cannot get new stack size: %s", strerror (errno));
+        if (pthread_attr_getstacksize(&this->thattr, &newsize) != 0)
+            throw new Exception("Pthreads error: Cannot get new stack size: %s", strerror(errno));
 
         if (newsize != stacksize)
-            this->log->Write (Log::ALWAYS, "Warning: Thread stack size (%d bytes) differs from requested size (%d bytes)", stacksize, newsize);
-        }
+            this->log->Write(Log::ALWAYS,
+                             "Warning: Thread stack size (%d bytes) differs from requested size (%d bytes)", stacksize,
+                             newsize);
+    }
 
     else
         stacksize = initsize;
 
-    this->log->Write (Log::MINOR, "Thread stack size is %d bytes (%d MB)", stacksize, stacksize/ (1024*1024));
-    }
+    this->log->Write(Log::MINOR, "Thread stack size is %d bytes (%d MB)", stacksize, stacksize / (1024 * 1024));
+}
 
-
-int
-DD::DDGetThreadID (
-    void
-    ) {
-
-    int * idp;
-    this->log->Write (Log::ITER_MINOR, "DDGetThreadID called");
-    if ((idp = (int *) pthread_getspecific (this->thiter)) == NULL)
-        throw new Exception (true, "Pthreads error: pthread_getspecific fails: %s", strerror (errno));
+int DD::DDGetThreadID(void)
+{
+    int* idp;
+    this->log->Write(Log::ITER_MINOR, "DDGetThreadID called");
+    if ((idp = (int*)pthread_getspecific(this->thiter)) == NULL)
+        throw new Exception("Pthreads error: pthread_getspecific fails: %s", strerror(errno));
 
     return *idp;
-    }
+}

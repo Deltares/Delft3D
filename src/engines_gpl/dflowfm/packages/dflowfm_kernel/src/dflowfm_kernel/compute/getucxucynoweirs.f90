@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,8 @@ contains
 
    subroutine getucxucynoweirs(ku, ucxku, ucyku)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: hu, u0
+      use m_flowgeom, only: nd, iadv, iadv_subgrid_weir, wu, acl, dx, csu, snu, ba
       use m_sferic, only: jasfer3D
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
@@ -49,31 +49,41 @@ contains
 
       real(kind=dp) :: ucxku, ucyku, ww, ac1, huweir, hunoweir, wl, wlno, at, cs, sn, fac
 
-      ucxku = 0d0; ucyku = 0d0
-      huweir = 0d0; hunoweir = 0d0; wl = 0d0; wlno = 0d0; at = 0d0
+      ucxku = 0.0_dp
+      ucyku = 0.0_dp
+      huweir = 0.0_dp
+      hunoweir = 0.0_dp
+      wl = 0.0_dp
+      wlno = 0.0_dp
+      at = 0.0_dp
 
       do LL = 1, nd(ku)%lnx
-         Ls = nd(ku)%ln(LL); L = abs(Ls)
-         if (iadv(L) < 21 .or. iadv(L) > 29) then ! .ne. structures
+         Ls = nd(ku)%ln(LL)
+         L = abs(Ls)
+         if (iadv(L) < IADV_SUBGRID_WEIR .or. iadv(L) > 29) then ! .ne. structures
             hunoweir = hunoweir + wu(L) * hu(L)
             wlno = wlno + wu(L)
          end if
       end do
-      if (wlno > 0d0) hunoweir = hunoweir / wlno
+      if (wlno > 0.0_dp) then
+         hunoweir = hunoweir / wlno
+      end if
 
       do LL = 1, nd(ku)%lnx
-         Ls = nd(ku)%ln(LL); L = abs(Ls)
+         Ls = nd(ku)%ln(LL)
+         L = abs(Ls)
          if (Ls < 0) then
             ac1 = acL(L)
             n12 = 1
          else
-            ac1 = 1d0 - acL(L)
+            ac1 = 1.0_dp - acL(L)
             n12 = 2
          end if
          ww = ac1 * dx(L) * wu(L)
-         cs = ww * csu(L); sn = ww * snu(L)
+         cs = ww * csu(L)
+         sn = ww * snu(L)
          at = at + ww
-         if (iadv(L) < 21 .or. iadv(L) > 29) then ! .ne. structures
+         if (iadv(L) < IADV_SUBGRID_WEIR .or. iadv(L) > 29) then ! .ne. structures
             if (jasfer3D == 0) then
                ucxku = ucxku + cs * u0(L)
                ucyku = ucyku + sn * u0(L)
@@ -82,8 +92,10 @@ contains
                ucyku = ucyku + lin2nody(L, n12, cs, sn) * u0(L)
             end if
          else
-            fac = 1d0
-            if (hunoweir > 0d0) fac = min(1d0, hu(L) / hunoweir)
+            fac = 1.0_dp
+            if (hunoweir > 0.0_dp) then
+               fac = min(1.0_dp, hu(L) / hunoweir)
+            end if
             if (jasfer3D == 0) then
                ucxku = ucxku + cs * u0(L) * fac
                ucyku = ucyku + sn * u0(L) * fac

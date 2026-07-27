@@ -1,0 +1,16 @@
+[General]
+fileVersion=2.02
+fileType=extForce
+
+[Boundary]
+quantity=waterlevelbnd
+locationFile=f34_001.pli
+forcingFile=f34_001.bc
+
+[Meteo]
+quantity=windxy
+forcingFile=f34.wnd
+forcingFileType=uniMagDir
+interpolationMethod=linearSpaceTime
+operand=O
+

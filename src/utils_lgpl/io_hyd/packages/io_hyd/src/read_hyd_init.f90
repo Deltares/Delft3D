@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -152,6 +152,7 @@
       allocate(hyd%tem(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
       allocate(hyd%tau(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
       allocate(hyd%vdf(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%vel(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
       allocate(hyd%attributes(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
 !     allocate(hyd%wasteflow(hyd%wasteload_coll%actual_size))
 
@@ -189,6 +190,7 @@
       endif
 
       return
+
   970 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%num_cells:',hyd%num_cells
       call stop_with_error()

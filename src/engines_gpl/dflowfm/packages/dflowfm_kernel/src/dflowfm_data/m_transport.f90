@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> transport of many (scalar) constituents is performed with the transport module
 !!   -constituents are stored in the constituents array
 !!   -salt and temperature are filled from and copied to the sa1 and tem1 arrays, respectively
@@ -37,29 +34,32 @@
 !! tracers:
 !!   -tracers initial and boundary conditions are directly applied to the constituents
 !!   -the tracers always appear at the end of the whole constituents array
-!!   -the constituents numbers of the tracers are from "ITRA1" to "ITRAN", where ITRAN=0 (no tracers) or ITRAN=NUMCONST (tracers come last)
+!!   -the constituents numbers of the tracers are from "itra1" to "itran", where itran=0 (no tracers) or itran=numconst (tracers come last)
 !!   -tracers with boundary conditions (not necessarily all tracers) have their own numbering
 !!   -the tracer (with bc's) to consituent mapping is called "itrac2const"
 !!   -boundary condition related information of the tracers are stored in "bndtr" of type "bndtype"
-
 module m_transportdata
    use precision, only: dp
-   integer, parameter :: NAMLEN = 128
-   integer :: NUMCONST ! Total number of constituents
-   integer :: NUMCONST_MDU ! number of constituents as specified in mdu/ext file
-   integer, target :: ISALT ! salt
-   integer, target :: ITEMP ! temperature
-   integer :: ISED1 ! first sediment fraction
-   integer :: ISEDN ! last  sediment fraction
-   integer :: ISPIR ! secondary flow intensity
-   integer :: ITRA1 ! first tracer
-   integer :: ITRAN ! last  tracer, should be at the back
-   integer :: ITRAN0 ! back up of ITRAN
 
-!  tracers
+   implicit none(type, external)
+
+   integer, parameter :: NAMLEN = 128
+   integer :: numconst ! Total number of constituents
+   integer :: numconst_mdu ! number of constituents as specified in mdu/ext file
+   integer, target :: isalt ! salt
+   integer, target :: itemp ! temperature
+   integer :: ioxy ! oxygen, currently only used to skip the vertical Forester filter
+   integer :: ised1 ! first sediment fraction
+   integer :: isedn ! last  sediment fraction
+   integer :: ispir ! secondary flow intensity
+   integer :: itra1 ! first tracer
+   integer :: itran ! last  tracer, should be at the back
+   integer :: itran0 ! back up of itran
+
+   ! tracers
    integer, dimension(:), allocatable :: itrac2const ! constituent number of tracers (boundary conditions only)
    integer, dimension(:), allocatable :: ifrac2const ! constituent number of sediment fractions
-   real(kind=dp), dimension(:, :), allocatable, target :: constituents ! constituents, dim(NUMCONST,Ndkx)
+   real(kind=dp), dimension(:, :), allocatable, target :: constituents ! constituents, dim(numconst,Ndkx)
 
    character(len=NAMLEN), dimension(:), allocatable, target :: const_names ! constituent names
    character(len=NAMLEN), dimension(:), allocatable :: const_units ! constituent units
@@ -67,12 +67,14 @@ module m_transportdata
 
    integer, dimension(:, :), allocatable :: id_const ! consituent id's in map-file
    integer :: iconst_cur ! active constituent (for visualization)
+
 end module m_transportdata
 
 module m_transport
    use precision, only: dp
-
    use m_transportdata !separation to get rid of all those use only: checks
+
+   implicit none(type, external)
 
    real(kind=dp), dimension(:, :), allocatable :: fluxhor ! horizontal fluxes
    real(kind=dp), dimension(:, :), allocatable :: fluxver ! vertical   fluxes
@@ -83,21 +85,21 @@ module m_transport
    real(kind=dp), dimension(:), allocatable :: thetavert ! vertical advection fluxes explicit (0) or implicit (1)
 
    real(kind=dp), dimension(:), allocatable :: difsedu ! sum of molecular and user-specified diffusion coefficient
-   real(kind=dp), dimension(:), allocatable :: difsedw ! sum of molecular and user-specified diffusion coefficient
+   real(kind=dp), dimension(:), allocatable :: molecular_diffusion_coeff ! molecular diffusion coefficient
 
    real(kind=dp), allocatable :: dsedx(:, :) !< cell center constituent gradient
    real(kind=dp), allocatable :: dsedy(:, :) !< cell center constituent gradient
 
-   real(kind=dp), dimension(:, :), allocatable :: const_sour ! sources in transport, dim(NUMCONST,Ndkx)
-   real(kind=dp), dimension(:, :), allocatable :: const_sink ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
+   real(kind=dp), dimension(:, :), allocatable :: const_sour ! sources in transport, dim(numconst,Ndkx)
+   real(kind=dp), dimension(:, :), allocatable :: const_sink ! linear term of sinks in transport, dim(numconst,Ndkx)
 
-!  work arrays
-   real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(NUMCONST,Ndkx)
+   ! work arrays
+   real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(numconst,Ndkx)
    real(kind=dp), dimension(:, :), allocatable :: a, b, c, d ! aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
    real(kind=dp), dimension(:), allocatable :: sol, e ! solution and dummy array in tridag, respectively
 
-!  for local timestepping
-   real(kind=dp), dimension(:, :), allocatable :: sumhorflux !< sum of horizontal fluxes, dim(NUMCONST,Ndkx)
+   ! for local timestepping
+   real(kind=dp), dimension(:, :), allocatable :: sumhorflux !< sum of horizontal fluxes, dim(numconst,Ndkx)
    integer :: nsubsteps !< total number of substeps
    integer, dimension(:), allocatable :: ndeltasteps !< cell-based number of subtimesteps between updates, dim(Ndx)
    integer, dimension(:), allocatable :: jaupdate !< update cell (1) or not (0), dim(Ndx)
@@ -110,11 +112,11 @@ module m_transport
    real(kind=dp), dimension(:), allocatable :: sumdifflim !< contribution of diffusion to transport time-step limitation
    real(kind=dp), dimension(:), allocatable :: dxiAu !< area of horizontal diffusive flux divided by Dx
 
-!  for sediment advection velocity
+   ! for sediment advection velocity
    integer, dimension(:), allocatable :: jaupdateconst !< update constituent (1) or not (0)
    integer, dimension(:), allocatable :: noupdateconst !< do not update constituent (1) or do (0)
 
-!  time step related
+   ! time step related
    integer :: jalimitdiff
    integer :: jalimitdtdiff
 
@@ -123,4 +125,5 @@ module m_transport
 
    real(kind=dp), dimension(:), allocatable :: u1sed
    real(kind=dp), dimension(:), allocatable :: q1sed
+
 end module m_transport

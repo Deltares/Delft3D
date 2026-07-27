@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,8 +41,8 @@ contains
 
    subroutine getucxucyeuler(N, ucxeu, ucyeu)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: jawave, no_waves, lnx, ln, wcx1, wcy1, wcx2, wcy2
+      use m_flow, only: ndkx, ucx, ucy, flow_without_waves, lbot, kmxl
       use m_waves, only: ustokes ! available for all wave models
 
       implicit none
@@ -53,12 +53,14 @@ contains
 
       integer :: Lb, Lt, L, LL, k1, k2
 
-      ucxeu(1:ndkx) = ucx(1:ndkx); ucyeu(1:ndkx) = ucy(1:ndkx)
-      if (jawave > 0 .and. .not. flowWithoutWaves) then
+      ucxeu(1:ndkx) = ucx(1:ndkx)
+      ucyeu(1:ndkx) = ucy(1:ndkx)
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
-               if (ustokes(L) /= 0d0) then ! link flows
+               if (ustokes(L) /= 0.0_dp) then ! link flows
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   ucxeu(k1) = ucxeu(k1) - wcx1(LL) * ustokes(L)

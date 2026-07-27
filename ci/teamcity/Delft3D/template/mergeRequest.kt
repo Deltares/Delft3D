@@ -2,18 +2,25 @@ package Delft3D.template
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import Delft3D.step.*
 
 object TemplateMergeRequest : Template({
 
-    name = "Merge Request"
-    description = "Support running pipeline on merge requests."
+    name = "Pull Request"
+    description = "Support running pipeline on pull requests."
+
+    steps {
+        mergeTargetBranch {}
+        cleanupTemporaryRemote {}
+    }
 
     features {
         pullRequests {
-            provider = gitlab {
+            provider = github {
                 authType = token {
-                    token = "%gitlab_private_access_token%"
+                    token = "%github_deltares-service-account_access_token%"
                 }
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
                 filterSourceBranch = "+:*"
                 ignoreDrafts = true
             }

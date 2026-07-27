@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -78,7 +78,9 @@ contains
 97          continue
 
             do i = 1, maxpts - 5, 6
-               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) exit
+               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) then
+                  exit
+               end if
 
                !curx = curx + pts(i+4) ! Just take endpoint of bezier curve
                !cury = cury + pts(i+5)
@@ -129,7 +131,9 @@ contains
             ypl(npl) = starty
             ! If more than one point was given, treat as implicit subsequent lineto commands
             do i = 3, maxpts - 1, 2
-               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) exit
+               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) then
+                  exit
+               end if
 
                npl = npl + 1
                call increasepol(npl, 1)
@@ -156,7 +160,9 @@ contains
 99          continue
 
             do i = 1, maxpts - 1, 2
-               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) exit
+               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) then
+                  exit
+               end if
 
                npl = npl + 1
                call increasepol(npl, 1)
@@ -178,13 +184,13 @@ contains
       call zeronet()
       KN3TYP = 1
       K1 = 0
-      rcir = 1d-10 ! isnode only for 'exact' hits
+      rcir = 1.0e-10_dp ! isnode only for 'exact' hits
       do i = 1, npl
          if (XPL(i) == dmiss) then
             K1 = 0
             cycle
          end if
-         zp = 0d0
+         zp = 0.0_dp
          call ISNODE(KP, XPL(i), YPL(i), zp)
          if (KP == 0) then
             call dSETNEWPOINT(XPL(i), YPL(i), KP)

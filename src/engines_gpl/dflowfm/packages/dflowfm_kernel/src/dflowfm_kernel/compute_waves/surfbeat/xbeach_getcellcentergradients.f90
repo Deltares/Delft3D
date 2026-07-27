@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine getcellcentergradients(hh, dhsdx, dhsdy)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: hu, epshu, nbndu, kbndu, nbndz, kbndz
+      use m_flowgeom, only: lnx, ln, wcx1, dxi, wcy1, wcx2, wcy2, ndx
 
       implicit none
 
@@ -54,8 +54,8 @@ contains
       real(kind=dp) :: hs1, hs2
 
       ! Tegeltjesdiepte approach is eenvoudiger en onnauwkeuriger, maar werkt altijd, ook met morfologie
-      dhsdx = 0d0
-      dhsdy = 0d0
+      dhsdx = 0.0_dp
+      dhsdy = 0.0_dp
       do L = 1, Lnx
          if (hu(L) > epshu) then ! link flows
             k1 = ln(1, L)

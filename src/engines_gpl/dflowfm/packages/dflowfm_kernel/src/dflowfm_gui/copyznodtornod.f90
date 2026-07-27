@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,11 +51,13 @@ contains
       if (.not. allocated(rn)) then
          ja = 1
       else if (size(rn) < numk) then
-         deallocate (rn); ja = 1
+         deallocate (rn)
+         ja = 1
       end if
       if (ja == 1) then
          allocate (rn(numk), stat=ierr)
-         call aerr('rn(numk)', ierr, numk); rn = 0d0
+         call aerr('rn(numk)', ierr, numk)
+         rn = 0.0_dp
          do n = 1, ndx2d
             nn = size(nd(n)%nod)
             do kk = 1, nn
@@ -65,10 +67,10 @@ contains
          end do
       end if
 
-      rnod = 0d0
+      rnod = 0.0_dp
       do n = 1, ndx2d
          znn = znod(n)
-         if (znn /= 0d0) then
+         if (znn /= 0.0_dp) then
             nn = size(nd(n)%nod)
             do kk = 1, nn
                kkk = nd(n)%nod(kk)

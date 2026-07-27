@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -111,7 +111,7 @@ module MessageHandling
    public mess
    public err
    public GetMessage_MH
-   public getOldestMessage
+   public getLastMessage
    public resetMessageCount_MH
    public getMaxErrorLevel
    public resetMaxerrorLevel
@@ -448,32 +448,28 @@ subroutine pushMessage(level, string)
 end subroutine pushMessage
 
 
-!> Pops the oldest message from the head of the message queue.
+!> Returns the most recently added message in the message queue.
 !! When the message queue is empty, level=LEVEL_NONE is returned.
-subroutine getOldestMessage(level, msg)
-   integer,          intent(out) :: level !< Set to the level of the newest message.
-   character(len=*), intent(out) :: msg   !< Set to the newest message text.
+subroutine getLastMessage(level, msg)
+   integer,          intent(out) :: level !< Level of the message.
+   character(len=*), intent(out) :: msg   !< Message text.
 
-   integer :: ibufferhead, itrimlen
+   integer :: itrimlen
 
    if (messagecount == 0) then
       level = LEVEL_NONE
       return
-   else
-      ! ibufferhead: front element in the message queue, is tail minus count, but notice the cyclic list/queue (mod) and +1 for 1-based index.
-      ibufferhead = mod(ibuffertail - messagecount + maxmessages, maxmessages) + 1
-      msg = ' '
-      itrimlen = min(len(msg), len_trim(messages(ibuffertail))) ! Shortest of actual message and the available space in output variable.
-
-      msg   = messages(ibuffertail)(1:itrimlen)
-      level = levels(ibufferhead)
-      messagecount = messagecount-1
    end if
-end subroutine getOldestMessage
+   
+   msg = ' '
+   itrimlen = min(len(msg), len_trim(messages(ibuffertail))) ! Shortest of actual message and the available space in output variable.
+
+   msg   = messages(ibuffertail)(1:itrimlen)
+   level = levels(ibuffertail)
+end subroutine getLastMessage
 
 
 !> Returns the number of messages that are still in the message buffer queue.
-!! Note: it is advised to use getOldestMessage to pop messages from the queue.
 integer function getMessageCount()
    getMessageCount = messagecount
 end function
@@ -483,9 +479,9 @@ end function
 !! Returns the integer level as the function's return value, and stores the accompanying message in the message dummy argument.
 integer function GetMessage_MH(imessage, message)
    integer,            intent(in)  :: imessage  !< Position in the message queue.
-   character(len=200), intent(out) :: message   !< The message text.
+   character(len=*),   intent(out) :: message   !< The message text.
 
-   message=messages(imessage)(1:200)
+   message = messages(imessage)
    GetMessage_MH = levels(imessage)
 end function
 

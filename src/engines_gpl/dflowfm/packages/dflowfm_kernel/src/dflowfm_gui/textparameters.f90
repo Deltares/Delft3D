@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_textparameters
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -216,9 +217,9 @@ contains
             call IFormGetDouble(2 * 7, TXTIMSIZE)
             call IFormGetDouble(2 * 8, TXTIMX)
             call IFormGetDouble(2 * 9, TXTIMY)
-            TXSIZE = max(0d0, min(TXSIZE, 10d0))
-            TXXpos = max(0d0, min(TXXpos, 1d0))
-            TXYpos = max(0d0, min(TXYpos, 1d0))
+            TXSIZE = max(0.0_dp, min(TXSIZE, 10.0_dp))
+            TXXpos = max(0.0_dp, min(TXXpos, 1.0_dp))
+            TXYpos = max(0.0_dp, min(TXYpos, 1.0_dp))
          end if
          call IWinClose(1)
          call IWinClose(1)

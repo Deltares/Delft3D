@@ -53,7 +53,7 @@ done
 # clashes with the internal opt directory of the container
 current_working_dir=$(pwd)
 mount_dir=/data
-
+image=${DOCKER_IMAGE:-deltares/delft3dfm:latest}
 
 echo ---------------------------------------------------------------------- 
 echo $scriptdirname
@@ -76,5 +76,5 @@ docker run \
             -e I_MPI_FABRICS=shm \
             --shm-size 8G \
             --ulimit stack=-1 \
-            deltares/delft3dfm:latest \
+            ${image} \
             $container_bindir/$executable $executable_opts

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_search
 contains
 
    subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
-      use m_okay
+      use m_okay, only: okay
       implicit none
       integer :: jofnd
       integer :: k
@@ -50,7 +50,9 @@ contains
       character HLPTXT(NUMTXT) * (*), WRDKEY * 40
 
       LEN = len_trim(WRDKEY)
-      if (LEN == 0) return
+      if (LEN == 0) then
+         return
+      end if
 
       JOFND = 0
       K = NUMCHC - NAHEAD
@@ -58,10 +60,14 @@ contains
 10    continue
       K = K + NAHEAD
       if (K > NUMTXT .or. K < 1) then
-         if (JOFND == 0) call OKAY(0)
+         if (JOFND == 0) then
+            call OKAY(0)
+         end if
          return
       else
-         if (HLPTXT(K) (NLEVEL:NLEVEL + LEN - 1) /= WRDKEY) goto 10
+         if (HLPTXT(K) (NLEVEL:NLEVEL + LEN - 1) /= WRDKEY) then
+            goto 10
+         end if
       end if
 
       JOFND = 1
