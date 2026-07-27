@@ -11239,6 +11239,43 @@ contains
 !! Processing is done elsewhere.
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
+      use dfm_error, only: dfm_noerr
+
+      character(len=*), intent(in) :: filename !< Name of NetCDF file.
+      integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
+      integer, intent(inout) :: numl_keep !< Number of netlinks to keep in existing net.
+      integer, intent(out) :: numk_read !< Number of new netnodes read from file.
+      integer, intent(out) :: numl_read !< Number of new netlinks read from file.
+      integer, intent(out) :: ierr !< Return status (NetCDF operations)
+
+      call readyy('Reading net data', 0.0_dp)
+
+      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
+
+      !
+      ! Try and read as new UGRID NetCDF format
+      !
+      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      if (ierr /= dfm_noerr) then
+         ! No UGRID, but just try to use the 'old' format now.
+         call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      end if
+      
+      if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
+         ierr = detect_proj_string(crs)
+         if (ierr /= dfm_noerr) then
+            ierr = dfm_noerr
+            call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
+            if (iand(unc_writeopts,UG_WRITE_LATLON) > 0) then
+               call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if projection string is unknown. Switched off.')
+               unc_writeopts = ixor(unc_writeopts,UG_WRITE_LATLON)
+            end if
+         end if
+      end if
+   end subroutine unc_read_net
+      
+   subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      use precision, only: dp
       use network_data
       use m_sferic
       use m_missing
@@ -11266,26 +11303,10 @@ contains
 
       integer :: L
       real(kind=dp) :: zk_fillvalue
-
-      call readyy('Reading net data', 0.0_dp)
-
-      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
-
+      
       nerr_ = 0
       allocate (character(len=0) :: coordsyscheck)
-
-      !
-      ! Try and read as new UGRID NetCDF format
-      !
-      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
-      if (ierr == dfm_noerr) then
-         ! UGRID successfully read, we're done.
-         return
-      else
-         ! No UGRID, but just try to use the 'old' format now.
-         continue
-      end if
-
+      
       ierr = unc_open(filename, nf90_nowrite, inetfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
       if (nerr_ > 0) then
@@ -11421,7 +11442,7 @@ contains
       ierr = unc_close(inetfile)
       call readyy('Reading net data', -1.0_dp)
 
-   end subroutine unc_read_net
+   end subroutine unc_read_net_old
 
 !> print MD5 checksum for net file, based on netlinks only.
 !! Only in case of loglevel is debug or all.
