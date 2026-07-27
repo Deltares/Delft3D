@@ -890,10 +890,10 @@ contains
                              'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
       call add_output_config(config_set_his, IDX_HIS_RUG_RUX, &
                              'Wrihis_runupgauge', 'rug_x_coordinate', 'time-varying x-coordinate of shoreline position', '', &
-                             'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
+                             'm', UNC_LOC_RUG)
       call add_output_config(config_set_his, IDX_HIS_RUG_RUY, &
                              'Wrihis_runupgauge', 'rug_y_coordinate', 'time-varying y-coordinate of shoreline position', '', &
-                             'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
+                             'm', UNC_LOC_RUG)
 
       !
       ! HIS: hydraulic structures

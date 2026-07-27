@@ -9141,7 +9141,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c86_drycellerosion" ref="dflowfm_restart">
-      <path version="2025-10-30T17:13:00">e02_dflowfm/f422_morphology_2D_restart/c86_drycellerosion</path>
+      <path version="2026-07-30T17:13:00">e02_dflowfm/f422_morphology_2D_restart/c86_drycellerosion</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/test_20010101_040000_rst.nc" type="netCDF">
@@ -9375,7 +9375,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c96_drycellerosion_spatial" ref="dflowfm_restart">
-      <path version="2025-10-30T17:13:00">e02_dflowfm/f422_morphology_2D_restart/c96_drycellerosion_spatial</path>
+      <path version="2026-07-30T17:13:00">e02_dflowfm/f422_morphology_2D_restart/c96_drycellerosion_spatial</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/test_20010101_040000_rst.nc" type="netCDF">
