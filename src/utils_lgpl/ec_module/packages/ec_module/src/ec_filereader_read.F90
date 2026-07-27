@@ -2293,6 +2293,8 @@ contains
                   start(ndims) = timesndx
                end if
                if (relndx > 0 .and. ndims >= 4) then
+                  ! UNST-10154: Limited support if variable contains an extra 'realization' dimension. 
+                  ! Pick the correct index relndx. For now, we assume length(dim) == 1.
                   start(3) = relndx
                end if
                if (n_layers /= 0) then

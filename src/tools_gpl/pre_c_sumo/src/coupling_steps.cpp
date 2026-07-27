@@ -272,9 +272,12 @@ namespace pre_c_sumo
                     double discharge = delta_s * source.entrainment * (source.has_weight ? source.weight : 1.0);
                     double source_z_top = -source.z_coordinate;
                     double source_z_bottom = -source.z_coordinate;
+                    double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
+                    double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0);
+                                                   source_z_top, discharge, source_moment_magnitude,
+                                                   source_moment_direction);
                 }
             }
 

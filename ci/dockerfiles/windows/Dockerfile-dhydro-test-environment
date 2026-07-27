@@ -12,13 +12,13 @@ ENV UV_PYTHON_INSTALL_DIR="C:\\uv\\python"
 ENV UV_PYTHON_BIN_DIR="C:\\uv\\bin"
 ENV UV_CACHE_DIR="C:\\uv\\cache"
 
-ARG UV_VERSION=0.11.21
+ARG UV_VERSION=0.11.31
 RUN irm https://astral.sh/uv/${UV_VERSION}/install.ps1 | iex
 
 # Add uv and the Python executables to the machine PATH (persists at container runtime)
 RUN $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine'); \
     [Environment]::SetEnvironmentVariable('Path', 'C:\uv;C:\uv\bin;' + $machinePath, 'Machine')
 
-# Install Python 3.12.7; --default also creates the 'python' and 'python3' executables
+# Install Python 3.12.12; --default also creates the 'python' and 'python3' executables
 RUN $env:Path = 'C:\uv;C:\uv\bin;' + $env:Path; \
-    uv python install 3.12.7 --default; exit $LASTEXITCODE
+    uv python install 3.12.12 --default; exit $LASTEXITCODE

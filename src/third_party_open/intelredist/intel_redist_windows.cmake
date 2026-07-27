@@ -1,69 +1,6 @@
-# Set the directory of where the source code is located
-set(src_path src)
-
-if(intel_version LESS_EQUAL 23)
-    set(mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/redist/intel64)
-    string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install(DIRECTORY ${mkl_path}/ DESTINATION bin
-    FILES_MATCHING
-    PATTERN "mkl_core.*.dll"
-    PATTERN "mkl_def.*.dll"
-    PATTERN "mkl_avx*.dll"
-    PATTERN "mkl_intel_thread.*.dll"
-    PATTERN "mkl_sequential.*.dll"
-    PATTERN "1033" EXCLUDE
-    )
-
-    set(redist_path $ENV{ONEAPI_ROOT}/compiler/latest/windows/redist/intel64_win/compiler)
-    string(REPLACE "\\" "/" redist_path "${redist_path}")
-    install(DIRECTORY ${redist_path}/ DESTINATION bin
-    FILES_MATCHING
-    PATTERN "*.dll"
-    PATTERN "1033" EXCLUDE
-    )
-
-    # Intel MPI
-    if("${OSS_MPI}" STREQUAL "IntelMPI")
-        set(mpi_path $ENV{I_MPI_ONEAPI_ROOT})
-        string(REPLACE "\\" "/" mpi_path "${mpi_path}")
-        install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
-        FILES_MATCHING
-        PATTERN "*.dll"
-        PATTERN "debug" EXCLUDE
-        PATTERN "release" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
-        FILES_MATCHING
-        PATTERN "*.exe"
-        PATTERN "debug" EXCLUDE
-        PATTERN "release" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION bin FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION bin FILES_MATCHING PATTERN "*.dll")
-
-        if(NOT TARGET impi)
-            add_library(impi SHARED IMPORTED GLOBAL)
-            set_target_properties(impi PROPERTIES
-                IMPORTED_LOCATION "${mpi_path}/bin/impi.dll"
-                IMPORTED_IMPLIB "${mpi_path}/lib/impi.lib"
-            )
-        endif()
-
-        if(NOT TARGET libfabric)
-            add_library(libfabric SHARED IMPORTED GLOBAL)
-            set_target_properties(libfabric PROPERTIES
-                IMPORTED_LOCATION "${mpi_path}/libfabric/bin/libfabric.dll"
-                IMPORTED_IMPLIB "${mpi_path}/lib/libfabric.lib"
-            )
-        endif()
-    endif()
-
-elseif(intel_version GREATER_EQUAL 24)
-    # Intel OneAPI folder structures and environment variables have changed with OneAPI 2024
-    set(mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
-    string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install(DIRECTORY ${mkl_path}/ DESTINATION bin
+set(mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
+string(REPLACE "\\" "/" mkl_path "${mkl_path}")
+install(DIRECTORY ${mkl_path}/ DESTINATION bin
     FILES_MATCHING
     PATTERN "mkl_core.*.dll"
     PATTERN "mkl_def.*.dll"
@@ -71,62 +8,67 @@ elseif(intel_version GREATER_EQUAL 24)
     PATTERN "mkl_intel_thread.*.dll"
     PATTERN "mkl_sequential.*.dll"
     PATTERN "intel64" EXCLUDE
-    )
+)
 
-    set(redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
-    string(REPLACE "\\" "/" redist_path "${redist_path}")
-    install(FILES
+set(redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
+string(REPLACE "\\" "/" redist_path "${redist_path}")
+install(FILES
     ${redist_path}/libifcoremd.dll
     ${redist_path}/libmmd.dll    
     ${redist_path}/svml_dispmd.dll
     ${redist_path}/libiomp5md.dll  
     ${redist_path}/libifportMD.dll 
-    DESTINATION bin)
+    DESTINATION bin
+)
     
-    #Debug runtime dlls
-    install(FILES
+#Debug runtime dlls
+install(FILES
     ${redist_path}/libifcoremdd.dll
     ${redist_path}/libmmdd.dll
     ${redist_path}/libiomp5md_db.dll
-    DESTINATION bin CONFIGURATIONS debug)
+    DESTINATION bin CONFIGURATIONS debug
+)
     
-    # Intel MPI
-    if("${OSS_MPI}" STREQUAL "IntelMPI")
-        set(mpi_path $ENV{ONEAPI_ROOT}/mpi/latest)
-        string(REPLACE "\\" "/" mpi_path "${mpi_path}")
-        install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
+# Intel MPI
+if("${OSS_MPI}" STREQUAL "IntelMPI")
+    set(mpi_path $ENV{ONEAPI_ROOT}/mpi/latest)
+    string(REPLACE "\\" "/" mpi_path "${mpi_path}")
+    install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
+    install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
         FILES_MATCHING
         PATTERN "*.dll"
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
         PATTERN "mpi" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
+        PATTERN "tune" EXCLUDE
+    )
+    install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
         FILES_MATCHING
         PATTERN "*.exe"
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
         PATTERN "mpi" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION bin FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
+        PATTERN "tune" EXCLUDE
+    )
+    install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/
+        DESTINATION bin
+        FILES_MATCHING PATTERN "*.dll" PATTERN "utils"
+        EXCLUDE
+    )
 
-        if(NOT TARGET impi)
-            add_library(impi SHARED IMPORTED GLOBAL)
-            set_target_properties(impi PROPERTIES
-                IMPORTED_LOCATION "${mpi_path}/bin/impi.dll"
-                IMPORTED_IMPLIB "${mpi_path}/lib/impi.lib"
-            )
-        endif()
-
-        if(NOT TARGET libfabric)
-            add_library(libfabric SHARED IMPORTED GLOBAL)
-            set_target_properties(libfabric PROPERTIES
-                IMPORTED_LOCATION "${mpi_path}/opt/mpi/libfabric/bin/libfabric.dll"
-                IMPORTED_IMPLIB "${mpi_path}/lib/libfabric.lib"
-            )
-        endif()
+    if(NOT TARGET impi)
+        add_library(impi SHARED IMPORTED GLOBAL)
+        set_target_properties(impi PROPERTIES
+            IMPORTED_LOCATION "${mpi_path}/bin/impi.dll"
+            IMPORTED_IMPLIB "${mpi_path}/lib/impi.lib"
+        )
     endif()
-else()
-    message(FATAL_ERROR "intel version ${intel_version} is not supported. \nCannot install intel redistributable libraries.")
+
+    if(NOT TARGET libfabric)
+        add_library(libfabric SHARED IMPORTED GLOBAL)
+        set_target_properties(libfabric PROPERTIES
+            IMPORTED_LOCATION "${mpi_path}/opt/mpi/libfabric/bin/libfabric.dll"
+            IMPORTED_IMPLIB "${mpi_path}/lib/libfabric.lib"
+        )
+    endif()
 endif()
