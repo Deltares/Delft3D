@@ -3318,19 +3318,22 @@ contains
       !   ! return?
       !end if
 
-      if (local_method /= METHOD_BILINEAR .and. filetype == arcinfo) then
+      if (filetype == arcinfo) then
 
-         local_method = METHOD_BILINEAR
-         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': for ArcInfo files only the bilinear interpolation method is supported. &
-                  Method has been set to bilinear interpolation instead.'
-         call warn_flush()
+         ! Remap method triangulation to bilinear for ArcInfo files.
+         if (local_method == METHOD_TRIANGULATION) then
+            local_method = METHOD_BILINEAR
+            msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for filetype ArcInfo. &
+                     Method has been set to bilinear interpolation instead.'
+            call warn_flush()
+         end if
 
-      else if (local_method == METHOD_BILINEAR .and. filetype /= arcinfo) then
+      else if (local_method == METHOD_BILINEAR) then
 
-         local_method = METHOD_TRIANGULATION
-         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': method bilinear interpolation is used, which is only supported for ArcInfo files. &
-                  Method has been set to triangulation interpolation instead.'
-         call warn_flush()
+         ! If method is bilinear, but filetype is not ArcInfo, raise error.
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for filetype ArcInfo.'
+         call err_flush()
+         return
 
       end if
 
@@ -3356,7 +3359,7 @@ contains
          end do
          call restorepol()
 
-      case (METHOD_TRIANGULATION, METHOD_AVERAGING)
+      case (METHOD_TRIANGULATION)
 
          select case (filetype)
          
@@ -3385,148 +3388,196 @@ contains
 
          end select
 
-         if (local_method == METHOD_TRIANGULATION) then
+         jdla = 1
+         call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
+            ZPL, transformcoef, kcc)
 
-            jdla = 1
-            call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
-               ZPL, transformcoef, kcc)
+      case (METHOD_AVERAGING)
 
-         else if (local_method == METHOD_AVERAGING) then ! and this only applies to flow-link data
+         select case (filetype)
+         
+         case (NCFLOW)
 
-            ! store settings
-            iav_store = iav
-            rcel_store = rcel
-            percentileminmax_store = percentileminmax
-            nummin_store = nummin
+            call read_flowsamples_from_netcdf(filename, qid, ierr)
 
-            if (transformcoef(4) /= DMISS) then
-               iav = int(transformcoef(4))
-            end if
+         case (NCGRID)
 
-            if (transformcoef(5) /= DMISS) then
-               rcel = transformcoef(5)
-            end if
+            ! TODO: support reading initial fields from NetCDF too
+            msgbuf = 'timespace::timespaceinitialfield: Error while reading '''//trim(qid)// &
+                     ''' from file '''//trim(filename)//'''. File type not supported for initial fields.'
+            call warn_flush()
+            return
 
-            if (transformcoef(7) /= DMISS) then
-               percentileminmax = transformcoef(7)
-            end if
+         case (ARCINFO)
 
-            if (transformcoef(8) /= DMISS) then
-               nummin = int(transformcoef(8))
-            end if
+            call read_samples_from_arcinfo(filename, 0, 0)
 
-            if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
+         case (GEOTIFF)
 
-               n6 = 4
-               allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
-
-               do L = 1, lnx
-
-                  xx(1, L) = xzw(ln(1, L))
-                  yy(1, L) = yzw(ln(1, L))
-                  xx(3, L) = xzw(ln(2, L))
-                  yy(3, L) = yzw(ln(2, L))
-
-                  Lk = ln2lne(L)
-
-                  xx(2, L) = xk(kn(1, Lk))
-                  yy(2, L) = yk(kn(1, Lk))
-                  xx(4, L) = xk(kn(2, Lk))
-                  yy(4, L) = yk(kn(2, Lk))
-
-               end do
-
-               nnn = 4 ! array nnn
-
-            else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
-
-               n6 = maxval(netcell%n)
-               if (jsferic == 1) then
-                  n6 = n6 + 2 ! safety at poles
-               end if
-
-               allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
-
-               allocate(LnnL(n6), Lorg(n6))
-
-               do n = 1, nx
-                  call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
-               end do
-
-               deallocate(LnnL, Lorg)
-
-            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
-
-               n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
-
-               do k = 1, numk
-
-                  if (jakc == 1) then
-
-                     if (kcc(k) /= 1) then
-                        cycle
-                     end if
-
-                  end if
-
-                  ! get the cell list
-                  call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
-
-                  do i = 1, nnn(k)
-                     xx(i, k) = xxx(i)
-                     yy(i, k) = yyy(i)
-                  end do
-
-               end do
-
-               deallocate(xxx, yyy)
-
-            end if
-
-            if (jakdtree == 1) then
-
-               ! initialize kdtree
-               call build_kdtree(treeglob, Ns, xs, ys, ierror, jsferic, dmiss)
-               if (ierror /= 0) then
-
-                  ! disable kdtree
-                  call delete_kdtree2(treeglob)
-                  jakdtree = 0
-
-               end if
-
-            end if
-
-            call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
-            deallocate (xx, yy, nnn)
-
-            if (errorInfo%cntNoSamples > 0) then
-               write (msgbuf, '(5a,i0,a)') 'For quantity ', trim(qid), ' in file ', trim(filename), ' no values found for ', errorInfo%cntNoSamples, ' cells/links.'
-               call warn_flush()
-            end if
-
-            if (allocated(errorInfo%message)) then
-               msgbuf = errorInfo%message
-               call warn_flush()
-            end if
-
-            if (.not. errorInfo%success) then
+            success = read_samples_from_geotiff(filename)
+            if (.not. success) then
                return
             end if
 
-            ! restore settings
-            iav = iav_store
-            rcel = rcel_store
-            percentileminmax = percentileminmax_store
-            nummin = nummin_store
+         case default
 
-            if (jakdtree == 1) then
+            call reasam(minp0, 0)
+
+         end select
+
+         if (ns <= 0) then
+            msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': no source samples available for averaging interpolation.'
+            call err_flush()
+            return
+         end if
+
+         ! store settings
+         iav_store = iav
+         rcel_store = rcel
+         percentileminmax_store = percentileminmax
+         nummin_store = nummin
+
+         if (transformcoef(4) /= DMISS) then
+            iav = int(transformcoef(4))
+         end if
+
+         if (transformcoef(5) /= DMISS) then
+            rcel = transformcoef(5)
+         end if
+
+         if (transformcoef(7) /= DMISS) then
+            percentileminmax = transformcoef(7)
+         end if
+
+         if (transformcoef(8) /= DMISS) then
+            nummin = int(transformcoef(8))
+         end if
+
+         if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
+
+            n6 = 4
+            allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+
+            do L = 1, lnx
+
+               xx(1, L) = xzw(ln(1, L))
+               yy(1, L) = yzw(ln(1, L))
+               xx(3, L) = xzw(ln(2, L))
+               yy(3, L) = yzw(ln(2, L))
+
+               Lk = ln2lne(L)
+
+               xx(2, L) = xk(kn(1, Lk))
+               yy(2, L) = yk(kn(1, Lk))
+               xx(4, L) = xk(kn(2, Lk))
+               yy(4, L) = yk(kn(2, Lk))
+
+            end do
+
+            nnn = 4 ! array nnn
+
+         else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
+
+            n6 = maxval(netcell%n)
+            if (jsferic == 1) then
+               n6 = n6 + 2 ! safety at poles
+            end if
+
+            allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
+
+            allocate(LnnL(n6), Lorg(n6))
+
+            do n = 1, nx
+               call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
+            end do
+
+            deallocate(LnnL, Lorg)
+
+         else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
+
+            n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
+            allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+
+            do k = 1, numk
+
+               if (jakc == 1) then
+
+                  if (kcc(k) /= 1) then
+                     cycle
+                  end if
+
+               end if
+
+               ! get the cell list
+               call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
+
+               do i = 1, nnn(k)
+                  xx(i, k) = xxx(i)
+                  yy(i, k) = yyy(i)
+               end do
+
+            end do
+
+            deallocate(xxx, yyy)
+
+         end if
+
+         if (jakdtree == 1) then
+
+            ! initialize kdtree
+            call build_kdtree(treeglob, Ns, xs, ys, ierror, jsferic, dmiss)
+            if (ierror /= 0) then
+
+               ! disable kdtree
                call delete_kdtree2(treeglob)
+               jakdtree = 0
+
             end if
 
          end if
+
+         call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
+                           dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
+         deallocate (xx, yy, nnn)
+
+         if (errorInfo%cntNoSamples > 0) then
+            write (msgbuf, '(5a,i0,a)') 'For quantity ', trim(qid), ' in file ', trim(filename), ' no values found for ', errorInfo%cntNoSamples, ' cells/links.'
+            call warn_flush()
+         end if
+
+         if (allocated(errorInfo%message)) then
+            msgbuf = errorInfo%message
+            call warn_flush()
+         end if
+
+         if (.not. errorInfo%success) then
+            return
+         end if
+
+         ! restore settings
+         iav = iav_store
+         rcel = rcel_store
+         percentileminmax = percentileminmax_store
+         nummin = nummin_store
+
+         if (jakdtree == 1) then
+            call delete_kdtree2(treeglob)
+         end if
+
+      case (METHOD_BILINEAR)
+
+         if (filetype == ARCINFO) then
+            
+            call read_samples_from_arcinfo(filename, 0, 0)
+
+            call bilinarc(xu, yu, zh, nx)
+
+         end if
+
+      end select
+
+      ! Final handling shared by triangulation, averaging and bilinear methods.
+      if (any(local_method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])) then
 
          do k = 1, nx
             if (zh(k) /= dmiss_default) then
@@ -3545,34 +3596,7 @@ contains
 
          end if
 
-      case (METHOD_BILINEAR)
-
-         if (filetype == ARCINFO) then
-            
-            call read_samples_from_arcinfo(filename, 0, 0)
-
-            call bilinarc(xu, yu, zh, nx)
-
-            do k = 1, nx
-               if (zh(k) /= dmiss_default) then
-                  call operate(zu(k), zh(k), operand)
-                  zh(k) = zu(k)
-               end if
-            end do
-
-            ! sample set can be large, delete it and do not make a copy
-            call delsam(-1)
-            if (allocated(d)) then
-
-               deallocate(d)
-               mca = 0
-               nca = 0
-
-            end if
-
-         end if
-
-      end select
+      end if
 
       success = .true.
       call doclose(minp0)
