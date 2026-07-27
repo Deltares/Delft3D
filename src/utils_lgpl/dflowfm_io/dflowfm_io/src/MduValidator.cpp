@@ -8,18 +8,18 @@
 
 namespace dflowfm_io
 {
-
-    IssueReport MduValidator::Validate(const ini::IniData& iniData)
+    IssueReport MduValidator::Validate(const ini::IniData& iniData, const MduSchema& schema)
     {
         IssueReport report;
-        ValidateRequired(iniData, report);
-        ValidateUnsupported(iniData, report);
+        ValidateRequired(iniData, schema, report);
+        ValidateUnsupported(iniData, schema, report);
+        ValidateStatus(iniData, schema, report);
         return report;
     }
 
-    void MduValidator::ValidateRequired(const ini::IniData& iniData, IssueReport& report)
+    void MduValidator::ValidateRequired(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+        for (const auto& sectionSchema : schema.Sections())
         {
             if (!iniData.HasSection(sectionSchema.name))
             {
@@ -40,8 +40,8 @@ namespace dflowfm_io
                     if (propertySchema.required)
                         report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
                     else if (!propertySchema.default_value.empty())
-                        report.AddInfo("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
-                                       propertySchema.key, propertySchema.default_value);
+                        report.AddDebug("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
+                                        propertySchema.key, propertySchema.default_value);
                     continue;
                 }
 
@@ -59,11 +59,11 @@ namespace dflowfm_io
         }
     }
 
-    void MduValidator::ValidateUnsupported(const ini::IniData& iniData, IssueReport& report)
+    void MduValidator::ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
         for (const auto& section : iniData)
         {
-            const auto* sectionSchema = MDU_SCHEMA.FindSection(section.GetName());
+            const auto* sectionSchema = schema.FindSection(section.GetName());
             if (!sectionSchema)
             {
                 report.AddWarning(section.GetLineNumber(), "Section [{}] is not a supported section.",
@@ -73,10 +73,57 @@ namespace dflowfm_io
 
             for (const auto& property : section)
             {
-                const auto* propertySchema = MDU_SCHEMA.FindProperty(section.GetName(), property.GetKey());
+                const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
                 if (!propertySchema)
                     report.AddWarning(property.GetLineNumber(), "Property [{}].{} is not a supported property.",
                                       section.GetName(), property.GetKey());
+            }
+        }
+    }
+
+    void MduValidator::ValidateStatus(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
+    {
+        for (const auto& section : iniData)
+        {
+            for (const auto& property : section)
+            {
+                const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
+                if (!propertySchema)
+                    continue;
+
+                if (propertySchema->status.type == StatusType::Obsolete)
+                {
+                    report.AddError(property.GetLineNumber(), "Property [{}].{} is obsolete since {}. {}",
+                                    section.GetName(), property.GetKey(), propertySchema->status.since,
+                                    propertySchema->status.comment);
+                    continue;
+                }
+
+                if (propertySchema->status.type == StatusType::Deprecated)
+                {
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{} is deprecated. {}",
+                                      section.GetName(), property.GetKey(), propertySchema->status.comment);
+                    continue;
+                }
+
+                if (propertySchema->value_type != ValueType::Enum && propertySchema->value_type != ValueType::IntEnum)
+                    continue;
+
+                if (!property.HasValue())
+                    continue;
+
+                const auto* enumValueSchema = schema.FindEnumValue(*propertySchema, property.GetValue());
+                if (!enumValueSchema)
+                    continue;
+
+                if (enumValueSchema->status.type == StatusType::Obsolete)
+                    report.AddError(property.GetLineNumber(), "Property [{}].{}={} is obsolete since {}. {}",
+                                    section.GetName(), property.GetKey(), property.GetValue(),
+                                    enumValueSchema->status.since, enumValueSchema->status.comment);
+                else if (enumValueSchema->status.type == StatusType::Deprecated)
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
+                                      section.GetName(), property.GetKey(), property.GetValue(),
+                                      enumValueSchema->status.comment);
             }
         }
     }

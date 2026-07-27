@@ -60,15 +60,7 @@ namespace ini
         properties.insert(properties.end(), propertiesToAdd.begin(), propertiesToAdd.end());
     }
 
-    bool IniSection::HasProperty(const std::string& key) const
-    {
-        if (key.empty())
-        {
-            throw std::invalid_argument("Property key cannot be empty.");
-        }
-
-        return FindProperty(key) != end();
-    }
+    bool IniSection::HasProperty(const std::string& key) const { return FindProperty(key) != nullptr; }
 
     IniProperty& IniSection::GetProperty(const std::string& key)
     {
@@ -77,51 +69,42 @@ namespace ini
 
     const IniProperty& IniSection::GetProperty(const std::string& key) const
     {
-        const auto it = FindProperty(key);
-        if (it == properties.cend())
+        const IniProperty* property = FindProperty(key);
+        if (property == nullptr)
         {
             throw std::out_of_range("No property with key '" + key + "' was found.");
         }
 
-        return *it;
+        return *property;
+    }
+
+    const IniProperty* IniSection::FindProperty(const std::string& key) const
+    {
+        if (key.empty())
+        {
+            throw std::invalid_argument("Property key cannot be empty.");
+        }
+
+        const auto it = std::find_if(properties.cbegin(), properties.cend(),
+                                     [&key](const IniProperty& p) { return p.IsKeyEqualTo(key); });
+
+        return it == properties.cend() ? nullptr : &*it;
+    }
+
+    IniProperty* IniSection::FindProperty(const std::string& key)
+    {
+        return const_cast<IniProperty*>(std::as_const(*this).FindProperty(key));
     }
 
     std::string IniSection::GetPropertyValue(const std::string& key, const std::string& defaultValue) const
     {
-        if (key.empty())
-        {
-            throw std::invalid_argument("Property key cannot be empty.");
-        }
-
-        const auto it = FindProperty(key);
-        if (it == end())
+        const IniProperty* property = FindProperty(key);
+        if (property == nullptr)
         {
             return defaultValue;
         }
 
-        return it->HasValue() ? it->GetValue() : defaultValue;
-    }
-
-    std::vector<IniProperty>::iterator IniSection::FindProperty(const std::string& key)
-    {
-        if (key.empty())
-        {
-            throw std::invalid_argument("Property key cannot be empty.");
-        }
-
-        return std::find_if(properties.begin(), properties.end(),
-                            [&key](const IniProperty& p) { return p.IsKeyEqualTo(key); });
-    }
-
-    std::vector<IniProperty>::const_iterator IniSection::FindProperty(const std::string& key) const
-    {
-        if (key.empty())
-        {
-            throw std::invalid_argument("Property key cannot be empty.");
-        }
-
-        return std::find_if(properties.cbegin(), properties.cend(),
-                            [&key](const IniProperty& p) { return p.IsKeyEqualTo(key); });
+        return property->HasValue() ? property->GetValue() : defaultValue;
     }
 
     std::vector<std::string> IniSection::GetAllPropertyValues(const std::string& key) const
@@ -145,14 +128,14 @@ namespace ini
 
     IniProperty& IniSection::SetPropertyValue(const std::string& key, const std::string& value)
     {
-        const auto it = FindProperty(key);
-        if (it == end())
+        IniProperty* property = FindProperty(key);
+        if (property == nullptr)
         {
             return AddProperty(key, value);
         }
 
-        it->SetValue(value);
-        return *it;
+        property->SetValue(value);
+        return *property;
     }
 
     void IniSection::RemoveProperty(const IniProperty& property)

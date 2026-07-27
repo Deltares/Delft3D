@@ -81,7 +81,7 @@ contains
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
-                                  TEMPERATURE_MODEL_COMPOSITE, jased, jasal
+                                  TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
@@ -104,6 +104,13 @@ contains
       IVAL_CMX = 0
       IVAL_WX = 0
       IVAL_WY = 0
+      IVAL_WINDSTRESSX = 0
+      IVAL_WINDSTRESSY = 0
+      IVAL_WSTAR = 0
+      IVAL_OBUKHOV_LENGTH = 0
+      IVAL_TRANSFER_COEFF_MOMENTUM = 0
+      IVAL_TRANSFER_COEFF_SENSIBLE_HEAT = 0
+      IVAL_TRANSFER_COEFF_LATENT_HEAT = 0
       IVAL_PATM = 0
       IVAL_WAVEH = 0
       IVAL_WAVET = 0
@@ -141,7 +148,9 @@ contains
       IVAL_TEPS = 0
       IVAL_VIU = 0
       IVAL_VICWWS = 0
+      IVAL_VICWWS_TOTAL = 0
       IVAL_DIFWWS = 0
+      IVAL_DIFWWS_TOTAL = 0
       IVAL_VICWWU = 0
       IVAL_RICH = 0
       IVAL_RICHS = 0
@@ -151,6 +160,7 @@ contains
       IVAL_SEDDIFN = 0
       IVAL_TAIR = 0
       IVAL_WIND = 0
+      IVAL_RWIN = 0
       IVAL_RHUM = 0
       IVAL_CLOU = 0
       IVAL_AIRDENSITY = 0
@@ -224,6 +234,17 @@ contains
          IVAL_WX = next_index(i)
          IVAL_WY = next_index(i)
       end if
+      if (jawind > 0 .and. his_write_settings%windstress > 0) then
+         IVAL_WINDSTRESSX = next_index(i)
+         IVAL_WINDSTRESSY = next_index(i)
+      end if
+      if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         IVAL_WSTAR = next_index(i)
+         IVAL_OBUKHOV_LENGTH = next_index(i)
+         IVAL_TRANSFER_COEFF_MOMENTUM = next_index(i)
+         IVAL_TRANSFER_COEFF_SENSIBLE_HEAT = next_index(i)
+         IVAL_TRANSFER_COEFF_LATENT_HEAT = next_index(i)
+      end if
       if (air_pressure_available) then
          IVAL_PATM = next_index(i)
       end if
@@ -239,24 +260,36 @@ contains
          IVAL_TAUX = next_index(i)
          IVAL_TAUY = next_index(i)
       end if
-      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-         IVAL_TAIR = next_index(i)
-      end if
       if (jawind > 0) then
          IVAL_WIND = next_index(i)
       end if
-      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-         IVAL_RHUM = next_index(i)
-         IVAL_CLOU = next_index(i)
-         IVAL_QSUN = next_index(i)
-         IVAL_QEVA = next_index(i)
-         IVAL_QCON = next_index(i)
-         IVAL_QLON = next_index(i)
-         IVAL_QFRE = next_index(i)
-         IVAL_QFRC = next_index(i)
-      end if
-      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-         IVAL_QTOT = next_index(i)
+      ! heat flux
+      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            IVAL_QSUN = next_index(i)
+            IVAL_QEVA = next_index(i)
+            IVAL_QCON = next_index(i)
+            IVAL_QLON = next_index(i)
+            IVAL_QTOT = next_index(i)
+            IVAL_TAIR = next_index(i)
+            IVAL_RHUM = next_index(i)
+            IVAL_RWIN = next_index(i)
+      else          
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            IVAL_TAIR = next_index(i)
+         end if
+         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            IVAL_RHUM = next_index(i)
+            IVAL_CLOU = next_index(i)
+            IVAL_QSUN = next_index(i)
+            IVAL_QEVA = next_index(i)
+            IVAL_QCON = next_index(i)
+            IVAL_QLON = next_index(i)
+            IVAL_QFRE = next_index(i)
+            IVAL_QFRC = next_index(i)
+         end if
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            IVAL_QTOT = next_index(i)
+         end if
       end if
       call set_value_indices_for_ice(i)
       if (his_write_settings%rain > 0) then
@@ -389,7 +422,9 @@ contains
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)
+            IVAL_VICWWS_TOTAL = next_index(i)
             IVAL_DIFWWS = next_index(i)
+            IVAL_DIFWWS_TOTAL = next_index(i)
             IVAL_VICWWU = next_index(i)
          end if
          if (idensform > 0) then
@@ -448,6 +483,13 @@ contains
       IPNT_SED = ivalpoint(IVAL_SED, kmx, nlyrs)
       IPNT_WX = ivalpoint(IVAL_WX, kmx, nlyrs)
       IPNT_WY = ivalpoint(IVAL_WY, kmx, nlyrs)
+      IPNT_WINDSTRESSX = ivalpoint(IVAL_WINDSTRESSX, kmx, nlyrs)
+      IPNT_WINDSTRESSY = ivalpoint(IVAL_WINDSTRESSY, kmx, nlyrs)
+      IPNT_WSTAR = ivalpoint(IVAL_WSTAR, kmx, nlyrs)
+      IPNT_OBUKHOV_LENGTH = ivalpoint(IVAL_OBUKHOV_LENGTH, kmx, nlyrs)
+      IPNT_TRANSFER_COEFF_MOMENTUM = ivalpoint(IVAL_TRANSFER_COEFF_MOMENTUM, kmx, nlyrs)
+      IPNT_TRANSFER_COEFF_SENSIBLE_HEAT = ivalpoint(IVAL_TRANSFER_COEFF_SENSIBLE_HEAT, kmx, nlyrs)
+      IPNT_TRANSFER_COEFF_LATENT_HEAT = ivalpoint(IVAL_TRANSFER_COEFF_LATENT_HEAT, kmx, nlyrs)
       IPNT_PATM = ivalpoint(IVAL_PATM, kmx, nlyrs)
       IPNT_WAVEH = ivalpoint(IVAL_WAVEH, kmx, nlyrs)
       IPNT_WAVET = ivalpoint(IVAL_WAVET, kmx, nlyrs)
@@ -465,7 +507,9 @@ contains
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
       IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
+      IPNT_VICWWS_TOTAL = ivalpoint(IVAL_VICWWS_TOTAL, kmx, nlyrs)
       IPNT_DIFWWS = ivalpoint(IVAL_DIFWWS, kmx, nlyrs)
+      IPNT_DIFWWS_TOTAL = ivalpoint(IVAL_DIFWWS_TOTAL, kmx, nlyrs)
       IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
       IPNT_RICH = ivalpoint(IVAL_RICH, kmx, nlyrs)
       IPNT_RICHS = ivalpoint(IVAL_RICHS, kmx, nlyrs)
@@ -488,6 +532,7 @@ contains
       IPNT_UCYST = ivalpoint(IVAL_UCYST, kmx, nlyrs)
       IPNT_TAIR = ivalpoint(IVAL_TAIR, kmx, nlyrs)
       IPNT_WIND = ivalpoint(IVAL_WIND, kmx, nlyrs)
+      IPNT_RWIN = ivalpoint(IVAL_RWIN, kmx, nlyrs)
       IPNT_RHUM = ivalpoint(IVAL_RHUM, kmx, nlyrs)
       IPNT_CLOU = ivalpoint(IVAL_CLOU, kmx, nlyrs)
       IPNT_AIRDENSITY = ivalpoint(IVAL_AIRDENSITY, kmx, nlyrs)
@@ -1055,26 +1100,36 @@ contains
    !! Set intobs to 1 as .pli files are interpolated (not snapped to the grid).
    subroutine loadObservations_from_pli(filename)
       
-      use m_filez,   only: oldfil
+      use m_filez,   only: oldfil, doclose
       use m_polygon
       use m_reapol_nampli, only: reapol_nampli
-      
 
       implicit none
       character(len=*), intent(in) :: filename
       
       ! locals
-      integer                       :: minp,istat, ipli 
+      integer                       :: mpli,istat, ipli, ipnt 
       character(5)                  :: numstr 
 
-      call oldfil(minp, filename)
+      call oldfil(mpli, filename)
       ipli = 0
-      call reapol_nampli(minp, 0, 1, ipli)
+      call reapol_nampli(mpli, 0, 1, ipli)
       
-      do istat = 1, npl
-          write(numstr,'(i4.4)') istat
-          call addObservation(xpl(istat), ypl(istat), trim(nampli(1))//'_'//numstr)
-          intobs(numobs) = 1
+      ipli  = 1
+      istat = 1
+      do ipnt = 1, npl
+          if (xpl(ipnt) /=dmiss) then
+                write(numstr,'(i4.4)') istat
+                call addObservation(xpl(ipnt), ypl(ipnt), trim(nampli(ipli))//'_'//numstr)
+                intobs(numobs) = 1
+                istat          = istat + 1
+          else
+              istat = 1
+              ipli  = ipli + 1
+          end if
+          
       end do
+      
+       call doclose(mpli)
    end subroutine loadObservations_from_pli
 end module m_observations

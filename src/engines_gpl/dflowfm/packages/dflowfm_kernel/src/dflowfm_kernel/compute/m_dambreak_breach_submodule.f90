@@ -1211,6 +1211,7 @@ contains
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D
       use network_data, only: xk, yk
+      use network_data, only: LINK_1D2D_INTERNAL
 
       type(t_dambreak), intent(inout) :: dambreak !< the dambreak data
       real(kind=dp), intent(in) :: start_location_x !< x coordinate of the breach start location
@@ -1252,7 +1253,7 @@ contains
       ! compute the normal projections of the start and endpoints of the flow links
       do k = 1, dambreak%number_of_links
          link = abs(dambreak%link_indices(k))
-         if (kcu(link) == 3) then ! 1d2d flow link
+         if (kcu(link) == LINK_1D2D_INTERNAL) then ! 1d2d flow link
             dambreak%link_effective_width(k) = wu(link)
          else
             point = lftopol(k + dambreak%link_map_offset)

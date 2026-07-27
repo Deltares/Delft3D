@@ -36,6 +36,7 @@ contains
    subroutine get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
       use precision, only: dp
       use network_data, only: kn, xk, yk, lne, lnn, nump
+      use network_data, only: LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
       use m_flowgeom, only: xz, yz ! Note that xz,yz are already filled after findcells.
 
       integer, intent(in) :: L !< link number
@@ -46,7 +47,7 @@ contains
 
       isactive = 1
 
-      if (kn(3, L) == 1 .or. kn(3, L) == 3 .or. kn(3, L) == 4) then
+      if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D2D_INTERNAL .or. kn(3, L) == LINK_1D2D_LONGITUDINAL) then
          n1 = kn(1, L)
          n2 = kn(2, L)
          xza = xk(n1)

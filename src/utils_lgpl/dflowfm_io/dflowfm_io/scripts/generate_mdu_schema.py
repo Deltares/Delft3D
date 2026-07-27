@@ -18,6 +18,23 @@ VALUE_TYPE_MAP = {
     "datetime": "DateTime",
 }
 
+# Maps the JSON "format" strings to the C++ FormatType enum names.
+FORMAT_TYPE_MAP = {
+    "general": "General",
+    "fixed": "Fixed",
+    "scientific": "Scientific",
+    "date": "Date",
+    "datetime": "DateTime",
+}
+
+# Maps the JSON "status" strings to the C++ StatusType enum names.
+STATUS_TYPE_MAP = {
+    "GA": "GA",
+    "research": "Research",
+    "deprecated": "Deprecated",
+    "obsolete": "Obsolete",
+}
+
 # Template for the generated C++ source. Literal braces are doubled so the
 # string can be filled in with str.format(description=..., body=...).
 CPP_TEMPLATE = """\
@@ -50,68 +67,103 @@ def default_value_str(value):
 
 
 def enum_entries(prop):
-    """Return an ordered list of (int_key, name) pairs for an enum property.
-
-    For "enum" the JSON keys are symbolic names and the integer index is the
-    position. For "intenum" the JSON keys are the integer values themselves.
-    """
+    """Return an ordered list of (int_key, label, status) tuples for an enum property."""
     value_type = prop["value_type"]
     enum_values = prop.get("enum_values", {})
     entries = []
-    if value_type == "intenum":
-        for key, name in enum_values.items():
-            entries.append((int(key), name))
-    else:  # enum
-        for index, name in enumerate(enum_values.keys()):
-            entries.append((index, name))
+    for index, (key, entry) in enumerate(enum_values.items()):
+        int_key = int(key) if value_type == "intenum" else index
+        label = None if value_type == "intenum" else key
+        status = entry.get("status", {}) if isinstance(entry, dict) else {}
+        entries.append((int_key, label, status))
     return entries
 
 
-def render_property(prop, indent):
+def render_status(status, indent):
+    """Render the Status block."""
+    inner = " " * (indent + 4)
+    status_type = STATUS_TYPE_MAP[status["value"]]
+    comment = status.get("comment", "")
+    since_release = status.get("since_release", "")
+    sub_width = len(".comment") if comment else len(".type")
+
+    def status_field(name, val):
+        return f"{inner}{name.ljust(sub_width)} = {val}"
+
+    status_lines = [status_field(".type", f"StatusType::{status_type}")]
+    if comment:
+        status_lines.append(status_field(".comment", f'"{comment}"'))
+    if since_release:
+        status_lines.append(status_field(".since", f'"{since_release}"'))
+    body = ",\n".join(status_lines)
+    return f"{{\n{body}\n{' ' * indent}}}"
+
+
+def render_enum_value(value, label, status, indent):
+    """Render a single EnumValueSchema block."""
+    pad = " " * indent
+    inner = " " * (indent + 4)
+    width = len(".status") if status else len(".value")
+
+    def field(name, val):
+        return f"{inner}{name.ljust(width)} = {val}"
+
+    field_blocks = [field(".value", value)]
+    if label is not None:
+        field_blocks.append(field(".label", f'"{label}"'))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
+
+    body = ",\n".join(field_blocks)
+    return f"{pad}EnumValueSchema {{\n{body}\n{pad}}}"
+
+
+def render_property(prop, indent, default_float_format):
     """Render a single PropertySchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
-    lines = [pad + "PropertySchema {"]
+    width = len(".default_value") if "default_value" in prop else len(".description")
 
     required = bool(prop.get("validation", {}).get("is_required", False))
     nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
+    entries = enum_entries(prop)
+    status = prop.get("status", {})
 
-    # Field names are padded to the width of the longest one so the
-    # "=" signs line up in the generated C++.
-    width = len(".default_value")
+    def field(name, val):
+        return f"{inner}{name.ljust(width)} = {val}"
 
-    def field(name, value):
-        return f"{inner}{name.ljust(width)} = {value}"
-
-    lines.append(field(".key", f'"{prop["key"]}",'))
-    if required:
-        lines.append(field(".required", "true,"))
-    if nullable:
-        lines.append(field(".nullable", "true,"))
-    lines.append(field(".value_type", f"ValueType::{value_type},"))
-
+    field_blocks = [field(".key", f'"{prop["key"]}"')]
+    field_blocks.append(field(".value_type", f"ValueType::{value_type}"))
     if "default_value" in prop:
         dvs = default_value_str(prop["default_value"])
-        lines.append(field(".default_value", f'"{dvs}",'))
+        field_blocks.append(field(".default_value", f'"{dvs}"'))
 
-    entries = enum_entries(prop)
+    format_key = prop.get("format")
+    if format_key is None and prop["value_type"] in ("float", "list[float]"):
+        format_key = default_float_format
+    if format_key is not None:
+        format_type = FORMAT_TYPE_MAP[format_key]
+        field_blocks.append(field(".format", f"FormatType::{format_type}"))
+        
+    field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
+
+    if required:
+        field_blocks.append(field(".required", "true"))
+    if nullable:
+        field_blocks.append(field(".nullable", "true"))
     if entries:
-        lines.append(field(".enum_values", "{"))
-        for i, (key, name) in enumerate(entries):
-            comma = "," if i < len(entries) - 1 else ""
-            lines.append(f'{inner}    {{{key}, "{name}"}}{comma}')
-        lines.append(f"{inner}}},")
+        enum_blocks = [render_enum_value(v, label, st, indent + 8) for v, label, st in entries]
+        enum_body = ",\n".join(enum_blocks)
+        field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
 
-    if "format" in prop:
-        lines.append(field(".format", f'"{prop["format"]}",'))
-
-    lines.append(field(".description", f'"{prop.get("description", "")}"'))
-    lines.append(pad + "}")
-    return "\n".join(lines)
+    body = ",\n".join(field_blocks)
+    return f"{pad}PropertySchema {{\n{body}\n{pad}}}"
 
 
-def render_section(section, indent):
+def render_section(section, indent, default_float_format):
     """Render a single SectionSchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
@@ -122,25 +174,29 @@ def render_section(section, indent):
         p.get("validation", {}).get("is_required", False) for p in properties
     )
 
-    lines = [pad + "SectionSchema {"]
-    lines.append(f'{inner}.name        = "{section["name"]}",')
+    width = len(".description")
+
+    def field(name, value):
+        return f"{inner}{name.ljust(width)} = {value}"
+
+    field_blocks = [field(".name", f'"{section["name"]}"')]
     if required:
-        lines.append(f"{inner}.required    = true,")
-    lines.append(f'{inner}.description = "{section.get("description", "")}",')
-    lines.append(f"{inner}.properties  = {{")
+        field_blocks.append(field(".required", "true"))
+    field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
 
-    prop_blocks = [render_property(p, indent + 8) for p in properties]
-    lines.append(",\n".join(prop_blocks))
+    prop_blocks = [render_property(p, indent + 8, default_float_format) for p in properties]
+    props_body = ",\n".join(prop_blocks)
+    field_blocks.append(field(".properties", f"{{\n{props_body}\n{inner}}}"))
 
-    lines.append(f"{inner}}}")
-    lines.append(pad + "}")
-    return "\n".join(lines)
+    body = ",\n".join(field_blocks)
+    return f"{pad}SectionSchema {{\n{body}\n{pad}}}"
 
 
 def generate_schema_file(spec):
     """Generate the full C++ source from the parsed JSON specification."""
     sections = spec.get("ini_sections", [])
-    section_blocks = [render_section(s, 16) for s in sections]
+    default_float_format = spec.get("default_float_format", "general")
+    section_blocks = [render_section(s, 16, default_float_format) for s in sections]
 
     description = spec.get("description", "")
     body = ",\n".join(section_blocks)

@@ -16,26 +16,26 @@ namespace dflowfm_io
     ///
     /// MduDataConverter provides two conversion directions:
     ///
-    /// - **IniData → MduData**: Validates the parsed INI file representation and converts
-    ///   it to a typed @ref MduData. All issues found during validation and conversion are
-    ///   collected in the returned @ref IssueReport rather than thrown.
+    /// - **IniData → MduData**: Validates the parsed INI file representation against the
+    ///   given @ref MduSchema and converts it to a typed @ref MduData. All issues found during
+    ///   validation and conversion are collected in the returned @ref IssueReport rather than
+    ///   thrown.
     ///
     /// - **MduData → IniData**: Converts a typed @ref MduData back to an @ref ini::IniData,
-    ///   in the section and property order defined by the MDU schema.
+    ///   in the section and property order defined by the given @ref MduSchema.
     class MduDataConverter
     {
     public:
         /// @brief Converts the parsed INI file representation to a typed @ref MduData.
         /// @param iniData The parsed MDU file contents to convert.
-        /// @return A pair of the populated @ref MduData and an @ref IssueReport describing
-        ///         any validation or conversion problems.
-        static std::pair<MduData, IssueReport> Convert(const ini::IniData& iniData);
+        /// @param schema  The schema to validate and convert against.
+        static std::pair<MduData, IssueReport> Convert(const ini::IniData& iniData, const MduSchema& schema);
 
         /// @brief Converts typed @ref MduData to an INI file representation.
-        /// @param mduData  The typed MDU data to convert.
-        /// @return An @ref ini::IniData ready to be written to disk.
+        /// @param mduData The typed MDU data to convert.
+        /// @param schema The schema describing section/property order.
         /// @throws std::logic_error if a required property is absent from @p mduData.
-        static ini::IniData Convert(const MduData& mduData);
+        static ini::IniData Convert(const MduData& mduData, const MduSchema& schema);
     };
 
 } // namespace dflowfm_io

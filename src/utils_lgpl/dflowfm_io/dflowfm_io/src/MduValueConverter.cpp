@@ -15,10 +15,37 @@ namespace dflowfm_io
 
     namespace
     {
+        ini::FloatFormat GetFloatFormat(const PropertySchema& schema)
+        {
+            if (schema.format == FormatType::Fixed)
+            {
+                return ini::FloatFormat::Fixed;
+            }
+            if (schema.format == FormatType::Scientific)
+            {
+                return ini::FloatFormat::Scientific;
+            }
+            return ini::FloatFormat::General;
+        }
+
+        ini::TimePointFormat GetTimePointFormat(const PropertySchema& schema)
+        {
+            return (schema.format.has_value() && schema.format.value() == FormatType::Date)
+                       ? ini::TimePointFormat::CompactDateOnly
+                       : ini::TimePointFormat::CompactDateTime;
+        }
+
         template <typename T>
         std::optional<Value> TryFromString(const std::string& raw)
         {
             try { return ini::IniValueConverter::FromString<T>(raw); }
+            catch (const std::exception&) { return std::nullopt; }
+        }
+
+        std::optional<Value> TryFromDateTimeString(const PropertySchema& schema, const std::string& raw)
+        {
+            const auto format = GetTimePointFormat(schema);
+            try { return ini::IniValueConverter::FromString(raw, format); }
             catch (const std::exception&) { return std::nullopt; }
         }
 
@@ -31,8 +58,8 @@ namespace dflowfm_io
 
         std::optional<Value> TryEnumFromString(const PropertySchema& schema, const std::string& raw)
         {
-            for (const auto& [number, name] : schema.enum_values)
-                if (iequals(name, raw)) return EnumValue{number};
+            for (const auto& ev : schema.enum_values)
+                if (iequals(ev.label, raw)) return EnumValue{ev.value};
             return std::nullopt;
         }
 
@@ -42,10 +69,9 @@ namespace dflowfm_io
             try { number = ini::IniValueConverter::FromString<int>(raw); }
             catch (const std::exception&) { return std::nullopt; }
 
-            if (schema.enum_values.find(number) == schema.enum_values.end())
-                return std::nullopt;
-
-            return EnumValue{number};
+            for (const auto& ev : schema.enum_values)
+                if (ev.value == number) return EnumValue{ev.value};
+            return std::nullopt;
         }
 
         template <typename T>
@@ -57,7 +83,19 @@ namespace dflowfm_io
         template <>
         std::string ValueToString<bool>(const Value& value)
         {
-            return std::get<bool>(value) ? "1" : "0";
+            return ini::IniValueConverter::ToString(std::get<bool>(value), ini::BoolFormat::ZeroOne);
+        }
+
+        std::string FloatToString(const PropertySchema& schema, const Value& value)
+        {
+            return ini::IniValueConverter::ToString(std::get<double>(value), GetFloatFormat(schema));
+        }
+
+        std::string DateTimeToString(const PropertySchema& schema, const Value& value)
+        {
+            const auto& timePoint = std::get<std::chrono::system_clock::time_point>(value);
+            const auto format = GetTimePointFormat(schema);
+            return ini::IniValueConverter::ToString(timePoint, format);
         }
 
         template <typename T>
@@ -66,14 +104,20 @@ namespace dflowfm_io
             return ini::IniValueConverter::ToMultiValueString(std::get<std::vector<T>>(value));
         }
 
+        std::string FloatListToString(const PropertySchema& schema, const Value& value)
+        {
+            const auto& values = std::get<std::vector<double>>(value);
+            const auto format = GetFloatFormat(schema);
+            return ini::IniValueConverter::ToMultiValueString(values, format);
+        }
+
         std::string EnumToString(const PropertySchema& schema, const Value& value)
         {
             auto enumValue = std::get<EnumValue>(value);
-            auto it = schema.enum_values.find(enumValue.value);
-            if (it == schema.enum_values.end())
-                throw std::out_of_range(
-                    std::format("Enum value {} is out of range for property '{}'.", enumValue.value, schema.key));
-            return it->second;
+            for (const auto& ev : schema.enum_values)
+                if (ev.value == enumValue.value) return ev.label;
+            throw std::out_of_range(
+                std::format("Enum value {} is out of range for property '{}'.", enumValue.value, schema.key));
         }
 
         std::string IntEnumToString(const Value& value)
@@ -98,7 +142,7 @@ namespace dflowfm_io
             case ValueType::Path:
                 return TryFromString<std::filesystem::path>(raw);
             case ValueType::DateTime:
-                return TryFromString<std::chrono::system_clock::time_point>(raw);
+                return TryFromDateTimeString(schema, raw);
             case ValueType::StringList:
                 return TryFromMultiValueString<std::string>(raw);
             case ValueType::PathList:
@@ -124,19 +168,19 @@ namespace dflowfm_io
             case ValueType::Int:
                 return ValueToString<int>(value);
             case ValueType::Float:
-                return ValueToString<double>(value);
+                return FloatToString(schema, value);
             case ValueType::IntBool:
                 return ValueToString<bool>(value);
             case ValueType::Path:
                 return ValueToString<std::filesystem::path>(value);
             case ValueType::DateTime:
-                return ValueToString<std::chrono::system_clock::time_point>(value);
+                return DateTimeToString(schema, value);
             case ValueType::StringList:
                 return MultiValueToString<std::string>(value);
             case ValueType::PathList:
                 return MultiValueToString<std::filesystem::path>(value);
             case ValueType::FloatList:
-                return MultiValueToString<double>(value);
+                return FloatListToString(schema, value);
             case ValueType::Enum:
                 return EnumToString(schema, value);
             case ValueType::IntEnum:

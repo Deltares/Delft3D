@@ -5,6 +5,16 @@ module iso_c_utils
   ! always use max stringlen for c arrays otherwise you have to specify lengths by hand
   integer(c_int), parameter :: MAXSTRINGLEN = 1024
 contains
+
+  !> Convert a string to a null-terminated string (C style string).
+  !! Helpful for the F90TW macros, because those expect strings to be null terminated.
+  function cstr(string) result(res)
+    use iso_c_binding, only: c_null_char
+    character(len=*), intent(in) :: string
+    character(len=:), allocatable :: res
+    res = trim(string)//c_null_char
+  end function cstr
+
   ! Utility functions, move these to interop module
   ! Make functions pure so they can be used as input arguments.
   integer(c_int) pure function strlen(char_array)

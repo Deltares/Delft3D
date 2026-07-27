@@ -13,6 +13,7 @@ MduIssue = bindings.mdu_issue_t
 class Severity(IntEnum):
     """Severity of a validation issue."""
 
+    DEBUG = bindings.MDU_SEVERITY_DEBUG
     INFO = bindings.MDU_SEVERITY_INFO
     WARNING = bindings.MDU_SEVERITY_WARNING
     ERROR = bindings.MDU_SEVERITY_ERROR

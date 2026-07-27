@@ -62,13 +62,13 @@ class GeneralSection:
         self._model.set_string("general.guiversion", value)
 
     @property
-    def autoStart(self) -> str:
+    def autoStart(self) -> int:
         """Autostart simulation after loading MDU or not."""
-        return self._model.get_enum_name("general.autostart")
+        return self._model.get_enum("general.autostart")
 
     @autoStart.setter
-    def autoStart(self, value: str) -> None:
-        self._model.set_enum_name("general.autostart", value)
+    def autoStart(self, value: int) -> None:
+        self._model.set_enum("general.autostart", value)
 
     @property
     def pathsRelativeToParent(self) -> bool:
@@ -366,13 +366,13 @@ class GeometrySection:
         self._model.set_double("geometry.bedslope", value)
 
     @property
-    def bedLevType(self) -> str:
+    def bedLevType(self) -> int:
         """Bed level definition type."""
-        return self._model.get_enum_name("geometry.bedlevtype")
+        return self._model.get_enum("geometry.bedlevtype")
 
     @bedLevType.setter
-    def bedLevType(self, value: str) -> None:
-        self._model.set_enum_name("geometry.bedlevtype", value)
+    def bedLevType(self, value: int) -> None:
+        self._model.set_enum("geometry.bedlevtype", value)
 
     @property
     def blMeanBelow(self) -> float:
@@ -411,22 +411,22 @@ class GeometrySection:
         self._model.set_double("geometry.anglon", value)
 
     @property
-    def conveyance2D(self) -> str:
+    def conveyance2D(self) -> int:
         """2D analytic conveyance description."""
-        return self._model.get_enum_name("geometry.conveyance2d")
+        return self._model.get_enum("geometry.conveyance2d")
 
     @conveyance2D.setter
-    def conveyance2D(self, value: str) -> None:
-        self._model.set_enum_name("geometry.conveyance2d", value)
+    def conveyance2D(self, value: int) -> None:
+        self._model.set_enum("geometry.conveyance2d", value)
 
     @property
-    def nonLin1D(self) -> str:
+    def nonLin1D(self) -> int:
         """Non-linear 1D volumes, applicable for models with closed cross sections."""
-        return self._model.get_enum_name("geometry.nonlin1d")
+        return self._model.get_enum("geometry.nonlin1d")
 
     @nonLin1D.setter
-    def nonLin1D(self, value: str) -> None:
-        self._model.set_enum_name("geometry.nonlin1d", value)
+    def nonLin1D(self, value: int) -> None:
+        self._model.set_enum("geometry.nonlin1d", value)
 
     @property
     def nonLin2D(self) -> bool:
@@ -492,13 +492,13 @@ class GeometrySection:
         self._model.set_double("geometry.uniformheight1dstreetinlets", value)
 
     @property
-    def uniformTyp1DStreetInlets(self) -> str:
+    def uniformTyp1DStreetInlets(self) -> int:
         """Uniform cross section type for street inlets."""
-        return self._model.get_enum_name("geometry.uniformtyp1dstreetinlets")
+        return self._model.get_enum("geometry.uniformtyp1dstreetinlets")
 
     @uniformTyp1DStreetInlets.setter
-    def uniformTyp1DStreetInlets(self, value: str) -> None:
-        self._model.set_enum_name("geometry.uniformtyp1dstreetinlets", value)
+    def uniformTyp1DStreetInlets(self, value: int) -> None:
+        self._model.set_enum("geometry.uniformtyp1dstreetinlets", value)
 
     @property
     def uniformWidth1DRoofGutterPipes(self) -> float:
@@ -519,13 +519,13 @@ class GeometrySection:
         self._model.set_double("geometry.uniformheight1droofgutterpipes", value)
 
     @property
-    def uniformTyp1DRoofGutterPipes(self) -> str:
+    def uniformTyp1DRoofGutterPipes(self) -> int:
         """Uniform cross section type for type roof gutter pipes."""
-        return self._model.get_enum_name("geometry.uniformtyp1droofgutterpipes")
+        return self._model.get_enum("geometry.uniformtyp1droofgutterpipes")
 
     @uniformTyp1DRoofGutterPipes.setter
-    def uniformTyp1DRoofGutterPipes(self, value: str) -> None:
-        self._model.set_enum_name("geometry.uniformtyp1droofgutterpipes", value)
+    def uniformTyp1DRoofGutterPipes(self, value: int) -> None:
+        self._model.set_enum("geometry.uniformtyp1droofgutterpipes", value)
 
     @property
     def sillHeightMin(self) -> float:
@@ -609,13 +609,13 @@ class GeometrySection:
         self._model.set_int("geometry.kmx", value)
 
     @property
-    def layerType(self) -> str:
+    def layerType(self) -> int:
         """Vertical layer type."""
-        return self._model.get_enum_name("geometry.layertype")
+        return self._model.get_enum("geometry.layertype")
 
     @layerType.setter
-    def layerType(self, value: str) -> None:
-        self._model.set_enum_name("geometry.layertype", value)
+    def layerType(self, value: int) -> None:
+        self._model.set_enum("geometry.layertype", value)
 
     @property
     def numTopSig(self) -> int:
@@ -672,13 +672,13 @@ class GeometrySection:
         self._model.set_double("geometry.dztopuniabovez", value)
 
     @property
-    def numTopSigUniform(self) -> str:
+    def numTopSigUniform(self) -> int:
         """The number of sigma-layers in a z-sigma-model is constant or decreasing (depending on local depth)."""
-        return self._model.get_enum_name("geometry.numtopsiguniform")
+        return self._model.get_enum("geometry.numtopsiguniform")
 
     @numTopSigUniform.setter
-    def numTopSigUniform(self, value: str) -> None:
-        self._model.set_enum_name("geometry.numtopsiguniform", value)
+    def numTopSigUniform(self, value: int) -> None:
+        self._model.set_enum("geometry.numtopsiguniform", value)
 
     @property
     def zLayBot(self) -> float:
@@ -699,13 +699,13 @@ class GeometrySection:
         self._model.set_double("geometry.zlaytop", value)
 
     @property
-    def stretchType(self) -> str:
+    def stretchType(self) -> int:
         """Stretching type for non-uniform layers."""
-        return self._model.get_enum_name("geometry.stretchtype")
+        return self._model.get_enum("geometry.stretchtype")
 
     @stretchType.setter
-    def stretchType(self, value: str) -> None:
-        self._model.set_enum_name("geometry.stretchtype", value)
+    def stretchType(self, value: int) -> None:
+        self._model.set_enum("geometry.stretchtype", value)
 
     @property
     def stretchCoef(self) -> list[float]:
@@ -870,31 +870,31 @@ class GeometrySection:
         self._model.set_double("geometry.tsigma", value)
 
     @property
-    def dpuopt(self) -> str:
+    def dpuopt(self) -> int:
         """Bed level interpolation at velocity point in case of tile approach bed level."""
-        return self._model.get_enum_name("geometry.dpuopt")
+        return self._model.get_enum("geometry.dpuopt")
 
     @dpuopt.setter
-    def dpuopt(self, value: str) -> None:
-        self._model.set_enum_name("geometry.dpuopt", value)
+    def dpuopt(self, value: int) -> None:
+        self._model.set_enum("geometry.dpuopt", value)
 
     @property
-    def keepZLayeringAtBed(self) -> str:
+    def keepZLayeringAtBed(self) -> int:
         """Z-layering at bed."""
-        return self._model.get_enum_name("geometry.keepzlayeringatbed")
+        return self._model.get_enum("geometry.keepzlayeringatbed")
 
     @keepZLayeringAtBed.setter
-    def keepZLayeringAtBed(self, value: str) -> None:
-        self._model.set_enum_name("geometry.keepzlayeringatbed", value)
+    def keepZLayeringAtBed(self, value: int) -> None:
+        self._model.set_enum("geometry.keepzlayeringatbed", value)
 
     @property
-    def ihuzcSig(self) -> str:
+    def ihuzcSig(self) -> int:
         """If `keepZLayeringAtBed`>=2."""
-        return self._model.get_enum_name("geometry.ihuzcsig")
+        return self._model.get_enum("geometry.ihuzcsig")
 
     @ihuzcSig.setter
-    def ihuzcSig(self, value: str) -> None:
-        self._model.set_enum_name("geometry.ihuzcsig", value)
+    def ihuzcSig(self, value: int) -> None:
+        self._model.set_enum("geometry.ihuzcsig", value)
 
     @property
     def ihuz(self) -> int:
@@ -1172,22 +1172,22 @@ class NumericsSection:
         self._model.set_int("numerics.advectype", value)
 
     @property
-    def advecCorrection1D2D(self) -> str:
+    def advecCorrection1D2D(self) -> int:
         """Advection correction of 1D2D link volume."""
-        return self._model.get_enum_name("numerics.adveccorrection1d2d")
+        return self._model.get_enum("numerics.adveccorrection1d2d")
 
     @advecCorrection1D2D.setter
-    def advecCorrection1D2D(self, value: str) -> None:
-        self._model.set_enum_name("numerics.adveccorrection1d2d", value)
+    def advecCorrection1D2D(self, value: int) -> None:
+        self._model.set_enum("numerics.adveccorrection1d2d", value)
 
     @property
-    def timeStepType(self) -> str:
+    def timeStepType(self) -> int:
         """Type of time stepping."""
-        return self._model.get_enum_name("numerics.timesteptype")
+        return self._model.get_enum("numerics.timesteptype")
 
     @timeStepType.setter
-    def timeStepType(self, value: str) -> None:
-        self._model.set_enum_name("numerics.timesteptype", value)
+    def timeStepType(self, value: int) -> None:
+        self._model.set_enum("numerics.timesteptype", value)
 
     @property
     def maxNonLinearIterations(self) -> int:
@@ -1208,58 +1208,58 @@ class NumericsSection:
         self._model.set_bool("numerics.sethorizontalbobsfor1d2d", value)
 
     @property
-    def limTypHu(self) -> str:
+    def limTypHu(self) -> int:
         """Limiter type for waterdepth in continuity eq."""
-        return self._model.get_enum_name("numerics.limtyphu")
+        return self._model.get_enum("numerics.limtyphu")
 
     @limTypHu.setter
-    def limTypHu(self, value: str) -> None:
-        self._model.set_enum_name("numerics.limtyphu", value)
+    def limTypHu(self, value: int) -> None:
+        self._model.set_enum("numerics.limtyphu", value)
 
     @property
-    def limTypMom(self) -> str:
+    def limTypMom(self) -> int:
         """Limiter type for cell center advection velocity."""
-        return self._model.get_enum_name("numerics.limtypmom")
+        return self._model.get_enum("numerics.limtypmom")
 
     @limTypMom.setter
-    def limTypMom(self, value: str) -> None:
-        self._model.set_enum_name("numerics.limtypmom", value)
+    def limTypMom(self, value: int) -> None:
+        self._model.set_enum("numerics.limtypmom", value)
 
     @property
-    def limTypSa(self) -> str:
+    def limTypSa(self) -> int:
         """Limiter type for salinity transport."""
-        return self._model.get_enum_name("numerics.limtypsa")
+        return self._model.get_enum("numerics.limtypsa")
 
     @limTypSa.setter
-    def limTypSa(self, value: str) -> None:
-        self._model.set_enum_name("numerics.limtypsa", value)
+    def limTypSa(self, value: int) -> None:
+        self._model.set_enum("numerics.limtypsa", value)
 
     @property
-    def pure1D(self) -> str:
+    def pure1D(self) -> int:
         """Purely 1D advection."""
-        return self._model.get_enum_name("numerics.pure1d")
+        return self._model.get_enum("numerics.pure1d")
 
     @pure1D.setter
-    def pure1D(self, value: str) -> None:
-        self._model.set_enum_name("numerics.pure1d", value)
+    def pure1D(self, value: int) -> None:
+        self._model.set_enum("numerics.pure1d", value)
 
     @property
-    def junction1D(self) -> str:
+    def junction1D(self) -> int:
         """Advection at 1D junctions."""
-        return self._model.get_enum_name("numerics.junction1d")
+        return self._model.get_enum("numerics.junction1d")
 
     @junction1D.setter
-    def junction1D(self, value: str) -> None:
-        self._model.set_enum_name("numerics.junction1d", value)
+    def junction1D(self, value: int) -> None:
+        self._model.set_enum("numerics.junction1d", value)
 
     @property
-    def icgSolver(self) -> str:
+    def icgSolver(self) -> int:
         """Solver type."""
-        return self._model.get_enum_name("numerics.icgsolver")
+        return self._model.get_enum("numerics.icgsolver")
 
     @icgSolver.setter
-    def icgSolver(self, value: str) -> None:
-        self._model.set_enum_name("numerics.icgsolver", value)
+    def icgSolver(self, value: int) -> None:
+        self._model.set_enum("numerics.icgsolver", value)
 
     @property
     def logSolverConvergence(self) -> bool:
@@ -1280,13 +1280,13 @@ class NumericsSection:
         self._model.set_int("numerics.maxdegree", value)
 
     @property
-    def fixedWeirScheme(self) -> str:
+    def fixedWeirScheme(self) -> int:
         """Fixed weir scheme."""
-        return self._model.get_enum_name("numerics.fixedweirscheme")
+        return self._model.get_enum("numerics.fixedweirscheme")
 
     @fixedWeirScheme.setter
-    def fixedWeirScheme(self, value: str) -> None:
-        self._model.set_enum_name("numerics.fixedweirscheme", value)
+    def fixedWeirScheme(self, value: int) -> None:
+        self._model.set_enum("numerics.fixedweirscheme", value)
 
     @property
     def fixedWeirContraction(self) -> float:
@@ -1334,13 +1334,13 @@ class NumericsSection:
         self._model.set_double("numerics.fixedweirrelaxationcoef", value)
 
     @property
-    def fixedWeirScheme1D2D(self) -> str:
+    def fixedWeirScheme1D2D(self) -> int:
         """Fixed weir scheme for 1D2D links."""
-        return self._model.get_enum_name("numerics.fixedweirscheme1d2d")
+        return self._model.get_enum("numerics.fixedweirscheme1d2d")
 
     @fixedWeirScheme1D2D.setter
-    def fixedWeirScheme1D2D(self, value: str) -> None:
-        self._model.set_enum_name("numerics.fixedweirscheme1d2d", value)
+    def fixedWeirScheme1D2D(self, value: int) -> None:
+        self._model.set_enum("numerics.fixedweirscheme1d2d", value)
 
     @property
     def fixedWeir1D2D_dx(self) -> float:
@@ -1352,13 +1352,13 @@ class NumericsSection:
         self._model.set_double("numerics.fixedweir1d2d_dx", value)
 
     @property
-    def izBndPos(self) -> str:
+    def izBndPos(self) -> int:
         """Position of z boundary."""
-        return self._model.get_enum_name("numerics.izbndpos")
+        return self._model.get_enum("numerics.izbndpos")
 
     @izBndPos.setter
-    def izBndPos(self, value: str) -> None:
-        self._model.set_enum_name("numerics.izbndpos", value)
+    def izBndPos(self, value: int) -> None:
+        self._model.set_enum("numerics.izbndpos", value)
 
     @property
     def tlfSmo(self) -> float:
@@ -1460,13 +1460,13 @@ class NumericsSection:
         self._model.set_int("numerics.maxitverticalforestertem", value)
 
     @property
-    def transportAutoTimeStepDiff(self) -> str:
+    def transportAutoTimeStepDiff(self) -> int:
         """Auto timestepdiff in transport."""
-        return self._model.get_enum_name("numerics.transportautotimestepdiff")
+        return self._model.get_enum("numerics.transportautotimestepdiff")
 
     @transportAutoTimeStepDiff.setter
-    def transportAutoTimeStepDiff(self, value: str) -> None:
-        self._model.set_enum_name("numerics.transportautotimestepdiff", value)
+    def transportAutoTimeStepDiff(self, value: int) -> None:
+        self._model.set_enum("numerics.transportautotimestepdiff", value)
 
     @property
     def implicitDiffusion2D(self) -> bool:
@@ -1478,13 +1478,13 @@ class NumericsSection:
         self._model.set_bool("numerics.implicitdiffusion2d", value)
 
     @property
-    def turbulenceModel(self) -> str:
+    def turbulenceModel(self) -> int:
         """Turbulence model."""
-        return self._model.get_enum_name("numerics.turbulencemodel")
+        return self._model.get_enum("numerics.turbulencemodel")
 
     @turbulenceModel.setter
-    def turbulenceModel(self, value: str) -> None:
-        self._model.set_enum_name("numerics.turbulencemodel", value)
+    def turbulenceModel(self, value: int) -> None:
+        self._model.set_enum("numerics.turbulencemodel", value)
 
     @property
     def c1e(self) -> float:
@@ -1703,22 +1703,22 @@ class NumericsSection:
         self._model.set_double("numerics.lateral_fixedweir_minimal_1d2d_embankment", value)
 
     @property
-    def testFixedWeirs(self) -> str:
+    def testFixedWeirs(self) -> int:
         """Test for fixed weir algorithms."""
-        return self._model.get_enum_name("numerics.testfixedweirs")
+        return self._model.get_enum("numerics.testfixedweirs")
 
     @testFixedWeirs.setter
-    def testFixedWeirs(self, value: str) -> None:
-        self._model.set_enum_name("numerics.testfixedweirs", value)
+    def testFixedWeirs(self, value: int) -> None:
+        self._model.set_enum("numerics.testfixedweirs", value)
 
     @property
-    def jposhchk(self) -> str:
+    def jposhchk(self) -> int:
         """Check for positive waterdepth."""
-        return self._model.get_enum_name("numerics.jposhchk")
+        return self._model.get_enum("numerics.jposhchk")
 
     @jposhchk.setter
-    def jposhchk(self, value: str) -> None:
-        self._model.set_enum_name("numerics.jposhchk", value)
+    def jposhchk(self, value: int) -> None:
+        self._model.set_enum("numerics.jposhchk", value)
 
     @property
     def cfConHorMom(self) -> float:
@@ -1748,13 +1748,13 @@ class NumericsSection:
         self._model.set_double("numerics.trsh_u1lb", value)
 
     @property
-    def jaupwindsrc(self) -> str:
+    def jaupwindsrc(self) -> int:
         """Upwind advection discretization at sources/sinks."""
-        return self._model.get_enum_name("numerics.jaupwindsrc")
+        return self._model.get_enum("numerics.jaupwindsrc")
 
     @jaupwindsrc.setter
-    def jaupwindsrc(self, value: str) -> None:
-        self._model.set_enum_name("numerics.jaupwindsrc", value)
+    def jaupwindsrc(self, value: int) -> None:
+        self._model.set_enum("numerics.jaupwindsrc", value)
 
     @property
     def corioAdamsBashfordFac(self) -> float:
@@ -1766,13 +1766,13 @@ class NumericsSection:
         self._model.set_double("numerics.corioadamsbashfordfac", value)
 
     @property
-    def corioConstant(self) -> str:
+    def corioConstant(self) -> int:
         """Coriolis constant."""
-        return self._model.get_enum_name("numerics.corioconstant")
+        return self._model.get_enum("numerics.corioconstant")
 
     @corioConstant.setter
-    def corioConstant(self, value: str) -> None:
-        self._model.set_enum_name("numerics.corioconstant", value)
+    def corioConstant(self, value: int) -> None:
+        self._model.set_enum("numerics.corioconstant", value)
 
     @property
     def drop3D(self) -> float:
@@ -1793,22 +1793,22 @@ class NumericsSection:
         self._model.set_bool("numerics.zlayercenterbedvel", value)
 
     @property
-    def horAdvTypZLayer(self) -> str:
+    def horAdvTypZLayer(self) -> int:
         """Horizontal advection treatment of z-layers for dambreaks."""
-        return self._model.get_enum_name("numerics.horadvtypzlayer")
+        return self._model.get_enum("numerics.horadvtypzlayer")
 
     @horAdvTypZLayer.setter
-    def horAdvTypZLayer(self, value: str) -> None:
-        self._model.set_enum_name("numerics.horadvtypzlayer", value)
+    def horAdvTypZLayer(self, value: int) -> None:
+        self._model.set_enum("numerics.horadvtypzlayer", value)
 
     @property
-    def iCoriolisType(self) -> str:
+    def iCoriolisType(self) -> int:
         """Coriolis type."""
-        return self._model.get_enum_name("numerics.icoriolistype")
+        return self._model.get_enum("numerics.icoriolistype")
 
     @iCoriolisType.setter
-    def iCoriolisType(self, value: str) -> None:
-        self._model.set_enum_name("numerics.icoriolistype", value)
+    def iCoriolisType(self, value: int) -> None:
+        self._model.set_enum("numerics.icoriolistype", value)
 
     @property
     def zwsbTol(self) -> float:
@@ -1829,58 +1829,58 @@ class NumericsSection:
         self._model.set_double("numerics.cfexphu", value)
 
     @property
-    def jbasqbnddownwindhs(self) -> str:
+    def jbasqbnddownwindhs(self) -> int:
         """Water depth scheme at discharge boundaries."""
-        return self._model.get_enum_name("numerics.jbasqbnddownwindhs")
+        return self._model.get_enum("numerics.jbasqbnddownwindhs")
 
     @jbasqbnddownwindhs.setter
-    def jbasqbnddownwindhs(self, value: str) -> None:
-        self._model.set_enum_name("numerics.jbasqbnddownwindhs", value)
+    def jbasqbnddownwindhs(self, value: int) -> None:
+        self._model.set_enum("numerics.jbasqbnddownwindhs", value)
 
     @property
-    def filterOrder(self) -> str:
+    def filterOrder(self) -> int:
         """First-order or second order filter to suppress checkerboarding."""
-        return self._model.get_enum_name("numerics.filterorder")
+        return self._model.get_enum("numerics.filterorder")
 
     @filterOrder.setter
-    def filterOrder(self, value: str) -> None:
-        self._model.set_enum_name("numerics.filterorder", value)
+    def filterOrder(self, value: int) -> None:
+        self._model.set_enum("numerics.filterorder", value)
 
     @property
-    def keepSTBndOnOutflow(self) -> str:
+    def keepSTBndOnOutflow(self) -> int:
         """Keep salinity and temperature signals on boundary cells at outflow."""
-        return self._model.get_enum_name("numerics.keepstbndonoutflow")
+        return self._model.get_enum("numerics.keepstbndonoutflow")
 
     @keepSTBndOnOutflow.setter
-    def keepSTBndOnOutflow(self, value: str) -> None:
-        self._model.set_enum_name("numerics.keepstbndonoutflow", value)
+    def keepSTBndOnOutflow(self, value: int) -> None:
+        self._model.set_enum("numerics.keepstbndonoutflow", value)
 
     @property
-    def keepZLayeringAtBed(self) -> str:
+    def keepZLayeringAtBed(self) -> int:
         """Z-layering at bed."""
-        return self._model.get_enum_name("numerics.keepzlayeringatbed")
+        return self._model.get_enum("numerics.keepzlayeringatbed")
 
     @keepZLayeringAtBed.setter
-    def keepZLayeringAtBed(self, value: str) -> None:
-        self._model.set_enum_name("numerics.keepzlayeringatbed", value)
+    def keepZLayeringAtBed(self, value: int) -> None:
+        self._model.set_enum("numerics.keepzlayeringatbed", value)
 
     @property
-    def logProfAtUBndIn(self) -> str:
+    def logProfAtUBndIn(self) -> int:
         """ubnds inflow."""
-        return self._model.get_enum_name("numerics.logprofatubndin")
+        return self._model.get_enum("numerics.logprofatubndin")
 
     @logProfAtUBndIn.setter
-    def logProfAtUBndIn(self, value: str) -> None:
-        self._model.set_enum_name("numerics.logprofatubndin", value)
+    def logProfAtUBndIn(self, value: int) -> None:
+        self._model.set_enum("numerics.logprofatubndin", value)
 
     @property
-    def logProfKepsBndIn(self) -> str:
+    def logProfKepsBndIn(self) -> int:
         """3D profile at open boundaries."""
-        return self._model.get_enum_name("numerics.logprofkepsbndin")
+        return self._model.get_enum("numerics.logprofkepsbndin")
 
     @logProfKepsBndIn.setter
-    def logProfKepsBndIn(self, value: str) -> None:
-        self._model.set_enum_name("numerics.logprofkepsbndin", value)
+    def logProfKepsBndIn(self, value: int) -> None:
+        self._model.set_enum("numerics.logprofkepsbndin", value)
 
     @property
     def epshstem(self) -> float:
@@ -1910,22 +1910,22 @@ class NumericsSection:
         self._model.set_bool("numerics.newcorio", value)
 
     @property
-    def barrierAdvection(self) -> str:
+    def barrierAdvection(self) -> int:
         """Advection modelling at barriers."""
-        return self._model.get_enum_name("numerics.barrieradvection")
+        return self._model.get_enum("numerics.barrieradvection")
 
     @barrierAdvection.setter
-    def barrierAdvection(self, value: str) -> None:
-        self._model.set_enum_name("numerics.barrieradvection", value)
+    def barrierAdvection(self, value: int) -> None:
+        self._model.set_enum("numerics.barrieradvection", value)
 
     @property
-    def rhoInterfaces(self) -> str:
+    def rhoInterfaces(self) -> int:
         """Estimate rho at 3D layer interfaces for baroclinic pressure gradient method."""
-        return self._model.get_enum_name("numerics.rhointerfaces")
+        return self._model.get_enum("numerics.rhointerfaces")
 
     @rhoInterfaces.setter
-    def rhoInterfaces(self, value: str) -> None:
-        self._model.set_enum_name("numerics.rhointerfaces", value)
+    def rhoInterfaces(self, value: int) -> None:
+        self._model.set_enum("numerics.rhointerfaces", value)
 
     @property
     def chkdifd(self) -> float:
@@ -1937,31 +1937,31 @@ class NumericsSection:
         self._model.set_double("numerics.chkdifd", value)
 
     @property
-    def fixedWeirFrictScheme(self) -> str:
+    def fixedWeirFrictScheme(self) -> int:
         """Fixed weir friction scheme."""
-        return self._model.get_enum_name("numerics.fixedweirfrictscheme")
+        return self._model.get_enum("numerics.fixedweirfrictscheme")
 
     @fixedWeirFrictScheme.setter
-    def fixedWeirFrictScheme(self, value: str) -> None:
-        self._model.set_enum_name("numerics.fixedweirfrictscheme", value)
+    def fixedWeirFrictScheme(self, value: int) -> None:
+        self._model.set_enum("numerics.fixedweirfrictscheme", value)
 
     @property
-    def testDryingFlooding(self) -> str:
+    def testDryingFlooding(self) -> int:
         """Drying flooding algorithm."""
-        return self._model.get_enum_name("numerics.testdryingflooding")
+        return self._model.get_enum("numerics.testdryingflooding")
 
     @testDryingFlooding.setter
-    def testDryingFlooding(self, value: str) -> None:
-        self._model.set_enum_name("numerics.testdryingflooding", value)
+    def testDryingFlooding(self, value: int) -> None:
+        self._model.set_enum("numerics.testdryingflooding", value)
 
     @property
-    def turbulenceAdvection(self) -> str:
+    def turbulenceAdvection(self) -> int:
         """Turbulence advection."""
-        return self._model.get_enum_name("numerics.turbulenceadvection")
+        return self._model.get_enum("numerics.turbulenceadvection")
 
     @turbulenceAdvection.setter
-    def turbulenceAdvection(self, value: str) -> None:
-        self._model.set_enum_name("numerics.turbulenceadvection", value)
+    def turbulenceAdvection(self, value: int) -> None:
+        self._model.set_enum("numerics.turbulenceadvection", value)
 
     @property
     def horizontalMomentumfilter(self) -> bool:
@@ -1991,13 +1991,13 @@ class NumericsSection:
         self._model.set_double("numerics.tspinupturblogprof", value)
 
     @property
-    def vertAdvTypMom(self) -> str:
+    def vertAdvTypMom(self) -> int:
         """Vertical advection type in momentum equation."""
-        return self._model.get_enum_name("numerics.vertadvtypmom")
+        return self._model.get_enum("numerics.vertadvtypmom")
 
     @vertAdvTypMom.setter
-    def vertAdvTypMom(self, value: str) -> None:
-        self._model.set_enum_name("numerics.vertadvtypmom", value)
+    def vertAdvTypMom(self, value: int) -> None:
+        self._model.set_enum("numerics.vertadvtypmom", value)
 
     @property
     def verticalAdvectionType(self) -> str:
@@ -2009,31 +2009,31 @@ class NumericsSection:
         self._model.set_enum_name("numerics.verticaladvectiontype", value)
 
     @property
-    def vertAdvTypSal(self) -> str:
+    def vertAdvTypSal(self) -> int:
         """Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6."""
-        return self._model.get_enum_name("numerics.vertadvtypsal")
+        return self._model.get_enum("numerics.vertadvtypsal")
 
     @vertAdvTypSal.setter
-    def vertAdvTypSal(self, value: str) -> None:
-        self._model.set_enum_name("numerics.vertadvtypsal", value)
+    def vertAdvTypSal(self, value: int) -> None:
+        self._model.set_enum("numerics.vertadvtypsal", value)
 
     @property
-    def vertAdvTypTem(self) -> str:
+    def vertAdvTypTem(self) -> int:
         """Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6."""
-        return self._model.get_enum_name("numerics.vertadvtyptem")
+        return self._model.get_enum("numerics.vertadvtyptem")
 
     @vertAdvTypTem.setter
-    def vertAdvTypTem(self, value: str) -> None:
-        self._model.set_enum_name("numerics.vertadvtyptem", value)
+    def vertAdvTypTem(self, value: int) -> None:
+        self._model.set_enum("numerics.vertadvtyptem", value)
 
     @property
-    def zeroZBndInflowAdvection(self) -> str:
+    def zeroZBndInflowAdvection(self) -> int:
         """Switch for advection at open boundary."""
-        return self._model.get_enum_name("numerics.zerozbndinflowadvection")
+        return self._model.get_enum("numerics.zerozbndinflowadvection")
 
     @zeroZBndInflowAdvection.setter
-    def zeroZBndInflowAdvection(self, value: str) -> None:
-        self._model.set_enum_name("numerics.zerozbndinflowadvection", value)
+    def zeroZBndInflowAdvection(self, value: int) -> None:
+        self._model.set_enum("numerics.zerozbndinflowadvection", value)
 
     @property
     def turbulenceTimeIntegrationFactor(self) -> float:
@@ -2045,13 +2045,13 @@ class NumericsSection:
         self._model.set_double("numerics.turbulencetimeintegrationfactor", value)
 
     @property
-    def turbulenceTimeIntegrationMethod(self) -> str:
+    def turbulenceTimeIntegrationMethod(self) -> int:
         """Where to apply `turbulenceTimeIntegrationFactor`"""
-        return self._model.get_enum_name("numerics.turbulencetimeintegrationmethod")
+        return self._model.get_enum("numerics.turbulencetimeintegrationmethod")
 
     @turbulenceTimeIntegrationMethod.setter
-    def turbulenceTimeIntegrationMethod(self, value: str) -> None:
-        self._model.set_enum_name("numerics.turbulencetimeintegrationmethod", value)
+    def turbulenceTimeIntegrationMethod(self, value: int) -> None:
+        self._model.set_enum("numerics.turbulencetimeintegrationmethod", value)
 
     @property
     def locSaltMin(self) -> float:
@@ -2108,13 +2108,13 @@ class NumericsSection:
         self._model.set_double("numerics.coriohhtrsh", value)
 
     @property
-    def limTypW(self) -> str:
+    def limTypW(self) -> int:
         """Limiter type for wave action transport."""
-        return self._model.get_enum_name("numerics.limtypw")
+        return self._model.get_enum("numerics.limtypw")
 
     @limTypW.setter
-    def limTypW(self, value: str) -> None:
-        self._model.set_enum_name("numerics.limtypw", value)
+    def limTypW(self, value: int) -> None:
+        self._model.set_enum("numerics.limtypw", value)
 
     @property
     def huWeirRegular(self) -> float:
@@ -2126,13 +2126,13 @@ class NumericsSection:
         self._model.set_double("numerics.huweirregular", value)
 
     @property
-    def structureLayersActive(self) -> str:
+    def structureLayersActive(self) -> int:
         """For Villemonte and Tabellenboek, regular hu below `huWeirRegular`."""
-        return self._model.get_enum_name("numerics.structurelayersactive")
+        return self._model.get_enum("numerics.structurelayersactive")
 
     @structureLayersActive.setter
-    def structureLayersActive(self, value: str) -> None:
-        self._model.set_enum_name("numerics.structurelayersactive", value)
+    def structureLayersActive(self, value: int) -> None:
+        self._model.set_enum("numerics.structurelayersactive", value)
 
     @property
     def baOrgFracMin(self) -> float:
@@ -2189,31 +2189,31 @@ class NumericsSection:
         self._model.set_double("numerics.cffachu", value)
 
     @property
-    def vertAdvTypMom3OnBnd(self) -> str:
+    def vertAdvTypMom3OnBnd(self) -> int:
         """Vertical advection type u1 bnd UpwimpL."""
-        return self._model.get_enum_name("numerics.vertadvtypmom3onbnd")
+        return self._model.get_enum("numerics.vertadvtypmom3onbnd")
 
     @vertAdvTypMom3OnBnd.setter
-    def vertAdvTypMom3OnBnd(self, value: str) -> None:
-        self._model.set_enum_name("numerics.vertadvtypmom3onbnd", value)
+    def vertAdvTypMom3OnBnd(self, value: int) -> None:
+        self._model.set_enum("numerics.vertadvtypmom3onbnd", value)
 
     @property
-    def noDerivedTypes(self) -> str:
+    def noDerivedTypes(self) -> int:
         """Use derived types."""
-        return self._model.get_enum_name("numerics.noderivedtypes")
+        return self._model.get_enum("numerics.noderivedtypes")
 
     @noDerivedTypes.setter
-    def noDerivedTypes(self, value: str) -> None:
-        self._model.set_enum_name("numerics.noderivedtypes", value)
+    def noDerivedTypes(self, value: int) -> None:
+        self._model.set_enum("numerics.noderivedtypes", value)
 
     @property
-    def jarhoxu(self) -> str:
+    def jarhoxu(self) -> int:
         """Include density gradient in advection term."""
-        return self._model.get_enum_name("numerics.jarhoxu")
+        return self._model.get_enum("numerics.jarhoxu")
 
     @jarhoxu.setter
-    def jarhoxu(self, value: str) -> None:
-        self._model.set_enum_name("numerics.jarhoxu", value)
+    def jarhoxu(self, value: int) -> None:
+        self._model.set_enum("numerics.jarhoxu", value)
 
     @property
     def ilutype(self) -> str:
@@ -2502,13 +2502,13 @@ class PhysicsSection:
         self._model.set_double("physics.uniffrictcoef", value)
 
     @property
-    def unifFrictType(self) -> str:
+    def unifFrictType(self) -> int:
         """Uniform friction type."""
-        return self._model.get_enum_name("physics.uniffricttype")
+        return self._model.get_enum("physics.uniffricttype")
 
     @unifFrictType.setter
-    def unifFrictType(self, value: str) -> None:
-        self._model.set_enum_name("physics.uniffricttype", value)
+    def unifFrictType(self, value: int) -> None:
+        self._model.set_enum("physics.uniffricttype", value)
 
     @property
     def unifFrictCoef1D(self) -> float:
@@ -2637,13 +2637,13 @@ class PhysicsSection:
         self._model.set_double("physics.elder", value)
 
     @property
-    def irov(self) -> str:
+    def irov(self) -> int:
         """Wall friction."""
-        return self._model.get_enum_name("physics.irov")
+        return self._model.get_enum("physics.irov")
 
     @irov.setter
-    def irov(self, value: str) -> None:
-        self._model.set_enum_name("physics.irov", value)
+    def irov(self, value: int) -> None:
+        self._model.set_enum("physics.irov", value)
 
     @property
     def wall_ks(self) -> float:
@@ -2664,13 +2664,13 @@ class PhysicsSection:
         self._model.set_double("physics.rhomean", value)
 
     @property
-    def iDensForm(self) -> str:
+    def iDensForm(self) -> int:
         """Density calculation."""
-        return self._model.get_enum_name("physics.idensform")
+        return self._model.get_enum("physics.idensform")
 
     @iDensForm.setter
-    def iDensForm(self, value: str) -> None:
-        self._model.set_enum_name("physics.idensform", value)
+    def iDensForm(self, value: int) -> None:
+        self._model.set_enum("physics.idensform", value)
 
     @property
     def thermobaricity(self) -> bool:
@@ -2799,13 +2799,13 @@ class PhysicsSection:
         self._model.set_double("physics.backgroundsalinity", value)
 
     @property
-    def temperature(self) -> str:
+    def temperature(self) -> int:
         """Include temperature."""
-        return self._model.get_enum_name("physics.temperature")
+        return self._model.get_enum("physics.temperature")
 
     @temperature.setter
-    def temperature(self, value: str) -> None:
-        self._model.set_enum_name("physics.temperature", value)
+    def temperature(self, value: int) -> None:
+        self._model.set_enum("physics.temperature", value)
 
     @property
     def initialTemperature(self) -> float:
@@ -2934,13 +2934,13 @@ class PhysicsSection:
         self._model.set_double("physics.salimin", value)
 
     @property
-    def heat_eachStep(self) -> str:
+    def heat_eachStep(self) -> int:
         """Switch for heat each time step or each user time step."""
-        return self._model.get_enum_name("physics.heat_eachstep")
+        return self._model.get_enum("physics.heat_eachstep")
 
     @heat_eachStep.setter
-    def heat_eachStep(self, value: str) -> None:
-        self._model.set_enum_name("physics.heat_eachstep", value)
+    def heat_eachStep(self, value: int) -> None:
+        self._model.set_enum("physics.heat_eachstep", value)
 
     @property
     def nudgeTimeUni(self) -> float:
@@ -2952,13 +2952,13 @@ class PhysicsSection:
         self._model.set_double("physics.nudgetimeuni", value)
 
     @property
-    def iniWithNudge(self) -> str:
+    def iniWithNudge(self) -> int:
         """Initialize salinity and temperature with nudge variables."""
-        return self._model.get_enum_name("physics.iniwithnudge")
+        return self._model.get_enum("physics.iniwithnudge")
 
     @iniWithNudge.setter
-    def iniWithNudge(self, value: str) -> None:
-        self._model.set_enum_name("physics.iniwithnudge", value)
+    def iniWithNudge(self, value: int) -> None:
+        self._model.set_enum("physics.iniwithnudge", value)
 
     @property
     def secondaryFlow(self) -> bool:
@@ -3042,13 +3042,13 @@ class PhysicsSection:
         self._model.set_double("physics.soiltempthick", value)
 
     @property
-    def selfAttractionLoading(self) -> str:
+    def selfAttractionLoading(self) -> int:
         """Use self attraction and loading."""
-        return self._model.get_enum_name("physics.selfattractionloading")
+        return self._model.get_enum("physics.selfattractionloading")
 
     @selfAttractionLoading.setter
-    def selfAttractionLoading(self, value: str) -> None:
-        self._model.set_enum_name("physics.selfattractionloading", value)
+    def selfAttractionLoading(self, value: int) -> None:
+        self._model.set_enum("physics.selfattractionloading", value)
 
     @property
     def prandtlNumberTemperature(self) -> float:
@@ -3166,13 +3166,13 @@ class SedimentSection:
         self._model = model
 
     @property
-    def sedimentModelNr(self) -> str:
+    def sedimentModelNr(self) -> int:
         """Sediment model number."""
-        return self._model.get_enum_name("sediment.sedimentmodelnr")
+        return self._model.get_enum("sediment.sedimentmodelnr")
 
     @sedimentModelNr.setter
-    def sedimentModelNr(self, value: str) -> None:
-        self._model.set_enum_name("sediment.sedimentmodelnr", value)
+    def sedimentModelNr(self, value: int) -> None:
+        self._model.set_enum("sediment.sedimentmodelnr", value)
 
     @property
     def morFile(self) -> Path:
@@ -3220,13 +3220,13 @@ class SedimentSection:
         self._model.set_bool("sediment.seddenscoupling", value)
 
     @property
-    def implicitFallVelocity(self) -> str:
+    def implicitFallVelocity(self) -> int:
         """Implicit or explicit fall velocity"""
-        return self._model.get_enum_name("sediment.implicitfallvelocity")
+        return self._model.get_enum("sediment.implicitfallvelocity")
 
     @implicitFallVelocity.setter
-    def implicitFallVelocity(self, value: str) -> None:
-        self._model.set_enum_name("sediment.implicitfallvelocity", value)
+    def implicitFallVelocity(self, value: int) -> None:
+        self._model.set_enum("sediment.implicitfallvelocity", value)
 
     @property
     def nr_of_sedfractions(self) -> int:
@@ -3256,13 +3256,13 @@ class SedimentSection:
         self._model.set_bool("sediment.bndtreatment", value)
 
     @property
-    def sourSink(self) -> str:
+    def sourSink(self) -> int:
         """Switch off source or sink terms for sed advection."""
-        return self._model.get_enum_name("sediment.soursink")
+        return self._model.get_enum("sediment.soursink")
 
     @sourSink.setter
-    def sourSink(self, value: str) -> None:
-        self._model.set_enum_name("sediment.soursink", value)
+    def sourSink(self, value: int) -> None:
+        self._model.set_enum("sediment.soursink", value)
 
     @property
     def cRefCav(self) -> float:
@@ -3418,22 +3418,22 @@ class SedimentSection:
         self._model.set_double_list("sediment.taucre", value)
 
     @property
-    def inMorphoPol(self) -> str:
+    def inMorphoPol(self) -> int:
         """Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)"""
-        return self._model.get_enum_name("sediment.inmorphopol")
+        return self._model.get_enum("sediment.inmorphopol")
 
     @inMorphoPol.setter
-    def inMorphoPol(self, value: str) -> None:
-        self._model.set_enum_name("sediment.inmorphopol", value)
+    def inMorphoPol(self, value: int) -> None:
+        self._model.set_enum("sediment.inmorphopol", value)
 
     @property
-    def mormergeDtUser(self) -> str:
+    def mormergeDtUser(self) -> int:
         """Mormerge operation"""
-        return self._model.get_enum_name("sediment.mormergedtuser")
+        return self._model.get_enum("sediment.mormergedtuser")
 
     @mormergeDtUser.setter
-    def mormergeDtUser(self, value: str) -> None:
-        self._model.set_enum_name("sediment.mormergedtuser", value)
+    def mormergeDtUser(self, value: int) -> None:
+        self._model.set_enum("sediment.mormergedtuser", value)
 
     @property
     def upperLimitSSC(self) -> float:
@@ -3495,13 +3495,13 @@ class WindSection:
         self._model = model
 
     @property
-    def icdTyp(self) -> str:
+    def icdTyp(self) -> int:
         """Wind drag coefficient type."""
-        return self._model.get_enum_name("wind.icdtyp")
+        return self._model.get_enum("wind.icdtyp")
 
     @icdTyp.setter
-    def icdTyp(self, value: str) -> None:
-        self._model.set_enum_name("wind.icdtyp", value)
+    def icdTyp(self, value: int) -> None:
+        self._model.set_enum("wind.icdtyp", value)
 
     @property
     def cdBreakPoints(self) -> list[float]:
@@ -3585,13 +3585,13 @@ class WindSection:
         self._model.set_double("wind.pavini", value)
 
     @property
-    def windHuOrZwsBased(self) -> str:
+    def windHuOrZwsBased(self) -> int:
         """Wind drag hu or zws based."""
-        return self._model.get_enum_name("wind.windhuorzwsbased")
+        return self._model.get_enum("wind.windhuorzwsbased")
 
     @windHuOrZwsBased.setter
-    def windHuOrZwsBased(self, value: str) -> None:
-        self._model.set_enum_name("wind.windhuorzwsbased", value)
+    def windHuOrZwsBased(self, value: int) -> None:
+        self._model.set_enum("wind.windhuorzwsbased", value)
 
     @property
     def varyingAirDensity(self) -> bool:
@@ -3603,22 +3603,22 @@ class WindSection:
         self._model.set_bool("wind.varyingairdensity", value)
 
     @property
-    def wind_eachstep(self) -> str:
+    def wind_eachstep(self) -> int:
         """Switch for wind and air pressure each time step or each user time step."""
-        return self._model.get_enum_name("wind.wind_eachstep")
+        return self._model.get_enum("wind.wind_eachstep")
 
     @wind_eachstep.setter
-    def wind_eachstep(self, value: str) -> None:
-        self._model.set_enum_name("wind.wind_eachstep", value)
+    def wind_eachstep(self, value: int) -> None:
+        self._model.set_enum("wind.wind_eachstep", value)
 
     @property
-    def rhoWaterInWindStress(self) -> str:
+    def rhoWaterInWindStress(self) -> int:
         """Water density used in computation of wind stress."""
-        return self._model.get_enum_name("wind.rhowaterinwindstress")
+        return self._model.get_enum("wind.rhowaterinwindstress")
 
     @rhoWaterInWindStress.setter
-    def rhoWaterInWindStress(self, value: str) -> None:
-        self._model.set_enum_name("wind.rhowaterinwindstress", value)
+    def rhoWaterInWindStress(self, value: int) -> None:
+        self._model.set_enum("wind.rhowaterinwindstress", value)
 
     @property
     def gapres(self) -> str:
@@ -3637,13 +3637,13 @@ class WavesSection:
         self._model = model
 
     @property
-    def waveModelNr(self) -> str:
+    def waveModelNr(self) -> int:
         """Wave model nr."""
-        return self._model.get_enum_name("waves.wavemodelnr")
+        return self._model.get_enum("waves.wavemodelnr")
 
     @waveModelNr.setter
-    def waveModelNr(self, value: str) -> None:
-        self._model.set_enum_name("waves.wavemodelnr", value)
+    def waveModelNr(self, value: int) -> None:
+        self._model.set_enum("waves.wavemodelnr", value)
 
     @property
     def waveforcing(self) -> int:
@@ -3700,13 +3700,13 @@ class WavesSection:
         self._model.set_path("waves.surfbeatinput", value)
 
     @property
-    def waveSwartDelwaq(self) -> str:
+    def waveSwartDelwaq(self) -> int:
         """If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb."""
-        return self._model.get_enum_name("waves.waveswartdelwaq")
+        return self._model.get_enum("waves.waveswartdelwaq")
 
     @waveSwartDelwaq.setter
-    def waveSwartDelwaq(self, value: str) -> None:
-        self._model.set_enum_name("waves.waveswartdelwaq", value)
+    def waveSwartDelwaq(self, value: int) -> None:
+        self._model.set_enum("waves.waveswartdelwaq", value)
 
     @property
     def hwavuni(self) -> float:
@@ -3745,13 +3745,13 @@ class WavesSection:
         self._model.set_int("waves.3dwavestreaming", value)
 
     @property
-    def _3DWaveBoundaryLayer(self) -> str:
+    def _3DWaveBoundaryLayer(self) -> int:
         """Boundary layer formulation."""
-        return self._model.get_enum_name("waves.3dwaveboundarylayer")
+        return self._model.get_enum("waves.3dwaveboundarylayer")
 
     @_3DWaveBoundaryLayer.setter
-    def _3DWaveBoundaryLayer(self, value: str) -> None:
-        self._model.set_enum_name("waves.3dwaveboundarylayer", value)
+    def _3DWaveBoundaryLayer(self, value: int) -> None:
+        self._model.set_enum("waves.3dwaveboundarylayer", value)
 
     @property
     def twavuni(self) -> float:
@@ -3763,31 +3763,31 @@ class WavesSection:
         self._model.set_double("waves.twavuni", value)
 
     @property
-    def uorbfac(self) -> str:
+    def uorbfac(self) -> int:
         """Orbital velocities."""
-        return self._model.get_enum_name("waves.uorbfac")
+        return self._model.get_enum("waves.uorbfac")
 
     @uorbfac.setter
-    def uorbfac(self, value: str) -> None:
-        self._model.set_enum_name("waves.uorbfac", value)
+    def uorbfac(self, value: int) -> None:
+        self._model.set_enum("waves.uorbfac", value)
 
     @property
-    def _3DStokesProfile(self) -> str:
+    def _3DStokesProfile(self) -> int:
         """Stokes profile."""
-        return self._model.get_enum_name("waves.3dstokesprofile")
+        return self._model.get_enum("waves.3dstokesprofile")
 
     @_3DStokesProfile.setter
-    def _3DStokesProfile(self, value: str) -> None:
-        self._model.set_enum_name("waves.3dstokesprofile", value)
+    def _3DStokesProfile(self, value: int) -> None:
+        self._model.set_enum("waves.3dstokesprofile", value)
 
     @property
-    def jamapsigwav(self) -> str:
+    def jamapsigwav(self) -> int:
         """Wave height on map output"""
-        return self._model.get_enum_name("waves.jamapsigwav")
+        return self._model.get_enum("waves.jamapsigwav")
 
     @jamapsigwav.setter
-    def jamapsigwav(self, value: str) -> None:
-        self._model.set_enum_name("waves.jamapsigwav", value)
+    def jamapsigwav(self, value: int) -> None:
+        self._model.set_enum("waves.jamapsigwav", value)
 
     @property
     def hminlw(self) -> float:
@@ -3799,13 +3799,13 @@ class WavesSection:
         self._model.set_double("waves.hminlw", value)
 
     @property
-    def jahissigwav(self) -> str:
+    def jahissigwav(self) -> int:
         """Wave height on his output"""
-        return self._model.get_enum_name("waves.jahissigwav")
+        return self._model.get_enum("waves.jahissigwav")
 
     @jahissigwav.setter
-    def jahissigwav(self, value: str) -> None:
-        self._model.set_enum_name("waves.jahissigwav", value)
+    def jahissigwav(self, value: int) -> None:
+        self._model.set_enum("waves.jahissigwav", value)
 
     @property
     def waveNikuradse(self) -> str:
@@ -3833,13 +3833,13 @@ class GrwSection:
         self._model.set_bool("grw.groundwater", value)
 
     @property
-    def infiltrationModel(self) -> str:
+    def infiltrationModel(self) -> int:
         """Infiltration method."""
-        return self._model.get_enum_name("grw.infiltrationmodel")
+        return self._model.get_enum("grw.infiltrationmodel")
 
     @infiltrationModel.setter
-    def infiltrationModel(self, value: str) -> None:
-        self._model.set_enum_name("grw.infiltrationmodel", value)
+    def infiltrationModel(self, value: int) -> None:
+        self._model.set_enum("grw.infiltrationmodel", value)
 
     @property
     def hInterceptionLayer(self) -> float:
@@ -3912,13 +3912,13 @@ class HydrologySection:
         self._model = model
 
     @property
-    def interceptionModel(self) -> str:
+    def interceptionModel(self) -> int:
         """Interception model."""
-        return self._model.get_enum_name("hydrology.interceptionmodel")
+        return self._model.get_enum("hydrology.interceptionmodel")
 
     @interceptionModel.setter
-    def interceptionModel(self, value: str) -> None:
-        self._model.set_enum_name("hydrology.interceptionmodel", value)
+    def interceptionModel(self, value: int) -> None:
+        self._model.set_enum("hydrology.interceptionmodel", value)
 
 
 class TimeSection:
@@ -4054,13 +4054,13 @@ class TimeSection:
         self._model.set_datetime("time.startdatetimetlfsmo", value)
 
     @property
-    def autoTimestep(self) -> str:
+    def autoTimestep(self) -> int:
         """Automatic timestepping limited by the CFL condition. Several options are available controlling which flows are used in the CFL limit. Options 1 and 5 are the default for 2D and 3D models, respectively."""
-        return self._model.get_enum_name("time.autotimestep")
+        return self._model.get_enum("time.autotimestep")
 
     @autoTimestep.setter
-    def autoTimestep(self, value: str) -> None:
-        self._model.set_enum_name("time.autotimestep", value)
+    def autoTimestep(self, value: int) -> None:
+        self._model.set_enum("time.autotimestep", value)
 
     @property
     def autoTimestepNoStruct(self) -> bool:
@@ -4203,13 +4203,13 @@ class ExternalForcingSection:
         self._model.set_bool("external forcing.evaporation", value)
 
     @property
-    def windExt(self) -> str:
+    def windExt(self) -> int:
         """Include wind, externally provided."""
-        return self._model.get_enum_name("external forcing.windext")
+        return self._model.get_enum("external forcing.windext")
 
     @windExt.setter
-    def windExt(self, value: str) -> None:
-        self._model.set_enum_name("external forcing.windext", value)
+    def windExt(self, value: int) -> None:
+        self._model.set_enum("external forcing.windext", value)
 
 
 class TrachytopesSection:
@@ -4264,13 +4264,13 @@ class TrachytopesSection:
         self._model.set_int("trachytopes.trtmxr", value)
 
     @property
-    def trtMth(self) -> str:
+    def trtMth(self) -> int:
         """Area averaging method."""
-        return self._model.get_enum_name("trachytopes.trtmth")
+        return self._model.get_enum("trachytopes.trtmth")
 
     @trtMth.setter
-    def trtMth(self, value: str) -> None:
-        self._model.set_enum_name("trachytopes.trtmth", value)
+    def trtMth(self, value: int) -> None:
+        self._model.set_enum("trachytopes.trtmth", value)
 
     @property
     def trtMnh(self) -> float:
@@ -4496,13 +4496,13 @@ class OutputSection:
         self._model.set_path("output.foufile", value)
 
     @property
-    def fouUpdateStep(self) -> str:
+    def fouUpdateStep(self) -> int:
         """Fourier output type."""
-        return self._model.get_enum_name("output.fouupdatestep")
+        return self._model.get_enum("output.fouupdatestep")
 
     @fouUpdateStep.setter
-    def fouUpdateStep(self, value: str) -> None:
-        self._model.set_enum_name("output.fouupdatestep", value)
+    def fouUpdateStep(self, value: int) -> None:
+        self._model.set_enum("output.fouupdatestep", value)
 
     @property
     def hisFile(self) -> Path:
@@ -4568,22 +4568,22 @@ class OutputSection:
         self._model.set_double_list("output.cominterval", value)
 
     @property
-    def mapFormat(self) -> str:
+    def mapFormat(self) -> int:
         """Map file format."""
-        return self._model.get_enum_name("output.mapformat")
+        return self._model.get_enum("output.mapformat")
 
     @mapFormat.setter
-    def mapFormat(self, value: str) -> None:
-        self._model.set_enum_name("output.mapformat", value)
+    def mapFormat(self, value: int) -> None:
+        self._model.set_enum("output.mapformat", value)
 
     @property
-    def ncFormat(self) -> str:
+    def ncFormat(self) -> int:
         """Format for all NetCDF output files."""
-        return self._model.get_enum_name("output.ncformat")
+        return self._model.get_enum("output.ncformat")
 
     @ncFormat.setter
-    def ncFormat(self, value: str) -> None:
-        self._model.set_enum_name("output.ncformat", value)
+    def ncFormat(self, value: int) -> None:
+        self._model.set_enum("output.ncformat", value)
 
     @property
     def ncMapDataPrecision(self) -> str:
@@ -5594,13 +5594,13 @@ class OutputSection:
         self._model.set_path("output.comoutputtimevector", value)
 
     @property
-    def fullGridOutput(self) -> str:
+    def fullGridOutput(self) -> int:
         """Full grid output mode for layer positions."""
-        return self._model.get_enum_name("output.fullgridoutput")
+        return self._model.get_enum("output.fullgridoutput")
 
     @fullGridOutput.setter
-    def fullGridOutput(self, value: str) -> None:
-        self._model.set_enum_name("output.fullgridoutput", value)
+    def fullGridOutput(self, value: int) -> None:
+        self._model.set_enum("output.fullgridoutput", value)
 
     @property
     def eulerVelocities(self) -> bool:
@@ -6067,13 +6067,13 @@ class ProcessesSection:
         self._model.set_double("processes.dtprocesses", value)
 
     @property
-    def processFluxIntegration(self) -> str:
+    def processFluxIntegration(self) -> int:
         """Process fluxes integration option."""
-        return self._model.get_enum_name("processes.processfluxintegration")
+        return self._model.get_enum("processes.processfluxintegration")
 
     @processFluxIntegration.setter
-    def processFluxIntegration(self, value: str) -> None:
-        self._model.set_enum_name("processes.processfluxintegration", value)
+    def processFluxIntegration(self, value: int) -> None:
+        self._model.set_enum("processes.processfluxintegration", value)
 
     @property
     def volumeDryThreshold(self) -> float:
@@ -6164,13 +6164,13 @@ class ParticlesSection:
         self._model.set_double("particles.timestep", value)
 
     @property
-    def _3DType(self) -> str:
+    def _3DType(self) -> int:
         """3D velocity type."""
-        return self._model.get_enum_name("particles.3dtype")
+        return self._model.get_enum("particles.3dtype")
 
     @_3DType.setter
-    def _3DType(self, value: str) -> None:
-        self._model.set_enum_name("particles.3dtype", value)
+    def _3DType(self, value: int) -> None:
+        self._model.set_enum("particles.3dtype", value)
 
 
 class VegSection:
@@ -6180,13 +6180,13 @@ class VegSection:
         self._model = model
 
     @property
-    def vegetationModelNr(self) -> str:
+    def vegetationModelNr(self) -> int:
         """Vegetation model nr."""
-        return self._model.get_enum_name("veg.vegetationmodelnr")
+        return self._model.get_enum("veg.vegetationmodelnr")
 
     @vegetationModelNr.setter
-    def vegetationModelNr(self, value: str) -> None:
-        self._model.set_enum_name("veg.vegetationmodelnr", value)
+    def vegetationModelNr(self, value: int) -> None:
+        self._model.set_enum("veg.vegetationmodelnr", value)
 
     @property
     def clVeg(self) -> float:

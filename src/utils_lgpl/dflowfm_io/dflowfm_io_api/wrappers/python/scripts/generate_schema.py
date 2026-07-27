@@ -65,8 +65,10 @@ class SchemaRenderer:
         "datetime": ("get_datetime", "set_datetime", "datetime", "datetime"),
         "list[path]": ("get_path_list", "set_path_list", "list[Path]", "list[Path | str]"),
         "list[float]": ("get_double_list", "set_double_list", "list[float]", "list[float]"),
+        # A string enum carries a label, surfaced by name; an intenum has no label in the schema
+        # (EnumValueSchema.label is empty), so it is surfaced by its integer value.
         "enum": ("get_enum_name", "set_enum_name", "str", "str"),
-        "intenum": ("get_enum_name", "set_enum_name", "str", "str"),
+        "intenum": ("get_enum", "set_enum", "int", "int"),
     }
 
     def __init__(self, json_name: str, names: NameSanitizer | None = None) -> None:

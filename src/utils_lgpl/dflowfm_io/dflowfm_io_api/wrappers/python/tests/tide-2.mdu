@@ -12,7 +12,6 @@ PathsRelativeToParent             = 0                                           
 
 [geometry]
 NetFile                           = FlowFM_net.nc                                                       # Unstructured grid file *_net.nc
-BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
 DryPointsFile                     = dry.pol dry.xyz                                                     # Dry points file *.xyz (third column dummy z values), or dry areas polygon file *.pol (third column 1/-1: inside/outside)
 GridEnclosureFile                 =                                                                     # Enclosure polygon file *.pol (third column 1/-1: inside/outside)
 WaterLevIniFile                   =                                                                     # Initial water levels sample file *.xyz
@@ -27,7 +26,6 @@ ProfdefFile                       =                                             
 ProfdefxyzFile                    =                                                                     # Channel profile definition file _profdefinition.def with definition for all profile numbers
 IniFieldFile                      =
 Uniformwidth1D                    = 2                                                                   # Uniform width for channel profiles not specified by profloc
-ManholeFile                       =                                                                     # File *.ini containing manholes
 WaterLevIni                       = 0                                                                   # Initial water level at missing s0 values
 Bedlevuni                         = -5                                                                  # Uniform bed level used at missing z values if BedlevType > 2
 Bedslope                          = 0                                                                   # Bed slope inclination if BedlevType > 2
@@ -72,7 +70,6 @@ Tlfsmo                            = 3600                                        
 Slopedrop2D                       = 0                                                                   # Apply drop losses only if local bed slope > Slopedrop2D, (<=0: no drop losses)
 Chkadvd                           = 0.1                                                                 # Check advection terms if depth < chkadvdp, => less setbacks
 Teta0                             = 0.55                                                                # Theta of time integration (0.5 < theta < 1)
-Qhrelax                           = 0.01                                                                # Relaxation on Q-h open boundaries
 cstbnd                            = 0                                                                   # Delft3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)
 Maxitverticalforestersal          = 0                                                                   # Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)
 Maxitverticalforestertem          = 0                                                                   # Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)
@@ -89,7 +86,6 @@ UnifFrictType                     = 1                                           
 UnifFrictCoef                     = 0.023                                                               # Uniform friction coefficient (0: no friction)
 UnifFrictCoef1D                   = 0.023                                                               # Uniform friction coefficient in 1D links (0: no friction)
 UnifFrictCoefLin                  = 0                                                                   # Uniform linear friction coefficient for ocean models (0: no friction)
-Umodlin                           = 0                                                                   # Linear friction umod, for ifrctyp=4,5,6
 Vicouv                            = 0.1                                                                 # Uniform horizontal eddy viscosity
 Dicouv                            = 0.1                                                                 # Uniform horizontal eddy diffusivity
 Vicoww                            = 1E-06                                                               # Uniform vertical eddy viscosity
@@ -119,7 +115,6 @@ Stanton                           = -1                                          
 Dalton                            = -1                                                                  # Coefficient for evaporative heat flux
 Backgroundwatertemperature        = 6                                                                   # Background water temperature for eqn. of state
 SecondaryFlow                     = 0                                                                   # Secondary flow (0: no, 1: yes)
-EffectSpiral                      = 0                                                                   # Weight factor of the spiral flow intensity on transport angle
 BetaSpiral                        = 0                                                                   # Weight factor of the spiral flow intensity on flow dispersion stresses
 Temperature                       = 0                                                                   # Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)
 
@@ -133,7 +128,6 @@ PavIni                            = 0                                           
 
 [waves]
 Wavemodelnr                       = 0                                                                   # Wave model nr. (0: none, 1: fetch/depth limited Hurdle-Stive, 2: Young-Verhagen, 3: SWAN)
-WaveNikuradse                     = 0.01                                                                # Wave friction Nikuradse ks c , used in Krone-Swart
 Rouwav                            = FR84                                                                # Friction model for wave induced shear stress
 Gammax                            = 1                                                                   # Maximum wave height/water depth ratio
 
@@ -172,7 +166,6 @@ Wrishp_thd                        = 0                                           
 Wrishp_obs                        = 0                                                                   # Write shape file for observation stations
 Wrishp_emb                        = 0                                                                   # Write shape file for embankments
 Wrishp_dryarea                    = 0                                                                   # Write shape file for dry area
-Wrishp_enc                        = 0                                                                   # Write shape file for enclosure
 Wrishp_src                        = 0                                                                   # Write shape file for sources
 Wrishp_pump                       = 0                                                                   # Write shape file for pump
 OutputDir                         = output                                                              # Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.
@@ -186,7 +179,6 @@ XLSInterval                       =                                             
 MapFile                           =                                                                     # Map file output file *_map.nc in NetCDF format
 MapInterval                       = 1200                                                                # Map file output times, given as 'interval' 'start period' 'end period'
 RstInterval                       = 0                                                                   # Restart file output times, given as 'interval' 'start period' 'end period'
-S1incinterval                     =                                                                     # Interval (m) in incremental file for water levels s1
 MapFormat                         = 4                                                                   # Map file format (1: NetCDF, 2: Tecplot, 3: NetCFD and Tecplot)
 Wrihis_balance                    = 1                                                                   # Write mass balance totals to his file (1: yes, 0: no)
 Wrihis_sourcesink                 = 1                                                                   # Write sources-sinks statistics to his file (1: yes, 0: no)

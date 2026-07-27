@@ -13,7 +13,8 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
     templates(
         TemplateLinuxAgentNoFips,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Receive"
@@ -78,7 +79,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
                     --compare 
                     --skip-run
                     --skip-download cases 
-                    --config configs/apptainer/dimr/dimr_smoke_test_lnx64.xml
+                    --config configs/smoke_tests/apptainer_lnx64.xml
                     --log-level INFO 
                     --teamcity 
                     --parallel

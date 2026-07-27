@@ -9,9 +9,10 @@ import ctypes
 from dflowfm_io.base.library import lib
 
 # --- enum mdu_severity_t ---
-MDU_SEVERITY_INFO = 0
-MDU_SEVERITY_WARNING = 1
-MDU_SEVERITY_ERROR = 2
+MDU_SEVERITY_DEBUG = 0
+MDU_SEVERITY_INFO = 1
+MDU_SEVERITY_WARNING = 2
+MDU_SEVERITY_ERROR = 3
 
 
 # --- struct mdu_issue_t ---

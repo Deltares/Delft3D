@@ -485,6 +485,55 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
+    // FindProperty
+    // -------------------------------------------------------------------------
+
+    TEST(IniSectionTest, FindProperty_EmptyKey_ThrowsInvalidArgument)
+    {
+        IniSection section("TestSection");
+
+        EXPECT_THROW(section.FindProperty(""), std::invalid_argument);
+    }
+
+    class IniSectionFindPropertyCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniSectionFindPropertyCaseInsensitiveTest, FindProperty_ExistingKeyCaseInsensitive_ReturnsProperty)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        const IniProperty* foundProperty = section.FindProperty(GetParam());
+
+        ASSERT_NE(foundProperty, nullptr);
+        EXPECT_EQ(foundProperty->GetKey(), "TestKey");
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionFindPropertyCaseInsensitiveTest,
+                             ::testing::Values("testkey", "TestKey", "TESTKEY"));
+
+    TEST(IniSectionTest, FindProperty_NonExistingKey_ReturnsNullptr)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        EXPECT_EQ(section.FindProperty("NonExistingKey"), nullptr);
+    }
+
+    TEST(IniSectionTest, FindProperty_MultiplePropertiesSameKey_ReturnsFirstMatch)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "FirstValue");
+        section.AddProperty("TestKey", "SecondValue");
+
+        const IniProperty* foundProperty = section.FindProperty("TestKey");
+
+        ASSERT_NE(foundProperty, nullptr);
+        EXPECT_EQ(foundProperty->GetValue(), "FirstValue");
+    }
+
+    // -------------------------------------------------------------------------
     // GetPropertyValue - string
     // -------------------------------------------------------------------------
 

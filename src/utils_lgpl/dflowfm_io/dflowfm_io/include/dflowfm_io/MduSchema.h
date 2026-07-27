@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <locale>
 #include <map>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -29,8 +30,17 @@ namespace dflowfm_io
         DateTime,
     };
 
-    /// @brief Wrapper for enum values so they can be distinguished from 
-    ///        plain integers in the @ref Value variant.
+    /// @brief Describes the formatting style.
+    enum class FormatType
+    {
+        General,
+        Fixed,
+        Scientific,
+        Date,
+        DateTime,
+    };
+
+    /// @brief Represents a single value within an enumeration property.
     struct EnumValue
     {
         int value;
@@ -50,17 +60,43 @@ namespace dflowfm_io
         std::vector<double>
     >;
 
+    /// @brief Describes the lifecycle status of a property in the MDU schema.
+    enum class StatusType
+    {
+        GA, ///< Generally Available; stable and supported.
+        Research, ///< Experimental feature; may change without notice.
+        Deprecated, ///< Discouraged; still functional but scheduled for removal.
+        Obsolete ///< No longer supported; may be ignored or cause errors.
+    };
+
+    /// @brief Lifecycle status of a property or enum value.
+    struct Status
+    {
+        StatusType type = StatusType::GA; ///< The lifecycle status of the property or enum value.
+        std::string comment; ///< Explanation for Deprecated and Obsolete status types.
+        std::string since; ///< Since which this status applies.
+    };
+
+    /// @brief Schema metadata for a single value within an enumeration property.
+    struct EnumValueSchema
+    {
+        int value; ///< Integer index (Enum) or integer value (IntEnum).
+        std::string label; ///< String label for Enum types. Empty for IntEnum types.
+        Status status; ///< Lifecycle status of this enum value.
+    };
+
     /// @brief Schema definition for a single property within an MDU section.
     struct PropertySchema
     {
         std::string key; ///< Case-insensitive property key as it appears in the MDU file.
-        bool required; ///< Whether the property must be present in the MDU file.
-        bool nullable; ///< Whether the property may hold an explicit null (empty) value.
         ValueType value_type; ///< Expected type of the property value.
         std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
-        std::map<int, std::string> enum_values; ///< Mapping from integer to name for Enum and IntEnum types.
-        std::string format; ///< Optional format string for DateTime and Float properties.
+        std::optional<FormatType> format; ///< Optional format for Float, FloatList and DateTime properties.
         std::string description; ///< Human-readable description of the property.
+        bool required; ///< Whether the property must be present in the MDU file.
+        bool nullable; ///< Whether the property may hold an explicit null (empty) value.
+        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
+        Status status; ///< Describes the lifecycle status of the property.
     };
 
     /// @brief Schema definition for a single section within an MDU file.
@@ -108,6 +144,20 @@ namespace dflowfm_io
         /// @param property The property key to look up.
         /// @return The matching @ref PropertySchema, or nullptr if not found.
         const PropertySchema* FindProperty(const std::string& section, const std::string& property) const;
+
+        /// @brief Finds the enum value schema within @p propertySchema whose value/label matches @p rawValue.
+        /// @param propertySchema The schema of the property (must be of type Enum or IntEnum).
+        /// @param rawValue The raw string value as it appears in the MDU file.
+        /// @return The matching @ref EnumValueSchema, or nullptr if no match is found
+        /// or the property is not an Enum/IntEnum.
+        const EnumValueSchema* FindEnumValue(const PropertySchema& propertySchema, const std::string& rawValue) const;
+
+        /// @brief Determines whether @p rawValue is obsolete for @p propertySchema, either because the
+        /// property itself is obsolete, or because @p rawValue matches an obsolete enum value.
+        /// @param propertySchema The schema of the property.
+        /// @param rawValue The raw string value as it appears in the MDU file.
+        /// @return True if the property or the matching enum value is obsolete.
+        bool IsObsolete(const PropertySchema& propertySchema, const std::string& rawValue) const;
 
     private:
         std::string description;

@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     if (!report.empty())
     {
         cout << "Validation report:" << "\n\n";
-        cout << report.Format() << "\n";
+        cout << report.Format(Severity::Info) << "\n";
     }
 
     struct PrintValue

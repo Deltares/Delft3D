@@ -7,15 +7,17 @@
 
 namespace dflowfm_io
 {
-    MduData MduData::CreateFromSchema()
+    MduData MduData::CreateFromSchema(const MduSchema& schema)
     {
         MduData mduData;
 
-        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+        for (const auto& sectionSchema : schema.Sections())
         {
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 if (propertySchema.default_value.empty()) continue;
+
+                if (schema.IsObsolete(propertySchema, propertySchema.default_value)) continue;
 
                 std::optional<Value> value =
                     MduValueConverter::FromString(propertySchema, propertySchema.default_value);

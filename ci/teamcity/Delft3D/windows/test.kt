@@ -20,7 +20,8 @@ object WindowsTest : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Test"
@@ -105,36 +106,43 @@ object WindowsTest : BuildType({
         }
         // script is necessary to dynamically set the copy-failed-cases depending on the paramter
         script {
-
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-                scriptContent = """
-                    @echo off
+            scriptContent = """
+                @echo off
 
-                    set argsList=--username %s3_dsctestbench_accesskey% ^
-                    --password %s3_dsctestbench_secret% ^
-                    --compare ^
-                    --config configs/%configfile% ^
-                    --filter testcase=%case_filter% ^
-                    --log-level DEBUG ^
-                    --parallel ^
-                    --teamcity
+                rem Python writes a lot of '.pyc' bytecode files in '__pycache__' directories. This build 
+                rem step runs in a clean container with a clean build directory bind-mounted in every time,
+                rem so the bytecode files are never reused. We've run into -1073741819 (0xC0000005) exit codes
+                rem while python was generating these '*.pyc' files. That's why we've decided to turn off the
+                rem bytecode file writing. In case we still get a crash, we set PYTHONFAULTHANDLER. This should
+                rem produce a stacktrace when python crashes.
+                set PYTHONDONTWRITEBYTECODE=1
+                set PYTHONFAULTHANDLER=1
 
-                    if "%copy_failed_cases%"=="true" (
-                        set argsList=%%argsList%% --copy-failed-cases
-                    )
+                set argsList=--username %s3_dsctestbench_accesskey% ^
+                --password %s3_dsctestbench_secret% ^
+                --compare ^
+                --config configs/%configfile% ^
+                --filter testcase=%case_filter% ^
+                --log-level DEBUG ^
+                --parallel ^
+                --teamcity
 
-                    rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
-                    rem to avoid os error 32 file-lock failures on the mount during install.
-                    rem Wheels come from the mounted uv cache volume.
-                    uv venv C:\venv
-                    if errorlevel 1 exit /b 1
-                    call C:\venv\Scripts\activate.bat
-                    uv pip sync pip/win-requirements.txt
-                    if errorlevel 1 exit /b 1
+                if "%copy_failed_cases%"=="true" (
+                    set argsList=%%argsList%% --copy-failed-cases
+                )
 
-                    python TestBench.py %%argsList%%
+                rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
+                rem to avoid os error 32 file-lock failures on the mount during install.
+                rem Wheels come from the mounted uv cache volume.
+                uv venv C:\venv
+                if %%ERRORLEVEL%% NEQ 0 exit /b 1
+                call C:\venv\Scripts\activate.bat
+                uv pip sync pip/win-requirements.txt
+                if %%ERRORLEVEL%% NEQ 0 exit /b 1
+                python TestBench.py %%argsList%%
             """.trimIndent()
 
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"

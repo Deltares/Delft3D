@@ -73,6 +73,9 @@ namespace
         case dflowfm_io::Severity::Error:
             return MDU_SEVERITY_ERROR;
         case dflowfm_io::Severity::Info:
+            return MDU_SEVERITY_INFO;
+        case dflowfm_io::Severity::Debug:
+            return MDU_SEVERITY_DEBUG;
         default:
             return MDU_SEVERITY_INFO;
         }
@@ -265,13 +268,21 @@ dflowfm_io_result_t mdu_get_enum_name(mdu_handle_t handle, const char* key, cons
             throw std::invalid_argument("Unknown property key: " + std::string(key));
         }
         const int value = asDocument(handle)->GetValue<dflowfm_io::EnumValue>(key).value;
-        const auto entry = property->enum_values.find(value);
-        if (entry == property->enum_values.end())
+        const dflowfm_io::EnumValueSchema* entry = nullptr;
+        for (const auto& candidate : property->enum_values)
+        {
+            if (candidate.value == value)
+            {
+                entry = &candidate;
+                break;
+            }
+        }
+        if (entry == nullptr)
         {
             throw std::invalid_argument(
                 "No enum name for value " + std::to_string(value) + " of key '" + std::string(key) + "'");
         }
-        stored_name = entry->second;
+        stored_name = entry->label;
         *name_out = stored_name.c_str();
     });
 }
@@ -417,11 +428,11 @@ dflowfm_io_result_t mdu_set_enum_name(mdu_handle_t handle, const char* key, cons
         {
             throw std::invalid_argument("Unknown property key: " + std::string(key));
         }
-        for (const auto& [value, enum_name] : property->enum_values)
+        for (const auto& entry : property->enum_values)
         {
-            if (enum_name == name)
+            if (entry.label == name)
             {
-                asDocument(handle)->SetValue(key, dflowfm_io::EnumValue{value});
+                asDocument(handle)->SetValue(key, dflowfm_io::EnumValue{entry.value});
                 return;
             }
         }

@@ -77,13 +77,13 @@ class TestMduSchema(unittest.TestCase):
         self.assertIsInstance(value, list)
         self.assertTrue(all(isinstance(item, Path) for item in value))
 
-    def test_intenum_property_reads_name_and_round_trips(self):
-        # bedLevType is an intenum; Layer 2 surfaces it by name, like the string enum.
+    def test_intenum_property_reads_int_and_round_trips(self):
+        # bedLevType is an intenum; the schema has no label for it, so Layer 2 surfaces the integer.
         doc = _loaded_doc()
-        name = doc.schema.geometry.bedLevType
-        self.assertIsInstance(name, str)
-        doc.schema.geometry.bedLevType = name
-        self.assertEqual(doc.schema.geometry.bedLevType, name)
+        value = doc.schema.geometry.bedLevType
+        self.assertIsInstance(value, int)
+        doc.schema.geometry.bedLevType = value
+        self.assertEqual(doc.schema.geometry.bedLevType, value)
 
     def test_digit_leading_key_is_sanitised_to_an_accessible_attribute(self):
         # 1D2DLinkFile is not a valid identifier; attr_name prefixes an underscore.

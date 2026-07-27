@@ -15,8 +15,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-WINDOWS_PROFILE = "delft3d_windows_msvc_194"
-LINUX_PROFILE = "delft3d_alma8_intel_2024"
+WINDOWS_PROFILE = "delft3d_windows_msvc_194_v2"
+LINUX_PROFILE = "delft3d_alma8_intel_2024_v2"
 
 ROOT = Path(__file__).resolve().parent
 CONFIG_DIR = ROOT / "conan/config"
@@ -284,8 +284,8 @@ def _require_profile(profile: str) -> None:
     if result.returncode != 0:
         sys.exit(
             f"ERROR: Conan profile '{profile}' not found.\n"
-            "       Run 'python run_conan.py initialize deltares' (or 'initialize external') first "
-            "to install profiles, configure settings and set up remotes."
+            "       Run 'python run_conan.py initialize external' (or 'initialize deltares' on the network) "
+            "first to install the latest profiles, configure settings and set up remotes."
         )
 
 
