@@ -4,7 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
-from generate_bindings import BindingsGenerator, CTypeMapper, HeaderParser
+from generate_bindings import BindingsGenerator, CTypeMapper, HeaderParser, ModelRenderer
 from generate_schema import NameSanitizer, SchemaGenerator, SchemaRenderer
 
 
@@ -92,6 +92,18 @@ class TestSchemaRenderer(unittest.TestCase):
         }
         with self.assertRaises(ValueError):
             self.renderer.render([section])
+
+
+class TestModelRenderer(unittest.TestCase):
+    """The accessor dispatch in the bindings generator."""
+
+    def test_unmapped_accessor_suffix_raises_valueerror(self):
+        with self.assertRaises(ValueError):
+            ModelRenderer("dflowfm_io_api.h")._accessor("mdu_get_bogus")
+
+    def test_non_accessor_function_is_skipped(self):
+        self.assertIsNone(ModelRenderer("dflowfm_io_api.h")._accessor("mdu_get_issue_list"))
+        self.assertIsNone(ModelRenderer("dflowfm_io_api.h")._accessor("mdu_create"))
 
 
 class TestGeneratedFilesInSync(unittest.TestCase):

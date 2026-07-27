@@ -283,7 +283,7 @@ class ModelRenderer:
         handle = 'self._ref.handle, key.encode("utf-8")'
 
         if kind == "get" and not is_list:
-            box, pyret, convert = self.GET_SCALAR[suffix]
+            box, pyret, convert = self._marshalling(self.GET_SCALAR, suffix, cname)
             return [
                 f"    def {method}(self, key: str) -> {pyret}:",
                 f"        value = {box}()",
@@ -291,7 +291,7 @@ class ModelRenderer:
                 f"        return {convert}",
             ]
         if kind == "get" and is_list:
-            elem, pyret, convert = self.GET_LIST[suffix]
+            elem, pyret, convert = self._marshalling(self.GET_LIST, suffix, cname)
             return [
                 f"    def {method}(self, key: str) -> {pyret}:",
                 f"        array_out = ctypes.POINTER({elem})()",
@@ -300,12 +300,12 @@ class ModelRenderer:
                 f"        return [{convert} for i in range(size_out.value)]",
             ]
         if kind == "set" and not is_list:
-            pyarg, c_arg = self.SET_SCALAR[suffix]
+            pyarg, c_arg = self._marshalling(self.SET_SCALAR, suffix, cname)
             return [
                 f"    def {method}(self, key: str, value: {pyarg}) -> None:",
                 f"        check_result(lib.{cname}({handle}, {c_arg}))",
             ]
-        pyarg, elem, encode = self.SET_LIST[suffix]
+        pyarg, elem, encode = self._marshalling(self.SET_LIST, suffix, cname)
         encoded = "list(values)" if encode is None else f"[{encode} for v in values]"
         return [
             f"    def {method}(self, key: str, values: {pyarg}) -> None:",
@@ -313,6 +313,18 @@ class ModelRenderer:
             f"        arr = ({elem} * len(encoded))(*encoded)",
             f"        check_result(lib.{cname}({handle}, arr, ctypes.c_uint64(len(encoded))))",
         ]
+
+    @staticmethod
+    def _marshalling(table: dict, suffix: str, cname: str):
+        """Look up the marshalling for an accessor suffix, failing closed with a clear message."""
+        try:
+            return table[suffix]
+        except KeyError:
+            raise ValueError(
+                f"{cname}: unmapped accessor suffix {suffix!r}. Add it to the ModelRenderer "
+                f"marshalling tables, or add {cname!r} to ModelRenderer._NON_ACCESSORS if it is "
+                f"not a typed value accessor."
+            ) from None
 
 
 class BindingsGenerator(Generator):
