@@ -1,7 +1,7 @@
 ---
 name: download-testbench-testcase
 description: 'Download `TestBench` test case data from MinIO'
-argument-hint: '[partial-testcase-name ...] [config-path]'
+argument-hint: '[partial-testcase-name ...] [config-path] [timestamp]'
 ---
 
 # Download `TestBench` test case(s)
@@ -37,18 +37,24 @@ Similar pre-conditions to running `TestBench.py`, since the _MinIO tools_ are in
 
 One test case:
 ```bash
-python -m tools.minio pull --case|--reference --config <config-path> --test-case-name <test-case-name>
+python -m tools.minio pull --case|--reference --config <config-path> --test-case-name <test-case-name> [--timestamp <timestamp>] --batch [--force]
 ```
 
 Multiple test cases:
 ```bash
-python -m tools.minio pull --case|--reference --test-case-file <testcase-file-path>
+python -m tools.minio pull --case|--reference --test-case-file <testcase-file-path> --batch [--force]
 ```
 
 Use `--case` to download just the _test case input_, and `--reference` to download the _test case references_.
 The user may not actually supply a `config-path`, which is a required argument of `pull`. In this case,
 use the `find-testbench-configs` skill to find a suitable config. `find-testbench-configs` may return multiple
 configs. Let the user select one to use.
+The MinIO tool is an interactive program, and so it sometimes prompts the user for what they want to do. Use the
+`--batch` flag to turn off interactive input and always go with the default option for the prompts. Use in combination
+with `--force` to force a `yes` to every `yes/no` prompts.
+If the user provides a time or timestamp to download the test case data, you can pass the `--timestamp <timestamp>`
+argument to the `pull` command. In this case, the timestamp will not be read from the config file. The `timestamp`
+should be an ISO 8601 formatted timestamp (e.g. 2026-01-02T12:13:14.000Z) and take care to use the UTC timezone.
 There is a way to download multiple test cases from multiple configs with the MinIO tools, but it requires
 writing a _test case file_. It is a CSV file with two columns: `partial-testcase-name` and `config-path`.
 Note that the `config-path` is relative to the `/test/deltares_testbench` and it supports glob patterns.

@@ -31,11 +31,17 @@
             "source": "delft3d-home-config",
             "target": "/home/dev/.config",
         },
-        // The ~/.vscode-server hosts Copilot chat sessions, amongst other things.
+        // The `~/.vscode-server` directory hosts Copilot chat sessions amongst other things.
         {
             "type": "volume",
             "source": "delft3d-vscode-server",
             "target": "/home/dev/.vscode-server",
+        },
+        // The `~/.copilot` hosts skills that users might install but don't want to commit to the Delft3D repository yet.
+        {
+            "type": "volume",
+            "source": "delft3d-copilot",
+            "target": "/home/dev/.copilot",
         },
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],
