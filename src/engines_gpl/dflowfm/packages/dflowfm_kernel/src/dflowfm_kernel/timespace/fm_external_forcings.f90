@@ -3159,7 +3159,7 @@ contains
      use m_polygon
      use m_reapol,           only: reapol
      use m_missing
-     use m_GlobalParameters, only: INDTP_All
+     use m_GlobalParameters, only: INDTP_2D
      use m_find_flownode,    only: find_nearest_flownodes
      use m_flowgeom,         only: xz, yz
      implicit none
@@ -3170,7 +3170,7 @@ contains
       integer                        :: mpli, i_first, i_last, jakdtree ! i_bndpnt
       real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, vx,vy, wx, wy,cross ! dist, distmin,    
 
-      character(len=4), dimension(1) :: tmpname
+      character(len=5), dimension(1) :: tmpname
       integer         , dimension(1) :: kbnd_centre
       real(kind=dp)   , dimension(1) :: x_tmp, y_tmp   
       
@@ -3192,8 +3192,8 @@ contains
       y_tmp(1)        = ypli_centre
       kbnd_centre(1)  = 0
       jakdtree        = 0
-      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname(1),kbnd_centre(1), jakdtree, 1, INDTP_ALL)
-      ! looks like point found is mirrored point, ik mirrorod point is left, sign = 1, if mirrored point is right, sign = -1
+      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname(1),kbnd_centre(1), jakdtree, 1, INDTP_2D)
+      ! Only look for internal 2D points, Boundary pli might be within network
       xbnd_centre = xz(kbnd_centre(1))
       ybnd_centre = yz(kbnd_centre(1))
       
@@ -3207,11 +3207,11 @@ contains
       ! cross product
       cross = (vx*wy) - (vy*wx)
       
-      ! cross > 0 ==> Model right of pli or obove pli
+      ! cross < 0 ==> Model right of pli or obove pli
       if (cross < 0.0_dp) then
-         position = -1
-      else if (cross > 0.0_dp) then 
          position = 1
+      else if (cross > 0.0_dp) then 
+         position = -1
       end if
 
    end subroutine det_net2pli_position

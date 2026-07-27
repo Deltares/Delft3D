@@ -43,7 +43,7 @@ contains
       use messagehandling, only: msgbuf, msg_flush, idlen
       use m_partitioninfo, only: jampi, reduce_int_max, reduce_kobs
       use m_flowgeom, only: nd, xz, yz
-      use m_GlobalParameters, only: INDTP_1D, INDTP_ALL
+      use m_GlobalParameters, only: INDTP_1D, INDTP_ALL, INDTP_2D
       use kdtree2Factory, only: treeglob
       use m_inflowcell, only: inflowcell
       use geometry_module, only: dbdistance
@@ -115,6 +115,10 @@ contains
                   node_nrs_nearest(i) = k
                end if
             end if
+            if (jaoutside == 1 .and. iLocTp == INDTP_2D) then
+               call find_nearest_2D_internal_bruteforce(xx(i), yy(i), node_nrs_nearest(i))
+            end if
+            
          end do
       end if
 
@@ -325,5 +329,37 @@ contains
       end if
 
    end subroutine find_nearest_1D_or_boundary_flownode_bruteforce
+   
+   !> Find the 2-D internal flownode with the shortest distance to the point [x, y]
+   !! Brute-force approach: simply check all flownodes in the entire grid
+   subroutine find_nearest_2D_internal_bruteforce(x, y, node_nr_nearest)
+      use stdlib_kinds, only: dp
+      use m_flowgeom, only: xz, yz,ndxi
+      use geometry_module, only: dbdistance
+      use m_sferic, only: jsferic, jasfer3D
+      use m_missing, only: dmiss
+
+      implicit none
+
+      real(dp), intent(in) :: x !< x-Coordinate of input point.
+      real(dp), intent(in) :: y !< y-Coordinate of input point.
+      integer, intent(out) :: node_nr_nearest !< Node number of nearest 1D or boundary flow node.
+
+      real(dp)             :: dist, distmin
+      integer              :: i_node
+
+      node_nr_nearest = 0
+
+      distmin = huge(1.0_dp)
+      
+      do i_node = 1, ndxi
+          dist = dbdistance(x, y, xz(i_node), yz(i_node), jsferic, jasfer3D, dmiss)
+          if (dist < distmin) then
+              distmin = dist
+              node_nr_nearest = i_node
+          end if
+      end do
+
+   end subroutine find_nearest_2D_internal_bruteforce
 
 end module m_find_flownode

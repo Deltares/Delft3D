@@ -1253,13 +1253,13 @@ contains
                   ! For fixed layers, surface layer(s) may exist for T0 but not for T1 (and vice versa) 
                   ! Avoid time interpolation between realistic value and dmiss
                   if (valuesT0(i) == dmiss .and. valuesT1(i) /= dmiss) then
-                     valuesT0(i) = valuesT1(i)
+                     valuesT(i) = valuesT1(i)
                   else if  (valuesT0(i) /= dmiss .and. valuesT1(i) == dmiss) then
-                     valuesT1(i) = valuesT0(i)
-                  end if 
-                  ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
-                  valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
-            
+                     valuesT(i) = valuesT0(i)
+                  else 
+                     ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
+                     valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
+                  end if  
                end do
             else
                do i = 1, size(valuesT0, dim=1)
