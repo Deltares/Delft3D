@@ -44,7 +44,7 @@ namespace dflowfm_io
             auto it = data_entries.find(dflowfm_io::tolower(key));
             if (it == data_entries.end())
             {
-                throw std::runtime_error("key/value pair not found: " + std::string(key));
+                throw std::runtime_error("can't get value, key not found: " + std::string(key));
             }
             return std::get<T>(it->second);
         }
@@ -66,15 +66,20 @@ namespace dflowfm_io
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
         /// @param value The new value to store.
         /// @throws std::runtime_error if the key is not present.
+        /// @throws std::runtime_error if the value type doesn't match the stored type.
         template <typename T>
         void setValue(std::string_view key, T value)
         {
             auto it = data_entries.find(dflowfm_io::tolower(key));
             if (it == data_entries.end())
             {
-                throw std::runtime_error("key/value pair not found: " + std::string(key));
+                throw std::runtime_error("can't set value, key not found: " + std::string(key));
             }
-            data_entries[dflowfm_io::tolower(key)] = std::move(value);
+            if (!std::holds_alternative<T>(it->second))
+            {
+                throw std::runtime_error("can't set value, provided type doesn't match stored type for key: " + std::string(key));
+            }
+            it->second = std::move(value);
         }
 
         /// @brief The underlying storage mapping lowercase fully qualified keys to their @ref Value.

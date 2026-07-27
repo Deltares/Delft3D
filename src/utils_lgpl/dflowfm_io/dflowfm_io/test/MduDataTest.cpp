@@ -387,6 +387,19 @@ namespace dflowfm_io::test
         EXPECT_THROW(data.setValue<int>("missing", 1), std::runtime_error);
     }
 
+    TEST(MduDataTest, SetValue_WrongType_ThrowsRuntimeErrorAndPreservesValue)
+    {
+        MduData data;
+        data.data_entries["somekey"] = 1;
+
+        data.setValue<int>("somekey", 22);
+        EXPECT_EQ(data.getValueAs<int>("somekey"), 22);
+
+        EXPECT_THROW(data.setValue<std::string>("somekey", "you are a string now"), std::runtime_error);
+
+        EXPECT_EQ(data.getValueAs<int>("somekey"), 22);
+    }
+
     // -------------------------------------------------------------------------
     // data_entries
     // -------------------------------------------------------------------------
