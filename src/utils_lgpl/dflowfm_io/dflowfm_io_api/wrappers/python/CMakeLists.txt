@@ -22,7 +22,7 @@ option(
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
 # Shared generator infrastructure imported by both generators — a change to it can change output.
-set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/codegen_support.py")
+set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator_base.py")
 set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_bindings.py")
 set(DFLOWFM_IO_GENERATED
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"

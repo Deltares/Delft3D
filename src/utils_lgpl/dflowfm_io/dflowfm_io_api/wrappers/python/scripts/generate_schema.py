@@ -21,7 +21,7 @@ import keyword
 import re
 from pathlib import Path
 
-from codegen_support import GeneratedModule, Generator, SourceBuilder
+from generator_base import GeneratedModule, Generator, SourceBuilder
 
 HERE = Path(__file__).resolve().parent
 MDU_JSON = HERE.parents[3] / "json" / "mdu.json"

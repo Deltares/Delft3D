@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
 
-from codegen_support import GeneratedModule, Generator, SourceBuilder
+from generator_base import GeneratedModule, Generator, SourceBuilder
 
 
 class TestSourceBuilder(unittest.TestCase):

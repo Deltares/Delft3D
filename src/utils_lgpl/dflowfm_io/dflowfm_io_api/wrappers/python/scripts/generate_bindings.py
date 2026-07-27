@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from codegen_support import GeneratedModule, Generator, SourceBuilder
+from generator_base import GeneratedModule, Generator, SourceBuilder
 
 HERE = Path(__file__).resolve().parent  # .../dflowfm_io_api/wrappers/python/scripts
 HEADER = HERE.parents[2] / "include" / "dflowfm_io_api" / "dflowfm_io_api.h"
