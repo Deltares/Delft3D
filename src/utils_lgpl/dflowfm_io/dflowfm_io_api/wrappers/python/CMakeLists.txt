@@ -21,6 +21,8 @@ option(
 # generator changes.
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
+# Shared generator infrastructure imported by both generators — a change to it can change output.
+set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator.py")
 set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_bindings.py")
 set(DFLOWFM_IO_GENERATED
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"
@@ -29,7 +31,7 @@ set(DFLOWFM_IO_GENERATED
 add_custom_command(
 	OUTPUT ${DFLOWFM_IO_GENERATED}
 	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_BINDINGS_GENERATOR}"
-	DEPENDS "${DFLOWFM_IO_BINDINGS_GENERATOR}" "${DFLOWFM_IO_HEADER}"
+	DEPENDS "${DFLOWFM_IO_BINDINGS_GENERATOR}" "${DFLOWFM_IO_GENERATOR_SUPPORT}" "${DFLOWFM_IO_HEADER}"
 	COMMENT "Generating dflowfm_io Python bindings and typed model from dflowfm_io_api.h"
 	VERBATIM
 )
@@ -43,7 +45,7 @@ set(DFLOWFM_IO_SCHEMA "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/schema.py"
 add_custom_command(
 	OUTPUT "${DFLOWFM_IO_SCHEMA}"
 	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_SCHEMA_GENERATOR}"
-	DEPENDS "${DFLOWFM_IO_SCHEMA_GENERATOR}" "${DFLOWFM_IO_MDU_JSON}"
+	DEPENDS "${DFLOWFM_IO_SCHEMA_GENERATOR}" "${DFLOWFM_IO_GENERATOR_SUPPORT}" "${DFLOWFM_IO_MDU_JSON}"
 	COMMENT "Generating dflowfm_io typed MDU schema (Layer 2) from mdu.json"
 	VERBATIM
 )
