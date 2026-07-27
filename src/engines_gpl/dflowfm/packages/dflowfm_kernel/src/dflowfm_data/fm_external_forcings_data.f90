@@ -402,8 +402,8 @@ module fm_external_forcings_data
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
 
-   integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in a loaded new external forcings file.
-   public :: have_laterals_in_external_forcings_file, set_lateral_count_in_external_forcings_file
+   integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in all new external forcings files.
+   public :: have_laterals_in_external_forcings_file, set_lateral_count
 
    real(kind=dp), allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
@@ -469,10 +469,10 @@ contains
    end function have_laterals_in_external_forcings_file
 
    !> Sets the number of lateral forcing blocks in the new external forcings file.
-   subroutine set_lateral_count_in_external_forcings_file(num_lat)
+   subroutine set_lateral_count(num_lat)
       integer, intent(in) :: num_lat
 
       num_lat_ini_blocks = num_lat
-   end subroutine set_lateral_count_in_external_forcings_file
+   end subroutine set_lateral_count
 
 end module fm_external_forcings_data

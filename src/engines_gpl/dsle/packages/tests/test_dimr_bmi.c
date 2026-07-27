@@ -99,7 +99,7 @@ static void test_finalize(void) {
 
 static void test_get_var_parameterized(char *variable_name, double *source) {
   double *destination;
-  int status = get_var(variable_name, &destination);
+  int status = get_var(variable_name, (void**)&destination);
   TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
   TEST_ASSERT_EQUAL(source, destination);
 }
@@ -123,7 +123,7 @@ TEST_GET_VAR(salinity_lake, config.locks[0].parameters3d.salinity_lake)
 
 static void test_get_var__unknown_var_name(void) {
   double *result;
-  int status = get_var("the_answer_to_life_the_universe_and_everything", &result);
+  int status = get_var("the_answer_to_life_the_universe_and_everything", (void**)&result);
   TEST_ASSERT_EQUAL(DIMR_BMI_FAILURE, status);
 }
 

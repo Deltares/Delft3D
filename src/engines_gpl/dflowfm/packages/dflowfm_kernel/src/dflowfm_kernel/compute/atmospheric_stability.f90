@@ -71,6 +71,9 @@ module m_atmospheric_stability
       real(kind=dp) :: sensor_height_wind_velocity = 10.0_dp !< Sensor height of prescribed wind velocity [m]
       real(kind=dp) :: sensor_height_humidity = 2.0_dp !< Sensor height of prescribed humidity [m]
       real(kind=dp) :: sensor_height_air_temperature = 2.0_dp !< Sensor height of prescribed air temperature [m]
+      real(kind=dp) :: alpha_m = 0.11_dp ! Air viscous momentum coefficient [-]
+      real(kind=dp) :: alpha_h = 0.40_dp ! Air viscous heat coefficient [-]
+      real(kind=dp) :: alpha_q = 0.62_dp ! Air viscous moisture coefficient [-]
    end type t_options
 
    !> Scaling parameters data type.
@@ -184,7 +187,7 @@ contains
          richardson_number = 0.0_dp
 
          do iteration = 1, MAXIMUM_ITERATION
-            call compute_roughness_lengths(u_star, charnock, z0_momentum, z0_heat, z0_humidity)
+            call compute_roughness_lengths(u_star, charnock, options%alpha_m, options%alpha_h, options%alpha_q, z0_momentum, z0_heat, z0_humidity)
 
             if (options%include_free_convection) then
                convective_velocity_scale = compute_convective_velocity_scale(u_star, t_star, q_star, &
@@ -647,21 +650,22 @@ contains
    end subroutine get_bulk_exchange_diagnostics
 
    !> Compute roughness lengths following an ECMWF-style parameterization.
-   pure subroutine compute_roughness_lengths(u_star, charnock, z0_momentum, z0_heat, z0_humidity)
+   pure subroutine compute_roughness_lengths(u_star, charnock, alpha_m, alpha_h, alpha_q, z0_momentum, z0_heat, z0_humidity)
       real(kind=dp), intent(in) :: u_star !< u* [m/s]
       real(kind=dp), intent(in) :: charnock !< Charnock [-]
+      real(kind=dp), intent(in) :: alpha_m !< Air viscous momentum coefficient [-]
+      real(kind=dp), intent(in) :: alpha_h !< Air viscous heat coefficient [-]
+      real(kind=dp), intent(in) :: alpha_q !< Air viscous moisture coefficient [-]
       real(kind=dp), intent(out) :: z0_momentum !< Roughness length for momentum [m]
       real(kind=dp), intent(out) :: z0_heat !< Roughness length for heat [m]
       real(kind=dp), intent(out) :: z0_humidity !< Roughness length for humidity [m]
-      real(kind=dp), parameter :: ALPHA_M = 0.11_dp ! roughness length coefficient for momentum
-      real(kind=dp), parameter :: ALPHA_H = 0.40_dp ! roughness length coefficient for heat
-      real(kind=dp), parameter :: ALPHA_Q = 0.62_dp ! roughness length coefficient for humidity
+
       real(kind=dp) :: inverse_u_star
 
       inverse_u_star = 1.0_dp / sign(max(abs(u_star), EPS8), u_star)
-      z0_momentum = ALPHA_M * CONST_NU_AIR * inverse_u_star + charnock * u_star * u_star / CONST_GRAVITY
-      z0_heat = ALPHA_H * CONST_NU_AIR * inverse_u_star
-      z0_humidity = ALPHA_Q * CONST_NU_AIR * inverse_u_star
+      z0_momentum = alpha_m * CONST_NU_AIR * inverse_u_star + charnock * u_star * u_star / CONST_GRAVITY
+      z0_heat = alpha_h * CONST_NU_AIR * inverse_u_star
+      z0_humidity = alpha_q * CONST_NU_AIR * inverse_u_star
    end subroutine compute_roughness_lengths
 
    !> Compute saturation-vapor-pressure from temperature (ECMWF_T2esat).

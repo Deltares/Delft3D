@@ -481,7 +481,7 @@ contains
                         jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext, jaevap, jawind, &
                         wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
                         CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
-                        CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
+                        CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977, wcharnock
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
@@ -533,6 +533,7 @@ contains
 
       character(len=32) :: program
       logical :: success, ex, value_parsed
+      logical :: has_charnock_coefficient, has_air_viscous_momentum_coefficient
       character(len=1), dimension(1) :: dummychar
       logical :: dummylog
       character(len=1000) :: charbuf = ' '
@@ -1335,7 +1336,6 @@ contains
       call prop_get(md_ptr, 'sediment', 'inMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
       call prop_get(md_ptr, 'sediment', 'morCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
       call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-      call prop_get(md_ptr, 'sediment', 'masBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
@@ -1429,6 +1429,10 @@ contains
       call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
       call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
       call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
+      call prop_get(md_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, has_charnock_coefficient)
+      call prop_get(md_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, has_air_viscous_momentum_coefficient)
+      call prop_get(md_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff)
+      call prop_get(md_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff)
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -1454,6 +1458,21 @@ contains
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
          cdb_user(1:2) = cdb(1:2)
       end if
+
+      if (wind_drag_type == CD_TYPE_CHARNOCK1955 .or. wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+         if (has_charnock_coefficient) then
+            cdb(1) = wcharnock%scalar
+            cdb_user(1) = cdb(1)
+         end if
+      end if
+
+      if (wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+         if (has_air_viscous_momentum_coefficient) then
+            cdb(2) = air_viscous_momentum_coeff
+            cdb_user(2) = cdb(2)
+         end if
+      end if
+
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
       call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
@@ -1703,6 +1722,26 @@ contains
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+
+      if (allocated(extfile_new_list)) then
+         deallocate(extfile_new_list)
+      end if
+
+      if (len_trim(md_extfile_new) > 0) then        
+         call strsplit(md_extfile_new, 1, extfile_new_list, 1)
+      end if
+
+      if (.not. allocated(extfile_new_list)) then
+         ! If no new external forcing files were specified, allocate an empty list so functions can still 'loop' over this list.
+         allocate(extfile_new_list(0))
+      end if
+      
+      ! IniFieldFile is treated entirely by ExtForceFileNew code (during deprecation phase)
+      if (len_trim(md_inifieldfile) > 0) then
+         call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
+         extfile_new_list(size(extfile_new_list)) = md_inifieldfile
+      end if
+
       call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
       if (jarain > 0) then
          jaqin = 1
@@ -2467,7 +2506,7 @@ contains
       use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
                         pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
                         CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_CHARNOCK_PLUS_VISCOUS
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_CHARNOCK_PLUS_VISCOUS, wcharnock
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
@@ -3133,9 +3172,7 @@ contains
       if (writeall .or. locsaltmax /= 10.0_dp) then
          call prop_set(prop_ptr, 'numerics', 'LocSaltMax', locsaltmax, 'maximum salinity for case of lock exchange')
       end if
-      if (writeall .or. numlimdt_baorg > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
-      end if
+      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
       if (writeall .or. baorgfracmin > 0) then
          call prop_set(prop_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin, 'Cell area = max(orgcellarea*Baorgfracmin, cutcell area) ')
       end if
@@ -3172,7 +3209,6 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
-      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
 
       ! Physics
       call prop_set(prop_ptr, 'physics', 'unifFrictCoef', frcuni, 'Uniform friction coefficient [the unit depends on unifFrictType].')
@@ -3319,6 +3355,10 @@ contains
       call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
       call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
       call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
+      call prop_set(prop_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
       
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')

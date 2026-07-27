@@ -89,6 +89,15 @@ contains
       if (allocated(netcdf%dimlen)) then
          deallocate (netcdf%dimlen)
       end if
+      if (allocated(netcdf%standard_names)) then
+         deallocate (netcdf%standard_names)
+      end if
+      if (allocated(netcdf%long_names)) then
+         deallocate (netcdf%long_names)
+      end if
+      if (allocated(netcdf%variable_names)) then
+         deallocate (netcdf%variable_names)
+      end if
       if (allocated(netcdf%tsid)) then
          deallocate (netcdf%tsid)
       end if
@@ -183,6 +192,14 @@ contains
       if (ierr /= 0) then
          return
       end if
+      allocate (ncptr%standard_names(nVars), stat=ierr)
+      if (ierr /= NF90_NOERR) then 
+         return
+      end if
+      allocate (ncptr%long_names(nVars), stat=ierr)
+      if (ierr /= NF90_NOERR) then
+         return
+      end if      
       allocate (ncptr%variable_ndims(nVars), stat=ierr)
       if (ierr /= 0) then
          return
@@ -205,6 +222,8 @@ contains
       end if
       
       ncptr%variable_names = ' '
+      ncptr%standard_names = ' '
+      ncptr%long_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
       ncptr%offsets = 0.0_dp
@@ -220,7 +239,11 @@ contains
       
       do iVars = 1, nVars ! Inventorize variables
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
-         
+         ierr = nf90_get_att(ncptr%ncid, iVars, 'standard_name', ncptr%standard_names(iVars)) ! Standard name if available
+         if (ierr /= NF90_NOERR) then
+            ncptr%standard_names(iVars) = ncptr%variable_names(iVars) ! Variable name as fallback for standard_name
+         end if
+         ierr = nf90_get_att(ncptr%ncid, iVars, 'long_name', ncptr%long_names(iVars)) ! Long name for non CF names         
          !
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) then
@@ -398,6 +421,10 @@ contains
       character(len=30), dimension(:), allocatable :: elmnames
       character(len=:) , dimension(:), allocatable :: name_stat_crs
       integer, dimension(:), allocatable :: dimids_check
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
+      character(len=NF90_MAX_NAME) :: quantity_candidate !< quantity candidate name during search      
 
       success = .false.
       vmax = 1
@@ -418,7 +445,27 @@ contains
          if (strcmpi(ncptr%variable_names(ivar), quantity)) then
             exit
          end if
-     end do 
+      end do 
+
+      if (ivar < 0) then
+         ! get candidate names for the quantity
+         call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
+      end if
+
+      ! search for standard_name
+      if (ivar < 0 .and. allocated(ncptr%standard_names) .and. allocated(ncstdnames)) then
+         ivar = find_candidates_in_targets(ncptr%standard_names, ncstdnames)
+      end if
+
+      ! if standard_name not found, search for long_name
+      if (ivar < 0 .and. allocated(ncptr%long_names) .and. allocated(ncstdnames_fallback)) then
+         ivar = find_candidates_in_targets(ncptr%long_names, ncstdnames_fallback)
+      end if
+
+      ! if also long_name not found, search for variable_name
+      if (ivar < 0 .and. allocated(ncptr%variable_names) .and. allocated(ncvarnames)) then
+         ivar = find_candidates_in_targets(ncptr%variable_names, ncvarnames)
+      end if
 
      if (ivar <= ncptr%nVars) then
          q_id(1) = ivar

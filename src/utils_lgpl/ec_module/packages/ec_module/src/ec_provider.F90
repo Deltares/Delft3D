@@ -2631,14 +2631,13 @@ contains
       integer :: lon_varid, lon_dimid, lat_varid, lat_dimid, tim_varid, tim_dimid
       integer :: grid_lon_varid, grid_lat_varid
       integer :: x_varid, x_dimid, y_varid, y_dimid, z_varid, z_dimid, nod_varid, nod_dimid
-      integer :: realization_varid, realization_dimid, dim_offset
 
       integer, dimension(:, :), allocatable :: crd_dimids, crd_dimlen
       integer :: timeint
       integer :: expectedLength
       character(len=:), allocatable :: nameVar ! variable name in error message
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
-      integer :: nrow, ncol, nlay, nrel
+      integer :: nrow, ncol, nlay
       !
       success = .false.
       itemPtr => null()
@@ -2682,8 +2681,7 @@ contains
                                              x_varid, x_dimid, y_varid, y_dimid, &
                                              z_varid, z_dimid, &
                                              tim_varid, tim_dimid, &
-                                             nod_varid, nod_dimid, &
-                                             realization_varid, realization_dimid)) then
+                                             nod_varid, nod_dimid)) then
          ! Exception: inquiry of id's of required coordinate variables failed
          return
       end if
@@ -2963,13 +2961,6 @@ contains
                return
             end if
 
-            if (realization_dimid > 0) then
-               dim_offset = 1
-               nrel = fileReaderPtr%dim_length(dimids(1))
-            else
-               dim_offset = 0
-               nrel = 0
-            end if
             ! this goes wrong when time is defined before space in nc file
             if (grid_type == elmSetType_samples) then
                ncol = fileReaderPtr%dim_length(dimids(1))
@@ -2999,8 +2990,8 @@ contains
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
                   fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
-                  if (size(dimids) > 3 + dim_offset) then
-                     nlay = fileReaderPtr%dim_length(dimids(3 + dim_offset))
+                  if (size(dimids) > 3) then
+                     nlay = fileReaderPtr%dim_length(dimids(3))
                   end if
                end if
             end if
