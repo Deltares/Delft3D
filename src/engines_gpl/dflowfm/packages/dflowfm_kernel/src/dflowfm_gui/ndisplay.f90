@@ -68,6 +68,7 @@ contains
       use m_set_branch_lc
       use m_filez, only: oldfil, doclose, message
       use m_wind, only: jawind
+      use m_setgrafmod, only: setgrafmod
 
       integer :: ium
       integer :: maxopt
@@ -851,6 +852,7 @@ contains
          end if
 
       else if (NWHAT == 28) then
+         call SETGRAFMOD() ! necessary to update coordinate view, bottom bar and top menu bar
          KEY = 3
       else if (NWHAT == 29) then
          NDRAW(10) = 1

@@ -134,6 +134,7 @@ module m_observations_data
    integer :: IVAL_RICHS
    integer :: IVAL_TAIR
    integer :: IVAL_WIND
+   integer :: IVAL_RWIN
    integer :: IVAL_RHUM
    integer :: IVAL_CLOU
    integer :: IVAL_AIRDENSITY
@@ -261,6 +262,7 @@ module m_observations_data
    integer :: IPNT_RICHS
    integer :: IPNT_TAIR
    integer :: IPNT_WIND
+   integer :: IPNT_RWIN
    integer :: IPNT_RHUM
    integer :: IPNT_CLOU
    integer :: IPNT_AIRDENSITY
