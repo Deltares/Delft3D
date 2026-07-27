@@ -157,6 +157,49 @@ namespace
     }
 
     /**
+     * @brief Parse a newline-delimited numeric block into typed records.
+     *
+     * Shared implementation used by source/sink and intake parsers:
+     * each non-empty line is parsed as doubles and then converted by the
+     * provided extractor.
+     *
+     * @tparam TItem Output record type.
+     * @tparam TExtractor Callable converting std::vector<double> into TItem.
+     * @param text Raw multiline block content.
+     * @param element_name XML element name for parse error context.
+     * @param extractor Conversion callback per non-empty line.
+     * @return std::expected containing parsed records or the first parse error.
+     */
+    template <typename TItem, typename TExtractor>
+    std::expected<std::vector<TItem>, parsing_utils::ParseError> parseBlockVector(
+        const std::string_view text, const std::string_view element_name, TExtractor extractor)
+    {
+        std::vector<std::string> newline_separated_tokens;
+        boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
+                                boost::algorithm::token_compress_on);
+
+        auto is_non_empty = [](const std::string_view token) {
+            return token.find_first_not_of(" \t\r") != std::string_view::npos;
+        };
+        auto to_item = [element_name, extractor](const std::string_view token)
+            -> std::expected<TItem, parsing_utils::ParseError> {
+            ASSIGN_OR_RETURN(auto values, parsing_utils::parseDoubleVector(token, element_name));
+            return extractor(values);
+        };
+
+        auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
+                              std::ranges::views::transform(to_item) | std::ranges::to<std::vector>();
+
+        if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
+            errorIt != expected_items.end())
+        {
+            return std::unexpected((*errorIt).error());
+        }
+
+        return expected_items | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
+    }
+
+    /**
      * @brief extract Source or Sink values from sources or sinks blocks.
      * Since the data in these blocks are formatted by line we split the text into lines first and then
      * convert each line to source or sink data objects if the line is not 'empty' (ergo, a line does not
@@ -167,30 +210,11 @@ namespace
     std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseSourceOrSinkVector(
         const std::string_view text, const std::string_view element_name)
     {
-        std::vector<std::string> newline_separated_tokens;
-        boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
-                                boost::algorithm::token_compress_on);
-
-        auto is_non_empty = [](const std::string_view token) {
-            return token.find_first_not_of(" \t\r") != std::string_view::npos;
-        };
-        auto to_source_or_sink = [element_name](const std::string_view token)
+        auto extractor = [element_name](const std::vector<double>& values)
             -> std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> {
-            ASSIGN_OR_RETURN(auto vector, parsing_utils::parseDoubleVector(token.data(), element_name));
-            ASSIGN_OR_RETURN(auto data, extractSourceOrSinkData(vector, element_name));
-            return data;
+            return extractSourceOrSinkData(values, element_name);
         };
-
-        auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
-                              std::ranges::views::transform(to_source_or_sink) | std::ranges::to<std::vector>();
-
-        if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
-            errorIt != expected_items.end())
-        {
-            return std::unexpected((*errorIt).error());
-        }
-
-        return expected_items | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
+        return parseBlockVector<pre_c_sumo::SourceOrSinkData>(text, element_name, extractor);
     }
 
     std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> extractIntakeData(const std::vector<double> values)
@@ -214,33 +238,23 @@ namespace
         return data;
     }
 
+    /**
+     * @brief Parse intake rows from the <intakes> block.
+     *
+     * Expected per-line format is handled by extractIntakeData.
+     * This wrapper delegates common line parsing mechanics to parseBlockVector.
+     *
+     * @param text Contents of the <intakes> element.
+     * @return std::expected containing parsed intake records or a ParseError.
+     */
     std::expected<std::vector<pre_c_sumo::IntakeData>, parsing_utils::ParseError> parseIntakeVector(
         const std::string_view text)
     {
-        std::vector<std::string> newline_separated_tokens;
-        boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
-                                boost::algorithm::token_compress_on);
-
-        auto is_non_empty = [](const std::string_view token) {
-            return token.find_first_not_of(" \t\r") != std::string_view::npos;
+        auto extractor = [](const std::vector<double>& values)
+            -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
+            return extractIntakeData(values);
         };
-        auto to_intake =
-            [](const std::string_view token) -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
-            ASSIGN_OR_RETURN(auto vector, parsing_utils::parseDoubleVector(token.data(), "intakes"));
-            ASSIGN_OR_RETURN(auto data, extractIntakeData(vector));
-            return data;
-        };
-
-        auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
-                              std::ranges::views::transform(to_intake) | std::ranges::to<std::vector>();
-
-        if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
-            errorIt != expected_items.end())
-        {
-            return std::unexpected((*errorIt).error());
-        }
-
-        return expected_items | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
+        return parseBlockVector<pre_c_sumo::IntakeData>(text, "intakes", extractor);
     }
 
 } // namespace
