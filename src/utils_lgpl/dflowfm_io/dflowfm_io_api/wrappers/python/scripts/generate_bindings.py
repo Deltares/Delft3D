@@ -9,7 +9,7 @@ from the DLL:
   ``mdu_get_*``/``mdu_set_*`` function, with the per-type value marshalling.
 
 Run:
-    python codegen/generate_bindings.py
+    python scripts/generate_bindings.py
 
 The header is small and regular (flat ``extern "C"`` declarations), so this parses it directly
 rather than depending on a C preprocessor. The lifecycle (``MduDocument``), the report
@@ -20,7 +20,7 @@ design decisions (ownership, ``__del__``, convenience methods) with no 1:1 C-fun
 import re
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent  # .../dflowfm_io_api/wrappers/python/codegen
+HERE = Path(__file__).resolve().parent  # .../dflowfm_io_api/wrappers/python/scripts
 HEADER = HERE.parents[2] / "include" / "dflowfm_io_api" / "dflowfm_io_api.h"
 SRC = HERE.parent / "src" / "dflowfm_io"
 OUTPUT_BINDINGS = SRC / "base" / "bindings.py"
@@ -165,7 +165,7 @@ def parse_header(text: str):
 def render_bindings(enum_members, struct_fields, functions) -> str:
     """Render the ctypes ABI mirror (bindings.py)."""
     lines = [
-        f'"""GENERATED from {HEADER.name} by codegen/generate_bindings.py - do not edit.',
+        f'"""GENERATED from {HEADER.name} by scripts/generate_bindings.py - do not edit.',
         "",
         "The ctypes ABI mirror of the dflowfm_io_api C header: enum constants, the mdu_issue_t struct,",
         "and argtypes/restype for every exported function, applied to the loaded library.",
@@ -236,7 +236,7 @@ def _accessor_method(kind: str, suffix: str, is_list: bool, cname: str) -> list[
 def render_model(functions) -> tuple[str, int]:
     """Render the typed MduModel (mdu/model.py). Returns (source, method_count)."""
     lines = [
-        f'"""GENERATED from {HEADER.name} by codegen/generate_bindings.py - do not edit.',
+        f'"""GENERATED from {HEADER.name} by scripts/generate_bindings.py - do not edit.',
         "",
         "The typed MduModel: one get/set method per mdu_get_*/mdu_set_* C function, with the per-type",
         "value marshalling. Regenerated from the C header, so the accessors cannot drift from the ABI.",

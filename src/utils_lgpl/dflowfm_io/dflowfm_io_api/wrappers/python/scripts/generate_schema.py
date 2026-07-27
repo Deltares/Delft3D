@@ -5,7 +5,7 @@ typed property per keyword, each delegating to the generated :class:`MduModel` (
 the typed, discoverable surface over the stringly-typed get/set of Layer 1.
 
 Run:
-    python codegen/generate_schema.py
+    python scripts/generate_schema.py
 
 Enum handling: enum/intenum properties use the C ABI's mdu_get_enum_name/mdu_set_enum_name (surfaced
 as MduModel.get_enum_name/set_enum_name), so they read and write the enum *name* (e.g. "S") as a
@@ -103,7 +103,7 @@ def main() -> None:
         raise ValueError(f"mdu.json has value_type(s) not mapped in ACCESSORS: {unsupported}")
 
     lines = [
-        f'"""GENERATED from {MDU_JSON.name} by codegen/generate_schema.py - do not edit.',
+        f'"""GENERATED from {MDU_JSON.name} by scripts/generate_schema.py - do not edit.',
         "",
         "Layer 2: typed per-keyword access to MDU properties. Each section is a class of typed",
         "properties over the generated MduModel (Layer 1); MduSchema exposes them keyed by section.",

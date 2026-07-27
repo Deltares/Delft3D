@@ -7,9 +7,9 @@ inside the wheel (`dflowfm_io/_lib/`) and loaded automatically, so consumers onl
 ## Generated code
 
 Three modules in this package are **generated** from the single sources of truth (the C header and
-`mdu.json`) — do **not** hand-edit them. Two generator scripts under `codegen/` produce them:
+`mdu.json`) — do **not** hand-edit them. Two generator scripts under `scripts/` produce them:
 
-| Generator (`codegen/`)   | Source of truth                                  | Generates                     |
+| Generator (`scripts/`)   | Source of truth                                  | Generates                     |
 |--------------------------|--------------------------------------------------|-------------------------------|
 | `generate_bindings.py`   | `../../include/dflowfm_io_api/dflowfm_io_api.h`  | `src/dflowfm_io/base/bindings.py` — ctypes `argtypes`/`restype`, the `mdu_severity_t` enum, and the `mdu_issue_t` struct |
 | `generate_bindings.py`   | *(same header)*                                  | `src/dflowfm_io/mdu/model.py` — the typed `MduModel` get/set accessors (one per `mdu_get_*`/`mdu_set_*`) |
@@ -24,8 +24,8 @@ The generators need only Python 3 (standard library — no third-party dependenc
 directory (`wrappers/python`):
 
 ```bash
-python codegen/generate_bindings.py   # -> base/bindings.py + mdu/model.py
-python codegen/generate_schema.py      # -> mdu/schema.py
+python scripts/generate_bindings.py   # -> base/bindings.py + mdu/model.py
+python scripts/generate_schema.py      # -> mdu/schema.py
 ```
 
 Each prints what it wrote (e.g. `Wrote 30 function signatures ...`, `Wrote 21 sections, 694 typed

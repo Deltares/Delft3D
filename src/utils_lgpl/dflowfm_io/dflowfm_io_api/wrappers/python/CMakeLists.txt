@@ -21,7 +21,7 @@ option(
 # generator changes.
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
-set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/codegen/generate_bindings.py")
+set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_bindings.py")
 set(DFLOWFM_IO_GENERATED
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/model.py")
@@ -36,7 +36,7 @@ add_custom_command(
 
 # Regenerate the typed per-keyword MDU schema (Layer 2, mdu/schema.py) from mdu.json, the same
 # single source the C++ core is generated from.
-set(DFLOWFM_IO_SCHEMA_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/codegen/generate_schema.py")
+set(DFLOWFM_IO_SCHEMA_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_schema.py")
 cmake_path(SET DFLOWFM_IO_MDU_JSON NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../../json/mdu.json")
 set(DFLOWFM_IO_SCHEMA "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/schema.py")
 

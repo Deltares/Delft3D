@@ -1,4 +1,4 @@
-"""GENERATED from mdu.json by codegen/generate_schema.py - do not edit.
+"""GENERATED from mdu.json by scripts/generate_schema.py - do not edit.
 
 Layer 2: typed per-keyword access to MDU properties. Each section is a class of typed
 properties over the generated MduModel (Layer 1); MduSchema exposes them keyed by section.

@@ -1,4 +1,4 @@
-"""GENERATED from dflowfm_io_api.h by codegen/generate_bindings.py - do not edit.
+"""GENERATED from dflowfm_io_api.h by scripts/generate_bindings.py - do not edit.
 
 The ctypes ABI mirror of the dflowfm_io_api C header: enum constants, the mdu_issue_t struct,
 and argtypes/restype for every exported function, applied to the loaded library.

@@ -1,4 +1,4 @@
-"""GENERATED from dflowfm_io_api.h by codegen/generate_bindings.py - do not edit.
+"""GENERATED from dflowfm_io_api.h by scripts/generate_bindings.py - do not edit.
 
 The typed MduModel: one get/set method per mdu_get_*/mdu_set_* C function, with the per-type
 value marshalling. Regenerated from the C header, so the accessors cannot drift from the ABI.
