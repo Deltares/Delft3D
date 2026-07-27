@@ -251,7 +251,7 @@ class ModelRenderer:
         builder.line("from dflowfm_io.base import HandleRef, check_result, lib")
         builder.blank(2)
         builder.line("class MduModel:")
-        builder.line('    """Typed get/set access to MDU properties, keyed by dotted `section.property` names."""')
+        builder.line('    """Typed get/set access to MDU properties, keyed by dotted ``section.property`` names."""')
         builder.blank()
         builder.line("    def __init__(self, ref: HandleRef):")
         builder.line("        self._ref = ref")
