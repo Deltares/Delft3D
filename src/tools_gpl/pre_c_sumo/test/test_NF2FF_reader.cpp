@@ -45,7 +45,7 @@ namespace
      <fileVersion>0.3</fileVersion>
   </NF2FF>)";
 
-   constexpr std::string_view valid_xml_no_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
+    constexpr std::string_view valid_xml_no_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
   <NF2FF>
      <fileVersion>0.3</fileVersion>
      <discharge>
@@ -477,16 +477,16 @@ TEST(NF2FFReaderTest, ReturnsErrorOnSurplusQintake)
 
 TEST(NF2FFReaderTest, ReturnsErrorOnNegativeQintake)
 {
-   const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_negative_intake_flow);
-   ASSERT_FALSE(result.has_value());
-   EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qintake> should be a value >= 0.0");
+    const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_negative_intake_flow);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qintake> should be a value >= 0.0");
 }
 
 TEST(NF2FFReaderTest, ParsesMissingQintakeAsZero)
 {
-   const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml_no_intake_flow);
-   ASSERT_TRUE(result.has_value());
-   EXPECT_DOUBLE_EQ(result->intakeFlowRate(), 0.0);
+    const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml_no_intake_flow);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_DOUBLE_EQ(result->intakeFlowRate(), 0.0);
 }
 
 TEST(NF2FFReaderTest, ParsesQsource)
@@ -710,18 +710,18 @@ TEST(NF2FFReaderTest, ParsesSinks)
 
 TEST(NF2FFReaderTest, ParsesIntakes)
 {
-   const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
-   ASSERT_TRUE(result.has_value());
-   const auto& intakes = result.value().intakes();
-   ASSERT_EQ(intakes.size(), 2u);
-   EXPECT_DOUBLE_EQ(intakes[0].x_coordinate, 1550.000);
-   EXPECT_DOUBLE_EQ(intakes[0].y_coordinate, 950.000);
-   EXPECT_DOUBLE_EQ(intakes[0].z_coordinate, 0.500);
-   EXPECT_FALSE(intakes[0].has_weight);
-   EXPECT_DOUBLE_EQ(intakes[1].x_coordinate, 1550.000);
-   EXPECT_DOUBLE_EQ(intakes[1].y_coordinate, 950.000);
-   EXPECT_DOUBLE_EQ(intakes[1].z_coordinate, 1.500);
-   EXPECT_FALSE(intakes[1].has_weight);
+    const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
+    ASSERT_TRUE(result.has_value());
+    const auto& intakes = result.value().intakes();
+    ASSERT_EQ(intakes.size(), 2u);
+    EXPECT_DOUBLE_EQ(intakes[0].x_coordinate, 1550.000);
+    EXPECT_DOUBLE_EQ(intakes[0].y_coordinate, 950.000);
+    EXPECT_DOUBLE_EQ(intakes[0].z_coordinate, 0.500);
+    EXPECT_FALSE(intakes[0].has_weight);
+    EXPECT_DOUBLE_EQ(intakes[1].x_coordinate, 1550.000);
+    EXPECT_DOUBLE_EQ(intakes[1].y_coordinate, 950.000);
+    EXPECT_DOUBLE_EQ(intakes[1].z_coordinate, 1.500);
+    EXPECT_FALSE(intakes[1].has_weight);
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSinks)

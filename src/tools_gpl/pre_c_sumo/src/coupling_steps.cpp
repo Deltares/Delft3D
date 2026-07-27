@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <thread>
 #include <chrono>
+#include <limits>
 #include <numbers> // for std::numbers::pi
 #include <cmath>   // for atan2,sin,cos
 
@@ -302,35 +303,43 @@ namespace pre_c_sumo
 
             // Intake
             auto intakes = diffuser.intakes();
-            if (intakes.empty() && diffuser_index < diffuser_settings.size() &&
-                diffuser_settings[diffuser_index].intake.has_value())
+            const double intake_flow_rate = diffuser.intakeFlowRate();
+            // Use a practical absolute cutoff: zero or epsilon (~2e-16) is too small
+            // for flow magnitudes and would let tiny positive numerical noise trigger
+            // fallback intake creation. The test SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge
+            // was failing with epsilon.
+            constexpr double minimum_intake_flow_rate = 1e-12;
+            if (intake_flow_rate > minimum_intake_flow_rate)
             {
-                // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
-                const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
-                intakes.push_back(
-                    IntakeData{.x_coordinate = intake_xy.x_coordinate, .y_coordinate = intake_xy.y_coordinate,
-                               .z_coordinate = 0.0,
-                               .weight = 0.0, .has_weight = false});
-            }
-
-            if (!intakes.empty())
-            {
-                const double intake_flow_rate = diffuser.intakeFlowRate();
-                double intake_weight_norm = 0.0;
-                for (const auto& intake : intakes)
+                if (intakes.empty() && diffuser_index < diffuser_settings.size() &&
+                    diffuser_settings[diffuser_index].intake.has_value())
                 {
-                    intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
+                    // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
+                    const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
+                    intakes.push_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
+                                                 .y_coordinate = intake_xy.y_coordinate,
+                                                 .z_coordinate = 0.0,
+                                                 .weight = 0.0,
+                                                 .has_weight = false});
                 }
-                intake_weight_norm = std::max(intake_weight_norm, 1.0);
-
-                // Intakes are sink-only terms (not connected to source points).
-                for (const auto& intake : intakes)
+                if (!intakes.empty())
                 {
-                    const double intake_discharge =
-                        intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
-                    connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
-                                                   -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                   0.0);
+                    double intake_weight_norm = 0.0;
+                    for (const auto& intake : intakes)
+                    {
+                        intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
+                    }
+                    intake_weight_norm = std::max(intake_weight_norm, 1.0);
+
+                    // Intakes are sink-only terms (not connected to source points).
+                    for (const auto& intake : intakes)
+                    {
+                        const double intake_discharge =
+                            intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
+                        connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
+                                                       -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
+                                                       0.0);
+                    }
                 }
             }
         }

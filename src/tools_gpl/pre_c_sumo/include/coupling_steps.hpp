@@ -122,12 +122,12 @@ namespace pre_c_sumo
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
      *
-        * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
+     * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
      *
-        * @param csumoSettings Parsed C-SUMO settings.
-        * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
+     * @param csumoSettings Parsed C-SUMO settings.
+     * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
      *
-        * @return Connected source/sink pairs to be written to preCICE.
+     * @return Connected source/sink pairs to be written to preCICE.
      */
     pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
         const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers);
@@ -159,7 +159,7 @@ namespace pre_c_sumo
      * @brief Create an approximate diffuser model from NF source data.
      *
      * When diffusers are not modelled explicitly this function creates
-        * the sources for a simplified diffuser representation that can be used
+     * the sources for a simplified diffuser representation that can be used
      * to create the farfield component.
      */
     std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFReader& diffuser);

@@ -197,8 +197,8 @@ namespace
     {
         if (values.size() < 3 || values.size() > 4)
         {
-            return std::unexpected(parsing_utils::ParseError{std::format(
-                "Found line in <intakes> with {} values; expected 3 to 4 values", values.size())});
+            return std::unexpected(parsing_utils::ParseError{
+                std::format("Found line in <intakes> with {} values; expected 3 to 4 values", values.size())});
         }
 
         pre_c_sumo::IntakeData data = {.x_coordinate = values[0],
@@ -224,8 +224,8 @@ namespace
         auto is_non_empty = [](const std::string_view token) {
             return token.find_first_not_of(" \t\r") != std::string_view::npos;
         };
-        auto to_intake = [](const std::string_view token)
-            -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
+        auto to_intake =
+            [](const std::string_view token) -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
             ASSIGN_OR_RETURN(auto vector, parsing_utils::parseDoubleVector(token.data(), "intakes"));
             ASSIGN_OR_RETURN(auto data, extractIntakeData(vector));
             return data;
@@ -292,8 +292,8 @@ namespace pre_c_sumo
             ASSIGN_OR_RETURN(intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
             if (intake_flow_rate < 0.0)
             {
-                return std::unexpected(parsing_utils::ParseError{std::format(
-                    "Element <Qintake> should be a value >= 0.0, got: {}", intake_flow_rate)});
+                return std::unexpected(parsing_utils::ParseError{
+                    std::format("Element <Qintake> should be a value >= 0.0, got: {}", intake_flow_rate)});
             }
         }
         ASSIGN_OR_RETURN(const auto source_flow_rate, parseRequiredDouble(discharge_node, "Qsource"));
@@ -305,13 +305,13 @@ namespace pre_c_sumo
 
         // NFResult
         ASSIGN_OR_RETURN(auto nfresult_node, parseNFResult(root));
-                std::vector<pre_c_sumo::IntakeData> intakes{};
-                const pugi::xml_node intakes_node = parsing_utils::findChild(nfresult_node, "intakes");
-                if (intakes_node)
-                {
-                        ASSIGN_OR_RETURN(const auto intakes_text, parsing_utils::requiredChildText(nfresult_node, "intakes"));
-                        ASSIGN_OR_RETURN(intakes, parseIntakeVector(intakes_text));
-                }
+        std::vector<pre_c_sumo::IntakeData> intakes{};
+        const pugi::xml_node intakes_node = parsing_utils::findChild(nfresult_node, "intakes");
+        if (intakes_node)
+        {
+            ASSIGN_OR_RETURN(const auto intakes_text, parsing_utils::requiredChildText(nfresult_node, "intakes"));
+            ASSIGN_OR_RETURN(intakes, parseIntakeVector(intakes_text));
+        }
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
         ASSIGN_OR_RETURN(auto sources, parseSourceOrSinkVector(sources_text, "sources"));
         ASSIGN_OR_RETURN(const auto sinks_text, parsing_utils::requiredChildText(nfresult_node, "sinks"));
@@ -319,23 +319,23 @@ namespace pre_c_sumo
         // End NFResult
 
         // Compose result
-                return NF2FFReader{std::move(file_version), std::move(doc),          intake_flow_rate,
-                                                     source_flow_rate,        constituents_operator,    std::move(constituents),
-                                                     std::move(intakes),      std::move(sources),       std::move(sinks)};
+        return NF2FFReader{std::move(file_version), std::move(doc),        intake_flow_rate,
+                           source_flow_rate,        constituents_operator, std::move(constituents),
+                           std::move(intakes),      std::move(sources),    std::move(sinks)};
     }
 
     NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
                              double source_flow_rate, ConstituentsOperator constituents_operator,
-                                                         std::vector<double> constituents, std::vector<pre_c_sumo::IntakeData> intakes,
-                                                         std::vector<pre_c_sumo::SourceOrSinkData> sources,
-                                                         std::vector<pre_c_sumo::SourceOrSinkData> sinks)
+                             std::vector<double> constituents, std::vector<pre_c_sumo::IntakeData> intakes,
+                             std::vector<pre_c_sumo::SourceOrSinkData> sources,
+                             std::vector<pre_c_sumo::SourceOrSinkData> sinks)
         : file_version_{std::move(file_version)},
           document_{std::move(document)},
           intake_flow_rate_{intake_flow_rate},
           source_flow_rate_{source_flow_rate},
           constituents_operator_{constituents_operator},
           constituents_{constituents},
-                    intakes_{intakes},
+          intakes_{intakes},
           sources_{sources},
           sinks_{sinks}
     {

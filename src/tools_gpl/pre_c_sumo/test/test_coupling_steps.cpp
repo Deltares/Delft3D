@@ -49,8 +49,7 @@ namespace
      * @param intake_count Number of intake entries to emit; defaults to derived behavior.
      * @return std::string XML document as a string.
      */
-    std::string build_nf2ff_xml(std::size_t sink_count, std::size_t source_count, bool include_qintake,
-                                double qintake,
+    std::string build_nf2ff_xml(std::size_t sink_count, std::size_t source_count, bool include_qintake, double qintake,
                                 std::size_t intake_count = std::numeric_limits<std::size_t>::max())
     {
         const std::size_t effective_intake_count =
@@ -73,20 +72,20 @@ namespace
     <NFResult>
 )";
 
-                if (effective_intake_count > 0)
-                {
-                        xml << R"(    <intakes>
+        if (effective_intake_count > 0)
+        {
+            xml << R"(    <intakes>
 )";
-                        for (std::size_t i = 0; i < effective_intake_count; ++i)
-                        {
-                                const double z = 0.5 + static_cast<double>(i);
-                                xml << "      1550.0 950.0 " << z << "\n";
-                        }
-                        xml << R"(    </intakes>
+            for (std::size_t i = 0; i < effective_intake_count; ++i)
+            {
+                const double z = 0.5 + static_cast<double>(i);
+                xml << "      1550.0 950.0 " << z << "\n";
+            }
+            xml << R"(    </intakes>
 )";
-                }
+        }
 
-                xml << R"(    <sinks>
+        xml << R"(    <sinks>
 )";
 
         for (std::size_t i = 0; i < sink_count; ++i)
@@ -96,8 +95,7 @@ namespace
             const double z = 9.7;
             const double entrainment = i == 0 ? 1.0 : (5.0 + static_cast<double>(i - 1) * 0.1);
             const double plume_height = 5.0;
-            xml << "      " << x << " " << y << " " << z << " " << entrainment << " " << plume_height
-                << " 0.000\n";
+            xml << "      " << x << " " << y << " " << z << " " << entrainment << " " << plume_height << " 0.000\n";
         }
 
         xml << R"(    </sinks>
@@ -116,10 +114,9 @@ namespace
         return xml.str();
     }
 
-    pre_c_sumo::ConnectedSinkSources convert_from_synthetic_case(std::size_t sink_count, std::size_t source_count,
-                                                                  bool include_qintake, double qintake,
-                                                                  std::size_t intake_count =
-                                                                      std::numeric_limits<std::size_t>::max())
+    pre_c_sumo::ConnectedSinkSources convert_from_synthetic_case(
+        std::size_t sink_count, std::size_t source_count, bool include_qintake, double qintake,
+        std::size_t intake_count = std::numeric_limits<std::size_t>::max())
     {
         const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_with_intake_xml);
         EXPECT_TRUE(settings.has_value());
@@ -132,7 +129,7 @@ namespace
         nf2ff_readers.emplace_back(std::move(*reader));
         return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
     }
-}
+} // namespace
 
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
 TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
@@ -246,8 +243,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*diffuser));
 
-    const auto connected_sources_sinks =
-        pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
+    const auto connected_sources_sinks = pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
 
     EXPECT_EQ(connected_sources_sinks.get_number_of_entries(), 2000u);
 }
@@ -282,8 +278,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*diffuser));
 
-    const auto connected_sources_sinks =
-        pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
+    const auto connected_sources_sinks = pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
 
     EXPECT_EQ(connected_sources_sinks.get_number_of_entries(), 1000u);
 }
@@ -303,7 +298,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticNF2FFCasesYieldExpectedConnectedCou
 
     constexpr std::array<SyntheticCase, 5> cases = {
         SyntheticCase{"i0si2so2", 2u, 2u, true, 10.0, 1u, 5u},
-        SyntheticCase{"i0si2so1", 2u, 1u, false, 0.0, 0u, 2001u},
+        SyntheticCase{"i0si2so1", 2u, 1u, false, 0.0, 0u, 2000u},
         SyntheticCase{"i1si2so2", 2u, 2u, true, 10.0, 1u, 5u},
         SyntheticCase{"i10si2so1", 2u, 1u, true, 10.0, 10u, 2010u},
         SyntheticCase{"i1si42so1", 42u, 1u, true, 10.0, 1u, 42001u},
@@ -311,9 +306,9 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticNF2FFCasesYieldExpectedConnectedCou
 
     for (const auto& scenario : cases)
     {
-        const auto connected = convert_from_synthetic_case(scenario.sink_count, scenario.source_count,
-                                                           scenario.include_qintake, scenario.qintake,
-                                                           scenario.intake_count);
+        const auto connected =
+            convert_from_synthetic_case(scenario.sink_count, scenario.source_count, scenario.include_qintake,
+                                        scenario.qintake, scenario.intake_count);
         EXPECT_EQ(connected.get_number_of_entries(), scenario.expected_count) << scenario.name;
     }
 }
@@ -331,21 +326,19 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseCopiedToAllTimestepsKeepsStable
     };
 
     constexpr std::array<SyntheticCase, 5> cases = {
-        SyntheticCase{"i0si2so2", 2u, 2u, true, 10.0, 1u},
-        SyntheticCase{"i0si2so1", 2u, 1u, false, 0.0, 0u},
-        SyntheticCase{"i1si2so2", 2u, 2u, true, 10.0, 1u},
-        SyntheticCase{"i10si2so1", 2u, 1u, true, 10.0, 10u},
+        SyntheticCase{"i0si2so2", 2u, 2u, true, 10.0, 1u},   SyntheticCase{"i0si2so1", 2u, 1u, false, 0.0, 0u},
+        SyntheticCase{"i1si2so2", 2u, 2u, true, 10.0, 1u},   SyntheticCase{"i10si2so1", 2u, 1u, true, 10.0, 10u},
         SyntheticCase{"i1si42so1", 42u, 1u, true, 10.0, 1u},
     };
 
     for (const auto& scenario : cases)
     {
-        const auto initial_connected = convert_from_synthetic_case(scenario.sink_count, scenario.source_count,
-                                                                   scenario.include_qintake, scenario.qintake,
-                                                                   scenario.intake_count);
-        const auto step_connected = convert_from_synthetic_case(scenario.sink_count, scenario.source_count,
-                                                                scenario.include_qintake, scenario.qintake,
-                                                                scenario.intake_count);
+        const auto initial_connected =
+            convert_from_synthetic_case(scenario.sink_count, scenario.source_count, scenario.include_qintake,
+                                        scenario.qintake, scenario.intake_count);
+        const auto step_connected =
+            convert_from_synthetic_case(scenario.sink_count, scenario.source_count, scenario.include_qintake,
+                                        scenario.qintake, scenario.intake_count);
         EXPECT_EQ(step_connected.get_number_of_entries(), initial_connected.get_number_of_entries()) << scenario.name;
         EXPECT_GT(step_connected.get_number_of_entries(), 0u) << scenario.name;
     }
@@ -367,7 +360,31 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So2YieldsExpectedDischarges)
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge)
 {
-    const auto connected = convert_from_synthetic_case(2u, 1u, false, 0.0);
+    const auto xml = build_nf2ff_xml(2u, 1u, false, 0.0, 0u);
+    const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_with_intake_xml);
+    ASSERT_TRUE(settings.has_value());
+
+    auto reader = pre_c_sumo::NF2FFReader::fromString(xml);
+    ASSERT_TRUE(reader.has_value());
+    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    nf2ff_readers.emplace_back(std::move(*reader));
+
+    EXPECT_NEAR(nf2ff_readers.front().intakeFlowRate(), 0.0, 1e-12);
+    EXPECT_TRUE(nf2ff_readers.front().intakes().empty());
+
+    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+    ASSERT_EQ(connected.get_number_of_entries(), 2000u);
+
+    const auto& discharges = connected.get_discharge_value();
+    ASSERT_EQ(discharges.size(), 2000u);
+    EXPECT_NEAR(discharges[0], 0.04, 1e-12);
+    EXPECT_NEAR(discharges[999], 0.04, 1e-12);
+    EXPECT_NEAR(discharges[1000], 0.01, 1e-12);
+    EXPECT_NEAR(discharges[1999], 0.01, 1e-12);
+}
+TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesSettingsIntakeFallbackWithNonZeroQintake)
+{
+    const auto connected = convert_from_synthetic_case(2u, 1u, true, 10.0, 0u);
     ASSERT_EQ(connected.get_number_of_entries(), 2001u);
 
     const auto& discharges = connected.get_discharge_value();
@@ -376,7 +393,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
     EXPECT_NEAR(discharges[999], 0.04, 1e-12);
     EXPECT_NEAR(discharges[1000], 0.01, 1e-12);
     EXPECT_NEAR(discharges[1999], 0.01, 1e-12);
-    EXPECT_NEAR(discharges[2000], 0.0, 1e-12);
+    EXPECT_NEAR(discharges[2000], 10.0, 1e-12);
 }
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticI10Si2So1WithTenIntakesYieldsExpectedCount)
