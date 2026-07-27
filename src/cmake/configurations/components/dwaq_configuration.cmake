@@ -19,7 +19,6 @@ if(${configuration_type} STREQUAL ${dwaq_configuration} OR
    ${configuration_type} STREQUAL ${testbench-waq_configuration} OR
    ${configuration_type} STREQUAL ${testbench-part_configuration} OR
    ${configuration_type} STREQUAL ${testbench-none_configuration} OR
-   ${configuration_type} STREQUAL ${testbench-qp_configuration} OR
    ${configuration_type} STREQUAL ${testbench-tc_configuration})
     message(STATUS "Intel MPI & MKL")
     list(APPEND CMAKE_MESSAGE_INDENT "   ")
