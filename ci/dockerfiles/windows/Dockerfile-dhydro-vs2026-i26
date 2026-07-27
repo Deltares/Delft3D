@@ -4,19 +4,35 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
 
-SHELL ["cmd", "/S", "/C"]
-
-ADD vs_Community.exe C:/
-
-RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
-    --installPath "C:\\Program Files\\Microsoft Visual Studio\\18\\Community" \
-    --add Microsoft.VisualStudio.Workload.NativeDesktop \
-    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
-    --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
-    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
-    || IF "%ERRORLEVEL%"=="3010" EXIT 0)
-
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+RUN $installer = 'C:\vs_Community.exe'; \
+    $installPath = 'C:\Program Files\Microsoft Visual Studio\18\Community'; \
+    Invoke-WebRequest -Uri 'https://aka.ms/vs/stable/vs_community.exe' -OutFile $installer -UseBasicParsing; \
+    try { \
+        $version = (Get-Item $installer).VersionInfo; \
+        if ($version.FileMajorPart -ne 18) { \
+            throw ('Expected Visual Studio major version 18, but bootstrapper is {0}' -f $version.FileVersion) \
+        } \
+        # Start-Process flattens ArgumentList, so quote the path after PowerShell parses -Command. \
+        $quote = [char]34; \
+        $quotedInstallPath = $quote + $installPath + $quote; \
+        $installerArguments = '--passive --wait --norestart --nocache ' + \
+            '--installPath ' + $quotedInstallPath + ' ' + \
+            '--add Microsoft.VisualStudio.Workload.NativeDesktop ' + \
+            '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + \
+            '--add Microsoft.VisualStudio.Component.Windows11SDK.26100 ' + \
+            '--add Microsoft.VisualStudio.Component.VC.ATLMFC'; \
+        $process = Start-Process -FilePath $installer -ArgumentList $installerArguments -Wait -PassThru; \
+        if ($process.ExitCode -notin 0, 3010) { \
+            throw ('Visual Studio installer exited with code {0}' -f $process.ExitCode) \
+        } \
+        $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'; \
+        $registeredPath = & $vswhere -latest -products * -property installationPath; \
+        if ($registeredPath -ne $installPath) { \
+            throw ('Visual Studio registered at {0}, expected {1}' -f $registeredPath, $installPath) \
+        } \
+    } finally { \
+        Remove-Item -Force $installer -ErrorAction SilentlyContinue \
+    }
 
 # Install the Intel C/C++ and Fortran compilers, oneMKL, and Intel MPI.
 ADD intel-oneapi-toolkit-2026.1.0.191_offline.exe C:/
@@ -34,10 +50,10 @@ RUN Start-Process -FilePath "C:\intel-oneapi-toolkit-2026.1.0.191_offline.exe" -
 RUN Remove-Item C:\*.exe
 
 # Install CMake
-ADD cmake-4.4.0-rc2-windows-x86_64.msi C:\\cmake-4.4.0-rc2-windows-x86_64.msi
-RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-4.4.0-rc2-windows-x86_64.msi /qn'
+ADD cmake-4.4.0-windows-x86_64.msi C:\\cmake-4.4.0-windows-x86_64.msi
+RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-4.4.0-windows-x86_64.msi /qn'
 RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
-RUN Remove-Item C:\\cmake-4.4.0-rc2-windows-x86_64.msi
+RUN Remove-Item C:\\cmake-4.4.0-windows-x86_64.msi
 
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
 ENV VS2026INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\"
