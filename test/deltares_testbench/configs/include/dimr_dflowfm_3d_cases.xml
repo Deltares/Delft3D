@@ -120,6 +120,18 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f006_c120_multiple_extforce_files" ref="dflowfm_default">
+        <path version="2026-07-23T08:59:35.343000">e02_dflowfm/f006_external_forcing/c120_multiple_extforce_files</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/SimpleBucket_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
+                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f011_c201_wind_algebraic_sigma_equi_3d" ref="dflowfm_default">
       <path version="2025-10-07T06:55:41.424000">e02_dflowfm/f011_wind/c201_wind_algebraic_sigma_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>

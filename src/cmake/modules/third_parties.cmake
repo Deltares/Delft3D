@@ -15,9 +15,6 @@ set(metis_module ${third_party_open_path}/metis/${cmake_directory})
 # precice
 set(precice_module ${third_party_open_path}/precice)
 
-# triangle_c
-set(triangle_c_module ${third_party_open_path}/triangle/${cmake_directory})
-
 # libsigwatch
 set(libsigwatch_module ${third_party_open_path}/libsigwatch/${cmake_directory})
 
