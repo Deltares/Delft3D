@@ -305,7 +305,7 @@ contains
 
         do j = 1, nuspec
             flnppr8 = ((xdef(j + nurows) - x(j)) / ctodry(j)) / tstep
-            flresp8 = real(rcresp(j), kind=dp) * real(tcresp(j), kind=dp)**real(temp, kind=dp) * (xdef(j + nurows) / ctodry(j))
+            flresp8 = real(rcresp(j), kind=dp) * real(tcresp(j), kind=dp)**temp8 * (xdef(j + nurows) / ctodry(j))
             flgppr8 = flnppr8 + flresp8
             flnppr(j) = real(flnppr8, kind=real_wp)
             flresp(j) = real(flresp8, kind=real_wp)
