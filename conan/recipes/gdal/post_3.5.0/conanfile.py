@@ -296,7 +296,7 @@ class GdalConan(ConanFile):
 
     def build_requirements(self):
         # https://github.com/conan-io/conan/issues/3482#issuecomment-662284561
-        self.tool_requires("cmake/[>=3.18 <4]")
+        self.tool_requires("cmake/[>=3.18 <5]")
 
     def validate(self):
         if Version(self.version) >= "3.10.0":
