@@ -3081,6 +3081,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_IM1 ","Salinity  ",   7,"Y","x",1
 "CalVS_IM1 ","SMax      ",   8,"Y","x",1
 "CalVS_IM1 ","EnhSedIM1 ",   9,"Y","x",1
+"CalVS_IM1 ","UsePOMIM1 ",  10,"Y","x",1
+"CalVS_IM1 ","CritPOMIM1",  11,"Y","x",1
+"CalVS_IM1 ","ExpPOMIM1 ",  12,"Y","x",1
+"CalVS_IM1 ","POC       ",  13,"Y","x",1
 "CalVS_IM2 ","V0SedIM2  ",   1,"N","x",1
 "CalVS_IM2 ","SS        ",   2,"N","x",1
 "CalVS_IM2 ","CrSS      ",   3,"Y","x",1
@@ -3090,6 +3094,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_IM2 ","Salinity  ",   7,"Y","x",1
 "CalVS_IM2 ","SMax      ",   8,"Y","x",1
 "CalVS_IM2 ","EnhSedIM2 ",   9,"Y","x",1
+"CalVS_IM2 ","UsePOMIM2 ",  10,"Y","x",1
+"CalVS_IM2 ","CritPOMIM2",  11,"Y","x",1
+"CalVS_IM2 ","ExpPOMIM2 ",  12,"Y","x",1
+"CalVS_IM2 ","POC       ",  13,"Y","x",1
 "CalVS_IM3 ","V0SedIM3  ",   1,"N","x",1
 "CalVS_IM3 ","SS        ",   2,"N","x",1
 "CalVS_IM3 ","CrSS      ",   3,"Y","x",1
@@ -3099,6 +3107,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_IM3 ","Salinity  ",   7,"Y","x",1
 "CalVS_IM3 ","SMax      ",   8,"Y","x",1
 "CalVS_IM3 ","EnhSedIM3 ",   9,"Y","x",1
+"CalVS_IM3 ","UsePOMIM3 ",  10,"Y","x",1
+"CalVS_IM3 ","CritPOMIM3",  11,"Y","x",1
+"CalVS_IM3 ","ExpPOMIM3 ",  12,"Y","x",1
+"CalVS_IM3 ","POC       ",  13,"Y","x",1
 "CalVS_POC1","V0SedPOC1 ",   1,"N","x",1
 "CalVS_POC1","SS        ",   2,"N","x",1
 "CalVS_POC1","CrSS      ",   3,"Y","x",1
@@ -3108,6 +3120,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_POC1","Salinity  ",   7,"Y","x",1
 "CalVS_POC1","SMax      ",   8,"Y","x",1
 "CalVS_POC1","EnhSedPOC1",   9,"Y","x",1
+"CalVS_POC1","UsePOMPOC1",  10,"Y","x",1
+"CalVS_POC1","CriPOMPOC1",  11,"Y","x",1
+"CalVS_POC1","ExpPOMPOC1",  12,"Y","x",1
+"CalVS_POC1","POC       ",  13,"Y","x",1
 "CalVS_POC2","V0SedPOC2 ",   1,"N","x",1
 "CalVS_POC2","SS        ",   2,"N","x",1
 "CalVS_POC2","CrSS      ",   3,"Y","x",1
@@ -3117,6 +3133,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_POC2","Salinity  ",   7,"Y","x",1
 "CalVS_POC2","SMax      ",   8,"Y","x",1
 "CalVS_POC2","EnhSedPOC2",   9,"Y","x",1
+"CalVS_POC2","UsePOMPOC2",  10,"Y","x",1
+"CalVS_POC2","CriPOMPOC2",  11,"Y","x",1
+"CalVS_POC2","ExpPOMPOC2",  12,"Y","x",1
+"CalVS_POC2","POC       ",  13,"Y","x",1
 "CalVS_POC3","V0SedPOC3 ",   1,"N","x",1
 "CalVS_POC3","SS        ",   2,"N","x",1
 "CalVS_POC3","CrSS      ",   3,"Y","x",1
@@ -3126,6 +3146,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_POC3","Salinity  ",   7,"Y","x",1
 "CalVS_POC3","SMax      ",   8,"Y","x",1
 "CalVS_POC3","EnhSedPOC3",   9,"Y","x",1
+"CalVS_POC3","UsePOMPOC3",  10,"Y","x",1
+"CalVS_POC3","CriPOMPOC3",  11,"Y","x",1
+"CalVS_POC3","ExpPOMPOC3",  12,"Y","x",1
+"CalVS_POC3","POC       ",  13,"Y","x",1
 "CalVS_POC4","V0SedPOC4 ",   1,"N","x",1
 "CalVS_POC4","SS        ",   2,"N","x",1
 "CalVS_POC4","CrSS      ",   3,"Y","x",1
@@ -3135,6 +3159,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_POC4","Salinity  ",   7,"Y","x",1
 "CalVS_POC4","SMax      ",   8,"Y","x",1
 "CalVS_POC4","EnhSedPOC4",   9,"Y","x",1
+"CalVS_POC4","UsePOMPOC4",  10,"Y","x",1
+"CalVS_POC4","CriPOMPOC4",  11,"Y","x",1
+"CalVS_POC4","ExpPOMPOC4",  12,"Y","x",1
+"CalVS_POC4","POC       ",  13,"Y","x",1
 "CalVS_Diat","V0SedDiat ",   1,"N","x",1
 "CalVS_Diat","SS        ",   2,"N","x",1
 "CalVS_Diat","CrSS      ",   3,"Y","x",1
@@ -3144,6 +3172,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_Diat","Salinity  ",   7,"Y","x",1
 "CalVS_Diat","SMax      ",   8,"Y","x",1
 "CalVS_Diat","EnhSedDiat",   9,"Y","x",1
+"CalVS_Diat","UsePOMDiat",  10,"Y","x",1
+"CalVS_Diat","CriPOMDiat",  11,"Y","x",1
+"CalVS_Diat","ExpPOMDiat",  12,"Y","x",1
+"CalVS_Diat","POC       ",  13,"Y","x",1
 "CalVS_Gree","V0SedGreen",   1,"N","x",1
 "CalVS_Gree","SS        ",   2,"N","x",1
 "CalVS_Gree","CrSS      ",   3,"Y","x",1
@@ -3153,6 +3185,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVS_Gree","Salinity  ",   7,"Y","x",1
 "CalVS_Gree","SMax      ",   8,"Y","x",1
 "CalVS_Gree","EnhSedGree",   9,"Y","x",1
+"CalVS_Gree","UsePOMGree",  10,"Y","x",1
+"CalVS_Gree","CriPOMGree",  11,"Y","x",1
+"CalVS_Gree","ExpPOMGree",  12,"Y","x",1
+"CalVS_Gree","POC       ",  13,"Y","x",1
 "CalVSALG  ","V0SedAlg  ",   1,"N","x",1
 "CalVSALG  ","SS        ",   2,"Y","x",1
 "CalVSALG  ","CrSS      ",   3,"Y","x",1
@@ -3162,6 +3198,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG  ","Salinity  ",   7,"Y","x",1
 "CalVSALG  ","SMax      ",   8,"Y","x",1
 "CalVSALG  ","EnhSdAlg  ",   9,"Y","x",1
+"CalVSALG  ","UsePOMAlg ",  10,"Y","x",1
+"CalVSALG  ","CriPOMAlg ",  11,"Y","x",1
+"CalVSALG  ","ExpPOMAlg ",  12,"Y","x",1
+"CalVSALG  ","POC       ",  13,"Y","x",1
 "CalVSALG01","V0SedAlg01",   1,"N","x",1
 "CalVSALG01","SS        ",   2,"N","x",1
 "CalVSALG01","CrSS      ",   3,"Y","x",1
@@ -3171,6 +3211,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG01","Salinity  ",   7,"Y","x",1
 "CalVSALG01","SMax      ",   8,"Y","x",1
 "CalVSALG01","EnhSdAlg01",   9,"Y","x",1
+"CalVSALG01","UsePOAlg01",  10,"Y","x",1
+"CalVSALG01","CriPOAlg01",  11,"Y","x",1
+"CalVSALG01","ExpPOAlg01",  12,"Y","x",1
+"CalVSALG01","POC       ",  13,"Y","x",1
 "CalVSALG02","V0SedAlg02",   1,"N","x",1
 "CalVSALG02","SS        ",   2,"N","x",1
 "CalVSALG02","CrSS      ",   3,"Y","x",1
@@ -3180,6 +3224,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG02","Salinity  ",   7,"Y","x",1
 "CalVSALG02","SMax      ",   8,"Y","x",1
 "CalVSALG02","EnhSdAlg02",   9,"Y","x",1
+"CalVSALG02","UsePOAlg02",  10,"Y","x",1
+"CalVSALG02","CriPOAlg02",  11,"Y","x",1
+"CalVSALG02","ExpPOAlg02",  12,"Y","x",1
+"CalVSALG02","POC       ",  13,"Y","x",1
 "CalVSALG03","V0SedAlg03",   1,"N","x",1
 "CalVSALG03","SS        ",   2,"N","x",1
 "CalVSALG03","CrSS      ",   3,"Y","x",1
@@ -3189,6 +3237,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG03","Salinity  ",   7,"Y","x",1
 "CalVSALG03","SMax      ",   8,"Y","x",1
 "CalVSALG03","EnhSdAlg03",   9,"Y","x",1
+"CalVSALG03","UsePOAlg03",  10,"Y","x",1
+"CalVSALG03","CriPOAlg03",  11,"Y","x",1
+"CalVSALG03","ExpPOAlg03",  12,"Y","x",1
+"CalVSALG03","POC       ",  13,"Y","x",1
 "CalVSALG04","V0SedAlg04",   1,"N","x",1
 "CalVSALG04","SS        ",   2,"N","x",1
 "CalVSALG04","CrSS      ",   3,"Y","x",1
@@ -3198,6 +3250,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG04","Salinity  ",   7,"Y","x",1
 "CalVSALG04","SMax      ",   8,"Y","x",1
 "CalVSALG04","EnhSdAlg04",   9,"Y","x",1
+"CalVSALG04","UsePOAlg04",  10,"Y","x",1
+"CalVSALG04","CriPOAlg04",  11,"Y","x",1
+"CalVSALG04","ExpPOAlg04",  12,"Y","x",1
+"CalVSALG04","POC       ",  13,"Y","x",1
 "CalVSALG05","V0SedAlg05",   1,"N","x",1
 "CalVSALG05","SS        ",   2,"N","x",1
 "CalVSALG05","CrSS      ",   3,"Y","x",1
@@ -3207,6 +3263,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG05","Salinity  ",   7,"Y","x",1
 "CalVSALG05","SMax      ",   8,"Y","x",1
 "CalVSALG05","EnhSdAlg05",   9,"Y","x",1
+"CalVSALG05","UsePOAlg05",  10,"Y","x",1
+"CalVSALG05","CriPOAlg05",  11,"Y","x",1
+"CalVSALG05","ExpPOAlg05",  12,"Y","x",1
+"CalVSALG05","POC       ",  13,"Y","x",1
 "CalVSALG06","V0SedAlg06",   1,"N","x",1
 "CalVSALG06","SS        ",   2,"N","x",1
 "CalVSALG06","CrSS      ",   3,"Y","x",1
@@ -3216,6 +3276,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG06","Salinity  ",   7,"Y","x",1
 "CalVSALG06","SMax      ",   8,"Y","x",1
 "CalVSALG06","EnhSdAlg06",   9,"Y","x",1
+"CalVSALG06","UsePOAlg06",  10,"Y","x",1
+"CalVSALG06","CriPOAlg06",  11,"Y","x",1
+"CalVSALG06","ExpPOAlg06",  12,"Y","x",1
+"CalVSALG06","POC       ",  13,"Y","x",1
 "CalVSALG07","V0SedAlg07",   1,"N","x",1
 "CalVSALG07","SS        ",   2,"N","x",1
 "CalVSALG07","CrSS      ",   3,"Y","x",1
@@ -3225,6 +3289,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG07","Salinity  ",   7,"Y","x",1
 "CalVSALG07","SMax      ",   8,"Y","x",1
 "CalVSALG07","EnhSdAlg07",   9,"Y","x",1
+"CalVSALG07","UsePOAlg07",  10,"Y","x",1
+"CalVSALG07","CriPOAlg07",  11,"Y","x",1
+"CalVSALG07","ExpPOAlg07",  12,"Y","x",1
+"CalVSALG07","POC       ",  13,"Y","x",1
 "CalVSALG08","V0SedAlg08",   1,"N","x",1
 "CalVSALG08","SS        ",   2,"N","x",1
 "CalVSALG08","CrSS      ",   3,"Y","x",1
@@ -3234,6 +3302,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG08","Salinity  ",   7,"Y","x",1
 "CalVSALG08","SMax      ",   8,"Y","x",1
 "CalVSALG08","EnhSdAlg08",   9,"Y","x",1
+"CalVSALG08","UsePOAlg08",  10,"Y","x",1
+"CalVSALG08","CriPOAlg08",  11,"Y","x",1
+"CalVSALG08","ExpPOAlg08",  12,"Y","x",1
+"CalVSALG08","POC       ",  13,"Y","x",1
 "CalVSALG09","V0SedAlg09",   1,"N","x",1
 "CalVSALG09","SS        ",   2,"N","x",1
 "CalVSALG09","CrSS      ",   3,"Y","x",1
@@ -3243,6 +3315,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG09","Salinity  ",   7,"Y","x",1
 "CalVSALG09","SMax      ",   8,"Y","x",1
 "CalVSALG09","EnhSdAlg09",   9,"Y","x",1
+"CalVSALG09","UsePOAlg09",  10,"Y","x",1
+"CalVSALG09","CriPOAlg09",  11,"Y","x",1
+"CalVSALG09","ExpPOAlg09",  12,"Y","x",1
+"CalVSALG09","POC       ",  13,"Y","x",1
 "CalVSALG10","V0SedAlg10",   1,"N","x",1
 "CalVSALG10","SS        ",   2,"N","x",1
 "CalVSALG10","CrSS      ",   3,"Y","x",1
@@ -3252,6 +3328,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG10","Salinity  ",   7,"Y","x",1
 "CalVSALG10","SMax      ",   8,"Y","x",1
 "CalVSALG10","EnhSdAlg10",   9,"Y","x",1
+"CalVSALG10","UsePOAlg10",  10,"Y","x",1
+"CalVSALG10","CriPOAlg10",  11,"Y","x",1
+"CalVSALG10","ExpPOAlg10",  12,"Y","x",1
+"CalVSALG10","POC       ",  13,"Y","x",1
 "CalVSALG11","V0SedAlg11",   1,"N","x",1
 "CalVSALG11","SS        ",   2,"N","x",1
 "CalVSALG11","CrSS      ",   3,"Y","x",1
@@ -3261,6 +3341,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG11","Salinity  ",   7,"Y","x",1
 "CalVSALG11","SMax      ",   8,"Y","x",1
 "CalVSALG11","EnhSdAlg11",   9,"Y","x",1
+"CalVSALG11","UsePOAlg11",  10,"Y","x",1
+"CalVSALG11","CriPOAlg11",  11,"Y","x",1
+"CalVSALG11","ExpPOAlg11",  12,"Y","x",1
+"CalVSALG11","POC       ",  13,"Y","x",1
 "CalVSALG12","V0SedAlg12",   1,"N","x",1
 "CalVSALG12","SS        ",   2,"N","x",1
 "CalVSALG12","CrSS      ",   3,"Y","x",1
@@ -3270,6 +3354,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG12","Salinity  ",   7,"Y","x",1
 "CalVSALG12","SMax      ",   8,"Y","x",1
 "CalVSALG12","EnhSdAlg12",   9,"Y","x",1
+"CalVSALG12","UsePOAlg12",  10,"Y","x",1
+"CalVSALG12","CriPOAlg12",  11,"Y","x",1
+"CalVSALG12","ExpPOAlg12",  12,"Y","x",1
+"CalVSALG12","POC       ",  13,"Y","x",1
 "CalVSALG13","V0SedAlg13",   1,"N","x",1
 "CalVSALG13","SS        ",   2,"N","x",1
 "CalVSALG13","CrSS      ",   3,"Y","x",1
@@ -3279,6 +3367,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG13","Salinity  ",   7,"Y","x",1
 "CalVSALG13","SMax      ",   8,"Y","x",1
 "CalVSALG13","EnhSdAlg13",   9,"Y","x",1
+"CalVSALG13","UsePOAlg13",  10,"Y","x",1
+"CalVSALG13","CriPOAlg13",  11,"Y","x",1
+"CalVSALG13","ExpPOAlg13",  12,"Y","x",1
+"CalVSALG13","POC       ",  13,"Y","x",1
 "CalVSALG14","V0SedAlg14",   1,"N","x",1
 "CalVSALG14","SS        ",   2,"N","x",1
 "CalVSALG14","CrSS      ",   3,"Y","x",1
@@ -3288,6 +3380,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG14","Salinity  ",   7,"Y","x",1
 "CalVSALG14","SMax      ",   8,"Y","x",1
 "CalVSALG14","EnhSdAlg14",   9,"Y","x",1
+"CalVSALG14","UsePOAlg14",  10,"Y","x",1
+"CalVSALG14","CriPOAlg14",  11,"Y","x",1
+"CalVSALG14","ExpPOAlg14",  12,"Y","x",1
+"CalVSALG14","POC       ",  13,"Y","x",1
 "CalVSALG15","V0SedAlg15",   1,"N","x",1
 "CalVSALG15","SS        ",   2,"N","x",1
 "CalVSALG15","CrSS      ",   3,"Y","x",1
@@ -3297,6 +3393,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG15","Salinity  ",   7,"Y","x",1
 "CalVSALG15","SMax      ",   8,"Y","x",1
 "CalVSALG15","EnhSdAlg15",   9,"Y","x",1
+"CalVSALG15","UsePOAlg15",  10,"Y","x",1
+"CalVSALG15","CriPOAlg15",  11,"Y","x",1
+"CalVSALG15","ExpPOAlg15",  12,"Y","x",1
+"CalVSALG15","POC       ",  13,"Y","x",1
 "CalVSALG16","V0SedAlg16",   1,"N","x",1
 "CalVSALG16","SS        ",   2,"N","x",1
 "CalVSALG16","CrSS      ",   3,"Y","x",1
@@ -3306,6 +3406,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG16","Salinity  ",   7,"Y","x",1
 "CalVSALG16","SMax      ",   8,"Y","x",1
 "CalVSALG16","EnhSdAlg16",   9,"Y","x",1
+"CalVSALG16","UsePOAlg16",  10,"Y","x",1
+"CalVSALG16","CriPOAlg16",  11,"Y","x",1
+"CalVSALG16","ExpPOAlg16",  12,"Y","x",1
+"CalVSALG16","POC       ",  13,"Y","x",1
 "CalVSALG17","V0SedAlg17",   1,"N","x",1
 "CalVSALG17","SS        ",   2,"N","x",1
 "CalVSALG17","CrSS      ",   3,"Y","x",1
@@ -3315,6 +3419,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG17","Salinity  ",   7,"Y","x",1
 "CalVSALG17","SMax      ",   8,"Y","x",1
 "CalVSALG17","EnhSdAlg17",   9,"Y","x",1
+"CalVSALG17","UsePOAlg17",  10,"Y","x",1
+"CalVSALG17","CriPOAlg17",  11,"Y","x",1
+"CalVSALG17","ExpPOAlg17",  12,"Y","x",1
+"CalVSALG17","POC       ",  13,"Y","x",1
 "CalVSALG18","V0SedAlg18",   1,"N","x",1
 "CalVSALG18","SS        ",   2,"N","x",1
 "CalVSALG18","CrSS      ",   3,"Y","x",1
@@ -3324,6 +3432,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG18","Salinity  ",   7,"Y","x",1
 "CalVSALG18","SMax      ",   8,"Y","x",1
 "CalVSALG18","EnhSdAlg18",   9,"Y","x",1
+"CalVSALG18","UsePOAlg18",  10,"Y","x",1
+"CalVSALG18","CriPOAlg18",  11,"Y","x",1
+"CalVSALG18","ExpPOAlg18",  12,"Y","x",1
+"CalVSALG18","POC       ",  13,"Y","x",1
 "CalVSALG19","V0SedAlg19",   1,"N","x",1
 "CalVSALG19","SS        ",   2,"N","x",1
 "CalVSALG19","CrSS      ",   3,"Y","x",1
@@ -3333,6 +3445,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG19","Salinity  ",   7,"Y","x",1
 "CalVSALG19","SMax      ",   8,"Y","x",1
 "CalVSALG19","EnhSdAlg19",   9,"Y","x",1
+"CalVSALG19","UsePOAlg19",  10,"Y","x",1
+"CalVSALG19","CriPOAlg19",  11,"Y","x",1
+"CalVSALG19","ExpPOAlg19",  12,"Y","x",1
+"CalVSALG19","POC       ",  13,"Y","x",1
 "CalVSALG20","V0SedAlg20",   1,"N","x",1
 "CalVSALG20","SS        ",   2,"N","x",1
 "CalVSALG20","CrSS      ",   3,"Y","x",1
@@ -3342,6 +3458,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG20","Salinity  ",   7,"Y","x",1
 "CalVSALG20","SMax      ",   8,"Y","x",1
 "CalVSALG20","EnhSdAlg20",   9,"Y","x",1
+"CalVSALG20","UsePOAlg20",  10,"Y","x",1
+"CalVSALG20","CriPOAlg20",  11,"Y","x",1
+"CalVSALG20","ExpPOAlg20",  12,"Y","x",1
+"CalVSALG20","POC       ",  13,"Y","x",1
 "CalVSALG21","V0SedAlg21",   1,"N","x",1
 "CalVSALG21","SS        ",   2,"N","x",1
 "CalVSALG21","CrSS      ",   3,"Y","x",1
@@ -3351,6 +3471,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG21","Salinity  ",   7,"Y","x",1
 "CalVSALG21","SMax      ",   8,"Y","x",1
 "CalVSALG21","EnhSdAlg21",   9,"Y","x",1
+"CalVSALG21","UsePOAlg21",  10,"Y","x",1
+"CalVSALG21","CriPOAlg21",  11,"Y","x",1
+"CalVSALG21","ExpPOAlg21",  12,"Y","x",1
+"CalVSALG21","POC       ",  13,"Y","x",1
 "CalVSALG22","V0SedAlg22",   1,"N","x",1
 "CalVSALG22","SS        ",   2,"N","x",1
 "CalVSALG22","CrSS      ",   3,"Y","x",1
@@ -3360,6 +3484,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG22","Salinity  ",   7,"Y","x",1
 "CalVSALG22","SMax      ",   8,"Y","x",1
 "CalVSALG22","EnhSdAlg22",   9,"Y","x",1
+"CalVSALG22","UsePOAlg22",  10,"Y","x",1
+"CalVSALG22","CriPOAlg22",  11,"Y","x",1
+"CalVSALG22","ExpPOAlg22",  12,"Y","x",1
+"CalVSALG22","POC       ",  13,"Y","x",1
 "CalVSALG23","V0SedAlg23",   1,"N","x",1
 "CalVSALG23","SS        ",   2,"N","x",1
 "CalVSALG23","CrSS      ",   3,"Y","x",1
@@ -3369,6 +3497,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG23","Salinity  ",   7,"Y","x",1
 "CalVSALG23","SMax      ",   8,"Y","x",1
 "CalVSALG23","EnhSdAlg23",   9,"Y","x",1
+"CalVSALG23","UsePOAlg23",  10,"Y","x",1
+"CalVSALG23","CriPOAlg23",  11,"Y","x",1
+"CalVSALG23","ExpPOAlg23",  12,"Y","x",1
+"CalVSALG23","POC       ",  13,"Y","x",1
 "CalVSALG24","V0SedAlg24",   1,"N","x",1
 "CalVSALG24","SS        ",   2,"N","x",1
 "CalVSALG24","CrSS      ",   3,"Y","x",1
@@ -3378,6 +3510,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG24","Salinity  ",   7,"Y","x",1
 "CalVSALG24","SMax      ",   8,"Y","x",1
 "CalVSALG24","EnhSdAlg24",   9,"Y","x",1
+"CalVSALG24","UsePOAlg24",  10,"Y","x",1
+"CalVSALG24","CriPOAlg24",  11,"Y","x",1
+"CalVSALG24","ExpPOAlg24",  12,"Y","x",1
+"CalVSALG24","POC       ",  13,"Y","x",1
 "CalVSALG25","V0SedAlg25",   1,"N","x",1
 "CalVSALG25","SS        ",   2,"N","x",1
 "CalVSALG25","CrSS      ",   3,"Y","x",1
@@ -3387,6 +3523,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG25","Salinity  ",   7,"Y","x",1
 "CalVSALG25","SMax      ",   8,"Y","x",1
 "CalVSALG25","EnhSdAlg25",   9,"Y","x",1
+"CalVSALG25","UsePOAlg25",  10,"Y","x",1
+"CalVSALG25","CriPOAlg25",  11,"Y","x",1
+"CalVSALG25","ExpPOAlg25",  12,"Y","x",1
+"CalVSALG25","POC       ",  13,"Y","x",1
 "CalVSALG26","V0SedAlg26",   1,"N","x",1
 "CalVSALG26","SS        ",   2,"N","x",1
 "CalVSALG26","CrSS      ",   3,"Y","x",1
@@ -3396,6 +3536,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG26","Salinity  ",   7,"Y","x",1
 "CalVSALG26","SMax      ",   8,"Y","x",1
 "CalVSALG26","EnhSdAlg26",   9,"Y","x",1
+"CalVSALG26","UsePOAlg26",  10,"Y","x",1
+"CalVSALG26","CriPOAlg26",  11,"Y","x",1
+"CalVSALG26","ExpPOAlg26",  12,"Y","x",1
+"CalVSALG26","POC       ",  13,"Y","x",1
 "CalVSALG27","V0SedAlg27",   1,"N","x",1
 "CalVSALG27","SS        ",   2,"N","x",1
 "CalVSALG27","CrSS      ",   3,"Y","x",1
@@ -3405,6 +3549,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG27","Salinity  ",   7,"Y","x",1
 "CalVSALG27","SMax      ",   8,"Y","x",1
 "CalVSALG27","EnhSdAlg27",   9,"Y","x",1
+"CalVSALG27","UsePOAlg27",  10,"Y","x",1
+"CalVSALG27","CriPOAlg27",  11,"Y","x",1
+"CalVSALG27","ExpPOAlg27",  12,"Y","x",1
+"CalVSALG27","POC       ",  13,"Y","x",1
 "CalVSALG28","V0SedAlg28",   1,"N","x",1
 "CalVSALG28","SS        ",   2,"N","x",1
 "CalVSALG28","CrSS      ",   3,"Y","x",1
@@ -3414,6 +3562,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG28","Salinity  ",   7,"Y","x",1
 "CalVSALG28","SMax      ",   8,"Y","x",1
 "CalVSALG28","EnhSdAlg28",   9,"Y","x",1
+"CalVSALG28","UsePOAlg28",  10,"Y","x",1
+"CalVSALG28","CriPOAlg28",  11,"Y","x",1
+"CalVSALG28","ExpPOAlg28",  12,"Y","x",1
+"CalVSALG28","POC       ",  13,"Y","x",1
 "CalVSALG29","V0SedAlg29",   1,"N","x",1
 "CalVSALG29","SS        ",   2,"N","x",1
 "CalVSALG29","CrSS      ",   3,"Y","x",1
@@ -3423,6 +3575,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG29","Salinity  ",   7,"Y","x",1
 "CalVSALG29","SMax      ",   8,"Y","x",1
 "CalVSALG29","EnhSdAlg29",   9,"Y","x",1
+"CalVSALG29","UsePOAlg29",  10,"Y","x",1
+"CalVSALG29","CriPOAlg29",  11,"Y","x",1
+"CalVSALG29","ExpPOAlg29",  12,"Y","x",1
+"CalVSALG29","POC       ",  13,"Y","x",1
 "CalVSALG30","V0SedAlg30",   1,"N","x",1
 "CalVSALG30","SS        ",   2,"N","x",1
 "CalVSALG30","CrSS      ",   3,"Y","x",1
@@ -3432,6 +3588,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG30","Salinity  ",   7,"Y","x",1
 "CalVSALG30","SMax      ",   8,"Y","x",1
 "CalVSALG30","EnhSdAlg30",   9,"Y","x",1
+"CalVSALG30","UsePOAlg30",  10,"Y","x",1
+"CalVSALG30","CriPOAlg30",  11,"Y","x",1
+"CalVSALG30","ExpPOAlg30",  12,"Y","x",1
+"CalVSALG30","POC       ",  13,"Y","x",1
 "Res_Buffer","IM1S2     ",   1,"Y","x",1
 "Res_Buffer","IM2S2     ",   2,"Y","x",1
 "Res_Buffer","IM3S2     ",   3,"Y","x",1
@@ -3463,7 +3623,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Res_Buffer","ZResIM3   ",  29,"Y","x",1
 "Res_Buffer","VResIM3   ",  30,"Y","x",1
 "Res_Buffer","TaucRS1IM3",  31,"Y","x",1
-"Res_Buffer","DMS1      ",  32,"Y","x",1
+"Res_Buffer","DMS1      ",  32,"N","x",1
 "Res_Buffer","DMS2      ",  33,"Y","x",1
 "Res_Buffer","SwResBuf  ",  34,"Y","x",1
 "Sed_IM1   ","IM1       ",   1,"N","x",1
@@ -5215,7 +5375,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Cd ","PORS1     ",  16,"Y","x",1
 "PartS1_Cd ","ActThS1   ",  17,"Y","x",1
 "PartS1_Cd ","Surf      ",  18,"Y","x",1
-"PartS1_Cd ","DMS1      ",  19,"Y","x",1
+"PartS1_Cd ","DMS1      ",  19,"N","x",1
 "PartS1_Cd ","HLTAdsCdS1",  20,"Y","x",1
 "PartS1_Cd ","HLTDesCdS1",  21,"Y","x",1
 "PartS1_Cd ","DELT      ",  22,"N","x",1
@@ -5791,7 +5951,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_153","PORS1     ",  16,"Y","x",1
 "PartS1_153","ActThS1   ",  17,"Y","x",1
 "PartS1_153","Surf      ",  18,"Y","x",1
-"PartS1_153","DMS1      ",  19,"Y","x",1
+"PartS1_153","DMS1      ",  19,"N","x",1
 "PartS1_153","HLTAds153S",  20,"Y","x",1
 "PartS1_153","HLTDes153S",  21,"Y","x",1
 "PartS1_153","DELT      ",  22,"N","x",1
@@ -5823,7 +5983,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Atr","PORS1     ",  16,"Y","x",1
 "PartS1_Atr","ActThS1   ",  17,"Y","x",1
 "PartS1_Atr","Surf      ",  18,"Y","x",1
-"PartS1_Atr","DMS1      ",  19,"Y","x",1
+"PartS1_Atr","DMS1      ",  19,"N","x",1
 "PartS1_Atr","HLTAdsAtrS",  20,"Y","x",1
 "PartS1_Atr","HLTDesAtrS",  21,"Y","x",1
 "PartS1_Atr","DELT      ",  22,"N","x",1
@@ -5855,7 +6015,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_BaP","PORS1     ",  16,"Y","x",1
 "PartS1_BaP","ActThS1   ",  17,"Y","x",1
 "PartS1_BaP","Surf      ",  18,"Y","x",1
-"PartS1_BaP","DMS1      ",  19,"Y","x",1
+"PartS1_BaP","DMS1      ",  19,"N","x",1
 "PartS1_BaP","HLTAdsBaPS",  20,"Y","x",1
 "PartS1_BaP","HLTDesBaPS",  21,"Y","x",1
 "PartS1_BaP","DELT      ",  22,"N","x",1
@@ -5887,7 +6047,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Diu","PORS1     ",  16,"Y","x",1
 "PartS1_Diu","ActThS1   ",  17,"Y","x",1
 "PartS1_Diu","Surf      ",  18,"Y","x",1
-"PartS1_Diu","DMS1      ",  19,"Y","x",1
+"PartS1_Diu","DMS1      ",  19,"N","x",1
 "PartS1_Diu","HLTAdsDiuS",  20,"Y","x",1
 "PartS1_Diu","HLTDesDiuS",  21,"Y","x",1
 "PartS1_Diu","DELT      ",  22,"N","x",1
@@ -5919,7 +6079,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Flu","PORS1     ",  16,"Y","x",1
 "PartS1_Flu","ActThS1   ",  17,"Y","x",1
 "PartS1_Flu","Surf      ",  18,"Y","x",1
-"PartS1_Flu","DMS1      ",  19,"Y","x",1
+"PartS1_Flu","DMS1      ",  19,"N","x",1
 "PartS1_Flu","HLTAdsFluS",  20,"Y","x",1
 "PartS1_Flu","HLTDesFluS",  21,"Y","x",1
 "PartS1_Flu","DELT      ",  22,"N","x",1
@@ -5951,7 +6111,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_HCB","PORS1     ",  16,"Y","x",1
 "PartS1_HCB","ActThS1   ",  17,"Y","x",1
 "PartS1_HCB","Surf      ",  18,"Y","x",1
-"PartS1_HCB","DMS1      ",  19,"Y","x",1
+"PartS1_HCB","DMS1      ",  19,"N","x",1
 "PartS1_HCB","HLTAdsHCBS",  20,"Y","x",1
 "PartS1_HCB","HLTDesHCBS",  21,"Y","x",1
 "PartS1_HCB","DELT      ",  22,"N","x",1
@@ -5983,7 +6143,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_HCH","PORS1     ",  16,"Y","x",1
 "PartS1_HCH","ActThS1   ",  17,"Y","x",1
 "PartS1_HCH","Surf      ",  18,"Y","x",1
-"PartS1_HCH","DMS1      ",  19,"Y","x",1
+"PartS1_HCH","DMS1      ",  19,"N","x",1
 "PartS1_HCH","HLTAdsHCHS",  20,"Y","x",1
 "PartS1_HCH","HLTDesHCHS",  21,"Y","x",1
 "PartS1_HCH","DELT      ",  22,"N","x",1
@@ -6015,7 +6175,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Mef","PORS1     ",  16,"Y","x",1
 "PartS1_Mef","ActThS1   ",  17,"Y","x",1
 "PartS1_Mef","Surf      ",  18,"Y","x",1
-"PartS1_Mef","DMS1      ",  19,"Y","x",1
+"PartS1_Mef","DMS1      ",  19,"N","x",1
 "PartS1_Mef","HLTAdsMefS",  20,"Y","x",1
 "PartS1_Mef","HLTDesMefS",  21,"Y","x",1
 "PartS1_Mef","DELT      ",  22,"N","x",1
@@ -9522,7 +9682,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_OMP","PORS1     ",  16,"Y","x",1
 "PartS1_OMP","ActThS1   ",  17,"Y","x",1
 "PartS1_OMP","Surf      ",  18,"Y","x",1
-"PartS1_OMP","DMS1      ",  19,"Y","x",1
+"PartS1_OMP","DMS1      ",  19,"N","x",1
 "PartS1_OMP","HLTAdsOMPS",  20,"Y","x",1
 "PartS1_OMP","HLTDesOMPS",  21,"Y","x",1
 "PartS1_OMP","DELT      ",  22,"N","x",1
@@ -15451,7 +15611,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1Vir1","PORS1     ",  16,"Y","x",1
 "PartS1Vir1","ActThS1   ",  17,"Y","x",1
 "PartS1Vir1","Surf      ",  18,"Y","x",1
-"PartS1Vir1","DMS1      ",  19,"Y","x",1
+"PartS1Vir1","DMS1      ",  19,"N","x",1
 "PartS1Vir1","HLTAdsVir1",  20,"Y","x",1
 "PartS1Vir1","HLTDesVir1",  21,"Y","x",1
 "PartS1Vir1","DELT      ",  22,"N","x",1
@@ -15483,7 +15643,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1Vir2","PORS1     ",  16,"Y","x",1
 "PartS1Vir2","ActThS1   ",  17,"Y","x",1
 "PartS1Vir2","Surf      ",  18,"Y","x",1
-"PartS1Vir2","DMS1      ",  19,"Y","x",1
+"PartS1Vir2","DMS1      ",  19,"N","x",1
 "PartS1Vir2","HLTAdsVir2",  20,"Y","x",1
 "PartS1Vir2","HLTDesVir2",  21,"Y","x",1
 "PartS1Vir2","DELT      ",  22,"N","x",1
@@ -15515,7 +15675,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1Vir3","PORS1     ",  16,"Y","x",1
 "PartS1Vir3","ActThS1   ",  17,"Y","x",1
 "PartS1Vir3","Surf      ",  18,"Y","x",1
-"PartS1Vir3","DMS1      ",  19,"Y","x",1
+"PartS1Vir3","DMS1      ",  19,"N","x",1
 "PartS1Vir3","HLTAdsVir3",  20,"Y","x",1
 "PartS1Vir3","HLTDesVir3",  21,"Y","x",1
 "PartS1Vir3","DELT      ",  22,"N","x",1
