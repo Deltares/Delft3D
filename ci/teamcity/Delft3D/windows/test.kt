@@ -86,6 +86,7 @@ object WindowsTest : BuildType({
             param("nexus_username", "%nexus_username%")
             param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
+            enabled = false
         }
         powerShell {
             name = "Extract artifact"
