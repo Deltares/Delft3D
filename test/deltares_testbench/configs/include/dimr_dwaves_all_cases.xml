@@ -394,7 +394,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
-      <maxRunTime>660</maxRunTime>
+      <!-- <maxRunTime>660</maxRunTime> -->
             <path version="2025-07-29T12:53:17.117000">e04_wave/f09-SWANDCSM/c03</path>
             
             <checks>

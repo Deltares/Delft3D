@@ -270,8 +270,6 @@ class Program:
                 check=False,
             )
         else:
-            import signal
-
             try:
                 os.killpg(os.getpgid(pid), signal.SIGKILL)
             except ProcessLookupError:
