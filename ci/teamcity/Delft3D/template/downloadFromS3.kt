@@ -21,7 +21,7 @@ object TemplateDownloadFromS3 : Template({
             validationMessage = "format: 2025-04-03 14:25:08 +0000"
         )
         param("env.AWS_ACCESS_KEY_ID", "%s3_dsctestbench_accesskey%")
-        param("env.AWS_SECRET_ACCESS_KEY", "%s3_dsctestbench_secret%")
+        password("env.AWS_SECRET_ACCESS_KEY", "%s3_dsctestbench_secret%")
     }
 
     steps {

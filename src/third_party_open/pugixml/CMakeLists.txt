@@ -7,7 +7,7 @@ if(WIN32)
 
     install(IMPORTED_RUNTIME_ARTIFACTS
             pugixml::shared
-            RUNTIME DESTINATION lib
+            RUNTIME DESTINATION bin
     )
 endif()
 

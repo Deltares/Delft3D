@@ -156,6 +156,8 @@ integer, parameter, public :: SP_RUNID =  1     ! ID of simulation
 integer, parameter, public :: SP_USRFL =  2     ! name of user specified input file
 integer, parameter, public :: MAX_SP   =  2     ! maximum number of strings
 
+   integer, parameter, public :: NPARDEF = 20 ! default number of parameters for transport formulae, can be used for allocation in transport formulae and transport formula tests
+
 integer, parameter, public :: WS_FORM_FUNCTION_SALTEMCON    = 1
 integer, parameter, public :: WS_FORM_FUNCTION_DSS          = 2
 integer, parameter, public :: WS_FORM_FUNCTION_DSS_2004     = -2
@@ -250,6 +252,7 @@ type moroutputtype
     integer                         :: nstatqnt ! number of quantities for morphology statistics output
     integer                         :: weightflg ! weighting by time or dbodsd
     real(fp), dimension(3)          :: avgintv  ! interval, start, stop for writing statistics (FM only)
+      real(fp), allocatable , dimension(:) :: unit_transport_conversion_factor !  Factor for converting the unit of sediment transport quantities in the his/map writers
     !
     logical :: aks
     logical :: cumavg
@@ -589,8 +592,7 @@ type sedpar_type
     ! doubles
     !
     real(fp) :: csoil     !  concentration at bed used in hindered settling formulation
-    real(fp) :: mdcuni    !  mud content / mud fraction uniform value (non-zero only
-                          !  if mud is not included simulation)
+      real(fp) :: mdcuni !  mud content / mud fraction uniform value (non-zero only if mud is not included simulation)
     real(fp) :: kssilt    !  ks value for silt for Soulsby 2004 formulation (used below sc_cmf1)
     real(fp) :: kssand    !  ks value for sand (used above sc_cmf2)
     real(fp) :: sc_cmf1   !  lower critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
@@ -601,6 +603,8 @@ type sedpar_type
     real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
     real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
+      real(fp) :: seddif_cal ! calibration factor for susp. sed. diffusion, only applied if strictly positive
+      real(fp) :: difparam ! scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive
     !
     ! reals
     !
@@ -629,7 +633,7 @@ type sedpar_type
     real(fp)      , dimension(:)    , pointer :: logsedsig             !  Standard deviation on log scale (log of geometric std.) [-]
     real(fp)      , dimension(:)    , pointer :: sedd10                !  10% Diameter sediment fraction [m]
     real(fp)      , dimension(:)    , pointer :: sedd50                !  50% Diameter sediment fraction [m]
-    real(fp)      , dimension(:)    , pointer :: sedd50fld  => null()  !  Spatially varying 50% sediment diameter [m]
+      real(fp), dimension(:), pointer :: sedd50fld => null() !  Spatially varying 50% sediment diameter [m] in case of spatial_d50
     real(fp)      , dimension(:)    , pointer :: seddm                 !  Arithmetic mean sediment diameter [m]
     real(fp)      , dimension(:)    , pointer :: sedd90                !  90% Diameter sediment fraction [m]
     !
@@ -665,6 +669,7 @@ type sedpar_type
     !
     logical :: anymud     ! Flag to indicate whether a mud fraction is included in the simulation.
     logical :: bsskin     ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
+      logical :: spatial_d50 ! Flag to indicate whether the model uses spatially varying D50
     !
     ! characters
     !
@@ -1291,6 +1296,8 @@ subroutine nullsedpar(sedpar)
     sedpar%tfloc    = 1e-10_fp
     sedpar%d_micro  = 1e-4_fp
     sedpar%ustar_macro = 0.067_fp
+      sedpar%seddif_cal = 0.0_fp
+      sedpar%difparam = 10.0_fp
     !
     sedpar%flocmod        = FLOC_NONE
     sedpar%nflocpop       = 1
@@ -1302,6 +1309,7 @@ subroutine nullsedpar(sedpar)
     !
     sedpar%anymud    = .false.
     sedpar%bsskin    = .false.
+      sedpar%spatial_d50 = .false.
     !
     sedpar%flsdia   = ' '
     sedpar%flsmdc   = ' '

@@ -50,14 +50,13 @@ set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
 set exedir=%D3D_HOME%\test
 set testdir=%D3D_HOME%\test
-set libdir=%D3D_HOME%\lib
 
 set workdir=testdir\ec_module_test\
 cd %D3D_HOME%\test\ec_module_test\
 echo Working directory: %workdir%
 
     rem Run
-set PATH=%sharedir%;%libdir%
+set PATH=%sharedir%
 echo executing: "%exedir%\ec_module_test.exe" 
 		"%exedir%\ec_module_test.exe" -c internal
 		python run_all_tests.py

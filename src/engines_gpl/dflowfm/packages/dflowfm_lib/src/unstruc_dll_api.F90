@@ -67,12 +67,14 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: write_1D_flowgeom_ugrid
 
       use unstruc_netcdf, only: unc_write_1D_flowgeom_ugrid, t_unc_mapids
+      use m_unstruc_netcdf_data, only: flowgeom
       use messageHandling, only: Idlen
       use iso_c_utils
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
       type(t_unc_mapids) :: mapids
-      call unc_write_1D_flowgeom_ugrid(mapids%id_tsp, ncid)
+
+      call unc_write_1D_flowgeom_ugrid(flowgeom, mapids%id_tsp, ncid)
 
    end subroutine write_1D_flowgeom_ugrid
 

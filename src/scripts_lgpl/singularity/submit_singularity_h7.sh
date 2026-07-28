@@ -50,6 +50,10 @@ dimrFile=dimr_config.xml
 # This setting might help to prevent errors due to temporary locking of NetCDF files. 
 export HDF5_USE_FILE_LOCKING=FALSE
 
+# Pinning might be the default Slurm setting and blocks optimal usage
+# of the (possibly virtual) computational node. Pinning might be beneficial when sharing a node with other jobs.
+# The following line prevents pinning:
+export SLURM_CPU_BIND=none
 
 # Stop the computation after an error occurs.
 set -e

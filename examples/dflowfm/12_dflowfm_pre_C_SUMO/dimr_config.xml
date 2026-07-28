@@ -27,7 +27,7 @@
         <library>cosumo_bmi</library>
         <workingDir>cosumo</workingDir>
         <!-- component specific -->
-        <inputFile>CSUMOsettings.xml</inputFile>
+        <inputFile>csumo_settings.xml</inputFile>
         <parameter key="skipUniqueID" value="yes"/>
     </component>
 

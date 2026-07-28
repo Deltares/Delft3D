@@ -13,6 +13,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <format>
 
 #include "monadic_utils.hpp"
 #include "parsing_utils.hpp"
@@ -289,4 +290,44 @@ namespace pre_c_sumo
     std::string_view CSumoSettingsReader::fileVersion() const { return file_version_; }
 
     const std::vector<DiffuserSettings>& CSumoSettingsReader::diffusers() const { return diffusers_; }
+
+    const std::filesystem::path DiffuserSettings::ff2nfFilepath(int subgrid_model_nr, double current_time_seconds) const
+    {
+        const std::string run_id = "preC-SUMO"; // TODO: obtain this from the far-field model / coupling state
+        return ff2nf_dir /
+               std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id, subgrid_model_nr, current_time_seconds / 60.0);
+    }
+
+    const std::filesystem::path DiffuserSettings::nf2ffFilepath(int subgrid_model_nr, double current_time_seconds) const
+    {
+        const std::string run_id = "preC-SUMO"; // TODO: obtain this from the far-field model / coupling state
+        const std::filesystem::path nf2ff_dir =
+            ff2nf_dir.has_parent_path() ? ff2nf_dir.parent_path() / "NF2FF" : "NF2FF";
+        return nf2ff_dir /
+               std::format("NF2FF__{}_SubMod{:03d}_{:.3f}.xml", run_id, subgrid_model_nr, current_time_seconds / 60.0);
+    }
+
+    const std::vector<std::filesystem::path> CSumoSettingsReader::ff2nfFilepaths(double current_time_seconds) const
+    {
+        std::vector<std::filesystem::path> ff2nf_filepaths{};
+        for (const auto& [index, diffuser] : diffusers_ | std::views::enumerate)
+        {
+            const int subgrid_model_nr = static_cast<int>(index + 1);
+            ff2nf_filepaths.emplace_back(diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds));
+        }
+        return ff2nf_filepaths;
+    };
+
+    const std::vector<std::filesystem::path> CSumoSettingsReader::nf2ffFilepaths(double current_time_seconds) const
+    {
+        std::vector<std::filesystem::path> nf2ff_filepaths{};
+        for (const auto& [index, diffuser] : diffusers_ | std::views::enumerate)
+        {
+            const int subgrid_model_nr = static_cast<int>(index + 1);
+            nf2ff_filepaths.emplace_back(diffuser.nf2ffFilepath(subgrid_model_nr, current_time_seconds));
+        }
+        return nf2ff_filepaths;
+    };
+    ;
+
 } // namespace pre_c_sumo

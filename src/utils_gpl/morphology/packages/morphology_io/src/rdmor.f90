@@ -86,6 +86,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     integer                                                           :: ilun     !< Unit number for attribute file
     integer                                                           :: istat
     integer                                                           :: j
+    integer                                                           :: l
     integer                                                           :: lenc
     integer                                                           :: lfile    !< Length of file name
     integer                                                           :: nxxprog
@@ -264,6 +265,23 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
        end if
        !
     end if
+    !
+    ! Initialise unit_transport_conversion_factor according to Transptype
+    allocate(morpar%moroutput%unit_transport_conversion_factor(lsedtot), stat = istat)
+    do l = 1, lsedtot
+        select case (morpar%moroutput%transptype)
+            case default
+            call write_error('RDMOR: error in initialisation of Transptype',unit=lundia)
+            error = .true.
+            return
+            case (0)
+            morpar%moroutput%unit_transport_conversion_factor(l) = 1.0_dp
+            case (1)
+            morpar%moroutput%unit_transport_conversion_factor(l) = sedpar%cdryb(l)
+            case (2)
+            morpar%moroutput%unit_transport_conversion_factor(l) = sedpar%rhosol(l)
+        end select
+    end do  
     !
     call remove_double_percentiles(morpar, nxxuser, nxxprog, xxprog, max_nuserfrac, rfield)
     !

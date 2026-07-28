@@ -13,7 +13,8 @@ object LifecycleScanTestBench : BuildType({
     }
 
     templates(
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     artifactRules = """

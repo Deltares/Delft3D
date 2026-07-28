@@ -320,7 +320,7 @@ contains
             l1 = index(rec, '=') + 1
             call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
             read (rec(l2:l2), '(a1)', err=990) temp
-            operand = convert_operand_string_to_integer(temp)
+            operand = convert_legacy_operand_string_to_integer(temp)
          end block
       else
          return
@@ -2777,7 +2777,7 @@ module timespace
 
    use timespace_data
    use timespace_triangle
-   implicit none
+   implicit none(type, external)
 
 contains
    !
@@ -2933,7 +2933,7 @@ contains
       use m_reapol
       use m_filez, only: oldfil
       use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
-
+      use m_tpoly, only: inwhichpolygon
       implicit none
 
       !inputs
@@ -3115,6 +3115,7 @@ contains
       use m_delpol
       use m_reapol
       use m_filez, only: oldfil
+      use m_tpoly, only: inwhichpolygon
 
       implicit none
 
@@ -3731,9 +3732,11 @@ module m_meteo
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
    integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
    integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity   
    integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
+   integer, target :: item_general_structure_gateHeight !< Unique Item id of the structure file's 'general structure gateHeight' quantity
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
    integer, target :: item_general_structure_gateOpeningWidth !< Unique Item id of the structure file's 'general structure gateOpeningWidth' quantity
    integer, target :: item_longculvert_valve_relative_opening !< Unique Item id of the structure file's 'longculvert valveRelativeOpening' quantity
@@ -3769,6 +3772,8 @@ module m_meteo
    integer, target :: item_cloudiness !< 'cloudiness' quantity
    integer, target :: item_solar_radiation !< 'solarradiation' quantity
    integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
+   integer, target :: item_sensible_heat_flux !< 'sensibleheatflux' quantity
+   integer, target :: item_latent_heat_flux !< 'latentheathflux' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -3908,9 +3913,11 @@ contains
       item_orifice_gateLowerEdgeLevel = ec_undef_int
       item_gate_crestLevel = ec_undef_int
       item_gate_gateLowerEdgeLevel = ec_undef_int
+      item_gate_gateHeight = ec_undef_int
       item_gate_gateOpeningWidth = ec_undef_int
       item_general_structure_crestLevel = ec_undef_int
       item_general_structure_gateLowerEdgeLevel = ec_undef_int
+      item_general_structure_gateHeight = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
       item_general_structure_gateOpeningWidth = ec_undef_int
       item_longculvert_valve_relative_opening = ec_undef_int
@@ -3937,6 +3944,8 @@ contains
       item_cloudiness = ec_undef_int
       item_solar_radiation = ec_undef_int
       item_long_wave_radiation = ec_undef_int
+      item_sensible_heat_flux = ec_undef_int
+      item_latent_heat_flux = ec_undef_int
       item_hac_humidity = ec_undef_int
       item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
@@ -4097,17 +4106,25 @@ contains
 
    !> Translate FM's meteo1 'operand' enum to EC's 'operand' enum.
    subroutine operand_fm_to_ec(operand, ec_operand)
-      use timespace_parameters, only: FM_OVERRIDE => OPERAND_OVERRIDE, FM_ADD => OPERAND_ADD
+      use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_OVERRIDE_IF_MISSING, OPERAND_ADD, OPERAND_MULTIPLY, OPERAND_MINIMUM, OPERAND_MAXIMUM
       integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
       
       select case (operand)
-      case (FM_OVERRIDE)
-         ec_operand = operand_replace
-      case (FM_ADD)
-         ec_operand = operand_add
+      case (OPERAND_OVERRIDE)
+         ec_operand = EC_OPERAND_REPLACE
+      case (OPERAND_OVERRIDE_IF_MISSING)
+         ec_operand = EC_OPERAND_REPLACE_IF_MISSING
+      case (OPERAND_ADD)
+         ec_operand = EC_OPERAND_ADD
+      case (OPERAND_MULTIPLY)
+         ec_operand = EC_OPERAND_MULTIPLY
+      case (OPERAND_MINIMUM)
+         ec_operand = EC_OPERAND_MINIMUM
+      case (OPERAND_MAXIMUM)
+         ec_operand = EC_OPERAND_MAXIMUM
       case default
-         ec_operand = operand_undefined
+         ec_operand = EC_OPERAND_UNDEFINED
       end select
    end subroutine operand_fm_to_ec
 
@@ -4324,6 +4341,9 @@ contains
       case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateheight') ! flow1d gate
+         itemPtr1 => item_gate_gateHeight
+         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
@@ -4332,6 +4352,9 @@ contains
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('general_structure_gateheight') ! flow1d general structure
+         itemPtr1 => item_general_structure_gateHeight
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
@@ -4345,8 +4368,6 @@ contains
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreaklevelsandwidths')
-         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -4406,6 +4427,12 @@ contains
       case ('longwaveradiation')
          itemPtr1 => item_long_wave_radiation
          dataPtr1 => long_wave_radiation
+      case ('sensibleheatflux')
+         itemPtr1 => item_sensible_heat_flux
+         dataPtr1 => sensible_heat_flux
+      case ('latentheatflux')
+          itemPtr1 => item_latent_heat_flux
+         dataPtr1 => latent_heat_flux
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
@@ -4503,8 +4530,6 @@ contains
          isfun = find_name(sfunname, waqinput)
          itemPtr1 => item_waqsfun(isfun)
          dataPtr1 => sfuninp(isfun, :)
-      case ('initialtracer')
-         continue
       case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
@@ -4513,7 +4538,6 @@ contains
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
-         call mess(LEVEL_FATAL, 'm_meteo::fm_ext_force_name_to_ec_item: Unsupported quantity specified in ext-file (construct target field): '//qidname)
          success = .false.
       end select
    end function fm_ext_force_name_to_ec_item

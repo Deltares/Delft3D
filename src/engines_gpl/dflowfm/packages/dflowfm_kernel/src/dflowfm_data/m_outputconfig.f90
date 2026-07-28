@@ -68,6 +68,7 @@ module m_output_config
    integer, public :: IDX_HIS_RUG_RUX
    integer, public :: IDX_HIS_RUG_RUY
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE
+   integer, public :: IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE
@@ -76,6 +77,7 @@ module m_output_config
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_DISCHARGE
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL
+   integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_HEIGHT
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_S1UP
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_S1DN
@@ -120,6 +122,7 @@ module m_output_config
    integer, public :: IDX_HIS_GATEGEN_CREST_LEVEL
    integer, public :: IDX_HIS_GATEGEN_CREST_WIDTH
    integer, public :: IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL
+   integer, public :: IDX_HIS_GATEGEN_GATE_HEIGHT
    integer, public :: IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT
    integer, public :: IDX_HIS_GATEGEN_GATE_OPENING_WIDTH
    integer, public :: IDX_HIS_GATEGEN_S1UP
@@ -213,7 +216,9 @@ module m_output_config
 
    integer, public :: IDX_HIS_VIU
    integer, public :: IDX_HIS_VICWWS
+   integer, public :: IDX_HIS_VICWWS_TOTAL
    integer, public :: IDX_HIS_DIFWWS
+   integer, public :: IDX_HIS_DIFWWS_TOTAL
    integer, public :: IDX_HIS_VICWWU
    integer, public :: IDX_HIS_TKIN
    integer, public :: IDX_HIS_EPS
@@ -243,6 +248,15 @@ module m_output_config
    integer, public :: IDX_HIS_WINDX_SFERIC
    integer, public :: IDX_HIS_WINDY
    integer, public :: IDX_HIS_WINDY_SFERIC
+   integer, public :: IDX_HIS_WINDSTRESSX
+   integer, public :: IDX_HIS_WINDSTRESSX_SFERIC
+   integer, public :: IDX_HIS_WINDSTRESSY
+   integer, public :: IDX_HIS_WINDSTRESSY_SFERIC
+   integer, public :: IDX_HIS_WSTAR
+   integer, public :: IDX_HIS_OBUKHOV_LENGTH
+   integer, public :: IDX_HIS_TRANSFER_COEFF_MOMENTUM
+   integer, public :: IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT
+   integer, public :: IDX_HIS_TRANSFER_COEFF_LATENT_HEAT
    integer, public :: IDX_HIS_RAIN
    integer, public :: IDX_HIS_INFILTRATION_CAP
    integer, public :: IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL
@@ -250,6 +264,7 @@ module m_output_config
    integer, public :: IDX_HIS_AIR_DENSITY
 
    integer, public :: IDX_HIS_WIND
+   integer, public :: IDX_HIS_RWIN
    integer, public :: IDX_HIS_TAIR
    integer, public :: IDX_HIS_RHUM
    integer, public :: IDX_HIS_CLOU
@@ -407,6 +422,7 @@ module m_output_config
    integer, public :: IDX_MAP_TAIR
    integer, public :: IDX_MAP_RHUM
    integer, public :: IDX_MAP_CLOU
+   integer, public :: IDX_MAP_SECC
    integer, public :: IDX_MAP_QSUN
    integer, public :: IDX_MAP_QEVA
    integer, public :: IDX_MAP_QCON

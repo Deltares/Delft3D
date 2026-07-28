@@ -52,8 +52,9 @@ contains
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       use m_fm_erosed, only: ndx => ndx_mor
+      use network_data, only: LINK_1D_BOUNDARY
       use m_comp_gradc, only: comp_gradC
-
+      
       implicit none
 
       integer, intent(in) :: lsedtot !< number of sediment fractions
@@ -130,9 +131,10 @@ contains
                else if (.not. higherorderbedload) then! 2D
                   ! legacy code: donor-cell upwind
                   if (upwindbedload .or. Lf > Lnxi) then
-                     ! project the fluxes in flowlink direction
-                     sutot1 = csu(Lf) * sxtot(k1, l) + snu(Lf) * sytot(k1, l)
-                     sutot2 = csu(Lf) * sxtot(k2, l) + snu(Lf) * sytot(k2, l)
+                  ! project the fluxes in flowlink direction
+                  sutot1 = csu(Lf) * sxtot(k1, l) + snu(Lf) * sytot(k1, l)
+                  sutot2 = csu(Lf) * sxtot(k2, l) + snu(Lf) * sytot(k2, l)
+
                      ! upwind approximation (also at boundary cells for central scheme if jabndtreatment==0)
                      if (sutot1 > 0.0_dp .and. sutot2 > 0.0_dp) then
                         e_sn(Lf, l) = csu(Lf) * sx(k1, l) + snu(Lf) * sy(k1, l)
@@ -150,8 +152,9 @@ contains
                         
                      else
                      ! central
-                        e_sn(Lf, l) = csu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + snu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l))
-                     end if
+                     e_sn(Lf, l) = csu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + snu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l))
+                  end if
+                  e_st(Lf, l) = -snu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + csu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l)) ! to check
                   end if
                   
                end if
@@ -184,7 +187,7 @@ contains
                      cycle
                   end if
                   !
-                  if (pure1d_mor .and. kcu(Lf) == -1) then
+                  if (pure1d_mor .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                      if (link1(k2) == Lf) then
                         e_sn(Lf, l) = sx(k2, l)
                      else

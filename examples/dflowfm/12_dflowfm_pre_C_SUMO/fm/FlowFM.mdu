@@ -139,7 +139,7 @@ RestartFile                       =                 # Restart netcdf-file, eithe
 RestartDateTime                   =                 # Restart date and time when restarting from *_map.nc [YYYY-MM-DD HH:MM:SS]
 
 [external forcing]
-ExtForceFileNew                   = sources.ext     # New format for external forcings file *.ext, link with bc-format boundary conditions specification
+ExtForceFileNew                   =   # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [trachytopes]
 TrtRou                            = N               # Include alluvial and vegetation roughness (trachytopes) (Y: yes, N: no)
@@ -162,10 +162,10 @@ Wrishp_pump                       = 0               # Write shape file for pump
 OutputDir                         =                 # Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.
 WAQOutputDir                      =                 # Output directory of WAQ files, default: DFM_DELWAQ_<modelname>. Set to . for current dir.
 FlowGeomFile                      =                 # Flow geometry NetCDF *_flowgeom.nc
-ObsFile                           =                 # Points file *.xyn with observation stations with rows x, y, station name
+ObsFile                           = FlowFM.xyn      # Points file *.xyn with observation stations with rows x, y, station name
 CrsFile                           =                 # Polyline file *_crs.pli defining observation cross sections
 HisFile                           =                 # History output file *_his.nc in NetCDF format
-HisInterval                       = 0               # History output times, given as 'interval' 'start period' 'end period'
+HisInterval                       = 300             # History output times, given as 'interval' 'start period' 'end period'
 XLSInterval                       =                 # Interval between XLS history [Dd HH:MM:SS.ZZZ]
 MapFile                           =                 # Map file output file *_map.nc in NetCDF format
 MapInterval                       = 7200            # Map file output times, given as 'interval' 'start period' 'end period'

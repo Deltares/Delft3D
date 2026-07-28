@@ -31,17 +31,16 @@
 !
 
 module m_heatfluxes
-   use precision, only: dp
+   use precision, only: dp, fp
 
    implicit none
 
    real(kind=dp) :: albedo !< reflection coefficient of water () at average incidence angle of 60 deg,
    ! (albedo is .025 at angle 0 deg, 0.13 at angle 70 deg)
-   real(kind=dp) :: em !< Emissivity ()
-   real(kind=dp) :: cpa !< Specific heat air   [J/kg/K]
-   real(kind=dp) :: cpw !< Specific heat water [J/kg/K]
+   real(kind=dp), parameter :: EMMISIVITY_FACTOR = 0.985_dp !< Emissivity factor (-)
+   real(kind=dp), parameter :: SPECIFIC_HEAT_AIR = 1004.0_dp !< Specific heat air   [J/kg/K]
+   real(kind=dp), parameter :: SPECIFIC_HEAT_WATER = 3986.0_dp !< Specific heat capacity of water [J/kg/K]
    real(kind=dp) :: rcpi !< 1/(rho*cpi) m3K/J
-   real(kind=dp) :: emstf !< Em*Stf [W/m^2/K^4]
 
    real(kind=dp) :: qsunav !< Solar influx              (W/m2)
    real(kind=dp) :: qevaav !< Evaporative heat loss     (W/m2)
@@ -71,14 +70,17 @@ module m_heatfluxes
    logical :: secchi_depth_is_time_varying !< Flag to indicate if time-varying Secchi depth is available
    real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
 
+   real(kind=dp), parameter :: PRANDTL_NUMBER_SQUARED = 0.49_dp !< Prandtl number (0.7) squared for air [dimensionless]
+   real(kind=dp), parameter :: KINEMATIC_VISCOSITY_AIR = 16.0e-06_dp !< Kinematic viscosity of air [m^2/s]   at reference temperature
+   real(kind=dp), parameter :: GAS_CONSTANT_DRY_AIR = 287.05e-02_dp !< Specific gas constant for dry air [J/kg/K]
+   real(kind=dp), parameter :: GAS_CONSTANT_WATER_VAPOR = 461.495e-02_dp !< Specific gas constant for water vapor [J/kg/K]
+   real(kind=dp), parameter :: MIN_ICE_SNOW_THICKNESS = 0.001_fp !< Threshold thickness for ice/snow to overrule the underlying layer [m]
+
 contains
 
    !< sets heat flux model constants to default values
    subroutine default_heatfluxes()
       albedo = 0.06_dp
-      em = 0.985_dp
-      cpa = 1004.0_dp
-      cpw = 3986.0_dp
       jarichardsononoutput = 0
       rho_water_in_wind_stress = RHO_MEAN
 
@@ -87,10 +89,8 @@ contains
    !> calculate derived coefficients for heatfluxes
    subroutine calculate_derived_coefficients_heatfluxes()
       use m_physcoef, only: rhomean
-      use physicalconsts, only: stf
 
-      rcpi = 1.0_dp / (rhomean * cpw)
-      emstf = em * stf
+      rcpi = 1.0_dp / (rhomean * SPECIFIC_HEAT_WATER)
 
    end subroutine calculate_derived_coefficients_heatfluxes
 

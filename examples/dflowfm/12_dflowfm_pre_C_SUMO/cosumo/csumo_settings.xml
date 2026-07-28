@@ -19,11 +19,13 @@
       <!-- Position diffusor in flow computation -->
       <XYdiff>550.0 350.0</XYdiff>
       <!-- Position where to get ambient conditions -->
-      <XYambient>823.0 344.8</XYambient>
-      <XYambient>465.8 793.2</XYambient>
-      <XYambient>587.4 509.2</XYambient>
+      <XYambient>823.0 344.0</XYambient>
+      <XYambient>465.0 793.0</XYambient>
+      <XYambient>587.0 509.0</XYambient>
+      <XYambient>300.4 400.4</XYambient>
+      <XYambient>1100.5 300.5</XYambient>
       <!-- Position of the intake -->
-      <XYintake>567.0 821.3453</XYintake>
+      <XYintake>1500.6 1000.6</XYintake>
       <discharge>
         <M3s>10.0</M3s>
         <!-- Constituents in fixed order: Temperature, Salinity, Sediments, Tracers

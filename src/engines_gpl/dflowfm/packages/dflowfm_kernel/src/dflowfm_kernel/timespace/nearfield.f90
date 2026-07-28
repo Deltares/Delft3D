@@ -31,11 +31,10 @@
 
 ! Processing data obtained from nearfield models like COSUMO inside D-Flow FM
 module m_nearfield
-   use m_reallocsrc, only: reallocsrc
    use iso_c_binding
    use precision
    use MessageHandling
-   use fm_external_forcings_data
+   use m_source_sink, only: source_sinks, source_sink_all_discharges
    use m_transport
 
    implicit none(type, external)
@@ -159,7 +158,7 @@ contains
       nf_numintake = 0
       nf_numsour = 0
       nf_numsink = 0
-      num_source_sink_for_nearfield = 0
+      source_sinks%num_nearfield = 0
       nf_entr_start = 0
       nf_entr_end = 0
       !
@@ -310,14 +309,14 @@ contains
       ! Body
       !
       ! Reset the FM dimensions:
-      !     num_source_sink   : without num_source_sink_for_nearfield
-      !     num_source_sink_for_nearfield: 0
+      !     source_sinks%num_total   : without source_sinks%num_nearfield
+      !     source_sinks%num_nearfield: 0
       ! They will be redefined in this subroutine
-      do i = num_source_sink + 1, num_source_sink_for_nearfield
-         source_sink_area(i) = 0.0_hp
+      do i = source_sinks%num_total + 1, source_sinks%num_nearfield
+         source_sinks%area(i) = 0.0_hp
       end do
-      num_source_sink = num_source_sink - num_source_sink_for_nearfield
-      num_source_sink_for_nearfield = 0
+      source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
+      source_sinks%num_nearfield = 0
       nf_entr_max = 0
       if (NFEntrainmentMomentum > 0) then
          call realloc(nf_entr_start, nf_num_dif, keepExisting=.false., fill=0)
@@ -652,7 +651,7 @@ contains
       !
       ! Body
       if (NFEntrainmentMomentum > 0) then
-         nf_entr_start(idif) = num_source_sink + 1
+         nf_entr_start(idif) = source_sinks%num_total + 1
          nf_entr_end(idif) = nf_entr_start(idif) - 1
       end if
       ! Start with isink=2: For isink=1, q is zero, because nf_sink(i,isink-1,IS) is undefined
@@ -663,42 +662,42 @@ contains
             if (nf_sour_n(idif, isour) == 0) then
                exit ! This might happen if the number of sources is not the same for each diffuser
             end if
-            num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
-            num_source_sink = num_source_sink + 1
+            source_sinks%num_nearfield = source_sinks%num_nearfield + 1
+            source_sinks%num_total = source_sinks%num_total + 1
             if (NFEntrainmentMomentum > 0) then
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call reallocsrc(num_source_sink, 2)
+            call source_sinks%resize(source_sinks%num_total)
             !
             ! Name
-            write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
+            write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
             !
             ! Sink
-            source_sink_indices(1, num_source_sink) = nf_sink_n(idif, isink)
-            source_sink_z_bottom(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
-            source_sink_z_top(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
+            source_sinks%indices(source_sinks%num_total, 1) = nf_sink_n(idif, isink)
+            source_sinks%z_bottom(source_sinks%num_total, 1) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
+            source_sinks%z_top(source_sinks%num_total, 1) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
             !
             ! Source
-            source_sink_indices(4, num_source_sink) = nf_sour_n(idif, isour)
+            source_sinks%indices(source_sinks%num_total, 4) = nf_sour_n(idif, isour)
             if (nf_numsour == 1) then
-               source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-               source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+               source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+               source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
             else
                !
                ! Do not use NF_IH, but just NF_IZ
-               source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
-               source_sink_z_top(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+               source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
+               source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
             end if
-            call check_mixed_source_sink(num_source_sink)
+            call check_mixed_source_sink(source_sinks%num_total)
             !
             ! q = delta_IS * Q_TOT * this_cell_fraction
-            source_sink_all_discharges(1, num_source_sink) = (nf_sink(idif, isink, NF_IS) - nf_sink(idif, isink - 1, NF_IS)) * nf_q_source(idif) &
+            source_sink_all_discharges(1, source_sinks%num_total) = (nf_sink(idif, isink, NF_IS) - nf_sink(idif, isink - 1, NF_IS)) * nf_q_source(idif) &
                                                       & * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
             !
             ! Constituents: Entrainment does not cause addition
             do iconst = 1, numconst
-               source_sink_all_discharges(iconst + 1, num_source_sink) = 0.0_hp
+               source_sink_all_discharges(iconst + 1, source_sinks%num_total) = 0.0_hp
             end do
             !
             if (NFEntrainmentMomentum > 0) then
@@ -768,9 +767,9 @@ contains
          if (nf_sour_n(idif, isour) == 0) then
             exit
          end if
-         num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
-         num_source_sink = num_source_sink + 1
-         call reallocsrc(num_source_sink, 2)
+         source_sinks%num_nearfield = source_sinks%num_nearfield + 1
+         source_sinks%num_total = source_sinks%num_total + 1
+         call source_sinks%resize(source_sinks%num_total)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -778,36 +777,36 @@ contains
          end if
          !
          ! Name
-         write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
+         write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
          !
          ! Sink
-         source_sink_indices(1, num_source_sink) = 0
-         source_sink_z_bottom(1, num_source_sink) = 0.0_hp
-         source_sink_z_top(1, num_source_sink) = 0.0_hp
+         source_sinks%indices(source_sinks%num_total, 1) = 0
+         source_sinks%z_bottom(source_sinks%num_total, 1) = 0.0_hp
+         source_sinks%z_top(source_sinks%num_total, 1) = 0.0_hp
          !
          ! Source
-         source_sink_indices(4, num_source_sink) = nf_sour_n(idif, isour)
+         source_sinks%indices(source_sinks%num_total, 4) = nf_sour_n(idif, isour)
          if (nf_numsour == 1) then
-            source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-            source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+            source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+            source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
          else
             !
             ! Do not use NF_IH, but just NF_IZ
-            source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
-            source_sink_z_top(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+            source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
+            source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
          end if
-         call check_mixed_source_sink(num_source_sink)
+         call check_mixed_source_sink(source_sinks%num_total)
          !
          ! q = Q_TOT * this_cell_fraction
-         source_sink_all_discharges(1, num_source_sink) = nf_q_source(idif) * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
+         source_sink_all_discharges(1, source_sinks%num_total) = nf_q_source(idif) * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
          !
          ! Constituents: Additions as specified by NearField
          do iconst = 1, numconst
             if (iconst_operator == CONST_OPERATOR_ABSOLUTE) then
-               source_sink_all_discharges(iconst + 1, num_source_sink) = nf_const(idif, iconst)
+               source_sink_all_discharges(iconst + 1, source_sinks%num_total) = nf_const(idif, iconst)
             else
                ! Excess
-               source_sink_all_discharges(iconst + 1, num_source_sink) = nf_const(idif, iconst) + intake_avg_consts(iconst)
+               source_sink_all_discharges(iconst + 1, source_sinks%num_total) = nf_const(idif, iconst) + intake_avg_consts(iconst)
             end if
          end do
          !
@@ -832,12 +831,12 @@ contains
          ! =>
          !         ai = Atot / wi
          !
-         source_sink_area(num_source_sink) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
+         source_sinks%area(source_sinks%num_total) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
          ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
          ! To be consistent with Delft3D4, change this into: 0=north, 90=east
-         source_sink_discharge_cosine(2, num_source_sink) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
-         source_sink_discharge_sine(2, num_source_sink) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sinks%discharge_cosine(source_sinks%num_total, 2) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sinks%discharge_sine(source_sinks%num_total, 2) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
    end subroutine dischargeToSrc
 !
@@ -861,31 +860,31 @@ contains
          if (nf_intake_n(idif, iintake) == 0) then
             exit
          end if
-         num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
-         num_source_sink = num_source_sink + 1
-         call reallocsrc(num_source_sink, 2)
+         source_sinks%num_nearfield = source_sinks%num_nearfield + 1
+         source_sinks%num_total = source_sinks%num_total + 1
+         call source_sinks%resize(source_sinks%num_total)
          !
          ! Name
-         write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
+         write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
          !
          ! Sink
-         source_sink_indices(1, num_source_sink) = nf_intake_n(idif, iintake)
-         source_sink_z_bottom(1, num_source_sink) = nf_intake_z(idif, iintake)
-         source_sink_z_top(1, num_source_sink) = nf_intake_z(idif, iintake)
+         source_sinks%indices(source_sinks%num_total, 1) = nf_intake_n(idif, iintake)
+         source_sinks%z_bottom(source_sinks%num_total, 1) = nf_intake_z(idif, iintake)
+         source_sinks%z_top(source_sinks%num_total, 1) = nf_intake_z(idif, iintake)
          !
          ! Source
-         source_sink_indices(4, num_source_sink) = 0
-         source_sink_z_bottom(2, num_source_sink) = 0.0_hp
-         source_sink_z_top(2, num_source_sink) = 0.0_hp
+         source_sinks%indices(source_sinks%num_total, 4) = 0
+         source_sinks%z_bottom(source_sinks%num_total, 2) = 0.0_hp
+         source_sinks%z_top(source_sinks%num_total, 2) = 0.0_hp
          !
-         call check_mixed_source_sink(num_source_sink)
+         call check_mixed_source_sink(source_sinks%num_total)
          !
          ! q = Q_TOT * this_cell_fraction
-         source_sink_all_discharges(1, num_source_sink) = nf_q_intake(idif) * nf_intake_wght(idif, iintake) / sum_weight_intakes
+         source_sink_all_discharges(1, source_sinks%num_total) = nf_q_intake(idif) * nf_intake_wght(idif, iintake) / sum_weight_intakes
          !
          ! Constituents, not relevant for pure sinks
          do iconst = 1, numconst
-            source_sink_all_discharges(iconst + 1, num_source_sink) = 0.0_hp
+            source_sink_all_discharges(iconst + 1, source_sinks%num_total) = 0.0_hp
          end do
       end do
    end subroutine intakesToSrc
@@ -941,11 +940,11 @@ contains
             nk = nf_sinkid(idif, i - nf_entr_start(idif) + 1)
             umag = sqrt(ucx(nk)**2 + ucy(nk)**2)
             if (umag < eps_fp) then
-               source_sink_area(i) = 0.0_hp
+               source_sinks%area(i) = 0.0_hp
             else
-               source_sink_area(i) = source_sink_all_discharges(1, i) / umag
-               source_sink_discharge_cosine(2, i) = ucx(nk) / umag
-               source_sink_discharge_sine(2, i) = ucy(nk) / umag
+               source_sinks%area(i) = source_sinks%discharge(i) / umag
+               source_sinks%discharge_cosine(i, 2) = ucx(nk) / umag
+               source_sinks%discharge_sine(i, 2) = ucy(nk) / umag
             end if
          end do
       end do
@@ -969,26 +968,26 @@ contains
          !
          ! Check if new sink coincides with an already existing source
          ! Horizontally:
-         if (source_sink_indices(1, num_source_sink) == source_sink_indices(4, i) .and. source_sink_indices(1, num_source_sink) /= 0) then
+         if (source_sinks%indices(num_source_sink, 1) == source_sinks%indices(i, 4) .and. source_sinks%indices(num_source_sink, 1) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (source_sink_z_top(1, num_source_sink) > source_sink_z_bottom(2, i) .and. source_sink_z_top(2, i) > source_sink_z_bottom(1, num_source_sink)) then
-               write (message, '(5a,i0)') "The sink location of '", trim(source_sink_name(num_source_sink)), &
-                                      & "' coincides with the source location of '", trim(source_sink_name(i)), &
-                                      & "'. Horizontal cell index: ", source_sink_indices(1, num_source_sink)
+            if (source_sinks%z_top(num_source_sink, 1) > source_sinks%z_bottom(i, 2) .and. source_sinks%z_top(i, 2) > source_sinks%z_bottom(num_source_sink, 1)) then
+               write (message, '(5a,i0)') "The sink location of '", trim(source_sinks%name(num_source_sink)), &
+                                      & "' coincides with the source location of '", trim(source_sinks%name(i)), &
+                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, 1)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if
          !
          ! Check if new source coincides with an already existing sink
          ! Horizontally:
-         if (source_sink_indices(4, num_source_sink) == source_sink_indices(1, i) .and. source_sink_indices(4, num_source_sink) /= 0) then
+         if (source_sinks%indices(num_source_sink, 4) == source_sinks%indices(i, 1) .and. source_sinks%indices(num_source_sink, 4) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (source_sink_z_top(2, num_source_sink) > source_sink_z_bottom(1, i) .and. source_sink_z_top(1, i) > source_sink_z_bottom(2, num_source_sink)) then
-               write (message, '(5a,i0)') "The source location of '", trim(source_sink_name(num_source_sink)), &
-                                      & "' coincides with the sink location of '", trim(source_sink_name(i)), &
-                                      & "'. Horizontal cell index: ", source_sink_indices(4, num_source_sink)
+            if (source_sinks%z_top(num_source_sink, 2) > source_sinks%z_bottom(i, 1) .and. source_sinks%z_top(i, 1) > source_sinks%z_bottom(num_source_sink, 2)) then
+               write (message, '(5a,i0)') "The source location of '", trim(source_sinks%name(num_source_sink)), &
+                                      & "' coincides with the sink location of '", trim(source_sinks%name(i)), &
+                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, 4)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if

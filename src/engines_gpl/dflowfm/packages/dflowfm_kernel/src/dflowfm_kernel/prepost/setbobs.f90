@@ -51,6 +51,7 @@ contains
       use m_longculverts, only: find1d2dculvertlinks, longculvertsToProfs
       use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use unstruc_model, only: md_convertlongculverts
+      use network_data, only: LINK_1D_BOUNDARY, LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
@@ -139,7 +140,7 @@ contains
                ibotL = 0
             end if
             bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, blu(Lf), ibotL)
-            if (jaconveyance2D >= 1) then
+            if (jaconveyance2D >= 1 .and. (ibedlevtyp >= 3 .and. ibedlevtyp <= 5)) then
                if (zk(k1) == dmiss) then
                   bob(1, Lf) = zkuni
                else
@@ -177,21 +178,20 @@ contains
                cycle ! skip update of bobs for structures
             end if
 
-            n1 = ln(1, L)
-            n2 = ln(2, L) ! flow ref
-            k1 = lncn(1, L)
-            k2 = lncn(2, L) ! net  ref
-            zn1 = zk(k1)
-            if (zn1 == dmiss) then
-               zn1 = zkuni
-            end if
-            zn2 = zk(k2)
-            if (zn2 == dmiss) then
-               zn2 = zkuni
-            end if
+            if (kcu(L) == LINK_1D) then ! 1D link
 
-            if (kcu(L) == 1) then ! 1D link
-
+               n1 = ln(1, L)
+               n2 = ln(2, L) ! flow ref
+               k1 = lncn(1, L)
+               k2 = lncn(2, L) ! net  ref
+               zn1 = zk(k1)
+               if (zn1 == dmiss) then
+                  zn1 = zkuni
+               end if
+               zn2 = zk(k2)
+               if (zn2 == dmiss) then
+                  zn2 = zkuni
+               end if
                if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! tegeldieptes celcentra ! TODO: [TRUNKMERGE] WO/BJ: do we need stm_included in this if (consistent?)
                   if (stm_included) then
                      bl1 = bl(n1)
@@ -239,7 +239,7 @@ contains
             zn2 = zkuni
          end if
 
-         if (kcu(L) == 3) then ! 1D2D internal link, bobs at minimum
+         if (kcu(L) == LINK_1D2D_INTERNAL) then ! 1D2D internal link, bobs at minimum
             if (kcs(n1) == 21) then
                bedlevel_at_link = bl(n1)
                call get2Dnormal(n1, xn, yn) ! xn, yn = 2D land normal vector pointing upward, both zero = flat
@@ -257,7 +257,7 @@ contains
             bob0(2, L) = bedlevel_at_link ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
-         else if (kcu(L) == BEDLEV_TYPE_MIN) then ! left right
+         else if (kcu(L) == LINK_1D2D_LONGITUDINAL) then ! left right
             bedlevel_at_link = min(zn1, zn2)
             bob(1, L) = zn1
             bob(2, L) = zn2
@@ -265,7 +265,7 @@ contains
             bob0(2, L) = zn2
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
-         else if (kcu(L) == 5 .or. kcu(L) == 7) then ! keep 1D and 2D levels
+         else if (kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then ! keep 1D and 2D levels
             if (bl(n1) /= 1.0e30_dp) then
                bob(1, L) = bl(n1)
             else
@@ -312,13 +312,13 @@ contains
             end if
          end if
 
-         if (kcu(L) == -1) then ! 1D randjes extrapoleren voor 1D straight channel convecyance testcase
+         if (kcu(L) == LINK_1D_BOUNDARY) then ! 1D randjes extrapoleren voor 1D straight channel convecyance testcase
             k1 = lncn(1, L)
             k2 = lncn(2, L)
             k3 = 0
             do k = 1, nd(n2)%lnx
                LL = abs(nd(n2)%ln(k))
-               if (kcu(LL) == 1) then
+               if (kcu(LL) == LINK_1D) then
                   if (nd(n2)%ln(k) < 0) then
                      k3 = lncn(2, LL)
                   end if

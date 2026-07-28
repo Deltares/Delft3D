@@ -621,7 +621,7 @@ void piTimeSeriesSAX2Handler::write(string filename, vector<piTimeSeries> series
     // xml output
 #ifdef _WIN32
     wofstream xmlFile;
-    xmlFile.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>));
+    xmlFile.imbue(std::locale(std::locale{}, new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>));
 #else
     ofstream xmlFile;
 #endif

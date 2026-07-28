@@ -176,9 +176,6 @@ object StartVerschilanalyse : BuildType({
 
     features {
         swabra {}
-        provideAwsCredentials {
-            awsConnectionId = "minio_verschilanalyse_connection"
-        }
     }
 
     requirements {

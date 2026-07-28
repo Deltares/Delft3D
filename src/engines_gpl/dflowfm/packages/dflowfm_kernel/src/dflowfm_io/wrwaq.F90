@@ -334,6 +334,7 @@ end module wrwaq
 module waq
    use m_getkbotktopmax
    use precision, only: dp
+   use m_source_sink, only: source_sinks
 
    implicit none
 
@@ -434,7 +435,7 @@ contains
       use m_flowparameters
       use m_flowtimes
       use m_flow
-      use fm_external_forcings_data
+      use m_source_sink, only: source_sinks
       use m_flowgeom
       use unstruc_model
       use time_module, only: ymd2jul
@@ -469,14 +470,10 @@ contains
 
       write (lunhyd, '(a,a)') 'task      ', 'full-coupling'
 
-      if (layertype == LAYTP_SIGMA) then ! sigma-layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured sigma-layers'
-      elseif (layertype == LAYTP_Z) then ! z- or z-sigma-layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z- or z-sigma-layers'
-      elseif (layertype == LAYTP_POLYGON_MIXED) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured polygon defined z-layers'
-      elseif (layertype == LAYTP_DENS_SIGMA) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured density controlled sigma-layers'
+      if ((layertype == LAYTP_SIGMA) .or. (layertype == LAYTP_DENS_SIGMA)) then ! (density controlled) sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
+      elseif ((layertype == LAYTP_Z) .or. (layertype == LAYTP_POLYGON_MIXED)) then ! (polygon defined) z- or z-sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
       end if
@@ -624,15 +621,15 @@ contains
       !discharges
       !    2   14    1   '(14,2)'
       !end-discharges
-      if (num_source_sink > 0) then
+      if (source_sinks%num_total > 0) then
          ibnd = 0
          if (nopenbndsect > 0) then
             ibnd = nopenbndlin(nopenbndsect)
          end if
          write (lunhyd, '(A      )') 'sink-sources'
-         do isrc = 1, num_source_sink
-            kk1 = source_sink_indices(1, isrc)
-            kk2 = source_sink_indices(4, isrc)
+         do isrc = 1, source_sinks%num_total
+            kk1 = source_sinks%indices(isrc, 1)
+            kk2 = source_sinks%indices(isrc, 4)
             if ((kk1 == 0 .and. kk2 > 0) .or. &
                 (kk2 == 0 .and. kk1 > 0) .or. &
                 (kk1 > 0 .and. kk2 > 0)) then
@@ -655,7 +652,7 @@ contains
                   ibnd = ibnd + 1
                   kk2 = -ibnd
                end if
-               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(source_sink_name(isrc))
+               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(source_sinks%name(isrc))
             end if
          end do
          write (lunhyd, '(A      )') 'end-sink-sources'
@@ -917,7 +914,7 @@ contains
       if (numl1d > 0) then ! there is a 1D grid
          ! count 1d mesh nodes and 1d2d contacts
          do L = 1, numl1d
-            if (kn(3, L) == 1 .or. kn(3, L) == 6) then
+            if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then
                ! Regular 1D net link, or: when no cells, all 1D2D-type net links will also be included with both start and end node.
                numk1d = max(numk1d, kn(1, l), kn(2, l))
             else
@@ -1573,7 +1570,8 @@ contains
       use m_flowgeom
       use network_data
       use m_partitioninfo, only: is_ghost_node
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: nopenbndsect, nopenbndlin, openbndlin, openbndname
+      use m_source_sink, only: source_sinks
       use m_laterals, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
       use unstruc_files
       use m_sferic, only: jsferic, jasfer3D
@@ -1630,7 +1628,7 @@ contains
                y2 = 0.0_dp
             else
                n = ln(1, Lf)
-               if (kn(3, L) == 1) then ! 1D link
+               if (kn(3, L) == LINK_1D) then ! 1D link
                   ! TODO: AvD: this is probably wrong for 1D2D links (kcu==3 or 4)
                   !                    n1 = abs(lne(1,L))             ! external 1D flow node
                   !                    n2 = abs(lne(2,L))             ! internal 1D flow node
@@ -1660,16 +1658,16 @@ contains
          istart = nopenbndlin(i)
       end do
       ibnd = ndx - ndxi
-      do isrc = 1, num_source_sink
-         if ((source_sink_indices(1, isrc) == 0 .and. source_sink_indices(4, isrc) > 0) .or. (source_sink_indices(4, isrc) == 0 .and. source_sink_indices(1, isrc) > 0)) then
+      do isrc = 1, source_sinks%num_total
+         if ((source_sinks%indices(isrc, 1) == 0 .and. source_sinks%indices(isrc, 4) > 0) .or. (source_sinks%indices(isrc, 4) == 0 .and. source_sinks%indices(isrc, 1) > 0)) then
             ! This is a boundary condition within the current domain
             ibnd = ibnd + 1
-            if (source_sink_indices(1, isrc) /= 0) then
-               kk = source_sink_indices(1, isrc)
+            if (source_sinks%indices(isrc, 1) /= 0) then
+               kk = source_sinks%indices(isrc, 1)
             else
-               kk = source_sink_indices(4, isrc)
+               kk = source_sinks%indices(isrc, 4)
             end if
-            sectionname = makesectionname('src_', source_sink_name(isrc))
+            sectionname = makesectionname('src_', source_sinks%name(isrc))
             write (lunbnd, '(a)') sectionname ! Section name
             write (lunbnd, '(i8)') 1 ! Nr of source links in section
             write (lunbnd, '(i8,4f18.8)') - (ibnd), xz(kk), yz(kk), xz(kk), yz(kk)
@@ -1835,8 +1833,8 @@ contains
             if (kmx > 0) then
                qwwaq = 0.0_dp
             end if
-            if (num_source_sink > 0) then
-               source_sink_cumulative_discharge_waq = 0.0_dp ! Reset accumulated discharges
+            if (source_sinks%num_total > 0) then
+               source_sinks%cumulative_discharge_waq = 0.0_dp ! Reset accumulated discharges
             end if
             if (numlatsg > 0) then
                qlatwaq = 0.0_dp ! Reset accumulated discharges
@@ -1853,8 +1851,8 @@ contains
       if (kmx > 0) then
          qwwaq = 0.0_dp ! Reset accumulated discharges
       end if
-      if (num_source_sink > 0) then
-         source_sink_cumulative_discharge_waq = 0.0_dp ! Reset accumulated discharges
+      if (source_sinks%num_total > 0) then
+         source_sinks%cumulative_discharge_waq = 0.0_dp ! Reset accumulated discharges
       end if
       if (numlatsg > 0) then
          qlatwaq = 0.0_dp ! Reset accumulated discharges
@@ -2035,7 +2033,7 @@ contains
       if (waqpar%kmxnxa > 1) then
          waqpar%num_exchanges = waqpar%noq12 + waqpar%numsrcwaq + waqpar%numlatwaq + ndxi * waqpar%kmxnxa
       else
-         waqpar%num_exchanges = waqpar%noq12 + num_source_sink + waqpar%numlatwaq
+         waqpar%num_exchanges = waqpar%noq12 + source_sinks%num_total + waqpar%numlatwaq
       end if
       call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.false., fill=0)
 
@@ -2273,7 +2271,7 @@ contains
    subroutine waq_prepare_src()
       use m_flowgeom
       use m_flow
-      use fm_external_forcings_data
+      use m_source_sink, only: source_sinks
       use m_alloc
       use messagehandling, only: msgbuf, err_flush
       implicit none
@@ -2284,19 +2282,19 @@ contains
 
       waqpar%numsrcbnd = 0
       waqpar%numsrcwaq = 0
-      if (num_source_sink == 0) then
+      if (source_sinks%num_total == 0) then
          return ! skip is no resources
       end if
-      call realloc(source_sink_waq_index, num_source_sink, keepexisting=.false., fill=-1)
+      call realloc(source_sinks%waq_index, source_sinks%num_total, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
-      do isrc = 1, num_source_sink
-         kk1 = source_sink_indices(1, isrc)
-         kk2 = source_sink_indices(4, isrc)
+      do isrc = 1, source_sinks%num_total
+         kk1 = source_sinks%indices(isrc, 1)
+         kk2 = source_sinks%indices(isrc, 4)
          if (kk1 == 0 .or. kk2 == 0) then
             ! If one of the nodes is external
             if (kk1 > 0 .or. kk2 > 0) then
                ! And the other is not a ghost cell, then this is a boundary within this domain
-               source_sink_waq_index(isrc) = waqpar%numsrcwaq
+               source_sinks%waq_index(isrc) = waqpar%numsrcwaq
                waqpar%numsrcbnd = waqpar%numsrcbnd + 1
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa
             end if
@@ -2304,39 +2302,39 @@ contains
             ! This is an internal sink/source combination
             if (kk1 > 0 .and. kk2 > 0) then
                ! And the first node is not a ghost cell
-               source_sink_waq_index(isrc) = waqpar%numsrcwaq
+               source_sinks%waq_index(isrc) = waqpar%numsrcwaq
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa * waqpar%kmxnxa
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sink_name(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sinks%name(source_sinks%num_total)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
                call err_flush()
             end if
          end if
       end do
       call realloc(waqpar%ifrmtosrc, [2, waqpar%numsrcwaq], keepexisting=.true., fill=0)
-      call realloc(source_sink_cumulative_discharge_waq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
-      call realloc(source_sink_cumulative_discharge_waq_previous, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(source_sinks%cumulative_discharge_waq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(source_sinks%cumulative_discharge_waq_previous, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
       nbnd = ndx - ndxi + waqpar%numsrcbnd ! total number of boudaries
       ibnd = ndx - ndxi ! starting number for sink source boundaries
 
       ! Create additional pointer for sink/sources
-      do isrc = 1, num_source_sink
-         kk1 = source_sink_indices(1, isrc)
-         kk2 = source_sink_indices(4, isrc)
+      do isrc = 1, source_sinks%num_total
+         kk1 = source_sinks%indices(isrc, 1)
+         kk2 = source_sinks%indices(isrc, 4)
          if (kk1 == 0 .or. kk2 == 0) then
             ! This is a boundary. If kk1 or kk2 is positive, then it is in the active domain
             if (kk1 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
-                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
+                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
                end do
             else if (kk2 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
-                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
+                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
                end do
             end if
          else
@@ -2347,14 +2345,14 @@ contains
                if (waqpar%kmxnxa > 1) then
                   do K1 = 1, waqpar%kmxnxa
                      do K2 = 1, waqpar%kmxnxa
-                        kk = source_sink_waq_index(isrc) + K1 + (K2 - 1) * waqpar%kmxnxa
+                        kk = source_sinks%waq_index(isrc) + K1 + (K2 - 1) * waqpar%kmxnxa
                         waqpar%ifrmtosrc(1, kk) = waqpar%iapnt(kk1) + (K1 - 1) * waqpar%nosegl
                         waqpar%ifrmtosrc(2, kk) = waqpar%iapnt(kk2) + (K2 - 1) * waqpar%nosegl
                      end do
                   end do
                else
-                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + 1) = waqpar%iapnt(kk1)
-                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + 1) = waqpar%iapnt(kk2)
+                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + 1) = waqpar%iapnt(kk1)
+                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + 1) = waqpar%iapnt(kk2)
                end if
             end if
          end if
@@ -3144,7 +3142,7 @@ contains
    !! TODO: write out discharges to a separe (ascii) file for additional wasteloads?
       if (waqpar%numsrcwaq > 0) then
          do isrc = 1, waqpar%numsrcwaq
-            waqpar%qag(waqpar%noq12 + isrc) = source_sink_cumulative_discharge_waq(isrc) / real(ti_waq, kind=dp)
+            waqpar%qag(waqpar%noq12 + isrc) = source_sinks%cumulative_discharge_waq(isrc) / real(ti_waq, kind=dp)
          end do
       end if
 

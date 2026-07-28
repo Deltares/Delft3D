@@ -19,8 +19,8 @@ quantity          = time
 unit              = MINUTES SINCE 2001-01-01 00:00:00
 quantity          = sourcesink_temperatureDelta
 unit              = 1e-3
-0.0           25.0
-9000000000.0  25.0
+0.0           60.0
+9000000000.0  60.0
 
 [Forcing]
 name              = source

@@ -2716,79 +2716,67 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "SedOXYDem ","TotalDepth",  21,"N","x",1
 "SedOXYDem ","COXSOD    ",  22,"Y","x",1
 "SedOXYDem ","OOXSOD    ",  23,"Y","x",1
-"TF_Green  ","Temp      ",   1,"Y","x",1
-"TF_Green  ","TcGroGreen",   2,"Y","x",1
-"TF_Green  ","TcDecGreen",   3,"Y","x",1
-"TF_Diat   ","Temp      ",   1,"Y","x",1
-"TF_Diat   ","TcGroDiat ",   2,"Y","x",1
-"TF_Diat   ","TcDecDiat ",   3,"Y","x",1
-"DL_Green  ","DayL      ",   1,"Y","x",1
-"DL_Green  ","OptDLGreen",   2,"Y","x",1
-"DL_Diat   ","DayL      ",   1,"Y","x",1
-"DL_Diat   ","OptDLDiat ",   2,"Y","x",1
 "DL_DiatS1 ","DayL      ",   1,"Y","x",1
 "DL_DiatS1 ","OptDLDiaS1",   2,"Y","x",1
-"NLGreen   ","PrfNH4gree",   1,"Y","x",1
-"NLGreen   ","KMDINgreen",   2,"Y","x",1
-"NLGreen   ","KMPgreen  ",   3,"Y","x",1
-"NLGreen   ","KMSigreen ",   4,"O"," ",1
-"NLGreen   ","NH4       ",   5,"N","x",1
-"NLGreen   ","NO3       ",   6,"N","x",1
-"NLGreen   ","PO4       ",   7,"N","x",1
-"NLGreen   ","Si        ",   8,"O"," ",1
-"NLDiat    ","PrfNH4diat",   1,"Y","x",1
-"NLDiat    ","KMDINdiat ",   2,"Y","x",1
-"NLDiat    ","KMPdiat   ",   3,"Y","x",1
-"NLDiat    ","KMSidiat  ",   4,"Y","x",1
-"NLDiat    ","NH4       ",   5,"N","x",1
-"NLDiat    ","NO3       ",   6,"N","x",1
-"NLDiat    ","PO4       ",   7,"N","x",1
-"NLDiat    ","Si        ",   8,"N","x",1
-"Rad_Green ","Depth     ",   1,"N","x",1
-"Rad_Green ","Rad       ",   2,"N","x",1
-"Rad_Green ","RadSatGree",   3,"Y","x",1
-"Rad_Green ","ExtVl     ",   4,"N","x",1
-"Rad_Green ","TFGroGreen",   5,"Y","x",1
-"Rad_Diat  ","Depth     ",   1,"N","x",1
-"Rad_Diat  ","Rad       ",   2,"N","x",1
-"Rad_Diat  ","RadSatDiat",   3,"Y","x",1
-"Rad_Diat  ","ExtVl     ",   4,"N","x",1
-"Rad_Diat  ","TFGroDiat ",   5,"Y","x",1
 "Rad_DiatS1","Depth     ",   1,"N","x",1
 "Rad_DiatS1","RadBot    ",   2,"N","x",1
 "Rad_DiatS1","RadSatDiS1",   3,"Y","x",1
 "Rad_DiatS1","ExtVl     ",   4,"N","x",1
 "Rad_DiatS1","TFGroDiat ",   5,"Y","x",1
-"GroMrt_Gre","Green     ",   1,"N","x",1
-"GroMrt_Gre","LimDLGreen",   2,"Y","x",1
-"GroMrt_Gre","LimNutGree",   3,"Y","x",1
-"GroMrt_Gre","LimRadGree",   4,"Y","x",1
-"GroMrt_Gre","TFGroGreen",   5,"Y","x",1
-"GroMrt_Gre","TFMrtGreen",   6,"Y","x",1
-"GroMrt_Gre","PPMaxGreen",   7,"Y","x",1
-"GroMrt_Gre","MRespGreen",   8,"Y","x",1
-"GroMrt_Gre","GRespGreen",   9,"Y","x",1
-"GroMrt_Gre","Mort0Green",  10,"Y","x",1
-"GroMrt_Gre","MortSGreen",  11,"Y","x",1
-"GroMrt_Gre","SalM1Green",  12,"O","x",1
-"GroMrt_Gre","SalM2Green",  13,"O","x",1
-"GroMrt_Gre","Salinity  ",  14,"Y","x",1
-"GroMrt_Gre","MinGreen  ",  15,"Y","x",1
-"GroMrt_Dia","Diat      ",   1,"N","x",1
-"GroMrt_Dia","LimDLdiat ",   2,"Y","x",1
-"GroMrt_Dia","LimNutDiat",   3,"Y","x",1
-"GroMrt_Dia","LimRadDiat",   4,"Y","x",1
-"GroMrt_Dia","TFGroDiat ",   5,"Y","x",1
-"GroMrt_Dia","TFMrtDiat ",   6,"Y","x",1
-"GroMrt_Dia","PPMaxDiat ",   7,"Y","x",1
-"GroMrt_Dia","MRespDiat ",   8,"Y","x",1
-"GroMrt_Dia","GRespDiat ",   9,"Y","x",1
-"GroMrt_Dia","Mort0Diat ",  10,"Y","x",1
-"GroMrt_Dia","MortSDiat ",  11,"Y","x",1
-"GroMrt_Dia","SalM1Diat ",  12,"O","x",1
-"GroMrt_Dia","SalM2Diat ",  13,"O","x",1
-"GroMrt_Dia","Salinity  ",  14,"Y","x",1
-"GroMrt_Dia","MinDiat   ",  15,"Y","x",1
+"GroMrt_Gre","Temp      ",   1,"Y","x",1
+"GroMrt_Gre","TcGroGreen",   2,"Y","x",1
+"GroMrt_Gre","TcDecGreen",   3,"Y","x",1
+"GroMrt_Gre","DayL      ",   4,"Y","x",1
+"GroMrt_Gre","OptDLGreen",   5,"Y","x",1
+"GroMrt_Gre","PrfNH4gree",   6,"Y","x",1
+"GroMrt_Gre","KMDINgreen",   7,"Y","x",1
+"GroMrt_Gre","KMPgreen  ",   8,"Y","x",1
+"GroMrt_Gre","KMSigreen ",   9,"O"," ",1
+"GroMrt_Gre","NH4       ",  10,"N","x",1
+"GroMrt_Gre","NO3       ",  11,"N","x",1
+"GroMrt_Gre","PO4       ",  12,"N","x",1
+"GroMrt_Gre","Si        ",  13,"O"," ",1
+"GroMrt_Gre","Depth     ",  14,"N","x",1
+"GroMrt_Gre","Rad       ",  15,"N","x",1
+"GroMrt_Gre","RadSatGree",  16,"Y","x",1
+"GroMrt_Gre","ExtVl     ",  17,"N","x",1
+"GroMrt_Gre","Green     ",  18,"N","x",1
+"GroMrt_Gre","PPMaxGreen",  19,"Y","x",1
+"GroMrt_Gre","MRespGreen",  20,"Y","x",1
+"GroMrt_Gre","GRespGreen",  21,"Y","x",1
+"GroMrt_Gre","Mort0Green",  22,"Y","x",1
+"GroMrt_Gre","MortSGreen",  23,"Y","x",1
+"GroMrt_Gre","SalM1Green",  24,"O","x",1
+"GroMrt_Gre","SalM2Green",  25,"O","x",1
+"GroMrt_Gre","Salinity  ",  26,"Y","x",1
+"GroMrt_Gre","MinGreen  ",  27,"Y","x",1
+"GroMrt_Dia","Temp      ",   1,"Y","x",1
+"GroMrt_Dia","TcGroDiat ",   2,"Y","x",1
+"GroMrt_Dia","TcDecDiat ",   3,"Y","x",1
+"GroMrt_Dia","DayL      ",   4,"Y","x",1
+"GroMrt_Dia","OptDLDiat ",   5,"Y","x",1
+"GroMrt_Dia","PrfNH4diat",   6,"Y","x",1
+"GroMrt_Dia","KMDINdiat ",   7,"Y","x",1
+"GroMrt_Dia","KMPdiat   ",   8,"Y","x",1
+"GroMrt_Dia","KMSidiat  ",   9,"Y","x",1
+"GroMrt_Dia","NH4       ",  10,"N","x",1
+"GroMrt_Dia","NO3       ",  11,"N","x",1
+"GroMrt_Dia","PO4       ",  12,"N","x",1
+"GroMrt_Dia","Si        ",  13,"N","x",1
+"GroMrt_Dia","Depth     ",  14,"N","x",1
+"GroMrt_Dia","Rad       ",  15,"N","x",1
+"GroMrt_Dia","RadSatDiat",  16,"Y","x",1
+"GroMrt_Dia","ExtVl     ",  17,"N","x",1
+"GroMrt_Dia","Diat      ",  18,"N","x",1
+"GroMrt_Dia","PPMaxDiat ",  19,"Y","x",1
+"GroMrt_Dia","MRespDiat ",  20,"Y","x",1
+"GroMrt_Dia","GRespDiat ",  21,"Y","x",1
+"GroMrt_Dia","Mort0Diat ",  22,"Y","x",1
+"GroMrt_Dia","MortSDiat ",  23,"Y","x",1
+"GroMrt_Dia","SalM1Diat ",  24,"O","x",1
+"GroMrt_Dia","SalM2Diat ",  25,"O","x",1
+"GroMrt_Dia","Salinity  ",  26,"Y","x",1
+"GroMrt_Dia","MinDiat   ",  27,"Y","x",1
 "GroMrt_DS1","DiatS1    ",   1,"N","x",1
 "GroMrt_DS1","LimDLdiaS1",   2,"Y","x",1
 "GroMrt_DS1","LimRadDiS1",   3,"Y","x",1
@@ -2819,40 +2807,25 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "GroMrt_DS1","FrMinS1Bac",  28,"Y","x",1
 "GroMrt_DS1","DELT      ",  29,"N","x",1
 "GroMrt_DS1","NH4Crit   ",  30,"Y","x",1
-"PPrLim    ","fPPGreen  ",   1,"N","x",1
-"PPrLim    ","NCRatGreen",   2,"Y","x",1
-"PPrLim    ","PCRatGreen",   3,"Y","x",1
-"PPrLim    ","fPPDiat   ",   4,"Y","x",1
-"PPrLim    ","NCRatDiat ",   5,"Y","x",1
-"PPrLim    ","PCRatDiat ",   6,"Y","x",1
-"PPrLim    ","SCRatDiat ",   7,"Y","x",1
-"PPrLim    ","DELT      ",   8,"N","x",1
-"PPrLim    ","NH4       ",   9,"N","x",1
-"PPrLim    ","NO3       ",  10,"N","x",1
-"PPrLim    ","PO4       ",  11,"N","x",1
-"PPrLim    ","Si        ",  12,"Y","x",1
-"NutUpt_Alg","fcPPGreen ",   1,"N","x",1
-"NutUpt_Alg","NCRatGreen",   2,"Y","x",1
-"NutUpt_Alg","PCRatGreen",   3,"Y","x",1
-"NutUpt_Alg","fcPPDiat  ",   4,"N","x",1
-"NutUpt_Alg","NCRatDiat ",   5,"Y","x",1
-"NutUpt_Alg","PCRatDiat ",   6,"Y","x",1
-"NutUpt_Alg","SCRatDiat ",   7,"Y","x",1
-"NutUpt_Alg","DELT      ",   8,"N","x",1
-"NutUpt_Alg","NH4       ",   9,"N","x",1
-"NutUpt_Alg","NO3       ",  10,"N","x",1
-"NutUpt_Alg","NH4KRIT   ",  11,"Y","x",1
-"NutRel_Alg","fMrtGreen ",   1,"N","x",1
+"NutRel_Alg","fPPGreen  ",   1,"N","x",1
 "NutRel_Alg","NCRatGreen",   2,"Y","x",1
 "NutRel_Alg","PCRatGreen",   3,"Y","x",1
-"NutRel_Alg","FrAutGreen",   4,"Y","x",1
-"NutRel_Alg","FrDetGreen",   5,"Y","x",1
-"NutRel_Alg","fMrtDiat  ",   6,"Y","x",1
-"NutRel_Alg","NCRatDiat ",   7,"Y","x",1
-"NutRel_Alg","PCRatDiat ",   8,"Y","x",1
-"NutRel_Alg","SCRatDiat ",   9,"Y","x",1
-"NutRel_Alg","FrAutDiat ",  10,"Y","x",1
-"NutRel_Alg","FrDetDiat ",  11,"Y","x",1
+"NutRel_Alg","fPPDiat   ",   4,"Y","x",1
+"NutRel_Alg","NCRatDiat ",   5,"Y","x",1
+"NutRel_Alg","PCRatDiat ",   6,"Y","x",1
+"NutRel_Alg","SCRatDiat ",   7,"Y","x",1
+"NutRel_Alg","DELT      ",   8,"N","x",1
+"NutRel_Alg","NH4       ",   9,"N","x",1
+"NutRel_Alg","NO3       ",  10,"N","x",1
+"NutRel_Alg","PO4       ",  11,"N","x",1
+"NutRel_Alg","Si        ",  12,"Y","x",1
+"NutRel_Alg","NH4KRIT   ",  13,"Y","x",1
+"NutRel_Alg","fMrtGreen ",  14,"N","x",1
+"NutRel_Alg","fMrtDiat  ",  15,"Y","x",1
+"NutRel_Alg","FrAutGreen",  16,"Y","x",1
+"NutRel_Alg","FrDetGreen",  17,"Y","x",1
+"NutRel_Alg","FrAutDiat ",  18,"Y","x",1
+"NutRel_Alg","FrDetDiat ",  19,"Y","x",1
 "NRAlg_S1  ","fMrtGreeS1",   1,"Y","x",1
 "NRAlg_S1  ","NCRatGreen",   2,"Y","x",1
 "NRAlg_S1  ","PCRatGreen",   3,"Y","x",1

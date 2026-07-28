@@ -196,6 +196,20 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
+		<testCase name="e04_f02_c06_windfields" ref="dimr_noconf">
+            <path version="2026-06-11T12:52:41.165000">e04_wave/f02-windfields/c06</path>
+            <maxRunTime>900.0</maxRunTime>
+            <checks>
+                <file name="wavm-osaka.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="dir" toleranceAbsolute="400.0"/>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.022"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
         <testCase name="e04_f03_c01_windoncurvi" ref="dimr_trunk" ignore="false">
             <path version="2025-07-29T12:52:44.018000">e04_wave/f03-windoncurvi/c01</path>
             <maxRunTime>60.0</maxRunTime>
@@ -302,6 +316,18 @@
                     <parameters>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
                         <parameter name="nstems" toleranceAbsolute="0.00001"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+		 <!-- ======================================================================== -->
+        <testCase name="e04_f04_c08" ref="dimr_trunk">
+            <path version="2026-07-22T08:25:00">e04_wave/f04-general/c08_missing_gridvalue</path> 
+            <maxRunTime>300.0</maxRunTime>
+            <checks>
+                <file name="wavm-Waves.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
                     </parameters>
                 </file>
             </checks>
@@ -426,6 +452,30 @@
                 <file name="wavm-tst.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="0.1"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
+		<testCase name="e04_f12_c01_overallspecfile" ref="dimr_noconf">
+            <path version="2026-06-02T12:53:36.167000">e04_wave/f12_wave_spectral_cache/c01_overallspecfile</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="wave/wavm-icelandnest.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
+		<testCase name="e04_f12_c02_from_specfile" ref="dimr_noconf">
+            <path version="2026-06-02T12:53:36.167000">e04_wave/f12_wave_spectral_cache/c02_from_specfile</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="wave/wavm-iceland.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
                     </parameters>
                 </file>
             </checks>

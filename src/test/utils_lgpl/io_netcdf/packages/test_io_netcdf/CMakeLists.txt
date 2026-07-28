@@ -15,10 +15,7 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    target_link_directories(${executable_name} PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name} ${oss_dependencies} "netcdf.lib")
+    target_link_libraries(${executable_name} ${oss_dependencies} netCDF::netcdf)
 endif(WIN32)
 
 # Create the folder structure in vfproj

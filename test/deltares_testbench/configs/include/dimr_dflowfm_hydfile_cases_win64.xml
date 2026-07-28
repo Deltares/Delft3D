@@ -173,4 +173,88 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f029_c400_bubblescreen_box_model" ref="dimr_default">
+      <path version="2026-05-12T20:00:00.000000">e02_dflowfm/f029_hyd_file/c400_bubblescreen_box_model</path>
+      <programs>
+        <program ref="dimr" seq="1">
+          <arguments>
+            <argument>dimr_config_DFM.xml</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+          <arguments>
+            <argument>dimr_config_WAQ.xml</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="WAQ/deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_trLayer01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer04" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer05" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer06" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer07" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer08" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer09" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer10" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer11" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer12" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer13" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer14" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer15" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer16" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer17" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer18" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer19" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer20" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f029_c401_bubblescreen_nieuwe_meer" ref="dimr_default">
+      <path version="2026-05-12T20:00:00.000000">e02_dflowfm/f029_hyd_file/c401_bubblescreen_nieuwe_meer</path>
+      <programs>
+        <program ref="dimr" seq="1">
+          <arguments>
+            <argument>dimr_config_DFM.xml</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+          <arguments>
+            <argument>dimr_config_WAQ.xml</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="WAQ/deltashell_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_trLayer01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer03" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer04" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer05" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer06" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer07" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer08" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer09" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer10" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer11" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer12" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer13" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer14" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer15" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer16" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer17" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer18" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer19" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+            <parameter name="mesh2d_trLayer20" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
 </testCases>

@@ -1,0 +1,73 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Delft3D: Initialize Conan",
+            "type": "shell",
+            "command": "python run_conan.py initialize ${input:conanProfileMode}",
+            "problemMatcher": []
+        },
+        {
+            "label": "Delft3D: Conan install and CMake configure",
+            "type": "shell",
+            "command": "python build.py --keep-build --config ${input:config} --build-type ${input:buildType}",
+            "problemMatcher": []
+        },
+        {
+            "label": "Delft3D: Build",
+            "type": "shell",
+            "command": "python build.py --keep-build --config ${input:config} --build-type ${input:buildType} --build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "conanProfileMode",
+            "type": "pickString",
+            "description": "Select the profile mode for Conan. Select `deltares` if you have access to our package repo",
+            "options": ["deltares", "external"],
+            "default": "deltares"
+        },
+        {
+            "id": "buildType",
+            "type": "pickString",
+            "description": "Select build type",
+            "options": ["Debug", "Release", "RelWithDebInfo"],
+            "default": "Debug"
+        },
+        {
+            "id": "config",
+            "type": "pickString",
+            "description": "Select the Delft3D config",
+            "options": [
+                "all",
+                "all-testbench",
+                "fm-suite",
+                "fm-testbench",
+                "d3d4-suite",
+                "d3d4-testbench",
+                "waq-testbench",
+                "part-testbench",
+                "rr-testbench",
+                "wave-testbench",
+                "swan-testbench",
+                "dflowfm_interacter",
+                "dflowfm",
+                "dimr",
+                "drr",
+                "dwaq",
+                "dwaves",
+                "flow2d3d",
+                "swan",
+                "fbc",
+                "tools",
+                "tools_gpl"
+            ],
+            "default": "fm-suite"
+        }
+    ]
+}

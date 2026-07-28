@@ -48,17 +48,27 @@ class TestSaltLoadSteady(unittest.TestCase):
         self.assert_allclose_loose(dsle_calc_steady(**self.parameters)["salt_load_lake"], -34.315)
 
     def test_deeper_lock(self):
-        sl_high_head = dsle_calc_steady(**dict(self.parameters, head_lake=4.0, head_sea=4.0,))[
-            "salt_load_lake"
-        ]
+        sl_high_head = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                head_lake=4.0,
+                head_sea=4.0,
+            )
+        )["salt_load_lake"]
 
-        sl_low_bottom = dsle_calc_steady(**dict(self.parameters, lock_bottom=-8.0,))[
-            "salt_load_lake"
-        ]
+        sl_low_bottom = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                lock_bottom=-8.0,
+            )
+        )["salt_load_lake"]
 
-        sl_higher_bottom = dsle_calc_steady(**dict(self.parameters, lock_bottom=-2.0,))[
-            "salt_load_lake"
-        ]
+        sl_higher_bottom = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                lock_bottom=-2.0,
+            )
+        )["salt_load_lake"]
 
         # Comparison checks
         self.assertLess(-sl_higher_bottom, -self.reference_load)
@@ -74,11 +84,19 @@ class TestSaltLoadSteady(unittest.TestCase):
 
     def test_salinity_lake_sea(self):
         sl_sal_gap_smaller = dsle_calc_steady(
-            **dict(self.parameters, salinity_lake=10.0, salinity_sea=20.0,)
+            **dict(
+                self.parameters,
+                salinity_lake=10.0,
+                salinity_sea=20.0,
+            )
         )["salt_load_lake"]
 
         sl_sal_gap_wider = dsle_calc_steady(
-            **dict(self.parameters, salinity_lake=0.0, salinity_sea=30.0,)
+            **dict(
+                self.parameters,
+                salinity_lake=0.0,
+                salinity_sea=30.0,
+            )
         )["salt_load_lake"]
 
         # Comparison checks
@@ -91,11 +109,19 @@ class TestSaltLoadSteady(unittest.TestCase):
         self.assert_allclose_loose(sl_sal_gap_wider, -64.234)
 
     def test_lock_dimensions(self):
-        sl_lock_longer = dsle_calc_steady(**dict(self.parameters, lock_length=480.0,))[
-            "salt_load_lake"
-        ]
+        sl_lock_longer = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                lock_length=480.0,
+            )
+        )["salt_load_lake"]
 
-        sl_lock_wider = dsle_calc_steady(**dict(self.parameters, lock_width=24.0,))["salt_load_lake"]
+        sl_lock_wider = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                lock_width=24.0,
+            )
+        )["salt_load_lake"]
 
         # Comparison checks
         # NOTE: A longer lock does not imply more salt intrusion. A deeper or
@@ -120,20 +146,29 @@ class TestSaltLoadSteady(unittest.TestCase):
         ]
 
         for num_cycles, sl_ref in num_cycles_to_sl:
-            result = dsle_calc_steady(**dict(self.parameters, num_cycles=num_cycles,))
-
-            self.assert_allclose_loose(
-                result["salt_load_lake"], sl_ref, err_msg=f"num_cycles: {num_cycles}"
+            result = dsle_calc_steady(
+                **dict(
+                    self.parameters,
+                    num_cycles=num_cycles,
+                )
             )
 
-    def test_quicker_door_level(self):
-        sl_door_quick_open = dsle_calc_steady(**dict(self.parameters, door_time_to_open=0.0,))[
-            "salt_load_lake"
-        ]
+            self.assert_allclose_loose(result["salt_load_lake"], sl_ref, err_msg=f"num_cycles: {num_cycles}")
 
-        sl_door_quick_level = dsle_calc_steady(**dict(self.parameters, leveling_time=0.0,))[
-            "salt_load_lake"
-        ]
+    def test_quicker_door_level(self):
+        sl_door_quick_open = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                door_time_to_open=0.0,
+            )
+        )["salt_load_lake"]
+
+        sl_door_quick_level = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                leveling_time=0.0,
+            )
+        )["salt_load_lake"]
 
         # Comparison checks
         self.assertGreater(-sl_door_quick_open, -self.reference_load)
@@ -146,10 +181,19 @@ class TestSaltLoadSteady(unittest.TestCase):
 
     def test_calibration_factor(self):
         # TODO: Why do we also change num_cycles 14.4?
-        sl_ref = dsle_calc_steady(**dict(self.parameters, num_cycles=14.4,))["salt_load_lake"]
+        sl_ref = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                num_cycles=14.4,
+            )
+        )["salt_load_lake"]
 
         sl_calibration_fac = dsle_calc_steady(
-            **dict(self.parameters, num_cycles=14.4, calibration_coefficient=0.5,)
+            **dict(
+                self.parameters,
+                num_cycles=14.4,
+                calibration_coefficient=0.5,
+            )
         )["salt_load_lake"]
 
         # Comparison checks
@@ -159,9 +203,19 @@ class TestSaltLoadSteady(unittest.TestCase):
         self.assert_allclose_loose(sl_calibration_fac, -20.590)
 
     def test_symmetry_coefficient(self):
-        results_sym_0_5 = dsle_calc_steady(**dict(self.parameters, symmetry_coefficient=0.5,))
+        results_sym_0_5 = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                symmetry_coefficient=0.5,
+            )
+        )
 
-        results_sym_1_5 = dsle_calc_steady(**dict(self.parameters, symmetry_coefficient=1.5,))
+        results_sym_1_5 = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                symmetry_coefficient=1.5,
+            )
+        )
 
         sl_sym_0_5 = results_sym_0_5["salt_load_lake"]
         sl_sym_1_5 = results_sym_1_5["salt_load_lake"]
@@ -180,13 +234,16 @@ class TestSaltLoadSteady(unittest.TestCase):
         # It does not matter what direction the asymmetry is for the mass load
         # (when not flushing). Discharges flip side.
         self.assert_allclose_tight(
-            sl_sym_0_5, sl_sym_1_5,
+            sl_sym_0_5,
+            sl_sym_1_5,
         )
         self.assert_allclose_tight(
-            disch_to_lake_sym_0_5, disch_to_sea_sym_1_5,
+            disch_to_lake_sym_0_5,
+            disch_to_sea_sym_1_5,
         )
         self.assert_allclose_tight(
-            disch_to_sea_sym_0_5, disch_to_lake_sym_1_5,
+            disch_to_sea_sym_0_5,
+            disch_to_lake_sym_1_5,
         )
 
         # Check values against known good values
@@ -196,17 +253,27 @@ class TestSaltLoadSteady(unittest.TestCase):
 
     def test_ship_water_deplacement(self):
         results_ship_sea_to_lake = dsle_calc_steady(
-            **dict(self.parameters, ship_volume_sea_to_lake=5000.0,)
+            **dict(
+                self.parameters,
+                ship_volume_sea_to_lake=5000.0,
+            )
         )
         sl_ship_sea_to_lake = results_ship_sea_to_lake["salt_load_lake"]
 
         results_ship_lake_to_sea = dsle_calc_steady(
-            **dict(self.parameters, ship_volume_lake_to_sea=5000.0,)
+            **dict(
+                self.parameters,
+                ship_volume_lake_to_sea=5000.0,
+            )
         )
         sl_ship_lake_to_sea = results_ship_lake_to_sea["salt_load_lake"]
 
         results_ship_both = dsle_calc_steady(
-            **dict(self.parameters, ship_volume_sea_to_lake=5000.0, ship_volume_lake_to_sea=5000.0,)
+            **dict(
+                self.parameters,
+                ship_volume_sea_to_lake=5000.0,
+                ship_volume_lake_to_sea=5000.0,
+            )
         )
         sl_ship_both = results_ship_both["salt_load_lake"]
 
@@ -254,13 +321,17 @@ class TestSaltLoadSteady(unittest.TestCase):
     def test_bubble_screen(self):
         sl_bubble_50 = dsle_calc_steady(
             **dict(
-                self.parameters, density_current_factor_sea=0.5, density_current_factor_lake=0.5,
+                self.parameters,
+                density_current_factor_sea=0.5,
+                density_current_factor_lake=0.5,
             )
         )["salt_load_lake"]
 
         sl_bubble_30 = dsle_calc_steady(
             **dict(
-                self.parameters, density_current_factor_sea=0.25, density_current_factor_lake=0.25,
+                self.parameters,
+                density_current_factor_sea=0.25,
+                density_current_factor_lake=0.25,
             )
         )["salt_load_lake"]
 
@@ -275,11 +346,17 @@ class TestSaltLoadSteady(unittest.TestCase):
 
     def test_flushing_equal_head(self):
         results_flushing_lw = dsle_calc_steady(
-            **dict(self.parameters, flushing_discharge_low_tide=1.0,)
+            **dict(
+                self.parameters,
+                flushing_discharge_low_tide=1.0,
+            )
         )
 
         results_flushing_hw = dsle_calc_steady(
-            **dict(self.parameters, flushing_discharge_high_tide=1.0,)
+            **dict(
+                self.parameters,
+                flushing_discharge_high_tide=1.0,
+            )
         )
 
         # Comparison checks
@@ -294,35 +371,45 @@ class TestSaltLoadSteady(unittest.TestCase):
         self.assert_allclose_loose(results_flushing_hw["salt_load_lake"], -25.035)
 
     def test_low_high_tide(self):
-        results_low_tide = dsle_calc_steady(**dict(self.parameters, head_sea=-2.0,))
+        results_low_tide = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                head_sea=-2.0,
+            )
+        )
 
-        results_high_tide = dsle_calc_steady(**dict(self.parameters, head_sea=2.0,))
+        results_high_tide = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                head_sea=2.0,
+            )
+        )
 
         results_flushing_low_tide = dsle_calc_steady(
-            **dict(self.parameters, head_sea=-2.0, flushing_discharge_low_tide=1.0,)
+            **dict(
+                self.parameters,
+                head_sea=-2.0,
+                flushing_discharge_low_tide=1.0,
+            )
         )
 
         results_flushing_high_tide = dsle_calc_steady(
-            **dict(self.parameters, head_sea=2.0, flushing_discharge_high_tide=1.0,)
+            **dict(
+                self.parameters,
+                head_sea=2.0,
+                flushing_discharge_high_tide=1.0,
+            )
         )
 
         # Comparison checks
         self.assertGreater(-self.reference_load, -results_low_tide["salt_load_lake"])
         self.assertGreater(-results_high_tide["salt_load_lake"], -self.reference_load)
 
-        self.assertGreater(
-            -results_high_tide["salt_load_lake"], -results_flushing_high_tide["salt_load_lake"]
-        )
-        self.assertGreater(
-            -results_low_tide["salt_load_lake"], -results_flushing_low_tide["salt_load_lake"]
-        )
+        self.assertGreater(-results_high_tide["salt_load_lake"], -results_flushing_high_tide["salt_load_lake"])
+        self.assertGreater(-results_low_tide["salt_load_lake"], -results_flushing_low_tide["salt_load_lake"])
 
-        self.assertGreater(
-            results_low_tide["discharge_from_lake"], self.reference_results["discharge_from_lake"]
-        )
-        self.assertGreater(
-            results_high_tide["discharge_from_sea"], self.reference_results["discharge_from_sea"]
-        )
+        self.assertGreater(results_low_tide["discharge_from_lake"], self.reference_results["discharge_from_lake"])
+        self.assertGreater(results_high_tide["discharge_from_sea"], self.reference_results["discharge_from_sea"])
 
         # Check values against known good values
         self.assert_allclose_loose(results_low_tide["salt_load_lake"], -2.189)
@@ -334,13 +421,19 @@ class TestSaltLoadSteady(unittest.TestCase):
         self.assert_allclose_loose(results_flushing_high_tide["salt_load_lake"], -63.516)
 
     def test_sill(self):
-        sl_sill_sea = dsle_calc_steady(**dict(self.parameters, sill_height_sea=1.0,))[
-            "salt_load_lake"
-        ]
+        sl_sill_sea = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                sill_height_sea=1.0,
+            )
+        )["salt_load_lake"]
 
-        sl_sill_lake = dsle_calc_steady(**dict(self.parameters, sill_height_lake=1.0,))[
-            "salt_load_lake"
-        ]
+        sl_sill_lake = dsle_calc_steady(
+            **dict(
+                self.parameters,
+                sill_height_lake=1.0,
+            )
+        )["salt_load_lake"]
 
         # Comparison checks
         self.assertGreater(-self.reference_load, -sl_sill_sea)
@@ -352,18 +445,26 @@ class TestSaltLoadSteady(unittest.TestCase):
         self.assert_allclose_loose(sl_sill_lake, -26.126)
 
     def test_distance_door_bubble_screen(self):
-        base_params = dict(
-            self.parameters, density_current_factor_sea=0.25, density_current_factor_lake=0.25
-        )
+        base_params = dict(self.parameters, density_current_factor_sea=0.25, density_current_factor_lake=0.25)
 
-        sl_bubble_base = dsle_calc_steady(**dict(base_params,))["salt_load_lake"]
+        sl_bubble_base = dsle_calc_steady(
+            **dict(
+                base_params,
+            )
+        )["salt_load_lake"]
 
         sl_bubble_distance_sea = dsle_calc_steady(
-            **dict(base_params, distance_door_bubble_screen_sea=4.0,)
+            **dict(
+                base_params,
+                distance_door_bubble_screen_sea=4.0,
+            )
         )["salt_load_lake"]
 
         sl_bubble_distance_lake = dsle_calc_steady(
-            **dict(base_params, distance_door_bubble_screen_lake=4.0,)
+            **dict(
+                base_params,
+                distance_door_bubble_screen_lake=4.0,
+            )
         )["salt_load_lake"]
 
         # Comparison checks

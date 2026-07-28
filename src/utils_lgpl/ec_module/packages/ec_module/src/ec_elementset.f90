@@ -37,6 +37,7 @@ module m_ec_elementSet
    use m_ec_support
    use m_ec_alloc
    use m_alloc
+   use m_ec_utm_inverse, only: is_valid_utm_zone
    
    implicit none
    
@@ -72,6 +73,7 @@ module m_ec_elementSet
    public :: ecElementSetSetXyen
    public :: ecElementSetGetAbsZ
    public :: ecElementSetSetKbotKtop
+   public :: ecElementSetSetUTMzone
 
    interface ecElementSetGetAbsZ
       module procedure ecElementSetGetAbsZbyPtr
@@ -414,7 +416,6 @@ module m_ec_elementSet
             call set_ec_message("ERROR: ec_elementSet::ecElementSetSetZArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetZArray
-
       
       function ecElementSetSetKbotKtop(instancePtr, elementSetId, kbot, ktop, Lpointer_) result(success)
          logical                               :: success      !< function status
@@ -965,6 +966,45 @@ module m_ec_elementSet
             call set_ec_message("ERROR: ec_elementSet::ecElementSetSetRadius: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetRadius
+      
+      !> Set the spiderweb target grid utm zone
+      function ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit) result(success)
+         logical                               :: success      !< function status
+         type(tEcInstance), pointer            :: instancePtr  !< intent(in)
+         integer,                   intent(in) :: elementSetId !< unique ElementSet id
+         character(len=maxNameLen), intent(in) :: utmzone      !< utmzone target grid
+         character(len=maxNameLen), intent(in) :: gridunit     !< only do this for spherical grids
+         !
+         type(tEcElementSet), pointer :: elementSetPtr !< ElementSet corresponding to elementSetId
+         !
+         success = .false.
+         elementSetPtr => null()
+         !
+         elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
+         if (associated(elementSetPtr)) then
+            if (elementSetPtr%ofType == elmSetType_spw) then
+               if (trim(gridunit) /= 'degree' .and. trim(utmzone) /= 'undefined') then
+                  call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: " // &
+                                      "spw_utm_zone_target must be 'undefined' when specifying spiderweb grid coordinates in m.")
+                  return
+               end if
+               if (trim(gridunit) == 'degree' .and. trim(utmzone) /= 'undefined' .and. &
+                  & .not. is_valid_utm_zone(utmzone)) then
+                  call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: Invalid spw_utm_zone_target '" // &
+                                      trim(utmzone) // "'. Expected UTM zone 1..60 followed by hemisphere N or S, " // &
+                                      "for example 53N.")
+                  return
+               end if
+               elementSetPtr%utmzone = utmzone
+               elementSetPtr%gridunit = gridunit
+               success = .true.
+            else
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetUTMzone: Won't set UTM zone of target grid for this ElementSet type.")
+            end if
+         else
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: Cannot find an ElementSet with the supplied id.")
+         end if
+      end function ecElementSetSetUTMzone
       
       ! =======================================================================
       

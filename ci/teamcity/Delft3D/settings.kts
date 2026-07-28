@@ -11,7 +11,7 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.11"
+version = "2026.1"
 
 project {
 
@@ -32,7 +32,7 @@ project {
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
         param("nexus_iq_username", DslContext.getParameter("nexus_iq_username"))
         password("nexus_iq_password", DslContext.getParameter("nexus_iq_password"))
-        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
+        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@internal-artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }
@@ -49,6 +49,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
+    template(TemplateBuildConcurrency)
 
     subProject {
         id("Linux")
@@ -59,10 +60,12 @@ project {
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildType(LinuxDevContainer)
+            buildType(LinuxPython)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
+                LinuxPython,
             )
         }        
         subProject {
@@ -75,6 +78,7 @@ project {
                 LinuxReceiveH7ContainerSmokeTest,
             )
         }        
+        buildType(LinuxConanPackages)
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
@@ -83,6 +87,7 @@ project {
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
+            LinuxConanPackages,
             LinuxBuild,
             LinuxBuild2D3DSP,
             LinuxCollect,
@@ -97,8 +102,10 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsTestEnvironment)
+        buildType(WindowsCollectEnvironment)
+        buildType(WindowsConanPackages)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -106,8 +113,10 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironment,
             WindowsTestEnvironment,
+            WindowsCollectEnvironment,
+            WindowsConanPackages,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,

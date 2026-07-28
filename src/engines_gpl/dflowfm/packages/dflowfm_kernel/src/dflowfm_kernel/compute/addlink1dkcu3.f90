@@ -88,7 +88,7 @@ contains
          calcConv = 0
          if (network%loaded) then
             ! Only in case of a 1d-network, vol1 and vol1_f can be different
-            if (kcs(k1) == 1) then ! TODO: consider *also* adding storage area to the 2D side k1, if kcu(L)==5, maybe not for kcu(L)==7
+            if (kcs(k1) == 1) then ! TODO: consider *also* adding storage area to the 2D side k1, if kcu(L)==LINK_1D2D_STREETINLET, maybe not for kcu(L)==LINK_1D2D_ROOF
                hpr = s1(k1) - bob0(1, L)
                if (hpr >= 0.0_dp) then
                   if (comparereal(hu(L), hpr) == 0) then
@@ -99,7 +99,7 @@ contains
                   end if
                end if
             end if
-            if (kcs(k2) == 1) then ! TODO: consider *also* adding storage area to the 2D side k2, if kcu(L)==5, maybe not for kcu(L)==7
+            if (kcs(k2) == 1) then ! TODO: consider *also* adding storage area to the 2D side k2, if kcu(L)==LINK_1D2D_STREETINLET, maybe not for kcu(L)==LINK_1D2D_ROOF
                hpr = s1(k2) - bob0(2, L)
                if (hpr >= 0.0_dp) then
                   ! flow volume

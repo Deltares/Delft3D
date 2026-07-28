@@ -80,26 +80,22 @@ module m_fm_icecover
 
    character(len=*), parameter :: MDU_ICE_CHAPTER = 'ice' !< name of the ice chapter in the mdu file
 
+   real(fp) :: ice_wetting_drying_threshold !< Wetting drying threshold for ice growth or melt (m).
 contains
 
-!> Nullify/initialize ice data structure.
-   subroutine fm_ice_null()
-      !
-      ! Function/routine arguments
-      !
-      ! NONE
-      !
-      ! Local variables
-      !
-      integer :: istat !< status flag for allocation
-!
-!! executable statements -------------------------------------------------------
-!
-      istat = null_icecover(ice_data)
-      call fm_ice_update_all_pointers()
-   end subroutine fm_ice_null
 
-!> Update all ice data structure.
+   !> Sets ALL variables in this module to their default values.
+   !! For a reinit prior to flow computation, call reset_fm_icecover() instead.
+   subroutine default_fm_icecover()
+      integer :: istat !< status flag for deallocation
+
+      istat = clr_icecover(ice_data)
+      istat = null_icecover(ice_data)
+
+      call fm_ice_update_all_pointers()
+   end subroutine default_fm_icecover
+
+   !> Associates all FM local ice data pointers with the current ice data structure members.
    subroutine fm_ice_update_all_pointers()
       !
       ! Function/routine arguments
@@ -166,6 +162,22 @@ contains
       qh_ice2wat => ice_data%qh_ice2wat
    end subroutine fm_ice_update_spatial_pointers
 
+   !> Resets only FM ice variables intended for a restart of an already loaded model.
+   !! Upon loading of new model/MDU, use default_fm_icecover() instead.
+   subroutine reset_fm_icecover()
+      use m_flowparameters, only: epshu
+
+      ! Determine wetting-drying status for ice growth or melt for computational cell (n).
+      !
+      ! This is a trial-and-error approach. For example, variabele KFS, which indeed is meant for the wetting-drying status - isn't suited for our check because
+      ! it is based on the criterion "Volume(n) > 0.0". Thus, for very thin waterdepths (HS) computational cells are still wet. This also holds for (much) smaller
+      ! values than EPSHU. which is used for wetting-drying at flow links. The goal is to have a criterion that is close to the criterion for flow links.
+      ! In dried ares the HS values are often close to EPSHU. For example a few percent smaller. In these cells we would like to switch off ice growth or melt.
+      ! Therefore, as a first guess we propose to apply ice growth or melt only for "HS > 1.1 * EPSHU".
+      !
+      ice_wetting_drying_threshold = 1.1_fp * epshu
+   end subroutine reset_fm_icecover
+
    !> logical flag for allocation
    function fm_is_allocated_ice() result(flag)
       logical :: flag !< logical flag for allocation
@@ -203,14 +215,6 @@ contains
          call fm_ice_update_spatial_pointers()
       end if
    end subroutine fm_ice_alloc
-
-!> Clear the arrays of ice data structure.
-   subroutine fm_ice_clr()
-      integer :: istat !< status flag for allocation
-
-      istat = clr_icecover(ice_data)
-      call fm_ice_null()
-   end subroutine fm_ice_clr
 
 !> Read the ice cover module configuration from the mdu file
    subroutine fm_ice_read(md_ptr, ierror)
@@ -257,7 +261,7 @@ contains
       use m_flowgeom, only: nd
       use m_physcoef, only: vonkar
       use physicalconsts, only: celsius_to_kelvin, kelvin_to_celsius
-      use m_heatfluxes, only: cpw
+      use m_heatfluxes, only: SPECIFIC_HEAT_WATER
       use m_wind, only: air_temperature
       use ieee_arithmetic, only: ieee_is_nan
 
@@ -395,7 +399,7 @@ contains
          !
          ! Calculate heat flux out of the ocean
          !
-         qh_ice2wat(n) = rhow * cpw * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze))
+         qh_ice2wat(n) = rhow * SPECIFIC_HEAT_WATER * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze))
          !
          ! adaptation of QH_ICE2WAT conform KNMI approach (QH_ICE2WAT = 2.4 W/m2)
          !
@@ -415,6 +419,7 @@ contains
 !! let's see if we can make it gradually more modular and move functionality to the icecover_module.
    subroutine update_icecover()
       use precision, only: fp
+      use m_flow, only: hs
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
       use m_wind, only: air_temperature, rain, jarain
@@ -442,6 +447,11 @@ contains
 
          ! Compute ice growth or melt of snow and ice
          do n = 1, ndx
+
+            if (hs(n) <= ice_wetting_drying_threshold) then
+               cycle
+            end if
+
             if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
                if (qh_air2ice(n) > qh_ice2wat(n) .and. snow_thickness(n) > 0.0_fp) then
                   ! melting of snow due to heat exchange with air
