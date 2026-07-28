@@ -429,59 +429,59 @@ contains
 
                 ! make flow and dispersion arrays
                 call create_substance_dependent_flow_and_diffusion_array(substance_i, num_substances_transported, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
-                        a(iarea:), a(iflow:), flowtot(1, ith), nvdim, j(ivpnw:), &
-                        a(ivnew:), a(idisp:), disptot(1, ith), nddim, j(idpnw:), &
+                        a(iarea:), a(iflow:), flowtot(1:, ith), nvdim, j(ivpnw:), &
+                        a(ivnew:), a(idisp:), disptot(1:, ith), nddim, j(idpnw:), &
                         a(idnew:), mixlen)
 
                 ! compute variable theta coefficients
                 call calculate_theta(idt, num_cells, num_boundary_conditions, a(ivol:), num_exchanges, &
-                        num_exchanges_u_dir, num_exchanges_v_dir, j(ixpnt:), flowtot(1, ith), disptot(1, ith), &
-                        theta(1:, ith), thetaseg(1, ith), antidiffusion, iexseg (:, ith))
+                        num_exchanges_u_dir, num_exchanges_v_dir, j(ixpnt:), flowtot(1:, ith), disptot(1:, ith), &
+                        theta(1:, ith), thetaseg(1:, ith), antidiffusion, iexseg (:, ith))
 
                 if (substance_i == 1) call output_theta (num_output_variables_extra, c(ionam:), j(iiopo:), num_constants, num_spatial_parameters, &
                         num_time_functions, num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, &
-                        a(iploc:), num_defaults, thetaseg(1, ith))
+                        a(iploc:), num_defaults, thetaseg(1:, ith))
 
                 ! construct matrix
                 call fill_matrix_for_theta_algorithm(idt, num_cells, a(ivol2:), num_boundary_conditions, num_exchanges, &
-                        j(ixpnt:), flowtot(1, ith), disptot(1, ith), theta(1:, ith), gm_diag(1, ith), &
-                        iscale, gm_diac(1:, ith), fast_solver_arr_size, gm_amat(1, ith), rowpnt, &
+                        j(ixpnt:), flowtot(1:, ith), disptot(1:, ith), theta(1:, ith), gm_diag(1:, ith), &
+                        iscale, gm_diac(1:, ith), fast_solver_arr_size, gm_amat(1:, ith), rowpnt, &
                         fmat, tmat, iexseg (:, ith))
 
                 ! construct rhs
                 call fill_rhs_initial_guess_theta(idt, substance_i, num_substances_transported, num_substances_total, num_cells, &
                         a(iconc:), a(iderv:), a(ivol:), num_boundary_conditions, a(iboun:), &
-                        num_exchanges, j(ixpnt:), flowtot(1, ith), disptot(1, ith), theta(1:, ith), &
-                        gm_diac(1:, ith), iscale, gm_rhs (1, ith), gm_sol(1, ith))
+                        num_exchanges, j(ixpnt:), flowtot(1:, ith), disptot(1:, ith), theta(1:, ith), &
+                        gm_diac(1:, ith), iscale, gm_rhs (1:, ith), gm_sol(1:, ith))
 
                 ! solve linear system of equations by means of gmres to obtain local theta solution estimation
-                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1, ith), gm_sol(1, ith), num_fast_solver_vectors, gm_work(1, ith), &
-                        num_cells + num_boundary_conditions, gm_hess(1, ith), num_fast_solver_vectors + 1, iter, tol, &
-                        fast_solver_arr_size, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
-                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1, ith), iexseg (:, ith), &
+                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1:, ith), gm_sol(1:, ith), num_fast_solver_vectors, gm_work(1:, ith), &
+                        num_cells + num_boundary_conditions, gm_hess(1:, ith), num_fast_solver_vectors + 1, iter, tol, &
+                        fast_solver_arr_size, gm_amat(1:, ith), j(imat:), gm_diag(1:, ith), rowpnt, &
+                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1:, ith), iexseg (:, ith), &
                         file_unit_list(19), litrep)
 
                 ! mass balance of transport
                 call calculate_mass_balance_for_theta_algorithm(substance_i, num_substances_transported, num_substances_total, num_cells, a(iconc:), &
-                        gm_sol(1, ith), num_boundary_conditions, a(iboun:), num_exchanges, j(ixpnt:), &
-                        theta (1, ith), flowtot(1, ith), disptot(1, ith), a(imas2:), ndmpq, &
+                        gm_sol(1:, ith), num_boundary_conditions, a(iboun:), num_exchanges, j(ixpnt:), &
+                        theta (1:, ith), flowtot(1:, ith), disptot(1:, ith), a(imas2:), ndmpq, &
                         j(iqdmp:), a(idmpq:), idt)
 
                 ! apply flux corrected transport to obtain the local theta fct solution estimation
                 if (intsrt == 21)       & ! Flux correction according to Salezac
                         call apply_fct_salezac(idt, substance_i, num_substances_transported, num_substances_total, num_cells, &
-                                a(iconc:), gm_sol(1, ith), a(ivol2:), num_boundary_conditions, a(iboun:), &
+                                a(iconc:), gm_sol(1:, ith), a(ivol2:), num_boundary_conditions, a(iboun:), &
                                 num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, j(ixpnt:), &
-                                iknmkv, a(iarea:), a(ileng:), theta(1:, ith), flowtot(1, ith), &
-                                disptot(1, ith), a(imas2:), ndmpq, j(iqdmp:), &
-                                a(idmpq:), flux(1, ith), lim(1, ith), maxi (1, ith), mini   (1, ith), &
-                                l1(1, ith), l2  (1, ith), m1 (1, ith), m2   (1, ith), n1     (1, ith), &
-                                n2(1, ith))
+                                iknmkv, a(iarea:), a(ileng:), theta(1:, ith), flowtot(1:, ith), &
+                                disptot(1:, ith), a(imas2:), ndmpq, j(iqdmp:), &
+                                a(idmpq:), flux(1:, ith), lim(1:, ith), maxi (1:, ith), mini   (1:, ith), &
+                                l1(1:, ith), l2  (1:, ith), m1 (1:, ith), m2   (1:, ith), n1     (1:, ith), &
+                                n2(1:, ith))
                 if (intsrt == 22)       & ! Flux correction according to Boris and Book
                         call apply_fct_boris_book_scheme_21_22(idt, substance_i, num_substances_transported, num_substances_total, num_cells, &
-                                a(iconc:), gm_sol (1, ith), a(ivol2:), num_boundary_conditions, a(iboun:), &
+                                a(iconc:), gm_sol (1:, ith), a(ivol2:), num_boundary_conditions, a(iboun:), &
                                 num_exchanges, iknmkv, j(ixpnt:), a(iarea:), a(ileng:), &
-                                theta(1:, ith), flowtot(1, ith), intopt, a(imas2:), ndmpq, &
+                                theta(1:, ith), flowtot(1:, ith), intopt, a(imas2:), ndmpq, &
                                 j(iqdmp:), a(idmpq:))
 
             end do
