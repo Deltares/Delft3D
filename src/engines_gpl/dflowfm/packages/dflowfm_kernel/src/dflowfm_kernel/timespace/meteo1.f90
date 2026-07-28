@@ -3400,6 +3400,10 @@ contains
             call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
                ZPL, transformcoef, kcc)
 
+         case (METHOD_BILINEAR)
+
+            call bilinarc(xu, yu, zh, nx)
+
          case (METHOD_AVERAGING)
 
             ! store settings
@@ -3425,37 +3429,28 @@ contains
             end if
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
-
                n6 = 4
                allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
-
                do L = 1, lnx
-
                   xx(1, L) = xzw(ln(1, L))
                   yy(1, L) = yzw(ln(1, L))
                   xx(3, L) = xzw(ln(2, L))
                   yy(3, L) = yzw(ln(2, L))
-
                   Lk = ln2lne(L)
-
                   xx(2, L) = xk(kn(1, Lk))
                   yy(2, L) = yk(kn(1, Lk))
                   xx(4, L) = xk(kn(2, Lk))
                   yy(4, L) = yk(kn(2, Lk))
-
                end do
 
                nnn = 4 ! array nnn
-
             else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
-
                n6 = maxval(netcell%n)
                if (jsferic == 1) then
                   n6 = n6 + 2 ! safety at poles
                end if
 
                allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
-
                allocate(LnnL(n6), Lorg(n6))
 
                do n = 1, nx
@@ -3463,20 +3458,15 @@ contains
                end do
 
                deallocate(LnnL, Lorg)
-
             else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
-
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
                allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
 
                do k = 1, numk
-
                   if (jakc == 1) then
-
                      if (kcc(k) /= 1) then
                         cycle
                      end if
-
                   end if
 
                   ! get the cell list
@@ -3486,25 +3476,19 @@ contains
                      xx(i, k) = xxx(i)
                      yy(i, k) = yyy(i)
                   end do
-
                end do
 
                deallocate(xxx, yyy)
-
             end if
 
             if (jakdtree == 1) then
-
                ! initialize kdtree
                call build_kdtree(treeglob, Ns, xs, ys, ierror, jsferic, dmiss)
                if (ierror /= 0) then
-
                   ! disable kdtree
                   call delete_kdtree2(treeglob)
                   jakdtree = 0
-
                end if
-
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
@@ -3534,10 +3518,6 @@ contains
             if (jakdtree == 1) then
                call delete_kdtree2(treeglob)
             end if
-
-         case (METHOD_BILINEAR)
-
-            call bilinarc(xu, yu, zh, nx)
 
          end select
 
