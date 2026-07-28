@@ -1865,7 +1865,7 @@ contains
       call prop_get(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success) ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
       call prop_get(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
       call prop_get(md_ptr, 'output', 'NcNoForcedFlush', unc_noforcedflush, success)
-      call prop_get(md_ptr, 'output', 'OutputPolygonFile', md_map_output_polyfile, success)
+      call prop_get(md_ptr, 'output', 'MapOutputPolygonFile', md_map_output_polyfile, success)
 
       ibuf = 0
       call prop_get(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
