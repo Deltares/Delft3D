@@ -3375,6 +3375,18 @@
          </file>
       </checks>
    </testCase>
+    <testCase name="e02_f010_c078_generalstructure_time_varying_gate_height" ref="dflowfm_default">
+        <path version="2026-07-28T11:24:17.536000">e02_dflowfm/f010_structures/c078_generalstructure_time_varying_gate_height</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="dflowfmoutput/t4_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="general_structure_gate_height" toleranceAbsolute="0.0001" />
+                    <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f011_c015_sobey_uniform_squares" ref="dflowfm_default">
       <path version="2026-03-31T11:31:57.285000">e02_dflowfm/f011_wind/c015_sobey_uniform_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
