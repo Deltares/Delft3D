@@ -48,8 +48,8 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
                       item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
-                      item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
-                      item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
+                      item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateHeight, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
+                      item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
                       AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
    use m_source_sink, only: source_sinks, source_sink_all_discharges
@@ -91,6 +91,7 @@ contains
       use m_calibration_update, only: calibration_update
       use m_flow_settidepotential, only: flow_settidepotential
       use precision, only: dp
+      use m_structures, only: jaoldstr
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
@@ -102,20 +103,30 @@ contains
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_bubblescreen_discharge, item_secchi_depth
+      use m_missing, only: dmiss
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
+      ! Local variables
+      integer :: i
       integer :: i_const
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
+         real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
 
       call timstrt('External forcings', handle_ext)
 
       success = .true.
+
+      if (jaoldstr > 0 .and. ncgensg > 0) then
+         allocate(zcgen_legacy_kx3(ncgensg * 3))
+         zcgen_legacy_kx3 = dmiss
+      end if
 
       if (allocated(air_pressure)) then
          ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
@@ -190,7 +201,21 @@ contains
       end if
 
       if (ncgensg > 0) then
-         call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
+         if (jaoldstr > 0) then
+            ! Old ext-style generalstructure forcing still supplies 3 values per structure.
+            call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen_legacy_kx3, time_in_seconds)
+
+            ! Remap legacy slots 1:3 onto zcgen slots 1, 2 and 4, leaving slot 3
+            ! available for the newer time-varying gate height.
+            do i = 0, ncgensg - 1
+               zcgen(i * 4 + 1) = merge(zcgen_legacy_kx3(i * 3 + 1), zcgen(i * 4 + 1), zcgen_legacy_kx3(i * 3 + 1) /= dmiss)
+               zcgen(i * 4 + 2) = merge(zcgen_legacy_kx3(i * 3 + 2), zcgen(i * 4 + 2), zcgen_legacy_kx3(i * 3 + 2) /= dmiss)
+               zcgen(i * 4 + 4) = merge(zcgen_legacy_kx3(i * 3 + 3), zcgen(i * 4 + 4), zcgen_legacy_kx3(i * 3 + 3) /= dmiss)
+            end do
+         else
+            call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
+         end if
+
          call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
       end if
 
@@ -888,12 +913,14 @@ contains
       if (network%sts%numGates > 0) then
          call get_timespace_value_by_item(item_gate_crestLevel, time_in_seconds)
          call get_timespace_value_by_item(item_gate_gateLowerEdgeLevel, time_in_seconds)
+         call get_timespace_value_by_item(item_gate_gateHeight, time_in_seconds)
          call get_timespace_value_by_item(item_gate_gateOpeningWidth, time_in_seconds)
       end if
 
       if (network%sts%numGeneralStructures > 0) then
          call get_timespace_value_by_item(item_general_structure_crestLevel, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_gateLowerEdgeLevel, time_in_seconds)
+         call get_timespace_value_by_item(item_general_structure_gateHeight, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_crestWidth, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_gateOpeningWidth, time_in_seconds)
       end if
