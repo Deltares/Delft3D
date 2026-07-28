@@ -160,7 +160,7 @@ target_link_libraries(${library_name} PRIVATE
                       precicef
                       trachytopes_io
                       trachytopes_kernel
-                      triangle_c
+                      triangle::triangle
                       waq_definition
                       wq_processes
                       waq_process
