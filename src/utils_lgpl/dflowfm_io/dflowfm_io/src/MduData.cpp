@@ -9,7 +9,7 @@ namespace dflowfm_io
 {
     MduData MduData::CreateFromSchema(const MduSchema& schema)
     {
-        MduData mduData;
+        decltype(data_entries) entries;
 
         for (const auto& sectionSchema : schema.Sections())
         {
@@ -32,10 +32,17 @@ namespace dflowfm_io
                 }
 
                 const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
-                mduData.data_entries[key] = std::move(*value);
+                entries[key] = std::move(*value);
             }
         }
 
+        return CreateFromRawData(std::move(entries));
+    }
+
+    MduData MduData::CreateFromRawData(std::unordered_map<std::string, Value> raw_data)
+    {
+        MduData mduData;
+        mduData.data_entries = std::move(raw_data);
         return mduData;
     }
 

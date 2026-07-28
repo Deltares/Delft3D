@@ -47,7 +47,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(mduData.data_entries.empty());
+        EXPECT_FALSE(mduData.empty());
     }
 
     // -------------------------------------------------------------------------
@@ -530,22 +530,27 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 
-        for (const auto& [key, value] : mduData.data_entries)
-        {
-            const auto [sectionName, propertyKey] = SplitKey(key);
+        mduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            const auto [sectionName, propertyKey] = SplitKey(std::string(key));
 
             ASSERT_TRUE(iniData.HasSection(sectionName)) << "Missing section for MduData entry: " << sectionName;
 
             EXPECT_TRUE(iniData.GetSection(sectionName).HasProperty(propertyKey))
                 << "Missing property for MduData entry: " << sectionName << "." << propertyKey;
-        }
+        });
     }
 
     TEST_F(MduDataConverterTest, ConvertMduData_PropertyAbsentInMduData_OmittedFromIniData)
     {
-        MduData mduData = TestMduData();
-        const std::string key = FormatKey("geometry", "bedLevUni");
-        mduData.data_entries.erase(key);
+        std::unordered_map<std::string, Value> filteredKeyValuePairs;
+        const MduData completeMduData = TestMduData();
+        completeMduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            if (key == FormatKey("geometry", "bedLevUni"))
+                return; // Skip this property to simulate it being absent in MduData
+            filteredKeyValuePairs[std::string(key)] = value;
+        });
+
+        const MduData mduData = MduData::CreateFromRawData(std::move(filteredKeyValuePairs));
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 

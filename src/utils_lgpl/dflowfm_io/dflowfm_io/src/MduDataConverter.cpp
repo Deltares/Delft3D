@@ -92,7 +92,7 @@ namespace dflowfm_io
                     continue;
                 }
 
-                mduData.data_entries[key] = std::move(*converted_value);
+                mduData.setValue(key, *converted_value);
             }
         }
 
@@ -120,7 +120,7 @@ namespace dflowfm_io
                     continue;
                 }
 
-                auto value = MduValueConverter::ToString(propertySchema, mduData.data_entries.at(key));
+                auto value = MduValueConverter::ToString(propertySchema, mduData.getValue(key));
 
                 ini::IniProperty property(propertySchema.key, std::move(value), propertySchema.description);
                 iniSection.AddProperty(std::move(property));

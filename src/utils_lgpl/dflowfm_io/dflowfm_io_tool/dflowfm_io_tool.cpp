@@ -87,12 +87,11 @@ int main(int argc, char* argv[])
     cout << "\nMDU data: " << "\n\n";
 
     const MduData& data = document.GetData();
-    for (const auto& [key, value] : data.data_entries)
-    {
+    data.visitKeyValuePairs([&](std::string_view key, const Value& value) {
         cout << "  " << key << " = ";
         visit(PrintValue{}, value);
         cout << "\n";
-    }
+    });
 
     std::ostringstream stream;
     try
