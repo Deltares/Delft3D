@@ -1,13 +1,13 @@
 # Builds the dflowfm_io Python wheel.
 #
-# The native library is staged into src/dflowfm_io/_lib by the dflowfm_io_api POST_BUILD step, so the
-# wheel produced here bundles it and is self-contained (`pip install` needs nothing else).
+# Targets (build order when the wheel is built):
+#   dflowfm_io_bindings -> runs the generator scripts (regenerates the committed generated code)
+#   dflowfm_io_api      -> compiles the DLL; its POST_BUILD stages it into _lib/
+#   dflowfm_io_wheel    -> `pip wheel` packages src/ + _lib/ into a .whl (depends on the two above)
 #
-# The wheel is NOT part of the default build (it is slow and only needed when publishing). Build it
-# on demand:
+# The wheel is NOT part of the default build (slow; only needed when publishing). Build on demand:
 #     cmake --build <build-dir> --target dflowfm_io_wheel
-# or include it in the default build by configuring with:
-#     -D DFLOWFM_IO_BUILD_PYTHON_WHEEL=ON
+# or add it to the default build with: -D DFLOWFM_IO_BUILD_PYTHON_WHEEL=ON
 
 option(
 	DFLOWFM_IO_BUILD_PYTHON_WHEEL
@@ -15,19 +15,18 @@ option(
 	OFF
 )
 
-# Regenerate the ABI-coupled Python code from the C header, so it can never drift from the
-# dflowfm_io_api ABI: the ctypes bindings (base/bindings.py) and the typed MduModel accessors
-# (mdu/model.py). The generated files are committed, but rebuilt here whenever the header or the
-# generator changes.
+# Generated (committed) Python, regenerated here so it can never drift from its source:
+#   base/bindings.py + mdu/model.py  <- generate_bindings.py, from the C header
+#   mdu/schema.py                    <- generate_schema.py, from mdu.json
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
-# Shared generator infrastructure imported by both generators — a change to it can change output.
 set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator_base.py")
 set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_bindings.py")
 set(DFLOWFM_IO_GENERATED
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/model.py")
 
+# Runs generate_bindings.py (re-runs only when a DEPENDS input changes).
 add_custom_command(
 	OUTPUT ${DFLOWFM_IO_GENERATED}
 	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_BINDINGS_GENERATOR}"
@@ -36,12 +35,11 @@ add_custom_command(
 	VERBATIM
 )
 
-# Regenerate the typed per-keyword MDU schema (Layer 2, mdu/schema.py) from mdu.json, the same
-# single source the C++ core is generated from.
 set(DFLOWFM_IO_SCHEMA_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_schema.py")
 cmake_path(SET DFLOWFM_IO_MDU_JSON NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../../json/mdu.json")
 set(DFLOWFM_IO_SCHEMA "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/schema.py")
 
+# Runs generate_schema.py (re-runs only when mdu.json or the generator changes).
 add_custom_command(
 	OUTPUT "${DFLOWFM_IO_SCHEMA}"
 	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_SCHEMA_GENERATOR}"
@@ -50,6 +48,7 @@ add_custom_command(
 	VERBATIM
 )
 
+# Build this target to (re)generate the Python code on its own.
 add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
 
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
@@ -60,6 +59,7 @@ else()
 	set(_dflowfm_io_wheel_in_all "")
 endif()
 
+# The wheel itself: pip wheel packages src/ (generated code + bundled _lib/ DLL) into DFLOWFM_IO_WHEEL_DIR.
 add_custom_target(dflowfm_io_wheel ${_dflowfm_io_wheel_in_all}
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${DFLOWFM_IO_WHEEL_DIR}"
 	COMMAND ${Python3_EXECUTABLE} -m pip wheel "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -68,6 +68,5 @@ add_custom_target(dflowfm_io_wheel ${_dflowfm_io_wheel_in_all}
 	VERBATIM
 )
 
-# The wheel bundles the native library (built + staged into _lib by dflowfm_io_api) and the
-# generated bindings, so both must be up to date first.
+# Guarantees the DLL is staged and the code regenerated before pip wheel runs.
 add_dependencies(dflowfm_io_wheel dflowfm_io_api dflowfm_io_bindings)
