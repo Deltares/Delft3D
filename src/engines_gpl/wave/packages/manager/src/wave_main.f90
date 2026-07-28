@@ -157,7 +157,7 @@ function wave_init(mode_in, mdw_file) result(retval)
    integer                                      :: i_swan       ! counter
    integer                                      :: it01flow     ! reference date obtained from FLOW
    integer                                      :: mtdim
-   real                                         :: tscaleflow   ! basic time unit == flow time step (s)
+   real(hp)                                         :: tscaleflow   ! basic time unit == flow time step (s)
    real(fp)       , dimension(:,:), allocatable :: x_fp         ! Copy of x-coordinate of grid in flexible precision, needed for external forcing module
    real(fp)       , dimension(:,:), allocatable :: y_fp         ! Copy of y-coordinate of grid in flexible precision, needed for external forcing module
    character(60) , dimension(:), allocatable    :: extforce_quantities

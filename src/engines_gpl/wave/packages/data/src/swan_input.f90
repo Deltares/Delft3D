@@ -284,7 +284,7 @@ module swan_input
       real :: cftriad2
       real :: css
       real :: deltc ! used when modsim = 3: Time step in non-stat SWAN runs
-      real :: nonstat_interval ! used when modsim = 3: Interval of non-stat SWAN computation
+      real(hp) :: nonstat_interval ! used when modsim = 3: Interval of non-stat SWAN computation
       real :: deltcom ! Not used: COM write interval
       real :: inthotf
       real :: depmin
@@ -450,7 +450,7 @@ contains
       integer :: iuntim
       integer :: istat
       integer :: it01
-      real :: tscale
+      real(hp) :: tscale
       logical :: ex
       logical :: keywbased
       character(256) :: line
@@ -557,7 +557,7 @@ contains
       real :: def_enddir
       real :: def_freqmin
       real :: def_freqmax
-      real :: tscale
+      real(hp) :: tscale
       real, dimension(2) :: xy
       character(10) :: exemode
       character(10) :: versionstring
@@ -768,7 +768,7 @@ contains
       sr%tzone = 0.0
       call prop_get(mdw_ptr, 'General', 'TZone', sr%tzone)
       !
-      tscale = 60.0
+      tscale = 60.0_hp
       call prop_get(mdw_ptr, 'General', 'TScale', tscale)
       call settscale(wavedata%time, tscale)
       !

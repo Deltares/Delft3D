@@ -127,7 +127,7 @@ contains
                      e_sn(Lf, l) = 0.5_dp * (sx(k1, l) + sx(k2, l))
                   end if
                   e_st(Lf, l) = 0.0_dp
-               else ! 2D
+               else if (.not. higherorderbedload) then! 2D
                   ! legacy code: donor-cell upwind
                   if (upwindbedload .or. Lf > Lnxi) then
                      ! project the fluxes in flowlink direction
@@ -145,8 +145,13 @@ contains
                   !
                   ! Higher order central or upwind
                   else
-                     ! central approximation
-                     e_sn(Lf, l) = csu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + snu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l))
+                     ! h.o. upwind bedload
+                     if (higherorderbedload) then
+                        
+                     else
+                     ! central
+                        e_sn(Lf, l) = csu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + snu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l))
+                     end if
                   end if
                   
                end if
