@@ -133,7 +133,7 @@ contains
       use m_flowparameters, only: map_write_settings
       use m_unc_flowgeom, only: build_flowgeom
       use m_unstruc_netcdf_data, only: flowgeom_map, flowgeom_full
-      use m_unstruc_model_data, only: md_output_polyfile
+      use m_unstruc_model_data, only: md_map_output_polyfile
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -595,9 +595,9 @@ contains
       call mess(LEVEL_INFO, '**')
       call timstop(handle_extra(34)) ! end writeMDUFilepointer
       flowgeom_full = build_flowgeom(map_write_settings%bnd)
-      if (len_trim(md_output_polyfile) > 0) then
+      if (len_trim(md_map_output_polyfile) > 0) then
          allocate(flowgeom_map)
-         flowgeom_map = build_flowgeom(map_write_settings%bnd, md_output_polyfile)
+         flowgeom_map = build_flowgeom(map_write_settings%bnd, md_map_output_polyfile)
       else
          flowgeom_map => flowgeom_full
       end if
