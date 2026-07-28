@@ -3787,7 +3787,7 @@ contains
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
-      use m_unstruc_netcdf_data, only: flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom_map
 
       implicit none
 
@@ -3853,7 +3853,7 @@ contains
 
       nc_precision = netcdf_data_type(md_nc_map_precision)
 
-      if (flowgeom%ndx_out <= 0) then
+      if (flowgeom_map%ndx_out <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
          return
       end if
@@ -13796,7 +13796,7 @@ contains
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: bl, bl_min, ba
-      use m_unstruc_netcdf_data, only: flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom_map
       use m_sferic
       use m_missing
       use netcdf
@@ -13912,36 +13912,36 @@ contains
          end if
       end if
 
-      if (allocated(flowgeom%node_map_1d)) then
-         nodes_1d = flowgeom%node_map_1d
+      if (allocated(flowgeom_map%node_map_1d)) then
+         nodes_1d = flowgeom_map%node_map_1d
       else
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
+         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
       end if
 
-      if (allocated(flowgeom%face_map_2D)) then
-         faces = flowgeom%face_map_2D
+      if (allocated(flowgeom_map%face_map_2D)) then
+         faces = flowgeom_map%face_map_2D
       else
-         faces = [(i, i=1, flowgeom%mesh2d%numFace)]
+         faces = [(i, i=1, flowgeom_map%mesh2d%numFace)]
       end if
 
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
       ! All other counters (ndx, ndxi, ndx1db, lnx...) are always the global values; use m_flowgeom directly.
-      associate (ndx2d => flowgeom%mesh2d%numFace, &
-                 z2dn => flowgeom%mesh2d%nodez)
+      associate (ndx2d => flowgeom_map%mesh2d%numFace, &
+                 z2dn => flowgeom_map%mesh2d%nodez)
 
-         call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
+         call unc_write_1D_flowgeom_ugrid(flowgeom_map, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
          if (ndx2d > 0 .and. ja2D_) then
-            flowgeom%mesh2d%num_layers = layer_count
-            flowgeom%mesh2d%layertype = layer_type
-            flowgeom%mesh2d%numtopsig = numtopsig
+            flowgeom_map%mesh2d%num_layers = layer_count
+            flowgeom_map%mesh2d%layertype = layer_type
+            flowgeom_map%mesh2d%numtopsig = numtopsig
             if (layer_count > 0) then
-               flowgeom%mesh2d%layer_zs => layer_zs
-               flowgeom%mesh2d%interface_zs => interface_zs
+               flowgeom_map%mesh2d%layer_zs => layer_zs
+               flowgeom_map%mesh2d%interface_zs => interface_zs
             end if
 
-            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d)
-            call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom%edge_type)
+            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom_map%mesh2d)
+            call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom_map%edge_type)
 
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
                ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
@@ -13983,7 +13983,7 @@ contains
          ierr = nf90_enddef(ncid)
 
          !-- Start data writing (time-independent data) ------------
-         if (flowgeom%mesh1D%numNode > 0) then
+         if (flowgeom_map%mesh1D%numNode > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(nodes_1d))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(nodes_1d))
          end if
@@ -14007,7 +14007,7 @@ contains
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(faces))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(faces))
             end if
-            if (flowgeom%mesh1D%numNode > 0) then
+            if (flowgeom_map%mesh1D%numNode > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(nodes_1d))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(nodes_1d))
             end if
@@ -14107,10 +14107,10 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      if (allocated(flowgeom%node_map_1d)) then
-         nodes_1d = flowgeom%node_map_1d
+      if (allocated(flowgeom_map%node_map_1d)) then
+         nodes_1d = flowgeom_map%node_map_1d
       else
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
+         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &

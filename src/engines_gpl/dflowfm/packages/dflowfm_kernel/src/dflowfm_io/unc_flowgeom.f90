@@ -730,14 +730,14 @@ contains
 
       type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
-      character(len=*), intent(in) :: polygon_files !< Space-separated output-polygon files (e.g., *_output.pol)
+      character(len=*), intent(in), optional :: polygon_files !< Space-separated output-polygon files (e.g., *_output.pol)
       integer, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells (nonzero = include); if absent, all cells are included.
 
-      if (len_trim(polygon_files) > 0) then
+      if (present(polygon_files)) then
          cell_mask = cell_mask_from_polygon_file(polygon_files)
          call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
-      else
+      else 
          call build_flowgeom_2d(flowgeom)
          call build_flowgeom_1d(flowgeom, jabndnd)
       end if

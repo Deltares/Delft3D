@@ -508,8 +508,8 @@ module m_unstruc_netcdf_data
       integer, allocatable :: ilink_merge(:) !< like ilink_own, but from the merged restart file
    end type t_unc_merged
 
-   type(t_fm_flowgeom) :: flowgeom !< global flow geometry object to be built by build_flowgeom_2d and build_flowgeom_1d.
-
+   type(t_fm_flowgeom), pointer :: flowgeom_map => null() !< global flow geometry object, possibly cropped by a map output polygon.
+   type(t_fm_flowgeom), target :: flowgeom_full !< global flow geometry object to be built by build_flowgeom_2d and build_flowgeom_1d.
    type(t_unc_mapids) :: mapids !< Global descriptor for the (open) map-file
    integer :: ihisfile = 0 !< Global netcdf ID of the his-file
 

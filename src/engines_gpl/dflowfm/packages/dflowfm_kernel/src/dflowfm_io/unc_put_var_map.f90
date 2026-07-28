@@ -1,5 +1,5 @@
 module m_unc_put_var_map
-use m_unstruc_netcdf_data, only: t_unc_timespace_id, flowgeom
+use m_unstruc_netcdf_data, only: t_unc_timespace_id, flowgeom_map
 use m_unstruc_netcdf_types, only: t_fm_flowgeom
 use io_ugrid, only: UG_NOTIMPLEMENTED, UG_INVALID_DATALOCATION
 use netcdf, only: nf90_put_var, nf90_inquire_variable, nf90_inquire_dimension
@@ -115,8 +115,8 @@ contains
          ilocdim = 1
       end if
 
-      ndx2d     = flowgeom%mesh2d%numFace
-      n1d_write = flowgeom%mesh1D%numNode
+      ndx2d     = flowgeom_map%mesh2d%numFace
+      n1d_write = flowgeom_map%mesh1D%numNode
       last_1d = ndx2d + n1d_write
       select case (iloc)
       case (UNC_LOC_S) ! Pressure point location
@@ -270,8 +270,8 @@ contains
          jabndnd_ = 0
       end if
 
-      ndx2d     = flowgeom%mesh2d%numFace
-      n1d_write = flowgeom%mesh1D%numNode
+      ndx2d     = flowgeom_map%mesh2d%numFace
+      n1d_write = flowgeom_map%mesh1D%numNode
       last_1d = ndx2d + n1d_write
 
       select case (iloc)

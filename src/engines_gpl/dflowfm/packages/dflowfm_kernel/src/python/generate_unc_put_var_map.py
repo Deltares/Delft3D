@@ -63,11 +63,11 @@ def generate_rank1(ftype: FortranType) -> str:
       end associate
    end if
 
-   ndx2d = flowgeom%mesh2d%numFace
-   n1d_write = flowgeom%mesh1D%numNode
+   ndx2d = flowgeom_map%mesh2d%numFace
+   n1d_write = flowgeom_map%mesh1D%numNode
    iloc = iloc_in
 
-   remapping_active = flowgeom%remapping_active
+   remapping_active = flowgeom_map%remapping_active
    output_values => values
    write_surface_output = iloc == UNC_LOC_S3D .and. write_surface_data_to_map_file
 
@@ -77,7 +77,7 @@ def generate_rank1(ftype: FortranType) -> str:
       call realloc(work, ndx2d, keepExisting=.false.)
       do n = 1, ndx2d
          if (remapping_active) then
-            g = flowgeom%face_map_2D(n)
+            g = flowgeom_map%face_map_2D(n)
          else
             g = n
          end if
@@ -87,18 +87,18 @@ def generate_rank1(ftype: FortranType) -> str:
    else if (remapping_active) then
       select case (iloc)
       case (UNC_LOC_CN)
-         call realloc(work, flowgeom%mesh2d%numNode, keepExisting=.false.)
-         do i = 1, flowgeom%mesh2d%numNode
-            work(i) = values(flowgeom%node_map_2D(i))
+         call realloc(work, flowgeom_map%mesh2d%numNode, keepExisting=.false.)
+         do i = 1, flowgeom_map%mesh2d%numNode
+            work(i) = values(flowgeom_map%node_map_2D(i))
          end do
 
       case (UNC_LOC_S)
-         call realloc(work, flowgeom%ndx_out, keepExisting=.false.)
+         call realloc(work, flowgeom_map%ndx_out, keepExisting=.false.)
          do i = 1, ndx2d
-            work(i) = values(flowgeom%face_map_2D(i))
+            work(i) = values(flowgeom_map%face_map_2D(i))
          end do
          do i = 1, n1d_write
-            work(ndx2d + i) = values(flowgeom%node_map_1D(i))
+            work(ndx2d + i) = values(flowgeom_map%node_map_1D(i))
          end do
       end select
 
@@ -113,7 +113,7 @@ def generate_rank1(ftype: FortranType) -> str:
          return
       end if
       if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
-         ierr = nf90_put_var(ncid, id_var(2), output_values(1:flowgeom%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
+         ierr = nf90_put_var(ncid, id_var(2), output_values(1:flowgeom_map%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
       end if
 
    case (UNC_LOC_S) ! Pressure point location
@@ -128,31 +128,31 @@ def generate_rank1(ftype: FortranType) -> str:
 
    case (UNC_LOC_U) ! Horizontal velocity point location
       ! Internal 1d flowlinks. Horizontal position: edges in 1d mesh.
-      if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-         if (size(flowgeom%edge_map_1D, 1) > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(flowgeom%edge_map_1D(:)), start=[1, id_tsp%idx_curtime])
+      if (id_var(1) > 0 .and. flowgeom_map%mesh1D%numEdge > 0) then
+         if (size(flowgeom_map%edge_map_1D, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(1), values(flowgeom_map%edge_map_1D(:)), start=[1, id_tsp%idx_curtime])
          end if
       end if
-      if (id_var(4) > 0 .and. flowgeom%n1d2dcontacts > 0) then
+      if (id_var(4) > 0 .and. flowgeom_map%n1d2dcontacts > 0) then
          ! 1d2d contacts
-         if (size(flowgeom%contacts_map, 1) > 0) then
-            ierr = nf90_put_var(ncid, id_var(4), values(flowgeom%contacts_map(:)), start=[1, id_tsp%idx_curtime])
+         if (size(flowgeom_map%contacts_map, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(4), values(flowgeom_map%contacts_map(:)), start=[1, id_tsp%idx_curtime])
          end if
       end if
       if (remapping_active) then
          ! Reduced output: gather open 2d edges (internal+boundary) in output order, then default on closed edges.
-         n_open = flowgeom%lnx2d_int + flowgeom%lnx2d_bnd
+         n_open = flowgeom_map%lnx2d_int + flowgeom_map%lnx2d_bnd
          if (id_var(2) > 0 .and. n_open > 0) then
             call realloc(work, n_open, keepExisting=.false.)
             do i = 1, n_open
-               Lf = abs(lne2ln(numl1d + flowgeom%edge_map_2D(i)))
+               Lf = abs(lne2ln(numl1d + flowgeom_map%edge_map_2D(i)))
                work(i) = values(Lf)
             end do
             ierr = nf90_put_var(ncid, id_var(2), work(1:n_open), start=[1, id_tsp%idx_curtime])
          end if
-         if (present(default_value) .and. id_var(2) > 0 .and. flowgeom%numl2d_closed > 0) then
+         if (present(default_value) .and. id_var(2) > 0 .and. flowgeom_map%numl2d_closed > 0) then
             ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[n_open + 1, id_tsp%idx_curtime], &
-                                count=[flowgeom%numl2d_closed, 1], map=[0])
+                                count=[flowgeom_map%numl2d_closed, 1], map=[0])
          end if
       else
          lnx2d = lnxi - lnx1d
@@ -180,19 +180,19 @@ def generate_rank1(ftype: FortranType) -> str:
    case (UNC_LOC_L) ! Horizontal net link location
       if (remapping_active) then
          ! Reduced output: gather directly on output edges (all edges, including closed, carry net link data).
-         if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-            call realloc(work, flowgeom%mesh1D%numEdge, keepExisting=.false.)
-            do i = 1, flowgeom%mesh1D%numEdge
-               work(i) = values(abs(ln2lne(flowgeom%edge_map_1D(i))))
+         if (id_var(1) > 0 .and. flowgeom_map%mesh1D%numEdge > 0) then
+            call realloc(work, flowgeom_map%mesh1D%numEdge, keepExisting=.false.)
+            do i = 1, flowgeom_map%mesh1D%numEdge
+               work(i) = values(abs(ln2lne(flowgeom_map%edge_map_1D(i))))
             end do
-            ierr = nf90_put_var(ncid, id_var(1), work(1:flowgeom%mesh1D%numEdge), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(1), work(1:flowgeom_map%mesh1D%numEdge), start=[1, id_tsp%idx_curtime])
          end if
-         if (id_var(2) > 0 .and. flowgeom%mesh2d%numEdge > 0) then
-            call realloc(work, flowgeom%mesh2d%numEdge, keepExisting=.false.)
-            do i = 1, flowgeom%mesh2d%numEdge
-               work(i) = values(numl1d + flowgeom%edge_map_2D(i))
+         if (id_var(2) > 0 .and. flowgeom_map%mesh2d%numEdge > 0) then
+            call realloc(work, flowgeom_map%mesh2d%numEdge, keepExisting=.false.)
+            do i = 1, flowgeom_map%mesh2d%numEdge
+               work(i) = values(numl1d + flowgeom_map%edge_map_2D(i))
             end do
-            ierr = nf90_put_var(ncid, id_var(2), work(1:flowgeom%mesh2d%numEdge), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), work(1:flowgeom_map%mesh2d%numEdge), start=[1, id_tsp%idx_curtime])
          end if
       else
          ! NOTE: In the ugrid geometry, edges have been order based on flow link order. All non-flowlink net links are at the end of the edge array.
@@ -230,17 +230,17 @@ def generate_rank1(ftype: FortranType) -> str:
       end if
 
    case (UNC_LOC_S3D) ! Pressure point location in all layers.
-      call realloc(work_layers, [kmx, flowgeom%ndx_out], keepExisting=.false.)
-      do n = 1, flowgeom%ndx_out ! Loop over horizontal flownodes (output order: 2d faces first, then 1d nodes).
+      call realloc(work_layers, [kmx, flowgeom_map%ndx_out], keepExisting=.false.)
+      do n = 1, flowgeom_map%ndx_out ! Loop over horizontal flownodes (output order: 2d faces first, then 1d nodes).
          if (n <= ndx2d) then
             if (remapping_active) then
-               g = flowgeom%face_map_2D(n)
+               g = flowgeom_map%face_map_2D(n)
             else
                g = n
             end if
          else
             if (remapping_active) then
-               g = flowgeom%node_map_1D(n - ndx2d)
+               g = flowgeom_map%node_map_1D(n - ndx2d)
             else
                g = n
             end if
@@ -269,7 +269,7 @@ def generate_rank1(ftype: FortranType) -> str:
    ! TODO: AvD: include flow link bug fix (Feb 15, 2017) from 1d/2D above also in U3D and WU code below.
    case (UNC_LOC_U3D)
       n_open = 0
-      if (remapping_active) n_open = flowgeom%lnx2d_int + flowgeom%lnx2d_bnd
+      if (remapping_active) n_open = flowgeom_map%lnx2d_int + flowgeom_map%lnx2d_bnd
       call realloc(work_layers, [kmx, lnx + n_open], keepExisting=.false.)
       do LL = 1, lnx ! Loop over horizontal flowlinks.
          work_layers(:, LL) = dmiss
@@ -283,26 +283,26 @@ def generate_rank1(ftype: FortranType) -> str:
          end do
       end do
       ! Internal 2dv horizontal flowlinks. Horizontal position: edges in 1d mesh. Vertical position: layer centers.
-      if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-         if (size(flowgeom%edge_map_1D, 1) > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), work_layers(1:kmx, flowgeom%edge_map_1D(:)), &
-                                start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom%edge_map_1D, 1), 1])
+      if (id_var(1) > 0 .and. flowgeom_map%mesh1D%numEdge > 0) then
+         if (size(flowgeom_map%edge_map_1D, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(1), work_layers(1:kmx, flowgeom_map%edge_map_1D(:)), &
+                                start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom_map%edge_map_1D, 1), 1])
          end if
       end if
       if (remapping_active) then
          ! Reduced output: gather open 2d edges (internal+boundary) in output order, then default on closed edges.
-         n_open = flowgeom%lnx2d_int + flowgeom%lnx2d_bnd
+         n_open = flowgeom_map%lnx2d_int + flowgeom_map%lnx2d_bnd
          if (id_var(2) > 0 .and. n_open > 0) then
             do i = 1, n_open
-               Lf = abs(lne2ln(numl1d + flowgeom%edge_map_2D(i)))
+               Lf = abs(lne2ln(numl1d + flowgeom_map%edge_map_2D(i)))
                work_layers(1:kmx, lnx + i) = work_layers(1:kmx, Lf)
             end do
             ierr = nf90_put_var(ncid, id_var(2), work_layers(1:kmx, lnx + 1:lnx + n_open), &
                                 start=[1, 1, id_tsp%idx_curtime], count=[kmx, n_open, 1])
          end if
-         if (present(default_value) .and. id_var(2) > 0 .and. flowgeom%numl2d_closed > 0) then
+         if (present(default_value) .and. id_var(2) > 0 .and. flowgeom_map%numl2d_closed > 0) then
             ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[1, n_open + 1, id_tsp%idx_curtime], &
-                                count=[kmx, flowgeom%numl2d_closed, 1], map=[0, 0, 0])
+                                count=[kmx, flowgeom_map%numl2d_closed, 1], map=[0, 0, 0])
          end if
       else
          lnx2d = lnx - lnx1d ! TODO: AvD: now also includes 1D bnds, dont want that.
@@ -322,18 +322,18 @@ def generate_rank1(ftype: FortranType) -> str:
       end if
 
    case (UNC_LOC_W) ! Vertical velocity point location on all layer interfaces.
-      call realloc(work_interfaces, [kmx, flowgeom%ndx_out], lindex=[0, 1], keepExisting=.false.)
+      call realloc(work_interfaces, [kmx, flowgeom_map%ndx_out], lindex=[0, 1], keepExisting=.false.)
       ! Loop over horizontal flownodes (output order: 2d faces first, then 1d nodes).
-      do n = 1, flowgeom%ndx_out
+      do n = 1, flowgeom_map%ndx_out
          if (n <= ndx2d) then
             if (remapping_active) then
-               g = flowgeom%face_map_2D(n)
+               g = flowgeom_map%face_map_2D(n)
             else
                g = n
             end if
          else
             if (remapping_active) then
-               g = flowgeom%node_map_1D(n - ndx2d)
+               g = flowgeom_map%node_map_1D(n - ndx2d)
             else
                g = n
             end if
@@ -361,7 +361,7 @@ def generate_rank1(ftype: FortranType) -> str:
 
    case (UNC_LOC_WU) ! Vertical viscosity point location on all layer interfaces.
       n_open = 0
-      if (remapping_active) n_open = flowgeom%lnx2d_int + flowgeom%lnx2d_bnd
+      if (remapping_active) n_open = flowgeom_map%lnx2d_int + flowgeom_map%lnx2d_bnd
       call realloc(work_interfaces, [kmx, lnx + n_open], lindex=[0, 1], keepExisting=.false.)
       do LL = 1, lnx ! Loop over horizontal flowlinks.
          work_interfaces(:, LL) = dmiss
@@ -376,24 +376,24 @@ def generate_rank1(ftype: FortranType) -> str:
       end do
       if (remapping_active) then
          ! Reduced output: 1d edges via edge_map_1D, 2d open edges gathered, default on closed edges.
-         if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-            if (size(flowgeom%edge_map_1D, 1) > 0) then
-               ierr = nf90_put_var(ncid, id_var(1), work_interfaces(0:kmx, flowgeom%edge_map_1D(:)), &
-                                   start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, size(flowgeom%edge_map_1D, 1), 1])
+         if (id_var(1) > 0 .and. flowgeom_map%mesh1D%numEdge > 0) then
+            if (size(flowgeom_map%edge_map_1D, 1) > 0) then
+               ierr = nf90_put_var(ncid, id_var(1), work_interfaces(0:kmx, flowgeom_map%edge_map_1D(:)), &
+                                   start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, size(flowgeom_map%edge_map_1D, 1), 1])
             end if
          end if
-         n_open = flowgeom%lnx2d_int + flowgeom%lnx2d_bnd
+         n_open = flowgeom_map%lnx2d_int + flowgeom_map%lnx2d_bnd
          if (id_var(2) > 0 .and. n_open > 0) then
             do i = 1, n_open
-               Lf = abs(lne2ln(numl1d + flowgeom%edge_map_2D(i)))
+               Lf = abs(lne2ln(numl1d + flowgeom_map%edge_map_2D(i)))
                work_interfaces(0:kmx, lnx + i) = work_interfaces(0:kmx, Lf)
             end do
             ierr = nf90_put_var(ncid, id_var(2), work_interfaces(0:kmx, lnx + 1:lnx + n_open), &
                                 start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, n_open, 1])
          end if
-         if (present(default_value) .and. id_var(2) > 0 .and. flowgeom%numl2d_closed > 0) then
+         if (present(default_value) .and. id_var(2) > 0 .and. flowgeom_map%numl2d_closed > 0) then
             ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[1, n_open + 1, id_tsp%idx_curtime], &
-                                count=[kmx + 1, flowgeom%numl2d_closed, 1], map=[0])
+                                count=[kmx + 1, flowgeom_map%numl2d_closed, 1], map=[0])
          end if
       else
          ! Internal 2dv vertical viscosity points. Horizontal position: edges in 1d mesh. Vertical position: layer interfaces.
@@ -447,7 +447,7 @@ def generate(output_file: Path) -> None:
     content = f"""\
 ! This file is generated by generate_unc_put_var_map.py. do not edit manually.
 module m_unc_put_var_map_generated
-   use m_unstruc_netcdf_data, only: t_unc_timespace_id, flowgeom
+   use m_unstruc_netcdf_data, only: t_unc_timespace_id, flowgeom_map
    use m_unstruc_netcdf_types, only: t_fm_flowgeom
    use io_ugrid, only: UG_NOTIMPLEMENTED, UG_INVALID_DATALOCATION
    use netcdf, only: nf90_put_var, nf90_inquire_variable, nf90_inquire_dimension
