@@ -13,6 +13,8 @@ namespace dflowfm_io
 
         for (const auto& sectionSchema : schema.Sections())
         {
+            if (sectionSchema.status.type == StatusType::Obsolete) continue;
+
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 if (propertySchema.default_value.empty()) continue;

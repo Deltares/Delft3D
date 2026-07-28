@@ -25,13 +25,14 @@ namespace dflowfm_io::test
         const MduData data = MduData::CreateFromSchema(schema);
 
         for (const auto& sectionSchema : schema.Sections())
-            for (const auto& propertySchema : sectionSchema.properties)
-                if (!propertySchema.default_value.empty() &&
-                    !schema.IsObsolete(propertySchema, propertySchema.default_value))
-                {
-                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
-                    EXPECT_TRUE(data.hasValue(key));
-                }
+            if (sectionSchema.status.type != StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
+                    if (!propertySchema.default_value.empty() &&
+                        !schema.IsObsolete(propertySchema, propertySchema.default_value))
+                    {
+                        const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                        EXPECT_TRUE(data.hasValue(key));
+                    }
     }
 
     TEST(MduDataTest, CreateFromSchema_DoesNotContainPropertiesWithoutDefaults)
@@ -41,6 +42,20 @@ namespace dflowfm_io::test
         for (const auto& sectionSchema : TestSchema().Sections())
             for (const auto& propertySchema : sectionSchema.properties)
                 if (propertySchema.default_value.empty())
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_FALSE(data.hasValue(key));
+                }
+    }
+
+    TEST(MduDataTest, CreateFromSchema_DoesNotContainPropertiesFromObsoleteSections)
+    {
+        const MduSchema& schema = TestSchema();
+        const MduData data = MduData::CreateFromSchema(schema);
+
+        for (const auto& sectionSchema : schema.Sections())
+            if (sectionSchema.status.type == StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
                 {
                     const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                     EXPECT_FALSE(data.hasValue(key));

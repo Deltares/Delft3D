@@ -265,8 +265,23 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Convert IniData → MduData — obsolete properties and enum values are skipped
+    // Convert IniData → MduData — obsolete sections, properties and enum values are skipped
     // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteSection_PropertiesOmittedFromMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        auto& section = iniData.AddSection("model");
+        section.AddProperty("program", "D-Flow FM");
+        section.AddProperty("mduFormatVersion", "1.09");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        EXPECT_FALSE(mduData.hasValue(FormatKey("model", "program")))
+            << "Property from obsolete section should be omitted: model.program";
+        EXPECT_FALSE(mduData.hasValue(FormatKey("model", "mduFormatVersion")))
+            << "Property from obsolete section should be omitted: model.mduFormatVersion";
+    }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteProperty_PropertyOmittedFromMduData)
     {
@@ -292,7 +307,37 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
     }
 
-    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedPropertyValue_PropertyPresentInMduData)
+    // -------------------------------------------------------------------------
+    // Convert IniData → MduData — deprecated sections, properties and enum values are converted
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedSection_PropertiesPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        auto& section = iniData.AddSection("sediment");
+        section.AddProperty("nrOfSedFractions", 2);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("sediment", "nrOfSedFractions");
+        EXPECT_TRUE(mduData.hasValue(key))
+            << "Property from deprecated section should still be converted: sediment.nrOfSedFractions";
+        EXPECT_EQ(mduData.getValueAs<int>(key), 2);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedProperty_PropertyPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("numerics", "vertAdvTypSal");
+        EXPECT_TRUE(mduData.hasValue(key)) << "Deprecated property should still be converted: numerics.vertAdvTypSal";
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 6);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedEnumValue_PropertyPresentInMduData)
     {
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);

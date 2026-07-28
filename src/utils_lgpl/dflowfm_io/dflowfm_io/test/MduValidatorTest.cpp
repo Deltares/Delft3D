@@ -212,56 +212,191 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Validate — deprecated property
+    // Validate — obsolete section
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_ReturnsWarning)
+    TEST_F(MduValidatorTest, Validate_ObsoleteSection_ReturnsError)
     {
-        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+        iniData.AddSection("model");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        EXPECT_TRUE(report.HasError());
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSection_ErrorMentionsSection)
+    {
+        iniData.AddSection("model");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* error = FirstIssue(report, Severity::Error);
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("model"), std::string::npos);
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithObsoleteProperty_ErrorMentionsProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("model");
+        section.AddProperty("convertLongCulverts", "1");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* error = FindIssue(report, Severity::Error, "convertLongCulverts");
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("model"), std::string::npos);
+        EXPECT_NE(error->message.find("convertLongCulverts"), std::string::npos);
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithDeprecatedProperty_NoMessageForProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("model");
+        section.AddProperty("mduFormatVersion", "1.09");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* issue = FindIssue(report, "mduFormatVersion");
+        EXPECT_EQ(issue, nullptr);
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithDeprecatedEnumValue_NoMessageForProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("model");
+        section.SetPropertyValue("autoStart", "2");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* issue = FindIssue(report, "autoStart");
+        EXPECT_EQ(issue, nullptr);
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithAvailableProperty_NoMessageForProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("model");
+        section.AddProperty("program", "D-Flow FM");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* issue = FindIssue(report, "program");
+        EXPECT_EQ(issue, nullptr);
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSectionMissingRequiredProperty_NoMessageForProperty)
+    {
+        iniData.AddSection("model");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* issue = FindIssue(report, "program");
+        EXPECT_EQ(issue, nullptr);
+    }
+
+    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithUnknownProperty_NoMessageForProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("model");
+        section.AddProperty("someUnknownKey", "value");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* issue = FindIssue(report, "someUnknownKey");
+        EXPECT_EQ(issue, nullptr);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validate — deprecated section
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedSection_ReturnsWarning)
+    {
+        iniData.AddSection("sediment");
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
         EXPECT_TRUE(report.HasWarning());
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
+    TEST_F(MduValidatorTest, Validate_DeprecatedSection_WarningMentionsSection)
     {
-        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+        iniData.AddSection("sediment");
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
         EXPECT_NE(warning->message.find("deprecated"), std::string::npos);
-        EXPECT_NE(warning->message.find("numerics"), std::string::npos);
-        EXPECT_NE(warning->message.find("vertAdvTypSal"), std::string::npos);
+        EXPECT_NE(warning->message.find("sediment"), std::string::npos);
     }
 
-    // -------------------------------------------------------------------------
-    // Validate — deprecated enum value
-    // -------------------------------------------------------------------------
-
-    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_ReturnsWarning)
+    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithObsoleteProperty_ErrorMentionsProperty)
     {
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+        ini::IniSection& section = iniData.AddSection("sediment");
+        section.AddProperty("morMaxDtEps", "0.0");
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarning());
+        const Issue* error = FindIssue(report, Severity::Error, "morMaxDtEps");
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("sediment"), std::string::npos);
+        EXPECT_NE(error->message.find("morMaxDtEps"), std::string::npos);
+        EXPECT_NE(error->message.find("2022.02"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
+    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithObsoleteEnumValue_ErrorMentionsPropertyAndValue)
     {
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+        ini::IniSection& section = iniData.AddSection("sediment");
+        section.SetPropertyValue("sedimentModelNr", "2");
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        const Issue* warning = FirstIssue(report, Severity::Warning);
+        const Issue* error = FindIssue(report, Severity::Error, "sedimentModelNr");
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("sediment"), std::string::npos);
+        EXPECT_NE(error->message.find("sedimentModelNr"), std::string::npos);
+        EXPECT_NE(error->message.find("2"), std::string::npos);
+    }
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithDeprecatedProperty_WarningMentionsProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("sediment");
+        section.AddProperty("morFile", "test.mor");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* warning = FindIssue(report, Severity::Warning, "morFile");
         ASSERT_NE(warning, nullptr);
         EXPECT_NE(warning->message.find("deprecated"), std::string::npos);
-        EXPECT_NE(warning->message.find("geometry"), std::string::npos);
-        EXPECT_NE(warning->message.find("layerType"), std::string::npos);
-        EXPECT_NE(warning->message.find("3"), std::string::npos);
+        EXPECT_NE(warning->message.find("sediment"), std::string::npos);
+        EXPECT_NE(warning->message.find("morFile"), std::string::npos);
+    }
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithDeprecatedEnumValue_WarningMentionsPropertyAndValue)
+    {
+        ini::IniSection& section = iniData.AddSection("sediment");
+        section.SetPropertyValue("sedimentModelNr", "1");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* warning = FindIssue(report, Severity::Warning, "sedimentModelNr");
+        ASSERT_NE(warning, nullptr);
+        EXPECT_NE(warning->message.find("deprecated"), std::string::npos);
+        EXPECT_NE(warning->message.find("sediment"), std::string::npos);
+        EXPECT_NE(warning->message.find("sedimentModelNr"), std::string::npos);
+        EXPECT_NE(warning->message.find("1"), std::string::npos);
+    }
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithAvaiableProperty_NoMessageForProperty)
+    {
+        ini::IniSection& section = iniData.AddSection("sediment");
+        section.AddProperty("nrOfSedFractions", "0");
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* issue = FindIssue(report, "nrOfSedFractions");
+        EXPECT_EQ(issue, nullptr);
     }
 
     // -------------------------------------------------------------------------
@@ -317,6 +452,59 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find("geometry"), std::string::npos);
         EXPECT_NE(error->message.find("layerType"), std::string::npos);
         EXPECT_NE(error->message.find("4"), std::string::npos);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validate — deprecated property
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_ReturnsWarning)
+    {
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        EXPECT_TRUE(report.HasWarning());
+    }
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
+    {
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* warning = FirstIssue(report, Severity::Warning);
+        ASSERT_NE(warning, nullptr);
+        EXPECT_NE(warning->message.find("deprecated"), std::string::npos);
+        EXPECT_NE(warning->message.find("numerics"), std::string::npos);
+        EXPECT_NE(warning->message.find("vertAdvTypSal"), std::string::npos);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validate — deprecated enum value
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_ReturnsWarning)
+    {
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        EXPECT_TRUE(report.HasWarning());
+    }
+
+    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
+    {
+        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+
+        const IssueReport report = MduValidator::Validate(iniData, schema);
+
+        const Issue* warning = FirstIssue(report, Severity::Warning);
+        ASSERT_NE(warning, nullptr);
+        EXPECT_NE(warning->message.find("deprecated"), std::string::npos);
+        EXPECT_NE(warning->message.find("geometry"), std::string::npos);
+        EXPECT_NE(warning->message.find("layerType"), std::string::npos);
+        EXPECT_NE(warning->message.find("3"), std::string::npos);
     }
 
 } // namespace dflowfm_io::test

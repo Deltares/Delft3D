@@ -69,6 +69,9 @@ namespace dflowfm_io
 
         for (const auto& sectionSchema : schema.Sections())
         {
+            if (sectionSchema.status.type == StatusType::Obsolete)
+                continue;
+
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 const auto* iniProperty = iniData.FindProperty(sectionSchema.name, propertySchema.key);

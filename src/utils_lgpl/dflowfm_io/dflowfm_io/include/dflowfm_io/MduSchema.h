@@ -63,7 +63,7 @@ namespace dflowfm_io
     /// @brief Describes the lifecycle status of a property in the MDU schema.
     enum class StatusType
     {
-        GA, ///< Generally Available; stable and supported.
+        Available, ///< Generally Available; stable and supported.
         Research, ///< Experimental feature; may change without notice.
         Deprecated, ///< Discouraged; still functional but scheduled for removal.
         Obsolete ///< No longer supported; may be ignored or cause errors.
@@ -72,7 +72,7 @@ namespace dflowfm_io
     /// @brief Lifecycle status of a property or enum value.
     struct Status
     {
-        StatusType type = StatusType::GA; ///< The lifecycle status of the property or enum value.
+        StatusType type = StatusType::Available; ///< The lifecycle status of the property or enum value.
         std::string comment; ///< Explanation for Deprecated and Obsolete status types.
         std::string since; ///< Since which this status applies.
     };
@@ -93,18 +93,19 @@ namespace dflowfm_io
         std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
         std::optional<FormatType> format; ///< Optional format for Float, FloatList and DateTime properties.
         std::string description; ///< Human-readable description of the property.
-        bool required; ///< Whether the property must be present in the MDU file.
-        bool nullable; ///< Whether the property may hold an explicit null (empty) value.
-        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
+        bool required = false; ///< Whether the property must be present in the MDU file.
+        bool nullable = false; ///< Whether the property may hold an explicit null (empty) value.
         Status status; ///< Describes the lifecycle status of the property.
+        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
     };
 
     /// @brief Schema definition for a single section within an MDU file.
     struct SectionSchema
     {
         std::string name; ///< Case-insensitive section name as it appears in the MDU file.
-        bool required; ///< Whether this section must be present in the MDU file.
+        bool required = false; ///< Whether this section must be present in the MDU file.
         std::string description; ///< Human-readable description of the section.
+        Status status; ///< Describes the lifecycle status of the schema.
         std::vector<PropertySchema> properties; ///< Ordered list of property schemas within this section.
     };
 
