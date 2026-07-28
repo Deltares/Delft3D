@@ -6,7 +6,7 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
 if (WIN32)
     add_compile_definitions(NOMINMAX)
@@ -50,6 +50,8 @@ find_package(expat CONFIG REQUIRED)
 find_package(TIFF CONFIG REQUIRED)
 find_package(PROJ CONFIG REQUIRED)
 find_package(GDAL CONFIG REQUIRED)
+find_package(PETSc CONFIG REQUIRED)
+find_package(triangle CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
@@ -81,7 +83,6 @@ set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes"
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    get_intel_version()
     include(compiler_options/intel.cmake)
 else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
@@ -111,17 +112,9 @@ if (WIN32)
         message(STATUS "Intel MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-        if(intel_version GREATER_EQUAL 24)
-            message(STATUS "Using Intel 2024 folder structure.")
-            set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
-            set(mpi_module_path ${mpi_include_path}/mpi)
-            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
-        else()
-            message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
-            set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
-            set(mpi_module_path ${mpi_include_path})
-            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<IF:$<CONFIG:Debug>,debug,release>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
-        endif()
+        set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
+        set(mpi_module_path ${mpi_include_path}/mpi)
+        set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
     else()
@@ -134,14 +127,6 @@ if (WIN32)
     message(STATUS "mpi fortran library \"${mpi_fortran_library}\"")
     message(STATUS "mpi c library \"${mpi_c_library}\"")
 
-    list(POP_BACK CMAKE_MESSAGE_INDENT)
-
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
-    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
-    message(STATUS "PETSC")
-    list(APPEND CMAKE_MESSAGE_INDENT "  ")
-    message(STATUS "path ${petsc_path}")
-    message(STATUS "library directory ${petsc_libdir}")
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
     add_definitions(-DHAVE_MPI=1)
@@ -158,9 +143,6 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
-
-    # Petsc
-    pkg_check_modules(PETSC REQUIRED PETSc)
 endif(UNIX)
 
 if (UNIX)
@@ -237,6 +219,11 @@ set(testbench-qp_configuration "QP-TESTBENCH")
 # For products that we release
 set(fm-suite_configuration "FM-SUITE")
 set(d3d4-suite_configuration "D3D4-SUITE")
+
+# Research branches do not specify a product scope, so build and test everything.
+if(${configuration_type} STREQUAL "RESEARCH-TESTBENCH")
+    set(configuration_type ${testbench-all_configuration})
+endif()
 
 # Determine the configuration to make
 if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}

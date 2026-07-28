@@ -67,9 +67,6 @@ namespace pre_c_sumo
         std::vector<double> discharge_vector;          //< Discharges [m^3/s]
         std::vector<double> momentum_magnitude_vector; //< Momentum magnitude [kg m/s]
         std::vector<double> momentum_direction_vector; //< Momentum direction [rad]
-        std::vector<double> momentum_sin_vector;       // ??
-        std::vector<double> momentum_cos_vector;       // ??
-
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo
 

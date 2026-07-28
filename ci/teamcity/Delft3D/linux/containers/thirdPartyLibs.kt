@@ -18,8 +18,7 @@ object LinuxThirdPartyLibs : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry,
-        TemplateBuildConcurrency
+        TemplateDockerRegistry
     )
 
     vcs {
