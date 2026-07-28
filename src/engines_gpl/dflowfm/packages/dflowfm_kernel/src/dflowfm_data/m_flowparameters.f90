@@ -138,6 +138,9 @@ module m_flowparameters
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
    real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
+   real(kind=dp) :: air_viscous_momentum_coeff !< Air viscous momentum coefficient [-]
+   real(kind=dp) :: air_viscous_heat_coeff !< Air viscous heat coefficient [-]
+   real(kind=dp) :: air_viscous_moisture_coeff !< Air viscous moisture coefficient [-]
 
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
@@ -768,6 +771,9 @@ contains
       sensor_height_wind_velocity = 10.0_dp ! Height of prescribed wind velocity
       sensor_height_air_temperature = 2.0_dp ! Height of prescribed air temperature
       sensor_height_humidity = 2.0_dp ! Height of prescribed humidity
+      air_viscous_momentum_coeff = 0.11_dp ! Air viscous momentum coefficient
+      air_viscous_heat_coeff = 0.40_dp ! Air viscous heat coefficient
+      air_viscous_moisture_coeff = 0.62_dp ! Air viscous moisture coefficient
 
       janudge = 0 ! temperature and salinity nudging
       jainiwithnudge = 0 !< initialize salinity and temperature with nudge variables
