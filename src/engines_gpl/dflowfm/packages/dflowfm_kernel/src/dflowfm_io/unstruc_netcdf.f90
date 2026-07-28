@@ -1456,7 +1456,7 @@ contains
          id_weirdte, &
          id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
          id_culvert_openh, id_longculvert_valveopen, &
-         id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
+         id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
          id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
          id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
          id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
@@ -2436,6 +2436,10 @@ contains
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'long_name', 'Crest width of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'units', 'm')
 
+            ierr = nf90_def_var(irstfile, 'general_structure_gate_height', nf90_double, [id_genstrudim, id_timedim], id_genstru_gateh)
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'long_name', 'Gate height of general structure')
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'units', 'm')
+
             ierr = nf90_def_var(irstfile, 'general_structure_gate_lower_edge_level', nf90_double, [id_genstrudim, id_timedim], id_genstru_edgel)
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'long_name', 'Gate lower edge level of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'units', 'm')
@@ -2676,6 +2680,7 @@ contains
          if (network%sts%numGeneralStructures > 0) then
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_level', id_genstru_crestl)
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_width', id_genstru_crestw)
+            ierr = nf90_inq_varid(irstfile, 'general_structure_gate_height', id_genstru_gateh)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_lower_edge_level', id_genstru_edgel)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_opening_width', id_genstru_openw)
             ierr = nf90_inq_varid(irstfile, 'general_structure_flow_area', id_genstru_area)
@@ -3336,6 +3341,7 @@ contains
          if (nlen > 0) then
             ierr = nf90_put_var(irstfile, id_genstru_crestl, valgenstru(9, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_crestw, valgenstru(10, 1:nlen), [1, itim], [nlen, 1])
+            ierr = nf90_put_var(irstfile, id_genstru_gateh, valgenstru(15, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_edgel, valgenstru(14, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_openw, valgenstru(13, 1:nlen), [1, itim], [nlen, 1])
 
@@ -15641,7 +15647,7 @@ contains
       integer, allocatable :: tmpvar3di(:, :, :), tmpvar2di(:, :)
       integer :: strucDimErr, i, nLinks, nStru, ierr, iStru, nfuru, numlinks, strucVarErr, L, L0, nstages, maxNumStages
       integer :: id_culvert_openh, id_longculvert_valveopen, &
-                 id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
+                 id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
                  id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
                  id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
                  id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
@@ -15755,6 +15761,19 @@ contains
                   genstr => network%sts%struct(istru)%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
+               end do
+            end if
+
+            ! read general_structure_gate_height
+            call realloc(tmpvar, nStru, stat=ierr, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, 'general_structure_gate_height', id_genstru_gateh)
+            ierr = nf90_get_var(ncid, id_genstru_gateh, tmpvar, start=[1, it_read], count=[nStru, 1])
+            call check_error(ierr, '"general_structure_gate_height", The simulation will continue but the results may not be reliable.', LEVEL_WARN)
+            if (ierr == 0) then
+               do i = 1, nStru
+                  istru = network%sts%generalStructureIndices(i)
+                  genstr => network%sts%struct(istru)%generalst
+                  genstr%gateDoorHeight = tmpvar(i)
                end do
             end if
 
