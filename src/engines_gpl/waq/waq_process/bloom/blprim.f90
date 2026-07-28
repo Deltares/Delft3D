@@ -134,8 +134,6 @@ contains
         real(kind = dp) :: totchl           ! Real version of output parameter
         real(kind = dp) :: totdry           ! Real version of output parameter
         real(kind = dp) :: totcar           ! Real version of output parameter
-        real(kind = dp) :: flnppr8          ! Double precision of net primary production fluxes (gC/m3/d)
-        real(kind = dp) :: flgppr8          ! Double precision of gross primary production fluxes (gC/m3/d)
         real(kind = dp) :: flresp8          ! Double precision of respiration fluxes (gC/m3/d)
         real(kind = real_wp) :: uptake           ! Nitrogen uptake (gN/m3/d)
         real(kind = real_wp) :: frmixx           ! Fraction of mixotrophy in production
@@ -304,12 +302,10 @@ contains
         ! Added: Calculate uptake fluxes (JvG, June 2006)
 
         do j = 1, nuspec
-            flnppr8 = ((xdef(j + nurows) - x(j)) / ctodry(j)) / tstep
             flresp8 = real(rcresp(j), kind=dp) * real(tcresp(j), kind=dp)**temp8 * (xdef(j + nurows) / ctodry(j))
-            flgppr8 = flnppr8 + flresp8
-            flnppr(j) = real(flnppr8, kind=real_wp)
+            flnppr(j) = real(((xdef(j + nurows) - x(j)) / ctodry(j)) / tstep, kind=real_wp)
             flresp(j) = real(flresp8, kind=real_wp)
-            flgppr(j) = real(flgppr8, kind=real_wp)
+            flgppr(j) = real(((xdef(j + nurows) - x(j)) / ctodry(j)) / tstep + flresp8, kind=real_wp)
             if (.not.lcarb) fluptn(1) = fluptn(1) + flnppr(j)
             fbod5 = fbod5 + real(xdef(j + nurows) / ctodry(j)) * (1. - exp(-5.0 * rmort(j)))
             do k = 1, nunuco
