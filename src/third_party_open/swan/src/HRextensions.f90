@@ -290,7 +290,7 @@ contains
                         if (nint(density(j, i, n, m)) /= fill_value) then
                            density(j, i, n, m) = density(j, i, n, m) * scale_factor(n, m)
                         else
-                           density = 0.
+                           density(j, i, n, m) = 0.
                         end if
                      end do
                   end do

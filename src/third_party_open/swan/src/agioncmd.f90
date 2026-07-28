@@ -1766,7 +1766,7 @@
                                 end if
                             else
                                 if ( do_scale ) then
-                                    density(ith,ik,ip) = AGNC_FILL_SHORT
+                                    density(ith,ik,ip) = NF90_FILL_SHORT
                                 else
                                     density(ith,ik,ip) = NF90_FILL_FLOAT
                                 end if
@@ -1814,7 +1814,7 @@
                                     end if
                                 else
                                     if ( do_scale ) then
-                                        density(ith,ik,lxi) = AGNC_FILL_SHORT
+                                        density(ith,ik,lxi) = NF90_FILL_SHORT
                                     else
                                         density(ith,ik,lxi) = NF90_FILL_FLOAT
                                     end if
