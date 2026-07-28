@@ -32,6 +32,10 @@ module m_itdate
 
    implicit none(type, external)
 
+   private
+
+   public :: refdat, itdate, jul0, imonth0, iday0, iyear0, Tzone
+
    character(len=8) :: refdat
    integer :: itdate !< should be user specified for (asc routines)
    integer :: jul0
