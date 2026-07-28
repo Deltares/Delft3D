@@ -1077,7 +1077,9 @@ contains
       integer :: ierror, unit
 
       open (newunit=unit, file=filename, status='old', action='read', iostat=ierror)
-      if (ierror == 0) close (unit, status='delete')
+      if (ierror == 0) then
+         close (unit, status='delete')
+      end if
 
    end subroutine delete_polygon_file
 
