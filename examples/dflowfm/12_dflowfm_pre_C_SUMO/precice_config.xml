@@ -77,6 +77,8 @@
     <read-data name="sources_z_min" mesh="sources_sinks_nodes" />
     <read-data name="sources_z_max" mesh="sources_sinks_nodes" />
     <read-data name="sources_sinks_discharge" mesh="sources_sinks_nodes" />
+    <read-data name="sources_momentum_magnitude" mesh="sources_sinks_nodes" />
+    <read-data name="sources_momentum_direction" mesh="sources_sinks_nodes" />
     <export:vtu directory="precice-exports" />
   </participant>
 
@@ -125,6 +127,8 @@
     <exchange data="sources_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
     <exchange data="sources_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
     <exchange data="sources_sinks_discharge" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_momentum_magnitude" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sources_momentum_direction" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
 
   </coupling-scheme:parallel-explicit>
 </precice-configuration>

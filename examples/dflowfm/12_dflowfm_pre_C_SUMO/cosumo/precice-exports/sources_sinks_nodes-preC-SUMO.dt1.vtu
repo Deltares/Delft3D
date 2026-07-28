@@ -55,10 +55,10 @@
                20 20 5 5 10 
             </DataArray>
             <DataArray type="Float64" Name="sources_momentum_magnitude" NumberOfComponents="1" format="ascii">
-               0 0 0 0 0 
+               1.23 1.23 0 0 0 
             </DataArray>
             <DataArray type="Float64" Name="sources_momentum_direction" NumberOfComponents="1" format="ascii">
-               0 0 0 0 0 
+               270 270 0 0 0 
             </DataArray>
          </PointData> 
       </Piece>
