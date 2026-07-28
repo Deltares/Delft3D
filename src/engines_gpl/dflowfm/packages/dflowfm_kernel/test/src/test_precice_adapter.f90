@@ -61,7 +61,7 @@ contains
 
       ! Setup grid
       call disable_timers_logging_and_mpi()
-      call source_sinks%clear()
+      call source_sinks%dealloc()
       call source_sinks%initialize(1)
       grid_helper = t_grid_helper()
       call grid_helper%make_square_grid( &
