@@ -6,12 +6,8 @@ RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnab
 
 RUN $installer = 'C:\vs_Community.exe'; \
     $installPath = 'C:\Program Files\Microsoft Visual Studio\18\Community'; \
-    Invoke-WebRequest -Uri 'https://aka.ms/vs/stable/vs_community.exe' -OutFile $installer -UseBasicParsing; \
+    Invoke-WebRequest -Uri 'https://aka.ms/vs/18/Stable/vs_community.exe' -OutFile $installer -UseBasicParsing; \
     try { \
-        $version = (Get-Item $installer).VersionInfo; \
-        if ($version.FileMajorPart -ne 18) { \
-            throw ('Expected Visual Studio major version 18, but bootstrapper is {0}' -f $version.FileVersion) \
-        } \
         # Start-Process flattens ArgumentList, so quote the path after PowerShell parses -Command. \
         $quote = [char]34; \
         $quotedInstallPath = $quote + $installPath + $quote; \
