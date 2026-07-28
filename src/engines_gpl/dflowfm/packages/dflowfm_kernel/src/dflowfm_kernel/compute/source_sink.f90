@@ -113,10 +113,70 @@ contains
    subroutine dealloc_source_sinks(self)
       class(SourceSinks), intent(inout) :: self
 
-      select type (self)
-      type is (SourceSinks)
-         self = SourceSinks()
-      end select
+      self%num_total = 0
+      self%num_normal = 0
+      self%num_oldfile = 0
+      self%num_nearfield = 0
+      self%max_polyline_points = 2
+
+      if (allocated(self%name)) then
+         deallocate (self%name)
+      end if
+      if (allocated(self%x)) then
+         deallocate (self%x)
+      end if
+      if (allocated(self%y)) then
+         deallocate (self%y)
+      end if
+      if (allocated(self%z_bottom)) then
+         deallocate (self%z_bottom)
+      end if
+      if (allocated(self%z_top)) then
+         deallocate (self%z_top)
+      end if
+      if (allocated(self%indices)) then
+         deallocate (self%indices)
+      end if
+      if (allocated(self%area)) then
+         deallocate (self%area)
+      end if
+      if (allocated(self%discharge_cosine)) then
+         deallocate (self%discharge_cosine)
+      end if
+      if (allocated(self%discharge_sine)) then
+         deallocate (self%discharge_sine)
+      end if
+      if (allocated(self%discharge)) then
+         deallocate (self%discharge)
+      end if
+      if (allocated(self%constituents)) then
+         deallocate (self%constituents)
+      end if
+      if (allocated(self%max_xy_points)) then
+         deallocate (self%max_xy_points)
+      end if
+      if (allocated(self%is_normal)) then
+         deallocate (self%is_normal)
+      end if
+      self%add_k_to_turkin = .false.
+      if (allocated(self%cumulative_volume)) then
+         deallocate (self%cumulative_volume)
+      end if
+      if (allocated(self%cumulative_volume_previous)) then
+         deallocate (self%cumulative_volume_previous)
+      end if
+      if (allocated(self%average_discharge_previous)) then
+         deallocate (self%average_discharge_previous)
+      end if
+      if (allocated(self%waq_index)) then
+         deallocate (self%waq_index)
+      end if
+      if (allocated(self%cumulative_discharge_waq)) then
+         deallocate (self%cumulative_discharge_waq)
+      end if
+      if (allocated(self%cumulative_discharge_waq_previous)) then
+         deallocate (self%cumulative_discharge_waq_previous)
+      end if
 
       if (allocated(source_sink_all_discharges)) then
          deallocate (source_sink_all_discharges)
