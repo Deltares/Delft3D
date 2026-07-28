@@ -349,7 +349,7 @@ contains
 
             ! write initial crest level
             if (allocated(zcgen)) then
-               j = dbfwriteattribute(shphandle, ishape, id_weirgen_cresth, zcgen((igen - 1) * 3 + 1))
+               j = dbfwriteattribute(shphandle, ishape, id_weirgen_cresth, zcgen((igen - 1) * 4 + 1))
             end if
 
             if (j /= 1) then
