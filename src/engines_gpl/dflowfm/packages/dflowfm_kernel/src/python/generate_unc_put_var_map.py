@@ -76,15 +76,12 @@ def generate_rank1(ftype: FortranType) -> str:
       n1d_write = 0
       call realloc(work, ndx2d, keepExisting=.false.)
       do n = 1, ndx2d
-         if (remapping_active) then
-            g = flowgeom_map%face_map_2D(n)
-         else
-            g = n
-         end if
-         work(n) = values(ktop(g))
+         work(n) = values(ktop(get_mapped_index(n, flowgeom_map%face_map_2D, remapping_active)))
       end do
       output_values => work
-   else if (remapping_active) then
+   end if
+
+   if (remapping_active .and. .not. write_surface_output) then ! Write_surface_output handles its own remapping, don't overwrite
       select case (iloc)
       case (UNC_LOC_CN)
          call realloc(work, flowgeom_map%mesh2d%numNode, keepExisting=.false.)
@@ -233,17 +230,9 @@ def generate_rank1(ftype: FortranType) -> str:
       call realloc(work_layers, [kmx, flowgeom_map%ndx_out], keepExisting=.false.)
       do n = 1, flowgeom_map%ndx_out ! Loop over horizontal flownodes (output order: 2d faces first, then 1d nodes).
          if (n <= ndx2d) then
-            if (remapping_active) then
-               g = flowgeom_map%face_map_2D(n)
-            else
-               g = n
-            end if
+            g = get_mapped_index(n, flowgeom_map%face_map_2D, remapping_active)
          else
-            if (remapping_active) then
-               g = flowgeom_map%node_map_1D(n - ndx2d)
-            else
-               g = n
-            end if
+            g = get_mapped_index(n, flowgeom_map%node_map_1D, remapping_active, -ndx2d)
          end if
          work_layers(:, n) = dmiss ! Store missing values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode g).
          call getlayerindices(g, nlayb, nrlay) ! The current horizontal flownode g has active layers nlayb:nlayb+nrlay-1.
@@ -326,17 +315,9 @@ def generate_rank1(ftype: FortranType) -> str:
       ! Loop over horizontal flownodes (output order: 2d faces first, then 1d nodes).
       do n = 1, flowgeom_map%ndx_out
          if (n <= ndx2d) then
-            if (remapping_active) then
-               g = flowgeom_map%face_map_2D(n)
-            else
-               g = n
-            end if
+            g = get_mapped_index(n, flowgeom_map%face_map_2D, remapping_active)
          else
-            if (remapping_active) then
-               g = flowgeom_map%node_map_1D(n - ndx2d)
-            else
-               g = n
-            end if
+            g = get_mapped_index(n, flowgeom_map%node_map_1D, remapping_active, -ndx2d)
          end if
          work_interfaces(:, n) = dmiss
          call getlayerindices(g, nlayb, nrlay) ! The current horizontal flownode g has active layers nlayb:nlayb+nrlay-1.
@@ -472,6 +453,23 @@ module m_unc_put_var_map_generated
    end interface unc_put_var_map
 
 contains
+
+   !> Remap the supplied index according to the map and an offset conditional on remapping being active.
+   pure function get_mapped_index(index, mapping, remapping_active, mapping_index_offset) result(mapped_index)
+      integer, intent(in) :: index !< the index to be remapped
+      integer, intent(in), allocatable :: mapping(:) !< the mapping array to use for remapping
+      logical, intent(in) :: remapping_active !< whether remapping is active or not
+      integer, intent(in), optional :: mapping_index_offset !< an optional offset for the index in the mapping array.
+      integer :: mapped_index, mapping_index
+
+      if (remapping_active) then
+         mapping_index = index
+         if (present(mapping_index_offset)) mapping_index = mapping_index + mapping_index_offset
+         mapped_index = mapping(mapping_index)
+      else
+         mapped_index = index
+      end if
+   end function get_mapped_index
 
 {all_bodies}
 
