@@ -50,10 +50,10 @@ class TestSchemaRenderer(unittest.TestCase):
         self.assertIn('        return self._model.get_path("geometry.netfile")', lines)
         self.assertIn('        self._model.set_path("geometry.netfile", value)', lines)
 
-    def test_render_enum_property_uses_enum_name(self):
+    def test_render_enum_property_uses_int_enum(self):
         lines = self.renderer.render_property("time", {"key": "tUnit", "value_type": "enum"})
-        self.assertIn("    def tUnit(self) -> str:", lines)
-        self.assertIn('        return self._model.get_enum_name("time.tunit")', lines)
+        self.assertIn("    def tUnit(self) -> int:", lines)
+        self.assertIn('        return self._model.get_enum("time.tunit")', lines)
 
     def test_render_property_unknown_value_type_raises(self):
         with self.assertRaises(KeyError):

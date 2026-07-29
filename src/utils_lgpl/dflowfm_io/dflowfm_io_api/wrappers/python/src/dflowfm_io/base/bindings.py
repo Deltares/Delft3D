@@ -1,7 +1,8 @@
-"""GENERATED from dflowfm_io_api.h by scripts/generate_bindings.py - do not edit.
+"""Hand-maintained ctypes ABI mirror of the dflowfm_io_api C header.
 
-The ctypes ABI mirror of the dflowfm_io_api C header: enum constants, the mdu_issue_t struct,
-and argtypes/restype for every exported function, applied to the loaded library.
+Enum constants, the mdu_issue_t struct, and argtypes/restype for every exported function, applied
+to the loaded library. This is a small, rarely-changing file kept in sync with the C header by
+hand; the typed model (mdu/model.py) and schema (mdu/schema.py) are generated, this is not.
 """
 
 import ctypes
@@ -53,8 +54,6 @@ lib.mdu_get_datetime.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTE
 lib.mdu_get_datetime.restype = ctypes.c_int32
 lib.mdu_get_enum.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int32)]
 lib.mdu_get_enum.restype = ctypes.c_int32
-lib.mdu_get_enum_name.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
-lib.mdu_get_enum_name.restype = ctypes.c_int32
 lib.mdu_get_string_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)), ctypes.POINTER(ctypes.c_uint64)]
 lib.mdu_get_string_list.restype = ctypes.c_int32
 lib.mdu_get_path_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)), ctypes.POINTER(ctypes.c_uint64)]
@@ -75,8 +74,6 @@ lib.mdu_set_datetime.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int6
 lib.mdu_set_datetime.restype = ctypes.c_int32
 lib.mdu_set_enum.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int32]
 lib.mdu_set_enum.restype = ctypes.c_int32
-lib.mdu_set_enum_name.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
-lib.mdu_set_enum_name.restype = ctypes.c_int32
 lib.mdu_set_string_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint64]
 lib.mdu_set_string_list.restype = ctypes.c_int32
 lib.mdu_set_path_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint64]

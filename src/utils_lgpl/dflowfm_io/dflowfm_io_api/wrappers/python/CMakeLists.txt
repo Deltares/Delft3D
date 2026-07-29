@@ -16,22 +16,22 @@ option(
 )
 
 # Generated (committed) Python, regenerated here so it can never drift from its source:
-#   base/bindings.py + mdu/model.py  <- generate_bindings.py, from the C header
-#   mdu/schema.py                    <- generate_schema.py, from mdu.json
+#   mdu/model.py   <- generate_model.py, from the C header
+#   mdu/schema.py  <- generate_schema.py, from mdu.json
+# (base/bindings.py is hand-maintained, not generated.)
 cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
 set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator_base.py")
-set(DFLOWFM_IO_BINDINGS_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_bindings.py")
+set(DFLOWFM_IO_MODEL_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_model.py")
 set(DFLOWFM_IO_GENERATED
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/base/bindings.py"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/model.py")
 
-# Runs generate_bindings.py (re-runs only when a DEPENDS input changes).
+# Runs generate_model.py (re-runs only when a DEPENDS input changes).
 add_custom_command(
 	OUTPUT ${DFLOWFM_IO_GENERATED}
-	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_BINDINGS_GENERATOR}"
-	DEPENDS "${DFLOWFM_IO_BINDINGS_GENERATOR}" "${DFLOWFM_IO_GENERATOR_SUPPORT}" "${DFLOWFM_IO_HEADER}"
-	COMMENT "Generating dflowfm_io Python bindings and typed model from dflowfm_io_api.h"
+	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_MODEL_GENERATOR}"
+	DEPENDS "${DFLOWFM_IO_MODEL_GENERATOR}" "${DFLOWFM_IO_GENERATOR_SUPPORT}" "${DFLOWFM_IO_HEADER}"
+	COMMENT "Generating dflowfm_io typed MduModel (Layer 1) from dflowfm_io_api.h"
 	VERBATIM
 )
 

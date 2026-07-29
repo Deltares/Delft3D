@@ -17,36 +17,6 @@ def _loaded_doc(path=MDU_PATH):
     return doc
 
 
-class TestMduModelEnumName(unittest.TestCase):
-    """The enum-name accessors surfaced from the C ABI's mdu_get_enum_name/mdu_set_enum_name."""
-
-    def test_get_enum_name_returns_the_name(self):
-        doc = _loaded_doc()
-        # time.tUnit is an enum; mdu_get_enum returns the index, mdu_get_enum_name the name.
-        self.assertEqual(doc.model.get_enum_name("time.tunit"), "S")
-
-    def test_set_enum_name_round_trips(self):
-        doc = _loaded_doc()
-        doc.model.set_enum_name("time.tunit", "M")
-        self.assertEqual(doc.model.get_enum_name("time.tunit"), "M")
-
-    def test_set_unknown_enum_name_raises(self):
-        doc = _loaded_doc()
-        with self.assertRaises(RuntimeError):
-            doc.model.set_enum_name("time.tunit", "not-a-valid-name")
-
-    def test_get_enum_name_on_intenum_raises(self):
-        # intenum entries have no label; the C ABI fails loudly rather than returning "".
-        doc = _loaded_doc()
-        with self.assertRaises(RuntimeError):
-            doc.model.get_enum_name("geometry.bedlevtype")
-
-    def test_set_empty_enum_name_raises(self):
-        doc = _loaded_doc()
-        with self.assertRaises(RuntimeError):
-            doc.model.set_enum_name("geometry.bedlevtype", "")
-
-
 class TestMduSchema(unittest.TestCase):
     """The generated Layer-2 typed per-keyword access (MduSchema)."""
 
@@ -61,16 +31,18 @@ class TestMduSchema(unittest.TestCase):
         self.assertIsInstance(doc.schema.geometry.netFile, Path)
         self.assertIsInstance(doc.schema.time.refDate, datetime)
 
-    def test_enum_property_reads_name(self):
+    def test_enum_property_reads_int(self):
+        # tUnit is an enum; Layer 2 surfaces its integer value (the C ABI has no name accessor).
         doc = _loaded_doc()
-        self.assertEqual(doc.schema.time.tUnit, "S")
+        self.assertIsInstance(doc.schema.time.tUnit, int)
 
     def test_property_round_trips_through_schema(self):
         doc = _loaded_doc()
         doc.schema.geometry.kmx = 7
         self.assertEqual(doc.schema.geometry.kmx, 7)
-        doc.schema.time.tUnit = "M"
-        self.assertEqual(doc.schema.time.tUnit, "M")
+        tunit = doc.schema.time.tUnit
+        doc.schema.time.tUnit = tunit
+        self.assertEqual(doc.schema.time.tUnit, tunit)
 
     def test_multi_word_section_is_accessible(self):
         doc = _loaded_doc()

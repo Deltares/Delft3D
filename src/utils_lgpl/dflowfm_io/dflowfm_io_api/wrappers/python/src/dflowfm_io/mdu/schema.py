@@ -35,13 +35,13 @@ class GeneralSection:
         self._model.set_string("general.version", value)
 
     @property
-    def fileType(self) -> str:
+    def fileType(self) -> int:
         """File type. Do not edit this."""
-        return self._model.get_enum_name("general.filetype")
+        return self._model.get_enum("general.filetype")
 
     @fileType.setter
-    def fileType(self, value: str) -> None:
-        self._model.set_enum_name("general.filetype", value)
+    def fileType(self, value: int) -> None:
+        self._model.set_enum("general.filetype", value)
 
     @property
     def fileVersion(self) -> str:
@@ -555,13 +555,13 @@ class GeometrySection:
         self._model.set_double("geometry.dcenterinside", value)
 
     @property
-    def circumcenterMethod(self) -> str:
+    def circumcenterMethod(self) -> int:
         """Circumcenter computation method."""
-        return self._model.get_enum_name("geometry.circumcentermethod")
+        return self._model.get_enum("geometry.circumcentermethod")
 
     @circumcenterMethod.setter
-    def circumcenterMethod(self, value: str) -> None:
-        self._model.set_enum_name("geometry.circumcentermethod", value)
+    def circumcenterMethod(self, value: int) -> None:
+        self._model.set_enum("geometry.circumcentermethod", value)
 
     @property
     def circumcenterTolerance(self) -> float:
@@ -1640,13 +1640,13 @@ class NumericsSection:
         self._model.set_double("numerics.epsmaxlevm", value)
 
     @property
-    def flowSolver(self) -> str:
+    def flowSolver(self) -> int:
         """Flow solver."""
-        return self._model.get_enum_name("numerics.flowsolver")
+        return self._model.get_enum("numerics.flowsolver")
 
     @flowSolver.setter
-    def flowSolver(self, value: str) -> None:
-        self._model.set_enum_name("numerics.flowsolver", value)
+    def flowSolver(self, value: int) -> None:
+        self._model.set_enum("numerics.flowsolver", value)
 
     @property
     def lateral_fixedweir_umin(self) -> float:
@@ -2000,13 +2000,13 @@ class NumericsSection:
         self._model.set_enum("numerics.vertadvtypmom", value)
 
     @property
-    def verticalAdvectionType(self) -> str:
+    def verticalAdvectionType(self) -> int:
         """Vertical advection type for salinity. Note that `verticalAdvectionType`=`centralImplicit` leads to less numerical dissipation than `verticalAdvectionType`=`higherOrderUpwindExplicit`."""
-        return self._model.get_enum_name("numerics.verticaladvectiontype")
+        return self._model.get_enum("numerics.verticaladvectiontype")
 
     @verticalAdvectionType.setter
-    def verticalAdvectionType(self, value: str) -> None:
-        self._model.set_enum_name("numerics.verticaladvectiontype", value)
+    def verticalAdvectionType(self, value: int) -> None:
+        self._model.set_enum("numerics.verticaladvectiontype", value)
 
     @property
     def vertAdvTypSal(self) -> int:
@@ -2979,13 +2979,13 @@ class PhysicsSection:
         self._model.set_double("physics.betaspiral", value)
 
     @property
-    def breachGrowth(self) -> str:
+    def breachGrowth(self) -> int:
         """Method for distributing dam breach width over dam break flow links."""
-        return self._model.get_enum_name("physics.breachgrowth")
+        return self._model.get_enum("physics.breachgrowth")
 
     @breachGrowth.setter
-    def breachGrowth(self, value: str) -> None:
-        self._model.set_enum_name("physics.breachgrowth", value)
+    def breachGrowth(self, value: int) -> None:
+        self._model.set_enum("physics.breachgrowth", value)
 
     @property
     def thermobaricityInPressureGradient(self) -> bool:
@@ -3461,13 +3461,13 @@ class SedtrailsSection:
         self._model.set_path("sedtrails.sedtrailsgrid", value)
 
     @property
-    def sedtrailsAnalysis(self) -> str:
+    def sedtrailsAnalysis(self) -> int:
         """Sedtrails analysis."""
-        return self._model.get_enum_name("sedtrails.sedtrailsanalysis")
+        return self._model.get_enum("sedtrails.sedtrailsanalysis")
 
     @sedtrailsAnalysis.setter
-    def sedtrailsAnalysis(self, value: str) -> None:
-        self._model.set_enum_name("sedtrails.sedtrailsanalysis", value)
+    def sedtrailsAnalysis(self, value: int) -> None:
+        self._model.set_enum("sedtrails.sedtrailsanalysis", value)
 
     @property
     def sedtrailsInterval(self) -> list[float]:
@@ -3664,13 +3664,13 @@ class WavesSection:
         self._model.set_bool("waves.3dwavebreakerturbulence", value)
 
     @property
-    def rouWav(self) -> str:
+    def rouWav(self) -> int:
         """Friction model for wave induced shear stress."""
-        return self._model.get_enum_name("waves.rouwav")
+        return self._model.get_enum("waves.rouwav")
 
     @rouWav.setter
-    def rouWav(self, value: str) -> None:
-        self._model.set_enum_name("waves.rouwav", value)
+    def rouWav(self, value: int) -> None:
+        self._model.set_enum("waves.rouwav", value)
 
     @property
     def gammaX(self) -> float:
@@ -3946,13 +3946,13 @@ class TimeSection:
         self._model.set_double("time.tzone", value)
 
     @property
-    def tUnit(self) -> str:
+    def tUnit(self) -> int:
         """Time units in MDU."""
-        return self._model.get_enum_name("time.tunit")
+        return self._model.get_enum("time.tunit")
 
     @tUnit.setter
-    def tUnit(self, value: str) -> None:
-        self._model.set_enum_name("time.tunit", value)
+    def tUnit(self, value: int) -> None:
+        self._model.set_enum("time.tunit", value)
 
     @property
     def dtUser(self) -> float:
@@ -4219,13 +4219,13 @@ class TrachytopesSection:
         self._model = model
 
     @property
-    def trtRou(self) -> str:
+    def trtRou(self) -> int:
         """Flag for trachytopes."""
-        return self._model.get_enum_name("trachytopes.trtrou")
+        return self._model.get_enum("trachytopes.trtrou")
 
     @trtRou.setter
-    def trtRou(self, value: str) -> None:
-        self._model.set_enum_name("trachytopes.trtrou", value)
+    def trtRou(self, value: int) -> None:
+        self._model.set_enum("trachytopes.trtrou", value)
 
     @property
     def trtDef(self) -> Path:
@@ -4586,22 +4586,22 @@ class OutputSection:
         self._model.set_enum("output.ncformat", value)
 
     @property
-    def ncMapDataPrecision(self) -> str:
+    def ncMapDataPrecision(self) -> int:
         """Precision for NetCDF data in map files (double or single)."""
-        return self._model.get_enum_name("output.ncmapdataprecision")
+        return self._model.get_enum("output.ncmapdataprecision")
 
     @ncMapDataPrecision.setter
-    def ncMapDataPrecision(self, value: str) -> None:
-        self._model.set_enum_name("output.ncmapdataprecision", value)
+    def ncMapDataPrecision(self, value: int) -> None:
+        self._model.set_enum("output.ncmapdataprecision", value)
 
     @property
-    def ncHisDataPrecision(self) -> str:
+    def ncHisDataPrecision(self) -> int:
         """Precision for NetCDF data in his files (double or single)."""
-        return self._model.get_enum_name("output.nchisdataprecision")
+        return self._model.get_enum("output.nchisdataprecision")
 
     @ncHisDataPrecision.setter
-    def ncHisDataPrecision(self, value: str) -> None:
-        self._model.set_enum_name("output.nchisdataprecision", value)
+    def ncHisDataPrecision(self, value: int) -> None:
+        self._model.set_enum("output.nchisdataprecision", value)
 
     @property
     def ncCompression(self) -> bool:
@@ -6234,13 +6234,13 @@ class VegSection:
         self._model.set_double("veg.stemheightstd", value)
 
     @property
-    def stemHeightConvention(self) -> str:
+    def stemHeightConvention(self) -> int:
         """Stem height convention."""
-        return self._model.get_enum_name("veg.stemheightconvention")
+        return self._model.get_enum("veg.stemheightconvention")
 
     @stemHeightConvention.setter
-    def stemHeightConvention(self, value: str) -> None:
-        self._model.set_enum_name("veg.stemheightconvention", value)
+    def stemHeightConvention(self, value: int) -> None:
+        self._model.set_enum("veg.stemheightconvention", value)
 
     @property
     def densVegMinBap(self) -> float:
