@@ -49,14 +49,18 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_flow, only: kmx
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
+      use m_meteo, only: item_waqfun
+      use m_ec_parameters, only: ec_undef_int
       use m_source_sink, only: source_sinks
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use properties, only: MAX_PROP_LENGTH
+      use processes_input, only: num_time_functions
+      use properties, only: MAX_PROP_LENGTH, prop_get
       use string_module, only: str_tolower
       use system_utils, only: split_filename
       use tree_data_types, only: tree_data_ptr
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use unstruc_inifields, only: register_waqfunction_target
       use unstruc_messages, only: threshold_abort
 
       ! Arguments
@@ -82,6 +86,8 @@ contains
       integer :: num_laterals !< Total number of laterals in all external forcing files
       integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
       integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
+      logical :: is_read
+      character(len=INI_VALUE_LEN) :: quantity
 
       character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: file_names !< List of file names
       character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: base_dirs !< List of base directories
@@ -119,6 +125,24 @@ contains
          call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
 
       end do
+
+      ! Register all global WAQ functions before creating any EC target fields.
+      ! Growing funinp after a field points into it would invalidate that pointer.
+      do i_ext = 1, size(extfile_new_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+         num_items_in_file = tree_num_nodes(bnd_ptr)
+         do i = 1, num_items_in_file
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(block_ptr))
+            select case (str_tolower(group_name))
+            case ('spatial', 'meteo', 'parameter', 'initial')
+               quantity = ''
+               call prop_get(block_ptr, '', 'quantity', quantity, is_read)
+               if (is_read) call register_waqfunction_target(quantity)
+            end select
+         end do
+      end do
+      call realloc(item_waqfun, num_time_functions, keepExisting=.false., fill=ec_undef_int)
 
       ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
       i_bubblescreen = 0
@@ -1120,8 +1144,8 @@ contains
             end if
             res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
          else
-            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
-               ''': ['//group_name//']. Check previous log lines for details.'
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
+               ''': ['//trim(group_name)//']. Check previous log lines for details.'
             call err_flush()
          end if
       end associate

@@ -49,7 +49,8 @@ module unstruc_inifields
    public :: init1dField, spaceInit1dField, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
-             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger
+             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
+             register_waqfunction_target
 
    !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -1310,6 +1311,24 @@ contains
       call realloc(nudge_time, ndx, fill=dmiss)
       call realloc(nudge_rate, ndx, fill=dmiss)
    end subroutine alloc_nudging
+
+   !> Register a global WAQ function and allocate its target value when needed.
+   subroutine register_waqfunction_target(qid)
+      use fm_external_forcings_utils, only: split_qid
+      use processes_input, only: funame, funinp, num_time_functions
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: qid
+
+      character(len=256) :: qid_base, qid_specific
+      integer :: index_waq_input
+
+      call split_qid(qid, qid_base, qid_specific)
+      if (str_tolower(qid_base) /= 'waqfunction') return
+
+      call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., &
+                                 waq_values_ptr=funinp, index_waq_input=index_waq_input)
+   end subroutine register_waqfunction_target
 
    !> Search a particular water quality input name in a list of names,
    !! and if not found, add it to the list, also increasing the associated value array.

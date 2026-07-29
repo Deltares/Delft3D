@@ -384,6 +384,7 @@ contains
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_waqfun
       use processes_input, only: funinp, funame, num_time_functions
       use time_module, only: ymd2modified_jul
+      use unstruc_inifields, only: register_waqfunction_target
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -407,12 +408,11 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
-      num_time_functions = 1
+      num_time_functions = 0
       if (allocated(funame)) deallocate (funame)
       if (associated(funinp)) deallocate (funinp)
-      allocate (funame(1), funinp(1, 1))
-      funame(1) = 'Test'
-      funinp = 0.0_dp
+      allocate (funame(0))
+      call register_waqfunction_target('waqfunctionTest')
       call setup_minimal_grid()
       call initialize_ec_module()
 
