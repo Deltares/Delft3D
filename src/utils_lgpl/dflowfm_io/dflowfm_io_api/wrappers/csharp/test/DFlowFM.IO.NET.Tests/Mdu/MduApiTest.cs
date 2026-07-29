@@ -471,79 +471,105 @@ public class MduApiTest
     }
 
     [Test]
-    public void GetEnum_StringEnumKnownKey_ReturnsExpectedValue()
+    public void GetStringEnum_KnownKey_ReturnsExpectedValue()
     {
         using MduApi api = CreateWithValidContent();
 
-        Assert.That(api.GetEnum("time.tunit"), Is.EqualTo(1));
+        Assert.That(api.GetStringEnum("time.tunit"), Is.EqualTo("H"));
     }
 
     [Test]
-    public void GetEnum_IntEnumKnownKey_ReturnsExpectedValue()
-    {
-        using MduApi api = CreateWithValidContent();
-
-        Assert.That(api.GetEnum("numerics.timesteptype"), Is.EqualTo(3));
-    }
-
-    [Test]
-    public void GetEnum_StringEnumNewDocument_ReturnsSchemaDefault()
+    public void GetStringEnum_NewDocument_ReturnsSchemaDefault()
     {
         using MduApi api = new();
 
-        Assert.That(api.GetEnum("time.tunit"), Is.EqualTo(3));
+        Assert.That(api.GetStringEnum("time.tunit"), Is.EqualTo("S"));
     }
 
     [Test]
-    public void GetEnum_IntEnumNewDocument_ReturnsSchemaDefault()
+    public void GetStringEnum_UnknownKey_ThrowsInvalidOperationException()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        Assert.That(() => api.GetStringEnum("unknown.key"), Throws.TypeOf<InvalidOperationException>());
+    }
+
+
+    [Test]
+    public void GetIntEnum_KnownKey_ReturnsExpectedValue()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        Assert.That(api.GetIntEnum("numerics.timesteptype"), Is.EqualTo(3));
+    }
+
+
+    [Test]
+    public void GetIntEnum_NewDocument_ReturnsSchemaDefault()
     {
         using MduApi api = new();
 
-        Assert.That(api.GetEnum("numerics.timesteptype"), Is.EqualTo(2));
+        Assert.That(api.GetIntEnum("numerics.timesteptype"), Is.EqualTo(2));
     }
 
     [Test]
-    public void GetEnum_UnknownKey_ThrowsInvalidOperationException()
+    public void GetIntEnum_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
 
-        Assert.That(() => api.GetEnum("unknown.key"), Throws.TypeOf<InvalidOperationException>());
+        Assert.That(() => api.GetIntEnum("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]
-    public void SetEnum_StringEnumKnownKey_UpdatesValue()
+    public void SetStringEnum_KnownKey_UpdatesValue()
     {
         using MduApi api = CreateWithValidContent();
 
-        api.SetEnum("time.tunit", 3);
+        api.SetStringEnum("time.tunit", "S");
 
-        Assert.That(api.GetEnum("time.tunit"), Is.EqualTo(3));
+        Assert.That(api.GetStringEnum("time.tunit"), Is.EqualTo("S"));
     }
 
     [Test]
-    public void SetEnum_IntEnumKnownKey_UpdatesValue()
+    public void SetStringEnum_OutOfRange_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
 
-        api.SetEnum("numerics.timesteptype", 2);
-
-        Assert.That(api.GetEnum("numerics.timesteptype"), Is.EqualTo(2));
+        Assert.That(() => api.SetStringEnum("time.tUnit", "invalid"), Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]
-    public void SetEnum_OutOfRange_ThrowsInvalidOperationException()
+    public void SetStringEnum_UnknownKey_ThrowsInvalidOperationException()
     {
         using MduApi api = CreateWithValidContent();
 
-        Assert.That(() => api.SetEnum("numerics.timesteptype", -1), Throws.TypeOf<InvalidOperationException>());
+        Assert.That(() => api.SetStringEnum("nonexisting.key", "value"), Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]
-    public void SetEnum_UnknownKey_ThrowsInvalidOperationException()
+    public void SetIntEnum_KnownKey_UpdatesValue()
     {
         using MduApi api = CreateWithValidContent();
 
-        Assert.That(() => api.SetEnum("nonexisting.key", 0), Throws.TypeOf<InvalidOperationException>());
+        api.SetIntEnum("numerics.timesteptype", 2);
+
+        Assert.That(api.GetIntEnum("numerics.timesteptype"), Is.EqualTo(2));
+    }
+
+    [Test]
+    public void SetIntEnum_OutOfRange_ThrowsInvalidOperationException()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        Assert.That(() => api.SetIntEnum("numerics.timesteptype", -1), Throws.TypeOf<InvalidOperationException>());
+    }
+
+    [Test]
+    public void SetIntEnum_UnknownKey_ThrowsInvalidOperationException()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        Assert.That(() => api.SetIntEnum("nonexisting.key", 0), Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]

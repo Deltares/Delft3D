@@ -23,8 +23,8 @@ namespace dflowfm_io
         /// @param schema The schema of the property whose value is being converted.
         /// @param raw The raw value string to convert.
         /// @return The converted @ref Value.
-        /// @throws std::exception if @p raw is not a valid representation for the property's
-        ///         @ref ValueType.
+        /// @throws std::invalid_argument if @p raw is not a valid representation for the 
+        ///         property's @ref schema.
         static Value FromString(const PropertySchema& schema, const std::string& raw);
 
         /// @brief Converts a typed @ref Value into its raw MDU string representation.
@@ -32,8 +32,8 @@ namespace dflowfm_io
         /// @param value  The typed value to convert. Its active alternative must match the
         ///               property's @ref ValueType.
         /// @return The raw string representation of @p value for use in an MDU file.
-        /// @throws std::out_of_range if @p value is an enumeration whose numeric value is not
-        ///         present in @p schema.
+        /// @throws std::invalid_argument if @p value is not a valid representation for the
+        ///         property's @ref ValueType
         static std::string ToString(const PropertySchema& schema, const Value& value);
     };
 

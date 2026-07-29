@@ -1,5 +1,4 @@
 #include <dflowfm_io/MduValueConverter.h>
-
 #include <dflowfm_io/StringUtils.h>
 
 #include <ini/IniValueConverter.h>
@@ -35,30 +34,40 @@ namespace dflowfm_io
                        : ini::TimePointFormat::CompactDateTime;
         }
 
-        Value EnumFromString(const PropertySchema& schema, const std::string& raw)
+        Value StringEnumFromString(const PropertySchema& schema, const std::string& raw)
         {
             for (const auto& ev : schema.enum_values)
-                if (iequals(ev.label, raw)) return EnumValue{ev.value};
+                if (iequals(ev.value, raw)) return StringEnumValue{ev.value};
             throw std::invalid_argument(
-                std::format("'{}' is not a valid value for property '{}'.", raw, schema.key));
+                std::format("Enum value '{}' is not a valid value for property '{}'.", raw, schema.key));
         }
 
         Value IntEnumFromString(const PropertySchema& schema, const std::string& raw)
         {
-            const int number = ini::IniValueConverter::FromString<int>(raw);
             for (const auto& ev : schema.enum_values)
-                if (ev.value == number) return EnumValue{ev.value};
+                if (iequals(ev.value, raw))
+                    return IntEnumValue{ini::IniValueConverter::FromString<int>(ev.value)};
             throw std::invalid_argument(
-                std::format("'{}' is not a valid value for property '{}'.", raw, schema.key));
+                std::format("Enum value '{}' is not a valid value for property '{}'.", raw, schema.key));
         }
 
-        std::string EnumToString(const PropertySchema& schema, const Value& value)
+        std::string StringEnumToString(const PropertySchema& schema, const Value& value)
         {
-            auto enumValue = std::get<EnumValue>(value);
+            auto enumValue = std::get<StringEnumValue>(value);
             for (const auto& ev : schema.enum_values)
-                if (ev.value == enumValue.value) return ev.label;
-            throw std::out_of_range(
-                std::format("Enum value {} is out of range for property '{}'.", enumValue.value, schema.key));
+                if (iequals(ev.value, enumValue.value)) return ev.value;
+            throw std::invalid_argument(
+                std::format("Enum value '{}' is not a valid value for property '{}'.", enumValue.value, schema.key));
+        }
+
+        std::string IntEnumToString(const PropertySchema& schema, const Value& value)
+        {
+            auto enumValue = std::get<IntEnumValue>(value);
+            auto valueStr = ini::IniValueConverter::ToString(enumValue.value);
+            for (const auto& ev : schema.enum_values)
+                if (ev.value == valueStr) return valueStr;
+            throw std::invalid_argument(
+                std::format("Enum value '{}' is not a valid value for property '{}'.", valueStr, schema.key));
         }
 
     } // namespace
@@ -85,8 +94,8 @@ namespace dflowfm_io
                 return ini::IniValueConverter::FromMultiValueString<std::filesystem::path>(raw);
             case ValueType::FloatList:
                 return ini::IniValueConverter::FromMultiValueString<double>(raw);
-            case ValueType::Enum:
-                return EnumFromString(schema, raw);
+            case ValueType::StringEnum:
+                return StringEnumFromString(schema, raw);
             case ValueType::IntEnum:
                 return IntEnumFromString(schema, raw);
             default:
@@ -118,10 +127,10 @@ namespace dflowfm_io
                 return ini::IniValueConverter::ToMultiValueString(std::get<std::vector<std::filesystem::path>>(value));
             case ValueType::FloatList:
                 return ini::IniValueConverter::ToMultiValueString(std::get<std::vector<double>>(value), GetFloatFormat(schema));
-            case ValueType::Enum:
-                return EnumToString(schema, value);
+            case ValueType::StringEnum:
+                return StringEnumToString(schema, value);
             case ValueType::IntEnum:
-                return ini::IniValueConverter::ToString(std::get<EnumValue>(value).value);
+                return IntEnumToString(schema, value);
             default:
                 throw std::logic_error(
                     std::format("Unhandled ValueType for property '{}'.", schema.key));

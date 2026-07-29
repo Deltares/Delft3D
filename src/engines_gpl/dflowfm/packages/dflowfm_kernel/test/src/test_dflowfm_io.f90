@@ -188,8 +188,8 @@ contains
    end subroutine test_set_and_get_path
 !$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_enum, test_set_and_get_enum,
-   subroutine test_set_and_get_enum() bind(C)
+!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_int_enum, test_set_and_get_int_enum,
+   subroutine test_set_and_get_int_enum() bind(C)
       type(MduModel) :: model
       integer :: value
       logical :: success = .false.
@@ -197,12 +197,29 @@ contains
       call model%create(success, terminate_on_error)
       call model%load_from_string(MINIMAL_MDU, success, terminate_on_error)
 
-      call model%set_enum("general.autostart", 1, success, terminate_on_error)
+      call model%set_int_enum("general.autostart", 1, success, terminate_on_error)
       call f90_expect_eq(success, .true.)
-      call model%get_enum("general.autostart", value, success, terminate_on_error)
+      call model%get_int_enum("general.autostart", value, success, terminate_on_error)
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(value, 1)
-   end subroutine test_set_and_get_enum
+   end subroutine test_set_and_get_int_enum
+!$f90tw)
+
+!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_string_enum, test_set_and_get_string_enum,
+   subroutine test_set_and_get_string_enum() bind(C)
+      type(MduModel) :: model
+      character(len=:), allocatable :: value
+      logical :: success = .false.
+
+      call model%create(success, terminate_on_error)
+      call model%load_from_string(MINIMAL_MDU, success, terminate_on_error)
+
+      call model%set_string_enum("time.tunit", "M", success, terminate_on_error)
+      call f90_expect_eq(success, .true.)
+      call model%get_string_enum("time.tunit", value, success, terminate_on_error)
+      call f90_expect_eq(success, .true.)
+      call f90_expect_streq(trim(value)//c_null_char, "M"//c_null_char)
+   end subroutine test_set_and_get_string_enum
 !$f90tw)
 
 !$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_datetime, test_set_and_get_datetime,

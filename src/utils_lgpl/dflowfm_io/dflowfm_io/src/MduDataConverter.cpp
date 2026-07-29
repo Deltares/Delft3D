@@ -18,19 +18,6 @@ namespace dflowfm_io
             static constexpr std::string_view prefix = "Expected value type: ";
             switch (propertySchema.value_type)
             {
-                case ValueType::Enum:
-                case ValueType::IntEnum:
-                {
-                    std::string values;
-                    for (const auto& ev : propertySchema.enum_values)
-                    {
-                        if (!values.empty()) values += ", ";
-                        values += propertySchema.value_type == ValueType::IntEnum
-                            ? std::format("\"{}\"", ev.value)
-                            : std::format("\"{}\"", ev.label);
-                    }
-                    return std::format("Supported values: {}", values);
-                }
                 case ValueType::String: return std::format("{}\"string\"", prefix);
                 case ValueType::Int: return std::format("{}\"integer\"", prefix);
                 case ValueType::IntBool: return std::format("{}\"integer (0 or 1)\"", prefix);
@@ -39,6 +26,17 @@ namespace dflowfm_io
                 case ValueType::PathList: return std::format("{}\"list of paths (separated by whitespace)\"", prefix);
                 case ValueType::FloatList: return std::format("{}\"list of floats (separated by whitespace)\"", prefix);
                 case ValueType::StringList: return std::format("{}\"list of strings (separated by whitespace)\"", prefix);
+                case ValueType::StringEnum:
+                case ValueType::IntEnum:
+                {
+                    std::string values;
+                    for (const auto& ev : propertySchema.enum_values)
+                    {
+                        if (!values.empty()) values += ", ";
+                        values += std::format("\"{}\"", ev.value);
+                    }
+                    return std::format("Supported values: {}", values);
+                }
                 case ValueType::DateTime:
                 {
                     const std::string dateTimeFormat =
@@ -47,7 +45,8 @@ namespace dflowfm_io
                         : "yyyymmddhhmmss";
                     return std::format("{}\"datetime with format {}\"", prefix, dateTimeFormat);
                 }
-                default: throw std::invalid_argument(std::format("Unhandled ValueType: {}", static_cast<int>(propertySchema.value_type)));
+                default: throw std::invalid_argument(
+                    std::format("Unhandled ValueType: {}", static_cast<int>(propertySchema.value_type)));
             }
         }
 

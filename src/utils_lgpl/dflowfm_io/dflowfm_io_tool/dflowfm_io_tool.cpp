@@ -45,7 +45,8 @@ int main(int argc, char* argv[])
             {
                 cout << std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(v)) << " (datetime)";
             }
-            void operator()(const EnumValue& v) const { cout << v.value << " (enum)"; }
+            void operator()(const StringEnumValue& v) const { cout << v.value << " (enum)"; }
+            void operator()(const IntEnumValue& v) const { cout << v.value << " (intenum)"; }
             void operator()(const vector<string>& v) const
             {
                 cout << "[";

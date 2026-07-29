@@ -129,7 +129,7 @@ namespace dflowfm_io
                     continue;
                 }
 
-                if (propertySchema->value_type != ValueType::Enum && propertySchema->value_type != ValueType::IntEnum)
+                if (propertySchema->value_type != ValueType::StringEnum && propertySchema->value_type != ValueType::IntEnum)
                     continue;
 
                 if (!property.HasValue())

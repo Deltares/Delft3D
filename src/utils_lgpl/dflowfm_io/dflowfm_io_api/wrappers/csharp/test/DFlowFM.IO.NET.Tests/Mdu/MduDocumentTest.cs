@@ -256,11 +256,19 @@ public class MduDocumentTest
     }
 
     [Test]
-    public void GetProperty_EnumValueType_ReturnsInt()
+    public void GetProperty_StringEnumValueType_ReturnsString()
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("time.tunit"), Is.EqualTo(1));
+        Assert.That(document.GetProperty("general.filetype"), Is.EqualTo("modelDef"));
+    }
+
+    [Test]
+    public void GetProperty_IntEnumValueType_ReturnsInt()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(document.GetProperty("numerics.timesteptype"), Is.EqualTo(3));
     }
 
     [Test]
@@ -381,13 +389,23 @@ public class MduDocumentTest
     }
 
     [Test]
-    public void SetProperty_EnumValueType_UpdatesValue()
+    public void SetProperty_StringEnumValueType_UpdatesValue()
     {
         using MduDocument document = CreateWithValidContent();
 
-        document.SetProperty("time.tunit", 3);
+        document.SetProperty("time.tunit", "S");
 
-        Assert.That(document.GetProperty<int>("time.tunit"), Is.EqualTo(3));
+        Assert.That(document.GetProperty<string>("time.tunit"), Is.EqualTo("S"));
+    }
+
+    [Test]
+    public void SetProperty_IntEnumValueType_UpdatesValue()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        document.SetProperty("numerics.timesteptype", 3);
+
+        Assert.That(document.GetProperty<int>("numerics.timesteptype"), Is.EqualTo(3));
     }
 
     [Test]

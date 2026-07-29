@@ -8,9 +8,10 @@ module dflowfm_io
    integer, parameter, public :: DFLOWFM_IO_RESULT_ERROR = 1
 
    ! Mirrors mdu_severity_t in dflowfm_io_api.h
-   integer, parameter, public :: MDU_SEVERITY_INFO = 0
-   integer, parameter, public :: MDU_SEVERITY_WARNING = 1
-   integer, parameter, public :: MDU_SEVERITY_ERROR = 2
+   integer, parameter, public :: MDU_SEVERITY_DEBUG = 0
+   integer, parameter, public :: MDU_SEVERITY_INFO = 1
+   integer, parameter, public :: MDU_SEVERITY_WARNING = 2
+   integer, parameter, public :: MDU_SEVERITY_ERROR = 3
 
    !> Fortran mirror of a single diagnostic issue. Uses only native Fortran types.
    type, public :: MduIssue
@@ -49,7 +50,8 @@ module dflowfm_io
       procedure :: get_string => mdu_get_string_f
       procedure :: get_path => mdu_get_path_f
       procedure :: get_datetime => mdu_get_datetime_f
-      procedure :: get_enum => mdu_get_enum_f
+      procedure :: get_int_enum => mdu_get_int_enum_f
+      procedure :: get_string_enum => mdu_get_string_enum_f
       procedure :: get_string_list => mdu_get_string_list_f
       procedure :: get_path_list => mdu_get_path_list_f
       procedure :: get_double_list => mdu_get_double_list_f
@@ -60,7 +62,8 @@ module dflowfm_io
       procedure :: set_string => mdu_set_string_f
       procedure :: set_path => mdu_set_path_f
       procedure :: set_datetime => mdu_set_datetime_f
-      procedure :: set_enum => mdu_set_enum_f
+      procedure :: set_int_enum => mdu_set_int_enum_f
+      procedure :: set_string_enum => mdu_set_string_enum_f
       procedure :: set_string_list => mdu_set_string_list_f
       procedure :: set_path_list => mdu_set_path_list_f
       procedure :: set_double_list => mdu_set_double_list_f
@@ -162,11 +165,19 @@ module dflowfm_io
          integer(c_int32_t) :: res
       end function
 
-      function c_mdu_get_enum(handle, key, out_value) result(res) bind(C, name="mdu_get_enum")
+      function c_mdu_get_int_enum(handle, key, out_value) result(res) bind(C, name="mdu_get_int_enum")
          import :: c_ptr, c_char, c_int32_t
          type(c_ptr), value, intent(in) :: handle
          character(kind=c_char), intent(in) :: key(*)
          integer(c_int32_t), intent(out) :: out_value
+         integer(c_int32_t) :: res
+      end function
+
+      function c_mdu_get_string_enum(handle, key, out_value) result(res) bind(C, name="mdu_get_string_enum")
+         import :: c_ptr, c_char, c_int32_t
+         type(c_ptr), value, intent(in) :: handle
+         character(kind=c_char), intent(in) :: key(*)
+         type(c_ptr), intent(out) :: out_value
          integer(c_int32_t) :: res
       end function
 
@@ -245,11 +256,19 @@ module dflowfm_io
          integer(c_int32_t) :: res
       end function
 
-      function c_mdu_set_enum(handle, key, value) result(res) bind(C, name="mdu_set_enum")
+      function c_mdu_set_int_enum(handle, key, value) result(res) bind(C, name="mdu_set_int_enum")
          import :: c_ptr, c_char, c_int32_t
          type(c_ptr), value, intent(in) :: handle
          character(kind=c_char), intent(in) :: key(*)
          integer(c_int32_t), value, intent(in) :: value
+         integer(c_int32_t) :: res
+      end function
+
+      function c_mdu_set_string_enum(handle, key, value) result(res) bind(C, name="mdu_set_string_enum")
+         import :: c_ptr, c_char, c_int32_t
+         type(c_ptr), value, intent(in) :: handle
+         character(kind=c_char), intent(in) :: key(*)
+         character(kind=c_char), intent(in) :: value(*)
          integer(c_int32_t) :: res
       end function
 
@@ -515,7 +534,7 @@ contains
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine
 
-   subroutine mdu_get_enum_f(self, key, value, success, error_handler)
+   subroutine mdu_get_int_enum_f(self, key, value, success, error_handler)
       class(MduModel), intent(in) :: self
       character(len=*), intent(in) :: key
       integer, intent(out) :: value
@@ -524,8 +543,25 @@ contains
       integer(c_int32_t) :: c_value
       integer :: result_code
 
-      result_code = int(c_mdu_get_enum(self%handle, f_to_c_string(key), c_value))
+      result_code = int(c_mdu_get_int_enum(self%handle, f_to_c_string(key), c_value))
       value = int(c_value)
+      call self%handle_result(result_code, error_handler)
+      success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
+   end subroutine
+
+   subroutine mdu_get_string_enum_f(self, key, value, success, error_handler)
+      class(MduModel), intent(in) :: self
+      character(len=*), intent(in) :: key
+      character(len=:), allocatable, intent(out) :: value
+      logical, intent(out) :: success
+      procedure(mdu_error_handler_i) :: error_handler
+      type(c_ptr) :: cptr
+      integer :: result_code
+
+      result_code = int(c_mdu_get_string_enum(self%handle, f_to_c_string(key), cptr))
+      if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+         value = c_string_to_f(cptr)
+      end if
       call self%handle_result(result_code, error_handler)
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine
@@ -675,7 +711,7 @@ contains
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine
 
-   subroutine mdu_set_enum_f(self, key, value, success, error_handler)
+   subroutine mdu_set_int_enum_f(self, key, value, success, error_handler)
       class(MduModel), intent(in) :: self
       character(len=*), intent(in) :: key
       integer, intent(in) :: value
@@ -683,7 +719,20 @@ contains
       procedure(mdu_error_handler_i) :: error_handler
       integer :: result_code
 
-      result_code = int(c_mdu_set_enum(self%handle, f_to_c_string(key), int(value, c_int32_t)))
+      result_code = int(c_mdu_set_int_enum(self%handle, f_to_c_string(key), int(value, c_int32_t)))
+      call self%handle_result(result_code, error_handler)
+      success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
+   end subroutine
+
+   subroutine mdu_set_string_enum_f(self, key, value, success, error_handler)
+      class(MduModel), intent(in) :: self
+      character(len=*), intent(in) :: key
+      character(len=*), intent(in) :: value
+      logical, intent(out) :: success
+      procedure(mdu_error_handler_i) :: error_handler
+      integer :: result_code
+
+      result_code = int(c_mdu_set_string_enum(self%handle, f_to_c_string(key), f_to_c_string(value)))
       call self%handle_result(result_code, error_handler)
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine

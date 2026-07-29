@@ -87,24 +87,28 @@ namespace dflowfm_io
         }
 
         /// @brief Sets the value of an enum property.
+        /// @tparam T Either @ref IntEnumValue or @ref StringEnumValue.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
-        /// @param value The @ref EnumValue to store. Must be a valid entry in the property's enum definition.
+        /// @param value The enum value to store. Must be a valid entry in the property's enum definition.
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
         /// @throws std::out_of_range if @p value is not a valid enum entry for the property.
-        void SetValue(const std::string& key, EnumValue value)
+        template <typename T>
+            requires std::same_as<T, IntEnumValue> || std::same_as<T, StringEnumValue>
+        void SetValue(const std::string& key, T value)
         {
             EnsureKnownKey(key);
             EnsureEnumInRange(key, value);
-            mduData.setValue(key, value);
+            mduData.setValue(key, std::move(value));
         }
 
     private:
-        void EnsureKnownKey(const std::string& key) const;
-        void EnsureEnumInRange(const std::string& key, EnumValue value) const;
-
         const MduSchema& schema;
         MduData mduData;
         IssueReport issues;
+
+        void EnsureKnownKey(const std::string& key) const;
+        void EnsureEnumInRange(const std::string& key, const IntEnumValue& value) const;
+        void EnsureEnumInRange(const std::string& key, const StringEnumValue& value) const;
     };
 
 } // namespace dflowfm_io

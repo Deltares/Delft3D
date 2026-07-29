@@ -102,7 +102,7 @@ public sealed class MduSchemaTest
     public void EveryEnumProperty_HasEnumValues()
     {
         Assert.That(
-            MduSchema.AllProperties.Where(p => p.ValueType is MduValueType.Enum),
+            MduSchema.AllProperties.Where(p => p.ValueType is MduValueType.StringEnum or MduValueType.IntEnum),
             Has.All.Matches<MduPropertySchema>(p => p.EnumValues.Any()));
     }
 
@@ -110,7 +110,7 @@ public sealed class MduSchemaTest
     public void EveryNonEnumProperty_HasNoEnumValues()
     {
         Assert.That(
-            MduSchema.AllProperties.Where(p => p.ValueType is not MduValueType.Enum),
+            MduSchema.AllProperties.Where(p => p.ValueType is not MduValueType.StringEnum and not MduValueType.IntEnum),
             Has.All.Matches<MduPropertySchema>(p => !p.EnumValues.Any()));
     }
 

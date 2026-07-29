@@ -125,7 +125,7 @@ namespace dflowfm_io::test
     // FindEnumValue
     // -------------------------------------------------------------------------
 
-    TEST(MduSchemaTest, FindEnumValue_ExistingEnumValue_ReturnsEnumValue)
+    TEST(MduSchemaTest, FindEnumValue_ExistingIntEnumValue_ReturnsEnumValue)
     {
         const MduSchema& schema = TestSchema();
 
@@ -135,7 +135,33 @@ namespace dflowfm_io::test
         const EnumValueSchema* enumValue = schema.FindEnumValue(*prop, "1");
 
         ASSERT_NE(enumValue, nullptr);
-        EXPECT_EQ(enumValue->value, 1);
+        EXPECT_EQ(enumValue->value, "1");
+    }
+
+    TEST(MduSchemaTest, FindEnumValue_ExistingStringEnumValue_ReturnsEnumValue)
+    {
+        const MduSchema& schema = TestSchema();
+
+        const PropertySchema* prop = schema.FindProperty("numerics.verticalAdvectionType");
+        ASSERT_NE(prop, nullptr);
+
+        const EnumValueSchema* enumValue = schema.FindEnumValue(*prop, "centralImplicit");
+
+        ASSERT_NE(enumValue, nullptr);
+        EXPECT_EQ(enumValue->value, "centralImplicit");
+    }
+
+    TEST(MduSchemaTest, FindEnumValue_ExistingStringEnumValueDifferentCase_ReturnsEnumValue)
+    {
+        const MduSchema& schema = TestSchema();
+
+        const PropertySchema* prop = schema.FindProperty("numerics.verticalAdvectionType");
+        ASSERT_NE(prop, nullptr);
+
+        const EnumValueSchema* enumValue = schema.FindEnumValue(*prop, "CENTRALIMPLICIT");
+
+        ASSERT_NE(enumValue, nullptr);
+        EXPECT_EQ(enumValue->value, "centralImplicit");
     }
 
     TEST(MduSchemaTest, FindEnumValue_NonExistingEnumValue_ReturnsNullptr)
@@ -148,19 +174,6 @@ namespace dflowfm_io::test
         const EnumValueSchema* enumValue = schema.FindEnumValue(*prop, "nonexistent_xyz");
 
         EXPECT_EQ(enumValue, nullptr);
-    }
-
-    TEST(MduSchemaTest, FindEnumValue_StringEnumProperty_ExistingValue_ReturnsEnumValue)
-    {
-        const MduSchema& schema = TestSchema();
-
-        const PropertySchema* prop = schema.FindProperty("numerics.verticalAdvectionType");
-        ASSERT_NE(prop, nullptr);
-
-        const EnumValueSchema* enumValue = schema.FindEnumValue(*prop, "centralImplicit");
-
-        ASSERT_NE(enumValue, nullptr);
-        EXPECT_EQ(enumValue->label, "centralImplicit");
     }
 
     TEST(MduSchemaTest, FindEnumValue_NonEnumProperty_ReturnsNullptr)
@@ -258,7 +271,7 @@ namespace dflowfm_io::test
     {
         for (const auto& section : MDU_SCHEMA.Sections())
             for (const auto& prop : section.properties)
-                if (prop.value_type == ValueType::Enum || prop.value_type == ValueType::IntEnum)
+                if (prop.value_type == ValueType::StringEnum || prop.value_type == ValueType::IntEnum)
                     EXPECT_FALSE(prop.enum_values.empty())
                         << "Enum property has no values: " << section.name << "." << prop.key;
     }
@@ -267,7 +280,7 @@ namespace dflowfm_io::test
     {
         for (const auto& section : MDU_SCHEMA.Sections())
             for (const auto& prop : section.properties)
-                if (prop.value_type != ValueType::Enum && prop.value_type != ValueType::IntEnum)
+                if (prop.value_type != ValueType::StringEnum && prop.value_type != ValueType::IntEnum)
                     EXPECT_TRUE(prop.enum_values.empty())
                         << "Non-enum property has enum values: " << section.name << "." << prop.key;
     }

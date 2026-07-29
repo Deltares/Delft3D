@@ -72,17 +72,17 @@ class TestMduModel(unittest.TestCase):
         doc = _loaded_doc()
         self.assertAlmostEqual(doc.model.get_double("numerics.cflmax"), 0.7)
 
-    def test_get_intenum(self):
+    def test_get_int_enum(self):
         doc = _loaded_doc()
-        result = doc.model.get_enum("general.autostart")
+        result = doc.model.get_int_enum("general.autostart")
         self.assertIsInstance(result, int)
         self.assertEqual(result, 0)
 
-    def test_get_enum(self):
+    def test_get_string_enum(self):
         doc = _loaded_doc()
-        result = doc.model.get_enum("general.filetype")
-        self.assertIsInstance(result, int)
-        self.assertEqual(result, 0)
+        result = doc.model.get_string_enum("general.filetype")
+        self.assertIsInstance(result, str)
+        self.assertEqual(result, "modelDef")
 
     def test_get_datetime(self):
         doc = _loaded_doc()
@@ -135,13 +135,13 @@ class TestMduModel(unittest.TestCase):
         doc = MduDocument()
         self.assertEqual(doc.model.get_string("general.program"), "D-Flow FM")
 
-    def test_get_intenum_default_value(self):
+    def test_get_int_enum_default_value(self):
         doc = MduDocument()
-        self.assertEqual(doc.model.get_enum("general.autoStart"), 0)
+        self.assertEqual(doc.model.get_int_enum("general.autoStart"), 0)
 
-    def test_get_enum_default_value(self):
+    def test_get_string_enum_default_value(self):
         doc = MduDocument()
-        self.assertEqual(doc.model.get_enum("numerics.flowSolver"), 0)
+        self.assertEqual(doc.model.get_string_enum("numerics.flowSolver"), "generic1d2d3d")
 
     def test_get_double_list_default_value(self):
         doc = MduDocument()
@@ -180,15 +180,15 @@ class TestMduModel(unittest.TestCase):
         doc.model.set_string("general.program", "My Program")
         self.assertEqual(doc.model.get_string("general.program"), "My Program")
 
-    def test_set_intenum(self):
+    def test_set_int_enum(self):
         doc = _loaded_doc()
-        doc.model.set_enum("general.autostart", 1)
-        self.assertEqual(doc.model.get_enum("general.autostart"), 1)
+        doc.model.set_int_enum("general.autostart", 1)
+        self.assertEqual(doc.model.get_int_enum("general.autostart"), 1)
 
-    def test_set_enum(self):
+    def test_set_string_enum(self):
         doc = _loaded_doc()
-        doc.model.set_enum("numerics.flowSolver", 1)
-        self.assertEqual(doc.model.get_enum("numerics.flowSolver"), 1)
+        doc.model.set_string_enum("numerics.flowSolver", "implicit1d")
+        self.assertEqual(doc.model.get_string_enum("numerics.flowSolver"), "implicit1d")
 
     def test_set_path(self):
         doc = _loaded_doc()
@@ -277,15 +277,15 @@ class TestMduModel(unittest.TestCase):
 
     # --- set: value out of range ---
 
-    def test_set_intenum_out_of_range(self):
+    def test_set_int_enum_out_of_range(self):
         doc = _loaded_doc()
         with self.assertRaises(RuntimeError):
-            doc.model.set_enum("general.autostart", 3)
+            doc.model.set_int_enum("general.autostart", 3)
 
-    def test_set_enum_out_of_range(self):
+    def test_set_string_enum_out_of_range(self):
         doc = _loaded_doc()
         with self.assertRaises(RuntimeError):
-            doc.model.set_enum("numerics.flowSolver", 3)
+            doc.model.set_string_enum("numerics.flowSolver", "not_a_valid_solver")
 
 
 if __name__ == "__main__":

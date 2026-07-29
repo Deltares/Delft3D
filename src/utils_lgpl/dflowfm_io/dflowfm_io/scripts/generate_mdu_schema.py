@@ -10,7 +10,7 @@ VALUE_TYPE_MAP = {
     "float": "Float",
     "intbool": "IntBool",
     "path": "Path",
-    "enum": "Enum",
+    "enum": "StringEnum",
     "intenum": "IntEnum",
     "list[path]": "PathList",
     "list[string]": "StringList",
@@ -66,16 +66,13 @@ def default_value_str(value):
     return str(value)
 
 
-def enum_entries(prop):
-    """Return an ordered list of (int_key, label, status) tuples for an enum property."""
-    value_type = prop["value_type"]
+def get_enum_entries(prop):
+    """Return an ordered list of (value, status) tuples for an enum property."""
     enum_values = prop.get("enum_values", {})
     entries = []
-    for index, (key, entry) in enumerate(enum_values.items()):
-        int_key = int(key) if value_type == "intenum" else index
-        label = None if value_type == "intenum" else key
+    for (key, entry) in enum_values.items():
         status = entry.get("status", {}) if isinstance(entry, dict) else {}
-        entries.append((int_key, label, status))
+        entries.append((key, status))
     return entries
 
 
@@ -99,7 +96,7 @@ def render_status(status, indent):
     return f"{{\n{body}\n{' ' * indent}}}"
 
 
-def render_enum_value(value, label, status, indent):
+def render_enum_value(value, status, indent):
     """Render a single EnumValueSchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
@@ -108,9 +105,7 @@ def render_enum_value(value, label, status, indent):
     def field(name, val):
         return f"{inner}{name.ljust(width)} = {val}"
 
-    field_blocks = [field(".value", value)]
-    if label is not None:
-        field_blocks.append(field(".label", f'"{label}"'))
+    field_blocks = [field(".value", f'"{value}"')]
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
 
@@ -127,7 +122,7 @@ def render_property(prop, indent, default_float_format):
     required = bool(prop.get("validation", {}).get("is_required", False))
     nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
-    entries = enum_entries(prop)
+    enum_entries = get_enum_entries(prop)
     status = prop.get("status", {})
 
     def field(name, val):
@@ -154,8 +149,8 @@ def render_property(prop, indent, default_float_format):
         field_blocks.append(field(".nullable", "true"))
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
-    if entries:
-        enum_blocks = [render_enum_value(v, label, st, indent + 8) for v, label, st in entries]
+    if enum_entries:
+        enum_blocks = [render_enum_value(v, st, indent + 8) for v, st in enum_entries]
         enum_body = ",\n".join(enum_blocks)
         field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
 

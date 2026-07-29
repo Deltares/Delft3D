@@ -186,9 +186,14 @@ class MduModel:
         _check_result(_lib.mdu_get_datetime(self._ref.handle, key.encode("utf-8"), ctypes.byref(epoch_out)))
         return datetime.fromtimestamp(epoch_out.value, tz=timezone.utc)
 
-    def get_enum(self, key: str) -> int:
+    def get_string_enum(self, key: str) -> str:
+        string_out = ctypes.c_char_p()
+        _check_result(_lib.mdu_get_string_enum(self._ref.handle, key.encode("utf-8"), ctypes.byref(string_out)))
+        return string_out.value.decode("utf-8")
+
+    def get_int_enum(self, key: str) -> int:
         value = ctypes.c_int32()
-        _check_result(_lib.mdu_get_enum(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
+        _check_result(_lib.mdu_get_int_enum(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
         return value.value
 
     def get_string_list(self, key: str) -> list[str]:
@@ -228,8 +233,11 @@ class MduModel:
         epoch = int(value.timestamp())
         _check_result(_lib.mdu_set_datetime(self._ref.handle, key.encode("utf-8"), ctypes.c_int64(epoch)))
 
-    def set_enum(self, key: str, value: int) -> None:
-        _check_result(_lib.mdu_set_enum(self._ref.handle, key.encode("utf-8"), ctypes.c_int32(value)))
+    def set_string_enum(self, key: str, value: int) -> None:
+        _check_result(_lib.mdu_set_string_enum(self._ref.handle, key.encode("utf-8"), value.encode("utf-8")))
+
+    def set_int_enum(self, key: str, value: str) -> None:
+        _check_result(_lib.mdu_set_int_enum(self._ref.handle, key.encode("utf-8"), ctypes.c_int32(value)))
 
     def set_string_list(self, key: str, values: list[str]) -> None:
         encoded = [v.encode("utf-8") for v in values]

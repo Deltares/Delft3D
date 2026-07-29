@@ -181,11 +181,18 @@ namespace dflowfm_io::test
         EXPECT_EQ(doc.GetValue<std::string>(key), "1.09");
     }
 
-    TEST_F(MduDocumentTest, GetValue_ExistingEnumProperty_ReturnsDefaultValue)
+    TEST_F(MduDocumentTest, GetValue_ExistingStringEnumProperty_ReturnsDefaultValue)
+    {
+        const std::string key = FormatKey("numerics", "verticalAdvectionType");
+
+        EXPECT_EQ(doc.GetValue<StringEnumValue>(key).value, "higherOrderUpwindExplicit");
+    }
+
+    TEST_F(MduDocumentTest, GetValue_ExistingIntEnumProperty_ReturnsDefaultValue)
     {
         const std::string key = FormatKey("numerics", "vertAdvTypSal");
 
-        EXPECT_EQ(doc.GetValue<EnumValue>(key).value, 6);
+        EXPECT_EQ(doc.GetValue<IntEnumValue>(key).value, 6);
     }
 
     TEST_F(MduDocumentTest, GetValue_ExistingBoolProperty_ReturnsDefaultValue)
@@ -252,10 +259,18 @@ namespace dflowfm_io::test
         EXPECT_THROW(doc.SetValue("general.nonexistent_xyz", 42), std::invalid_argument);
     }
 
-    TEST_F(MduDocumentTest, SetValue_EnumOutOfRange_ThrowsOutOfRange)
+    TEST_F(MduDocumentTest, SetValue_StringEnumOutOfRange_ThrowsOutOfRange)
     {
         const std::string key = FormatKey("general", "fileType");
-        const EnumValue outOfRange{std::numeric_limits<int>::max()};
+        const StringEnumValue outOfRange{"invalid"};
+
+        EXPECT_THROW(doc.SetValue(key, outOfRange), std::out_of_range);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_IntEnumOutOfRange_ThrowsOutOfRange)
+    {
+        const std::string key = FormatKey("geometry", "layerType");
+        const IntEnumValue outOfRange{-1};
 
         EXPECT_THROW(doc.SetValue(key, outOfRange), std::out_of_range);
     }
@@ -287,13 +302,22 @@ namespace dflowfm_io::test
         EXPECT_EQ(doc.GetValue<std::string>(key), "1.10");
     }
 
-    TEST_F(MduDocumentTest, SetValue_ValidEnumValue_UpdatesData)
+    TEST_F(MduDocumentTest, SetValue_ValidStringEnumValue_UpdatesData)
+    {
+        const std::string key = FormatKey("numerics", "verticalAdvectionType");
+
+        doc.SetValue(key, StringEnumValue{"centralImplicit"});
+
+        EXPECT_EQ(doc.GetValue<StringEnumValue>(key).value, "centralImplicit");
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidIntEnumValue_UpdatesData)
     {
         const std::string key = FormatKey("numerics", "vertAdvTypSal");
 
-        doc.SetValue(key, EnumValue{4});
+        doc.SetValue(key, IntEnumValue{4});
 
-        EXPECT_EQ(doc.GetValue<EnumValue>(key).value, 4);
+        EXPECT_EQ(doc.GetValue<IntEnumValue>(key).value, 4);
     }
 
     TEST_F(MduDocumentTest, SetValue_ValidBoolValue_UpdatesData)

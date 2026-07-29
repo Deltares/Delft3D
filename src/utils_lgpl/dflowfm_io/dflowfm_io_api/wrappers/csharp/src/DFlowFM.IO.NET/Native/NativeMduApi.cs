@@ -52,7 +52,10 @@ internal static class NativeMduApi
     public static extern int mdu_get_datetime(SafeMduHandle handle, byte[] key, out long epochOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_get_enum(SafeMduHandle handle, byte[] key, out int enumOut);
+    public static extern int mdu_get_string_enum(SafeMduHandle handle, byte[] key, out IntPtr stringOut);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int mdu_get_int_enum(SafeMduHandle handle, byte[] key, out int enumOut);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_get_string_list(SafeMduHandle handle, byte[] key, out IntPtr stringListOut, out ulong sizeOut);
@@ -82,7 +85,10 @@ internal static class NativeMduApi
     public static extern int mdu_set_datetime(SafeMduHandle handle, byte[] key, long epoch);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int mdu_set_enum(SafeMduHandle handle, byte[] key, int enumValue);
+    public static extern int mdu_set_string_enum(SafeMduHandle handle, byte[] key, byte[] enumValue);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int mdu_set_int_enum(SafeMduHandle handle, byte[] key, int enumValue);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int mdu_set_string_list(SafeMduHandle handle, byte[] key, IntPtr stringList, ulong size);

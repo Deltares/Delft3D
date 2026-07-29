@@ -27,11 +27,11 @@ namespace dflowfm_io::test
 
             PropertySchema fileType;
             fileType.key = "fileType";
-            fileType.value_type = ValueType::Enum;
+            fileType.value_type = ValueType::StringEnum;
             fileType.default_value = "modelDef";
             fileType.description = "File type. Do not edit this.";
             fileType.required = true;
-            fileType.enum_values = {{0, "modelDef"}};
+            fileType.enum_values = {{"modelDef"}};
             general.properties.push_back(fileType);
 
             PropertySchema fileVersion;
@@ -67,9 +67,9 @@ namespace dflowfm_io::test
             autoStart.value_type = ValueType::IntEnum;
             autoStart.default_value = "0";
             autoStart.description = "Autostart simulation after loading MDU or not.";
-            autoStart.enum_values = {{1, ""},
-                                     {2, "", {StatusType::Deprecated, "Option is deprecated."}},
-                                     {3, "", {StatusType::Obsolete, "Option is obsololete.", "2026.02"}}};
+            autoStart.enum_values = {{"1"},
+                                     {"2", {StatusType::Deprecated, "Option is deprecated."}},
+                                     {"3", {StatusType::Obsolete, "Option is obsololete.", "2026.02"}}};
             model.properties.push_back(autoStart);
 
             PropertySchema convertLongCulverts;
@@ -111,9 +111,9 @@ namespace dflowfm_io::test
             sedimentModelNr.value_type = ValueType::IntEnum;
             sedimentModelNr.default_value = "0";
             sedimentModelNr.description = "Sediment model number.";
-            sedimentModelNr.enum_values = {{0, ""},
-                                           {1, "", {StatusType::Deprecated, "Option is deprecated."}},
-                                           {2, "", {StatusType::Obsolete, "Option is obsolete.", "2022.02"}}};
+            sedimentModelNr.enum_values = {{"0"},
+                                           {"1", {StatusType::Deprecated, "Option is deprecated."}},
+                                           {"2", {StatusType::Obsolete, "Option is obsolete.", "2022.02"}}};
             sediment.properties.push_back(sedimentModelNr);
 
             // [geometry]
@@ -155,10 +155,10 @@ namespace dflowfm_io::test
             layerType.value_type = ValueType::IntEnum;
             layerType.default_value = "1";
             layerType.description = "Vertical layer type.";
-            layerType.enum_values = {{1, ""},
-                                     {2, ""},
-                                     {3, "", {StatusType::Deprecated, "Option is deprecated."}},
-                                     {4, "", {StatusType::Obsolete, "Option is obsololete.", "2026.02"}}};
+            layerType.enum_values = {{"1"},
+                                     {"2"},
+                                     {"3", {StatusType::Deprecated, "Option is deprecated."}},
+                                     {"4", {StatusType::Obsolete, "Option is obsololete.", "2026.02"}}};
             geometry.properties.push_back(layerType);
 
             PropertySchema stretchCoef;
@@ -191,7 +191,7 @@ namespace dflowfm_io::test
             timeStepType.value_type = ValueType::IntEnum;
             timeStepType.default_value = "0";
             timeStepType.description = "Type of time stepping.";
-            timeStepType.enum_values = {{0}, {1}, {2}, {3}, {4}};
+            timeStepType.enum_values = {{"0"}, {"1"}, {"2"}, {"3"}, {"4"}};
             numerics.properties.push_back(timeStepType);
 
             PropertySchema qhRelax;
@@ -204,10 +204,10 @@ namespace dflowfm_io::test
 
             PropertySchema verticalAdvectionType;
             verticalAdvectionType.key = "verticalAdvectionType";
-            verticalAdvectionType.value_type = ValueType::Enum;
+            verticalAdvectionType.value_type = ValueType::StringEnum;
             verticalAdvectionType.default_value = "higherOrderUpwindExplicit";
             verticalAdvectionType.description = "Vertical advection type for salinity.";
-            verticalAdvectionType.enum_values = {{0, "centralImplicit"}, {1, "higherOrderUpwindExplicit"}};
+            verticalAdvectionType.enum_values = {{"centralImplicit"}, {"higherOrderUpwindExplicit"}};
             numerics.properties.push_back(verticalAdvectionType);
 
             PropertySchema vertAdvTypSal;
@@ -216,7 +216,7 @@ namespace dflowfm_io::test
             vertAdvTypSal.default_value = "6";
             vertAdvTypSal.description = "Vertical advection type for salinity.";
             vertAdvTypSal.status = {StatusType::Deprecated, "Use [numerics] verticalAdvectionType instead."};
-            vertAdvTypSal.enum_values = {{0}, {4}, {6}};
+            vertAdvTypSal.enum_values = {{"0"}, {"4"}, {"6"}};
             numerics.properties.push_back(vertAdvTypSal);
 
             // [time]

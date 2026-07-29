@@ -145,15 +145,28 @@ internal sealed class MduApi : IDisposable
     }
 
     /// <summary>
-    /// Gets an enumeration property value by its fully-qualified key.
+    /// Gets a string enumeration property value by its fully-qualified key.
+    /// </summary>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <returns>The string representation of the enumeration value.</returns>
+    /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
+    public string GetStringEnum(string key)
+    {
+        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        ThrowIfError(NativeMduApi.mdu_get_string_enum(_handle, keyBytes, out IntPtr ptr));
+        return NativeInterop.PtrToStringUtf8(ptr);
+    }
+
+    /// <summary>
+    /// Gets an integer enumeration property value by its fully-qualified key.
     /// </summary>
     /// <param name="key">The fully-qualified property key.</param>
     /// <returns>The integer representation of the enumeration value.</returns>
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
-    public int GetEnum(string key)
+    public int GetIntEnum(string key)
     {
         byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        ThrowIfError(NativeMduApi.mdu_get_enum(_handle, keyBytes, out int value));
+        ThrowIfError(NativeMduApi.mdu_get_int_enum(_handle, keyBytes, out int value));
         return value;
     }
 
@@ -275,12 +288,25 @@ internal sealed class MduApi : IDisposable
     /// Sets an enumeration property value by its fully-qualified key.
     /// </summary>
     /// <param name="key">The fully-qualified property key.</param>
-    /// <param name="value">The integer representation of the enumeration value to assign.</param>
+    /// <param name="value">The string representation of the enumeration value to assign.</param>
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
-    public void SetEnum(string key, int value)
+    public void SetStringEnum(string key, string value)
     {
         byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        ThrowIfError(NativeMduApi.mdu_set_enum(_handle, keyBytes, value));
+        byte[] valueBytes = NativeInterop.StringToUtf8(value);
+        ThrowIfError(NativeMduApi.mdu_set_string_enum(_handle, keyBytes, valueBytes));
+    }
+
+    /// <summary>
+    /// Sets an enumeration property value by its fully-qualified key.
+    /// </summary>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="value">The integer representation of the enumeration value to assign.</param>
+    /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
+    public void SetIntEnum(string key, int value)
+    {
+        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        ThrowIfError(NativeMduApi.mdu_set_int_enum(_handle, keyBytes, value));
     }
 
     /// <summary>

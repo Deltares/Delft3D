@@ -86,14 +86,20 @@ namespace dflowfm_io
                 std::format("Unknown MDU property: '{}'.", key));
     }
 
-    void MduDocument::EnsureEnumInRange(const std::string& key, EnumValue value) const
+    void MduDocument::EnsureEnumInRange(const std::string& key, const IntEnumValue& value) const
     {
         const auto* ps = schema.FindProperty(key);
-        if (!ps) return;
-        const auto it = std::ranges::find(ps->enum_values, value.value, &EnumValueSchema::value);
-        if (it == ps->enum_values.end())
+        if (ps && !schema.FindEnumValue(*ps, std::to_string(value.value)))
             throw std::out_of_range(
-                std::format("Enum value {} is out of range for '{}'.", value.value, key));
+                std::format("Enum value '{}' is out of range for '{}'.", value.value, key));
+    }
+
+    void MduDocument::EnsureEnumInRange(const std::string& key, const StringEnumValue& value) const
+    {
+        const auto* ps = schema.FindProperty(key);
+        if (ps && !schema.FindEnumValue(*ps, value.value))
+            throw std::out_of_range(
+                std::format("Enum value '{}' is out of range for '{}'.", value.value, key));
     }
 
 } // namespace dflowfm_io

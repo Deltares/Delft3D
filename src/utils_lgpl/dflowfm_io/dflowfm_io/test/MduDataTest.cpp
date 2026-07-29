@@ -220,13 +220,22 @@ namespace dflowfm_io::test
         EXPECT_EQ(data.getValueAs<std::filesystem::path>("somekey"), std::filesystem::path{"some/file.txt"});
     }
 
-    TEST(MduDataTest, GetValueAs_ExistingEnumKey_ReturnsCorrectValue)
+    TEST(MduDataTest, GetValueAs_ExistingStringEnumKey_ReturnsCorrectValue)
     {
         MduData data = MduData::CreateFromRawData({
-            {"somekey", EnumValue{3}}
+            {"somekey", StringEnumValue{"somevalue"}}
         });
 
-        EXPECT_EQ(data.getValueAs<EnumValue>("somekey").value, 3);
+        EXPECT_EQ(data.getValueAs<StringEnumValue>("somekey").value, "somevalue");
+    }
+
+    TEST(MduDataTest, GetValueAs_ExistingIntEnumKey_ReturnsCorrectValue)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", IntEnumValue{3}}
+        });
+
+        EXPECT_EQ(data.getValueAs<IntEnumValue>("somekey").value, 3);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingDateTimeKey_ReturnsCorrectValue)
@@ -380,15 +389,26 @@ namespace dflowfm_io::test
         EXPECT_EQ(data.getValueAs<std::filesystem::path>("somekey"), std::filesystem::path{"new.txt"});
     }
 
-    TEST(MduDataTest, SetValue_ExistingEnumKey_UpdatesValue)
+    TEST(MduDataTest, SetValue_ExistingStringEnumKey_UpdatesValue)
     {
         MduData data = MduData::CreateFromRawData({
-            {"somekey", EnumValue{1}}
+            {"somekey", StringEnumValue{"somevalue"}}
         });
 
-        data.setValue<EnumValue>("somekey", EnumValue{2});
+        data.setValue<StringEnumValue>("somekey", StringEnumValue{"newvalue"});
 
-        EXPECT_EQ(data.getValueAs<EnumValue>("somekey").value, 2);
+        EXPECT_EQ(data.getValueAs<StringEnumValue>("somekey").value, "newvalue");
+    }
+
+    TEST(MduDataTest, SetValue_ExistingIntEnumKey_UpdatesValue)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", IntEnumValue{1}}
+        });
+
+        data.setValue<IntEnumValue>("somekey", IntEnumValue{2});
+
+        EXPECT_EQ(data.getValueAs<IntEnumValue>("somekey").value, 2);
     }
 
     TEST(MduDataTest, SetValue_ExistingDateTimeKey_UpdatesValue)

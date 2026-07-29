@@ -22,7 +22,7 @@ namespace dflowfm_io
         Float,
         IntBool,
         Path,
-        Enum,
+        StringEnum,
         IntEnum,
         PathList,
         StringList,
@@ -40,10 +40,16 @@ namespace dflowfm_io
         DateTime,
     };
 
-    /// @brief Represents a single value within an enumeration property.
-    struct EnumValue
+    /// @brief Represents a single value within an integer enumeration property.
+    struct IntEnumValue
     {
         int value;
+    };
+
+    /// @brief Represents a single value within a string enumeration property.
+    struct StringEnumValue
+    {
+        std::string value;
     };
 
     /// @brief A discriminated union of all supported MDU property value types.
@@ -53,7 +59,8 @@ namespace dflowfm_io
         double,
         bool,
         std::filesystem::path,
-        EnumValue,
+        StringEnumValue,
+        IntEnumValue,
         std::chrono::system_clock::time_point,
         std::vector<std::string>,
         std::vector<std::filesystem::path>,
@@ -80,8 +87,7 @@ namespace dflowfm_io
     /// @brief Schema metadata for a single value within an enumeration property.
     struct EnumValueSchema
     {
-        int value; ///< Integer index (Enum) or integer value (IntEnum).
-        std::string label; ///< String label for Enum types. Empty for IntEnum types.
+        std::string value; ///< The enum value as it appears in the MDU schema.
         Status status; ///< Lifecycle status of this enum value.
     };
 
@@ -96,7 +102,7 @@ namespace dflowfm_io
         bool required = false; ///< Whether the property must be present in the MDU file.
         bool nullable = false; ///< Whether the property may hold an explicit null (empty) value.
         Status status; ///< Describes the lifecycle status of the property.
-        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for Enum and IntEnum types.
+        std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for StringEnum and IntEnum types.
     };
 
     /// @brief Schema definition for a single section within an MDU file.
@@ -147,10 +153,10 @@ namespace dflowfm_io
         const PropertySchema* FindProperty(const std::string& section, const std::string& property) const;
 
         /// @brief Finds the enum value schema within @p propertySchema whose value/label matches @p rawValue.
-        /// @param propertySchema The schema of the property (must be of type Enum or IntEnum).
+        /// @param propertySchema The schema of the property (must be of type StringEnum or IntEnum).
         /// @param rawValue The raw string value as it appears in the MDU file.
         /// @return The matching @ref EnumValueSchema, or nullptr if no match is found
-        /// or the property is not an Enum/IntEnum.
+        ///         or the property is not an StringEnum/IntEnum.
         const EnumValueSchema* FindEnumValue(const PropertySchema& propertySchema, const std::string& rawValue) const;
 
         /// @brief Determines whether @p rawValue is obsolete for @p propertySchema, either because the

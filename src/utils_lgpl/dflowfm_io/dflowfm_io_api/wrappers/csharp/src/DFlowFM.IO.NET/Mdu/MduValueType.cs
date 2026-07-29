@@ -11,7 +11,8 @@ public enum MduValueType
     String,
     Path,
     DateTime,
-    Enum,
+    StringEnum,
+    IntEnum,
     DoubleList,
     StringList,
     PathList

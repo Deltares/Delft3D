@@ -34,10 +34,9 @@ namespace dflowfm_io
                     return "";
                 case ValueType::FloatList:
                     return "";
-                case ValueType::Enum:
-                    return schema.enum_values.empty() ? "0" : schema.enum_values.front().label;
+                case ValueType::StringEnum:
                 case ValueType::IntEnum:
-                    return schema.enum_values.empty() ? "0" : std::to_string(schema.enum_values.front().value);
+                    return schema.enum_values.front().value;
                 default:
                     throw std::logic_error(std::format("Unhandled ValueType for property '{}'.", schema.key));
             }
