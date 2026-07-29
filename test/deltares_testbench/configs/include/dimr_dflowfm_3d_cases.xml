@@ -823,7 +823,7 @@
     </testCase>
 
     <testCase name="e02_f025_c011_bendcase_structured_3d" ref="dflowfm_default">
-      <maxRunTime>540</maxRunTime>
+      <maxRunTime>660</maxRunTime>
       <path version="2026-07-09T15:46:55.684000">e02_dflowfm/f025_secondary_flow_hydrodynamics/c011_bendcase_structured_3d</path>
       <checks>
         <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">

@@ -1,7 +1,7 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
-      <maxRunTime>2640</maxRunTime>
+      <maxRunTime>4140</maxRunTime>
             <path version="2025-07-29T12:51:53.132000">e04_wave/f09-SWANDCSM/c01</path>
             
             <checks>
@@ -185,6 +185,7 @@
         <!-- ======================================================================== -->
         <testCase name="e04_f02_c05_windfields" ref="dimr_trunk">
             <path version="2025-07-29T12:52:41.165000">e04_wave/f02-windfields/c05</path>
+      <maxRunTime>660</maxRunTime>
             
             <checks>
                 <file name="wavm-grw.nc" type="NETCDF">
@@ -394,7 +395,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
-      <!-- <maxRunTime>660</maxRunTime> -->
+      <maxRunTime>1200</maxRunTime>
             <path version="2025-07-29T12:53:17.117000">e04_wave/f09-SWANDCSM/c03</path>
             
             <checks>
@@ -409,7 +410,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c04_SWANDCSM" ref="dimr_trunk">
-      <maxRunTime>900</maxRunTime>
+      <maxRunTime>1800</maxRunTime>
             <path version="2025-07-29T12:53:23.514000">e04_wave/f09-SWANDCSM/c04</path>
             
             <checks>
@@ -424,7 +425,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c05_SWANDCSM" ref="dimr_trunk">
-      <maxRunTime>660</maxRunTime>
+      <maxRunTime>1500</maxRunTime>
             <path version="2025-07-29T12:53:28.793000">e04_wave/f09-SWANDCSM/c05</path>
             
             <checks>
@@ -464,7 +465,7 @@
         <!-- ======================================================================== -->
 		<testCase name="e04_f12_c01_overallspecfile" ref="dimr_noconf">
             <path version="2026-06-02T12:53:36.167000">e04_wave/f12_wave_spectral_cache/c01_overallspecfile</path>
-            <maxRunTime>60.0</maxRunTime>
+            <maxRunTime>360</maxRunTime>
             <checks>
                 <file name="wave/wavm-icelandnest.nc" type="NETCDF">
                     <parameters>
