@@ -131,11 +131,6 @@ if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
 endif()
 
-# triangle
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
 # libsigwatch
 if(NOT TARGET libsigwatch)
     add_subdirectory(${checkout_src_root}/${libsigwatch_module} libsigwatch)
