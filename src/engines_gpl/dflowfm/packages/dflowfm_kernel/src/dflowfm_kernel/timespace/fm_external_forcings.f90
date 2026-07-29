@@ -454,39 +454,53 @@ contains
       integer :: link !< link counter
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
+      logical :: significant_height_required
+      logical :: period_required
+      logical :: direction_required
+      logical :: force_x_required
+      logical :: force_y_required
+      logical :: dissipation_total_required
+      logical :: dissipation_surface_required
+      logical :: dissipation_white_capping_required
       logical :: wave_kinematics_required
 
-      wave_kinematics_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT) .and. &
-                                 wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD) .and. &
-                                 wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+      significant_height_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+      period_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
+      direction_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+      force_x_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_X)
+      force_y_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y)
+      dissipation_total_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_TOTAL)
+      dissipation_surface_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_SURFACE)
+      dissipation_white_capping_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+      wave_kinematics_required = significant_height_required .and. period_required .and. direction_required
 
       do link = 1, number_of_links
          kb = link2cell(1, link)
          ki = link2cell(2, link)
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)) then
+         if (significant_height_required) then
             hwavcom(kb) = hwavcom(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)) then
+         if (period_required) then
             twav(kb) = twav(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)) then
+         if (direction_required) then
             phiwav(kb) = phiwav(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_X)) then
+         if (force_x_required) then
             sxwav(kb) = sxwav(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y)) then
+         if (force_y_required) then
             sywav(kb) = sywav(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_TOTAL)) then
+         if (dissipation_total_required) then
             distot(kb) = distot(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_SURFACE)) then
+         if (dissipation_surface_required) then
             dsurf(kb) = dsurf(ki)
             sbxwav(kb) = sbxwav(ki)
             sbywav(kb) = sbywav(ki)
          end if
-         if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)) then
+         if (dissipation_white_capping_required) then
             dwcap(kb) = dwcap(ki)
          end if
          if (wave_kinematics_required) then
