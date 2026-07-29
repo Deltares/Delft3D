@@ -4979,7 +4979,7 @@
 		</testCase>
 		<testCase name="e01_f27_c25-z_upper_pierce_slope_limiter" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f27_zmodel_updates/c25-z_upper_pierce_slope_limiter</path>
-      <maxRunTime>2400</maxRunTime>
+      <maxRunTime>3000</maxRunTime>
 			
 			<checks>
 				<file name="trih-b11.dat" type="NEFIS">

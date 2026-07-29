@@ -109,6 +109,7 @@
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c02" ref="dimr_trunk">
         <path version="2025-06-05T11:46:49.669000">e100_dflowfm-dwaves/f02_delft3d_cases/c02-FriesianInlet_schematic/dfm</path>
+      <maxRunTime>450</maxRunTime>
         
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -240,6 +241,7 @@
     <!-- ======================================================================== -->
     <testCase name="e100_f09_c01" ref="dimr_noconfig">
         <path version="2025-08-27T12:39:58.274000">e100_dflowfm-dwaves/f09_comwrite_intervals/c01-ti_com_dtuser_default</path>
+      <maxRunTime>450</maxRunTime>
         
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
