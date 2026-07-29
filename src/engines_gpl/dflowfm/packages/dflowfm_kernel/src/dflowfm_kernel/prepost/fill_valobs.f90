@@ -99,6 +99,7 @@ contains
       use m_flowparameters, only: his_write_settings
       use messagehandling, only: LEVEL_WARN, msgbuf, mess
       use m_relative_wind, only: compute_wind_relative_to_surface_on_link
+      use m_turbulence, only: ozmidov_viscosity
 
       implicit none
 
@@ -173,7 +174,7 @@ contains
          do LL = 1, lnx
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb - 1, Lt
-               vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+               vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL) + ozmidov_viscosity(LL)
             end do
          end do
          call links_to_centers(vicwws_total, vicwwu_total)

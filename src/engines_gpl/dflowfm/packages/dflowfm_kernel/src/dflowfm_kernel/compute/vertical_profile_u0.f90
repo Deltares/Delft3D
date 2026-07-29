@@ -51,6 +51,7 @@ contains
       use m_waves, only: ustokes
       use m_sferic, only: jsferic, dg2rd
       use m_filter_data, only: ustar, itype
+      use m_turbulence, only: ozmidov_viscosity
       implicit none
       integer :: Lb, Lt, kxL, LL
       real(kind=dp) :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)
@@ -108,7 +109,7 @@ contains
          k = L - Lb + 1
          dzLw = 0.5_dp * (dzu(k + 1) + dzu(k))
 
-         vstress = (vicwwu(L) + vicoww%get(LL)) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
+         vstress = (vicwwu(L) + vicoww%get(LL) + ozmidov_viscosity(LL)) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
 
          ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 

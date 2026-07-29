@@ -59,7 +59,8 @@ contains
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
-
+      use m_turbulence, only: ozmidov_viscosity, ozmidov_viscosity_centers
+      
       implicit none
 
       integer, intent(in) :: NUMCONST !< number of transported quantities
@@ -173,6 +174,7 @@ contains
                if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
                   fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(kk, j)) * dtbazi
                else
+                  ozmid = sigdifi(j) * ozmidov_viscosity_centers(k) 
                   fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid) * dtbazi
                   if (j == ISALT) then
                      difwws(k) = sigdifi(j) * vicwws(k) + ozmid

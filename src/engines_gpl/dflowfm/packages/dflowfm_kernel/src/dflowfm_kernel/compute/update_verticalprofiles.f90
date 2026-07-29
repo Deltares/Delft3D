@@ -61,7 +61,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
-                              c3t_stable, c3t_unstable
+                              c3t_stable, c3t_unstable, ozmidov_viscosity, ozmidov_viscosity_centers
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -81,7 +81,6 @@ contains
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
-      real(kind=dp) :: ozmid
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror
 
@@ -391,8 +390,7 @@ contains
                      ! Add xlozmidov
                      if (xlozmidov%get(LL) > 0.0_dp) then
                         if (bruva(k) > 0.0_dp) then ! stable stratification
-                           ozmid = 0.2_dp * xlozmidov%get(LL) * xlozmidov%get(LL) * sqrt(bruva(k) * SIGRHO)
-                           vicwwu(L) = vicwwu(L) + ozmid * SIGRHO
+                           ozmidov_viscosity(LL) =  0.2_dp * xlozmidov%get(LL) * xlozmidov%get(LL) * sqrt(bruva(k) * SIGRHO) * SIGRHO
                         end if
                      end if
 
@@ -897,6 +895,7 @@ contains
       end if
 
       call links_to_centers(vicwws, vicwwu)
+      call links_to_centers(ozmidov_viscosity_centers, ozmidov_viscosity)
       if (jarichardsononoutput > 0) then
          call links_to_centers(richs, rich)
       end if

@@ -96,6 +96,8 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
    real(kind=dp), allocatable, target, dimension(:) :: vicwws !< [m2/s] turbulent vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: vicwws_total !< [m2/s] total vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: ozmidov_viscosity
+   real(kind=dp), allocatable, dimension(:) :: ozmidov_viscosity_centers
    real(kind=dp), allocatable, dimension(:) :: difwws !< [m2/s] turbulent vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: difwws_total !< [m2/s] total vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: vicwwu_total !< [m2/s] total vertical eddy viscosity at layer interface at u point
