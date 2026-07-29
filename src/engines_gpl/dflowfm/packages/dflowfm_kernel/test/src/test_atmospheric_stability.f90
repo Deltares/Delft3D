@@ -3,6 +3,7 @@ module test_atmospheric_stability
    use precision, only: dp
    use precision_basics, only: comparereal
    use m_atmospheric_stability
+   use m_array_or_scalar, only: t_array_or_scalar
    implicit none
 
 contains
@@ -17,6 +18,7 @@ contains
       real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
       real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
                                     obukhov_length, richardson_number, c_d, c_h, c_e
+      type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity
       type(t_options) :: options
       
       options%include_stability = .true.
@@ -27,9 +29,10 @@ contains
       air_pressure = [101190.122711076852283_dp, 99932.877309904928552_dp, 100434.759443715374800_dp]
       charnock = [0.031984724136352_dp, 0.007887448339510_dp, 0.063390066055710_dp]
       surface_temperature = [286.743896484375000_dp, 286.676513671875000_dp, 282.813232421875000_dp]
+      salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp
       
       call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
-                                  air_pressure, charnock, surface_temperature, options)
+                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
 
       call get_u_star(u_star)
       call get_t_star(t_star)
@@ -111,6 +114,7 @@ contains
       real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
       real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
                                     obukhov_length, richardson_number, c_d, c_h, c_e
+      type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity
       real(kind=dp) :: tolerance = 1e-5_dp
       type(t_options) :: options
       
@@ -122,9 +126,10 @@ contains
       air_pressure = [101190.122711076852283_dp, 99932.877309904928552_dp, 100434.759443715374800_dp]
       charnock = [0.031984724136352_dp, 0.007887448339510_dp, 0.063390066055710_dp]
       surface_temperature = [286.743896484375000_dp, 286.676513671875000_dp, 282.813232421875000_dp]
+      salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp
       
       call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
-                                  air_pressure, charnock, surface_temperature, options)
+                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
    
       call get_u_star(u_star)
       call get_t_star(t_star)
@@ -206,6 +211,7 @@ contains
       real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
       real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
                                     obukhov_length, richardson_number, c_d, c_h, c_e
+      type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity
       type(t_options) :: options
       
       options%include_stability = .true.
@@ -217,9 +223,10 @@ contains
       air_pressure = [101190.122711076852283_dp, 99932.877309904928552_dp, 100434.759443715374800_dp]
       charnock = [0.031984724136352_dp, 0.007887448339510_dp, 0.063390066055710_dp]
       surface_temperature = [286.743896484375000_dp, 286.676513671875000_dp, 282.813232421875000_dp]
+      salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp
       
       call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
-                                  air_pressure, charnock, surface_temperature, options)
+                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
 
       call get_u_star(u_star)
       call get_t_star(t_star)

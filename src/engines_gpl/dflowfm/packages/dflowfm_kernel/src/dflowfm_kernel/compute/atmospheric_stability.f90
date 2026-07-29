@@ -22,6 +22,7 @@ module m_atmospheric_stability
    use m_physcoef, only: vonkarw
    use m_flowparameters, only: EPS8
    use MessageHandling, only: err
+   use m_array_or_scalar, only: t_array_or_scalar
 
    implicit none(type, external)
 
@@ -67,7 +68,6 @@ module m_atmospheric_stability
    type :: t_options
       logical :: include_free_convection = .false. !< Use in weak-wind unstable conditions (buoyancy-driven turbulence matters); usually unnecessary in moderate/strong wind or neutral/stable cases.
       logical :: include_stability = .true. !< Use for stability-aware similarity corrections; disable for neutral conditions.
-      real(kind=dp) :: fqsat = 1.0_dp !< Salinity reducing factor of saturation humidity.
       real(kind=dp) :: sensor_height_wind_velocity = 10.0_dp !< Sensor height of prescribed wind velocity [m]
       real(kind=dp) :: sensor_height_humidity = 2.0_dp !< Sensor height of prescribed humidity [m]
       real(kind=dp) :: sensor_height_air_temperature = 2.0_dp !< Sensor height of prescribed air temperature [m]
@@ -108,7 +108,7 @@ contains
 
    !> Compute turbulence scaling parameters for a point value.
    pure function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
-                                            air_pressure, charnock, surface_temperature, options) result(result)
+                                            air_pressure, charnock, surface_temperature, salt_saturation_humidity_reduction_factor, options) result(result)
       real(kind=dp), intent(in) :: wind_velocity_x !< x-direction wind component [m/s].
       real(kind=dp), intent(in) :: wind_velocity_y !< y-direction wind component [m/s].
       real(kind=dp), intent(in) :: air_temperature !< Air temperature [K].
@@ -116,10 +116,10 @@ contains
       real(kind=dp), intent(in) :: air_pressure !< Air pressure [Pa].
       real(kind=dp), intent(in) :: charnock !< Charnock parameter [-].
       real(kind=dp), intent(in) :: surface_temperature !< Surface temperature [K].
+      real(kind=dp), intent(in) :: salt_saturation_humidity_reduction_factor !< Salinity reduction factor of saturation humidity
       type(t_options), intent(in) :: options !< Optional model switches.
       type(t_scales) :: result !< Computed scaling outputs.
 
-      real(kind=dp) :: salt_saturation_humidity_reduction_factor
       real(kind=dp) :: wind_velocity_magnitude
       real(kind=dp) :: vapor_pressure, saturated_vapor_pressure ! vapor and saturated vapor pressure at temperature sensor's height
       real(kind=dp) :: saturated_surface_vapor_pressure ! saturated vapor pressure just above water surface
@@ -153,7 +153,6 @@ contains
          vapor_pressure = compute_saturation_pressure(dew_point_temperature)
          saturated_vapor_pressure = compute_saturation_pressure(air_temperature)
          air_humidity = compute_specific_humidity(vapor_pressure, air_pressure)
-         salt_saturation_humidity_reduction_factor = options%fqsat
          saturated_surface_vapor_pressure = compute_saturation_pressure(surface_temperature)
          surface_humidity = compute_specific_humidity(saturated_surface_vapor_pressure, air_pressure)
          surface_humidity = salt_saturation_humidity_reduction_factor * surface_humidity
@@ -285,7 +284,7 @@ contains
    !> Compute arrays of scaling parameters and bulk surface fluxes.
    !! This routine gives no return values. It fills the module arrays with proper values.
    subroutine compute_scales_and_fluxes(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
-                                        air_pressure, charnock, surface_temperature, options)
+                                        air_pressure, charnock, surface_temperature, salt_saturation_humidity_reduction_factor, options)
       real(kind=dp), intent(in) :: wind_velocity_x(:) !< x-direction wind component [m/s].
       real(kind=dp), intent(in) :: wind_velocity_y(:) !< y-direction wind component [m/s].
       real(kind=dp), intent(in) :: air_temperature(:) !< Air temperature [K].
@@ -293,6 +292,7 @@ contains
       real(kind=dp), intent(in) :: air_pressure(:) !< Air pressure [Pa].
       real(kind=dp), intent(in) :: charnock(:) !< Charnock parameter [-].
       real(kind=dp), intent(in) :: surface_temperature(:) !< Surface temperature [K].
+      type(t_array_or_scalar), target :: salt_saturation_humidity_reduction_factor !< Salinity reduction factor of saturation humidity [-]
       type(t_options), intent(in) :: options !< Process options
 
       type(t_scales) :: scaling_parameter
@@ -320,7 +320,8 @@ contains
       do index = 1, number_of_elements
          scaling_parameter = compute_scaling_parameters(wind_velocity_x(index), wind_velocity_y(index), air_temperature(index), &
                                                         dew_point_temperature(index), air_pressure(index), charnock(index), &
-                                                        surface_temperature(index), options)
+                                                        surface_temperature(index), salt_saturation_humidity_reduction_factor%get(index), &
+                                                        options)
 
          vapor_pressure = compute_saturation_pressure(dew_point_temperature(index))
          air_density = compute_air_density(air_temperature(index), air_pressure(index), vapor_pressure)
