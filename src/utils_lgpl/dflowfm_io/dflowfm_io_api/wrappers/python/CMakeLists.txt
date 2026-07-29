@@ -5,22 +5,17 @@
 #   dflowfm_io_stage_lib -> stages the dflowfm_io_api DLL (built one level up) into _lib/
 #   dflowfm_io_wheel     -> `pip wheel` packages src/ + _lib/ into a .whl (depends on the two above)
 #
-# The wheel is NOT part of the default build (slow; only needed when publishing). Build on demand:
+# The wheel is not in the default build; build on demand, or with -D DFLOWFM_IO_BUILD_WRAPPER_PACKAGES=ON:
 #     cmake --build <build-dir> --target dflowfm_io_wheel
-# or add it to the default build with: -D DFLOWFM_IO_BUILD_PYTHON_WHEEL=ON
-
-option(
-	DFLOWFM_IO_BUILD_PYTHON_WHEEL
-	"Build the dflowfm_io Python wheel as part of the default build"
-	OFF
-)
 
 # Generated (committed) Python, regenerated here so it can never drift from its source:
 #   mdu/model.py   <- generate_model.py, from the C header
 #   mdu/schema.py  <- generate_schema.py, from mdu.json
 # (base/bindings.py is hand-maintained, not generated.)
-cmake_path(SET DFLOWFM_IO_HEADER NORMALIZE
-	"${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h")
+cmake_path(
+	SET DFLOWFM_IO_HEADER NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h"
+)
+
 set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator_base.py")
 set(DFLOWFM_IO_MODEL_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_model.py")
 set(DFLOWFM_IO_GENERATED
@@ -51,10 +46,8 @@ add_custom_command(
 # Build this target to (re)generate the Python code on its own.
 add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
 
-# Stage the freshly built dflowfm_io_api DLL into the wheel package (_lib/) so `pip wheel` bundles it.
-# The library is a build artifact: git-ignored there, only ever produced by the build, never committed.
-# This is a dependent target rather than a POST_BUILD on dflowfm_io_api because CMake forbids attaching
-# POST_BUILD to a target defined in another directory (dflowfm_io_api is defined one level up).
+# Stage the built DLL into _lib/ so `pip wheel` bundles it. A dependent target, not a POST_BUILD on
+# dflowfm_io_api: CMake forbids attaching POST_BUILD to a target defined in another directory.
 set(DFLOWFM_IO_LIB_STAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/_lib")
 
 add_custom_target(dflowfm_io_stage_lib ALL
@@ -69,7 +62,7 @@ add_dependencies(dflowfm_io_stage_lib dflowfm_io_api)
 
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
 
-if(DFLOWFM_IO_BUILD_PYTHON_WHEEL)
+if(DFLOWFM_IO_BUILD_WRAPPER_PACKAGES)
 	set(_dflowfm_io_wheel_in_all ALL)
 else()
 	set(_dflowfm_io_wheel_in_all "")
