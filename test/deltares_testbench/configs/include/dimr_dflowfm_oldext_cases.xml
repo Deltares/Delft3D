@@ -6065,6 +6065,7 @@
     </testCase>
     <testCase name="e02_f422_c55_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_restart">
       <path version="2024-05-22T03:51:00">e02_dflowfm/f422_morphology_2D_restart/c55_curvebend_spiral_mor_Bedup_Unstr</path>
+      <maxRunTime>900</maxRunTime>
       
       <checks>
         <file name="main/dflowfmoutput/c31smallbendUnstr_20010101_014000_rst.nc" type="netCDF">
