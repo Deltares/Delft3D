@@ -1412,7 +1412,12 @@
                     "key": "maxItPresDens",
                     "default_value": 1,
                     "value_type": "int",
-                    "description": "Max number of iterations in pressure-density coupling, only if `thermobaricity`=true."
+                    "description": "Max number of iterations in pressure-density coupling, only if `thermobaricity`=true.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Keyword will be removed in a future release.",
+                        "date": "2026-07-29"
+                    }
                 },
                 {
                     "key": "diagnosticTransport",

@@ -225,7 +225,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `c3eUnstable` | c3e coefficient (for unstable stratification) in k-eps turbulence model. | `1.489` |  |  |  |
 | `antiCreep` | Include anti-creep to suppress artificial vertical diffusion. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `barocPOnBnd` | Include baroclinic pressure on open boundaries. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `maxItPresDens` | Max number of iterations in pressure-density coupling, only if `thermobaricity`=true. | `1` |  |  |  |
+| `maxItPresDens` ⚠️ | Max number of iterations in pressure-density coupling, only if `thermobaricity`=true. | `1` |  |  |  |
 | `diagnosticTransport` | No update of transport quantities, also known as diagnostic transport. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `maxWaterLevelDiff` | Upper bound on water level changes, (<= 0: no bounds). Run will abort when violated. | `0.0` |  | [m] |  |
 | `maxVelocityDiff` | Upper bound on velocity changes, (<= 0: no bounds). Run will abort when violated. | `0.0` |  | [m/s] |  |
@@ -1060,6 +1060,7 @@ The keywords and keyword values listed below are deprecated and will be removed 
 | `[geometry] tSigma` | Keyword was used in combination with the deprecated option `layerType` = 4. |
 | `[geometry] vertPlizFile` | Keyword was used in combination with the deprecated option `layerType` = 3. |
 | `[numerics] keepZLayeringAtBed` | Use `[geometry] keepZLayeringAtBed` instead. |
+| `[numerics] maxItPresDens` | Keyword will be removed in a future release. |
 | `[numerics] maxItVerticalForesterSal` | Use `[numerics] maxItVerticalForester` instead. |
 | `[numerics] maxItVerticalForesterTem` | Use `[numerics] maxItVerticalForester` instead. |
 | `[numerics] vertAdvTypSal` | Use `[numerics] verticalAdvectionType` instead. |
