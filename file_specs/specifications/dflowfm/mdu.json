@@ -242,9 +242,7 @@
                     "value_type": "path",
                     "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
                     "status": {
-                        "value": "deprecated",
-                        "comment": "Keyword was used in combination with the deprecated option `layerType` = 3.",
-                        "date": "2025-11-01"
+                        "value": "research"
                     }
                 },
                 {
@@ -570,17 +568,13 @@
                         "3": {
                             "description": "mixed layering in polygon regions",
                             "status": {
-                                "value": "obsolete",
-                                "comment": "Option no longer supported.",
-                                "since_release": 2026.02
+                                "value": "research"
                             }
                         },
                         "4": {
                             "description": "density controlled sigma-layers",
                             "status": {
-                                "value": "obsolete",
-                                "comment": "Option no longer supported.",
-                                "since_release": 2026.02
+                                "value": "research"
                             }
                         }
                     }
@@ -803,9 +797,7 @@
                     "description": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers).",
                     "unit": "s",
                     "status": {
-                        "value": "deprecated",
-                        "comment": "Keyword was used in combination with the deprecated option `layerType` = 4.",
-                        "date": "2025-11-01"
+                        "value": "research"
                     }
                 },
                 {

@@ -98,7 +98,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `fixedWeirFile` | Polyline file (\*_fxw.pliz), containing polyline(s) with x, y, z where z = fixed weir top levels (formerly fixed weir). |  |  |  |  |
 | `pillarFile` | Polyline file (\*_pillar.pliz), containing four colums with x, y, diameter and Cd coefficient for bridge pillars. |  |  |  |  |
 | `useCaching` | Use caching for geometrical/network-related items. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `vertPlizFile` ⚠️ | Polyline file (\*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions). |  |  |  |  |
+| `vertPlizFile` 🔬 | Polyline file (\*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions). |  |  |  |  |
 | `frictFile` | Files with roughness data for 1D (space separated). |  |  |  |  |
 | `crossDefFile` | File containing the cross section definitions for all cross section shapes. |  |  |  |  |
 | `crossLocFile` | File containing the location definitions of the cross sections on a 1D network. |  |  |  |  |
@@ -140,7 +140,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `openBoundaryTolerance` | Search tolerance factor between boundary polyline and grid cells. | `3.0` |  | [cell size] |  |
 | `renumberFlowNodes` | Renumber the flow nodes. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `kmx` | Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM. | `0` |  | [-] |  |
-| `layerType` | Vertical layer type. | `1` | <ul><li>**`1`**: sigma-layers</li><li>**`2`**: z- or z-sigma-layers</li></ul> |  |  |
+| `layerType` | Vertical layer type. | `1` | <ul><li>**`1`**: sigma-layers</li><li>**`2`**: z- or z-sigma-layers</li><li>**`3`** 🔬: mixed layering in polygon regions</li><li>**`4`** 🔬: density controlled sigma-layers</li></ul> |  |  |
 | `numTopSig` | Number of sigma-layers on top of z-layers in case of z-sigma-layers. | `0` |  |  |  |
 | `sigmaGrowthFactor` ⚠️ | Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed. | `1.0` |  | [-] |  |
 | `zLayerGrowthFactor` | Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed. | `1.0` |  | [-] |  |
@@ -168,7 +168,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `createLinks1D2D` 🔬 | Rashly create links between 1D nodes and 2D cells when initializing model. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `bedWaveAmplitude` 🔬 | Bed testcases. |  |  |  |  |
 | `uniformHu` 🔬 | Waterdepth in rigid-lid-like solution. |  |  |  |  |
-| `tSigma` ⚠️ | Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers). |  |  | [s] |  |
+| `tSigma` 🔬 | Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers). |  |  | [s] |  |
 | `dpuopt` 🔬 | Bed level interpolation at velocity point in case of tile approach bed level. | `1` | <ul><li>**`1`**: max</li><li>**`2`**: mean</li></ul> |  |  |
 | `keepZLayeringAtBed` | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  |  |
 | `ihuzcSig` 🔬 | If `keepZLayeringAtBed`>=2. |  | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  |  |
@@ -912,13 +912,17 @@ The keyword and options listed below are available for research purposes.
 | `[geometry] ihuz` |  |
 | `[geometry] ihuzcSig` |  |
 | `[geometry] keepZLay1BedVol` |  |
+| `[geometry] layerType=3` |  |
+| `[geometry] layerType=4` |  |
 | `[geometry] pipeFile` |  |
 | `[geometry] removeSmallLinksTrsh` |  |
 | `[geometry] shipDefFile` |  |
 | `[geometry] stripMesh` |  |
 | `[geometry] topLayMinThick` |  |
+| `[geometry] tSigma` |  |
 | `[geometry] uniformHu` |  |
 | `[geometry] uniformTyp1D` |  |
+| `[geometry] vertPlizFile` |  |
 | `[geometry] waterDepthIni1D` |  |
 | `[geometry] zLayerAtuByBob` |  |
 | `[numerics] baOrgFracMin` |  |
@@ -1078,8 +1082,6 @@ The keywords and options listed below are deprecated and will be removed in a fu
 | `[geometry] circumcenterTolerance` | Once the keyword is removed/becomes obsolete, a fixed tolerance will be used. |
 | `[geometry] orgFloorLevTopLayDef` | Use `[geometry] floorLevTopLay` instead. |
 | `[geometry] sigmaGrowthFactor` | Use `[geometry] zLayerGrowthFactor` instead. |
-| `[geometry] tSigma` | Keyword was used in combination with the deprecated option `layerType` = 4. |
-| `[geometry] vertPlizFile` | Keyword was used in combination with the deprecated option `layerType` = 3. |
 | `[model]` | Section has been replaced with `[general]` section. |
 | `[model] mduFormatVersion` | Keyword has been replaced with `[general] fileVersion`. |
 | `[numerics] keepZLayeringAtBed` | Use `[geometry] keepZLayeringAtBed` instead. |
@@ -1115,8 +1117,6 @@ The keywords and options listed below are no longer supported and will cause an 
 | Keyword/value | Notes |
 | ------------- | ----- |
 | `[geometry] circumcenter` | Use `[geometry] circumcenterMethod` instead. |
-| `[geometry] layerType=3` | Option no longer supported. |
-| `[geometry] layerType=4` | Option no longer supported. |
 
 <a id="release-2026.01"></a>
 ## Release 2026.01
