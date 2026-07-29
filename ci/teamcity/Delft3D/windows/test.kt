@@ -146,7 +146,7 @@ object WindowsTest : BuildType({
 
                 rem Desperate attempt to fix the accursed, unutterable "Exit code -1073741819" problem.
                 echo "Effe wachten..."
-                timeout /t 3 /nobreak
+                ping -n 5 -w 1000 localhost > nul
                 echo "...Python!"
 
                 python TestBench.py %%argsList%%
