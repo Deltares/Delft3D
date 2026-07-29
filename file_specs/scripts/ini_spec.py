@@ -193,14 +193,17 @@ class IniSectionSpec:
     name: str
     description: str
     is_unique: bool
+    status: Optional[Status] = None
     ini_properties: List[IniPropertySpec] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "IniSectionSpec":
+        status = data.get("status")
         return cls(
             name=data["name"],
             description=data["description"],
             is_unique=data["is_unique"],
+            status=Status.from_dict(status) if status is not None else None,
             ini_properties=[
                 IniPropertySpec.from_dict(prop)
                 for prop in data.get("ini_properties", [])

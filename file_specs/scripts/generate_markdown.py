@@ -29,27 +29,37 @@ from ini_spec import (
     ValueType
 )
 
-KEYWORDS_SECTION_TITLE = "Supported keywords and values"
-RESEARCH_SECTION_TITLE = "Research keywords and values"
-DEPRECATED_SECTION_TITLE = "Deprecated keywords and values"
-OBSOLETE_SECTION_TITLE = "Obsolete keywords and values"
+KEYWORDS_SECTION_TITLE = "Supported keywords and options"
+RESEARCH_SECTION_TITLE = "Research keywords and options"
+DEPRECATED_SECTION_TITLE = "Deprecated keywords and options"
+OBSOLETE_SECTION_TITLE = "Obsolete keywords and options"
 
 SPECIFICATIONS_FOLDER = Path(__file__).parent.parent / "specifications"
 
 STATUS_ICONS = {StatusValue.RESEARCH: "🔬", StatusValue.DEPRECATED: "⚠️"}
 
 @dataclass
-class DataItem:
-    """A data item representing a keyword or keyword value."""
+class FileItem:
+    """A file item representing a section, keyword or keyword value in the file."""
 
-    section: str
-    key: str
     status: Status
+    section: str
+    key: Optional[str] = None
     value: Optional[str] = None
     description: Optional[str] = None
 
+    @property
+    def identifier(self) -> str:
+        """Return a unique identifier for the item."""
+        identifier = f"[{self.section}]"
+        if self.key:
+            identifier += f" {self.key}"
+            if self.value:
+                identifier += f"={self.value}"
+        return identifier
 
-def is_status_not_obsolete(status: Status) -> bool:
+
+def is_supported(status: Optional[Status]) -> bool:
     return status is None or status.value != StatusValue.OBSOLETE
 
 
@@ -111,8 +121,11 @@ def generate_table_of_contents(
 
     toc.append(f"- {get_anchor_link(KEYWORDS_SECTION_TITLE, KEYWORDS_SECTION_TITLE)}")
     for section in ini_file_spec.ini_sections:
-        if any(is_status_not_obsolete(prop.status) for prop in section.ini_properties):
-            link = get_anchor_link(f"[{section.name}]", f"{KEYWORDS_SECTION_TITLE} {section.name}")
+        if not is_supported(section.status):
+            continue
+        if any(is_supported(prop.status) for prop in section.ini_properties):
+            marker = get_status_marker(section.status)
+            link = get_anchor_link(f"[{section.name}]{marker}", f"{KEYWORDS_SECTION_TITLE} {section.name}")
             toc.append(f"  - {link}")
 
     if has_research:
@@ -150,17 +163,20 @@ def generate_supported_content(ini_file_spec: IniFileSpec) -> str:
 
     legend_lines = [
             "**Legend**",
-            "- 🔬: Indicates keywords that are still experimental.",
-            "- ⚠️: Indicates keywords that are deprecated and will be removed in future versions.",
+            "- 🔬: Indicates keywords or options that are still experimental.",
+            "- ⚠️: Indicates keywords or options that are deprecated and will be removed in future release versions.",
         ]
     sections_md.extend(legend_lines)
     
     for section in ini_file_spec.ini_sections:
         
+        if not is_supported(section.status):
+            continue
+
         properties = [
             property
             for property in section.ini_properties
-            if is_status_not_obsolete(property.status)
+            if is_supported(property.status)
         ]
         
         if len(properties) == 0:
@@ -170,7 +186,7 @@ def generate_supported_content(ini_file_spec: IniFileSpec) -> str:
 
         section_md.append("")
         section_md.append(f"{format_anchor(f'{KEYWORDS_SECTION_TITLE} {section.name}')}")
-        section_md.append(f"## [{section.name}]")
+        section_md.append(f"## [{section.name}]{get_status_marker(section.status)}")
         section_md.append("")
         section_md.append(section.description)
         section_md.append("")
@@ -189,15 +205,15 @@ def generate_supported_content(ini_file_spec: IniFileSpec) -> str:
 
 
 def generate_research_content(
-    research_items: List[DataItem]
+    research_items: List[FileItem]
 ) -> str:
-    """Generate one combined list of research keywords and keyword values."""
+    """Generate one combined list of research items."""
 
     lines = [
         f"{format_anchor(RESEARCH_SECTION_TITLE)}",
         f"# {RESEARCH_SECTION_TITLE}",
         "",
-        "The keywords and keyword values listed below are available for research "
+        "The keyword and options listed below are available for research "
         "purposes.",
         "",
         "",
@@ -208,21 +224,17 @@ def generate_research_content(
 
     return format_lines(lines)
 
-def create_status_table_rows(items: List[DataItem]) -> List[str]:
+def create_status_table_rows(items: List[FileItem]) -> List[str]:
     lines = [
         "| Keyword/value | Notes |",
         "| ------------- | ----- |",
     ]
 
-    alphabetically_sorted = sorted(items, key=lambda x: (x.section, x.key, x.value or ""))
+    alphabetically_sorted = sorted(items, key=lambda x: x.identifier.lower())
 
     for item in alphabetically_sorted:
         notes = escape_table_characters(item.status.comment) if item.status.comment else ""
-        value = f"={item.value}" if item.value else ""
-        keyword_str = f"[{item.section}] {item.key}{value}"
-        lines.append(
-            f"| `{keyword_str}` | {notes} |"
-        )
+        lines.append(f"| `{item.identifier}` | {notes} |")
 
     return lines
 
@@ -269,7 +281,7 @@ def get_supported_values_formatted(ini_property: IniPropertySpec) -> str:
 
     if ini_property.enum_values:
         for name, enum_value in ini_property.enum_values.items():
-            if not is_status_not_obsolete(enum_value.status):
+            if not is_supported(enum_value.status):
                 continue
 
             supported_values += get_supported_value_line(
@@ -321,7 +333,7 @@ def get_supported_value_line(
     return get_list_item(f"**`{value}`**{marker}: {description}")
 
 
-def get_status_marker(status: Status) -> str:
+def get_status_marker(status: Optional[Status]) -> str:
     if status is None or status.value not in STATUS_ICONS:
         return ""
     return f" {STATUS_ICONS[status.value]}"
@@ -346,19 +358,28 @@ def get_format_formatted(ini_property: IniPropertySpec) -> str:
 
     return ""
 
-def collect_items_with_status(ini_file_spec: IniFileSpec, status_value: StatusValue) -> List[DataItem]:
-    """Collect keywords and keyword values with a specific status across all sections.
+def collect_items_with_status(ini_file_spec: IniFileSpec, status_value: StatusValue) -> List[FileItem]:
+    """Collect sections, keywords and keyword values with a specific status across all sections.
 
     Returns a list of items with the specified status.
     """
 
-    items: List[DataItem] = []
+    items: List[FileItem] = []
 
     for ini_section in ini_file_spec.ini_sections:
+        if ini_section.status and ini_section.status.value == status_value:
+            items.append(
+                FileItem(
+                    section=ini_section.name,
+                    description=ini_section.description,
+                    status=ini_section.status,
+                )
+            )
+
         for ini_property in ini_section.ini_properties:
             if ini_property.status and ini_property.status.value == status_value:
                 items.append(
-                    DataItem(
+                    FileItem(
                         section=ini_section.name,
                         key=ini_property.key,
                         description=ini_property.description,
@@ -371,7 +392,7 @@ def collect_items_with_status(ini_file_spec: IniFileSpec, status_value: StatusVa
                 for name, enum_value in ini_property.enum_values.items():
                     if enum_value.status and enum_value.status.value == status_value:
                         items.append(
-                            DataItem(
+                            FileItem(
                                 section=ini_section.name,
                                 key=ini_property.key,
                                 value=name,
@@ -390,15 +411,15 @@ def format_release(release: Optional[float]) -> str:
     return str(release)
 
 def generate_deprecated_section(
-    deprecated_items: List[DataItem]
+    deprecated_items: List[FileItem]
 ) -> str:
-    """Generate one combined list of deprecated keywords and keyword values."""
+    """Generate one combined list of deprecated items."""
 
     lines = [
         f"{format_anchor(DEPRECATED_SECTION_TITLE)}",
         f"# {DEPRECATED_SECTION_TITLE}",
         "",
-        "The keywords and keyword values listed below are deprecated and will be "
+        "The keywords and options listed below are deprecated and will be "
         "removed in a future release. If your model still uses one of them, "
         "please update it as soon as possible by following the notes or user manual.",
         "",
@@ -413,9 +434,9 @@ def generate_deprecated_section(
 
 
 def generate_obsolete_section(
-    obsolete_items: List[DataItem]
+    obsolete_items: List[FileItem]
 ) -> str:
-    """Generate the overview of obsolete keywords and keyword values per release."""
+    """Generate the overview of obsolete sections, keywords and keyword values per release."""
 
     releases = sorted(
         {item.status.since_release for item in obsolete_items},
@@ -427,7 +448,7 @@ def generate_obsolete_section(
         f"{format_anchor(OBSOLETE_SECTION_TITLE)}",
         f"# {OBSOLETE_SECTION_TITLE}",
         "",
-        "The keywords and keyword values listed below are no longer supported and "
+        "The keywords and options listed below are no longer supported and "
         "will cause an error if used in D-Flow FM. They are grouped by the release in which they "
         "became obsolete, most recent first. If your model still uses one of them, "
         "please update it by following the notes or user manual.",

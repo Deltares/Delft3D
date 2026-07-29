@@ -47,6 +47,11 @@
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Autostart simulation after loading MDU or not.",
+                    "status": {
+                        "value": "deprecated",
+                        "date": "2025-09-04",
+                        "comment": "Keyword will be removed in a future release."
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "autostart",
@@ -84,6 +89,77 @@
                         "comment": "Unconverted long culverts (convertLongCulverts=0) will be removed in a future release.",
                         "date": "2026-06-11"
                     }
+                }
+            ]
+        },
+        {
+            "name": "model",
+            "description": "This section contains the program name and its version.",
+            "is_unique": true,
+            "status": {
+                "value": "deprecated",
+                "date": "2019-06-13",
+                "comment": "Section has been replaced with `[general]` section."
+            },
+            "ini_properties": [
+                {
+                    "key": "mduFormatVersion",
+                    "value_type": "string",
+                    "description": "File version. Do not edit this.",
+                    "status": {
+                        "value": "deprecated",
+                        "date": "2019-06-13",
+                        "comment": "Keyword has been replaced with `[general] fileVersion`."
+                    }
+                },
+                {
+                    "key": "program",
+                    "default_value": "D-Flow FM",
+                    "value_type": "string",
+                    "description": "Program."
+                },
+                {
+                    "key": "version",
+                    "default_value": "1.2.60.64623M",
+                    "value_type": "string",
+                    "description": "Version number of computational kernel."
+                },
+                {
+                    "key": "guiVersion",
+                    "value_type": "string",
+                    "description": "Version number of GUI."
+                },
+                {
+                    "key": "autoStart",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Autostart simulation after loading MDU or not.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "autostart",
+                        "2": "autostartstop"
+                    }
+                },
+                {
+                    "key": "pathsRelativeToParent",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the top-level MDU working dir."
+                },
+                {
+                    "key": "modelSpecific",
+                    "value_type": "string",
+                    "description": "Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name)."
+                },
+                {
+                    "key": "inputSpecific",
+                    "value_type": "intbool",
+                    "description": "Use of hardcoded specific inputs, shall not be used by users."
+                },
+                {
+                    "key": "convertLongCulverts",
+                    "value_type": "intbool",
+                    "description": "Convert long culvert input to 1D2D long culverts."
                 }
             ]
         },
@@ -3360,7 +3436,7 @@
         },
         {
             "name": "sedtrails",
-            "description": "Section for configuring the Sedtrails output",
+            "description": "Section for configuring the Sedtrails output.",
             "is_unique": true,
             "ini_properties": [
                 {
@@ -3409,7 +3485,7 @@
         },
         {
             "name": "wind",
-            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information.",
             "is_unique": true,
             "ini_properties": [
                 {
@@ -3575,7 +3651,7 @@
         },
         {
             "name": "waves",
-            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information.",
             "is_unique": true,
             "ini_properties": [
                 {
@@ -5665,7 +5741,7 @@
         {
             "name": "veg",
             "is_unique": true,
-            "description": "This section contains setting for a dynamic vegetation model",
+            "description": "This section contains setting for a dynamic vegetation model.",
             "ini_properties": [
                 {
                     "key": "vegetationModelNr",
@@ -5819,7 +5895,7 @@
         {
             "name": "ice",
             "is_unique": true,
-            "description": "This section contains setting for the ice module",
+            "description": "This section contains setting for the ice module.",
             "ini_properties": [
                 {
                     "key": "wriHis_ice_default",

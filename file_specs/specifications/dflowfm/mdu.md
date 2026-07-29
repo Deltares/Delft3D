@@ -3,44 +3,45 @@
 **File version**: 2.0.0
 
 ## Table of Contents
-- [Supported keywords and values](#supported-keywords-and-values)
-  - [[general]](#supported-keywords-and-values-general)
-  - [[geometry]](#supported-keywords-and-values-geometry)
-  - [[volumeTables]](#supported-keywords-and-values-volumetables)
-  - [[numerics]](#supported-keywords-and-values-numerics)
-  - [[physics]](#supported-keywords-and-values-physics)
-  - [[sediment]](#supported-keywords-and-values-sediment)
-  - [[sedtrails]](#supported-keywords-and-values-sedtrails)
-  - [[wind]](#supported-keywords-and-values-wind)
-  - [[waves]](#supported-keywords-and-values-waves)
-  - [[grw]](#supported-keywords-and-values-grw)
-  - [[hydrology]](#supported-keywords-and-values-hydrology)
-  - [[time]](#supported-keywords-and-values-time)
-  - [[restart]](#supported-keywords-and-values-restart)
-  - [[external forcing]](#supported-keywords-and-values-external-forcing)
-  - [[trachytopes]](#supported-keywords-and-values-trachytopes)
-  - [[output]](#supported-keywords-and-values-output)
-  - [[calibration]](#supported-keywords-and-values-calibration)
-  - [[processes]](#supported-keywords-and-values-processes)
-  - [[particles]](#supported-keywords-and-values-particles)
-  - [[veg]](#supported-keywords-and-values-veg)
-  - [[ice]](#supported-keywords-and-values-ice)
-- [Research keywords and values](#research-keywords-and-values)
-- [Deprecated keywords and values](#deprecated-keywords-and-values)
-- [Obsolete keywords and values](#obsolete-keywords-and-values)
+- [Supported keywords and options](#supported-keywords-and-options)
+  - [[general]](#supported-keywords-and-options-general)
+  - [[model] ⚠️](#supported-keywords-and-options-model)
+  - [[geometry]](#supported-keywords-and-options-geometry)
+  - [[volumeTables]](#supported-keywords-and-options-volumetables)
+  - [[numerics]](#supported-keywords-and-options-numerics)
+  - [[physics]](#supported-keywords-and-options-physics)
+  - [[sediment]](#supported-keywords-and-options-sediment)
+  - [[sedtrails]](#supported-keywords-and-options-sedtrails)
+  - [[wind]](#supported-keywords-and-options-wind)
+  - [[waves]](#supported-keywords-and-options-waves)
+  - [[grw]](#supported-keywords-and-options-grw)
+  - [[hydrology]](#supported-keywords-and-options-hydrology)
+  - [[time]](#supported-keywords-and-options-time)
+  - [[restart]](#supported-keywords-and-options-restart)
+  - [[external forcing]](#supported-keywords-and-options-external-forcing)
+  - [[trachytopes]](#supported-keywords-and-options-trachytopes)
+  - [[output]](#supported-keywords-and-options-output)
+  - [[calibration]](#supported-keywords-and-options-calibration)
+  - [[processes]](#supported-keywords-and-options-processes)
+  - [[particles]](#supported-keywords-and-options-particles)
+  - [[veg]](#supported-keywords-and-options-veg)
+  - [[ice]](#supported-keywords-and-options-ice)
+- [Research keywords and options](#research-keywords-and-options)
+- [Deprecated keywords and options](#deprecated-keywords-and-options)
+- [Obsolete keywords and options](#obsolete-keywords-and-options)
 
-<a id="supported-keywords-and-values"></a>
+<a id="supported-keywords-and-options"></a>
 
-# Supported keywords and values
+# Supported keywords and options
 
 **Legend**
 
-- 🔬: Indicates keywords that are still experimental.
+- 🔬: Indicates keywords or options that are still experimental.
 
-- ⚠️: Indicates keywords that are deprecated and will be removed in future versions.
+- ⚠️: Indicates keywords or options that are deprecated and will be removed in future release versions.
 
 
-<a id="supported-keywords-and-values-general"></a>
+<a id="supported-keywords-and-options-general"></a>
 ## [general]
 
 This section contains the program name and its version.
@@ -52,14 +53,32 @@ This section contains the program name and its version.
 | `fileType` | File type. Do not edit this. | `modelDef` | <ul><li>**`modelDef`**: model definition file</li></ul> |  |  |
 | `fileVersion` | File version. Do not edit this. | `1.09` |  |  |  |
 | `guiVersion` | Version number of GUI. |  |  |  |  |
-| `autoStart` | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
+| `autoStart` ⚠️ | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
 | `pathsRelativeToParent` | Resolve file names (e.g. inside the \*.ext file) relative to their direct parent, instead of to the top-level MDU working dir. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `modelSpecific` 🔬 | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). |  |  |  |  |
 | `inputSpecific` 🔬 | Use of hardcoded specific inputs, shall not be used by users. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `convertLongCulverts` ⚠️ | Convert long culvert input to 1D2D long culverts. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-geometry"></a>
+<a id="supported-keywords-and-options-model"></a>
+## [model] ⚠️
+
+This section contains the program name and its version.
+
+| Keyword | Description | Default | Supported values | Unit | Format |
+| ------- | ----------- | ------- | ---------------- | ---- | ------ |
+| `mduFormatVersion` ⚠️ | File version. Do not edit this. |  |  |  |  |
+| `program` | Program. | `D-Flow FM` |  |  |  |
+| `version` | Version number of computational kernel. | `1.2.60.64623M` |  |  |  |
+| `guiVersion` | Version number of GUI. |  |  |  |  |
+| `autoStart` | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
+| `pathsRelativeToParent` | Resolve file names (e.g. inside the \*.ext file) relative to their direct parent, instead of to the top-level MDU working dir. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `modelSpecific` | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). |  |  |  |  |
+| `inputSpecific` | Use of hardcoded specific inputs, shall not be used by users. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `convertLongCulverts` | Convert long culvert input to 1D2D long culverts. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+
+
+<a id="supported-keywords-and-options-geometry"></a>
 ## [geometry]
 
 In this section, the main entry comprises the specification of the grid (i.e. the netCDF network file). In addition, thin dams and thin dykes can be specified.
@@ -166,7 +185,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `bedLevMode` | Bed level mode. |  |  |  |  |
 
 
-<a id="supported-keywords-and-values-volumetables"></a>
+<a id="supported-keywords-and-options-volumetables"></a>
 ## [volumeTables]
 
 This section contains the settings for the volume tables used in 1D grid cells.
@@ -178,7 +197,7 @@ This section contains the settings for the volume tables used in 1D grid cells.
 | `useVolumeTableFile` | Read and write the volume table from/to file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-numerics"></a>
+<a id="supported-keywords-and-options-numerics"></a>
 ## [numerics]
 
 This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.
@@ -311,7 +330,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `perotType` | Perot discretization type. |  |  |  |  |
 
 
-<a id="supported-keywords-and-values-physics"></a>
+<a id="supported-keywords-and-options-physics"></a>
 ## [physics]
 
 In this field, physical model parameters can be inserted, for instance related to friction modelling and turbulence modelling.
@@ -389,7 +408,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `salinityDependentFreezingPoint` | Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-sediment"></a>
+<a id="supported-keywords-and-options-sediment"></a>
 ## [sediment]
 
 This section contains the setting for sediment transport and morphology.
@@ -428,10 +447,10 @@ This section contains the setting for sediment transport and morphology.
 | `upperLimitSSC` | Upper limit of cell centre SSC concentration after transport timestep. | `1e-06` |  |  |  |
 
 
-<a id="supported-keywords-and-values-sedtrails"></a>
+<a id="supported-keywords-and-options-sedtrails"></a>
 ## [sedtrails]
 
-Section for configuring the Sedtrails output
+Section for configuring the Sedtrails output.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
@@ -441,10 +460,10 @@ Section for configuring the Sedtrails output
 | `sedtrailsOutputFile` 🔬 | Sedtrails time-averaged output file. |  |  |  |  |
 
 
-<a id="supported-keywords-and-values-wind"></a>
+<a id="supported-keywords-and-options-wind"></a>
 ## [wind]
 
-The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information
+The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
@@ -464,10 +483,10 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | `rhoWaterInWindStress` | Water density used in computation of wind stress. | `0` | <ul><li>**`0`**: Rhomean</li><li>**`1`**: local (surface) density of model</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-waves"></a>
+<a id="supported-keywords-and-options-waves"></a>
 ## [waves]
 
-The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information
+The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
@@ -492,7 +511,7 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | `jahissigwav` 🔬 | Wave height on his output | `1` | <ul><li>**`0`**: hrms wave height</li><li>**`1`**: sign wave height</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-grw"></a>
+<a id="supported-keywords-and-options-grw"></a>
 ## [grw]
 
 This section contains the settings for ground water flow.
@@ -510,7 +529,7 @@ This section contains the settings for ground water flow.
 | `sgrwini` | Initial ground water level, if `h_unsatini` < 0. | `-999.0` |  | [m] |  |
 
 
-<a id="supported-keywords-and-values-hydrology"></a>
+<a id="supported-keywords-and-options-hydrology"></a>
 ## [hydrology]
 
 This section contains the settings for hydrology.
@@ -520,7 +539,7 @@ This section contains the settings for hydrology.
 | `interceptionModel` | Interception model. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: on, via layer thickness</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-time"></a>
+<a id="supported-keywords-and-options-time"></a>
 ## [time]
 
 This section contains the time settings for the model, such as start and stop time of the simulation.
@@ -549,7 +568,7 @@ This section contains the time settings for the model, such as start and stop ti
 | `autoTimeStepVisc` 🔬 | Use time step limitation based on explicit diffusive term. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-restart"></a>
+<a id="supported-keywords-and-options-restart"></a>
 ## [restart]
 
 This section contains the settings for restarting from a previous simulation.
@@ -561,7 +580,7 @@ This section contains the settings for restarting from a previous simulation.
 | `rstIgnoreBl` 🔬 | Ignore bed level from restart. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-external-forcing"></a>
+<a id="supported-keywords-and-options-external-forcing"></a>
 ## [external forcing]
 
 This section contains the settings for external forcings.
@@ -576,7 +595,7 @@ This section contains the settings for external forcings.
 | `windExt` | Include wind, externally provided. |  | <ul><li>**`0`**: no</li><li>**`1`**: reserved for EC</li><li>**`2`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-trachytopes"></a>
+<a id="supported-keywords-and-options-trachytopes"></a>
 ## [trachytopes]
 
 This section contains the settings for trachytopes allowing the usage of different types of roughness formulations at different locations.
@@ -593,7 +612,7 @@ This section contains the settings for trachytopes allowing the usage of differe
 | `trtCll` 🔬 | Calibration factor file for roughness from trachytopes. |  |  |  |  |
 
 
-<a id="supported-keywords-and-values-output"></a>
+<a id="supported-keywords-and-options-output"></a>
 ## [output]
 
 This section contains the settings for various output files.
@@ -780,7 +799,7 @@ This section contains the settings for various output files.
 | `wriHis_runupgauge` | Write runup gauge output to history file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-calibration"></a>
+<a id="supported-keywords-and-options-calibration"></a>
 ## [calibration]
 
 This section contains roughness calibration settings.
@@ -792,7 +811,7 @@ This section contains roughness calibration settings.
 | `areaFile` 🔬 | File (\*.cll) containing area distribution of calibration definitions. |  |  |  |  |
 
 
-<a id="supported-keywords-and-values-processes"></a>
+<a id="supported-keywords-and-options-processes"></a>
 ## [processes]
 
 This section settings for online water quality processes.
@@ -810,7 +829,7 @@ This section settings for online water quality processes.
 | `dtMassBalance` ⚠️ | Mass balance area output interval | `0.0` |  | [s] |  |
 
 
-<a id="supported-keywords-and-values-particles"></a>
+<a id="supported-keywords-and-options-particles"></a>
 ## [particles]
 
 This section contains settings for particle tracking.
@@ -825,10 +844,10 @@ This section contains settings for particle tracking.
 | `3DType` | 3D velocity type. | `0` | <ul><li>**`0`**: depth averaged velocities</li><li>**`1`**: free surface/top layer velocities</li></ul> |  |  |
 
 
-<a id="supported-keywords-and-values-veg"></a>
+<a id="supported-keywords-and-options-veg"></a>
 ## [veg]
 
-This section contains setting for a dynamic vegetation model
+This section contains setting for a dynamic vegetation model.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
@@ -848,10 +867,10 @@ This section contains setting for a dynamic vegetation model
 | `cdLeaf` 🔬 | TODO. | `0.0` |  | [-] |  |
 
 
-<a id="supported-keywords-and-values-ice"></a>
+<a id="supported-keywords-and-options-ice"></a>
 ## [ice]
 
-This section contains setting for the ice module
+This section contains setting for the ice module.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
@@ -866,10 +885,10 @@ This section contains setting for the ice module
 | `wriHis_snow_thickness` | Write snow thickness to his-file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_snow_temperature` | Write snow temperature to his-file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
-<a id="research-keywords-and-values"></a>
-# Research keywords and values
+<a id="research-keywords-and-options"></a>
+# Research keywords and options
 
-The keywords and keyword values listed below are available for research purposes.
+The keyword and options listed below are available for research purposes.
 
 
 | Keyword/value | Notes |
@@ -977,21 +996,21 @@ The keywords and keyword values listed below are available for research purposes
 | `[output] writeDetailedTimers` |  |
 | `[output] writeDfmInterpretedValues` |  |
 | `[physics] EPSMin` |  |
-| `[physics] SecchiDepthNonPenetrative` |  |
-| `[physics] SecchiDepthNonPenetrativeFraction` |  |
-| `[physics] TAUMin` |  |
-| `[physics] TKEMin` |  |
 | `[physics] equili` |  |
 | `[physics] freeConvectionCoefficient` |  |
 | `[physics] nfEntrainmentMomentum` |  |
 | `[physics] prandtlNumberTemperature` |  |
 | `[physics] schmidtNumberSalinity` |  |
 | `[physics] schmidtNumberTracer` |  |
+| `[physics] SecchiDepthNonPenetrative` |  |
+| `[physics] SecchiDepthNonPenetrativeFraction` |  |
 | `[physics] selfAttractionLoading` |  |
 | `[physics] selfAttractionLoading_correct_wl_with_ini` |  |
 | `[physics] soilTempThick` |  |
 | `[physics] surfTempSmoFac` |  |
+| `[physics] TAUMin` |  |
 | `[physics] thermobaricityInPressureGradient` |  |
+| `[physics] TKEMin` |  |
 | `[physics] unifFrictCoef1D2D` |  |
 | `[physics] uniffrictcoef1dgrlay` |  |
 | `[processes] additionalHistoryOutputFile` |  |
@@ -1006,8 +1025,8 @@ The keywords and keyword values listed below are available for research purposes
 | `[sediment] mxgrkrone` |  |
 | `[sediment] nr_of_sedfractions` |  |
 | `[sediment] sedDensCoupling` |  |
-| `[sedtrails] sedTrailsGrid` |  |
 | `[sedtrails] sedtrailsAnalysis` |  |
+| `[sedtrails] sedTrailsGrid` |  |
 | `[sedtrails] sedtrailsInterval` |  |
 | `[sedtrails] sedtrailsOutputFile` |  |
 | `[time] autoTimeStepVisc` |  |
@@ -1042,17 +1061,18 @@ The keywords and keyword values listed below are available for research purposes
 | `[waves] uorbfac` |  |
 | `[waves] waveSwartDelwaq` |  |
 | `[wind] varyingAirDensity` |  |
-| `[wind] windHuOrZwsBased` |  |
 | `[wind] wind_eachstep` |  |
+| `[wind] windHuOrZwsBased` |  |
 
-<a id="deprecated-keywords-and-values"></a>
-# Deprecated keywords and values
+<a id="deprecated-keywords-and-options"></a>
+# Deprecated keywords and options
 
-The keywords and keyword values listed below are deprecated and will be removed in a future release. If your model still uses one of them, please update it as soon as possible by following the notes or user manual.
+The keywords and options listed below are deprecated and will be removed in a future release. If your model still uses one of them, please update it as soon as possible by following the notes or user manual.
 
 
 | Keyword/value | Notes |
 | ------------- | ----- |
+| `[general] autoStart` | Keyword will be removed in a future release. |
 | `[general] convertLongCulverts` | Unconverted long culverts (convertLongCulverts=0) will be removed in a future release. |
 | `[geometry] circumcenterMethod` | Once the keyword is removed/becomes obsolete, the `allNetlinksLoop` method will be used. |
 | `[geometry] circumcenterTolerance` | Once the keyword is removed/becomes obsolete, a fixed tolerance will be used. |
@@ -1060,22 +1080,24 @@ The keywords and keyword values listed below are deprecated and will be removed 
 | `[geometry] sigmaGrowthFactor` | Use `[geometry] zLayerGrowthFactor` instead. |
 | `[geometry] tSigma` | Keyword was used in combination with the deprecated option `layerType` = 4. |
 | `[geometry] vertPlizFile` | Keyword was used in combination with the deprecated option `layerType` = 3. |
+| `[model]` | Section has been replaced with `[general]` section. |
+| `[model] mduFormatVersion` | Keyword has been replaced with `[general] fileVersion`. |
 | `[numerics] keepZLayeringAtBed` | Use `[geometry] keepZLayeringAtBed` instead. |
 | `[numerics] maxItPresDens` | Keyword will be removed in a future release. |
 | `[numerics] maxItVerticalForesterSal` | Use `[numerics] maxItVerticalForester` instead. |
 | `[numerics] maxItVerticalForesterTem` | Use `[numerics] maxItVerticalForester` instead. |
 | `[numerics] vertAdvTypSal` | Use `[numerics] verticalAdvectionType` instead. |
 | `[numerics] vertAdvTypTem` | Use `[numerics] verticalAdvectionType` instead. |
+| `[physics] jadelvappos` | Keyword will be removed in a future release. |
 | `[physics] SecchiDepth2` | Use `[physics] SecchiDepthNonPenetrative` instead. |
 | `[physics] SecchiDepth2Fraction` | Use `[physics] SecchiDepthNonPenetrativeFraction` instead. |
-| `[physics] jadelvappos` | Keyword will be removed in a future release. |
 | `[processes] dtMassBalance` | Use `[output] MbaInterval` instead. |
 | `[processes] thetaVertical` | Use `[numerics] verticalAdvectionType` instead. |
 
-<a id="obsolete-keywords-and-values"></a>
-# Obsolete keywords and values
+<a id="obsolete-keywords-and-options"></a>
+# Obsolete keywords and options
 
-The keywords and keyword values listed below are no longer supported and will cause an error if used in D-Flow FM. They are grouped by the release in which they became obsolete, most recent first. If your model still uses one of them, please update it by following the notes or user manual.
+The keywords and options listed below are no longer supported and will cause an error if used in D-Flow FM. They are grouped by the release in which they became obsolete, most recent first. If your model still uses one of them, please update it by following the notes or user manual.
 
 <a id="release-2027.01"></a>
 ## Release 2027.01
@@ -1141,15 +1163,15 @@ The keywords and keyword values listed below are no longer supported and will ca
 | Keyword/value | Notes |
 | ------------- | ----- |
 | `[geometry] 1dNetworkFile` | Use individual keywords such as `[geometry] structureFile`, `crossDefFile`, etc. instead. |
-| `[geometry] Grdang` | Keyword no longer supported. |
 | `[geometry] bathymetryFile` | Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information. |
 | `[geometry] bedLevelFile` | Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information. |
 | `[geometry] botLevType` | Use `[geometry] bedLevType` instead. |
 | `[geometry] botLevUni` | Use `[geometry] bedLevUni` instead. |
+| `[geometry] Grdang` | Keyword no longer supported. |
 | `[geometry] iThinDykeScheme` | Use `[numerics] fixedWeirScheme` instead. |
 | `[geometry] manholeFile` | Use `[geometry] storageNodeFile` instead. |
-| `[geometry] noOptimizedPolygon` | Keyword no longer supported. |
 | `[geometry] nodeFile` | Keyword no longer supported. Use `[geometry] frictFile` instead. |
+| `[geometry] noOptimizedPolygon` | Keyword no longer supported. |
 | `[geometry] roughnessFiles` | Keyword no longer supported. Use `[geometry] frictFile` instead. |
 | `[geometry] thinDykeFile` | Use `[numerics] fixedWeirFile` instead. |
 | `[numerics] CFLWaveFrac` | Keyword no longer supported. |

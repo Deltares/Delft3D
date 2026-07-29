@@ -469,6 +469,9 @@
                     "is_unique": {
                         "type": "boolean"
                     },
+                    "status": {
+                        "$ref": "#/definitions/status"
+                    },
                     "ini_properties": {
                         "type": "array",
                         "items": {
