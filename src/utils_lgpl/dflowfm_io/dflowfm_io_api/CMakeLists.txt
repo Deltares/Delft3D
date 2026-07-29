@@ -35,7 +35,7 @@ add_custom_command(TARGET dflowfm_io_api POST_BUILD
 	COMMAND ${CMAKE_COMMAND}
 	-DLIB_DIR=${DFLOWFM_IO_PY_WHEEL_LIB_DIR}
 	-DLIB_FILE=$<TARGET_FILE:dflowfm_io_api>
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/stage_native_library.cmake
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/wrappers/python/stage_native_library.cmake
 	COMMENT "Staging dflowfm_io_api into the Python wheel package (_lib/)"
 	VERBATIM
 )
