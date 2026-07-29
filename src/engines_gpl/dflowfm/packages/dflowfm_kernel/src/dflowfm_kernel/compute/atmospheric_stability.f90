@@ -289,6 +289,8 @@ contains
       real(kind=dp), intent(in) :: wind_velocity_y(:) !< y-direction wind component [m/s].
       real(kind=dp), intent(in) :: air_temperature(:) !< Air temperature [K].
       real(kind=dp), intent(in) :: dew_point_temperature(:) !< Dew-point temperature [K].
+      real(kind=dp), intent(in) :: air_pressure(:) !< Air pressure [Pa].
+      real(kind=dp), intent(in) :: charnock(:) !< Charnock parameter [-].
       real(kind=dp), intent(in) :: surface_temperature(:) !< Surface temperature [K].
       type(t_array_or_scalar), intent(in) :: salt_saturation_humidity_reduction_factor !< Salinity reduction factor of saturation humidity [-]
       type(t_options), intent(in) :: options !< Process options

@@ -4,6 +4,7 @@ module test_atmospheric_stability
    use precision_basics, only: comparereal
    use m_atmospheric_stability
    use m_array_or_scalar, only: t_array_or_scalar
+   use m_alloc, only: realloc
    implicit none
 
 contains
@@ -30,6 +31,8 @@ contains
       charnock = [0.031984724136352_dp, 0.007887448339510_dp, 0.063390066055710_dp]
       surface_temperature = [286.743896484375000_dp, 286.676513671875000_dp, 282.813232421875000_dp]
       salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp
+      call realloc(salinity_reduction_factor_saturation_humidity%values, size(surface_temperature), keepexisting=.true., fill=salinity_reduction_factor_saturation_humidity%scalar)
+      salinity_reduction_factor_saturation_humidity%values = [1.0_dp, 0.99_dp, 0.98_dp]
       
       call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                   air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
@@ -67,39 +70,39 @@ contains
       call f90_expect_near(c_h(1), 0.0014208689934920476_dp, 1e-9_dp, "c_h(1) does not match expected value.")
       call f90_expect_near(c_e(1), 0.0014748989040242813_dp, 1e-9_dp, "c_e(1) does not match expected value.")
             
-      call f90_expect_near(u_star(2), 0.021983450898111_dp, 1e-5_dp, "u_star(2) does not match expected value.")
-      call f90_expect_near(t_star(2), -0.063781380223977_dp, 1e-5_dp, "t_star(2) does not match expected value.")
-      call f90_expect_near(q_star(2), -0.000148940393852_dp, 1e-8_dp, "q_star(2) does not match expected value.")
-      call f90_expect_near(z0_momentum(2), 0.000075442471892_dp, 1e-8_dp, "z0_momentum(2) does not match expected value.")
-      call f90_expect_near(z0_heat(2), 0.000272922727444_dp, 1e-7_dp, "z0_heat(2) does not match expected value.")
+      call f90_expect_near(u_star(2), 0.021959777501879552_dp, 1e-5_dp, "u_star(2) does not match expected value.")
+      call f90_expect_near(t_star(2), -0.063662148797144533_dp, 1e-5_dp, "t_star(2) does not match expected value.")
+      call f90_expect_near(q_star(2), -0.00014127432406157292_dp, 1e-8_dp, "q_star(2) does not match expected value.")
+      call f90_expect_near(z0_momentum(2), 0.000075524194341495605_dp, 1e-8_dp, "z0_momentum(2) does not match expected value.")
+      call f90_expect_near(z0_heat(2), 0.00027322300528684709_dp, 1e-7_dp, "z0_heat(2) does not match expected value.")
       call f90_expect_near(z0_humidity(2), 0.000423030227538_dp, 1e-6_dp, "z0_humidity(2) does not match expected value.")
-      call f90_expect_near(obukhov_length(2), -0.401534400984983_dp, 1e-4_dp, "obukhov_length(2) does not match expected value.")
-      call f90_expect_near(richardson_number(2), -1.974372173626931_dp, 1e-4_dp, "richardson_number(2) does not match expected value.")
-      call f90_expect_near(wind_stress_u(2), 0.00014672001126972184_dp, 1e-9_dp, "wind_stress_u(2) does not match expected value.")
-      call f90_expect_near(wind_stress_v(2), -0.00056730769523640964_dp, 1e-9_dp, "wind_stress_v(2) does not match expected value.")
-      call f90_expect_near(latent_heat_flux(2), -9.9282650485071215_dp, 1e-9_dp, "latent_heat_flux(2) does not match expected value.")
-      call f90_expect_near(sensible_heat_flux(2), -1.4640944180384317_dp, 1e-9_dp, "sensible_heat_flux(2) does not match expected value.")
+      call f90_expect_near(obukhov_length(2), -0.40690796328902146_dp, 1e-4_dp, "obukhov_length(2) does not match expected value.")
+      call f90_expect_near(richardson_number(2), -1.9479139245561901_dp, 1e-4_dp, "richardson_number(2) does not match expected value.")
+      call f90_expect_near(wind_stress_u(2), 0.00014640312061274798_dp, 1e-9_dp, "wind_stress_u(2) does not match expected value.")
+      call f90_expect_near(wind_stress_v(2), -0.00056608240560690373_dp, 1e-9_dp, "wind_stress_v(2) does not match expected value.")
+      call f90_expect_near(latent_heat_flux(2), -9.4070428068618668_dp, 1e-9_dp, "latent_heat_flux(2) does not match expected value.")
+      call f90_expect_near(sensible_heat_flux(2), -1.4597738955897894_dp, 1e-9_dp, "sensible_heat_flux(2) does not match expected value.")
       call f90_expect_near(w_star(2), 0.0_dp, 1e-9_dp, "w_star(2) does not match expected value.")
-      call f90_expect_near(c_d(2), 0.0021821300262445326_dp, 1e-9_dp, "c_d(2) does not match expected value.")
-      call f90_expect_near(c_h(2), 0.0032842424452251642_dp, 1e-9_dp, "c_h(2) does not match expected value.")
-      call f90_expect_near(c_e(2), 0.003556338038678844_dp, 1e-9_dp, "c_e(2) does not match expected value.")
+      call f90_expect_near(c_d(2), 0.0021774204572332541_dp, 1e-9_dp, "c_d(2) does not match expected value.")
+      call f90_expect_near(c_h(2), 0.0032745507121213894_dp, 1e-9_dp, "c_h(2) does not match expected value.")
+      call f90_expect_near(c_e(2), 0.0035453171098001504_dp, 1e-9_dp, "c_e(2) does not match expected value.")
 
-      call f90_expect_near(u_star(3), 1.2605930619410015_dp, 1e-5_dp, "u_star(3) does not match expected value.")
-      call f90_expect_near(t_star(3), -0.061488117346359027_dp, 1e-7_dp, "t_star(3) does not match expected value.")
-      call f90_expect_near(q_star(3), -9.2337265830901515e-05_dp, 1e-9_dp, "q_star(3) does not match expected value.")
-      call f90_expect_near(z0_momentum(3), 0.010272354722833723_dp, 1e-6_dp, "z0_momentum(3) does not match expected value.")
+      call f90_expect_near(u_star(3), 1.2605257576398083_dp, 1e-5_dp, "u_star(3) does not match expected value.")
+      call f90_expect_near(t_star(3), -0.061487851538916886_dp, 1e-7_dp, "t_star(3) does not match expected value.")
+      call f90_expect_near(q_star(3), -8.756177722083455e-05_dp, 1e-9_dp, "q_star(3) does not match expected value.")
+      call f90_expect_near(z0_momentum(3), 0.010271257861220856_dp, 1e-6_dp, "z0_momentum(3) does not match expected value.")
       call f90_expect_near(z0_heat(3), 4.7598600384773734e-06_dp, 1e-9_dp, "z0_heat(3) does not match expected value.")
       call f90_expect_near(z0_humidity(3), 7.3777830596399287e-06_dp, 1e-9_dp, "z0_humidity(3) does not match expected value.")
-      call f90_expect_near(obukhov_length(3), -1479.651083435764122_dp, 2e-1_dp, "obukhov_length(3) does not match expected value.")
-      call f90_expect_near(richardson_number(3), -0.002086552554703_dp, 1e-7_dp, "richardson_number(3) does not match expected value.")
-      call f90_expect_near(wind_stress_u(3), 1.6941085481015359_dp, 1e-9_dp, "wind_stress_u(3) does not match expected value.")
-      call f90_expect_near(wind_stress_v(3), -1.0139020930358786_dp, 1e-9_dp, "wind_stress_v(3) does not match expected value.")
-      call f90_expect_near(latent_heat_flux(3), -361.66130457981751_dp, 1e-9_dp, "latent_heat_flux(3) does not match expected value.")
-      call f90_expect_near(sensible_heat_flux(3), -82.9336247571147_dp, 1e-9_dp, "sensible_heat_flux(3) does not match expected value.")
+      call f90_expect_near(obukhov_length(3), -1494.8705407521311_dp, 2e-1_dp, "obukhov_length(3) does not match expected value.")
+      call f90_expect_near(richardson_number(3), -0.0020650340081187547_dp, 1e-7_dp, "richardson_number(3) does not match expected value.")
+      call f90_expect_near(wind_stress_u(3), 1.6939276526935303_dp, 1e-9_dp, "wind_stress_u(3) does not match expected value.")
+      call f90_expect_near(wind_stress_v(3), -1.0137938294697673_dp, 1e-9_dp, "wind_stress_v(3) does not match expected value.")
+      call f90_expect_near(latent_heat_flux(3), -342.93863399702468_dp, 1e-9_dp, "latent_heat_flux(3) does not match expected value.")
+      call f90_expect_near(sensible_heat_flux(3), -82.928838354221909_dp, 1e-9_dp, "sensible_heat_flux(3) does not match expected value.")
       call f90_expect_near(w_star(3), 0.0_dp, 1e-9_dp, "w_star(3) does not match expected value.")
-      call f90_expect_near(c_d(3), 0.0034041655741110614_dp, 1e-9_dp, "c_d(3) does not match expected value.")
-      call f90_expect_near(c_h(3), 0.0018031744251089255_dp, 1e-9_dp, "c_h(3) does not match expected value.")
-      call f90_expect_near(c_e(3), 0.0018663715487940969_dp, 1e-9_dp, "c_e(3) does not match expected value.")
+      call f90_expect_near(c_d(3), 0.0034038020803307261_dp, 1e-9_dp, "c_d(3) does not match expected value.")
+      call f90_expect_near(c_h(3), 0.001803070418981471_dp, 1e-9_dp, "c_h(3) does not match expected value.")
+      call f90_expect_near(c_e(3), 0.0018662636169953025_dp, 1e-9_dp, "c_e(3) does not match expected value.")
 
    end subroutine test_compute_scales_and_fluxes_moninobukhov_true
    !$f90tw )
