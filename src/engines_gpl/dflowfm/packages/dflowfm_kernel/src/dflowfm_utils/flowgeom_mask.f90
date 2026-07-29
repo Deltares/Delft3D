@@ -76,7 +76,7 @@ contains
 
       call realloc(mask, num_elements, keepExisting=.false., fill=0)
 
-      if (location_type == UNC_LOC_GLOBAL) then
+      if (location_type == UNC_LOC_GLOBAL .or. spatial_location_type == SPATIAL_LOCATION_INVALID) then
          mask = 1
       else
          call apply_spatial_location_mask(mask, location_type, spatial_location_type)

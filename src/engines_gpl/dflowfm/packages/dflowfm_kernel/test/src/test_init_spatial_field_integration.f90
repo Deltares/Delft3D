@@ -1,5 +1,6 @@
 module test_init_spatial_fields_integration
    use assertions_gtest
+   use iso_c_utils, only: cstr
    use fm_external_forcings, only: init_spatial_fields
    use m_meteo, only: initialize_ec_module, jarain
    use m_wind, only: rain
@@ -55,6 +56,105 @@ contains
       call prop_file('ini', file_name, bnd_ptr, istat)
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_polygon_preserves_uncovered_values, test_polygon_preserves_uncovered_values,
+   subroutine test_polygon_preserves_uncovered_values() bind(C)
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use fm_location_types, only: UNC_LOC_S
+      use m_polygon, only: m_polygon_destructor
+      use timespace, only: timespaceinitialfield
+      use timespace_parameters, only: INSIDE_POLYGON, OPERAND_OVERRIDE
+
+      character(len=*), parameter :: POL_FILE = "test_partial_polygon.pol"
+      real(dp) :: transformcoef(NTRANSFORMCOEF)
+      real(dp) :: x(2), y(2), values(2)
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "enclosing_first_point", &
+                       "5  2", &
+                       "-1.0  -1.0", &
+                       " 1.0  -1.0", &
+                       " 1.0   1.0", &
+                       "-1.0   1.0", &
+                       "-1.0  -1.0"])
+      x = [0.0_dp, 2.0_dp]
+      y = [0.0_dp, 2.0_dp]
+      values = [7.0_dp, 7.0_dp]
+      transformcoef = -999.0_dp
+      transformcoef(1) = 4.0_dp
+      ierr = m_polygon_destructor()
+
+      success = timespaceinitialfield(x, y, values, size(values), POL_FILE, INSIDE_POLYGON, 4, &
+                                      OPERAND_OVERRIDE, transformcoef, UNC_LOC_S)
+
+      call f90_expect_true(success, "polygon initialization should succeed")
+      call f90_expect_eq(values(1), 4.0_dp, "the enclosed point should receive the polygon value")
+      call f90_expect_eq(values(2), 7.0_dp, "an uncovered point should retain its existing value")
+      ierr = m_polygon_destructor()
+   end subroutine test_polygon_preserves_uncovered_values
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_preserves_uncovered_values, test_waqparameter_polygon_preserves_uncovered_values,
+   subroutine test_waqparameter_polygon_preserves_uncovered_values() bind(C)
+      use m_flow, only: kmx, ndkx
+      use m_polygon, only: m_polygon_destructor
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      character(len=*), parameter :: POL_FILE = "test_nonoverlapping_waq_parameter.pol"
+      character(len=*), parameter :: EXT_FILE = "test_nonoverlapping_waq_parameter.ext"
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "polygon_away_from_grid", &
+                       "5  2", &
+                       "9.0   9.0", &
+                       "11.0  9.0", &
+                       "11.0 11.0", &
+                       "9.0  11.0", &
+                       "9.0   9.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqparameterSOD", &
+                       "    forcingFile         = "//POL_FILE, &
+                       "    forcingFileType     = Polygon", &
+                       "    interpolationMethod = constant", &
+                       "    operand              = override", &
+                       "    value                = 4.0"])
+
+      call setup_minimal_grid()
+      kmx = 0
+      ndkx = ndx
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call register_waq_target('waqparameterSOD')
+      painp(1, 1) = 2.5_dp
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 2.5_dp, &
+                         "an uncovered WAQ parameter cell should retain its existing value")
+
+      num_spatial_parameters = 0
+      kmx = 0
+      ndkx = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqparameter_polygon_preserves_uncovered_values
+   !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
    !> When no averaging keywords are present, read_averaging_input must return
@@ -474,14 +574,14 @@ contains
       call register_waq_target('waqsegmentfunctionSegmentFunction')
 
       call f90_expect_eq(num_spatial_parameters, 2, "two WAQ spatial parameters should be registered")
-      call f90_assert_streq(trim(paname(1)), "Parameter", "the WAQ parameter suffix should be retained")
-      call f90_assert_streq(trim(paname(2)), "Segment", "the WAQ segment-number suffix should be retained")
+      call f90_assert_streq(cstr(paname(1)), cstr("Parameter"), cstr("the WAQ parameter suffix should be retained"))
+      call f90_assert_streq(cstr(paname(2)), cstr("Segment"), cstr("the WAQ segment-number suffix should be retained"))
       call f90_expect_eq(size(painp, 2), ndkx, "spatial parameter storage should cover all WAQ segments")
       call f90_expect_eq(num_time_functions, 1, "one WAQ function should be registered")
-      call f90_assert_streq(trim(funame(1)), "Function", "the WAQ function suffix should be retained")
+      call f90_assert_streq(cstr(funame(1)), cstr("Function"), cstr("the WAQ function suffix should be retained"))
       call f90_expect_eq(size(funinp, 2), 1, "WAQ function storage should contain one global value")
       call f90_expect_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")
-      call f90_assert_streq(trim(sfunname(1)), "SegmentFunction", "the WAQ segment function suffix should be retained")
+      call f90_assert_streq(cstr(sfunname(1)), cstr("SegmentFunction"), cstr("the WAQ segment function suffix should be retained"))
       call f90_assert_true(associated(sfuninp), "WAQ segment function target storage should be allocated")
       call f90_expect_eq(size(sfuninp, 1), 1, "target storage should contain one segment function")
       call f90_expect_eq(size(sfuninp, 2), ndkx, "target storage should cover all WAQ segments")
@@ -955,7 +1055,7 @@ contains
 
       call f90_expect_true(success, "waqmassbalancearea polygon initialization should succeed")
       call f90_expect_eq(nomba, 1, "one mass-balance area should be registered")
-      call f90_assert_streq(trim(mbaname(1)), "SouthWest", "the mass-balance area suffix should be retained")
+      call f90_assert_streq(cstr(mbaname(1)), cstr("SouthWest"), cstr("the mass-balance area suffix should be retained"))
       call f90_expect_eq(mbadef(1), 1, "the enclosed cell should belong to the registered area")
 
       ti_mba = 0.0_dp

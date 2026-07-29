@@ -1012,6 +1012,7 @@ contains
          call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
                                     waq_values=painp, index_waq_input=first_index)
          allocate (target_array_3d(first_index:first_index, size(painp, 2)))
+         target_array_3d(first_index, :) = painp(first_index, :)
 
       case default
          success = .false.

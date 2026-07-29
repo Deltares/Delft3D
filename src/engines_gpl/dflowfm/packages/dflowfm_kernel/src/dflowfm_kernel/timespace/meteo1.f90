@@ -3273,7 +3273,7 @@ contains
       integer, intent(in) :: nx
       real(kind=dp), intent(in) :: xu(nx)
       real(kind=dp), intent(in) :: yu(nx)
-      real(kind=dp), intent(out) :: zu(nx)
+      real(kind=dp), intent(inout) :: zu(nx)
 
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
