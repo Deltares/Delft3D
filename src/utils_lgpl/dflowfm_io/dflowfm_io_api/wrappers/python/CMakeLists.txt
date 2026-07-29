@@ -1,9 +1,9 @@
 # Builds the dflowfm_io Python wheel.
 #
 # Targets (build order when the wheel is built):
-#   dflowfm_io_bindings -> runs the generator scripts (regenerates the committed generated code)
-#   dflowfm_io_api      -> compiles the DLL; its POST_BUILD stages it into _lib/
-#   dflowfm_io_wheel    -> `pip wheel` packages src/ + _lib/ into a .whl (depends on the two above)
+#   dflowfm_io_bindings  -> runs the generator scripts (regenerates the committed generated code)
+#   dflowfm_io_stage_lib -> stages the dflowfm_io_api DLL (built one level up) into _lib/
+#   dflowfm_io_wheel     -> `pip wheel` packages src/ + _lib/ into a .whl (depends on the two above)
 #
 # The wheel is NOT part of the default build (slow; only needed when publishing). Build on demand:
 #     cmake --build <build-dir> --target dflowfm_io_wheel
@@ -51,6 +51,22 @@ add_custom_command(
 # Build this target to (re)generate the Python code on its own.
 add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
 
+# Stage the freshly built dflowfm_io_api DLL into the wheel package (_lib/) so `pip wheel` bundles it.
+# The library is a build artifact: git-ignored there, only ever produced by the build, never committed.
+# This is a dependent target rather than a POST_BUILD on dflowfm_io_api because CMake forbids attaching
+# POST_BUILD to a target defined in another directory (dflowfm_io_api is defined one level up).
+set(DFLOWFM_IO_LIB_STAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/_lib")
+
+add_custom_target(dflowfm_io_stage_lib ALL
+	COMMAND ${CMAKE_COMMAND}
+	-DLIB_DIR=${DFLOWFM_IO_LIB_STAGE_DIR}
+	-DLIB_FILE=$<TARGET_FILE:dflowfm_io_api>
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/stage_native_library.cmake
+	COMMENT "Staging dflowfm_io_api into the Python wheel package (_lib/)"
+	VERBATIM
+)
+add_dependencies(dflowfm_io_stage_lib dflowfm_io_api)
+
 set(DFLOWFM_IO_WHEEL_DIR "${CMAKE_CURRENT_BINARY_DIR}/wheel")
 
 if(DFLOWFM_IO_BUILD_PYTHON_WHEEL)
@@ -69,4 +85,4 @@ add_custom_target(dflowfm_io_wheel ${_dflowfm_io_wheel_in_all}
 )
 
 # Guarantees the DLL is staged and the code regenerated before pip wheel runs.
-add_dependencies(dflowfm_io_wheel dflowfm_io_api dflowfm_io_bindings)
+add_dependencies(dflowfm_io_wheel dflowfm_io_stage_lib dflowfm_io_bindings)
