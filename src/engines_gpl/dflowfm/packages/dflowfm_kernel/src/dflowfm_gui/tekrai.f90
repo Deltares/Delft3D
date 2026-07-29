@@ -660,7 +660,7 @@ contains
       end do
 
       do ng = 1, ncgensg ! loop over gate signals, tekrai
-         zgaten = zcgen(3 * ng - 1)
+         zgaten = zcgen(4 * ng - 2)
          do n = L1cgensg(ng), L2cgensg(ng)
             k1 = kcgen(1, n)
             k2 = kcgen(2, n)

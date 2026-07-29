@@ -47,6 +47,7 @@ contains
       use m_flowgeom, only: bob, lnx1D, kcu, jagrounlay, grounlay
       use m_flow, only: kmx
       use m_flowparameters, only: jaconveyance2D
+      use network_data, only: LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       integer, intent(in) :: L !< Flow link number.
       integer, intent(in) :: iup !< Upwind node index for this flow link (either 1 or 2, use 0 if irrelevant).
@@ -63,9 +64,9 @@ contains
       end if
 
       if (L <= lnx1D) then ! 1D
-         if (kcu(L) == 4 .and. jaconveyance2D >= 1) then
+         if (kcu(L) == LINK_1D2D_LONGITUDINAL .and. jaconveyance2D >= 1) then
             blu = min(bob(1, L), bob(2, L))
-         else if (kcu(L) == 5 .or. kcu(L) == 7) then
+         else if (kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then
             blu = max(bob(1, L), bob(2, L))
          else
             blu = max(bob(1, L), bob(2, L))

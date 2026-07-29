@@ -24,6 +24,8 @@
   <data:scalar name="sources_z_min" />
   <data:scalar name="sources_z_max" />
   <data:scalar name="sources_sinks_discharge" />
+  <data:scalar name="sources_momentum_magnitude" />
+  <data:scalar name="sources_momentum_direction" />
 
 <!-- FM side -->
   <mesh name="fm_flow_cells" dimensions="2">
@@ -54,6 +56,8 @@
     <use-data name="sources_z_min" />
     <use-data name="sources_z_max" />
     <use-data name="sources_sinks_discharge" />
+    <use-data name="sources_momentum_magnitude" />
+    <use-data name="sources_momentum_direction" />
   </mesh>
 
   <participant name="fm">
@@ -95,6 +99,8 @@
     <write-data name="sources_z_min" mesh="sources_sinks_nodes" />
     <write-data name="sources_z_max" mesh="sources_sinks_nodes" />
     <write-data name="sources_sinks_discharge" mesh="sources_sinks_nodes" />
+    <write-data name="sources_momentum_magnitude" mesh="sources_sinks_nodes" />
+    <write-data name="sources_momentum_direction" mesh="sources_sinks_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells" to="csumo_2d_nodes" constraint="consistent" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells_3d" to="csumo_3d_nodes" constraint="consistent" />
     <export:vtu directory="precice-exports" />

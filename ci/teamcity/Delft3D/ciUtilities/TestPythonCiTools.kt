@@ -31,6 +31,7 @@ object TestPythonCiTools : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {

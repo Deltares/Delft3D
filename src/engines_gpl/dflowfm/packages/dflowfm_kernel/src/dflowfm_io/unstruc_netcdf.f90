@@ -1456,7 +1456,7 @@ contains
          id_weirdte, &
          id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
          id_culvert_openh, id_longculvert_valveopen, &
-         id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
+         id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
          id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
          id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
          id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
@@ -2436,6 +2436,10 @@ contains
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'long_name', 'Crest width of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'units', 'm')
 
+            ierr = nf90_def_var(irstfile, 'general_structure_gate_height', nf90_double, [id_genstrudim, id_timedim], id_genstru_gateh)
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'long_name', 'Gate height of general structure')
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'units', 'm')
+
             ierr = nf90_def_var(irstfile, 'general_structure_gate_lower_edge_level', nf90_double, [id_genstrudim, id_timedim], id_genstru_edgel)
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'long_name', 'Gate lower edge level of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'units', 'm')
@@ -2676,6 +2680,7 @@ contains
          if (network%sts%numGeneralStructures > 0) then
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_level', id_genstru_crestl)
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_width', id_genstru_crestw)
+            ierr = nf90_inq_varid(irstfile, 'general_structure_gate_height', id_genstru_gateh)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_lower_edge_level', id_genstru_edgel)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_opening_width', id_genstru_openw)
             ierr = nf90_inq_varid(irstfile, 'general_structure_flow_area', id_genstru_area)
@@ -3336,6 +3341,7 @@ contains
          if (nlen > 0) then
             ierr = nf90_put_var(irstfile, id_genstru_crestl, valgenstru(9, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_crestw, valgenstru(10, 1:nlen), [1, itim], [nlen, 1])
+            ierr = nf90_put_var(irstfile, id_genstru_gateh, valgenstru(15, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_edgel, valgenstru(14, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_openw, valgenstru(13, 1:nlen), [1, itim], [nlen, 1])
 
@@ -4340,12 +4346,16 @@ contains
          end if
 
          ! Heat fluxes
-         if (map_write_settings%heatflux > 0) then ! here less verbose
+         if (map_write_settings%heatflux > 0) then ! Here less verbose
             if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
+               
+               if (secchi_depth_is_time_varying) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, nc_precision, UNC_LOC_S, 'Secc', 'secchi_depth_of_sea_water', 'Secchi depth', 'm', jabndnd=jabndnd_)
+               end if
 
                if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, nc_precision, UNC_LOC_S, 'Qsun', 'surface_net_downward_shortwave_flux', 'Solar influx', 'W m-2', jabndnd=jabndnd_)
@@ -6059,6 +6069,10 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, UNC_LOC_S, air_temperature, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, UNC_LOC_S, relative_humidity, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, UNC_LOC_S, cloudiness, jabndnd=jabndnd_)
+
+            if (secchi_depth_is_time_varying) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, UNC_LOC_S, spatial_secchi_depth, jabndnd=jabndnd_)
+            end if
 
             if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, UNC_LOC_S, Qsunmap, jabndnd=jabndnd_)
@@ -9580,7 +9594,7 @@ contains
          maxbnd = ceiling(sqrt(real(numl))) ! First estimate of numbnd
          allocate (ibndlink(maxbnd))
          do L = 1, numl
-            if (lnn(L) < 2 .and. kn(3, L) == 2) then
+            if (lnn(L) < 2 .and. kn(3, L) == LINK_2D) then
                numbnd = numbnd + 1
                if (numbnd > maxbnd) then
                   maxbnd = max(NUMBND, nint(1.2 * maxbnd))
@@ -10260,7 +10274,7 @@ contains
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
          call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
-         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.true., fill='')
+         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.false., fill='')
          do i = 1, n2d2dcontacts
             L = temp_indices(i)
             n1 = abs(lne(1, L))
@@ -10447,7 +10461,7 @@ contains
                call mess(LEVEL_ERROR, 'Could not put header in net geometry file.')
                return
             end if
-         else
+         else if (num_1d_nodes > 0) then
             ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, num_1d_nodes, n1dedges, 0, 0, &
                                         edge_nodes, face_nodes, null(), null(), null(), xn, yn, xe, ye, xzw(1:1), yzw(1:1), &
                                         crs, -999, dmiss, start_index)
@@ -11007,7 +11021,7 @@ contains
          end if
 
          ! TODO: AvD: replace by read-in edge_type
-         ! NOTE: AvD: even meshgeom%dim is not entirely suitable, because if a net file was saved without cell info, then we currently write topology_dimension=1, whereas we actually intend to have kn(3,:)=2.
+         ! NOTE: AvD: even meshgeom%dim is not entirely suitable, because if a net file was saved without cell info, then we currently write topology_dimension=1, whereas we actually intend to have kn(3,:)=LINK_2D.
          kn3(:) = meshgeom%dim ! was 2, Needs to be read from file at some point
 
          ! Backwards compatibility
@@ -11397,7 +11411,7 @@ contains
       ! Repair invalid kn3 codes (e.g. 0, always set to default 2==2D, i.e., don't read in thin dam codes)
       do L = numl_keep + 1, numl_keep + numl_read
          if (kn(3, L) < 1) then
-            kn(3, L) = 2
+            kn(3, L) = LINK_2D
          end if
       end do
 
@@ -15232,7 +15246,7 @@ contains
                ierr = ionc_get_edge_nodes(ioncid, im2d, kn12, 1)
                do L = 1, numl2d_read
                   kn(1:2, numl1d + L) = numk1d + kn12(1:2, L)
-                  kn(3, numl1d + L) = 2
+                  kn(3, numl1d + L) = LINK_2D
                end do
             end if
          else
@@ -15578,7 +15592,7 @@ contains
                   numl = numl + 1
                   kn(1, numl) = pbr%grd(k)
                   kn(2, numl) = pbr%grd(k + 1)
-                  kn(3, numl) = 1
+                  kn(3, numl) = LINK_1D
                end do
 
             end do
@@ -15631,7 +15645,7 @@ contains
       integer, allocatable :: tmpvar3di(:, :, :), tmpvar2di(:, :)
       integer :: strucDimErr, i, nLinks, nStru, ierr, iStru, nfuru, numlinks, strucVarErr, L, L0, nstages, maxNumStages
       integer :: id_culvert_openh, id_longculvert_valveopen, &
-                 id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
+                 id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
                  id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
                  id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
                  id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
@@ -15745,6 +15759,19 @@ contains
                   genstr => network%sts%struct(istru)%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
+               end do
+            end if
+
+            ! read general_structure_gate_height
+            call realloc(tmpvar, nStru, stat=ierr, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, 'general_structure_gate_height', id_genstru_gateh)
+            ierr = nf90_get_var(ncid, id_genstru_gateh, tmpvar, start=[1, it_read], count=[nStru, 1])
+            call check_error(ierr, '"general_structure_gate_height", The simulation will continue but the results may not be reliable.', LEVEL_WARN)
+            if (ierr == 0) then
+               do i = 1, nStru
+                  istru = network%sts%generalStructureIndices(i)
+                  genstr => network%sts%struct(istru)%generalst
+                  genstr%gateDoorHeight = tmpvar(i)
                end do
             end if
 

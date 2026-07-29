@@ -159,7 +159,7 @@ contains
              (kc(node1) == 0 .and. kc(node2) == 1236) .or. (kc(node1) == 1236 .and. kc(node2) == 0) .or. &
              (kc(node1) == -1 .and. kc(node2) == -1) .or. (kc(node1) == -2 .and. kc(node2) == -2)) then ! last two lines for directional refinement
 
-            if (lnn(L) == 0 .or. kn(3, L) == 0) then
+            if (lnn(L) == 0 .or. kn(3, L) == LINK_CLOSED) then
                cycle ! a 1D-link: keep it
             end if
 

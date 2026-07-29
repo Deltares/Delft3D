@@ -8,7 +8,8 @@ import Delft3D.template.*
 object PinAndTag : BuildType({
 
     templates(
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     name = "Pin and tag"

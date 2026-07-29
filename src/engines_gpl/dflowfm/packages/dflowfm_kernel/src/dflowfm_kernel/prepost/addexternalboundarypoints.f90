@@ -57,6 +57,7 @@ contains
       use m_reapol
       use m_is_1d_boundary_candidate, only: is_1d_boundary_candidate
       use m_filez, only: oldfil, doclose
+      use network_data, only: LINK_2D_BOUNDARY, LINK_1D_BOUNDARY, LINK_2D
 
       integer :: i, k, k1, k2, L, Lf, lb, nn, ierr, k3, k4, id, istart, num1d2d, kL, kR, mpliz
 
@@ -106,7 +107,7 @@ contains
 
             k3 = kn(1, L)
             k4 = kn(2, L)
-            if (kn(3, L) == 2) then ! in 2D mirror cell
+            if (kn(3, L) == LINK_2D) then ! in 2D mirror cell
                call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
                xzw(k1) = xz(k1)
                yzw(k1) = yz(k1)
@@ -121,7 +122,7 @@ contains
 
                end if
 
-               kcu(Lf) = -2
+               kcu(Lf) = LINK_2D_BOUNDARY
                kcs(k1) = -2
             else ! in 1D mirror point
                if (is_1d_boundary_candidate(L, 1)) then
@@ -137,7 +138,7 @@ contains
 
                   end if
                   ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
-                  kcu(Lf) = -1
+                  kcu(Lf) = LINK_1D_BOUNDARY
                   kcs(k1) = -1
                   nd(k1)%x = xz(k1)
                   nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
@@ -156,7 +157,7 @@ contains
 
                   end if
                   ln(2, Lf) = abs(lne(2, L))
-                  kcu(Lf) = -1
+                  kcu(Lf) = LINK_1D_BOUNDARY
                   kcs(k1) = -1
                   nd(k1)%x = xz(k1)
                   nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
@@ -199,12 +200,12 @@ contains
             call aerr('nd(k1)%x(nn), nd(k1)%y(nn)', ierr, nn * 2)
             k3 = kn(1, L)
             k4 = kn(2, L)
-            if (kn(3, L) == 2) then ! in 2D mirror cell
+            if (kn(3, L) == LINK_2D) then ! in 2D mirror cell
                call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
                xzw(k1) = xz(k1)
                yzw(k1) = yz(k1)
 
-               kcu(Lf) = -2
+               kcu(Lf) = LINK_2D_BOUNDARY
                kcs(k1) = -2
             else ! in 1D mirror point
                if (is_1d_boundary_candidate(L, 1)) then
@@ -212,7 +213,7 @@ contains
 !            yz(k1)  = 2d0*yk(k3) - yk(k4)
                   call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 2.0_dp, -1.0_dp, xz(k1), yz(k1))
                   ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
-                  kcu(Lf) = -1
+                  kcu(Lf) = LINK_1D_BOUNDARY
                   kcs(k1) = -1
                   nd(k1)%x = xz(k1)
                   nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
@@ -223,7 +224,7 @@ contains
 !            yz(k1)  = 2d0*yk(k4) - yk(k3)
                   call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -1.0_dp, 2.0_dp, xz(k1), yz(k1))
                   ln(2, Lf) = abs(lne(2, L))
-                  kcu(Lf) = -1
+                  kcu(Lf) = LINK_1D_BOUNDARY
                   kcs(k1) = -1
                   nd(k1)%x = xz(k1)
                   nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
@@ -264,7 +265,7 @@ contains
             !xz(k1)  = 0.5d0*( xk(k3) + xk(k4 ) )
             !yz(k1)  = 0.5d0*( yk(k3) + yk(k4 ) )
 
-            kcu(Lf) = -2
+            kcu(Lf) = LINK_2D_BOUNDARY
             kcs(k1) = -2
          else ! in 1D mirror point
             ! non-sensible: 1D internal point that accidentally lies on 2DFM -- 1DSOBEK boundary (should not happen)

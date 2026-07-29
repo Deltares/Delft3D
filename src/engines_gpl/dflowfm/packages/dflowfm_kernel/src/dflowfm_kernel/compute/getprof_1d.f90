@@ -46,6 +46,7 @@ contains
       use m_flowtimes, only: time1, times_update_roughness
       use m_get_chezy, only: get_chezy
       use m_roughness, only: getchezy
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer :: L, japerim, calcConv
       real(kind=dp) :: hprL !< hoogte in profiel
@@ -75,7 +76,7 @@ contains
       hpr = hprL
 
       jacustombnd1d = 0
-      if (kcu(L) == -1 .and. allocated(bndWidth1D)) then
+      if (kcu(L) == LINK_1D_BOUNDARY .and. allocated(bndWidth1D)) then
          ibndsect = lnxbnd(L - lnxi)
          if (ibndsect > 0) then
             if (bndWidth1D(ibndsect) /= dmiss) then

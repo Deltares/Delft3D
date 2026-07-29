@@ -77,8 +77,7 @@ module fm_external_forcings
    end interface
 
    interface
-      module subroutine init_new(external_force_file_name, iresult)
-         character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
+      module subroutine init_new(iresult)
          integer, intent(inout) :: iresult
       end subroutine init_new
    end interface
@@ -179,7 +178,9 @@ contains
       wy = 0.0_dp
       wdsu_x = 0.0_dp
       wdsu_y = 0.0_dp
-      wcharnock = 0.0_dp
+      if (allocated(ec_pwxwy_c) .or. allocated(ec_charnock)) then
+         wcharnock%values = 0.0_dp
+      end if
       call initialize_array_with_zero(ec_pwxwy_x)
       call initialize_array_with_zero(ec_pwxwy_y)
 
@@ -262,13 +263,13 @@ contains
          end if
          if (allocated(ec_pwxwy_c)) then
             do link = 1, lnx
-               wcharnock(link) = wcharnock(link) + 0.5_dp * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
+               wcharnock%values(link) = wcharnock%values(link) + 0.5_dp * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
             end do
          end if
       end if
       if (allocated(ec_charnock)) then
          do link = 1, lnx
-            wcharnock(link) = wcharnock(link) + 0.5_dp * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
+            wcharnock%values(link) = wcharnock%values(link) + 0.5_dp * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
          end do
       end if
 
@@ -500,6 +501,7 @@ contains
       integer :: filetype
       integer, allocatable :: kce(:) ! kc edges (numl)
       integer, allocatable :: ke(:) ! kc edges (numl)
+      integer :: i_ext !< index of external forcing file
       logical :: jawel
       integer :: ja_ext_force
       logical :: ext_force_bnd_used
@@ -535,16 +537,21 @@ contains
             call err_flush()
          end if
       end if
-      if (len(trim(md_extfile_new)) > 0) then
-         inquire (file=trim(md_extfile_new), exist=jawel)
-         if (jawel) then
-            ext_force_bnd_used = .true.
-         else
-            call qnerror('External forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile_new), ''' not found.'
-            call err_flush()
+
+      do i_ext = 1, size(extfile_new_list)
+         if (len(trim(extfile_new_list(i_ext))) > 0) then
+            inquire (file=trim(extfile_new_list(i_ext)), exist=jawel)
+
+            if (jawel) then
+               ext_force_bnd_used = .true.
+            else
+               call qnerror('External forcing file '''//trim(extfile_new_list(i_ext))//''' not found.', '  ', ' ')
+               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(extfile_new_list(i_ext)), ''' not found.'
+               call err_flush()
+            end if
+
          end if
-      end if
+      end do
 
       if (allocated(xe)) then
          deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
@@ -674,14 +681,12 @@ contains
       num_bc_ini_blocks = 0
       if (ext_force_bnd_used) then
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
-         call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
-                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+         do i_ext = 1, size(extfile_new_list)
+            call read_location_files_from_boundary_blocks(trim(extfile_new_list(i_ext)), nx, kce, num_bc_ini_blocks, &
+               numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
 
-         call read_initialtracer_properties(trim(md_extfile_new), nx)
-      end if
-
-      if (len(trim(md_inifieldfile)) > 0) then
-         call read_initialtracer_properties(trim(md_inifieldfile), nx)
+            call read_initialtracer_properties(trim(extfile_new_list(i_ext)), nx)
+         end do
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -1840,17 +1845,13 @@ contains
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
 
       integer :: iresult
 
       call setup(iresult)
       if (iresult == DFM_NOERR) then
-         call init_new(md_inifieldfile, iresult)
-      end if
-      if (iresult == DFM_NOERR) then
-         call init_new(md_extfile_new, iresult)
+         call init_new(iresult)
       end if
       if (iresult == DFM_NOERR) then
          call init_old(iresult)
@@ -1883,6 +1884,7 @@ contains
       use m_setzminmax, only: setzminmax
       use m_bnd, only: alloc_bnd, dealloc_bndarr
       use messagehandling, only: msgbuf, LEVEL_WARN, mess
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer, intent(out) :: iresult
 
@@ -1997,7 +1999,7 @@ contains
                teta(L) = 1.0_dp
             end do
 
-            if (iadvec /= 0 .and. kcu(L) == -1) then
+            if (iadvec /= 0 .and. kcu(L) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2017,7 +2019,7 @@ contains
          do k = 1, nbndz
             kbi = kbndz(2, k)
             Lf = kbndz(3, k)
-            if (iadvec /= 0 .and. kcu(Lf) == -1) then
+            if (iadvec /= 0 .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2663,6 +2665,7 @@ contains
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use unstruc_inifields, only: finalize_1dfield_global_values
+      use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -3000,7 +3003,7 @@ contains
             do L = 1, lnx1D ! for all links, set link width
                k1 = ln(1, L)
                k2 = ln(2, L)
-               if (kcu(L) == 1) then
+               if (kcu(L) == LINK_1D) then
                   ! Calculate maximal total area by using a water depth of 1000 m. FOR BARE we need the maximal possible catchment area.
                   ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                   ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.
