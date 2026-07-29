@@ -49,18 +49,18 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_flow, only: kmx
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
-      use m_meteo, only: item_waqfun
+      use m_meteo, only: item_waqfun, item_waqsfun
       use m_ec_parameters, only: ec_undef_int
       use m_source_sink, only: source_sinks
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use processes_input, only: num_time_functions
+      use processes_input, only: num_time_functions, num_spatial_time_fuctions, nosfunext
       use properties, only: MAX_PROP_LENGTH, prop_get
       use string_module, only: str_tolower
       use system_utils, only: split_filename
       use tree_data_types, only: tree_data_ptr
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
-      use unstruc_inifields, only: register_waqfunction_target
+      use unstruc_inifields, only: register_waq_target
       use unstruc_messages, only: threshold_abort
 
       ! Arguments
@@ -138,11 +138,13 @@ contains
             case ('spatial', 'meteo', 'parameter', 'initial')
                quantity = ''
                call prop_get(block_ptr, '', 'quantity', quantity, is_read)
-               if (is_read) call register_waqfunction_target(quantity)
+               if (is_read) call register_waq_target(quantity)
             end select
          end do
       end do
       call realloc(item_waqfun, num_time_functions, keepExisting=.false., fill=ec_undef_int)
+      nosfunext = num_spatial_time_fuctions
+      call realloc(item_waqsfun, nosfunext, keepExisting=.false., fill=ec_undef_int)
 
       ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
       i_bubblescreen = 0
@@ -1054,7 +1056,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
             call err_flush()
             return
          end if

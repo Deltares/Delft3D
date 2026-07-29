@@ -384,7 +384,7 @@ contains
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_waqfun
       use processes_input, only: funinp, funame, num_time_functions
       use time_module, only: ymd2modified_jul
-      use unstruc_inifields, only: register_waqfunction_target
+      use unstruc_inifields, only: register_waq_target
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -412,7 +412,7 @@ contains
       if (allocated(funame)) deallocate (funame)
       if (associated(funinp)) deallocate (funinp)
       allocate (funame(0))
-      call register_waqfunction_target('waqfunctionTest')
+      call register_waq_target('waqfunctionTest')
       call setup_minimal_grid()
       call initialize_ec_module()
 
@@ -442,6 +442,61 @@ contains
       if (allocated(item_waqfun)) deallocate (item_waqfun)
       call teardown_minimal_grid()
    end subroutine test_waqfunction_uses_global_ec_target
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_register_waq_targets, test_register_waq_targets,
+   !> Verifies that the new external-forcings pre-scan registers every WAQ input
+   !! type handled by the legacy pre-scan before dependent arrays are sized.
+   subroutine test_register_waq_targets() bind(C)
+      use m_flow, only: ndkx
+      use processes_input, only: painp, paname, num_spatial_parameters, &
+                                 funinp, funame, num_time_functions, &
+                                 sfuninp, sfunname, num_spatial_time_fuctions
+      use unstruc_inifields, only: register_waq_target
+
+      ndkx = 2
+      num_spatial_parameters = 0
+      num_time_functions = 0
+      num_spatial_time_fuctions = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(sfunname)) deallocate (sfunname)
+      if (associated(sfuninp)) deallocate (sfuninp)
+      allocate (paname(0))
+      allocate (funame(0))
+      allocate (sfunname(0))
+
+      call register_waq_target('waqparameterParameter')
+      call register_waq_target('waqsegmentnumberSegment')
+      call register_waq_target('waqfunctionFunction')
+      call register_waq_target('waqsegmentfunctionSegmentFunction')
+
+      call f90_expect_eq(num_spatial_parameters, 2, "two WAQ spatial parameters should be registered")
+      call f90_assert_streq(trim(paname(1)), "Parameter", "the WAQ parameter suffix should be retained")
+      call f90_assert_streq(trim(paname(2)), "Segment", "the WAQ segment-number suffix should be retained")
+      call f90_expect_eq(size(painp, 2), ndkx, "spatial parameter storage should cover all WAQ segments")
+      call f90_expect_eq(num_time_functions, 1, "one WAQ function should be registered")
+      call f90_assert_streq(trim(funame(1)), "Function", "the WAQ function suffix should be retained")
+      call f90_expect_eq(size(funinp, 2), 1, "WAQ function storage should contain one global value")
+      call f90_expect_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")
+      call f90_assert_streq(trim(sfunname(1)), "SegmentFunction", "the WAQ segment function suffix should be retained")
+      call f90_assert_true(associated(sfuninp), "WAQ segment function target storage should be allocated")
+      call f90_expect_eq(size(sfuninp, 1), 1, "target storage should contain one segment function")
+      call f90_expect_eq(size(sfuninp, 2), ndkx, "target storage should cover all WAQ segments")
+
+      num_spatial_parameters = 0
+      num_time_functions = 0
+      num_spatial_time_fuctions = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(sfunname)) deallocate (sfunname)
+      if (associated(sfuninp)) deallocate (sfuninp)
+      ndkx = 0
+   end subroutine test_register_waq_targets
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterlevel_static_field_populated_at_init, test_initialwaterlevel_static_field_populated_at_init,
