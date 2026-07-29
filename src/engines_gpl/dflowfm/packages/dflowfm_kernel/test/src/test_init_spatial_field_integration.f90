@@ -901,6 +901,75 @@ contains
    end subroutine test_advectiontype_integer_field_populated
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqmassbalancearea_polygon_populated, test_waqmassbalancearea_polygon_populated,
+   !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
+   !! named mass-balance area and assigns its integer ID to enclosed cells.
+   subroutine test_waqmassbalancearea_polygon_populated() bind(C)
+      use m_flow, only: ndkx
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
+      use m_mass_balance_areas, only: mbadef, mbaname, nomba
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: POL_FILE = "test_mba.pol"
+      character(len=*), parameter :: EXT_FILE = "test_mba.ext"
+
+      call create_file(POL_FILE, [ &
+                       "enclosing_polygon", &
+                       "5  2", &
+                       "-2.0  -2.0", &
+                       " 2.0  -2.0", &
+                       " 2.0   2.0", &
+                       "-2.0   2.0", &
+                       "-2.0  -2.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity        = waqmassbalanceareaSouthWest", &
+                       "    forcingFile     = "//POL_FILE, &
+                       "    forcingFileType = Polygon", &
+                       "    value           = 1"])
+
+      call setup_minimal_grid()
+      ndxi = ndx
+      ndkx = ndx
+      ndx2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ti_mba = 60.0_dp
+      threshold_abort = LEVEL_FATAL
+      nomba = 0
+      if (allocated(mbaname)) deallocate (mbaname)
+      if (allocated(mbadef)) deallocate (mbadef)
+      allocate (mbaname(0))
+      allocate (mbadef(ndkx), source=-999)
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "waqmassbalancearea polygon initialization should succeed")
+      call f90_expect_eq(nomba, 1, "one mass-balance area should be registered")
+      call f90_assert_streq(trim(mbaname(1)), "SouthWest", "the mass-balance area suffix should be retained")
+      call f90_expect_eq(mbadef(1), 1, "the enclosed cell should belong to the registered area")
+
+      ti_mba = 0.0_dp
+      nomba = 0
+      ndxi = 0
+      ndkx = 0
+      ndx2D = 0
+      if (allocated(mbaname)) deallocate (mbaname)
+      if (allocated(mbadef)) deallocate (mbadef)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqmassbalancearea_polygon_populated
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialsalinity_3d_field_populated, test_initialsalinity_3d_field_populated,
    !> Verifies that an initialsalinity [Initial] block populates constituents(ISALT,:)
    !! via the static 3D path: timespaceinitialfield (2D interp) + initialfield2Dto3D_dbl_indx.

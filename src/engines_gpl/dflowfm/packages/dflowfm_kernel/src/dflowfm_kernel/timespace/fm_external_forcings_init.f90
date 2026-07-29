@@ -954,7 +954,7 @@ contains
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower, strcmpi
+      use string_module, only: str_tolower
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
@@ -966,7 +966,8 @@ contains
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_slice
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
+                       resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -1047,6 +1048,9 @@ contains
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
+         end if
+         if (.not. res) then
+            res = resolve_mass_balance_area_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             if (str_tolower(quantity) == 'bedlevel') then
@@ -1139,12 +1143,8 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) then ! Friction coefficient is a special case, requires additional reading
-               if (strcmpi(quantity, 'frictioncoefficient')) then
-                  res = set_friction_type_values_explicit(block_ptr, input%oper)
-               end if
-            end if
-            res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
+            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper, target_data)
+            res = .true. ! Successful loading is sufficient; not every quantity requires an enablement action.
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
                ''': ['//trim(group_name)//']. Check previous log lines for details.'
@@ -1153,6 +1153,32 @@ contains
       end associate
 
    end function init_spatial_fields
+
+   !> Enable quantities that require post-load data or additional block metadata.
+   function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
+      use fm_external_forcings_utils, only: split_qid
+      use tree_data_types, only: tree_data
+      use unstruc_inifields, only: finish_mass_balance_area_target, set_friction_type_values_explicit
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity
+      type(tree_data), pointer, intent(in) :: block_ptr
+      integer, intent(in) :: operand
+      real(dp), dimension(:), pointer, intent(inout) :: target_data
+      logical :: success
+
+      character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
+
+      call split_qid(quantity, quantity_base, quantity_specific)
+      select case (str_tolower(quantity_base))
+      case ('frictioncoefficient')
+         success = set_friction_type_values_explicit(block_ptr, operand)
+      case ('massbalancearea')
+         success = finish_mass_balance_area_target(quantity, target_data)
+      case default
+         success = .false.
+      end select
+   end function enable_special_quantity
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
    !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
