@@ -9,14 +9,15 @@ from generate_schema import SchemaGenerator
 
 
 class TestGeneratedFilesInSync(unittest.TestCase):
-    """The committed generated files must equal a fresh regeneration — guards against generator drift."""
+    """The on-disk generated files must equal a fresh regeneration — catches a hand-edited or stale
+    generated file (they are produced by the build, not committed)."""
 
     def _assert_in_sync(self, generator):
         for module in generator.build():
             self.assertEqual(
                 module.path.read_text(encoding="utf-8"),
                 module.source,
-                f"{module.path.name} is stale vs its generator; run scripts/ to regenerate and commit it",
+                f"{module.path.name} is stale vs its generator; rebuild (or run scripts/) to regenerate it",
             )
 
     def test_model_in_sync(self):
