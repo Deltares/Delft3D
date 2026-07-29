@@ -61,6 +61,7 @@ contains
       use unstruc_channel_flow
       use m_start_parameters, only: md_jaautostart, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       use unstruc_display, only: jagui
+      use m_alloc, only: realloc
 
       call tree_destroy(md_ptr)
       nullify (trtdef_ptr) ! trtdef_ptr was only pointing to subtree of md_ptr, so is now a dangling pointer: model's responsibility to nullify it here.
@@ -100,10 +101,12 @@ contains
       md_profdefxyzfile = ' '
       md_1d2dlinkfile = ' '
       md_shipdeffile = ' '
+      md_inifieldfile = ' '
       md_restartfile = ' '
       md_extfile = ' '
       md_extfile_new = ' '
       md_extfile_dir = ' '
+      call realloc(extfile_new_list, 0)
       md_structurefile = ' '
       md_structurefile_dir = ' '
       md_wavefile = ' '
