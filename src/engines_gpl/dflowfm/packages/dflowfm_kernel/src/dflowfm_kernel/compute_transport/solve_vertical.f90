@@ -59,7 +59,7 @@ contains
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
-      use m_turbulence, only: ozmidov_viscosity, ozmidov_viscosity_centers
+      use m_turbulence, only: ozmidov_viscosity_centers
       
       implicit none
 
