@@ -376,6 +376,74 @@ contains
    end subroutine test_qext_bcascii_registers_ec_connection
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,
+   !> Verifies that a time-varying WAQ function uses a one-element global target,
+   !! matching the dummy target used by the old external-forcings initialization.
+   subroutine test_waqfunction_uses_global_ec_target() bind(C)
+      use m_flowtimes, only: irefdate, refdate_mjd, tzone, tunit, tstart_user
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_waqfun
+      use processes_input, only: funinp, funame, num_time_functions
+      use time_module, only: ymd2modified_jul
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: WAQ_TIM = "test_waqfunction.tim"
+      character(len=*), parameter :: WAQ_EXT = "test_waqfunction.ext"
+
+      call create_file(WAQ_TIM, [ &
+                       "0.0    10.0", &
+                       "100.0  20.0"])
+      call create_file(WAQ_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqfunctionTest", &
+                       "    forcingFile         = "//WAQ_TIM, &
+                       "    forcingFileType     = uniform", &
+                       "    interpolationMethod = linearSpaceTime", &
+                       "    operand              = override"])
+
+      irefdate = 20000101
+      success = ymd2modified_jul(irefdate, refdate_mjd)
+      call f90_assert_true(success, "the test reference date should convert to MJD")
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      num_time_functions = 1
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      allocate (funame(1), funinp(1, 1))
+      funame(1) = 'Test'
+      funinp = 0.0_dp
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(WAQ_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, WAQ_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_assert_true(success, "init_spatial_fields should succeed for a WAQ function")
+      call f90_assert_true(allocated(item_waqfun), "item_waqfun should be allocated")
+      call f90_assert_true(item_waqfun(1) > 0, "the WAQ function EC item should be registered")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_assert_true(success, "the WAQ function should update at t=0")
+      call f90_expect_near(funinp(1, 1), 10.0_dp, 1.0e-6_dp, &
+                           "the WAQ function value at t=0 should be 10")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
+                                               irefdate, tzone, tunit, 3000.0_dp)
+      call f90_assert_true(success, "the WAQ function should update at t=3000 seconds")
+      call f90_expect_near(funinp(1, 1), 15.0_dp, 1.0e-6_dp, &
+                           "the WAQ function value at 50 minutes should be linearly interpolated")
+
+      num_time_functions = 0
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(item_waqfun)) deallocate (item_waqfun)
+      call teardown_minimal_grid()
+   end subroutine test_waqfunction_uses_global_ec_target
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterlevel_static_field_populated_at_init, test_initialwaterlevel_static_field_populated_at_init,
    !> Verifies that an initialwaterlevel [Spatial] block populates s1 immediately at
    !! initialisation via the new init_spatial_fields static field path.

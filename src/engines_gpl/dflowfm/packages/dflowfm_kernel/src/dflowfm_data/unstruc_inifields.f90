@@ -47,7 +47,7 @@ module unstruc_inifields
    private
 
    public :: init1dField, spaceInit1dField, &
-             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
+             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger
 
@@ -1591,4 +1591,53 @@ contains
          end if
       end do
    end subroutine initialfield2Dto3D_dbl_indx
+
+   !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
+   !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
+   !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
+   subroutine initialfield2Dto3D_dbl_slice(input_array_2d, output_array_3d, vertical_range_min, vertical_range_max, operand)
+      use precision_basics
+      use m_flow, only: kmx, kbot, ktop, zws
+      use m_missing
+      use timespace, only: operate
+
+      implicit none
+
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
+      real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
+      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
+      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
+      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
+
+      real(kind=dp) :: lower_limit, upper_limit, level_at_pressure_point
+      integer :: n, k, kb, kt
+
+      lower_limit = -huge(1.0_dp)
+      upper_limit = huge(1.0_dp)
+      if (vertical_range_min /= dmiss) then
+         lower_limit = vertical_range_min
+      end if
+      if (vertical_range_max /= dmiss) then
+         upper_limit = vertical_range_max
+      end if
+      do n = 1, size(input_array_2d)
+         if (input_array_2d(n) /= dmiss) then
+            if (kmx == 0) then
+               call operate(output_array_3d(n), input_array_2d(n), operand)
+            else
+               kb = kbot(n)
+               kt = ktop(n)
+               call operate(output_array_3d(n), input_array_2d(n), operand)
+               do k = kb, kt
+                  level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))
+                  if (level_at_pressure_point > lower_limit .and. level_at_pressure_point < upper_limit) then
+                     call operate(output_array_3d(k), input_array_2d(n), operand)
+                  end if
+               end do
+            end if
+         end if
+      end do
+   end subroutine initialfield2Dto3D_dbl_slice
 end module unstruc_inifields

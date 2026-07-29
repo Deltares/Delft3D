@@ -34,6 +34,8 @@ submodule(fm_external_forcings) fm_external_forcings_init
    implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
+   real(dp), dimension(1), target, save :: global_target_x = [1.0_dp]
+   real(dp), dimension(1), target, save :: global_target_y = [1.0_dp]
 
 contains
 
@@ -938,7 +940,7 @@ contains
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_slice
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -1070,10 +1072,10 @@ contains
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      oper = oper_backup
-                     call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
+                     call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
                      if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
-                        painp(first_index, 1:target_num_points) = target_data(1:target_num_points)
+                        painp(first_index, 1:target_num_points) = target_array_3d(first_index, 1:target_num_points)
                         deallocate (target_array_3D)
                      end if
                      deallocate (target_data)
@@ -1823,9 +1825,9 @@ contains
          target_x => xk(1:target_num_points)
          target_y => yk(1:target_num_points)
       case (UNC_LOC_GLOBAL)
-         target_num_points = 0
-         target_x => null()
-         target_y => null()
+         target_num_points = 1
+         target_x => global_target_x
+         target_y => global_target_y
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
