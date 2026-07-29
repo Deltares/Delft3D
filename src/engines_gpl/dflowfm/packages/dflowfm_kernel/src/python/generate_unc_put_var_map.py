@@ -81,29 +81,16 @@ def generate_rank1(ftype: FortranType) -> str:
       output_values => work
    end if
 
-   if (remapping_active .and. .not. write_surface_output) then ! Write_surface_output handles its own remapping, don't overwrite
-      select case (iloc)
-      case (UNC_LOC_CN)
+   select case (iloc)
+   case (UNC_LOC_CN) ! Corner point location
+      if (remapping_active) then
          call realloc(work, flowgeom_map%mesh2d%numNode, keepExisting=.false.)
          do i = 1, flowgeom_map%mesh2d%numNode
             work(i) = values(flowgeom_map%node_map_2D(i))
          end do
+         output_values => work
+      end if
 
-      case (UNC_LOC_S)
-         call realloc(work, flowgeom_map%ndx_out, keepExisting=.false.)
-         do i = 1, ndx2d
-            work(i) = values(flowgeom_map%face_map_2D(i))
-         end do
-         do i = 1, n1d_write
-            work(ndx2d + i) = values(flowgeom_map%node_map_1D(i))
-         end do
-      end select
-
-      output_values => work
-   end if
-
-   select case (iloc)
-   case (UNC_LOC_CN) ! Corner point location
       ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
          ierr = UG_NOTIMPLEMENTED
@@ -114,6 +101,17 @@ def generate_rank1(ftype: FortranType) -> str:
       end if
 
    case (UNC_LOC_S) ! Pressure point location
+      if (remapping_active .and. .not. write_surface_output) then ! Surface output has already prepared output_values.
+         call realloc(work, flowgeom_map%ndx_out, keepExisting=.false.)
+         do i = 1, ndx2d
+            work(i) = values(flowgeom_map%face_map_2D(i))
+         end do
+         do i = 1, n1d_write
+            work(ndx2d + i) = values(flowgeom_map%node_map_1D(i))
+         end do
+         output_values => work
+      end if
+
       ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
       if (id_var(1) > 0 .and. n1d_write > 0) then
          ierr = nf90_put_var(ncid, id_var(1), output_values(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
