@@ -67,7 +67,6 @@ namespace dflowfm_io
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
         /// @return Const reference to the stored value.
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
-        /// @throws std::bad_variant_access if the stored value is not of type T.
         template <typename T>
         const T& GetValue(const std::string& key) const
         {

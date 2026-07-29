@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <map>
+
 #include <dflowfm_io/MduData.h>
 #include <dflowfm_io/StringUtils.h>
 
@@ -16,7 +18,7 @@ namespace dflowfm_io::test
     {
         const MduData data = MduData::CreateFromSchema(TestSchema());
 
-        EXPECT_FALSE(data.data_entries.empty());
+        EXPECT_FALSE(data.empty());
     }
 
     TEST(MduDataTest, CreateFromSchema_ContainsAllPropertiesWithDefaults)
@@ -25,13 +27,14 @@ namespace dflowfm_io::test
         const MduData data = MduData::CreateFromSchema(schema);
 
         for (const auto& sectionSchema : schema.Sections())
-            for (const auto& propertySchema : sectionSchema.properties)
-                if (!propertySchema.default_value.empty() &&
-                    !schema.IsObsolete(propertySchema, propertySchema.default_value))
-                {
-                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
-                    EXPECT_TRUE(data.hasValue(key));
-                }
+            if (sectionSchema.status.type != StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
+                    if (!propertySchema.default_value.empty() &&
+                        !schema.IsObsolete(propertySchema, propertySchema.default_value))
+                    {
+                        const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                        EXPECT_TRUE(data.hasValue(key));
+                    }
     }
 
     TEST(MduDataTest, CreateFromSchema_DoesNotContainPropertiesWithoutDefaults)
@@ -41,6 +44,20 @@ namespace dflowfm_io::test
         for (const auto& sectionSchema : TestSchema().Sections())
             for (const auto& propertySchema : sectionSchema.properties)
                 if (propertySchema.default_value.empty())
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_FALSE(data.hasValue(key));
+                }
+    }
+
+    TEST(MduDataTest, CreateFromSchema_DoesNotContainPropertiesFromObsoleteSections)
+    {
+        const MduSchema& schema = TestSchema();
+        const MduData data = MduData::CreateFromSchema(schema);
+
+        for (const auto& sectionSchema : schema.Sections())
+            if (sectionSchema.status.type == StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
                 {
                     const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                     EXPECT_FALSE(data.hasValue(key));
@@ -91,8 +108,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, HasValue_ExistingKey_ReturnsTrue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         EXPECT_TRUE(data.hasValue("somekey"));
     }
@@ -106,8 +124,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, HasValue_KeyStoredLowercase_LookupCaseInsensitive)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         EXPECT_TRUE(data.hasValue("SomeKey"));
         EXPECT_TRUE(data.hasValue("SOMEKEY"));
@@ -116,10 +135,40 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, HasValue_KeyStoredUppercase_LookupCaseInsensitive)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         EXPECT_TRUE(data.hasValue("SOMEKEY"));
+    }
+
+    // -------------------------------------------------------------------------
+    // getValue
+    // -------------------------------------------------------------------------
+
+    TEST(MduDataTest, GetValue_ExistingKey_ReturnsStoredValue)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 42}
+        });
+
+        EXPECT_EQ(std::get<int>(data.getValue("somekey")), 42);
+    }
+
+    TEST(MduDataTest, GetValue_CaseInsensitiveLookup_ReturnsStoredValue)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 42}
+        });
+
+        EXPECT_EQ(std::get<int>(data.getValue("SomeKey")), 42);
+    }
+
+    TEST(MduDataTest, GetValue_AbsentKey_ThrowsRuntimeError)
+    {
+        const MduData data;
+
+        EXPECT_THROW(data.getValue("missing"), std::runtime_error);
     }
 
     // -------------------------------------------------------------------------
@@ -128,84 +177,94 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, GetValueAs_ExistingIntKey_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 42;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 42}
+        });
 
         EXPECT_EQ(data.getValueAs<int>("somekey"), 42);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingFloatKey_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 3.14;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 3.14}
+        });
 
         EXPECT_DOUBLE_EQ(data.getValueAs<double>("somekey"), 3.14);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingStringKey_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::string{"hello"};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::string{"hello"}}
+        });
 
         EXPECT_EQ(data.getValueAs<std::string>("somekey"), "hello");
     }
 
     TEST(MduDataTest, GetValueAs_ExistingBoolKey_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = true;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", true}
+        });
 
         EXPECT_TRUE(data.getValueAs<bool>("somekey"));
     }
 
     TEST(MduDataTest, GetValueAs_ExistingPathKey_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::filesystem::path{"some/file.txt"};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::filesystem::path{"some/file.txt"}}
+        });
 
         EXPECT_EQ(data.getValueAs<std::filesystem::path>("somekey"), std::filesystem::path{"some/file.txt"});
     }
 
     TEST(MduDataTest, GetValueAs_ExistingEnumKey_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = EnumValue{3};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", EnumValue{3}}
+        });
 
         EXPECT_EQ(data.getValueAs<EnumValue>("somekey").value, 3);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingDateTimeKey_ReturnsCorrectValue)
     {
-        MduData data;
         const auto now = std::chrono::system_clock::now();
-        data.data_entries["somekey"] = now;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", now}
+        });
 
         EXPECT_EQ(data.getValueAs<std::chrono::system_clock::time_point>("somekey"), now);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingStringListKey_ReturnsCorrectValue)
     {
-        MduData data;
         const std::vector<std::string> value{"a", "b", "c"};
-        data.data_entries["somekey"] = value;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", value}
+        });
 
         EXPECT_EQ(data.getValueAs<std::vector<std::string>>("somekey"), value);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingPathListKey_ReturnsCorrectValue)
     {
-        MduData data;
         const std::vector<std::filesystem::path> value{"a.txt", "b.txt"};
-        data.data_entries["somekey"] = value;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", value}
+        });
 
         EXPECT_EQ(data.getValueAs<std::vector<std::filesystem::path>>("somekey"), value);
     }
 
     TEST(MduDataTest, GetValueAs_ExistingFloatListKey_ReturnsCorrectValue)
     {
-        MduData data;
         const std::vector<double> value{0.1, 0.2, 0.3};
-        data.data_entries["somekey"] = value;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", value}
+        });
 
         const auto& result = data.getValueAs<std::vector<double>>("somekey");
         ASSERT_EQ(result.size(), 3u);
@@ -216,8 +275,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, GetValueAs_CaseInsensitiveLookup_ReturnsCorrectValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 7;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 7}
+        });
 
         EXPECT_EQ(data.getValueAs<int>("SomeKey"), 7);
         EXPECT_EQ(data.getValueAs<int>("SOMEKEY"), 7);
@@ -232,8 +292,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, GetValueAs_WrongType_ThrowsBadVariantAccess)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         EXPECT_THROW(data.getValueAs<std::string>("somekey"), std::bad_variant_access);
     }
@@ -244,8 +305,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, GetValueAsMutable_ExistingKey_CanModifyValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         data.getValueAs<int>("somekey") = 99;
 
@@ -265,8 +327,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingIntKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         data.setValue<int>("somekey", 42);
 
@@ -275,8 +338,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingFloatKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1.0;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1.0}
+        });
 
         data.setValue<double>("somekey", 2.5);
 
@@ -285,8 +349,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingStringKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::string{"old"};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::string{"old"}}
+        });
 
         data.setValue<std::string>("somekey", "new");
 
@@ -295,8 +360,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingBoolKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = false;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", false}
+        });
 
         data.setValue<bool>("somekey", true);
 
@@ -305,8 +371,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingPathKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::filesystem::path{"old.txt"};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::filesystem::path{"old.txt"}}
+        });
 
         data.setValue<std::filesystem::path>("somekey", std::filesystem::path{"new.txt"});
 
@@ -315,8 +382,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingEnumKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = EnumValue{1};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", EnumValue{1}}
+        });
 
         data.setValue<EnumValue>("somekey", EnumValue{2});
 
@@ -325,8 +393,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingDateTimeKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::chrono::system_clock::time_point{};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::chrono::system_clock::time_point{}}
+        });
 
         const auto newValue = std::chrono::system_clock::now();
         data.setValue<std::chrono::system_clock::time_point>("somekey", newValue);
@@ -336,8 +405,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingStringListKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::vector<std::string>{"old"};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::vector<std::string>{"old"}}
+        });
 
         const std::vector<std::string> newValue{"a", "b"};
         data.setValue<std::vector<std::string>>("somekey", newValue);
@@ -347,8 +417,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingPathListKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::vector<std::filesystem::path>{"old.txt"};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::vector<std::filesystem::path>{"old.txt"}}
+        });
 
         const std::vector<std::filesystem::path> newValue{"a.txt", "b.txt"};
         data.setValue<std::vector<std::filesystem::path>>("somekey", newValue);
@@ -358,8 +429,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_ExistingFloatListKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = std::vector<double>{0.0};
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", std::vector<double>{0.0}}
+        });
 
         const std::vector<double> newValue{0.5, 0.6};
         data.setValue<std::vector<double>>("somekey", newValue);
@@ -372,8 +444,9 @@ namespace dflowfm_io::test
 
     TEST(MduDataTest, SetValue_CaseInsensitiveKey_UpdatesValue)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
         data.setValue<int>("SomeKey", 42);
 
@@ -387,6 +460,54 @@ namespace dflowfm_io::test
         EXPECT_THROW(data.setValue<int>("missing", 1), std::runtime_error);
     }
 
+    TEST(MduDataTest, SetValue_WrongType_ThrowsRuntimeErrorAndPreservesValue)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
+
+        data.setValue<int>("somekey", 22);
+        EXPECT_EQ(data.getValueAs<int>("somekey"), 22);
+
+        EXPECT_THROW(data.setValue<std::string>("somekey", "you are a string now"), std::runtime_error);
+
+        EXPECT_EQ(data.getValueAs<int>("somekey"), 22);
+    }
+
+    TEST(MduDataTest, SetValue_ValueOverload_ExistingKey_UpdatesValue)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
+
+        data.setValue("somekey", Value(42));
+
+        EXPECT_EQ(data.getValueAs<int>("somekey"), 42);
+    }
+
+    // -------------------------------------------------------------------------
+    // visitKeyValuePairs
+    // -------------------------------------------------------------------------
+
+    TEST(MduDataTest, VisitKeyValuePairs_VisitsEveryStoredEntry)
+    {
+        MduData data = MduData::CreateFromRawData({
+            {"keya", 1},
+            {"keyb", 2},
+            {"keyc", 3}
+        });
+
+        std::map<std::string, int> visited;
+        data.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            visited.emplace(std::string(key), std::get<int>(value));
+        });
+
+        EXPECT_EQ(visited.size(), 3u);
+        EXPECT_EQ(visited.at("keya"), 1);
+        EXPECT_EQ(visited.at("keyb"), 2);
+        EXPECT_EQ(visited.at("keyc"), 3);
+    }
+
     // -------------------------------------------------------------------------
     // data_entries
     // -------------------------------------------------------------------------
@@ -395,15 +516,16 @@ namespace dflowfm_io::test
     {
         const MduData data;
 
-        EXPECT_TRUE(data.data_entries.empty());
+        EXPECT_TRUE(data.empty());
     }
 
     TEST(MduDataTest, DataEntries_AfterAddingEntry_HasCorrectSize)
     {
-        MduData data;
-        data.data_entries["somekey"] = 1;
+        MduData data = MduData::CreateFromRawData({
+            {"somekey", 1}
+        });
 
-        EXPECT_EQ(data.data_entries.size(), 1);
+        EXPECT_EQ(data.size(), 1);
     }
 
 } // namespace dflowfm_io::test

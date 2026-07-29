@@ -29,7 +29,7 @@ FORMAT_TYPE_MAP = {
 
 # Maps the JSON "status" strings to the C++ StatusType enum names.
 STATUS_TYPE_MAP = {
-    "GA": "GA",
+    "GA": "Available",
     "research": "Research",
     "deprecated": "Deprecated",
     "obsolete": "Obsolete",
@@ -152,12 +152,12 @@ def render_property(prop, indent, default_float_format):
         field_blocks.append(field(".required", "true"))
     if nullable:
         field_blocks.append(field(".nullable", "true"))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
     if entries:
         enum_blocks = [render_enum_value(v, label, st, indent + 8) for v, label, st in entries]
         enum_body = ",\n".join(enum_blocks)
         field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
-    if status:
-        field_blocks.append(field(".status", render_status(status, indent + 4)))
 
     body = ",\n".join(field_blocks)
     return f"{pad}PropertySchema {{\n{body}\n{pad}}}"
@@ -168,6 +168,7 @@ def render_section(section, indent, default_float_format):
     pad = " " * indent
     inner = " " * (indent + 4)
     properties = section.get("ini_properties", [])
+    status = section.get("status", {})
 
     # A section is required when it contains at least one required property.
     required = any(
@@ -183,6 +184,8 @@ def render_section(section, indent, default_float_format):
     if required:
         field_blocks.append(field(".required", "true"))
     field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
 
     prop_blocks = [render_property(p, indent + 8, default_float_format) for p in properties]
     props_body = ",\n".join(prop_blocks)

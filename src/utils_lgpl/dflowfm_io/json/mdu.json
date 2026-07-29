@@ -47,6 +47,11 @@
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Autostart simulation after loading MDU or not.",
+                    "status": {
+                        "value": "deprecated",
+                        "date": "2025-09-04",
+                        "comment": "Keyword will be removed in a future release."
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "autostart",
@@ -84,6 +89,77 @@
                         "comment": "Unconverted long culverts (convertLongCulverts=0) will be removed in a future release.",
                         "date": "2026-06-11"
                     }
+                }
+            ]
+        },
+        {
+            "name": "model",
+            "description": "This section contains the program name and its version.",
+            "is_unique": true,
+            "status": {
+                "value": "deprecated",
+                "date": "2019-06-13",
+                "comment": "Section has been replaced with `[general]` section."
+            },
+            "ini_properties": [
+                {
+                    "key": "mduFormatVersion",
+                    "value_type": "string",
+                    "description": "File version. Do not edit this.",
+                    "status": {
+                        "value": "deprecated",
+                        "date": "2019-06-13",
+                        "comment": "Keyword has been replaced with `[general] fileVersion`."
+                    }
+                },
+                {
+                    "key": "program",
+                    "default_value": "D-Flow FM",
+                    "value_type": "string",
+                    "description": "Program."
+                },
+                {
+                    "key": "version",
+                    "default_value": "1.2.60.64623M",
+                    "value_type": "string",
+                    "description": "Version number of computational kernel."
+                },
+                {
+                    "key": "guiVersion",
+                    "value_type": "string",
+                    "description": "Version number of GUI."
+                },
+                {
+                    "key": "autoStart",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Autostart simulation after loading MDU or not.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "autostart",
+                        "2": "autostartstop"
+                    }
+                },
+                {
+                    "key": "pathsRelativeToParent",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the top-level MDU working dir."
+                },
+                {
+                    "key": "modelSpecific",
+                    "value_type": "string",
+                    "description": "Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name)."
+                },
+                {
+                    "key": "inputSpecific",
+                    "value_type": "intbool",
+                    "description": "Use of hardcoded specific inputs, shall not be used by users."
+                },
+                {
+                    "key": "convertLongCulverts",
+                    "value_type": "intbool",
+                    "description": "Convert long culvert input to 1D2D long culverts."
                 }
             ]
         },
@@ -867,6 +943,7 @@
                 {
                     "key": "circumcenter",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[geometry] circumcenterMethod` instead.",
@@ -876,6 +953,7 @@
                 {
                     "key": "bathymetryFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information.",
@@ -885,6 +963,7 @@
                 {
                     "key": "bedLevelFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information.",
@@ -894,6 +973,7 @@
                 {
                     "key": "botLevUni",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[geometry] bedLevUni` instead.",
@@ -903,6 +983,7 @@
                 {
                     "key": "botLevType",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[geometry] bedLevType` instead.",
@@ -912,6 +993,7 @@
                 {
                     "key": "manholeFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[geometry] storageNodeFile` instead.",
@@ -921,6 +1003,7 @@
                 {
                     "key": "noOptimizedPolygon",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -930,6 +1013,7 @@
                 {
                     "key": "thinDykeFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] fixedWeirFile` instead.",
@@ -939,6 +1023,7 @@
                 {
                     "key": "iThinDykeScheme",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] fixedWeirScheme` instead.",
@@ -948,6 +1033,7 @@
                 {
                     "key": "1dNetworkFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use individual keywords such as `[geometry] structureFile`, `crossDefFile`, etc. instead.",
@@ -957,6 +1043,7 @@
                 {
                     "key": "roughnessFiles",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported. Use `[geometry] frictFile` instead.",
@@ -966,6 +1053,7 @@
                 {
                     "key": "nodeFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported. Use `[geometry] frictFile` instead.",
@@ -975,6 +1063,7 @@
                 {
                     "key": "Grdang",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -1278,6 +1367,7 @@
                 {
                     "key": "filter",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Option no longer supported.",
@@ -2236,6 +2326,7 @@
                 {
                     "key": "facLaxTurb",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] turbulenceTimeIntegrationFactor` instead.",
@@ -2245,6 +2336,7 @@
                 {
                     "key": "facLaxTurbHor",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] turbulenceTimeIntegrationMethod` instead.",
@@ -2254,6 +2346,7 @@
                 {
                     "key": "facLaxTurbVer",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2263,6 +2356,7 @@
                 {
                     "key": "barocZLayBed",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2272,6 +2366,7 @@
                 {
                     "key": "orgBarocKeywords",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2281,6 +2376,7 @@
                 {
                     "key": "barocTerm",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2290,6 +2386,7 @@
                 {
                     "key": "barocTimeInt",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2299,6 +2396,7 @@
                 {
                     "key": "jaDrhoDz",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2308,6 +2406,7 @@
                 {
                     "key": "epsTKE",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[physics] TKEMin` instead.",
@@ -2317,6 +2416,7 @@
                 {
                     "key": "epsEPS",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[physics] EPSMin` (k-epsilon turbulence model) or `[physics] TAUMin` (k-tau turbulence model) instead.",
@@ -2326,6 +2426,7 @@
                 {
                     "key": "transportTimeStepping",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2335,6 +2436,7 @@
                 {
                     "key": "transportMethod",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Value 1 is the default and only available option, no further input needed. Value 2 for diagnostic transport is now under its own keyword. Use `[numerics] diagnosticTransport` keyword instead.",
@@ -2344,6 +2446,7 @@
                 {
                     "key": "hkad",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2353,6 +2456,7 @@
                 {
                     "key": "iThinDykeScheme",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] fixedWeirScheme` instead.",
@@ -2362,6 +2466,7 @@
                 {
                     "key": "thinDykeContraction",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] fixedWeirContraction` instead.",
@@ -2371,6 +2476,7 @@
                 {
                     "key": "jaOrgSethu",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2380,6 +2486,7 @@
                 {
                     "key": "CFLWaveFrac",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2389,6 +2496,7 @@
                 {
                     "key": "jaEmbed1d",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -2398,6 +2506,7 @@
                 {
                     "key": "sobekdfm_umin",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] lateral_fixedweir_umin` instead.",
@@ -2407,6 +2516,7 @@
                 {
                     "key": "sobekdfm_umin_method",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] lateral_fixedweir_umin_method` instead.",
@@ -2416,6 +2526,7 @@
                 {
                     "key": "sobekdfm_minimal_1d2d_embankment",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[numerics] lateral_fixedweir_minimal_1d2d_embankment` instead.",
@@ -2425,6 +2536,7 @@
                 {
                     "key": "wridia_viscosity_diffusivity_limit",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -3065,6 +3177,7 @@
                 {
                     "key": "allowCoolingBelowZero",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[physics] salinityDependentFreezingPoint` to allow cooling below zero degrees Celsius.",
@@ -3074,6 +3187,7 @@
                 {
                     "key": "rhoAirRhoWater",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[wind] rhoWaterInWindStress` instead.",
@@ -3083,6 +3197,7 @@
                 {
                     "key": "effectSpiral",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `Espir` contained in `MorFile` instead.",
@@ -3092,6 +3207,7 @@
                 {
                     "key": "stericCorrection",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -3315,7 +3431,7 @@
         },
         {
             "name": "sedtrails",
-            "description": "",
+            "description": "Section for configuring the Sedtrails output.",
             "is_unique": true,
             "ini_properties": [
                 {
@@ -3329,12 +3445,12 @@
                 {
                     "key": "sedtrailsAnalysis",
                     "value_type": "enum",
-                    "description": "Sedtrails analysis.",
+                    "description": "Option for writing sedtrails to the output file.",
                     "enum_values": {
-                        "all": "",
-                        "transport": "",
-                        "flowvelocity": "",
-                        "soulsby": ""
+                        "all": "write all quantities",
+                        "transport": "write bedload and suspended-load transport vectors per sediment fraction",
+                        "flowvelocity": "write depth-averaged velocity components at grid corners",
+                        "soulsby": "write quantities for the Soulsby sediment mobility method"
                     },
                     "status": {
                         "value": "research"
@@ -3364,7 +3480,7 @@
         },
         {
             "name": "wind",
-            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information.",
             "is_unique": true,
             "ini_properties": [
                 {
@@ -3519,6 +3635,7 @@
                 {
                     "key": "gapres",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -3529,7 +3646,7 @@
         },
         {
             "name": "waves",
-            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information.",
             "is_unique": true,
             "ini_properties": [
                 {
@@ -3725,6 +3842,7 @@
                 {
                     "key": "waveNikuradse",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -3981,6 +4099,7 @@
                 {
                     "key": "autoTimeStepDiff",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[time] autoTimeStepVisc` instead.",
@@ -4127,6 +4246,7 @@
                 {
                     "key": "trtdt",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[trachytopes] dtTrt` instead.",
@@ -4353,6 +4473,7 @@
                     "enum_values": {
                         "1": "NetCDF",
                         "2": {
+                            "description": "Option is obsolete.",
                             "status": {
                                 "value": "obsolete",
                                 "comment": "Option no longer supported.",
@@ -4360,6 +4481,7 @@
                             }
                         },
                         "3": {
+                            "description": "Option is obsolete.",
                             "status": {
                                 "value": "obsolete",
                                 "comment": "Option no longer supported.",
@@ -5314,6 +5436,7 @@
                 {
                     "key": "writeBalanceFile",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported. Superseded by default information included in the history file.",
@@ -5323,6 +5446,7 @@
                 {
                     "key": "s1incInterval",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[output] classMapFile` instead.",
@@ -5332,6 +5456,7 @@
                 {
                     "key": "waqFileBase",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -5341,6 +5466,7 @@
                 {
                     "key": "snapshotdir",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -5350,15 +5476,17 @@
                 {
                     "key": "heatFluxesOnOutput",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Use `[output] wriHis_heat_fluxes` and `wriMap_heat_fluxes` instead.",
+                        "comment": "Use `[output] wriHis_heat_fluxes` and `[output] wriMap_heat_fluxes` instead.",
                         "since_release": 2022.02
                     }
                 },
                 {
                     "key": "wrimap_input_dt",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
@@ -5368,6 +5496,7 @@
                 {
                     "key": "wrihis_heatflux",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Renamed to `[output] wriHis_heat_fluxes`.",
@@ -5530,6 +5659,7 @@
                 {
                     "key": "wriWaqBot3dOutput",
                     "value_type": "string",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Use `[output] wriHis_wqBot3d` and/or `[output] wriMap_wqBot3d` instead.",
@@ -5600,7 +5730,7 @@
         {
             "name": "veg",
             "is_unique": true,
-            "description": "This section contains setting for a dynamic vegetation model",
+            "description": "This section contains setting for a dynamic vegetation model.",
             "ini_properties": [
                 {
                     "key": "vegetationModelNr",
@@ -5754,7 +5884,7 @@
         {
             "name": "ice",
             "is_unique": true,
-            "description": "This section contains setting for the ice module",
+            "description": "This section contains setting for the ice module.",
             "ini_properties": [
                 {
                     "key": "wriHis_ice_default",

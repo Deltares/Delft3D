@@ -47,7 +47,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(mduData.data_entries.empty());
+        EXPECT_FALSE(mduData.empty());
     }
 
     // -------------------------------------------------------------------------
@@ -265,8 +265,23 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Convert IniData → MduData — obsolete properties and enum values are skipped
+    // Convert IniData → MduData — obsolete sections, properties and enum values are skipped
     // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteSection_PropertiesOmittedFromMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        auto& section = iniData.AddSection("model");
+        section.AddProperty("program", "D-Flow FM");
+        section.AddProperty("mduFormatVersion", "1.09");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        EXPECT_FALSE(mduData.hasValue(FormatKey("model", "program")))
+            << "Property from obsolete section should be omitted: model.program";
+        EXPECT_FALSE(mduData.hasValue(FormatKey("model", "mduFormatVersion")))
+            << "Property from obsolete section should be omitted: model.mduFormatVersion";
+    }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteProperty_PropertyOmittedFromMduData)
     {
@@ -292,7 +307,37 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
     }
 
-    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedPropertyValue_PropertyPresentInMduData)
+    // -------------------------------------------------------------------------
+    // Convert IniData → MduData — deprecated sections, properties and enum values are converted
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedSection_PropertiesPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        auto& section = iniData.AddSection("sediment");
+        section.AddProperty("nrOfSedFractions", 2);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("sediment", "nrOfSedFractions");
+        EXPECT_TRUE(mduData.hasValue(key))
+            << "Property from deprecated section should still be converted: sediment.nrOfSedFractions";
+        EXPECT_EQ(mduData.getValueAs<int>(key), 2);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedProperty_PropertyPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("numerics", "vertAdvTypSal");
+        EXPECT_TRUE(mduData.hasValue(key)) << "Deprecated property should still be converted: numerics.vertAdvTypSal";
+        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 6);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedEnumValue_PropertyPresentInMduData)
     {
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
@@ -485,22 +530,27 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 
-        for (const auto& [key, value] : mduData.data_entries)
-        {
-            const auto [sectionName, propertyKey] = SplitKey(key);
+        mduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            const auto [sectionName, propertyKey] = SplitKey(std::string(key));
 
             ASSERT_TRUE(iniData.HasSection(sectionName)) << "Missing section for MduData entry: " << sectionName;
 
             EXPECT_TRUE(iniData.GetSection(sectionName).HasProperty(propertyKey))
                 << "Missing property for MduData entry: " << sectionName << "." << propertyKey;
-        }
+        });
     }
 
     TEST_F(MduDataConverterTest, ConvertMduData_PropertyAbsentInMduData_OmittedFromIniData)
     {
-        MduData mduData = TestMduData();
-        const std::string key = FormatKey("geometry", "bedLevUni");
-        mduData.data_entries.erase(key);
+        std::unordered_map<std::string, Value> filteredKeyValuePairs;
+        const MduData completeMduData = TestMduData();
+        completeMduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            if (key == FormatKey("geometry", "bedLevUni"))
+                return; // Skip this property to simulate it being absent in MduData
+            filteredKeyValuePairs[std::string(key)] = value;
+        });
+
+        const MduData mduData = MduData::CreateFromRawData(std::move(filteredKeyValuePairs));
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 

@@ -27,7 +27,7 @@ namespace dflowfm_io::test
     // Constructor
     // -------------------------------------------------------------------------
 
-    TEST_F(MduDocumentTest, Constructor_PopulatesSchemaDefaults) { EXPECT_FALSE(doc.GetData().data_entries.empty()); }
+    TEST_F(MduDocumentTest, Constructor_PopulatesSchemaDefaults) { EXPECT_FALSE(doc.GetData().empty()); }
 
     // -------------------------------------------------------------------------
     // Load(stream)
@@ -48,7 +48,7 @@ namespace dflowfm_io::test
 
         doc.Load(stream);
 
-        EXPECT_FALSE(doc.GetData().data_entries.empty());
+        EXPECT_FALSE(doc.GetData().empty());
     }
 
     TEST_F(MduDocumentTest, Load_FailedStream_ThrowsIosBaseFailure)
