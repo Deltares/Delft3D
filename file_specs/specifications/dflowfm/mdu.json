@@ -4589,6 +4589,12 @@
                     "description": "Write k, eps and vicww to his file."
                 },
                 {
+                    "key": "wriHis_windstress",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write wind stress to his file."
+                },
+                {
                     "key": "wriHis_wind",
                     "default_value": 1,
                     "value_type": "intbool",
