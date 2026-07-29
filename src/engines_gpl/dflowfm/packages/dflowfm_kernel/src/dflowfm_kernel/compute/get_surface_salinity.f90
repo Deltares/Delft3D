@@ -41,15 +41,29 @@ module m_get_surface_salinity
 
    !> Returns the surface-layer salinity for all horizontal cells.
    subroutine get_surface_salinity(surface_salinity, initialization)
-      real(kind=dp), intent(out) :: surface_salinity(ndx)   
+      use MessageHandling, only: err
+      use m_flow, only: sa1
+      use m_transport, only: isalt
+
+      real(kind=dp), intent(out) :: surface_salinity(ndx)
       logical, intent(in) :: initialization !< initialization phase
-      
+
       if (initialization) then
+         if (.not. allocated(sa1)) then
+            call err('get_surface_salinity: salinity is not allocated (Salinity=0); cannot use SalinityDependentEvaporationMethod=2.')
+            surface_salinity = 0.0_dp
+            return
+         end if
          call get_surface_salinity_from_sa1(surface_salinity)
       else
+         if (isalt <= 0) then
+            call err('get_surface_salinity: salinity constituent not active (isalt<=0); cannot use SalinityDependentEvaporationMethod=2.')
+            surface_salinity = 0.0_dp
+            return
+         end if
          call get_surface_salinity_from_constituents(surface_salinity)
       end if
-      
+
    end subroutine get_surface_salinity
    
    !> Returns the surface-layer salinity from constituents(isalt,:) for all horizontal cells.
@@ -85,7 +99,7 @@ module m_get_surface_salinity
       real(kind=dp), intent(in) :: surface_salinity
       real(kind=dp), intent(out) :: salinity_reduction_factor_saturation_humidity
       
-      salinity_reduction_factor_saturation_humidity = 1.0_dp - 5.30e-4_dp * surface_salinity
+      salinity_reduction_factor_saturation_humidity = max(0.0_dp, min(1.0_dp, 1.0_dp - 5.30e-4_dp * max(0.0_dp, surface_salinity)))
    end subroutine get_salinity_reduction_factor_saturation_humidity
 
 end module m_get_surface_salinity
