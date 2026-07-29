@@ -849,7 +849,9 @@ contains
       success = .false.
 
       call split_qid(qid, qid_base, qid_specific)
-      if (str_tolower(qid_base) /= 'massbalancearea') return
+      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') then
+         return
+      end if
 
       if (.not. allocated(mbaname)) allocate (mbaname(0))
       area_index = find_name(mbaname, qid_specific)
@@ -885,7 +887,7 @@ contains
 
       success = .false.
       call split_qid(qid, qid_base, qid_specific)
-      if (str_tolower(qid_base) /= 'massbalancearea') return
+      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') return
 
       if (ti_mba <= 0.0_dp) then
          write (msgbuf, '(a)') 'Quantity '''//trim(qid)//''' requires MbaInterval to be specified in the MDU file.'

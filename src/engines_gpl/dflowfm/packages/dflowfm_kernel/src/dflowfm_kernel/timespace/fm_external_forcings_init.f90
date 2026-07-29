@@ -1173,7 +1173,7 @@ contains
       select case (str_tolower(quantity_base))
       case ('frictioncoefficient')
          success = set_friction_type_values_explicit(block_ptr, operand)
-      case ('massbalancearea')
+      case ('massbalancearea', 'waqmassbalancearea')
          success = finish_mass_balance_area_target(quantity, target_data)
       case default
          success = .false.
