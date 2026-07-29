@@ -31,6 +31,10 @@ module m_get_surface_salinity
    use precision_basics, only: dp
    use m_flowgeom, only: ndx
    use m_get_kbot_ktop, only: getkbotktop
+   use m_flow, only: sa1
+   use m_transport, only: constituents, isalt
+   use m_flowparameters, only: jasal
+   use MessageHandling, only: mess, LEVEL_ERROR
    
    implicit none
 
@@ -41,58 +45,29 @@ module m_get_surface_salinity
 
    !> Returns the surface-layer salinity for all horizontal cells.
    subroutine get_surface_salinity(surface_salinity, initialization)
-      use MessageHandling, only: err
-      use m_flow, only: sa1
-      use m_transport, only: isalt
-
       real(kind=dp), intent(out) :: surface_salinity(ndx)
       logical, intent(in) :: initialization !< initialization phase
-
-      if (initialization) then
-         if (.not. allocated(sa1)) then
-            call err('get_surface_salinity: salinity is not allocated (Salinity=0); cannot use SalinityDependentEvaporationMethod=2.')
-            surface_salinity = 0.0_dp
-            return
-         end if
-         call get_surface_salinity_from_sa1(surface_salinity)
-      else
-         if (isalt <= 0) then
-            call err('get_surface_salinity: salinity constituent not active (isalt<=0); cannot use SalinityDependentEvaporationMethod=2.')
-            surface_salinity = 0.0_dp
-            return
-         end if
-         call get_surface_salinity_from_constituents(surface_salinity)
+      
+      real(kind=dp), dimension(:), pointer :: sal_ptr
+      integer :: n, kb, kt
+      
+      if (jasal == 0) then
+         call mess(LEVEL_ERROR, 'get_surface_salinity: Salinity is turned off in mdu')
+         return
       end if
-
-   end subroutine get_surface_salinity
-   
-   !> Returns the surface-layer salinity from constituents(isalt,:) for all horizontal cells.
-   subroutine get_surface_salinity_from_constituents(surface_salinity)
-      use m_transport, only: constituents, isalt
-
-      real(kind=dp), intent(out) :: surface_salinity(ndx)
-
-      integer :: n, kb, kt
-
+          
+      if (initialization) then
+         sal_ptr => sa1
+      else
+         sal_ptr => constituents(isalt, :)
+      end if
+      
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
-         surface_salinity(n) = constituents(isalt, kt)
+         surface_salinity(n) = sal_ptr(kt)
       end do
-   end subroutine get_surface_salinity_from_constituents
 
-   !> Returns the surface-layer salinity from sa1 for all horizontal cells.
-   subroutine get_surface_salinity_from_sa1(surface_salinity)
-      use m_flow, only: sa1
-
-      real(kind=dp), intent(out) :: surface_salinity(ndx)
-
-      integer :: n, kb, kt
-
-      do n = 1, ndx
-         call getkbotktop(n, kb, kt)
-         surface_salinity(n) = sa1(kt)
-      end do
-   end subroutine get_surface_salinity_from_sa1
+   end subroutine get_surface_salinity   
 
    !> Returns the salinity reduction factor of saturation humidity.
    elemental subroutine get_salinity_reduction_factor_saturation_humidity(surface_salinity, salinity_reduction_factor_saturation_humidity)

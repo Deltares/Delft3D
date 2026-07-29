@@ -424,8 +424,12 @@ contains
       atm_stability_options%alpha_q = air_viscous_moisture_coeff
       
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR) then
-         call realloc(salinity_reduction_factor_saturation_humidity%values, ndx, keepexisting=.true., fill=salinity_reduction_factor_saturation_humidity%scalar)
-         call realloc(surface_salinity, ndx, keepexisting=.false., fill=0.0_dp)
+         if (.not. allocated(salinity_reduction_factor_saturation_humidity%values)) then
+            call realloc(salinity_reduction_factor_saturation_humidity%values, ndx, keepexisting=.false., fill=salinity_reduction_factor_saturation_humidity%scalar)
+         end if
+         if (.not. allocated(surface_salinity)) then
+            call realloc(surface_salinity, ndx, keepexisting=.false., fill=0.0_dp)
+         end if
          call get_surface_salinity(surface_salinity, initialization)
          call get_salinity_reduction_factor_saturation_humidity(surface_salinity, salinity_reduction_factor_saturation_humidity%values)
       end if

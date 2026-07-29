@@ -773,7 +773,7 @@ contains
       air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model
-      salinity_dependent_evaporation_method = 0 ! Switch for methods for determining salinity_reduction_factor_saturation_humidity
+      salinity_dependent_evaporation_method = SALINITY_DEPENDENT_EVAPORATION_NONE ! Switch for methods for determining salinity_reduction_factor_saturation_humidity
       salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
       sensor_height_wind_velocity = 10.0_dp ! Height of prescribed wind velocity
       sensor_height_air_temperature = 2.0_dp ! Height of prescribed air temperature
