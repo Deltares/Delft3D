@@ -1,4 +1,4 @@
-"""GENERATED from dflowfm_io_api.h by scripts/generate_bindings.py - do not edit.
+"""GENERATED from dflowfm_io_api.h by scripts/generate_model.py - do not edit.
 
 The typed MduModel: one get/set method per mdu_get_*/mdu_set_* C function, with the per-type
 value marshalling. Regenerated from the C header, so the accessors cannot drift from the ABI.
@@ -12,7 +12,7 @@ from dflowfm_io.base import HandleRef, check_result, lib
 
 
 class MduModel:
-    """Typed get/set access to MDU properties, keyed by dotted ``section.property`` names."""
+    """Typed get/set access to MDU properties, keyed by dotted `section.property` names."""
 
     def __init__(self, ref: HandleRef):
         self._ref = ref
@@ -52,11 +52,6 @@ class MduModel:
         check_result(lib.mdu_get_enum(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
         return value.value
 
-    def get_enum_name(self, key: str) -> str:
-        value = ctypes.c_char_p()
-        check_result(lib.mdu_get_enum_name(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
-        return value.value.decode("utf-8")
-
     def get_string_list(self, key: str) -> list[str]:
         array_out = ctypes.POINTER(ctypes.c_char_p)()
         size_out = ctypes.c_uint64()
@@ -95,9 +90,6 @@ class MduModel:
 
     def set_enum(self, key: str, value: int) -> None:
         check_result(lib.mdu_set_enum(self._ref.handle, key.encode("utf-8"), ctypes.c_int32(value)))
-
-    def set_enum_name(self, key: str, value: str) -> None:
-        check_result(lib.mdu_set_enum_name(self._ref.handle, key.encode("utf-8"), value.encode("utf-8")))
 
     def set_string_list(self, key: str, values: list[str]) -> None:
         encoded = [v.encode("utf-8") for v in values]
