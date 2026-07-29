@@ -250,6 +250,8 @@ namespace pre_c_sumo
             {
                 source_weight_norm += source.has_weight ? source.weight : 1.0;
             }
+            // Intended behavior: source weights are assumed to sum to >= 1.
+            // Keep 1.0 as the lower bound so malformed/underspecified input does not amplify discharge.
             source_weight_norm = std::max(source_weight_norm, 1.0);
 
             const auto sinks = diffuser.sinks();
@@ -329,6 +331,8 @@ namespace pre_c_sumo
                     {
                         intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
                     }
+                    // Intended behavior: intake weights are assumed to sum to >= 1.
+                    // Keep 1.0 as the lower bound so malformed/underspecified input does not amplify discharge.
                     intake_weight_norm = std::max(intake_weight_norm, 1.0);
 
                     // Intakes are sink-only terms (not connected to source points).

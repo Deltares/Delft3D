@@ -69,7 +69,7 @@ namespace
     <constituentsOperator>excess</constituentsOperator>
     <constituents>10.0 0.0</constituents>
   </discharge>
-    <NFResult>
+  <NFResult>
 )";
 
         if (effective_intake_count > 0)
@@ -114,6 +114,19 @@ namespace
         return xml.str();
     }
 
+    /**
+     * @brief Build synthetic NF2FF input and run the coupling conversion.
+     *
+     * Test helper for count/discharge scenarios driven by generated sink/source/intake
+     * records while using the same production conversion function.
+     *
+     * @param sink_count Number of synthetic sink rows.
+     * @param source_count Number of synthetic source rows.
+     * @param include_qintake Whether to include Qintake in the generated XML.
+     * @param qintake Qintake value used when include_qintake is true.
+     * @param intake_count Number of synthetic intake rows.
+     * @return Converted connected sink/source entries.
+     */
     pre_c_sumo::ConnectedSinkSources convert_from_synthetic_case(
         std::size_t sink_count, std::size_t source_count, bool include_qintake, double qintake,
         std::size_t intake_count = std::numeric_limits<std::size_t>::max())
@@ -123,6 +136,28 @@ namespace
 
         const auto xml = build_nf2ff_xml(sink_count, source_count, include_qintake, qintake, intake_count);
         auto reader = pre_c_sumo::NF2FFReader::fromString(xml);
+        EXPECT_TRUE(reader.has_value());
+
+        std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+        nf2ff_readers.emplace_back(std::move(*reader));
+        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+    }
+
+    /**
+     * @brief Parse NF2FF XML and run the coupling conversion with minimal settings.
+     *
+     * Test helper that keeps per-test setup compact while exercising the same
+     * production conversion path as file-based inputs.
+     *
+     * @param nf2ff_xml NF2FF XML payload to parse.
+     * @return Converted connected sink/source entries.
+     */
+    pre_c_sumo::ConnectedSinkSources convert_from_nf2ff_xml(const std::string_view nf2ff_xml)
+    {
+        const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_with_intake_xml);
+        EXPECT_TRUE(settings.has_value());
+
+        auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
         EXPECT_TRUE(reader.has_value());
 
         std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
@@ -409,4 +444,128 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI10Si2So1WithTenIntakesYieldsExpect
     EXPECT_NEAR(discharges[1999], 0.01, 1e-12);
     EXPECT_NEAR(discharges[2000], 1.0, 1e-12);
     EXPECT_NEAR(discharges[2009], 1.0, 1e-12);
+}
+
+TEST(CsumoPreciceCouplingStepsTest, SourceWeightSumBelowOneUsesClampAtOne)
+{
+    constexpr std::string_view nf2ff_xml = R"(<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+    <fileVersion>0.3</fileVersion>
+    <discharge>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+    </discharge>
+    <NFResult>
+        <sinks>
+            1010.0 300.0 5.0 1.0 5.0 0.0
+        </sinks>
+        <sources>
+            1000.0 300.0 5.0 1.0 5.0 15.0 0.2
+            1001.0 300.0 5.0 1.0 5.0 15.0 0.3
+        </sources>
+    </NFResult>
+</NF2FF>)";
+
+    const auto connected = convert_from_nf2ff_xml(nf2ff_xml);
+    ASSERT_EQ(connected.get_number_of_entries(), 2u);
+
+    const auto& discharges = connected.get_discharge_value();
+    ASSERT_EQ(discharges.size(), 2u);
+    // Intended behavior: denominator is clamped to 1.0 when sum(weights) < 1.
+    EXPECT_NEAR(discharges[0], 2.0, 1e-12);
+    EXPECT_NEAR(discharges[1], 3.0, 1e-12);
+}
+
+TEST(CsumoPreciceCouplingStepsTest, IntakeWeightSumBelowOneUsesClampAtOne)
+{
+    constexpr std::string_view nf2ff_xml = R"(<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+    <fileVersion>0.3</fileVersion>
+    <discharge>
+        <Qintake>10.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+    </discharge>
+    <NFResult>
+        <intakes>
+            1550.0 950.0 0.5 0.2
+            1551.0 950.0 0.5 0.3
+        </intakes>
+        <sinks>
+            1010.0 300.0 5.0 1.0 5.0 0.0
+        </sinks>
+        <sources>
+            1000.0 300.0 5.0 1.0 5.0 15.0
+            1001.0 300.0 5.0 1.0 5.0 15.0
+        </sources>
+    </NFResult>
+</NF2FF>)";
+
+    const auto connected = convert_from_nf2ff_xml(nf2ff_xml);
+    ASSERT_EQ(connected.get_number_of_entries(), 4u);
+
+    const auto& discharges = connected.get_discharge_value();
+    ASSERT_EQ(discharges.size(), 4u);
+    // Intended behavior: denominator is clamped to 1.0 when sum(weights) < 1.
+    EXPECT_NEAR(discharges[2], 2.0, 1e-12);
+    EXPECT_NEAR(discharges[3], 3.0, 1e-12);
+}
+
+TEST(CsumoPreciceCouplingStepsTest, SourceWeightSumBelowOneProducesLowerDischargeBecauseOfClamp)
+{
+    constexpr std::string_view nf2ff_xml_below_one = R"(<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+    <fileVersion>0.3</fileVersion>
+    <discharge>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+    </discharge>
+    <NFResult>
+        <sinks>
+            1010.0 300.0 5.0 1.0 5.0 0.0
+        </sinks>
+        <sources>
+            1000.0 300.0 5.0 1.0 5.0 15.0 0.2
+            1001.0 300.0 5.0 1.0 5.0 15.0 0.3
+        </sources>
+    </NFResult>
+</NF2FF>)";
+
+    constexpr std::string_view nf2ff_xml_equals_one = R"(<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+    <fileVersion>0.3</fileVersion>
+    <discharge>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+    </discharge>
+    <NFResult>
+        <sinks>
+            1010.0 300.0 5.0 1.0 5.0 0.0
+        </sinks>
+        <sources>
+            1000.0 300.0 5.0 1.0 5.0 15.0 0.4
+            1001.0 300.0 5.0 1.0 5.0 15.0 0.6
+        </sources>
+    </NFResult>
+</NF2FF>)";
+
+    const auto connected_below_one = convert_from_nf2ff_xml(nf2ff_xml_below_one);
+    const auto connected_equals_one = convert_from_nf2ff_xml(nf2ff_xml_equals_one);
+
+    const auto& discharges_below_one = connected_below_one.get_discharge_value();
+    const auto& discharges_equals_one = connected_equals_one.get_discharge_value();
+
+    ASSERT_EQ(discharges_below_one.size(), 2u);
+    ASSERT_EQ(discharges_equals_one.size(), 2u);
+
+    const double total_below_one = discharges_below_one[0] + discharges_below_one[1];
+    const double total_equals_one = discharges_equals_one[0] + discharges_equals_one[1];
+
+    EXPECT_NEAR(total_below_one, 5.0, 1e-12);
+    EXPECT_NEAR(total_equals_one, 10.0, 1e-12);
+    EXPECT_LT(total_below_one, total_equals_one);
 }

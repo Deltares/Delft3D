@@ -76,8 +76,7 @@ if %ARG_COUNT% GTR 0 (
             for %%K in (!CASE_TOKEN_SPLIT!) do (
                 call :validate_case "%%~K"
                 if errorlevel 1 (
-                    echo ERROR: Unknown case "%%~K"
-                    echo Allowed cases: %ALL_CASES%
+                    echo ERROR: Case folder not found: "%NFROOT%\%%~K"
                     popd
                     exit /b 4
                 )
@@ -175,11 +174,7 @@ popd
 exit /b %OVERALL_RC%
 
 :validate_case
-set "IS_VALID_CASE=0"
-for %%X in (%ALL_CASES%) do (
-    if /i "%%X"=="%~1" set "IS_VALID_CASE=1"
-)
-if "%IS_VALID_CASE%"=="1" exit /b 0
+if exist "%NFROOT%\%~1" exit /b 0
 exit /b 1
 
 :is_mode
