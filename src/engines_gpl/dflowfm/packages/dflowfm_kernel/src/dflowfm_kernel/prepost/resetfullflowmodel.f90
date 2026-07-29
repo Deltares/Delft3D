@@ -89,6 +89,7 @@ contains
       use m_sediment, only: deallocgrains, default_sediment
       use m_flow_validatestate, only: default_flow_validatestate
       use m_prefetch, only: cleanup_prefetch_arrays
+      use m_unstruc_netcdf_data, only: default_unstruc_netcdf_data
 
       implicit none
 
@@ -96,6 +97,7 @@ contains
       ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
       call default_fm_deprecated_keywords()
 
+      call default_unstruc_netcdf_data()
       call init_unstruc_netcdf()
 
       call default_caching()
