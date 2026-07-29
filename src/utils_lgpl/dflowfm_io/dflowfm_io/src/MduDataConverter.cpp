@@ -83,16 +83,17 @@ namespace dflowfm_io
                 if (schema.IsObsolete(propertySchema, iniProperty->GetValue()))
                     continue;
 
-                auto converted_value = MduValueConverter::FromString(propertySchema, iniProperty->GetValue());
-                if (!converted_value.has_value())
+                try
+                {
+                    auto converted_value = MduValueConverter::FromString(propertySchema, iniProperty->GetValue());
+                    mduData.setValue(key, converted_value);
+                }
+                catch (const std::exception&)
                 {
                     const std::string expected = GetExpectedValueDescription(propertySchema);
                     report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\". {}.",
                                     sectionSchema.name, propertySchema.key, iniProperty->GetValue(), expected);
-                    continue;
                 }
-
-                mduData.setValue(key, *converted_value);
             }
         }
 

@@ -60,18 +60,9 @@ namespace dflowfm_io
                 const std::string default_value = propertySchema.default_value.empty() ? GetDummyDefault(propertySchema)
                                                                           : propertySchema.default_value;
 
-                std::optional<Value> value =
-                    MduValueConverter::FromString(propertySchema, default_value);
-
-                if (!value.has_value())
-                {
-                    throw std::logic_error(std::format(
-                        "Invalid default value \"{}\" for property [{}].{}.",
-                        propertySchema.default_value, sectionSchema.name, propertySchema.key));
-                }
-
+                Value value = MduValueConverter::FromString(propertySchema, default_value);
                 const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
-                entries[key] = std::move(*value);
+                entries[key] = std::move(value);
             }
         }
 

@@ -53,8 +53,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::String);
         auto result = MduValueConverter::FromString(schema, "hello");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::string>(*result), "hello");
+        EXPECT_EQ(std::get<std::string>(result), "hello");
     }
 
     // -------------------------------------------------------------------------
@@ -66,16 +65,14 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Int);
         auto result = MduValueConverter::FromString(schema, "42");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<int>(*result), 42);
+        EXPECT_EQ(std::get<int>(result), 42);
     }
 
-    TEST(MduValueConverterTest, FromString_Int_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_Int_InvalidValue_Throws)
     {
         auto schema = MakeSchema(ValueType::Int);
-        auto result = MduValueConverter::FromString(schema, "not_an_int");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_an_int"), std::exception);
     }
 
     // -------------------------------------------------------------------------
@@ -87,8 +84,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Float);
         auto result = MduValueConverter::FromString(schema, "3.14");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_DOUBLE_EQ(std::get<double>(*result), 3.14);
+        EXPECT_DOUBLE_EQ(std::get<double>(result), 3.14);
     }
 
     TEST(MduValueConverterTest, FromString_Float_FortranExponent_ReturnsCorrectValue)
@@ -96,16 +92,14 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Float);
         auto result = MduValueConverter::FromString(schema, "1.0d-3");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_DOUBLE_EQ(std::get<double>(*result), 1.0e-3);
+        EXPECT_DOUBLE_EQ(std::get<double>(result), 1.0e-3);
     }
 
-    TEST(MduValueConverterTest, FromString_Float_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_Float_InvalidValue_Throws)
     {
         auto schema = MakeSchema(ValueType::Float);
-        auto result = MduValueConverter::FromString(schema, "not_a_float");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_float"), std::exception);
     }
 
     // -------------------------------------------------------------------------
@@ -117,8 +111,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::IntBool);
         auto result = MduValueConverter::FromString(schema, "0");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<bool>(*result), false);
+        EXPECT_EQ(std::get<bool>(result), false);
     }
 
     TEST(MduValueConverterTest, FromString_IntBool_One_ReturnsTrue)
@@ -126,16 +119,14 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::IntBool);
         auto result = MduValueConverter::FromString(schema, "1");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<bool>(*result), true);
+        EXPECT_EQ(std::get<bool>(result), true);
     }
 
-    TEST(MduValueConverterTest, FromString_IntBool_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_IntBool_InvalidValue_Throws)
     {
         auto schema = MakeSchema(ValueType::IntBool);
-        auto result = MduValueConverter::FromString(schema, "not_a_bool");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_bool"), std::exception);
     }
 
     // -------------------------------------------------------------------------
@@ -147,8 +138,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Path);
         auto result = MduValueConverter::FromString(schema, "some/path/file.txt");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::filesystem::path>(*result), std::filesystem::path("some/path/file.txt"));
+        EXPECT_EQ(std::get<std::filesystem::path>(result), std::filesystem::path("some/path/file.txt"));
     }
 
     // -------------------------------------------------------------------------
@@ -164,8 +154,7 @@ namespace dflowfm_io::test
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
             std::chrono::hours{12};
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), expected);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), expected);
     }
 
     TEST(MduValueConverterTest, FromString_DateTime_DateFormat_ReturnsCorrectValue)
@@ -176,34 +165,30 @@ namespace dflowfm_io::test
         const auto expected =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), expected);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), expected);
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_DateFormat_WithTimeComponent_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_DateTime_DateFormat_WithTimeComponent_Throws)
     {
         // Schema expects CompactDateOnly, but the value carries a time component.
         auto schema = MakeSchema(ValueType::DateTime, FormatType::Date);
-        auto result = MduValueConverter::FromString(schema, "20200130120000");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "20200130120000"), std::exception);
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_CompactDateTime_DateOnlyValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_DateTime_CompactDateTime_DateOnlyValue_Throws)
     {
         // Schema expects CompactDateTime, but the value only carries a date.
         auto schema = MakeSchema(ValueType::DateTime);
-        auto result = MduValueConverter::FromString(schema, "20200130");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "20200130"), std::exception);
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_DateTime_InvalidValue_Throws)
     {
         auto schema = MakeSchema(ValueType::DateTime);
-        auto result = MduValueConverter::FromString(schema, "not_a_date");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_date"), std::exception);
     }
 
     // -------------------------------------------------------------------------
@@ -215,8 +200,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::StringList);
         auto result = MduValueConverter::FromString(schema, "a b c");
 
-        ASSERT_TRUE(result.has_value());
-        auto values = std::get<std::vector<std::string>>(*result);
+        auto values = std::get<std::vector<std::string>>(result);
         ASSERT_EQ(values.size(), 3u);
         EXPECT_EQ(values[0], "a");
         EXPECT_EQ(values[1], "b");
@@ -228,8 +212,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::FloatList);
         auto result = MduValueConverter::FromString(schema, "1.0 2.0 3.0");
 
-        ASSERT_TRUE(result.has_value());
-        auto values = std::get<std::vector<double>>(*result);
+        auto values = std::get<std::vector<double>>(result);
         ASSERT_EQ(values.size(), 3u);
         EXPECT_DOUBLE_EQ(values[0], 1.0);
         EXPECT_DOUBLE_EQ(values[1], 2.0);
@@ -241,8 +224,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::PathList);
         auto result = MduValueConverter::FromString(schema, "a.txt b.txt");
 
-        ASSERT_TRUE(result.has_value());
-        auto values = std::get<std::vector<std::filesystem::path>>(*result);
+        auto values = std::get<std::vector<std::filesystem::path>>(result);
         ASSERT_EQ(values.size(), 2u);
         EXPECT_EQ(values[0], std::filesystem::path("a.txt"));
         EXPECT_EQ(values[1], std::filesystem::path("b.txt"));
@@ -257,8 +239,7 @@ namespace dflowfm_io::test
         auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}, {2, "Implicit"}});
         auto result = MduValueConverter::FromString(schema, "Explicit");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+        EXPECT_EQ(std::get<EnumValue>(result).value, 1);
     }
 
     TEST(MduValueConverterTest, FromString_Enum_NameCaseInsensitive_ReturnsCorrectValue)
@@ -266,16 +247,14 @@ namespace dflowfm_io::test
         auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}});
         auto result = MduValueConverter::FromString(schema, "explicit");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+        EXPECT_EQ(std::get<EnumValue>(result).value, 1);
     }
 
-    TEST(MduValueConverterTest, FromString_Enum_InvalidName_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_Enum_InvalidName_Throws)
     {
         auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}});
-        auto result = MduValueConverter::FromString(schema, "Unknown");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "Unknown"), std::exception);
     }
 
     TEST(MduValueConverterTest, FromString_IntEnum_ValidNumber_ReturnsCorrectValue)
@@ -283,24 +262,21 @@ namespace dflowfm_io::test
         auto schema = MakeIntEnumSchema({0, 1, 2});
         auto result = MduValueConverter::FromString(schema, "2");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 2);
+        EXPECT_EQ(std::get<EnumValue>(result).value, 2);
     }
 
-    TEST(MduValueConverterTest, FromString_IntEnum_OutOfRangeNumber_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_IntEnum_OutOfRangeNumber_Throws)
     {
         auto schema = MakeIntEnumSchema({0, 1});
-        auto result = MduValueConverter::FromString(schema, "99");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "99"), std::exception);
     }
 
-    TEST(MduValueConverterTest, FromString_IntEnum_InvalidString_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_IntEnum_InvalidString_Throws)
     {
         auto schema = MakeIntEnumSchema({0, 1});
-        auto result = MduValueConverter::FromString(schema, "not_a_number");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_number"), std::exception);
     }
 
     // -------------------------------------------------------------------------
@@ -512,8 +488,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<int>(*result), 42);
+        EXPECT_EQ(std::get<int>(result), 42);
     }
 
     TEST(MduValueConverterTest, RoundTrip_Float)
@@ -524,8 +499,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_DOUBLE_EQ(std::get<double>(*result), 1.5);
+        EXPECT_DOUBLE_EQ(std::get<double>(result), 1.5);
     }
 
     TEST(MduValueConverterTest, RoundTrip_Enum)
@@ -536,8 +510,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+        EXPECT_EQ(std::get<EnumValue>(result).value, 1);
     }
 
     TEST(MduValueConverterTest, RoundTrip_DateTime_CompactDateTime)
@@ -551,8 +524,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), timePoint);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), timePoint);
     }
 
     TEST(MduValueConverterTest, RoundTrip_DateTime_DateFormat)
@@ -565,8 +537,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), timePoint);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), timePoint);
     }
 
 } // namespace dflowfm_io::test
