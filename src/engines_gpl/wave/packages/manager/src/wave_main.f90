@@ -234,6 +234,7 @@ function wave_init(mode_in, mdw_file) result(retval)
       write(*,'(a)') '           Use Delft3D-WAVE-GUI version 4.90.00 or higher to create the mdw-file.'
       call wavestop(1, '*** ERROR: Reference date not set')
    endif
+   call register_boundary_spectrum_files(swan_run, wavedata%time%refdate)
    !
    ! Read wave grids and flow grids; make grid-maps
    !
@@ -570,6 +571,7 @@ end function wave_main_finish
 function wave_master_finish() result(retval)
    use swan_input
    use wave_mpi
+
    implicit none
 !
 ! return value
@@ -591,6 +593,8 @@ function wave_master_finish() result(retval)
    do i_swan = 1, n_swan_grids
       call deallocmeteo(swan_grids(i_swan)%grid_name)
    enddo
+   !
+   call cleanup_boundary_spectrum_files()
    !
    call dealloc_swan(swan_run)
    write(*,'(a)') 'Delft3D-WAVE finished normally.'

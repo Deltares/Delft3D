@@ -160,6 +160,7 @@ contains
       IVAL_SEDDIFN = 0
       IVAL_TAIR = 0
       IVAL_WIND = 0
+      IVAL_RWIN = 0
       IVAL_RHUM = 0
       IVAL_CLOU = 0
       IVAL_AIRDENSITY = 0
@@ -269,6 +270,9 @@ contains
             IVAL_QCON = next_index(i)
             IVAL_QLON = next_index(i)
             IVAL_QTOT = next_index(i)
+            IVAL_TAIR = next_index(i)
+            IVAL_RHUM = next_index(i)
+            IVAL_RWIN = next_index(i)
       else          
          if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             IVAL_TAIR = next_index(i)
@@ -528,6 +532,7 @@ contains
       IPNT_UCYST = ivalpoint(IVAL_UCYST, kmx, nlyrs)
       IPNT_TAIR = ivalpoint(IVAL_TAIR, kmx, nlyrs)
       IPNT_WIND = ivalpoint(IVAL_WIND, kmx, nlyrs)
+      IPNT_RWIN = ivalpoint(IVAL_RWIN, kmx, nlyrs)
       IPNT_RHUM = ivalpoint(IVAL_RHUM, kmx, nlyrs)
       IPNT_CLOU = ivalpoint(IVAL_CLOU, kmx, nlyrs)
       IPNT_AIRDENSITY = ivalpoint(IVAL_AIRDENSITY, kmx, nlyrs)
