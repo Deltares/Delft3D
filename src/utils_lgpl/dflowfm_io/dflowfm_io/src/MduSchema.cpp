@@ -1,6 +1,6 @@
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/MduSchemaGenerated.h>
-#include <dflowfm_io/MduValueConverter.h>
+#include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/StringUtils.h>
 
 #include <format>
@@ -110,7 +110,7 @@ namespace dflowfm_io
                                                        ? GetDummyDefault(propertySchema)
                                                        : propertySchema.default_value;
 
-                Value value = MduValueConverter::FromString(propertySchema, default_value);
+                Value value = MduConverter::ValueFromString(propertySchema, default_value);
                 const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                 entries[key] = std::move(value);
             }

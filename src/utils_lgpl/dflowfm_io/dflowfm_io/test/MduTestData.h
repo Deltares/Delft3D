@@ -1,6 +1,7 @@
 #pragma once
 
-#include <dflowfm_io/MduDataConverter.h>
+#include <dflowfm_io/IssueReport.h>
+#include <dflowfm_io/MduData.h>
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/StringUtils.h>
 
