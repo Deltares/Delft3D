@@ -49,7 +49,6 @@ module m_flow_flowinit
    use m_thacker1d, only: thacker1d
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
-   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
@@ -1351,12 +1350,9 @@ contains
       use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
       use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_waveconst, only: WAVE_SWAN_ONLINE, WAVE_UNIFORM, WAVE_NC_OFFLINE
 
       implicit none
-
-      integer, parameter :: SWAN = 3
-      integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
@@ -1371,7 +1367,7 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
          call compute_wave_parameters()
@@ -1382,12 +1378,12 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          call compute_wave_parameters()
       end if
 
-      if (jawave == CONST .and. .not. flow_without_waves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
