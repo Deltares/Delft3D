@@ -71,7 +71,6 @@ contains
       ag = par(1)
       delta = par(4)
       acal = par(11)
-      !rk = par(12) ! obsolete
       suspfac = par(13)
       !
       ! total transport

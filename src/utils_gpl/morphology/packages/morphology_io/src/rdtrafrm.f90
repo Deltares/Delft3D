@@ -1307,7 +1307,7 @@ contains
          nparreq = 1
          parkeyw(1) = 'ACal'
          nparopt = 2
-         parkeyw(2) = 'RouKs'
+         parkeyw(2) = 'RouKs' !obsolete, but don't remove: backward compatibility!
          pardef(2) = 1.0_fp
          parkeyw(3) = 'SusFac'
          pardef(3) = 0.0_fp
@@ -1336,7 +1336,7 @@ contains
          nparreq = 1
          parkeyw(1) = 'ACal'
          nparopt = 1
-         parkeyw(2) = 'RouKs'
+         parkeyw(2) = 'RouKs' !obsolete, but don't remove: backward compatibility!
          pardef(2) = 1.0_fp
          if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 2

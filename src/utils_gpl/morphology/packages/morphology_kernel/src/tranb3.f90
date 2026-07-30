@@ -68,7 +68,6 @@ contains
       real(fp) :: dgr
       real(fp) :: f ! real help array
       real(fp) :: fwc
-      real(fp) :: rk
       real(fp) :: rm
       real(fp) :: rn
       real(fp) :: u_star
@@ -82,7 +81,6 @@ contains
       ag = par(1)
       delta = par(4)
       acal = par(11)
-      !rk = par(12) ! obsolete
       !
       cf = ag / chezy / chezy
       u_star = sqrt(cf) * utot

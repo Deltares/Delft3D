@@ -885,7 +885,7 @@ contains
          target_array_3d => constituents
 
       case ('initialsediment')
-         if (jased <= 0 .or. stm_included) then
+         if (jased /= 1 .or. jased /= 2 .or. jased /= 3) then
             success = .false.
             return
          end if
