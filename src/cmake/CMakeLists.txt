@@ -52,6 +52,8 @@ find_package(PROJ CONFIG REQUIRED)
 find_package(GDAL CONFIG REQUIRED)
 find_package(PETSc CONFIG REQUIRED)
 find_package(triangle CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED)
+find_package(precice CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
