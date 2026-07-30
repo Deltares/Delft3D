@@ -1,14 +1,14 @@
 # Builds the dflowfm_io Python wheel.
 #
-# Targets (build order when the wheel is built):
-#   dflowfm_io_bindings  -> runs the generator scripts (regenerates the committed generated code)
-#   dflowfm_io_stage_lib -> stages the dflowfm_io_api DLL (built one level up) into _lib/
-#   dflowfm_io_wheel     -> `pip wheel` packages src/ + _lib/ into a .whl (depends on the two above)
+# Targets:
+#   dflowfm_io_bindings  -> runs the generator scripts (in ALL: generated code is not committed)
+#   dflowfm_io_stage_lib -> stages the dflowfm_io_api DLL (built one level up) into _lib/ (in ALL)
+#   dflowfm_io_wheel     -> `pip wheel` packages src/ + _lib/ into a .whl (NOT in ALL; on demand)
 #
 # The wheel is not in the default build; build on demand, or with -D DFLOWFM_IO_BUILD_WRAPPER_PACKAGES=ON:
 #     cmake --build <build-dir> --target dflowfm_io_wheel
 
-# Generated (committed) Python, regenerated here so it can never drift from its source:
+# Generated Python (not committed; produced by the build), so it can never drift from its source:
 #   mdu/model.py   <- generate_model.py, from the C header
 #   mdu/schema.py  <- generate_schema.py, from mdu.json
 # (base/bindings.py is hand-maintained, not generated.)
@@ -43,8 +43,9 @@ add_custom_command(
 	VERBATIM
 )
 
-# Build this target to (re)generate the Python code on its own.
-add_custom_target(dflowfm_io_bindings DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
+# Regenerate the Python code. In ALL (the generated files are not committed, so a default build must
+# produce them); also buildable on its own with --target dflowfm_io_bindings.
+add_custom_target(dflowfm_io_bindings ALL DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
 
 # Stage the built DLL into _lib/ so `pip wheel` bundles it. A dependent target, not a POST_BUILD on
 # dflowfm_io_api: CMake forbids attaching POST_BUILD to a target defined in another directory.
