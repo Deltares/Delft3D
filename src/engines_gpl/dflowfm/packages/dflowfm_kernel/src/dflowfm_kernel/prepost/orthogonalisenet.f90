@@ -1106,7 +1106,7 @@ contains
 
                   call qnerror('orthonet_compweights_vol: DvolR<0', ' ', ' ')
                   call teklink(ilink, ncolhl)
-                  if (kn(3, ilink) == 2) then
+                  if (kn(3, ilink) == LINK_2D) then
                      call cirr(xk(kn(1, ilink)), yk(kn(1, ilink)), ncolhl)
                      call cirr(xk(kn(2, ilink)), yk(kn(2, ilink)), ncolhl)
                   end if

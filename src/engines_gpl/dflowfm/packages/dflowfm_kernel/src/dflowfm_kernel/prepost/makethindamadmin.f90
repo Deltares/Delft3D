@@ -48,6 +48,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: getdxdy, duitpl, dlinedis
       use m_missing, only: dmiss
+      use network_data, only: LINK_CLOSED
 
       integer :: n, kk, L, k1, k3, k4, ja, ierr
       real(kind=dp) :: cs, sn, a, b, sig, dis, xn, yn, rrr
@@ -75,7 +76,7 @@ contains
          do kk = 1, netcell(n)%n
             L = netcell(n)%lin(kk)
 
-            if (kn(3, L) == 0) then
+            if (kn(3, L) == LINK_CLOSED) then
                nthd = nthd + 1
                k1 = n
                k3 = kn(1, L) ! netnode 1

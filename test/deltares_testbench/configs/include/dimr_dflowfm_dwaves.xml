@@ -55,7 +55,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f00_c03" ref="dimr_trunk">
-        <path version="2025-07-25T14:59:00">e100_dflowfm-dwaves/f00_general/c03_append_com</path>
+        <path version="2026-07-07T15:35:49.619000">e100_dflowfm-dwaves/f00_general/c03_append_com</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/DFM_OUTPUT_straight_coast/straight_coast_map.nc" type="NETCDF">
@@ -214,7 +214,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f05_c02" ref="dimr_trunk">
-        <path version="2026-01-23T17:45:00">e100_dflowfm-dwaves/f05_vegetation/c02_FM_veg_to_SWAN</path>
+        <path version="2026-07-07T15:35:51.691000">e100_dflowfm-dwaves/f05_vegetation/c02_FM_veg_to_SWAN</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/DFM_OUTPUT_shallow_wave/shallow_wave_map.nc" type="NETCDF">

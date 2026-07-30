@@ -15,7 +15,8 @@ object WindowsCollect : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Collect"
@@ -111,6 +112,7 @@ object WindowsCollect : BuildType({
             param("nexus_repo", "/delft3d-dev")
             param("retention_period", "07_day_retention")
             param("target_path", "/dimrset/%file_path%")
+            enabled = false
         }
     }
 

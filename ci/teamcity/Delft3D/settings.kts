@@ -32,7 +32,7 @@ project {
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
         param("nexus_iq_username", DslContext.getParameter("nexus_iq_username"))
         password("nexus_iq_password", DslContext.getParameter("nexus_iq_password"))
-        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
+        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@internal-artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }
@@ -49,6 +49,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
+    template(TemplateBuildConcurrency)
 
     subProject {
         id("Linux")
@@ -101,7 +102,7 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsTestEnvironment)
         buildType(WindowsCollectEnvironment)
         buildType(WindowsConanPackages)
@@ -112,7 +113,7 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironment,
             WindowsTestEnvironment,
             WindowsCollectEnvironment,
             WindowsConanPackages,

@@ -92,9 +92,13 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: tureps0 ! eps old (1/s)  , at layer interface at u
    real(kind=dp), allocatable, dimension(:) :: tureps1 ! eps new        , at layer interface at u
 
+   real(kind=dp), allocatable, dimension(:) :: vius !< Flowlink-averaged horizontal viscosity (viu) at s-point
    real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
-   real(kind=dp), allocatable, dimension(:), target :: vicwws !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, dimension(:), target :: difwws !< [m2/s] vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: vicwws !< [m2/s] turbulent vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: vicwws_total !< [m2/s] total vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: difwws !< [m2/s] turbulent vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: difwws_total !< [m2/s] total vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: vicwwu_total !< [m2/s] total vertical eddy viscosity at layer interface at u point
    real(kind=dp), allocatable, dimension(:) :: rich !< Richardson number at velocity-point
    real(kind=dp), allocatable, dimension(:) :: richs !< Richardson number at pressure-point
 

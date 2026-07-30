@@ -109,7 +109,7 @@ contains
                   lne(j, L) = -c
                end if
             end if
-            if (kn(3, L) == 3 .or. kn(3, L) == 4 .or. kn(3, L) == 5 .or. kn(3, L) == 7) then ! If 1d link L enters a 2d cell
+            if (kn(3, L) == LINK_1D2D_INTERNAL .or. kn(3, L) == LINK_1D2D_LONGITUDINAL .or. kn(3, L) == LINK_1D2D_STREETINLET .or. kn(3, L) == LINK_1D2D_ROOF) then ! If 1d link L enters a 2d cell
                k1 = kn(1, L)
                if (k1 == k) then
                   k1 = kn(2, L)
@@ -148,7 +148,7 @@ contains
       if (contactnlinks > 0) then
          do i = 1, size(contactnetlinks)
             L = contactnetlinks(i)
-            if (kn(3, L) == 3 .or. kn(3, L) == 4 .or. kn(3, L) == 5 .or. kn(3, L) == 7) then
+            if (kn(3, L) == LINK_1D2D_INTERNAL .or. kn(3, L) == LINK_1D2D_LONGITUDINAL .or. kn(3, L) == LINK_1D2D_STREETINLET .or. kn(3, L) == LINK_1D2D_ROOF) then
                if (lnn(l) == 0 .and. lne(1, L) == 0 .and. lne(2, L) == 0) then ! empty type 5 link, must be a 2D 2D contact
                   lne(:, L) = contact_cell_idx(:, i)
                   lnn(L) = 2

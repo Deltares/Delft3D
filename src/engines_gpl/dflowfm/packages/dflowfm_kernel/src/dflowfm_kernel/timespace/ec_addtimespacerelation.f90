@@ -1566,18 +1566,37 @@ contains
 
       if (sourceItemName /= ' ') then
          ! not a special case, connect source and target
-         sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-         if (sourceItemId == ec_undef_int) then
-            goto 1234
-         end if
-         if (.not. initializeConnection(ecInstancePtr, connectionId, sourceItemId, targetItemPtr1)) then
-            goto 1234
-         end if
-         if (present(targetIndex)) then
-            if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
+         block
+            integer, dimension(:), allocatable :: sourceItemIds
+            integer :: idIdx
+            ! with nesting there can be more than one source item now. But the first is always the main one
+            ! The second is made for nesting to be able to interpolate z-values in time
+            sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
+            if (.not. allocated(sourceItemIds)) then
                goto 1234
             end if
-         end if
+
+            do idIdx = 1, size(sourceItemIds)
+               sourceItemId = sourceItemIds(idIdx)
+               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (.not. success) then
+                  goto 1234
+               end if
+               if (present(targetIndex)) then
+                  if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
+                     goto 1234
+                  end if
+               end if
+            end do
+
+            if (success) then
+               success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
+            end if
+            if (success) then
+               success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
+            end if
+
+         end block
       end if
 
       success = ecSetConnectionIndexWeights(ecInstancePtr, connectionId)
@@ -1610,7 +1629,7 @@ contains
          ! TODO: AvD: I'd rather have a full message stack that will combine EC + meteo + dflowfm, and any caller may print any pending messages.
          ! For now: Print the EC message stack here, and leave the rest to the caller.
          ! TODO: RL: the message below is from m_meteo::message, whereas timespace::getmeteoerror() returns timespace::errormessage. So now this message here is lost/never printed at call site.
-         message = dump_ec_message_stack(LEVEL_ERROR, callback_msg)
+         message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          ! Leave this concluding message for the caller to print or not. (via getmeteoerror())
       end if
       message = 'm_meteo::ec_addtimespacerelation: Error while initializing '''//trim(name)//''' from file: '''//trim(filename)//''''

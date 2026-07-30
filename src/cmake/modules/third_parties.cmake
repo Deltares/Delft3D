@@ -12,16 +12,8 @@ set(md5_module ${third_party_open_path}/md5/${cmake_directory})
 # metis
 set(metis_module ${third_party_open_path}/metis/${cmake_directory})
 
-# petsc
-if(WIN32)
-    set(petsc_module ${third_party_open_path}/petsc/${cmake_directory})
-endif(WIN32)
-
 # precice
 set(precice_module ${third_party_open_path}/precice)
-
-# triangle_c
-set(triangle_c_module ${third_party_open_path}/triangle/${cmake_directory})
 
 # libsigwatch
 set(libsigwatch_module ${third_party_open_path}/libsigwatch/${cmake_directory})

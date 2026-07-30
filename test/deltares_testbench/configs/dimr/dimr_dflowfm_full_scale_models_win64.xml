@@ -259,7 +259,7 @@
             </checks>
         </testCase>		
         <testCase name="e02_f150_c31_pudong-1d" ref="dimr_default">
-            <path version="2025-10-21T11:11:05.095000">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
+            <path version="2026-07-06T08:39:17.950000">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>

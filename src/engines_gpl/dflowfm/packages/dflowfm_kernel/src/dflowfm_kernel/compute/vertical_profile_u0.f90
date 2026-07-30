@@ -108,7 +108,7 @@ contains
          k = L - Lb + 1
          dzLw = 0.5_dp * (dzu(k + 1) + dzu(k))
 
-         vstress = (vicwwu(L) + vicoww) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
+         vstress = (vicwwu(L) + vicoww%get(LL)) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
 
          ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 

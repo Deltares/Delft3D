@@ -165,6 +165,27 @@
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
     </testCase>
+    <testCase name="dflowfm_nesting">
+        <programs>
+            <program ref="dimr">
+                <arguments>
+                    <argument>-m dimr_big.xml</argument>
+                </arguments>
+            </program>
+            <program ref="dimr">
+                <arguments>
+                    <argument>-m dimr_small.xml</argument>
+                </arguments>
+            </program>
+        </programs>
+        <location ref="reference_results" type="reference">
+            <from>win64</from>
+        </location>
+        <location ref="cases" type="input">
+            <from>.</from>
+        </location>
+        <maxRunTime>120.0</maxRunTime> <!-- seconds -->
+    </testCase>
   </defaultTestCases>
   <!--
   testCases

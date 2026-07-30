@@ -17,7 +17,7 @@ class netcdf_fortranRecipe(ConanFile):
     topics = ("netcdf", "fortran", "scientific", "data")
 
     # Binary configuration
-    settings = "os", "compiler", "build_type", "arch"
+    settings = "os", "compiler", "build_type", "arch", "fortran_compiler"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
 
