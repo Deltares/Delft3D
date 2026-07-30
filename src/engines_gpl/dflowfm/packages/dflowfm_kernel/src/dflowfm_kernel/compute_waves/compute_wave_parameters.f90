@@ -195,7 +195,6 @@ contains
             call wave_uorbrlabda()
          else
             hwav = 0.0_dp
-            twav = 0.0_dp
             mxwav = 0.0_dp
             mywav = 0.0_dp
             sbxwav = 0.0_dp
@@ -203,6 +202,8 @@ contains
 
             if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)) then
                call transform_wave_period_hp(twavcom, ndx, 1, JONSWAPgamma0, twav, ierror)
+            else
+               twav = 0.0_dp  
             end if
          end if
       end subroutine compute_offline_wave_parameters
