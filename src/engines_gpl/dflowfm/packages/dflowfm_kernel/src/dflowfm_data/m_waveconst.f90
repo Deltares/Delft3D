@@ -22,6 +22,7 @@ module m_waveconst
 
    ! Offline wave input quantities. Individual vector components have separate
    ! flags so initialization can report exactly which provider is missing.
+   ! parameters are powers of two so they can be combined into a single integer bitmask.
    integer, parameter :: WAVE_INPUT_SIGNIFICANT_HEIGHT = 1
    integer, parameter :: WAVE_INPUT_PERIOD = 2
    integer, parameter :: WAVE_INPUT_DIRECTION = 4

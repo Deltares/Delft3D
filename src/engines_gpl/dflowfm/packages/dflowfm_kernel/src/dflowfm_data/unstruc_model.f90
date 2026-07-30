@@ -515,7 +515,7 @@ contains
       use m_fm_icecover, only: fm_ice_read
       use m_f1dimp, only: f1dimppar
       use m_sediment
-      use m_waves, only: hwavuni, twavuni, phiwavuni, ftauw, offline_wave_input_requirements
+      use m_waves, only: hwavuni, twavuni, phiwavuni, ftauw, fwfac, fbreak, offline_wave_input_requirements
       use m_sedtrails_data, only: sedtrails_analysis
       use m_gui
       use m_output_config, only: scan_input_tree
