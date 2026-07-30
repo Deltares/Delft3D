@@ -1,9 +1,9 @@
 __pycache__/
 *.pyc
 
-# Generated code: produced by scripts/ (from the C header and mdu.json) during the build. A build is
-# required to use the package anyway (it also stages the native library), so these are not committed.
-src/dflowfm_io/mdu/model.py
+# Generated code: schema.py is produced by scripts/generate_schema.py (from mdu.json) during the
+# build. A build is required to use the package anyway (it also stages the native library), so it is
+# not committed. (model.py is hand-maintained and committed.)
 src/dflowfm_io/mdu/schema.py
 
 # Local scratch / spike scripts under tests/ — not part of the committed test suite.

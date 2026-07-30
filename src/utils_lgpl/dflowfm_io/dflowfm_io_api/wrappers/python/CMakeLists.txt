@@ -1,7 +1,7 @@
 # Builds the dflowfm_io Python wheel.
 #
 # Targets:
-#   dflowfm_io_bindings  -> runs the generator scripts (in ALL: generated code is not committed)
+#   dflowfm_io_bindings  -> runs generate_schema.py (in ALL: schema.py is not committed)
 #   dflowfm_io_stage_lib -> stages the dflowfm_io_api DLL (built one level up) into _lib/ (in ALL)
 #   dflowfm_io_wheel     -> `pip wheel` packages src/ + _lib/ into a .whl (NOT in ALL; on demand)
 #
@@ -9,27 +9,9 @@
 #     cmake --build <build-dir> --target dflowfm_io_wheel
 
 # Generated Python (not committed; produced by the build), so it can never drift from its source:
-#   mdu/model.py   <- generate_model.py, from the C header
 #   mdu/schema.py  <- generate_schema.py, from mdu.json
-# (base/bindings.py is hand-maintained, not generated.)
-cmake_path(
-	SET DFLOWFM_IO_HEADER NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../include/dflowfm_io_api/dflowfm_io_api.h"
-)
-
+# (base/bindings.py and mdu/model.py are hand-maintained, not generated.)
 set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator_base.py")
-set(DFLOWFM_IO_MODEL_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_model.py")
-set(DFLOWFM_IO_GENERATED
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/model.py")
-
-# Runs generate_model.py (re-runs only when a DEPENDS input changes).
-add_custom_command(
-	OUTPUT ${DFLOWFM_IO_GENERATED}
-	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_MODEL_GENERATOR}"
-	DEPENDS "${DFLOWFM_IO_MODEL_GENERATOR}" "${DFLOWFM_IO_GENERATOR_SUPPORT}" "${DFLOWFM_IO_HEADER}"
-	COMMENT "Generating dflowfm_io typed MduModel (Layer 1) from dflowfm_io_api.h"
-	VERBATIM
-)
-
 set(DFLOWFM_IO_SCHEMA_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_schema.py")
 cmake_path(SET DFLOWFM_IO_MDU_JSON NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../../json/mdu.json")
 set(DFLOWFM_IO_SCHEMA "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/schema.py")
@@ -43,9 +25,9 @@ add_custom_command(
 	VERBATIM
 )
 
-# Regenerate the Python code. In ALL (the generated files are not committed, so a default build must
-# produce them); also buildable on its own with --target dflowfm_io_bindings.
-add_custom_target(dflowfm_io_bindings ALL DEPENDS ${DFLOWFM_IO_GENERATED} "${DFLOWFM_IO_SCHEMA}")
+# Regenerate the generated Python (schema.py). In ALL (it is not committed, so a default build must
+# produce it); also buildable on its own with --target dflowfm_io_bindings.
+add_custom_target(dflowfm_io_bindings ALL DEPENDS "${DFLOWFM_IO_SCHEMA}")
 
 # Stage the built DLL into _lib/ so `pip wheel` bundles it. A dependent target, not a POST_BUILD on
 # dflowfm_io_api: CMake forbids attaching POST_BUILD to a target defined in another directory.
