@@ -523,20 +523,18 @@ module m_unstruc_netcdf_data
    subroutine default_unstruc_netcdf_data()
       implicit none
 
-      type(t_unc_mapids) :: default_mapids
-
-      if (associated(flowgeom_map)) then
-         call reset_fm_flowgeom(flowgeom_map)
-         if (.not. associated(flowgeom_map, flowgeom_full)) then
-            deallocate(flowgeom_map)
-         end if
+      call reset_fm_flowgeom(flowgeom_map)
+      if (associated(flowgeom_map) .and. .not. associated(flowgeom_map, flowgeom_full)) then
+         deallocate(flowgeom_map)
+      else         
+         nullify(flowgeom_map)
       end if
-      nullify(flowgeom_map)
       call reset_fm_flowgeom(flowgeom_full)
 
-      mapids = default_mapids
+      mapids = t_unc_mapids()
       ihisfile = 0
       face_z_stdname = "face_z"
+
    end subroutine default_unstruc_netcdf_data
 
 end module m_unstruc_netcdf_data
