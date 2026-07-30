@@ -620,11 +620,13 @@ contains
             ! Correct for this by setting values to zero
             do k = 1, ndx
                if (ieee_is_nan(hwavcom(k)) .or. &
+                   ieee_is_nan(twavcom(k)) .or. &
                    ieee_is_nan(phiwav(k)) .or. &
                    ieee_is_nan(sxwav(k)) .or. &
                    ieee_is_nan(sywav(k)) .or. &
                    ieee_is_nan(sbxwav(k)) .or. &
                    ieee_is_nan(sbywav(k)) .or. &
+                   ieee_is_nan(distot(k)) .or. &
                    ieee_is_nan(dsurf(k)) .or. &
                    ieee_is_nan(dwcap(k)) .or. &
                    ieee_is_nan(mxwav(k)) .or. &
@@ -636,6 +638,7 @@ contains
                   sywav(k) = 0.0_dp
                   sbxwav(k) = 0.0_dp
                   sbywav(k) = 0.0_dp
+                  distot(k) = 0.0_dp
                   dsurf(k) = 0.0_dp
                   dwcap(k) = 0.0_dp
                   mxwav(k) = 0.0_dp
@@ -771,7 +774,25 @@ contains
    !> Read only the offline wave quantities required by the active configuration.
    subroutine set_offline_wave_parameters()
 
-      ! The ec module decides which wave quantities are required based on the active configuration. Only those quantities are read from the offline wave file.
+      ! Clear all offline source and intermediate fields before asking EC to
+      ! populate the required subset. This prevents values from a previously
+      ! wet or covered cell surviving when the current external field does not
+      ! cover it.
+      hwavcom(:) = 0.0_dp
+      twavcom(:) = 0.0_dp
+      twav(:) = 0.0_dp
+      phiwav(:) = 270.0_dp
+      sxwav(:) = 0.0_dp
+      sywav(:) = 0.0_dp
+      sbxwav(:) = 0.0_dp
+      sbywav(:) = 0.0_dp
+      distot(:) = 0.0_dp
+      dsurf(:) = 0.0_dp
+      dwcap(:) = 0.0_dp
+      mxwav(:) = 0.0_dp
+      mywav(:) = 0.0_dp
+      uorbwav(:) = 0.0_dp
+
       call get_required_offline_wave_value(WAVE_INPUT_SIGNIFICANT_HEIGHT, item_hrms)
       call get_required_offline_wave_value(WAVE_INPUT_PERIOD, item_tp)
       call get_required_offline_wave_value(WAVE_INPUT_DIRECTION, item_dir)
