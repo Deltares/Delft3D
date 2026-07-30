@@ -20,17 +20,9 @@ namespace dflowfm_io
     /// whose type is determined by the @ref MduSchema.
     struct MduData
     {
-        /// @brief Creates an @ref MduData populated with the default values defined by the given @ref MduSchema.
-        /// @param schema The schema whose default property values are used to populate the result.
-        /// @return An @ref MduData containing one entry per property that defines a default value.
-        /// @throws std::logic_error if a property's default value cannot be converted to its
-        ///         declared @ref ValueType.
-        static MduData CreateFromSchema(const MduSchema& schema);
-
-        /// @brief Creates an @ref MduData from a raw key-value mapping.
+        /// @brief Constructs an @ref MduData from a raw key-value mapping.
         /// @param raw_data A mapping of fully qualified property keys to their values.
-        /// @return An @ref MduData containing the provided key-value pairs.
-        static MduData CreateFromRawData(std::unordered_map<std::string, Value> raw_data);
+        explicit MduData(std::unordered_map<std::string, Value> raw_data) : data_entries(std::move(raw_data)) {}
 
         /// @brief Returns the number of stored key-value pairs.
         /// @return The number of entries in the storage.

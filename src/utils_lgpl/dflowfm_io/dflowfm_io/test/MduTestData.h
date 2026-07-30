@@ -273,7 +273,8 @@ namespace dflowfm_io::test
 
     inline MduData TestMduData()
     {
-        MduData mduData = MduData::CreateFromSchema(TestSchema());
+        const MduSchema& schema = TestSchema();
+        MduData mduData(schema.CreateDefaultValues());
         return mduData;
     }
 

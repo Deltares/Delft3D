@@ -555,7 +555,7 @@ namespace dflowfm_io::test
             filteredKeyValuePairs[std::string(key)] = value;
         });
 
-        const MduData mduData = MduData::CreateFromRawData(std::move(filteredKeyValuePairs));
+        const MduData mduData(std::move(filteredKeyValuePairs));
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 

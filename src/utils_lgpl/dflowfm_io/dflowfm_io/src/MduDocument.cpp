@@ -27,7 +27,7 @@ namespace dflowfm_io
     };
 
     MduDocument::MduDocument(const MduSchema& schema)
-        : schema(schema), mduData(MduData::CreateFromSchema(schema)) {}
+        : schema(schema), mduData(schema.CreateDefaultValues()) {}
 
     void MduDocument::Load(std::istream& in)
     {

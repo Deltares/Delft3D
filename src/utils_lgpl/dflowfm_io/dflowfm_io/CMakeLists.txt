@@ -27,7 +27,6 @@ add_library(dflowfm_io STATIC
     include/dflowfm_io/StringUtils.h
 
     src/IssueReport.cpp
-    src/MduData.cpp
     src/MduDataConverter.cpp
     src/MduDocument.cpp
     src/MduSchema.cpp

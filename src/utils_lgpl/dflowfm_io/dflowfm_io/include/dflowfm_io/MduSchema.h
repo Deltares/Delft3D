@@ -166,6 +166,12 @@ namespace dflowfm_io
         /// @return True if the property or the matching enum value is obsolete.
         bool IsObsolete(const PropertySchema& propertySchema, const std::string& rawValue) const;
 
+        /// @brief Builds the default key-value data for this schema.
+        /// @return A mapping of fully qualified property keys to their default @ref Value.
+        /// @throws std::logic_error if a property's default value cannot be converted to its
+        ///         declared @ref ValueType.
+        std::unordered_map<std::string, Value> CreateDefaultValues() const;
+
     private:
         std::string description;
         std::vector<SectionSchema> sections;

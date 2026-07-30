@@ -64,7 +64,7 @@ namespace dflowfm_io
     std::pair<MduData, IssueReport> MduDataConverter::Convert(const ini::IniData& iniData, const MduSchema& schema)
     {
         IssueReport report = MduValidator::Validate(iniData, schema);
-        MduData mduData = MduData::CreateFromSchema(schema);
+        MduData mduData(schema.CreateDefaultValues());
 
         for (const auto& sectionSchema : schema.Sections())
         {

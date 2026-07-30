@@ -246,6 +246,104 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
+    // CreateDefaultValues
+    // -------------------------------------------------------------------------
+
+    TEST(MduSchemaTest, CreateDefaultValues_PopulatesEntries)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        EXPECT_FALSE(entries.empty());
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_ContainsAllNonObsoleteProperties)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        for (const auto& sectionSchema : schema.Sections())
+            if (sectionSchema.status.type != StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
+                    if (!schema.IsObsolete(propertySchema, propertySchema.default_value))
+                    {
+                        const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                        EXPECT_TRUE(entries.contains(key)) << "Missing key: " << key;
+                    }
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_DoesNotContainPropertiesFromObsoleteSections)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        for (const auto& sectionSchema : schema.Sections())
+            if (sectionSchema.status.type == StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_FALSE(entries.contains(key));
+                }
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_DoesNotContainObsoleteProperties)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        for (const auto& sectionSchema : schema.Sections())
+            for (const auto& propertySchema : sectionSchema.properties)
+                if (schema.IsObsolete(propertySchema, propertySchema.default_value))
+                {
+                    const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                    EXPECT_FALSE(entries.contains(key));
+                }
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_IntPropertyHasCorrectDefaultValue)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        const std::string key = FormatKey("numerics", "maxNonLinearIterations");
+        EXPECT_EQ(std::get<int>(entries.at(key)), 100);
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_FloatPropertyHasCorrectDefaultValue)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        const std::string key = FormatKey("geometry", "bedLevUni");
+        EXPECT_DOUBLE_EQ(std::get<double>(entries.at(key)), -5.0);
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_StringPropertyHasCorrectDefaultValue)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        const std::string key = FormatKey("general", "fileVersion");
+        EXPECT_EQ(std::get<std::string>(entries.at(key)), "1.09");
+    }
+
+    TEST(MduSchemaTest, CreateDefaultValues_PropertyWithoutSchemaDefault_GetsDummyDefault)
+    {
+        const MduSchema& schema = TestSchema();
+        const auto entries = schema.CreateDefaultValues();
+
+        for (const auto& sectionSchema : schema.Sections())
+            if (sectionSchema.status.type != StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
+                    if (propertySchema.default_value.empty() && propertySchema.status.type != StatusType::Obsolete)
+                    {
+                        const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                        EXPECT_TRUE(entries.contains(key))
+                            << "Expected dummy default for property without schema default: " << key;
+                    }
+    }
+
+    // -------------------------------------------------------------------------
     // MDU_SCHEMA sanity checks
     // -------------------------------------------------------------------------
 
