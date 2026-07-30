@@ -1119,7 +1119,7 @@ contains
             end if
             res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
          else
-            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
                ''': ['//group_name//']. Check previous log lines for details.'
             call err_flush()
          end if
