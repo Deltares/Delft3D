@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 project(dflowfm_io_solution LANGUAGES CXX)
 
+# enable project files grouping by folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 enable_testing()
 
 set(CMAKE_CXX_STANDARD 20)
