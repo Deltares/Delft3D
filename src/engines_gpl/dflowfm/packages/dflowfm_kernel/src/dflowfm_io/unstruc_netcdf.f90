@@ -11272,9 +11272,9 @@ contains
          if (ierr /= dfm_noerr) then
             ierr = dfm_noerr
             call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
-            if (iand(unc_writeopts,UG_WRITE_LATLON) > 0) then
+            if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
                call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if projection string is unknown. Switched off.')
-               unc_writeopts = ixor(unc_writeopts,UG_WRITE_LATLON)
+               unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
             end if
          end if
       end if
