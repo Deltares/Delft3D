@@ -27,44 +27,54 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_get_surface_temperature
+module m_get_surface_salinity
    use precision_basics, only: dp
    use m_flowgeom, only: ndx
    use m_get_kbot_ktop, only: getkbotktop
-   use m_transport, only: constituents, itemp
-   use m_flow, only: tem1
-   use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_NONE
+   use m_flow, only: sa1
+   use m_transport, only: constituents, isalt
+   use m_flowparameters, only: jasal
    use MessageHandling, only: mess, LEVEL_ERROR
    
    implicit none
 
-   public :: get_surface_temperature
+   public :: get_surface_salinity
+   public :: get_salinity_reduction_factor_saturation_humidity
 
    contains
 
-   !> Returns the surface-layer temperature for all horizontal cells.
-   subroutine get_surface_temperature(surface_temperature, initialization)
-      real(kind=dp), intent(out) :: surface_temperature(ndx)   
+   !> Returns the surface-layer salinity for all horizontal cells.
+   subroutine get_surface_salinity(surface_salinity, initialization)
+      real(kind=dp), intent(out) :: surface_salinity(ndx)
       logical, intent(in) :: initialization !< initialization phase
       
-      real(kind=dp), dimension(:), pointer :: temperature_ptr
+      real(kind=dp), dimension(:), pointer :: sal_ptr
       integer :: n, kb, kt
       
-      if (temperature_model == TEMPERATURE_MODEL_NONE) then
-         call mess(LEVEL_ERROR, 'get_surface_temperature: Temperature is turned off in mdu')
+      if (jasal == 0) then
+         call mess(LEVEL_ERROR, 'get_surface_salinity: Salinity is turned off in mdu')
          return
       end if
-
+          
       if (initialization) then
-         temperature_ptr => tem1
+         sal_ptr => sa1
       else
-         temperature_ptr => constituents(itemp,:)
+         sal_ptr => constituents(isalt, :)
       end if
       
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
-         surface_temperature(n) = temperature_ptr(kt)
+         surface_salinity(n) = sal_ptr(kt)
       end do
-   end subroutine get_surface_temperature
 
-end module m_get_surface_temperature
+   end subroutine get_surface_salinity   
+
+   !> Returns the salinity reduction factor of saturation humidity.
+   elemental subroutine get_salinity_reduction_factor_saturation_humidity(surface_salinity, salinity_reduction_factor_saturation_humidity)
+      real(kind=dp), intent(in) :: surface_salinity
+      real(kind=dp), intent(out) :: salinity_reduction_factor_saturation_humidity
+      
+      salinity_reduction_factor_saturation_humidity = max(0.0_dp, min(1.0_dp, 1.0_dp - 5.30e-4_dp * max(0.0_dp, surface_salinity)))
+   end subroutine get_salinity_reduction_factor_saturation_humidity
+
+end module m_get_surface_salinity
