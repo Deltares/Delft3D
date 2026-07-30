@@ -528,56 +528,44 @@ contains
 
       call readyy('geominit-NODELINKS         ', 0.5_dp)
 
-      if (allocated(ln)) then
-         deallocate (ln, lncn, bob, bob0, dx, dxi, wu, wui, kcu, csu, snu, acl, iadv, teta, wu_mor, wu1D2D, hh1D2D)
-      end if
-      if (allocated(ibot)) then
-         deallocate (ibot)
-      end if
-      allocate (ln(2, lnx), stat=ierr)
+      call realloc(ln, [2, lnx], keepExisting=.false., stat=ierr)
       call aerr('ln   (2,lnx)', ierr, 2 * lnx)
-      allocate (lncn(2, lnx), stat=ierr)
+      call realloc(lncn, [2, lnx], keepExisting=.false., stat=ierr)
       call aerr('lncn (2,lnx)', ierr, 2 * lnx)
-      allocate (bob(2, lnx), stat=ierr)
+      call realloc(bob, [2, lnx], keepExisting=.false., stat=ierr, fill=0.0_dp)
       call aerr('bob  (2,lnx)', ierr, 2 * lnx)
-      bob = 0.0_dp
-      allocate (bob0(2, lnx), stat=ierr)
+      call realloc(bob0, [2, lnx], keepExisting=.false., stat=ierr, fill=0.0_dp)
       call aerr('bob0  (2,lnx)', ierr, 2 * lnx)
-      bob0 = 0.0_dp
-      allocate (dx(lnx), stat=ierr)
+      call realloc(dx, lnx, keepExisting=.false., stat=ierr)
       call aerr('dx   (  lnx)', ierr, lnx)
-      allocate (dxi(lnx), stat=ierr)
+      call realloc(dxi, lnx, keepExisting=.false., stat=ierr)
       call aerr('dxi  (  lnx)', ierr, lnx)
-      allocate (wu(lnx), stat=ierr)
+      call realloc(wu, lnx, keepExisting=.false., stat=ierr)
       call aerr('wu   (  lnx)', ierr, lnx)
-      allocate (wu_mor(lnx), stat=ierr)
+      call realloc(wu_mor, lnx, keepExisting=.false., stat=ierr)
       call aerr('wu_mor (  lnx)', ierr, lnx)
-      allocate (wui(lnx), stat=ierr)
+      call realloc(wui, lnx, keepExisting=.false., stat=ierr)
       call aerr('wui  (  lnx)', ierr, lnx)
-      allocate (wu1D2D(lnx1D), stat=ierr)
+      call realloc(wu1D2D, lnx1D, keepExisting=.false., stat=ierr)
       call aerr('wu1D2D(lnx1D)', ierr, lnx1D)
-      allocate (hh1D2D(lnx1D), stat=ierr)
+      call realloc(hh1D2D, lnx1D, keepExisting=.false., stat=ierr)
       call aerr('hh1D2D(lnx1D)', ierr, lnx1D)
-      allocate (kcu(lnx), stat=ierr)
+      call realloc(kcu, lnx, keepExisting=.false., stat=ierr, fill=0)
       call aerr('kcu  (  lnx)', ierr, lnx)
-      kcu = 0
-      allocate (csu(lnx), stat=ierr)
+      call realloc(csu, lnx, keepExisting=.false., stat=ierr)
       call aerr('csu  (  lnx)', ierr, lnx)
-      allocate (snu(lnx), stat=ierr)
+      call realloc(snu, lnx, keepExisting=.false., stat=ierr)
       call aerr('snu  (  lnx)', ierr, lnx)
-      allocate (acl(lnx), stat=ierr)
+      call realloc(acl, lnx, keepExisting=.false., stat=ierr)
       call aerr('acl  (  lnx)', ierr, lnx)
       allocate (acn(2, lnx), stat=ierr) ! will be deallocated after cornerweights
       call aerr('acn  (2,lnx)', ierr, lnx)
-      allocate (iadv(lnx), stat=ierr)
+      call realloc(iadv, lnx, keepExisting=.false., stat=ierr, fill=0)
       call aerr('iadv   (lnx)', ierr, lnx)
-      iadv = 0
-      allocate (teta(lnx), stat=ierr)
+      call realloc(teta, lnx, keepExisting=.false., stat=ierr, fill=0.0_dp)
       call aerr('teta   (lnx)', ierr, lnx)
-      teta = 0
-      allocate (ibot(lnx), stat=ierr)
+      call realloc(ibot, lnx, keepExisting=.false., stat=ierr, fill=0)
       call aerr('ibot   (lnx)', ierr, lnx)
-      ibot = 0
 
       call realloc(ln0, [2, lnx])
       call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
