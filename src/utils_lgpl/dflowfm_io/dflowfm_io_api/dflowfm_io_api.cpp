@@ -239,7 +239,22 @@ dflowfm_io_result_t mdu_get_datetime(mdu_handle_t handle, const char* key, int64
     });
 }
 
-dflowfm_io_result_t mdu_get_enum(mdu_handle_t handle, const char* key, int32_t* enum_out)
+dflowfm_io_result_t mdu_get_string_enum(mdu_handle_t handle, const char* key, const char** enum_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(enum_out);
+
+    static std::string stored_enum;
+
+    return exceptionToResult([&]()
+    {
+        stored_enum = asDocument(handle)->GetValue<dflowfm_io::StringEnumValue>(key).value;
+        *enum_out = stored_enum.c_str();
+    });
+}
+
+dflowfm_io_result_t mdu_get_int_enum(mdu_handle_t handle, const char* key, int32_t* enum_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -247,7 +262,7 @@ dflowfm_io_result_t mdu_get_enum(mdu_handle_t handle, const char* key, int32_t* 
 
     return exceptionToResult([&]()
     {
-        *enum_out = asDocument(handle)->GetValue<dflowfm_io::EnumValue>(key).value;
+        *enum_out = asDocument(handle)->GetValue<dflowfm_io::IntEnumValue>(key).value;
     });
 }
 
@@ -368,14 +383,26 @@ dflowfm_io_result_t mdu_set_datetime(mdu_handle_t handle, const char* key, int64
     });
 }
 
-dflowfm_io_result_t mdu_set_enum(mdu_handle_t handle, const char* key, int32_t enum_value)
+dflowfm_io_result_t mdu_set_string_enum(mdu_handle_t handle, const char* key, const char* enum_value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(enum_value);
+
+    return exceptionToResult([&]()
+    {
+        asDocument(handle)->SetValue(key, dflowfm_io::StringEnumValue{std::string(enum_value)});
+    });
+}
+
+dflowfm_io_result_t mdu_set_int_enum(mdu_handle_t handle, const char* key, int32_t enum_value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, dflowfm_io::EnumValue{enum_value});
+        asDocument(handle)->SetValue(key, dflowfm_io::IntEnumValue{enum_value});
     });
 }
 

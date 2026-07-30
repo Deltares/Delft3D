@@ -7,9 +7,9 @@ the typed, discoverable surface over the stringly-typed get/set of Layer 1.
 Run:
     python scripts/generate_schema.py
 
-Enum handling: enum/intenum properties are surfaced by their integer value via the C ABI's
-mdu_get_enum/mdu_set_enum (MduModel.get_enum/set_enum). The int<->name mapping stays in the C++
-core; it is not duplicated here.
+Enum handling: string enums are surfaced by name via mdu_get_string_enum/mdu_set_string_enum
+(MduModel.get_string_enum/set_string_enum, returning str); intenums by integer value via
+mdu_get_int_enum/mdu_set_int_enum. The int<->name mapping stays in the C++ core, not duplicated here.
 
 Naming: property names are the MDU keys. Keys that are not valid Python identifiers are sanitised
 (digit-leading keys get a leading underscore; keys colliding with a Python keyword get a trailing
@@ -65,10 +65,10 @@ class SchemaRenderer:
         "datetime": ("get_datetime", "set_datetime", "datetime", "datetime"),
         "list[path]": ("get_path_list", "set_path_list", "list[Path]", "list[Path | str]"),
         "list[float]": ("get_double_list", "set_double_list", "list[float]", "list[float]"),
-        # Both enum kinds are surfaced by their integer value; the int<->name mapping lives in the
-        # C++ core (there is no name-based enum accessor in the C ABI).
-        "enum": ("get_enum", "set_enum", "int", "int"),
-        "intenum": ("get_enum", "set_enum", "int", "int"),
+        # A string enum carries labels, surfaced by name (get_string_enum); an intenum has no labels,
+        # surfaced by its integer value (get_int_enum). The int<->name mapping lives in the C++ core.
+        "enum": ("get_string_enum", "set_string_enum", "str", "str"),
+        "intenum": ("get_int_enum", "set_int_enum", "int", "int"),
     }
 
     def __init__(self, json_name: str, names: NameSanitizer | None = None) -> None:

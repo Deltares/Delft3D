@@ -31,10 +31,10 @@ class TestMduSchema(unittest.TestCase):
         self.assertIsInstance(doc.schema.geometry.netFile, Path)
         self.assertIsInstance(doc.schema.time.refDate, datetime)
 
-    def test_enum_property_reads_int(self):
-        # tUnit is an enum; Layer 2 surfaces its integer value (the C ABI has no name accessor).
+    def test_enum_property_reads_name(self):
+        # tUnit is a string enum; Layer 2 surfaces its name via get_string_enum.
         doc = _loaded_doc()
-        self.assertIsInstance(doc.schema.time.tUnit, int)
+        self.assertIsInstance(doc.schema.time.tUnit, str)
 
     def test_property_round_trips_through_schema(self):
         doc = _loaded_doc()

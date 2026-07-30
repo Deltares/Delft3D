@@ -147,7 +147,8 @@ public sealed class MduDocument : IDisposable
             MduValueType.String => _api.GetString(key),
             MduValueType.Path => _api.GetPath(key),
             MduValueType.DateTime => _api.GetDateTime(key),
-            MduValueType.Enum => _api.GetEnum(key),
+            MduValueType.StringEnum => _api.GetStringEnum(key),
+            MduValueType.IntEnum => _api.GetIntEnum(key),
             MduValueType.DoubleList => _api.GetDoubleList(key),
             MduValueType.StringList => _api.GetStringList(key),
             MduValueType.PathList => _api.GetPathList(key),
@@ -188,7 +189,8 @@ public sealed class MduDocument : IDisposable
             case MduValueType.String: _api.SetString(key, (string)value); break;
             case MduValueType.Path: _api.SetPath(key, (string)value); break;
             case MduValueType.DateTime: _api.SetDateTime(key, (DateTime)value); break;
-            case MduValueType.Enum: _api.SetEnum(key, (int)value); break;
+            case MduValueType.StringEnum: _api.SetStringEnum(key, (string)value); break;
+            case MduValueType.IntEnum: _api.SetIntEnum(key, (int)value); break;
             case MduValueType.DoubleList: _api.SetDoubleList(key, (IEnumerable<double>)value); break;
             case MduValueType.StringList: _api.SetStringList(key, (IEnumerable<string>)value); break;
             case MduValueType.PathList: _api.SetPathList(key, (IEnumerable<string>)value); break;

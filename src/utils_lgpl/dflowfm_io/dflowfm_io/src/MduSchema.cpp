@@ -35,18 +35,13 @@ namespace dflowfm_io
 
     const EnumValueSchema* MduSchema::FindEnumValue(const PropertySchema& propertySchema, const std::string& rawValue) const
     {
-        if (propertySchema.value_type != ValueType::Enum && propertySchema.value_type != ValueType::IntEnum)
+        if (propertySchema.value_type != ValueType::StringEnum && propertySchema.value_type != ValueType::IntEnum)
             return nullptr;
 
         for (const auto& enumValueSchema : propertySchema.enum_values)
-        {
-            const std::string enumValue = propertySchema.value_type == ValueType::IntEnum
-                                              ? std::to_string(enumValueSchema.value)
-                                              : enumValueSchema.label;
-
-            if (rawValue == enumValue) return &enumValueSchema;
-        }
-
+            if (iequals(rawValue, enumValueSchema.value))
+                return &enumValueSchema;
+                
         return nullptr;
     }
 

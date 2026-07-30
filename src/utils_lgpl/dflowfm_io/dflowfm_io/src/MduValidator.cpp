@@ -21,6 +21,9 @@ namespace dflowfm_io
     {
         for (const auto& sectionSchema : schema.Sections())
         {
+            if (sectionSchema.status.type == StatusType::Obsolete)
+                continue;
+
             if (!iniData.HasSection(sectionSchema.name))
             {
                 if (sectionSchema.required) report.AddError("Required section [{}] is missing.", sectionSchema.name);
@@ -71,6 +74,9 @@ namespace dflowfm_io
                 continue;
             }
 
+            if (sectionSchema->status.type == StatusType::Obsolete)
+                continue;
+
             for (const auto& property : section)
             {
                 const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
@@ -85,6 +91,22 @@ namespace dflowfm_io
     {
         for (const auto& section : iniData)
         {
+            const auto* sectionSchema = schema.FindSection(section.GetName());
+            if (!sectionSchema)
+                continue;
+
+            if (sectionSchema->status.type == StatusType::Obsolete)
+            {
+                report.AddError(section.GetLineNumber(), "Section [{}] is obsolete since {}. {}",
+                                section.GetName(), sectionSchema->status.since, sectionSchema->status.comment);
+            }
+
+            if (sectionSchema->status.type == StatusType::Deprecated)
+            {
+                report.AddWarning(section.GetLineNumber(), "Section [{}] is deprecated. {}",
+                                  section.GetName(), sectionSchema->status.comment);
+            }
+
             for (const auto& property : section)
             {
                 const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
@@ -99,14 +121,15 @@ namespace dflowfm_io
                     continue;
                 }
 
-                if (propertySchema->status.type == StatusType::Deprecated)
+                if (propertySchema->status.type == StatusType::Deprecated &&
+                    sectionSchema->status.type != StatusType::Obsolete)
                 {
                     report.AddWarning(property.GetLineNumber(), "Property [{}].{} is deprecated. {}",
                                       section.GetName(), property.GetKey(), propertySchema->status.comment);
                     continue;
                 }
 
-                if (propertySchema->value_type != ValueType::Enum && propertySchema->value_type != ValueType::IntEnum)
+                if (propertySchema->value_type != ValueType::StringEnum && propertySchema->value_type != ValueType::IntEnum)
                     continue;
 
                 if (!property.HasValue())
@@ -117,13 +140,18 @@ namespace dflowfm_io
                     continue;
 
                 if (enumValueSchema->status.type == StatusType::Obsolete)
+                {
                     report.AddError(property.GetLineNumber(), "Property [{}].{}={} is obsolete since {}. {}",
                                     section.GetName(), property.GetKey(), property.GetValue(),
                                     enumValueSchema->status.since, enumValueSchema->status.comment);
-                else if (enumValueSchema->status.type == StatusType::Deprecated)
+                }
+                else if (enumValueSchema->status.type == StatusType::Deprecated &&
+                         sectionSchema->status.type != StatusType::Obsolete)
+                {
                     report.AddWarning(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
                                       section.GetName(), property.GetKey(), property.GetValue(),
                                       enumValueSchema->status.comment);
+                }
             }
         }
     }

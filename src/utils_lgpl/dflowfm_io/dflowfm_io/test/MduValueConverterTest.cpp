@@ -29,17 +29,10 @@ namespace dflowfm_io::test
             return schema;
         }
 
-        PropertySchema MakeEnumSchema(std::vector<std::pair<int, std::string>> enumValues)
+        PropertySchema MakeEnumSchema(ValueType type, std::vector<std::string> enumValues)
         {
-            PropertySchema schema = MakeSchema(ValueType::Enum);
-            for (auto& [value, label] : enumValues) schema.enum_values.push_back({value, label});
-            return schema;
-        }
-
-        PropertySchema MakeIntEnumSchema(std::vector<int> enumValues)
-        {
-            PropertySchema schema = MakeSchema(ValueType::IntEnum);
-            for (int value : enumValues) schema.enum_values.push_back({value});
+            PropertySchema schema = MakeSchema(type);
+            for (const auto& value : enumValues) schema.enum_values.push_back({value});
             return schema;
         }
     } // namespace
@@ -53,8 +46,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::String);
         auto result = MduValueConverter::FromString(schema, "hello");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::string>(*result), "hello");
+        EXPECT_EQ(std::get<std::string>(result), "hello");
     }
 
     // -------------------------------------------------------------------------
@@ -66,16 +58,14 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Int);
         auto result = MduValueConverter::FromString(schema, "42");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<int>(*result), 42);
+        EXPECT_EQ(std::get<int>(result), 42);
     }
 
-    TEST(MduValueConverterTest, FromString_Int_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_Int_InvalidValue_ThrowsInvalidArgument)
     {
         auto schema = MakeSchema(ValueType::Int);
-        auto result = MduValueConverter::FromString(schema, "not_an_int");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_an_int"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -87,8 +77,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Float);
         auto result = MduValueConverter::FromString(schema, "3.14");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_DOUBLE_EQ(std::get<double>(*result), 3.14);
+        EXPECT_DOUBLE_EQ(std::get<double>(result), 3.14);
     }
 
     TEST(MduValueConverterTest, FromString_Float_FortranExponent_ReturnsCorrectValue)
@@ -96,16 +85,14 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Float);
         auto result = MduValueConverter::FromString(schema, "1.0d-3");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_DOUBLE_EQ(std::get<double>(*result), 1.0e-3);
+        EXPECT_DOUBLE_EQ(std::get<double>(result), 1.0e-3);
     }
 
-    TEST(MduValueConverterTest, FromString_Float_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_Float_InvalidValue_ThrowsInvalidArgument)
     {
         auto schema = MakeSchema(ValueType::Float);
-        auto result = MduValueConverter::FromString(schema, "not_a_float");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_float"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -117,8 +104,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::IntBool);
         auto result = MduValueConverter::FromString(schema, "0");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<bool>(*result), false);
+        EXPECT_EQ(std::get<bool>(result), false);
     }
 
     TEST(MduValueConverterTest, FromString_IntBool_One_ReturnsTrue)
@@ -126,16 +112,14 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::IntBool);
         auto result = MduValueConverter::FromString(schema, "1");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<bool>(*result), true);
+        EXPECT_EQ(std::get<bool>(result), true);
     }
 
-    TEST(MduValueConverterTest, FromString_IntBool_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_IntBool_InvalidValue_ThrowsInvalidArgument)
     {
         auto schema = MakeSchema(ValueType::IntBool);
-        auto result = MduValueConverter::FromString(schema, "not_a_bool");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_bool"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -147,8 +131,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::Path);
         auto result = MduValueConverter::FromString(schema, "some/path/file.txt");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::filesystem::path>(*result), std::filesystem::path("some/path/file.txt"));
+        EXPECT_EQ(std::get<std::filesystem::path>(result), std::filesystem::path("some/path/file.txt"));
     }
 
     // -------------------------------------------------------------------------
@@ -164,8 +147,7 @@ namespace dflowfm_io::test
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
             std::chrono::hours{12};
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), expected);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), expected);
     }
 
     TEST(MduValueConverterTest, FromString_DateTime_DateFormat_ReturnsCorrectValue)
@@ -176,34 +158,30 @@ namespace dflowfm_io::test
         const auto expected =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), expected);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), expected);
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_DateFormat_WithTimeComponent_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_DateTime_DateFormat_WithTimeComponent_ThrowsInvalidArgument)
     {
         // Schema expects CompactDateOnly, but the value carries a time component.
         auto schema = MakeSchema(ValueType::DateTime, FormatType::Date);
-        auto result = MduValueConverter::FromString(schema, "20200130120000");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "20200130120000"), std::invalid_argument);
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_CompactDateTime_DateOnlyValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_DateTime_CompactDateTime_DateOnlyValue_ThrowsInvalidArgument)
     {
         // Schema expects CompactDateTime, but the value only carries a date.
         auto schema = MakeSchema(ValueType::DateTime);
-        auto result = MduValueConverter::FromString(schema, "20200130");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "20200130"), std::invalid_argument);
     }
 
-    TEST(MduValueConverterTest, FromString_DateTime_InvalidValue_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_DateTime_InvalidValue_ThrowsInvalidArgument)
     {
         auto schema = MakeSchema(ValueType::DateTime);
-        auto result = MduValueConverter::FromString(schema, "not_a_date");
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_date"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -215,8 +193,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::StringList);
         auto result = MduValueConverter::FromString(schema, "a b c");
 
-        ASSERT_TRUE(result.has_value());
-        auto values = std::get<std::vector<std::string>>(*result);
+        auto values = std::get<std::vector<std::string>>(result);
         ASSERT_EQ(values.size(), 3u);
         EXPECT_EQ(values[0], "a");
         EXPECT_EQ(values[1], "b");
@@ -228,8 +205,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::FloatList);
         auto result = MduValueConverter::FromString(schema, "1.0 2.0 3.0");
 
-        ASSERT_TRUE(result.has_value());
-        auto values = std::get<std::vector<double>>(*result);
+        auto values = std::get<std::vector<double>>(result);
         ASSERT_EQ(values.size(), 3u);
         EXPECT_DOUBLE_EQ(values[0], 1.0);
         EXPECT_DOUBLE_EQ(values[1], 2.0);
@@ -241,8 +217,7 @@ namespace dflowfm_io::test
         auto schema = MakeSchema(ValueType::PathList);
         auto result = MduValueConverter::FromString(schema, "a.txt b.txt");
 
-        ASSERT_TRUE(result.has_value());
-        auto values = std::get<std::vector<std::filesystem::path>>(*result);
+        auto values = std::get<std::vector<std::filesystem::path>>(result);
         ASSERT_EQ(values.size(), 2u);
         EXPECT_EQ(values[0], std::filesystem::path("a.txt"));
         EXPECT_EQ(values[1], std::filesystem::path("b.txt"));
@@ -252,55 +227,49 @@ namespace dflowfm_io::test
     // FromString — Enum types
     // -------------------------------------------------------------------------
 
-    TEST(MduValueConverterTest, FromString_Enum_ValidName_ReturnsCorrectValue)
+    TEST(MduValueConverterTest, FromString_StringEnum_ValidName_ReturnsCorrectValue)
     {
-        auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}, {2, "Implicit"}});
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit", "Implicit"});
         auto result = MduValueConverter::FromString(schema, "Explicit");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+        EXPECT_EQ(std::get<StringEnumValue>(result).value, "Explicit");
     }
 
-    TEST(MduValueConverterTest, FromString_Enum_NameCaseInsensitive_ReturnsCorrectValue)
+    TEST(MduValueConverterTest, FromString_StringEnum_NameCaseInsensitive_ReturnsCorrectValue)
     {
-        auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}});
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
         auto result = MduValueConverter::FromString(schema, "explicit");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+        EXPECT_EQ(std::get<StringEnumValue>(result).value, "Explicit");
     }
 
-    TEST(MduValueConverterTest, FromString_Enum_InvalidName_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_StringEnum_InvalidName_ThrowsInvalidArgument)
     {
-        auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}});
-        auto result = MduValueConverter::FromString(schema, "Unknown");
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "Unknown"), std::invalid_argument);
     }
 
     TEST(MduValueConverterTest, FromString_IntEnum_ValidNumber_ReturnsCorrectValue)
     {
-        auto schema = MakeIntEnumSchema({0, 1, 2});
+        auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
         auto result = MduValueConverter::FromString(schema, "2");
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 2);
+        EXPECT_EQ(std::get<IntEnumValue>(result).value, 2);
     }
 
-    TEST(MduValueConverterTest, FromString_IntEnum_OutOfRangeNumber_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_IntEnum_OutOfRangeNumber_ThrowsInvalidArgument)
     {
-        auto schema = MakeIntEnumSchema({0, 1});
-        auto result = MduValueConverter::FromString(schema, "99");
+        auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1"});
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "99"), std::invalid_argument);
     }
 
-    TEST(MduValueConverterTest, FromString_IntEnum_InvalidString_ReturnsNullopt)
+    TEST(MduValueConverterTest, FromString_IntEnum_InvalidString_ThrowsInvalidArgument)
     {
-        auto schema = MakeIntEnumSchema({0, 1});
-        auto result = MduValueConverter::FromString(schema, "not_a_number");
+        auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1"});
 
-        EXPECT_FALSE(result.has_value());
+        EXPECT_THROW(MduValueConverter::FromString(schema, "not_a_number"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -459,27 +428,42 @@ namespace dflowfm_io::test
     // ToString — Enum types
     // -------------------------------------------------------------------------
 
-    TEST(MduValueConverterTest, ToString_Enum_ReturnsEnumName)
+    TEST(MduValueConverterTest, ToString_StringEnum_ReturnsEnumName)
     {
-        auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}, {2, "Implicit"}});
-        auto result = MduValueConverter::ToString(schema, Value{EnumValue{1}});
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit", "Implicit"});
+        auto result = MduValueConverter::ToString(schema, Value{StringEnumValue{"Explicit"}});
 
         EXPECT_EQ(result, "Explicit");
     }
 
-    TEST(MduValueConverterTest, ToString_Enum_OutOfRange_ThrowsOutOfRange)
+    TEST(MduValueConverterTest, ToString_StringEnum_NameCaseInsensitive_ReturnsEnumName)
     {
-        auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}});
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
+        auto result = MduValueConverter::ToString(schema, Value{StringEnumValue{"explicit"}});
 
-        EXPECT_THROW(MduValueConverter::ToString(schema, Value{EnumValue{99}}), std::out_of_range);
+        EXPECT_EQ(result, "Explicit");
+    }
+
+    TEST(MduValueConverterTest, ToString_StringEnum_OutOfRange_ThrowsInvalidArgument)
+    {
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
+
+        EXPECT_THROW(MduValueConverter::ToString(schema, Value{StringEnumValue{"Implicit"}}), std::invalid_argument);
     }
 
     TEST(MduValueConverterTest, ToString_IntEnum_ReturnsIntegerString)
     {
-        auto schema = MakeIntEnumSchema({0, 1, 2});
-        auto result = MduValueConverter::ToString(schema, Value{EnumValue{2}});
+        auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
+        auto result = MduValueConverter::ToString(schema, Value{IntEnumValue{2}});
 
         EXPECT_EQ(result, "2");
+    }
+
+    TEST(MduValueConverterTest, ToString_IntEnum_OutOfRange_ThrowsInvalidArgument)
+    {
+        auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
+
+        EXPECT_THROW(MduValueConverter::ToString(schema, Value{IntEnumValue{3}}), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -512,8 +496,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<int>(*result), 42);
+        EXPECT_EQ(std::get<int>(result), 42);
     }
 
     TEST(MduValueConverterTest, RoundTrip_Float)
@@ -524,20 +507,29 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_DOUBLE_EQ(std::get<double>(*result), 1.5);
+        EXPECT_DOUBLE_EQ(std::get<double>(result), 1.5);
     }
 
-    TEST(MduValueConverterTest, RoundTrip_Enum)
+    TEST(MduValueConverterTest, RoundTrip_StringEnum)
     {
-        auto schema = MakeEnumSchema({{0, "None"}, {1, "Explicit"}});
-        const Value original = EnumValue{1};
+        auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
+        const Value original = StringEnumValue{"Explicit"};
 
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<EnumValue>(*result).value, 1);
+        EXPECT_EQ(std::get<StringEnumValue>(result).value, "Explicit");
+    }
+
+    TEST(MduValueConverterTest, RoundTrip_IntEnum)
+    {
+        auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
+        const Value original = IntEnumValue{1};
+
+        auto raw = MduValueConverter::ToString(schema, original);
+        auto result = MduValueConverter::FromString(schema, raw);
+
+        EXPECT_EQ(std::get<IntEnumValue>(result).value, 1);
     }
 
     TEST(MduValueConverterTest, RoundTrip_DateTime_CompactDateTime)
@@ -551,8 +543,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), timePoint);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), timePoint);
     }
 
     TEST(MduValueConverterTest, RoundTrip_DateTime_DateFormat)
@@ -565,8 +556,7 @@ namespace dflowfm_io::test
         auto raw = MduValueConverter::ToString(schema, original);
         auto result = MduValueConverter::FromString(schema, raw);
 
-        ASSERT_TRUE(result.has_value());
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(*result), timePoint);
+        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), timePoint);
     }
 
 } // namespace dflowfm_io::test

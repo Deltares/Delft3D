@@ -47,7 +47,7 @@ namespace dflowfm_io::test
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
-        EXPECT_FALSE(mduData.data_entries.empty());
+        EXPECT_FALSE(mduData.empty());
     }
 
     // -------------------------------------------------------------------------
@@ -116,7 +116,7 @@ namespace dflowfm_io::test
 
     struct InvalidValueTarget
     {
-        ValueType type;
+        std::string type;
         std::string section;
         std::string key;
     };
@@ -140,6 +140,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.HasError());
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find(target.type), std::string::npos);
         EXPECT_NE(error->message.find(target.section), std::string::npos);
         EXPECT_NE(error->message.find(target.key), std::string::npos);
     }
@@ -147,26 +148,41 @@ namespace dflowfm_io::test
     INSTANTIATE_TEST_SUITE_P(
         MduDataConverterTest, MduDataConverterInvalidValueTest,
         // Note: String and Path types are excluded because any raw string is a valid value for those types.
-        ::testing::Values(InvalidValueTarget{ValueType::Int, "numerics", "maxNonLinearIterations"},
-                          InvalidValueTarget{ValueType::Float, "geometry", "bedLevUni"},
-                          InvalidValueTarget{ValueType::IntBool, "geometry", "useCaching"},
-                          InvalidValueTarget{ValueType::Enum, "general", "fileType"},
-                          InvalidValueTarget{ValueType::IntEnum, "numerics", "timeStepType"},
-                          InvalidValueTarget{ValueType::DateTime, "time", "tStart"},
-                          InvalidValueTarget{ValueType::FloatList, "geometry", "stretchCoef"}),
+        ::testing::Values(InvalidValueTarget{"integer", "numerics", "maxNonLinearIterations"},
+                          InvalidValueTarget{"float", "geometry", "bedLevUni"},
+                          InvalidValueTarget{"integer (0 or 1)", "geometry", "useCaching"},
+                          InvalidValueTarget{"Supported values", "general", "fileType"},
+                          InvalidValueTarget{"Supported values", "numerics", "timeStepType"},
+                          InvalidValueTarget{"datetime", "time", "tStart"},
+                          InvalidValueTarget{"list of floats", "geometry", "stretchCoef"}),
         [](const ::testing::TestParamInfo<InvalidValueTarget>& info) {
             std::string name = info.param.section + "_" + info.param.key;
             std::replace(name.begin(), name.end(), '.', '_');
             return name;
         });
 
-    TEST_F(MduDataConverterTest, ConvertIniData_InvalidEnumValue_ErrorMessageContainsAllEnumDescriptions)
+    struct EnumErrorMessageTarget
     {
-        const auto* targetProperty = schema.FindProperty("numerics", "verticalAdvectionType");
+        std::string section;
+        std::string key;
+    };
+
+    void PrintTo(const EnumErrorMessageTarget& target, std::ostream* os) { *os << target.section << "." << target.key; }
+
+    class MduDataConverterEnumErrorMessageTest : public MduDataConverterTest,
+                                                 public ::testing::WithParamInterface<EnumErrorMessageTarget>
+    {
+    };
+
+    TEST_P(MduDataConverterEnumErrorMessageTest, ConvertIniData_InvalidEnumValue_ErrorMessageContainsAllEnumValues)
+    {
+        const auto& target = GetParam();
+
+        const auto* targetProperty = schema.FindProperty(target.section, target.key);
         ASSERT_NE(targetProperty, nullptr);
 
         ini::IniData iniData = TestIniData();
-        iniData.GetSection("numerics").SetPropertyValue("verticalAdvectionType", "##invalid##");
+        iniData.GetSection(target.section).SetPropertyValue(target.key, "##invalid##");
 
         const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
 
@@ -174,27 +190,16 @@ namespace dflowfm_io::test
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
         for (const auto& ev : targetProperty->enum_values)
-            EXPECT_NE(error->message.find(ev.label), std::string::npos)
-                << "Expected enum label \"" << ev.label << "\" in error message";
+            EXPECT_NE(error->message.find(ev.value), std::string::npos)
+                << "Expected enum value \"" << ev.value << "\" in error message";
     }
 
-    TEST_F(MduDataConverterTest, ConvertIniData_InvalidIntEnumValue_ErrorMessageContainsAllEnumValues)
-    {
-        const auto* targetProperty = schema.FindProperty("numerics", "timeStepType");
-        ASSERT_NE(targetProperty, nullptr);
-
-        ini::IniData iniData = TestIniData();
-        iniData.GetSection("numerics").SetPropertyValue("timeStepType", "##invalid##");
-
-        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
-
-        EXPECT_TRUE(report.HasError());
-        const Issue* error = FirstIssue(report, Severity::Error);
-        ASSERT_NE(error, nullptr);
-        for (const auto& ev : targetProperty->enum_values)
-            EXPECT_NE(error->message.find(std::to_string(ev.value)), std::string::npos)
-                << "Expected enum value " << ev.value << " in error message";
-    }
+    INSTANTIATE_TEST_SUITE_P(MduDataConverterTest, MduDataConverterEnumErrorMessageTest,
+                             ::testing::Values(EnumErrorMessageTarget{"numerics", "verticalAdvectionType"},
+                                               EnumErrorMessageTarget{"numerics", "timeStepType"}),
+                             [](const ::testing::TestParamInfo<EnumErrorMessageTarget>& info) {
+                                 return info.param.section + "_" + info.param.key;
+                             });
 
     TEST_F(MduDataConverterTest, ConvertIniData_InvalidDateTimeValue_ErrorMessageContainsExpectedFormat)
     {
@@ -261,12 +266,27 @@ namespace dflowfm_io::test
 
         const std::string key = FormatKey("numerics", "verticalAdvectionType");
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
+        EXPECT_EQ(mduData.getValueAs<StringEnumValue>(key).value, "higherOrderUpwindExplicit");
     }
 
     // -------------------------------------------------------------------------
-    // Convert IniData → MduData — obsolete properties and enum values are skipped
+    // Convert IniData → MduData — obsolete sections, properties and enum values are skipped
     // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteSection_PropertiesOmittedFromMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        auto& section = iniData.AddSection("model");
+        section.AddProperty("program", "D-Flow FM");
+        section.AddProperty("mduFormatVersion", "1.09");
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        EXPECT_FALSE(mduData.hasValue(FormatKey("model", "program")))
+            << "Property from obsolete section should be omitted: model.program";
+        EXPECT_FALSE(mduData.hasValue(FormatKey("model", "mduFormatVersion")))
+            << "Property from obsolete section should be omitted: model.mduFormatVersion";
+    }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ObsoleteProperty_PropertyOmittedFromMduData)
     {
@@ -289,10 +309,40 @@ namespace dflowfm_io::test
         const std::string key = FormatKey("geometry", "layerType");
         // The obsolete value (4) is skipped, so the schema default value (1) is used instead.
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
+        EXPECT_EQ(mduData.getValueAs<IntEnumValue>(key).value, 1);
     }
 
-    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedPropertyValue_PropertyPresentInMduData)
+    // -------------------------------------------------------------------------
+    // Convert IniData → MduData — deprecated sections, properties and enum values are converted
+    // -------------------------------------------------------------------------
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedSection_PropertiesPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        auto& section = iniData.AddSection("sediment");
+        section.AddProperty("nrOfSedFractions", 2);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("sediment", "nrOfSedFractions");
+        EXPECT_TRUE(mduData.hasValue(key))
+            << "Property from deprecated section should still be converted: sediment.nrOfSedFractions";
+        EXPECT_EQ(mduData.getValueAs<int>(key), 2);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedProperty_PropertyPresentInMduData)
+    {
+        ini::IniData iniData = TestIniData();
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+
+        const auto [mduData, report] = MduDataConverter::Convert(iniData, schema);
+
+        const std::string key = FormatKey("numerics", "vertAdvTypSal");
+        EXPECT_TRUE(mduData.hasValue(key)) << "Deprecated property should still be converted: numerics.vertAdvTypSal";
+        EXPECT_EQ(mduData.getValueAs<IntEnumValue>(key).value, 6);
+    }
+
+    TEST_F(MduDataConverterTest, ConvertIniData_DeprecatedEnumValue_PropertyPresentInMduData)
     {
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
@@ -301,7 +351,7 @@ namespace dflowfm_io::test
 
         const std::string key = FormatKey("geometry", "layerType");
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 3);
+        EXPECT_EQ(mduData.getValueAs<IntEnumValue>(key).value, 3);
     }
 
     // -------------------------------------------------------------------------
@@ -373,7 +423,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(mduData.getValueAs<std::filesystem::path>(key), std::filesystem::path("some/path/file.nc"));
     }
 
-    TEST_F(MduDataConverterTest, ConvertIniData_ValidEnumValue_ConvertsSuccessfully)
+    TEST_F(MduDataConverterTest, ConvertIniData_ValidStringEnumValue_ConvertsSuccessfully)
     {
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("verticalAdvectionType", "higherOrderUpwindExplicit");
@@ -383,7 +433,7 @@ namespace dflowfm_io::test
         EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("numerics", "verticalAdvectionType");
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 1);
+        EXPECT_EQ(mduData.getValueAs<StringEnumValue>(key).value, "higherOrderUpwindExplicit");
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ValidIntEnumValue_ConvertsSuccessfully)
@@ -396,7 +446,7 @@ namespace dflowfm_io::test
         EXPECT_FALSE(report.HasError());
         const std::string key = FormatKey("numerics", "timeStepType");
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, 2);
+        EXPECT_EQ(mduData.getValueAs<IntEnumValue>(key).value, 2);
     }
 
     TEST_F(MduDataConverterTest, ConvertIniData_ValidPathListValue_ConvertsSuccessfully)
@@ -485,22 +535,27 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 
-        for (const auto& [key, value] : mduData.data_entries)
-        {
-            const auto [sectionName, propertyKey] = SplitKey(key);
+        mduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            const auto [sectionName, propertyKey] = SplitKey(std::string(key));
 
             ASSERT_TRUE(iniData.HasSection(sectionName)) << "Missing section for MduData entry: " << sectionName;
 
             EXPECT_TRUE(iniData.GetSection(sectionName).HasProperty(propertyKey))
                 << "Missing property for MduData entry: " << sectionName << "." << propertyKey;
-        }
+        });
     }
 
     TEST_F(MduDataConverterTest, ConvertMduData_PropertyAbsentInMduData_OmittedFromIniData)
     {
-        MduData mduData = TestMduData();
-        const std::string key = FormatKey("geometry", "bedLevUni");
-        mduData.data_entries.erase(key);
+        std::unordered_map<std::string, Value> filteredKeyValuePairs;
+        const MduData completeMduData = TestMduData();
+        completeMduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            if (key == FormatKey("geometry", "bedLevUni"))
+                return; // Skip this property to simulate it being absent in MduData
+            filteredKeyValuePairs[std::string(key)] = value;
+        });
+
+        const MduData mduData = MduData::CreateFromRawData(std::move(filteredKeyValuePairs));
 
         const ini::IniData iniData = MduDataConverter::Convert(mduData, schema);
 

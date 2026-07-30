@@ -10,7 +10,7 @@ VALUE_TYPE_MAP = {
     "float": "Float",
     "intbool": "IntBool",
     "path": "Path",
-    "enum": "Enum",
+    "enum": "StringEnum",
     "intenum": "IntEnum",
     "list[path]": "PathList",
     "list[string]": "StringList",
@@ -29,7 +29,7 @@ FORMAT_TYPE_MAP = {
 
 # Maps the JSON "status" strings to the C++ StatusType enum names.
 STATUS_TYPE_MAP = {
-    "GA": "GA",
+    "GA": "Available",
     "research": "Research",
     "deprecated": "Deprecated",
     "obsolete": "Obsolete",
@@ -66,16 +66,13 @@ def default_value_str(value):
     return str(value)
 
 
-def enum_entries(prop):
-    """Return an ordered list of (int_key, label, status) tuples for an enum property."""
-    value_type = prop["value_type"]
+def get_enum_entries(prop):
+    """Return an ordered list of (value, status) tuples for an enum property."""
     enum_values = prop.get("enum_values", {})
     entries = []
-    for index, (key, entry) in enumerate(enum_values.items()):
-        int_key = int(key) if value_type == "intenum" else index
-        label = None if value_type == "intenum" else key
+    for (key, entry) in enum_values.items():
         status = entry.get("status", {}) if isinstance(entry, dict) else {}
-        entries.append((int_key, label, status))
+        entries.append((key, status))
     return entries
 
 
@@ -99,7 +96,7 @@ def render_status(status, indent):
     return f"{{\n{body}\n{' ' * indent}}}"
 
 
-def render_enum_value(value, label, status, indent):
+def render_enum_value(value, status, indent):
     """Render a single EnumValueSchema block."""
     pad = " " * indent
     inner = " " * (indent + 4)
@@ -108,9 +105,7 @@ def render_enum_value(value, label, status, indent):
     def field(name, val):
         return f"{inner}{name.ljust(width)} = {val}"
 
-    field_blocks = [field(".value", value)]
-    if label is not None:
-        field_blocks.append(field(".label", f'"{label}"'))
+    field_blocks = [field(".value", f'"{value}"')]
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
 
@@ -127,7 +122,7 @@ def render_property(prop, indent, default_float_format):
     required = bool(prop.get("validation", {}).get("is_required", False))
     nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
-    entries = enum_entries(prop)
+    enum_entries = get_enum_entries(prop)
     status = prop.get("status", {})
 
     def field(name, val):
@@ -152,12 +147,12 @@ def render_property(prop, indent, default_float_format):
         field_blocks.append(field(".required", "true"))
     if nullable:
         field_blocks.append(field(".nullable", "true"))
-    if entries:
-        enum_blocks = [render_enum_value(v, label, st, indent + 8) for v, label, st in entries]
-        enum_body = ",\n".join(enum_blocks)
-        field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
+    if enum_entries:
+        enum_blocks = [render_enum_value(v, st, indent + 8) for v, st in enum_entries]
+        enum_body = ",\n".join(enum_blocks)
+        field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
 
     body = ",\n".join(field_blocks)
     return f"{pad}PropertySchema {{\n{body}\n{pad}}}"
@@ -168,6 +163,7 @@ def render_section(section, indent, default_float_format):
     pad = " " * indent
     inner = " " * (indent + 4)
     properties = section.get("ini_properties", [])
+    status = section.get("status", {})
 
     # A section is required when it contains at least one required property.
     required = any(
@@ -183,6 +179,8 @@ def render_section(section, indent, default_float_format):
     if required:
         field_blocks.append(field(".required", "true"))
     field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
 
     prop_blocks = [render_property(p, indent + 8, default_float_format) for p in properties]
     props_body = ",\n".join(prop_blocks)
