@@ -5366,7 +5366,7 @@ contains
             do LL = 1, lnx
                call getLbotLtopmax(LL, Lb, Ltx)
                do L = Lb - 1, Ltx
-                  vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL) + ozmidov_viscosity(LL)
+                  vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL) + ozmidov_viscosity(L)
                end do
             end do
             call links_to_centers(vicwws_total, vicwwu_total)

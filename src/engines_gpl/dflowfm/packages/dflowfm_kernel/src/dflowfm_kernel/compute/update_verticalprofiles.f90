@@ -215,6 +215,8 @@ contains
 
       else if (iturbulencemodel >= 3) then ! 3=k-epsilon, 4=k-tau
 
+         ozmidov_viscosity = 0.0_dp
+          
          call calculate_drhodz(zws, drhodz)
 
          call links_to_centers(turkinws, turkin1)
@@ -390,7 +392,7 @@ contains
                      ! Add xlozmidov
                      if (xlozmidov%get(LL) > 0.0_dp) then
                         if (bruva(k) > 0.0_dp) then ! stable stratification
-                           ozmidov_viscosity(LL) =  0.2_dp * xlozmidov%get(LL) * xlozmidov%get(LL) * sqrt(bruva(k) * SIGRHO) * SIGRHO
+                           ozmidov_viscosity(L) =  0.2_dp * xlozmidov%get(LL) * xlozmidov%get(LL) * sqrt(bruva(k) * SIGRHO) * SIGRHO
                         end if
                      end if
 
