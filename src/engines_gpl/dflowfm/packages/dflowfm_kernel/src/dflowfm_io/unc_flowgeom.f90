@@ -280,17 +280,16 @@ contains
       call reallocP(flowgeom%mesh2d%nodey, numk, fill=dmiss, keepExisting=.false.)
       call reallocP(flowgeom%mesh2d%nodez, numk, fill=dmiss, keepExisting=.false.)
 
-      ! facex/facey: owned memory when masked (non-contiguous gather), pointer slice otherwise.
+      call reallocP(flowgeom%mesh2d%facex, numFace, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%facey, numFace, fill=dmiss, keepExisting=.false.)
       if (use_mask) then
-         allocate (flowgeom%mesh2d%facex(numFace))
-         allocate (flowgeom%mesh2d%facey(numFace))
          do i = 1, numFace
             flowgeom%mesh2d%facex(i) = xz(flowgeom%face_map_2D(i))
             flowgeom%mesh2d%facey(i) = yz(flowgeom%face_map_2D(i))
          end do
       else
-         flowgeom%mesh2d%facex => xz(1:ndx2d)
-         flowgeom%mesh2d%facey => yz(1:ndx2d)
+         flowgeom%mesh2d%facex = xz(1:ndx2d)
+         flowgeom%mesh2d%facey = yz(1:ndx2d)
       end if
 
       !> find max polygon size (up to 6) to allocate face_nodes.

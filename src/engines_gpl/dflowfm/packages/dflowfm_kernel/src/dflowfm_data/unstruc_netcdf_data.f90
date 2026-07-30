@@ -523,8 +523,8 @@ module m_unstruc_netcdf_data
    subroutine default_unstruc_netcdf_data()
       implicit none
 
-      call reset_fm_flowgeom(flowgeom_map)
       if (associated(flowgeom_map) .and. .not. associated(flowgeom_map, flowgeom_full)) then
+         call reset_fm_flowgeom(flowgeom_map)
          deallocate(flowgeom_map)
       else         
          nullify(flowgeom_map)
