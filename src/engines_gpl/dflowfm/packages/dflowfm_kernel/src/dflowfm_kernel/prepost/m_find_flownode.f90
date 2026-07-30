@@ -108,14 +108,13 @@ contains
                else if (k1b /= 0) then
                   k = k1b
                end if
-            end if
-            node_nrs_nearest(i) = 0
-            if (k /= 0) then
-               if (nd(k)%lnx > 0) then
-                  node_nrs_nearest(i) = k
+               node_nrs_nearest(i) = 0
+               if (k /= 0) then
+                  if (nd(k)%lnx > 0) then
+                     node_nrs_nearest(i) = k
+                  end if
                end if
-            end if
-            if (jaoutside == 1 .and. iLocTp == INDTP_2D) then
+            else if (jaoutside == 1 .and. iLocTp == INDTP_2D) then
                call find_nearest_2D_internal_bruteforce(xx(i), yy(i), node_nrs_nearest(i))
             end if
             
@@ -346,17 +345,17 @@ contains
       integer, intent(out) :: node_nr_nearest !< Node number of nearest 1D or boundary flow node.
 
       real(dp)             :: dist, distmin
-      integer              :: i_node
+      integer              :: k
 
       node_nr_nearest = 0
 
       distmin = huge(1.0_dp)
       
-      do i_node = 1, ndxi
-          dist = dbdistance(x, y, xz(i_node), yz(i_node), jsferic, jasfer3D, dmiss)
+      do k = 1, ndxi
+          dist = dbdistance(x, y, xz(k), yz(k), jsferic, jasfer3D, dmiss)
           if (dist < distmin) then
               distmin = dist
-              node_nr_nearest = i_node
+              node_nr_nearest = k
           end if
       end do
 
