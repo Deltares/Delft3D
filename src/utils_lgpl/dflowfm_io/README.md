@@ -39,6 +39,22 @@ JSON specification files define the rules of a D-Flow FM input file (allowed key
 This specification is the single source of truth and is used to auto-generate large parts of the code, including the
 data model and metadata, before compilation.
 
+## Python wrapper
+
+The Python binding (`dflowfm_io_api/wrappers/python`) is a ctypes package, `dflowfm_io`, over the C ABI. It is
+distributed as a platform wheel that bundles the native library, so consumers only need to `pip install` it — no build
+or compiler on their side. This is the binding through which **hydrolib-core** consumes `dflowfm_io`.
+
+Over an opened MDU document (`MduDocument`) it exposes two typed layers:
+
+- **Layer 1 — `MduModel`**: typed get/set of any property by its dotted `section.keyword` key.
+- **Layer 2 — `MduSchema`**: a typed, discoverable surface with one class per INI section and one typed property per
+  keyword, each delegating to Layer 1.
+
+`mdu/schema.py` (Layer 2) is generated from `json/mdu.json` at build time; the rest of the package is hand-maintained.
+See [`dflowfm_io_api/wrappers/python/README.md`](./dflowfm_io_api/wrappers/python/README.md) for the package layout,
+building the wheel, and regenerating the generated code.
+
 ## Building dflowfm_io
 
 Prerequisites:
@@ -80,6 +96,23 @@ The build produces the C++ core and, for each language binding whose required to
 ### Building as part of Delft3D
 
 dflowfm_io is also built (and tested) as part of the Delft3D cmake build. For more information, refer to the build instructions in the Delft3D repository.
+
+### Building the Python wheel
+
+The Python wheel (the `dflowfm_io` package bundling the native library) is built by the `dflowfm_io_wheel` target. It is
+**not** part of the default build. Configure the project as above, then build the target explicitly:
+
+```cmd
+cmake --build <path-to-build-dir> --target dflowfm_io_wheel --config Release
+```
+
+This compiles and stages the native library, generates the Python code, then runs `pip wheel`. The resulting wheel is
+written to `<path-to-build-dir>/dflowfm_io_api/wrappers/python/wheel/` (e.g.
+`dflowfm_io-0.1.0-py3-none-win_amd64.whl`).
+
+To build the wheel as part of the default build instead (no explicit `--target`), configure with
+`-D DFLOWFM_IO_BUILD_WRAPPER_PACKAGES=ON`. See
+[`dflowfm_io_api/wrappers/python/README.md`](./dflowfm_io_api/wrappers/python/README.md) for details.
 
 ## Testing
 
