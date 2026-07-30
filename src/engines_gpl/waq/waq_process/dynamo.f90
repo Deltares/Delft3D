@@ -142,7 +142,7 @@ contains
 
       ! Light efficiency function (uniform values)
       LgtOpt = .true.
-      if (increm(15) == 0 .and. increm(16) == 0) then
+      if (increm(idrad) == 0 .and. increm(16) == 0) then
          LgtOpt = .false. !  This is constant for all cells
          Rad = process_space_real(ipnt(idrad))
          RadSat = process_space_real(ipnt(16))
