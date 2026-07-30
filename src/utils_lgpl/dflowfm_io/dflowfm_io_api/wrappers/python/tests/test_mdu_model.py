@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from dflowfm_io import MduDocument
 
@@ -227,6 +227,24 @@ class TestMduModel(unittest.TestCase):
         new_dt = datetime(2025, 6, 11, 8, 30, 22, tzinfo=timezone.utc)
         doc.model.set_datetime("time.refdate", new_dt)
         self.assertEqual(doc.model.get_datetime("time.refdate"), new_dt)
+
+    def test_pre_1970_datetime_round_trips(self):
+        # datetime.fromtimestamp raises OSError on Windows for negative epochs; the getter must
+        # build from the epoch instead so historical reference dates read back.
+        doc = _loaded_doc()
+        early = datetime(1900, 1, 1, tzinfo=timezone.utc)
+        doc.model.set_datetime("time.refdate", early)
+        self.assertEqual(doc.model.get_datetime("time.refdate"), early)
+
+    def test_set_naive_datetime_is_treated_as_utc(self):
+        # A naive datetime must round-trip against the UTC-aware get_datetime, not shift by the
+        # local offset.
+        doc = _loaded_doc()
+        doc.model.set_datetime("time.refdate", datetime(2020, 1, 2, 3, 4, 5))
+        self.assertEqual(
+            doc.model.get_datetime("time.refdate"),
+            datetime(2020, 1, 2, 3, 4, 5, tzinfo=timezone.utc),
+        )
 
     # --- set: nonexisting key raises ---
 

@@ -3,7 +3,7 @@ import sys
 import os
 import tempfile
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from dflowfm_io import MduDocument, MduModel, MduReport
 

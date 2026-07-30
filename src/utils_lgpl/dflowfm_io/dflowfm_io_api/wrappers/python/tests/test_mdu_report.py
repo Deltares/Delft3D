@@ -4,7 +4,7 @@ import os
 import io
 from contextlib import redirect_stdout
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from dflowfm_io import MduDocument, MduReport, Issue, Severity
 
