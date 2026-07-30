@@ -1,11 +1,16 @@
 @ echo off
 
+setlocal
 set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
+set installDir=install_fm-suite
 
-set bindir=..\..\..\..\install_fm-suite\bin
-set libdir=%bindir%\..\lib
+if defined USE_PRECICE_OVERRIDE set usePreCICE=%USE_PRECICE_OVERRIDE%
+if defined START_FM_OVERRIDE set startFM=%START_FM_OVERRIDE%
+if defined START_PRECSUMO_OVERRIDE set startPreCSUMO=%START_PRECSUMO_OVERRIDE%
+
+set bindir=..\..\..\%installDir%\bin
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
 del /f /q fm\2dis_*_net.nc
@@ -24,13 +29,11 @@ del /f /q precice_debug_output.txt
 del /f /q precice-profiling\*.*
 rmdir /s /q precice-run
 
-
-
 if %usePreCICE% EQU 1 (
     if %startPreCSUMO% EQU 1 (
         cd cosumo
-        set PATH=%bindir%;%libdir%
-        start %bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml
+        set PATH=..\%bindir%
+        start ..\%bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml
         cd ..
     ) else (
         echo Please start preC-SUMO
@@ -38,8 +41,8 @@ if %usePreCICE% EQU 1 (
     
     if %startFM% EQU 1 (
         cd fm
-        set PATH=%bindir%;%libdir%
-        call %bindir%\run_dflowfm.bat FlowFM.mdu --precice
+        set PATH=..\%bindir%
+        call ..\%bindir%\run_dflowfm.bat FlowFM.mdu --precice
         cd ..
     ) else (
         echo Please start D-Flow FM
@@ -47,6 +50,9 @@ if %usePreCICE% EQU 1 (
 ) else (
     call %bindir%\run_dimr.bat
 )
+endlocal
+
+if "%NO_PAUSE%"=="1" goto :eof
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 pause

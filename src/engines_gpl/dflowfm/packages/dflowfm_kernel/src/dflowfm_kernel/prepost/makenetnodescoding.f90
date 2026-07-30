@@ -42,6 +42,7 @@ contains
       use m_missing, only: dxymis
       use geometry_module, only: dcosphi
       use gridoperations
+      use network_data, only: LINK_CLOSED, LINK_2D
 
       integer :: k
       integer :: k1
@@ -60,7 +61,7 @@ contains
          if (k1 < 1 .or. k2 < 1) then
             cycle ! SPvdP: safety
          end if
-         if (KN(3, L) == 2 .or. KN(3, L) == 0) then
+         if (KN(3, L) == LINK_2D .or. KN(3, L) == LINK_CLOSED) then
             if (NB(K1) /= -1 .and. NB(K2) /= -1) then
                if (LNN(L) == 0) then ! LINK ZONDER BUURCELLEN
                   NB(K1) = -1
@@ -70,7 +71,7 @@ contains
                   NB(K2) = NB(K2) + 1
                end if
             end if
-         else ! (kn(3,l) == 1 .or. kn(3,l) == 3 .or. kn(3,L) == 4) then ! 1D-links sowieso niet meenemen.
+         else ! (kn(3,l) == LINK_1D .or. kn(3,l) == LINK_1D2D_INTERNAL .or. kn(3,L) == LINK_1D2D_LONGITUDINAL) then ! 1D-links sowieso niet meenemen.
             nb(k1) = -1
             nb(k2) = -1
          end if

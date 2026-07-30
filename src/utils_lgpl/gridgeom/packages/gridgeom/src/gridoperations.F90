@@ -560,7 +560,7 @@ contains
          if (k1 < 1 .or. k2 < 1) cycle ! SPvdP: safety
 
          if (LNN(L) == 1) then ! LINK MET 1 BUURCEL
-            if (KN(3, L) == 2) then
+            if (KN(3, L) == LINK_2D) then
                call CROSSinbox(XP1, YP1, XP2, YP2, XK(K1), YK(K1), XK(K2), YK(K2), jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
                if (jacros == 1) then
                   if (sl < slm) then
@@ -595,7 +595,7 @@ contains
 
          do LL = 1, nml
             if (LL == Lfound) cycle
-            if (kn(3, LL) == 1 .or. kn(3, LL) == 3 .or. kn(3, LL) == 6) then ! crossing any another 1D type
+            if (kn(3, LL) == LINK_1D .or. kn(3, LL) == LINK_1D2D_INTERNAL .or. kn(3, LL) == LINK_1D_MAINBRANCH) then ! crossing any another 1D type
                K1 = KN(1, LL); K2 = KN(2, LL)
                if (k1 < 1 .or. k2 < 1) cycle ! SPvdP: safety
                call CROSS(XP1, YP1, XP2, YP2, XK(K1), YK(K1), XK(K2), YK(K2), jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
@@ -791,7 +791,7 @@ contains
       jathindams = 0
       lc = 0
       nlinkremoved = 0
-      if (any(kn(3, :) == 0)) then
+      if (any(kn(3, :) == LINK_CLOSED)) then
          jathindams = 1
       end if
       valid_links = pack([(L, L=1, NUML)], is_valid_link([(L, L=1, NUML)], kn(1, 1:NUML), kn(2, 1:NUML), kn(3, 1:NUML)))
@@ -2489,7 +2489,7 @@ contains
       N1 = 0
       DISMIN = 9e+33
       do L = 1, numl
-         if (kn(3, L) == 1 .or. kn(3, L) == 6) then !  .or. kn(3,L) == 4) THEN
+         if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then !  .or. kn(3,L) == LINK_1D2D_LONGITUDINAL) THEN
             K1 = kn(1, L); K2 = kn(2, L)
             ! If mask is present we check that the 1d nodes are the nodes I want to connect
             if (validOneDMask) then
@@ -2797,18 +2797,18 @@ contains
       KC = 2
       do L = 1, NUML ! FLAG TO 1 ANY NODE TOUCHED BY SOMETHING 1D
          K1 = KN(1, L); K2 = KN(2, L); K3 = KN(3, L)
-         if (K3 /= 4 .and. K3 /= 2 .and. K3 /= 0) then ! only for yet-isolated 1D channels with KN(3,L)==1
+         if (K3 /= 4 .and. K3 /= 2 .and. K3 /= 0) then ! only for yet-isolated 1D channels with KN(3,L)==LINK_1D
             KC(K1) = 1; KC(K2) = 1
             if (jadelnetlinktyp == 5 .or. jadelnetlinktyp == 7) then
                do k = 1, nmk(k1)
                   LL = nod(k1)%lin(k)
-                  if (kn(3, LL) == 5 .or. kn(3, LL) == 7) then
+                  if (kn(3, LL) == LINK_1D2D_STREETINLET .or. kn(3, LL) == LINK_1D2D_ROOF) then
                      kc(k1) = 2; exit ! when already connected by pipe forget it
                   end if
                end do
                do k = 1, nmk(k2)
                   LL = nod(k2)%lin(k)
-                  if (kn(3, LL) == 5 .or. kn(3, LL) == 7) then
+                  if (kn(3, LL) == LINK_1D2D_STREETINLET .or. kn(3, LL) == LINK_1D2D_ROOF) then
                      kc(k2) = 2; exit ! when already connected by pipe forget it
                   end if
                end do
@@ -2932,7 +2932,7 @@ contains
                   if (nc1 > 0) then
                      call dSETNEWPOINT(XZ(NC1), YZ(NC1), NC2)
                      call connectdbn(NC2, K, L)
-                     KN(3, L) = 3
+                     KN(3, L) = LINK_1D2D_INTERNAL
                      numValidLinks = numValidLinks + 1
                      connectionIndexes(1, numValidLinks) = NC1 !2d
                      connectionIndexes(2, numValidLinks) = K !1d
@@ -3047,7 +3047,7 @@ contains
             call dsetnewpoint(xz(n1), yz(n1), k1)
             k2 = nod1D(ip)
             call connectdbn(k1, k2, l)
-            kn(3, l) = 7
+            kn(3, l) = LINK_1D2D_ROOF
             numValidLinks = numValidLinks + 1
             connectionIndexes(1, numValidLinks) = n1 !2d
             connectionIndexes(2, numValidLinks) = k2 !1d
@@ -3194,7 +3194,7 @@ contains
                   call connectdbn(k1, n1, l)
                end if
 
-               kn(3, L) = 5
+               kn(3, L) = LINK_1D2D_STREETINLET
                numValidLinks = numValidLinks + 1
                connectionIndexes(1, numValidLinks) = k !2d
                connectionIndexes(2, numValidLinks) = n1 !1d
@@ -3286,7 +3286,7 @@ contains
 
       sumdis = 0d0
       do L = 1, numl
-         if (kn(3, L) == 1 .or. kn(3, L) == 6) then !  .or. kn(3,L) == 4) THEN
+         if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then !  .or. kn(3,L) == LINK_1D2D_LONGITUDINAL) THEN
             numl1dregular = numl1dregular + 1
             K1 = kn(1, L); K2 = kn(2, L)
             if (kcloc(k1) == 0) then

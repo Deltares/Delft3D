@@ -16,7 +16,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance,
         TemplateFailureCondition,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
     allowExternalStatus = true
     artifactRules = """
@@ -61,7 +62,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                call C:\set-env.cmd
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%

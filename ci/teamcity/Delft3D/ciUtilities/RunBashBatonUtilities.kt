@@ -21,7 +21,8 @@ object RunBashBatonUtilities : BuildType({
     templates(
         TemplatePublishStatus,
         TemplateMergeRequest,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {
