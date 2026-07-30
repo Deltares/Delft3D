@@ -157,6 +157,49 @@ namespace
     }
 
     /**
+     * @brief Parse a newline-delimited numeric block into typed records.
+     *
+     * Shared implementation used by source/sink and intake parsers:
+     * each non-empty line is parsed as doubles and then converted by the
+     * provided extractor.
+     *
+     * @tparam TItem Output record type.
+     * @tparam TExtractor Callable converting std::vector<double> into TItem.
+     * @param text Raw multiline block content.
+     * @param element_name XML element name for parse error context.
+     * @param extractor Conversion callback per non-empty line.
+     * @return std::expected containing parsed records or the first parse error.
+     */
+    template <typename TItem, typename TExtractor>
+    std::expected<std::vector<TItem>, parsing_utils::ParseError> parseBlockVector(
+        const std::string_view text, const std::string_view element_name, TExtractor extractor)
+    {
+        std::vector<std::string> newline_separated_tokens;
+        boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
+                                boost::algorithm::token_compress_on);
+
+        auto is_non_empty = [](const std::string_view token) {
+            return token.find_first_not_of(" \t\r") != std::string_view::npos;
+        };
+        auto to_item = [element_name, extractor](const std::string_view token)
+            -> std::expected<TItem, parsing_utils::ParseError> {
+            ASSIGN_OR_RETURN(auto values, parsing_utils::parseDoubleVector(token, element_name));
+            return extractor(values);
+        };
+
+        auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
+                              std::ranges::views::transform(to_item) | std::ranges::to<std::vector>();
+
+        if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
+            errorIt != expected_items.end())
+        {
+            return std::unexpected((*errorIt).error());
+        }
+
+        return expected_items | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
+    }
+
+    /**
      * @brief extract Source or Sink values from sources or sinks blocks.
      * Since the data in these blocks are formatted by line we split the text into lines first and then
      * convert each line to source or sink data objects if the line is not 'empty' (ergo, a line does not
@@ -167,30 +210,51 @@ namespace
     std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseSourceOrSinkVector(
         const std::string_view text, const std::string_view element_name)
     {
-        std::vector<std::string> newline_separated_tokens;
-        boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
-                                boost::algorithm::token_compress_on);
-
-        auto is_non_empty = [](const std::string_view token) {
-            return token.find_first_not_of(" \t\r") != std::string_view::npos;
-        };
-        auto to_source_or_sink = [element_name](const std::string_view token)
+        auto extractor = [element_name](const std::vector<double>& values)
             -> std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> {
-            ASSIGN_OR_RETURN(auto vector, parsing_utils::parseDoubleVector(token.data(), element_name));
-            ASSIGN_OR_RETURN(auto data, extractSourceOrSinkData(vector, element_name));
-            return data;
+            return extractSourceOrSinkData(values, element_name);
         };
+        return parseBlockVector<pre_c_sumo::SourceOrSinkData>(text, element_name, extractor);
+    }
 
-        auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
-                              std::ranges::views::transform(to_source_or_sink) | std::ranges::to<std::vector>();
-
-        if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
-            errorIt != expected_items.end())
+    std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> extractIntakeData(const std::vector<double> values)
+    {
+        if (values.size() < 3 || values.size() > 4)
         {
-            return std::unexpected((*errorIt).error());
+            return std::unexpected(parsing_utils::ParseError{
+                std::format("Found line in <intakes> with {} values; expected 3 to 4 values", values.size())});
         }
 
-        return expected_items | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
+        pre_c_sumo::IntakeData data = {.x_coordinate = values[0],
+                                       .y_coordinate = values[1],
+                                       .z_coordinate = values[2],
+                                       .weight = 0.0,
+                                       .has_weight = false};
+        if (values.size() == 4)
+        {
+            data.weight = values[3];
+            data.has_weight = true;
+        }
+        return data;
+    }
+
+    /**
+     * @brief Parse intake rows from the <intakes> block.
+     *
+     * Expected per-line format is handled by extractIntakeData.
+     * This wrapper delegates common line parsing mechanics to parseBlockVector.
+     *
+     * @param text Contents of the <intakes> element.
+     * @return std::expected containing parsed intake records or a ParseError.
+     */
+    std::expected<std::vector<pre_c_sumo::IntakeData>, parsing_utils::ParseError> parseIntakeVector(
+        const std::string_view text)
+    {
+        auto extractor = [](const std::vector<double>& values)
+            -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
+            return extractIntakeData(values);
+        };
+        return parseBlockVector<pre_c_sumo::IntakeData>(text, "intakes", extractor);
     }
 
 } // namespace
@@ -234,7 +298,18 @@ namespace pre_c_sumo
 
         // Discharge
         ASSIGN_OR_RETURN(auto discharge_node, parseDischarge(root));
-        ASSIGN_OR_RETURN(const auto intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+        double intake_flow_rate = 0.0;
+        const pugi::xml_node intake_flow_node = parsing_utils::findChild(discharge_node, "Qintake");
+        if (intake_flow_node)
+        {
+            // Missing Qintake defaults to 0.0; present Qintake must be valid.
+            ASSIGN_OR_RETURN(intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+            if (intake_flow_rate < 0.0)
+            {
+                return std::unexpected(parsing_utils::ParseError{
+                    std::format("Element <Qintake> should be a value >= 0.0, got: {}", intake_flow_rate)});
+            }
+        }
         ASSIGN_OR_RETURN(const auto source_flow_rate, parseRequiredDouble(discharge_node, "Qsource"));
         ASSIGN_OR_RETURN(const auto constituents_operator, parseConstituentsOperator(discharge_node));
         ASSIGN_OR_RETURN(const auto constituents_text,
@@ -244,6 +319,13 @@ namespace pre_c_sumo
 
         // NFResult
         ASSIGN_OR_RETURN(auto nfresult_node, parseNFResult(root));
+        std::vector<pre_c_sumo::IntakeData> intakes{};
+        const pugi::xml_node intakes_node = parsing_utils::findChild(nfresult_node, "intakes");
+        if (intakes_node)
+        {
+            ASSIGN_OR_RETURN(const auto intakes_text, parsing_utils::requiredChildText(nfresult_node, "intakes"));
+            ASSIGN_OR_RETURN(intakes, parseIntakeVector(intakes_text));
+        }
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
         ASSIGN_OR_RETURN(auto sources, parseSourceOrSinkVector(sources_text, "sources"));
         ASSIGN_OR_RETURN(const auto sinks_text, parsing_utils::requiredChildText(nfresult_node, "sinks"));
@@ -251,13 +333,15 @@ namespace pre_c_sumo
         // End NFResult
 
         // Compose result
-        return NF2FFReader{std::move(file_version), std::move(doc),          intake_flow_rate,   source_flow_rate,
-                           constituents_operator,   std::move(constituents), std::move(sources), std::move(sinks)};
+        return NF2FFReader{std::move(file_version), std::move(doc),        intake_flow_rate,
+                           source_flow_rate,        constituents_operator, std::move(constituents),
+                           std::move(intakes),      std::move(sources),    std::move(sinks)};
     }
 
     NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
                              double source_flow_rate, ConstituentsOperator constituents_operator,
-                             std::vector<double> constituents, std::vector<pre_c_sumo::SourceOrSinkData> sources,
+                             std::vector<double> constituents, std::vector<pre_c_sumo::IntakeData> intakes,
+                             std::vector<pre_c_sumo::SourceOrSinkData> sources,
                              std::vector<pre_c_sumo::SourceOrSinkData> sinks)
         : file_version_{std::move(file_version)},
           document_{std::move(document)},
@@ -265,6 +349,7 @@ namespace pre_c_sumo
           source_flow_rate_{source_flow_rate},
           constituents_operator_{constituents_operator},
           constituents_{constituents},
+          intakes_{intakes},
           sources_{sources},
           sinks_{sinks}
     {
@@ -299,6 +384,12 @@ namespace pre_c_sumo
      * @return std::vector<double>
      */
     std::vector<double> NF2FFReader::constituents() const { return constituents_; };
+
+    /**
+     * @brief Returns the intakes that have been read.
+     * @return std::vector<pre_c_sumo::IntakeData>
+     */
+    std::vector<pre_c_sumo::IntakeData> NF2FFReader::intakes() const { return intakes_; };
 
     /**
      * @brief Returns the sources that have been read.

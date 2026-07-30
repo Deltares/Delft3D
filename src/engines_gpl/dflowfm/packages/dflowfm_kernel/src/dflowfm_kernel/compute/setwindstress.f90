@@ -130,7 +130,7 @@ contains
                   wyL = wy(L)
                   call compute_wind_relative_to_surface_on_link(wx(L), wy(L), relativewind, u1(ltop(L)), v(ltop(L)), csu(L), snu(L), wxL, wyL, uwi)
                   if (jaspacevarcharn == 1) then
-                     cdb(1) = wcharnock(L)
+                     cdb(1) = wcharnock%get(L)
                   end if
                   call setcdwcoefficient(uwi, cdw, L)
                   if (ice_modify_winddrag /= ICE_WINDDRAG_NONE) then
