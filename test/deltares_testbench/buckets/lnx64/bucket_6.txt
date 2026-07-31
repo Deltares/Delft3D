@@ -1,0 +1,9 @@
+configs/dimr/dimr_dflowfm_drtc_restart_lnx64.xml
+configs/dimr/dimr_dflowfm_lnx64_parallel_memory_intensive.xml
+configs/dimr/dimr_dflowfm_tutorials_lnx64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml
+configs/dimr/dimr_dwaves_lnx64.xml
+configs/dwaq_dpart/lnx64/dwaq_validation.xml
+configs/delft3d4/delft3d_lnx64_hp_flow_parallel.xml
+configs/delft3d4/delft3d_lnx64_hp_flow_parallel_wave.xml
+configs/delft3d4/delft3d_lnx64_hp_flow_wave.xml

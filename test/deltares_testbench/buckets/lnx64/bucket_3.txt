@@ -1,0 +1,7 @@
+configs/dimr/dimr_dflowfm_drr_lnx64.xml
+configs/dimr/dimr_dflowfm_drtc_general_lnx64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_lnx64.xml
+configs/dimr/dimr_dmorphology_validation_lnx64.xml
+configs/dwaq_dpart/lnx64/dwaq_drtc.xml
+configs/dwaq_dpart/lnx64/dwaq.xml
+configs/delft3d4/delft3d_lnx64_hp_flow_mormerge.xml

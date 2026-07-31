@@ -1,0 +1,8 @@
+configs/dimr/dimr_dflowfm_cosumo_lnx64.xml
+configs/dimr/dimr_dflowfm_drtc_1d-network_lnx64.xml
+configs/dimr/dimr_dflowfm_lnx64_parallel.xml
+configs/dimr/dimr_dflowfm_dsle_lnx64.xml
+configs/dimr/dimr_drr_scs_lnx64.xml
+configs/dimr/dimr_dwaq_drtc_lnx64.xml
+configs/dwaq_dpart/lnx64/dpart_unstructured.xml
+configs/dwaq_dpart/lnx64/dwaq_dpart.xml

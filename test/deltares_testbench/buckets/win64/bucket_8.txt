@@ -1,0 +1,10 @@
+configs/dimr/dimr_dflowfm_drtc_dwaves_win64.xml
+configs/dimr/dimr_dflowfm_dwaves_win64_parallel.xml
+configs/dimr/dimr_dflowfm_dwaves_win64.xml
+configs/dimr/dimr_dflowfm_lim_waves_win64.xml
+configs/dimr/dimr_dflowfm_mormerge_win64.xml
+configs/dimr/dimr_dflowfm_processes_win64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_1D2D_win64.xml
+configs/dimr/dimr_drr_unpaved_win64.xml
+configs/dimr/dimr_dwaves_hongkong_win64.xml
+configs/dwaq_dpart/win64/dpart_structured.xml

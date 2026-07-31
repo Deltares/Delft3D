@@ -1,0 +1,8 @@
+configs/dimr/dimr_dflowfm_dwaves_win64_parallel_c01.xml
+configs/dimr/dimr_dflowfm_full_scale_models_win64.xml
+configs/dimr/dimr_dflowfm_swantau_to_waq_win64.xml
+configs/dimr/dimr_dflowfm_tutorials_win64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_win64.xml
+configs/dimr/dimr_dmorphology_validation_win64.xml
+configs/dwaq_dpart/win64/dwaq.xml
+configs/delft3d4/delft3d_win64_hp_flow_mormerge.xml

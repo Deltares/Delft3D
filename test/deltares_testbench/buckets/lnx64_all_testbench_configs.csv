@@ -1,0 +1,52 @@
+fm 1d parallel,configs/dimr/dimr_dflowfm_1D_lnx64_parallel.xml,17,5
+fm 1d,configs/dimr/dimr_dflowfm_1d_lnx64.xml,90,5
+fm 1d rivers,configs/dimr/dimr_dflowfm_1d_rivers_lnx64.xml,13,4
+fm 3d,configs/dimr/dimr_dflowfm_3d_lnx64.xml,124,4
+fm cosumo,configs/dimr/dimr_dflowfm_cosumo_lnx64.xml,31,7
+fm drr,configs/dimr/dimr_dflowfm_drr_lnx64.xml,5,3
+fm drtc 1d,configs/dimr/dimr_dflowfm_drtc_1d-network_lnx64.xml,64,7
+fm drtc 3d,configs/dimr/dimr_dflowfm_drtc_3D_lnx64.xml,9,4
+fm drtc dwaves,configs/dimr/dimr_dflowfm_drtc_dwaves_lnx64.xml,1,8
+fm drtc general,configs/dimr/dimr_dflowfm_drtc_general_lnx64.xml,12,3
+fm drtc restart,configs/dimr/dimr_dflowfm_drtc_restart_lnx64.xml,11,6
+fm drtc tutorials,configs/dimr/dimr_dflowfm_drtc_tutorials_lnx64.xml,3,8
+fm dwaves,configs/dimr/dimr_dflowfm_dwaves_lnx64.xml,17,8
+fm dwaves parallel,configs/dimr/dimr_dflowfm_dwaves_lnx64_parallel.xml,6,8
+fm dwaves parallel c01,configs/dimr/dimr_dflowfm_dwaves_lnx64_parallel_c01.xml,1,5
+fm hyd,configs/dimr/dimr_dflowfm_hyd_lnx64.xml,6,4
+fm lim-waves,configs/dimr/dimr_dflowfm_lim_waves_lnx64.xml,5,5
+fm parallel,configs/dimr/dimr_dflowfm_lnx64_parallel.xml,17,7
+fm parallel memory intensive,configs/dimr/dimr_dflowfm_lnx64_parallel_memory_intensive.xml,1,6
+fm,configs/dimr/dimr_dflowfm_lnx64.xml,542,1
+fm mormerge,configs/dimr/dimr_dflowfm_mormerge_lnx64.xml,3,8
+fm processes,configs/dimr/dimr_dflowfm_processes_lnx64.xml,36,8
+fm swantau-to-waq,configs/dimr/dimr_dflowfm_swantau_to_waq_lnx64.xml,2,5
+fm tutorials,configs/dimr/dimr_dflowfm_tutorials_lnx64.xml,5,6
+fm validation,configs/dimr/dimr_dflowfm_validation_lnx64.xml,42,5
+fm dsle,configs/dimr/dimr_dflowfm_dsle_lnx64.xml,11,7
+fm waq 1d2d,configs/dimr/dimr_dflowfm_waq_coupling_1D2D_lnx64.xml,50,8
+fm waq aggregation,configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml,14,6
+fm waq,configs/dimr/dimr_dflowfm_waq_coupling_lnx64.xml,9,3
+dmorphology,configs/dimr/dimr_dmorphology_validation_lnx64.xml,18,3
+drr dnam,configs/dimr/dimr_drr_dnam_lnx64.xml,23,4
+drr unpaved,configs/dimr/dimr_drr_unpaved_lnx64.xml,12,5
+drr walrus,configs/dimr/dimr_drr_walrus_lnx64.xml,12,8
+drr scs,configs/dimr/dimr_drr_scs_lnx64.xml,1,7
+dwaq drtc,configs/dimr/dimr_dwaq_drtc_lnx64.xml,3,7
+dwaves,configs/dimr/dimr_dwaves_lnx64.xml,30,6
+dwaves hongkong,configs/dimr/dimr_dwaves_hongkong_lnx64.xml,1,8
+dpart structured,configs/dwaq_dpart/lnx64/dpart_structured.xml,49,8
+dpart unstructured,configs/dwaq_dpart/lnx64/dpart_unstructured.xml,47,7
+dwaq dpart,configs/dwaq_dpart/lnx64/dwaq_dpart.xml,4,7
+dwaq drtc,configs/dwaq_dpart/lnx64/dwaq_drtc.xml,3,3
+dwaq validation,configs/dwaq_dpart/lnx64/dwaq_validation.xml,43,6
+dwaq,configs/dwaq_dpart/lnx64/dwaq.xml,131,3
+dwaq openpb,configs/dwaq_dpart/lnx64/dwaq_openpb.xml,3,4
+d3d4 flow,configs/delft3d4/delft3d_lnx64_hp_flow.xml,258,2
+d3d4 flow flow,configs/delft3d4/delft3d_lnx64_hp_flow_flow.xml,9,5
+d3d4 flow mormerge,configs/delft3d4/delft3d_lnx64_hp_flow_mormerge.xml,1,3
+d3d4 flow nearfield,configs/delft3d4/delft3d_lnx64_hp_flow_nearfield.xml,1,4
+d3d4 flow parallel,configs/delft3d4/delft3d_lnx64_hp_flow_parallel.xml,72,6
+d3d4 flow parallel nearfield,configs/delft3d4/delft3d_lnx64_hp_flow_parallel_nearfield.xml,1,5
+d3d4 flow parallel wave,configs/delft3d4/delft3d_lnx64_hp_flow_parallel_wave.xml,1,6
+d3d4 flow wave,configs/delft3d4/delft3d_lnx64_hp_flow_wave.xml,2,6

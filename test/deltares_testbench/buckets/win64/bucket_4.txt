@@ -1,0 +1,8 @@
+configs/dimr/dimr_dflowfm_1d_rivers_win64.xml
+configs/dimr/dimr_dflowfm_3d_win64.xml
+configs/dimr/dimr_dflowfm_dsle_win64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_structures_win64.xml
+configs/dimr/dimr_drr_dnam_win64.xml
+configs/dwaq_dpart/win64/dwaq_dpart.xml
+configs/dwaq_dpart/win64/dwaq_drtc.xml
+configs/delft3d4/delft3d_win64_hp_flow_nearfield.xml

@@ -1,0 +1,9 @@
+configs/dimr/dimr_dflowfm_1D_lnx64_parallel.xml
+configs/dimr/dimr_dflowfm_1d_lnx64.xml
+configs/dimr/dimr_dflowfm_dwaves_lnx64_parallel_c01.xml
+configs/dimr/dimr_dflowfm_lim_waves_lnx64.xml
+configs/dimr/dimr_dflowfm_swantau_to_waq_lnx64.xml
+configs/dimr/dimr_dflowfm_validation_lnx64.xml
+configs/dimr/dimr_drr_unpaved_lnx64.xml
+configs/delft3d4/delft3d_lnx64_hp_flow_flow.xml
+configs/delft3d4/delft3d_lnx64_hp_flow_parallel_nearfield.xml
