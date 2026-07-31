@@ -1159,17 +1159,17 @@ contains
 
    end function init_spatial_fields
 
-   !> Enable quantities that require post-load data or additional block metadata.
+   !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
    function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
       use fm_external_forcings_utils, only: split_qid
       use tree_data_types, only: tree_data
       use unstruc_inifields, only: finish_mass_balance_area_target, set_friction_type_values_explicit
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: quantity
-      type(tree_data), pointer, intent(in) :: block_ptr
-      integer, intent(in) :: operand
-      real(dp), dimension(:), pointer, intent(inout) :: target_data
+      character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
+      type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
+      integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
+      real(dp), dimension(:), pointer, intent(inout) :: target_data !< pointer to the target data array, for now only used for mass_balance_area
       logical :: success
 
       character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
