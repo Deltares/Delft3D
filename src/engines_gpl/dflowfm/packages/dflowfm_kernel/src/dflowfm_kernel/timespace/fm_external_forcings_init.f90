@@ -108,7 +108,7 @@ contains
       do i_ext = 1, size(extfile_new_list)
 
          call check_version_number_and_open_external_forcing_file(trim(extfile_new_list(i_ext)), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
-         
+
          ! Abort initialization if an external forcing file could not be validated or opened.
          if (iresult /= DFM_NOERR) then
 
@@ -344,7 +344,7 @@ contains
 
    end subroutine build_itpenzr_and_itpenur
 
-   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array. 
+   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array.
    !! The lateral bed area is computed as the sum of the bed areas of all nodes that belong to the lateral, excluding ghost nodes.
    subroutine compute_lateral_bed_areas()
       use m_flowgeom, only: ba
@@ -464,7 +464,7 @@ contains
             write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
-         end if 
+         end if
       end if
 
       num_items_in_block = 0
@@ -582,6 +582,7 @@ contains
       num_coordinates = imiss
       location_file = ''
       is_success = .false.
+      vertical_position = ''
 
       has_node_id = has_key(block_ptr, 'Lateral', 'nodeId')
       has_branch_id = has_key(block_ptr, 'Lateral', 'branchId')
@@ -964,9 +965,9 @@ contains
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
-                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
-                       resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice, apply_waqbot_vertical_position
+                                   resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice, apply_waqbot_vertical_position
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -1614,7 +1615,7 @@ contains
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens 
+      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens
       integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
