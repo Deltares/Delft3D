@@ -143,6 +143,11 @@ object WindowsTest : BuildType({
                 call C:\venv\Scripts\activate.bat
                 uv pip sync pip/win-requirements.txt
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
+
+                rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
+                rem been dealing with during the module import phase of "Python TestBench.py"
+                ping -n 5 -w 1000 localhost > nul
+
                 python TestBench.py %%argsList%%
             """.trimIndent()
 
