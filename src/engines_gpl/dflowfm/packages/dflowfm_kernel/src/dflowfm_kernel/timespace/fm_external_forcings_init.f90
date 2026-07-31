@@ -1000,6 +1000,8 @@ contains
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
       integer :: oper_backup
 
+      vertical_position = ''
+
       res = .false.
       ec_item = ec_undef_int
       target_data => null()
