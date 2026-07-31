@@ -926,7 +926,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c033_frisianinlet_waqbot_restart_z" ref="dflowfm_default_restart">
-  <path version="2025-10-16T07:12:21.443000">e02_dflowfm/f030_water_quality_processes/c033_frisianinlet_waqbot_restart_z</path>
+  <path version="2026-07-31T11:35:14.280000">e02_dflowfm/f030_water_quality_processes/c033_frisianinlet_waqbot_restart_z</path>
   <checks>
     <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
       <parameters>
