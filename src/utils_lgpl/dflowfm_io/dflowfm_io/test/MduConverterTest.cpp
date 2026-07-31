@@ -542,7 +542,9 @@ namespace dflowfm_io::test
         const auto expected =
             std::chrono::sys_days{std::chrono::year{2023} / std::chrono::January / std::chrono::day{15}} +
             std::chrono::hours{12};
-        EXPECT_EQ(mduData.getValueAs<std::chrono::system_clock::time_point>(key), expected);
+        const auto& actual = mduData.getValueAs<std::optional<std::chrono::system_clock::time_point>>(key);
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), expected);
     }
 
     // -------------------------------------------------------------------------
@@ -809,7 +811,9 @@ namespace dflowfm_io::test
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
             std::chrono::hours{12};
 
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), expected);
+        const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), expected);
     }
 
     TEST_F(MduConverterTest, ValueFromString_DateTime_DateFormat_ReturnsCorrectValue)
@@ -820,7 +824,9 @@ namespace dflowfm_io::test
         const auto expected =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), expected);
+        const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), expected);
     }
 
     TEST_F(MduConverterTest, ValueFromString_DateTime_DateFormat_WithTimeComponent_ThrowsInvalidArgument)
@@ -844,6 +850,15 @@ namespace dflowfm_io::test
         auto schema = MakePropertySchema(ValueType::DateTime);
 
         EXPECT_THROW(MduConverter::ValueFromString(schema, "not_a_date"), std::invalid_argument);
+    }
+
+    TEST_F(MduConverterTest, ValueFromString_DateTime_EmptyValue_ReturnsNullopt)
+    {
+        auto schema = MakePropertySchema(ValueType::DateTime);
+        auto result = MduConverter::ValueFromString(schema, "");
+
+        const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
+        EXPECT_FALSE(actual.has_value());
     }
 
     // -------------------------------------------------------------------------
@@ -1029,7 +1044,8 @@ namespace dflowfm_io::test
         const auto timePoint =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
-        auto result = MduConverter::ValueToString(schema, Value{std::chrono::system_clock::time_point{timePoint}});
+        auto result =
+            MduConverter::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{timePoint}});
 
         EXPECT_EQ(result, "20200130000000");
     }
@@ -1041,9 +1057,20 @@ namespace dflowfm_io::test
         const auto timePoint =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
-        auto result = MduConverter::ValueToString(schema, Value{std::chrono::system_clock::time_point{timePoint}});
+        auto result =
+            MduConverter::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{timePoint}});
 
         EXPECT_EQ(result, "20200130");
+    }
+
+    TEST_F(MduConverterTest, ValueToString_DateTime_Nullopt_ReturnsEmptyString)
+    {
+        auto schema = MakePropertySchema(ValueType::DateTime);
+
+        auto result =
+            MduConverter::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{std::nullopt}});
+
+        EXPECT_TRUE(result.empty());
     }
 
     // -------------------------------------------------------------------------
@@ -1200,12 +1227,14 @@ namespace dflowfm_io::test
         const auto timePoint = std::chrono::system_clock::time_point{
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
             std::chrono::hours{12}};
-        const Value original = timePoint;
+        const Value original = std::optional<std::chrono::system_clock::time_point>{timePoint};
 
         auto raw = MduConverter::ValueToString(schema, original);
         auto result = MduConverter::ValueFromString(schema, raw);
 
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), timePoint);
+        const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), timePoint);
     }
 
     TEST_F(MduConverterTest, RoundTrip_DateTime_DateFormat)
@@ -1213,12 +1242,14 @@ namespace dflowfm_io::test
         auto schema = MakePropertySchema(ValueType::DateTime, FormatType::Date);
         const auto timePoint = std::chrono::system_clock::time_point{
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}}};
-        const Value original = timePoint;
+        const Value original = std::optional<std::chrono::system_clock::time_point>{timePoint};
 
         auto raw = MduConverter::ValueToString(schema, original);
         auto result = MduConverter::ValueFromString(schema, raw);
 
-        EXPECT_EQ(std::get<std::chrono::system_clock::time_point>(result), timePoint);
+        const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), timePoint);
     }
 
 } // namespace dflowfm_io::test

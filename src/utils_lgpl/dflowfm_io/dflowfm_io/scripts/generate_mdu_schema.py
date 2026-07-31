@@ -120,7 +120,6 @@ def render_property(prop, indent, default_float_format):
     width = len(".default_value") if "default_value" in prop else len(".description")
 
     required = bool(prop.get("validation", {}).get("is_required", False))
-    nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
     enum_entries = get_enum_entries(prop)
     status = prop.get("status", {})
@@ -145,8 +144,6 @@ def render_property(prop, indent, default_float_format):
 
     if required:
         field_blocks.append(field(".required", "true"))
-    if nullable:
-        field_blocks.append(field(".nullable", "true"))
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
     if enum_entries:

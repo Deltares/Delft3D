@@ -43,9 +43,12 @@ class MduModel:
         check_result(lib.mdu_get_path(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
         return Path(value.value.decode("utf-8"))
 
-    def get_datetime(self, key: str) -> datetime:
+    def get_datetime(self, key: str) -> datetime | None:
         value = ctypes.c_int64()
-        check_result(lib.mdu_get_datetime(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))
+        has_value = ctypes.c_int32()
+        check_result(lib.mdu_get_datetime(self._ref.handle, key.encode("utf-8"), ctypes.byref(value), ctypes.byref(has_value)))
+        if has_value.value == 0:
+            return None
         return datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=value.value)
 
     def get_string_enum(self, key: str) -> str:
@@ -91,8 +94,12 @@ class MduModel:
     def set_path(self, key: str, value: Path | str) -> None:
         check_result(lib.mdu_set_path(self._ref.handle, key.encode("utf-8"), str(value).encode("utf-8")))
 
-    def set_datetime(self, key: str, value: datetime) -> None:
-        check_result(lib.mdu_set_datetime(self._ref.handle, key.encode("utf-8"), ctypes.c_int64(int((value if value.tzinfo else value.replace(tzinfo=timezone.utc)).timestamp()))))
+    def set_datetime(self, key: str, value: datetime | None) -> None:
+        if value is None:
+            check_result(lib.mdu_set_datetime(self._ref.handle, key.encode("utf-8"), ctypes.c_int64(0), ctypes.c_int32(0)))
+        else:
+            epoch = int((value if value.tzinfo else value.replace(tzinfo=timezone.utc)).timestamp())
+            check_result(lib.mdu_set_datetime(self._ref.handle, key.encode("utf-8"), ctypes.c_int64(epoch), ctypes.c_int32(1)))
 
     def set_string_enum(self, key: str, value: str) -> None:
         check_result(lib.mdu_set_string_enum(self._ref.handle, key.encode("utf-8"), value.encode("utf-8")))

@@ -27,7 +27,10 @@ namespace dflowfm_io::test
     // Constructor
     // -------------------------------------------------------------------------
 
-    TEST_F(MduDocumentTest, Constructor_PopulatesSchemaDefaults) { EXPECT_FALSE(doc.GetData().empty()); }
+    TEST_F(MduDocumentTest, Constructor_PopulatesSchemaDefaults)
+    {
+        EXPECT_FALSE(doc.GetData().empty());
+    }
 
     // -------------------------------------------------------------------------
     // Load(stream)
@@ -247,9 +250,22 @@ namespace dflowfm_io::test
     {
         const std::string key = FormatKey("time", "refDate");
 
-        EXPECT_NO_THROW(doc.GetValue<std::chrono::system_clock::time_point>(key));
+        const auto& value = doc.GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
+
+        const auto expected = std::chrono::system_clock::time_point{
+            std::chrono::sys_days{std::chrono::year{2000} / std::chrono::month{1} / std::chrono::day{1}}};
+        ASSERT_TRUE(value.has_value());
+        EXPECT_EQ(value.value(), expected);
     }
 
+    TEST_F(MduDocumentTest, GetValue_DateTimePropertyWithoutDefault_ReturnsNullopt)
+    {
+        const std::string key = FormatKey("time", "startDateTime");
+
+        const auto& value = doc.GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
+
+        EXPECT_FALSE(value.has_value());
+    }
     // -------------------------------------------------------------------------
     // SetValue
     // -------------------------------------------------------------------------
@@ -385,7 +401,19 @@ namespace dflowfm_io::test
 
         doc.SetValue(key, newValue);
 
-        EXPECT_EQ(doc.GetValue<std::chrono::system_clock::time_point>(key), newValue);
+        const auto& actual = doc.GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), newValue);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_NulloptDateTimeValue_ClearsData)
+    {
+        const std::string key = FormatKey("time", "refDate");
+
+        doc.SetValue(key, std::optional<std::chrono::system_clock::time_point>{std::nullopt});
+
+        const auto& actual = doc.GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
+        EXPECT_FALSE(actual.has_value());
     }
 
 } // namespace dflowfm_io::test

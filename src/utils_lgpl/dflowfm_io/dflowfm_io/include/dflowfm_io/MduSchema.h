@@ -61,7 +61,7 @@ namespace dflowfm_io
         std::filesystem::path,
         StringEnumValue,
         IntEnumValue,
-        std::chrono::system_clock::time_point,
+        std::optional<std::chrono::system_clock::time_point>,
         std::vector<std::string>,
         std::vector<std::filesystem::path>,
         std::vector<double>
@@ -100,7 +100,6 @@ namespace dflowfm_io
         std::optional<FormatType> format; ///< Optional format for Float, FloatList and DateTime properties.
         std::string description; ///< Human-readable description of the property.
         bool required = false; ///< Whether the property must be present in the MDU file.
-        bool nullable = false; ///< Whether the property may hold an explicit null (empty) value.
         Status status; ///< Describes the lifecycle status of the property.
         std::vector<EnumValueSchema> enum_values; ///< Ordered list of enum value schemas for StringEnum and IntEnum types.
     };

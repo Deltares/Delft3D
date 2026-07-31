@@ -227,14 +227,16 @@ contains
       type(MduModel) :: model
       logical :: success = .false.
       integer(kind=int64) :: epoch
+      logical :: has_value
 
       call model%create(success, terminate_on_error)
       call model%load_from_string(MINIMAL_MDU, success, terminate_on_error)
 
-      call model%set_datetime("time.refdate", 978307200_int64, success, terminate_on_error) ! 2001-01-01 UTC
+      call model%set_datetime("time.refdate", 978307200_int64, .true., success, terminate_on_error) ! 2001-01-01 UTC
       call f90_expect_eq(success, .true.)
-      call model%get_datetime("time.refdate", epoch, success, terminate_on_error)
+      call model%get_datetime("time.refdate", epoch, has_value, success, terminate_on_error)
       call f90_expect_eq(success, .true.)
+      call f90_expect_eq(has_value, .true.)
       call f90_expect_eq(int(epoch), 978307200)
    end subroutine test_set_and_get_datetime
 !$f90tw)

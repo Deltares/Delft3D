@@ -28,7 +28,7 @@ public sealed class MduDocument : IDisposable
     /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
-    public object this[string key]
+    public object? this[string key]
     {
         get => GetProperty(key);
         set => SetProperty(key, value);
@@ -135,7 +135,7 @@ public sealed class MduDocument : IDisposable
     /// <returns>The property value.</returns>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
-    public object GetProperty(string key)
+    public object? GetProperty(string key)
     {
         MduPropertySchema schema = GetPropertySchema(key);
 
@@ -165,35 +165,63 @@ public sealed class MduDocument : IDisposable
     /// <returns>The property value.</returns>
     /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
-    public T GetProperty<T>(string key)
+    public T? GetProperty<T>(string key)
     {
-        return (T)GetProperty(key);
+        return (T?)GetProperty(key);
     }
 
     /// <summary>
     /// Sets a property value by its fully-qualified key.
     /// </summary>
     /// <param name="key">The fully-qualified property key (e.g. <c>"geometry.netfile"</c>).</param>
-    /// <param name="value">The value to assign.</param>
-    /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
+    /// <param name="value">
+    /// The value to assign. Only <c>null</c> when the property's value type is <see cref="MduValueType.DateTime" />;
+    /// for all other value types <paramref name="value" /> must not be null.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// When <paramref name="key" /> is null or whitespace, or when <paramref name="value" /> is not of the type
+    /// expected by the property's value type.
+    /// </exception>
     /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
-    public void SetProperty(string key, object value)
+    /// <exception cref="ArgumentNullException">
+    /// When <paramref name="value" /> is null and the property's value type is not <see cref="MduValueType.DateTime" />.
+    /// </exception>
+    public void SetProperty(string key, object? value)
     {
         MduPropertySchema schema = GetPropertySchema(key);
 
+        if (schema.ValueType != MduValueType.DateTime && value is null)
+        {
+            throw new ArgumentNullException(nameof(value), $"Value for property '{key}' must not be null.");
+        }
+
+        try
+        {
+            SetProperty(schema, key, value);
+        }
+        catch (InvalidCastException ex)
+        {
+            throw new ArgumentException(
+                $"Value for property '{key}' is not of the type expected by value type '{schema.ValueType}'.",
+                nameof(value), ex);
+        }
+    }
+
+    private void SetProperty(MduPropertySchema schema, string key, object? value)
+    {
         switch (schema.ValueType)
         {
-            case MduValueType.Int: _api.SetInt(key, (int)value); break;
-            case MduValueType.Bool: _api.SetBool(key, (bool)value); break;
-            case MduValueType.Double: _api.SetDouble(key, (double)value); break;
-            case MduValueType.String: _api.SetString(key, (string)value); break;
-            case MduValueType.Path: _api.SetPath(key, (string)value); break;
-            case MduValueType.DateTime: _api.SetDateTime(key, (DateTime)value); break;
-            case MduValueType.StringEnum: _api.SetStringEnum(key, (string)value); break;
-            case MduValueType.IntEnum: _api.SetIntEnum(key, (int)value); break;
-            case MduValueType.DoubleList: _api.SetDoubleList(key, (IEnumerable<double>)value); break;
-            case MduValueType.StringList: _api.SetStringList(key, (IEnumerable<string>)value); break;
-            case MduValueType.PathList: _api.SetPathList(key, (IEnumerable<string>)value); break;
+            case MduValueType.Int: _api.SetInt(key, (int)value!); break;
+            case MduValueType.Bool: _api.SetBool(key, (bool)value!); break;
+            case MduValueType.Double: _api.SetDouble(key, (double)value!); break;
+            case MduValueType.String: _api.SetString(key, (string)value!); break;
+            case MduValueType.Path: _api.SetPath(key, (string)value!); break;
+            case MduValueType.DateTime: _api.SetDateTime(key, (DateTime?)value); break;
+            case MduValueType.StringEnum: _api.SetStringEnum(key, (string)value!); break;
+            case MduValueType.IntEnum: _api.SetIntEnum(key, (int)value!); break;
+            case MduValueType.DoubleList: _api.SetDoubleList(key, (IEnumerable<double>)value!); break;
+            case MduValueType.StringList: _api.SetStringList(key, (IEnumerable<string>)value!); break;
+            case MduValueType.PathList: _api.SetPathList(key, (IEnumerable<string>)value!); break;
             default:
                 throw new NotSupportedException(
                     $"Value type '{schema.ValueType}' is not supported.");

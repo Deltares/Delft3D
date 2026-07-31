@@ -240,6 +240,13 @@ namespace dflowfm_io::test
             tStart.description = "Start time w.r.t. `refDate`.";
             time.properties.push_back(tStart);
 
+            PropertySchema startDateTime;
+            startDateTime.key = "startDateTime";
+            startDateTime.value_type = ValueType::DateTime;
+            startDateTime.format = FormatType::DateTime;
+            startDateTime.description = "Computation start datetime.";
+            time.properties.push_back(startDateTime);
+
             return MduSchema{"Test schema", {general, model, sediment, geometry, numerics, time}};
         }();
 

@@ -157,11 +157,12 @@ module dflowfm_io
          integer(c_int32_t) :: res
       end function
 
-      function c_mdu_get_datetime(handle, key, out_value) result(res) bind(C, name="mdu_get_datetime")
+      function c_mdu_get_datetime(handle, key, out_value, out_has_value) result(res) bind(C, name="mdu_get_datetime")
          import :: c_ptr, c_char, c_int32_t, c_int64_t
          type(c_ptr), value, intent(in) :: handle
          character(kind=c_char), intent(in) :: key(*)
          integer(c_int64_t), intent(out) :: out_value
+         integer(c_int32_t), intent(out) :: out_has_value
          integer(c_int32_t) :: res
       end function
 
@@ -248,11 +249,12 @@ module dflowfm_io
          integer(c_int32_t) :: res
       end function
 
-      function c_mdu_set_datetime(handle, key, epoch) result(res) bind(C, name="mdu_set_datetime")
+      function c_mdu_set_datetime(handle, key, epoch, has_value) result(res) bind(C, name="mdu_set_datetime")
          import :: c_ptr, c_char, c_int32_t, c_int64_t
          type(c_ptr), value, intent(in) :: handle
          character(kind=c_char), intent(in) :: key(*)
          integer(c_int64_t), value, intent(in) :: epoch
+         integer(c_int32_t), value, intent(in) :: has_value
          integer(c_int32_t) :: res
       end function
 
@@ -521,15 +523,18 @@ contains
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine
 
-   subroutine mdu_get_datetime_f(self, key, epoch, success, error_handler)
+   subroutine mdu_get_datetime_f(self, key, epoch, has_value, success, error_handler)
       class(MduModel), intent(in) :: self
       character(len=*), intent(in) :: key
       integer(kind=int64), intent(out) :: epoch
+      logical, intent(out) :: has_value
       logical, intent(out) :: success
       procedure(mdu_error_handler_i) :: error_handler
+      integer(c_int32_t) :: c_has_value
       integer :: result_code
 
-      result_code = int(c_mdu_get_datetime(self%handle, f_to_c_string(key), epoch))
+      result_code = int(c_mdu_get_datetime(self%handle, f_to_c_string(key), epoch, c_has_value))
+      has_value = (c_has_value /= 0)
       call self%handle_result(result_code, error_handler)
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine
@@ -698,15 +703,19 @@ contains
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine
 
-   subroutine mdu_set_datetime_f(self, key, epoch, success, error_handler)
+   subroutine mdu_set_datetime_f(self, key, epoch, has_value, success, error_handler)
       class(MduModel), intent(in) :: self
       character(len=*), intent(in) :: key
       integer(kind=int64), intent(in) :: epoch
+      logical, intent(in) :: has_value
       logical, intent(out) :: success
       procedure(mdu_error_handler_i) :: error_handler
+      integer(c_int32_t) :: c_has_value
       integer :: result_code
 
-      result_code = int(c_mdu_set_datetime(self%handle, f_to_c_string(key), epoch))
+      c_has_value = 0
+      if (has_value) c_has_value = 1
+      result_code = int(c_mdu_set_datetime(self%handle, f_to_c_string(key), epoch, c_has_value))
       call self%handle_result(result_code, error_handler)
       success = (result_code == DFLOWFM_IO_RESULT_SUCCESS)
    end subroutine

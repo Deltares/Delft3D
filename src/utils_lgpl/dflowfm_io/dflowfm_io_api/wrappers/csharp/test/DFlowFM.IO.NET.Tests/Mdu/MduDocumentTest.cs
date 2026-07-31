@@ -133,7 +133,8 @@ public class MduDocumentTest
         using MduDocument reloaded = new();
         reloaded.LoadFromString(content);
 
-        Assert.That(reloaded.GetProperty<string>("general.program"), Is.EqualTo("Round Trip"));
+        string? result = reloaded.GetProperty<string>("general.program");
+        Assert.That(result, Is.EqualTo("Round Trip"));
     }
 
     [Test]
@@ -169,7 +170,8 @@ public class MduDocumentTest
         using MduDocument reloaded = new();
         reloaded.LoadFromStream(stream);
 
-        Assert.That(reloaded.GetProperty<string>("general.program"), Is.EqualTo("D-Flow FM éü中文"));
+        string? result = reloaded.GetProperty<string>("general.program");
+        Assert.That(result, Is.EqualTo("D-Flow FM éü中文"));
     }
 
     [TestCase(null)]
@@ -195,7 +197,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("geometry.kmx"), Is.EqualTo(3));
+        int result = document.GetProperty<int>("geometry.kmx");
+
+        Assert.That(result, Is.EqualTo(3));
     }
 
     [Test]
@@ -203,7 +207,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("numerics.cflmax"), Is.EqualTo(1.5));
+        double result = document.GetProperty<double>("numerics.cflmax");
+
+        Assert.That(result, Is.EqualTo(1.5));
     }
 
     [Test]
@@ -211,7 +217,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("geometry.usecaching"), Is.True);
+        bool result = document.GetProperty<bool>("geometry.usecaching");
+
+        Assert.That(result, Is.True);
     }
 
     [Test]
@@ -219,7 +227,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("general.program"), Is.EqualTo("D-Flow FM"));
+        string? result = document.GetProperty<string>("general.program");
+
+        Assert.That(result, Is.EqualTo("D-Flow FM"));
     }
 
     [Test]
@@ -227,7 +237,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContentUnicode();
 
-        Assert.That(document.GetProperty("general.program"), Is.EqualTo("D-Flow FM éü中文"));
+        string? result = document.GetProperty<string>("general.program");
+
+        Assert.That(result, Is.EqualTo("D-Flow FM éü中文"));
     }
 
     [Test]
@@ -235,7 +247,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("geometry.netfile"), Is.EqualTo("f34_net.nc"));
+        string? result = document.GetProperty<string>("geometry.netfile");
+
+        Assert.That(result, Is.EqualTo("f34_net.nc"));
     }
 
     [Test]
@@ -243,7 +257,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContentUnicode();
 
-        Assert.That(document.GetProperty("geometry.netfile"), Is.EqualTo("réseau/données_éü中文.nc"));
+        string? result = document.GetProperty<string>("geometry.netfile");
+
+        Assert.That(result, Is.EqualTo("réseau/données_éü中文.nc"));
     }
 
     [Test]
@@ -251,8 +267,19 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("time.refdate"),
-            Is.EqualTo(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+        DateTime? result = document.GetProperty<DateTime?>("time.refdate");
+
+        Assert.That(result, Is.EqualTo(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+    }
+
+    [Test]
+    public void GetProperty_DateTimeValueType_UnsetProperty_ReturnsNull()
+    {
+        using MduDocument document = new();
+
+        DateTime? result = document.GetProperty<DateTime?>("time.startdatetime");
+
+        Assert.That(result, Is.Null);
     }
 
     [Test]
@@ -260,7 +287,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("general.filetype"), Is.EqualTo("modelDef"));
+        string? result = document.GetProperty<string>("general.filetype");
+
+        Assert.That(result, Is.EqualTo("modelDef"));
     }
 
     [Test]
@@ -268,7 +297,9 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(document.GetProperty("numerics.timesteptype"), Is.EqualTo(3));
+        int result = document.GetProperty<int>("numerics.timesteptype");
+
+        Assert.That(result, Is.EqualTo(3));
     }
 
     [Test]
@@ -276,7 +307,7 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        IEnumerable<double> result = (IEnumerable<double>)document.GetProperty("output.hisinterval");
+        IEnumerable<double>? result = document.GetProperty<IEnumerable<double>>("output.hisinterval");
 
         Assert.That(result, Is.EqualTo([300.0, 500.0]));
     }
@@ -286,7 +317,7 @@ public class MduDocumentTest
     {
         using MduDocument document = CreateWithValidContent();
 
-        IEnumerable<string> result = (IEnumerable<string>)document.GetProperty("geometry.thindamfile");
+        IEnumerable<string>? result = document.GetProperty<IEnumerable<string>>("geometry.thindamfile");
 
         Assert.That(result, Is.EqualTo(["thd1.pli", "thd2.pli", "thd3.pli"]));
     }
@@ -344,7 +375,8 @@ public class MduDocumentTest
 
         document.SetProperty("geometry.kmx", 5);
 
-        Assert.That(document.GetProperty<int>("geometry.kmx"), Is.EqualTo(5));
+        int result = document.GetProperty<int>("geometry.kmx");
+        Assert.That(result, Is.EqualTo(5));
     }
 
     [Test]
@@ -354,7 +386,8 @@ public class MduDocumentTest
 
         document.SetProperty("numerics.cflmax", 0.9);
 
-        Assert.That(document.GetProperty<double>("numerics.cflmax"), Is.EqualTo(0.9));
+        double result = document.GetProperty<double>("numerics.cflmax");
+        Assert.That(result, Is.EqualTo(0.9));
     }
 
     [Test]
@@ -364,7 +397,8 @@ public class MduDocumentTest
 
         document.SetProperty("geometry.usecaching", false);
 
-        Assert.That(document.GetProperty<bool>("geometry.usecaching"), Is.False);
+        bool result = document.GetProperty<bool>("geometry.usecaching");
+        Assert.That(result, Is.False);
     }
 
     [Test]
@@ -374,7 +408,8 @@ public class MduDocumentTest
 
         document.SetProperty("general.program", "My Program");
 
-        Assert.That(document.GetProperty<string>("general.program"), Is.EqualTo("My Program"));
+        string? result = document.GetProperty<string>("general.program");
+        Assert.That(result, Is.EqualTo("My Program"));
     }
 
     [Test]
@@ -385,7 +420,18 @@ public class MduDocumentTest
 
         document.SetProperty("time.refdate", newDateTime);
 
-        Assert.That(document.GetProperty<DateTime>("time.refdate"), Is.EqualTo(newDateTime));
+        DateTime? result = document.GetProperty<DateTime?>("time.refdate");
+        Assert.That(result, Is.EqualTo(newDateTime));
+    }
+
+    [Test]
+    public void SetProperty_DateTimeValueType_NullValue_ClearsValue()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        document.SetProperty("time.startdatetime", null);
+
+        Assert.That(document.GetProperty("time.startdatetime"), Is.Null);
     }
 
     [Test]
@@ -395,7 +441,8 @@ public class MduDocumentTest
 
         document.SetProperty("time.tunit", "S");
 
-        Assert.That(document.GetProperty<string>("time.tunit"), Is.EqualTo("S"));
+        string? result = document.GetProperty<string>("time.tunit");
+        Assert.That(result, Is.EqualTo("S"));
     }
 
     [Test]
@@ -405,7 +452,8 @@ public class MduDocumentTest
 
         document.SetProperty("numerics.timesteptype", 3);
 
-        Assert.That(document.GetProperty<int>("numerics.timesteptype"), Is.EqualTo(3));
+        int result = document.GetProperty<int>("numerics.timesteptype");
+        Assert.That(result, Is.EqualTo(3));
     }
 
     [Test]
@@ -416,7 +464,7 @@ public class MduDocumentTest
 
         document.SetProperty("output.hisinterval", newValues);
 
-        IEnumerable<double> result = (IEnumerable<double>)document.GetProperty("output.hisinterval");
+        IEnumerable<double>? result = document.GetProperty<IEnumerable<double>>("output.hisinterval");
         Assert.That(result, Is.EqualTo(newValues));
     }
 
@@ -428,16 +476,24 @@ public class MduDocumentTest
 
         document.SetProperty("geometry.thindamfile", newPaths);
 
-        IEnumerable<string> result = (IEnumerable<string>)document.GetProperty("geometry.thindamfile");
+        IEnumerable<string>? result = document.GetProperty<IEnumerable<string>>("geometry.thindamfile");
         Assert.That(result, Is.EqualTo(newPaths));
     }
 
     [Test]
-    public void SetProperty_WrongValueType_ThrowsInvalidCastException()
+    public void SetProperty_WrongValueType_ThrowsArgumentException()
     {
         using MduDocument document = CreateWithValidContent();
 
-        Assert.That(() => document.SetProperty("geometry.kmx", "not-an-int"), Throws.TypeOf<InvalidCastException>());
+        Assert.That(() => document.SetProperty("geometry.kmx", "not-an-int"), Throws.TypeOf<ArgumentException>());
+    }
+
+    [Test]
+    public void SetProperty_NullValue_NonDateTimeValueType_ThrowsArgumentNullException()
+    {
+        using MduDocument document = CreateWithValidContent();
+
+        Assert.That(() => document.SetProperty("geometry.kmx", null), Throws.TypeOf<ArgumentNullException>());
     }
 
     [Test]
@@ -471,7 +527,8 @@ public class MduDocumentTest
 
         document["geometry.kmx"] = 7;
 
-        Assert.That(document.GetProperty<int>("geometry.kmx"), Is.EqualTo(7));
+        int result = document.GetProperty<int>("geometry.kmx");
+        Assert.That(result, Is.EqualTo(7));
     }
 
     [TestCase(null)]
@@ -514,8 +571,11 @@ public class MduDocumentTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(document1.GetProperty<string>("general.program"), Is.EqualTo("Modified"));
-            Assert.That(document2.GetProperty<string>("general.program"), Is.EqualTo("D-Flow FM"));
+            string? result1 = document1.GetProperty<string>("general.program");
+            string? result2 = document2.GetProperty<string>("general.program");
+
+            Assert.That(result1, Is.EqualTo("Modified"));
+            Assert.That(result2, Is.EqualTo("D-Flow FM"));
         }
     }
 

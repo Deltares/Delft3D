@@ -577,7 +577,7 @@ public class MduApiTest
     {
         using MduApi api = CreateWithValidContent();
 
-        DateTime result = api.GetDateTime("time.refdate");
+        DateTime? result = api.GetDateTime("time.refdate");
 
         Assert.That(result, Is.EqualTo(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
     }
@@ -588,6 +588,14 @@ public class MduApiTest
         using MduApi api = new();
 
         Assert.That(api.GetDateTime("time.refdate"), Is.EqualTo(new DateTime(2001, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+    }
+
+    [Test]
+    public void GetDateTime_UnsetProperty_ReturnsNull()
+    {
+        using MduApi api = new();
+
+        Assert.That(api.GetDateTime("time.startdatetime"), Is.Null);
     }
 
     [Test]
@@ -607,6 +615,16 @@ public class MduApiTest
         api.SetDateTime("time.refdate", newDateTime);
 
         Assert.That(api.GetDateTime("time.refdate"), Is.EqualTo(newDateTime));
+    }
+
+    [Test]
+    public void SetDateTime_NullValue_ClearsValue()
+    {
+        using MduApi api = CreateWithValidContent();
+
+        api.SetDateTime("time.refdate", null);
+
+        Assert.That(api.GetDateTime("time.refdate"), Is.Null);
     }
 
     [Test]

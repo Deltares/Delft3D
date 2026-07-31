@@ -41,9 +41,11 @@ int main(int argc, char* argv[])
             void operator()(int v) const { cout << v << " (int)"; }
             void operator()(bool b) const { cout << std::boolalpha << b << " (bool)"; }
             void operator()(double v) const { cout << v << " (double)"; }
-            void operator()(const std::chrono::system_clock::time_point& v) const
+            void operator()(const std::optional<std::chrono::system_clock::time_point>& v) const
             {
-                cout << std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(v)) << " (datetime)";
+                const std::string value =
+                    v ? std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(*v)) : "-";
+                cout << value << " (datetime)";
             }
             void operator()(const StringEnumValue& v) const { cout << v.value << " (enum)"; }
             void operator()(const IntEnumValue& v) const { cout << v.value << " (intenum)"; }

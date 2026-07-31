@@ -211,7 +211,19 @@ namespace dflowfm_io::test
             {"somekey", now}
         });
 
-        EXPECT_EQ(data.getValueAs<std::chrono::system_clock::time_point>("somekey"), now);
+        const auto& actual = data.getValueAs<std::optional<std::chrono::system_clock::time_point>>("somekey");
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), now);
+    }
+
+    TEST(MduDataTest, GetValueAs_NulloptDateTimeKey_ReturnsNullopt)
+    {
+        MduData data = MakeMduData({
+            {"somekey", std::optional<std::chrono::system_clock::time_point>{}}
+        });
+
+        const auto& actual = data.getValueAs<std::optional<std::chrono::system_clock::time_point>>("somekey");
+        EXPECT_FALSE(actual.has_value());
     }
 
     TEST(MduDataTest, GetValueAs_ExistingStringListKey_ReturnsCorrectValue)
@@ -384,13 +396,27 @@ namespace dflowfm_io::test
     TEST(MduDataTest, SetValue_ExistingDateTimeKey_UpdatesValue)
     {
         MduData data = MakeMduData({
-            {"somekey", std::chrono::system_clock::time_point{}}
+            {"somekey", std::optional<std::chrono::system_clock::time_point>{}}
         });
 
         const auto newValue = std::chrono::system_clock::now();
-        data.setValue<std::chrono::system_clock::time_point>("somekey", newValue);
+        data.setValue<std::optional<std::chrono::system_clock::time_point>>("somekey", newValue);
 
-        EXPECT_EQ(data.getValueAs<std::chrono::system_clock::time_point>("somekey"), newValue);
+        const auto& actual = data.getValueAs<std::optional<std::chrono::system_clock::time_point>>("somekey");
+        ASSERT_TRUE(actual.has_value());
+        EXPECT_EQ(actual.value(), newValue);
+    }
+
+    TEST(MduDataTest, SetValue_NulloptDateTimeKey_UpdatesValueToNullopt)
+    {
+        MduData data = MakeMduData({
+            {"somekey", std::chrono::system_clock::now()}
+        });
+
+        data.setValue<std::optional<std::chrono::system_clock::time_point>>("somekey", std::nullopt);
+
+        const auto& actual = data.getValueAs<std::optional<std::chrono::system_clock::time_point>>("somekey");
+        EXPECT_FALSE(actual.has_value());
     }
 
     TEST(MduDataTest, SetValue_ExistingStringListKey_UpdatesValue)

@@ -155,6 +155,10 @@ class TestMduModel(unittest.TestCase):
         result = doc.model.get_datetime("time.refdate")
         self.assertEqual(result, datetime(2001, 1, 1, tzinfo=timezone.utc))
 
+    def test_get_datetime_default_value_none(self):
+        doc = MduDocument()
+        self.assertIsNone(doc.model.get_datetime("time.startdatetime"))
+
     # --- set ---
 
     def test_set_int(self):
@@ -227,6 +231,11 @@ class TestMduModel(unittest.TestCase):
         new_dt = datetime(2025, 6, 11, 8, 30, 22, tzinfo=timezone.utc)
         doc.model.set_datetime("time.refdate", new_dt)
         self.assertEqual(doc.model.get_datetime("time.refdate"), new_dt)
+
+    def test_set_datetime_none_clears_value(self):
+        doc = _loaded_doc()
+        doc.model.set_datetime("time.refdate", None)
+        self.assertIsNone(doc.model.get_datetime("time.refdate"))
 
     def test_pre_1970_datetime_round_trips(self):
         # datetime.fromtimestamp raises OSError on Windows for negative epochs; the getter must

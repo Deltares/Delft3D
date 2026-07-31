@@ -62,7 +62,7 @@ class SchemaRenderer:
         "float": ("get_double", "set_double", "float", "float"),
         "intbool": ("get_bool", "set_bool", "bool", "bool"),
         "path": ("get_path", "set_path", "Path", "Path | str"),
-        "datetime": ("get_datetime", "set_datetime", "datetime", "datetime"),
+        "datetime": ("get_datetime", "set_datetime", "datetime | None", "datetime | None"),
         "list[path]": ("get_path_list", "set_path_list", "list[Path]", "list[Path | str]"),
         "list[float]": ("get_double_list", "set_double_list", "list[float]", "list[float]"),
         # A string enum carries labels, surfaced by name (get_string_enum); an intenum has no labels,

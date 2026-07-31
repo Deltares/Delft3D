@@ -78,6 +78,15 @@ namespace dflowfm_io
                        : ini::TimePointFormat::CompactDateTime;
         }
 
+        Value DateTimeFromString(const PropertySchema& schema, const std::string& raw)
+        {
+            if (raw.empty())
+                return std::optional<std::chrono::system_clock::time_point>{};
+            
+            return std::optional<std::chrono::system_clock::time_point>{
+                ini::IniValueConverter::FromString(raw, GetTimePointFormat(schema))};
+        }
+
         [[noreturn]] void ThrowInvalidEnumValue(const PropertySchema& schema, const std::string& raw)
         {
             throw std::invalid_argument(
@@ -97,6 +106,15 @@ namespace dflowfm_io
                 if (iequals(ev.value, raw))
                     return IntEnumValue{ini::IniValueConverter::FromString<int>(ev.value)};
             ThrowInvalidEnumValue(schema, raw);
+        }
+
+        std::string DateTimeToString(const PropertySchema& schema, const Value& value)
+        {
+            auto dateTimeValue = std::get<std::optional<std::chrono::system_clock::time_point>>(value);
+            if (!dateTimeValue.has_value())
+                return std::string{};
+
+            return ini::IniValueConverter::ToString(*dateTimeValue, GetTimePointFormat(schema));
         }
 
         std::string StringEnumToString(const PropertySchema& schema, const Value& value)
@@ -202,7 +220,7 @@ namespace dflowfm_io
             case ValueType::Path:
                 return ini::IniValueConverter::FromString<std::filesystem::path>(raw);
             case ValueType::DateTime:
-                return ini::IniValueConverter::FromString(raw, GetTimePointFormat(schema));
+                return DateTimeFromString(schema, raw);
             case ValueType::StringList:
                 return ini::IniValueConverter::FromMultiValueString<std::string>(raw);
             case ValueType::PathList:
@@ -234,8 +252,7 @@ namespace dflowfm_io
             case ValueType::Path:
                 return ini::IniValueConverter::ToString(std::get<std::filesystem::path>(value));
             case ValueType::DateTime:
-                return ini::IniValueConverter::ToString(
-                    std::get<std::chrono::system_clock::time_point>(value), GetTimePointFormat(schema));
+                return DateTimeToString(schema, value);
             case ValueType::StringList:
                 return ini::IniValueConverter::ToMultiValueString(std::get<std::vector<std::string>>(value));
             case ValueType::PathList:

@@ -226,16 +226,18 @@ dflowfm_io_result_t mdu_get_path(mdu_handle_t handle, const char* key, const cha
     });
 }
 
-dflowfm_io_result_t mdu_get_datetime(mdu_handle_t handle, const char* key, int64_t* epoch_out)
+dflowfm_io_result_t mdu_get_datetime(mdu_handle_t handle, const char* key, int64_t* epoch_out, dflowfm_io_bool_t* has_value_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
     ENSURE_ARGUMENT_NOT_NULL(epoch_out);
+    ENSURE_ARGUMENT_NOT_NULL(has_value_out);
 
     return exceptionToResult([&]()
     {
-        const auto& tp = asDocument(handle)->GetValue<std::chrono::system_clock::time_point>(key);
-        *epoch_out = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
+        const auto& tp = asDocument(handle)->GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
+        *epoch_out = tp.has_value() ? std::chrono::duration_cast<std::chrono::seconds>(tp->time_since_epoch()).count() : 0;
+        *has_value_out = tp.has_value() ? DFLOWFM_IO_TRUE : DFLOWFM_IO_FALSE;
     });
 }
 
@@ -371,14 +373,16 @@ dflowfm_io_result_t mdu_set_path(mdu_handle_t handle, const char* key, const cha
     });
 }
 
-dflowfm_io_result_t mdu_set_datetime(mdu_handle_t handle, const char* key, int64_t epoch)
+dflowfm_io_result_t mdu_set_datetime(mdu_handle_t handle, const char* key, int64_t epoch, dflowfm_io_bool_t has_value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
 
     return exceptionToResult([&]()
     {
-        auto tp = std::chrono::system_clock::time_point(std::chrono::seconds(epoch));
+        std::optional<std::chrono::system_clock::time_point> tp;
+        if (has_value != DFLOWFM_IO_FALSE)
+            tp = std::chrono::system_clock::time_point(std::chrono::seconds(epoch));
         asDocument(handle)->SetValue(key, tp);
     });
 }

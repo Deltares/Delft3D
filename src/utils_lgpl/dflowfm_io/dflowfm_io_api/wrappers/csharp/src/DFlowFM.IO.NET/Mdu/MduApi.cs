@@ -135,13 +135,13 @@ internal sealed class MduApi : IDisposable
     /// Gets a date/time property value by its fully-qualified key.
     /// </summary>
     /// <param name="key">The fully-qualified property key.</param>
-    /// <returns>The UTC <see cref="DateTime" /> value of the property.</returns>
+    /// <returns>The UTC <see cref="DateTime" /> value of the property, or <c>null</c> if the property has no value.</returns>
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
-    public DateTime GetDateTime(string key)
+    public DateTime? GetDateTime(string key)
     {
         byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        ThrowIfError(NativeMduApi.mdu_get_datetime(_handle, keyBytes, out long epochSeconds));
-        return DateTimeOffset.FromUnixTimeSeconds(epochSeconds).UtcDateTime;
+        ThrowIfError(NativeMduApi.mdu_get_datetime(_handle, keyBytes, out long epochSeconds, out int hasValue));
+        return hasValue != 0 ? DateTimeOffset.FromUnixTimeSeconds(epochSeconds).UtcDateTime : null;
     }
 
     /// <summary>
@@ -275,13 +275,13 @@ internal sealed class MduApi : IDisposable
     /// Sets a date/time property value by its fully-qualified key.
     /// </summary>
     /// <param name="key">The fully-qualified property key.</param>
-    /// <param name="value">The <see cref="DateTime" /> value to assign. Treated as UTC.</param>
+    /// <param name="value">The <see cref="DateTime" /> value to assign, treated as UTC, or <c>null</c> to clear the value.</param>
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
-    public void SetDateTime(string key, DateTime value)
+    public void SetDateTime(string key, DateTime? value)
     {
         byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        ThrowIfError(NativeMduApi.mdu_set_datetime(
-            _handle, keyBytes, new DateTimeOffset(value, TimeSpan.Zero).ToUnixTimeSeconds()));
+        long epoch = value.HasValue ? new DateTimeOffset(value.Value, TimeSpan.Zero).ToUnixTimeSeconds() : 0L;
+        ThrowIfError(NativeMduApi.mdu_set_datetime(_handle, keyBytes, epoch, value.HasValue ? 1 : 0));
     }
 
     /// <summary>

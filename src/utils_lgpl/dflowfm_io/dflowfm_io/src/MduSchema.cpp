@@ -18,22 +18,17 @@ namespace dflowfm_io
         {
             switch (schema.value_type)
             {
-                case ValueType::String:
-                    return "";
                 case ValueType::Int:
                     return "0";
                 case ValueType::Float:
                     return "0.0";
                 case ValueType::IntBool:
                     return "false";
+                case ValueType::String:
                 case ValueType::Path:
-                    return std::filesystem::path().string();
                 case ValueType::DateTime:
-                    return "20010101000000";
                 case ValueType::StringList:
-                    return "";
                 case ValueType::PathList:
-                    return "";
                 case ValueType::FloatList:
                     return "";
                 case ValueType::StringEnum:
