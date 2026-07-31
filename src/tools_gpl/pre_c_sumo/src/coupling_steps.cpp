@@ -276,11 +276,11 @@ namespace pre_c_sumo
                     // Momentum is only defined for the source points, not for the entrainment part
                     // Entrainment related momentum should be switched on in D-Flow FM using "NFEntrainmentMomentum = 1"
                     // (not implemented for coupling via preCICE yet)
-                    double source_moment_magnitude = 0.0;
+                    double source_moment_magnitude_weighted = 0.0;
                     double source_moment_direction = 0.0;
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, source_moment_magnitude,
+                                                   source_z_top, discharge, source_moment_magnitude_weighted,
                                                    source_moment_direction);
                 }
             }
@@ -290,7 +290,7 @@ namespace pre_c_sumo
             //
             // momentum_magnitude must be scaled by weight_fraction^2 to match the behavior of the original
             // DIMR-exchange:
-            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude
+            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude_weighted
             // - Comment copied from nearfield.f90::dischargeToSrc, line 828:
             //       Area of this fraction is total area divided by the weight factor:
             //       Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2,
@@ -313,12 +313,12 @@ namespace pre_c_sumo
                         single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
                     double source_z_bottom =
                         single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude =
+                    double source_moment_magnitude_weighted =
                         source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge, source_moment_magnitude,
-                                                   source_moment_direction);
+                                                   source_z_bottom, source_z_top, discharge,
+                                                   source_moment_magnitude_weighted, source_moment_direction);
                 }
             }
 
