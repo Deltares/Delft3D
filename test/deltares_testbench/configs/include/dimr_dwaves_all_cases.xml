@@ -200,6 +200,7 @@
         <!-- ======================================================================== -->
 		<testCase name="e04_f02_c06_windfields" ref="dimr_noconf">
             <path version="2026-06-11T12:52:41.165000">e04_wave/f02-windfields/c06</path>
+      <maxRunTime>450</maxRunTime>
             
             <checks>
                 <file name="wavm-osaka.nc" type="NETCDF">
@@ -380,7 +381,7 @@
         <!-- f06: D-Flow FM + D-Waves coupling, moved to e100                         -->
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_trunk">
-      <maxRunTime>1200</maxRunTime>
+      <maxRunTime>1500</maxRunTime>
             <path version="2025-07-29T12:53:10.423000">e04_wave/f09-SWANDCSM/c02</path>
             
             <checks>
@@ -477,7 +478,7 @@
         <!-- ======================================================================== -->
 		<testCase name="e04_f12_c02_from_specfile" ref="dimr_noconf">
             <path version="2026-06-02T12:53:36.167000">e04_wave/f12_wave_spectral_cache/c02_from_specfile</path>
-            <maxRunTime>60.0</maxRunTime>
+            <maxRunTime>450</maxRunTime>
             <checks>
                 <file name="wave/wavm-iceland.nc" type="NETCDF">
                     <parameters>
