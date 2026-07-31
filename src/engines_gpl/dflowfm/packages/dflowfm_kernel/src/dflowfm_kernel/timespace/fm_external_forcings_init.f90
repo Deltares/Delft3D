@@ -582,7 +582,6 @@ contains
       num_coordinates = imiss
       location_file = ''
       is_success = .false.
-      vertical_position = ''
 
       has_node_id = has_key(block_ptr, 'Lateral', 'nodeId')
       has_branch_id = has_key(block_ptr, 'Lateral', 'branchId')
