@@ -1218,7 +1218,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c101_spatial_parameters_3D" ref="dflowfm_default">
-  <path version="2026-07-09T09:10:48.305000">e02_dflowfm/f030_water_quality_processes/c101_spatial_parameters_3D</path>
+  <path version="2026-07-31T11:42:16.976000">e02_dflowfm/f030_water_quality_processes/c101_spatial_parameters_3D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
