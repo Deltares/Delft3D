@@ -1447,7 +1447,7 @@ contains
       case ('solarradiation')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'surface_downwelling_shortwave_flux_in_air'
-         else if (ec_filetype == provFile_datavalue) then
+         else if (ec_filetype == provFile_bc) then
             sourceItemName = 'solarradiation'
          else
             sourceItemName = 'sw_radiation_flux'

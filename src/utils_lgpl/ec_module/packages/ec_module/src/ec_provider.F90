@@ -125,6 +125,22 @@ contains
       success = .true.
    end function ecProviderCreateInitializeBCFileReader
 
+   !> Create and Initialize BC instance from a file unit, yielding a file reader with items, returning the fileReaderID
+   ! function ecUnitProviderCreateInitializeBCFileReader(instancePtr, forcingfileUnit, location, quantity, k_refdat, k_tzone, k_tsunit, fileReaderId, funtype) result(success)
+   !    use m_ec_support
+
+   !    logical :: success
+   !    type(tEcInstance), pointer :: instancePtr !< intent(in)
+   !    integer, intent(in) :: forcingfileUnit
+   !    character(len=*), intent(in) :: location
+   !    character(len=*), intent(in) :: quantity
+   !    real(dp), intent(in) :: k_refdat !< kernel ref date
+   !    real(dp), intent(in) :: k_tzone !< kernel time zone
+   !    integer, intent(in) :: k_tsunit !< kernel timestep unit (1=sec, 2=min, 3=hour)
+   !    integer, intent(out) :: fileReaderId !< unique fileReader id
+   !    character(len=*), optional, intent(in) :: funtype !< matching function in the BC-block header
+   ! end function ecUnitProviderCreateInitializeBCFileReader
+
    ! =======================================================================
 
    !> Initialize a new BCBlock item, which in turn constructs and initializes a filereader

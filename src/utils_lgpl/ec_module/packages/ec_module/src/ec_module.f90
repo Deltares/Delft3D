@@ -378,6 +378,7 @@ module m_ec_module
 
    interface ecCreateInitializeBCFileReader
       module procedure ecProviderCreateInitializeBCFileReader
+      ! module procedure ecUnitProviderCreateInitializeBCFileReader
    end interface ecCreateInitializeBCFileReader
 
    ! Support
