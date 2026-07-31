@@ -210,6 +210,8 @@ contains
          method = METHOD_TRIANGULATION
       case ('bilinear')
          method = METHOD_BILINEAR
+      case ('blockfrom')
+         method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
       end select

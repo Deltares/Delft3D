@@ -156,6 +156,73 @@ contains
    end subroutine test_waqparameter_polygon_preserves_uncovered_values
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_populates_3d_layers, test_waqparameter_polygon_populates_3d_layers,
+   subroutine test_waqparameter_polygon_populates_3d_layers() bind(C)
+      use m_flow, only: kmx, ndkx, kbot, ktop, zws
+      use m_polygon, only: m_polygon_destructor
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      character(len=*), parameter :: POL_FILE = "test_3d_waq_parameter.pol"
+      character(len=*), parameter :: EXT_FILE = "test_3d_waq_parameter.ext"
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "polygon_around_grid", &
+                       "5  2", &
+                       "-1.0  -1.0", &
+                       " 1.0  -1.0", &
+                       " 1.0   1.0", &
+                       "-1.0   1.0", &
+                       "-1.0  -1.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqparameterSOD", &
+                       "    forcingFile         = "//POL_FILE, &
+                       "    forcingFileType     = Polygon", &
+                       "    interpolationMethod = constant", &
+                       "    operand              = override", &
+                       "    value                = 4.0"])
+
+      call setup_minimal_grid()
+      kmx = 2
+      ndkx = 3
+      call realloc(kbot, ndx, fill=2, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=3, keepExisting=.false.)
+      call realloc(zws, ndkx, fill=0.0_dp, keepExisting=.false.)
+      zws = [-2.0_dp, -1.0_dp, 0.0_dp]
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call register_waq_target('waqparameterSOD')
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 4.0_dp, "the 2D representative should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, "the bottom layer should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, "the top layer should receive the polygon value")
+
+      num_spatial_parameters = 0
+      kmx = 0
+      ndkx = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(zws)) deallocate (zws)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqparameter_polygon_populates_3d_layers
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
    !> When no averaging keywords are present, read_averaging_input must return
    !! the documented defaults: type=1 (mean), relSize=-1, numMin=1, percentile=0.

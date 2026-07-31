@@ -1105,7 +1105,7 @@ contains
                      call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
                      if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
-                        painp(first_index, 1:target_num_points) = target_array_3d(first_index, 1:target_num_points)
+                        painp(first_index, :) = target_array_3d(first_index, :)
                         deallocate (target_array_3D)
                      end if
                      deallocate (target_data)

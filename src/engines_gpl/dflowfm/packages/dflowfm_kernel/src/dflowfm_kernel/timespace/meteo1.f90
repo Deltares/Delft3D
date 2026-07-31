@@ -3260,13 +3260,9 @@ contains
       use m_filez, only: oldfil, doclose, newfil
 
       ! Arguments
-      real(kind=dp), dimension(nx), intent(in) :: xu
-      real(kind=dp), dimension(nx), intent(in) :: yu
-      real(kind=dp), dimension(nx), intent(out) :: zu
+
       integer, intent(in) :: nx
-      character(*), intent(in) :: filename !< file name for meteo data file
-      integer, intent(in) :: filetype !< spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method !< time/space interpolation method
+
       real(kind=dp), intent(in) :: xu(nx)
       real(kind=dp), intent(in) :: yu(nx)
       real(kind=dp), intent(inout) :: zu(nx)
