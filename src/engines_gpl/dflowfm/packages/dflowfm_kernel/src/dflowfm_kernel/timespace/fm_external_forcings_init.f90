@@ -967,7 +967,7 @@ contains
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
-                       resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice
+                       resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice, apply_waqbot_vertical_position
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -993,6 +993,7 @@ contains
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
+      character(len=256) :: vertical_position
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       real(dp), dimension(:), pointer :: target_data
@@ -1084,6 +1085,7 @@ contains
                   call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
+                  call prop_get(block_ptr, '', 'verticalPosition', vertical_position)
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
@@ -1102,7 +1104,11 @@ contains
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      oper = oper_backup
-                     call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
+                        res = apply_waqbot_vertical_position(target_data, target_array_3d(first_index, :), vertical_position, quantity, oper) .and. res
+                     else
+                        call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                     end if
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
                      if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
                         painp(first_index, :) = target_array_3d(first_index, :)

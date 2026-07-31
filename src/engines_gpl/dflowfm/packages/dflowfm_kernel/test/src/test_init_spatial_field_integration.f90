@@ -1068,6 +1068,46 @@ contains
    end subroutine test_advectiontype_integer_field_populated
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqbot_vertical_layer_selection, test_waqbot_vertical_layer_selection,
+   subroutine test_waqbot_vertical_layer_selection() bind(C)
+      use m_flow, only: kmx, kbot, ktop, kmxn
+      use timespace_parameters, only: OPERAND_OVERRIDE
+      use unstruc_inifields, only: apply_waqbot_vertical_position
+
+      real(dp) :: input_2d(1), output_3d(9)
+      logical :: success
+
+      kmx = 8
+      call realloc(kbot, 1, fill=2, keepExisting=.false.)
+      call realloc(ktop, 1, fill=7, keepExisting=.false.)
+      call realloc(kmxn, 1, fill=8, keepExisting=.false.)
+      input_2d = 1.0_dp
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_vertical_position(input_2d, output_3d, 'kbot', 'initialwaqbottestbot', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "kbot should be accepted")
+      call f90_expect_eq(output_3d(2), 1.0_dp, "kbot should select the active bottom layer")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "kbot should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_vertical_position(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "layer 4 should be accepted")
+      call f90_expect_eq(output_3d(5), 1.0_dp, "layer 4 should be counted from the deepest model plane")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "a fixed layer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_vertical_position(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "layer 8 should be accepted")
+      call f90_expect_eq(output_3d(9), 1.0_dp, "an inactive maximum layer should be initialized for restart")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "a maximum fixed layer should update one layer")
+
+      kmx = 0
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+   end subroutine test_waqbot_vertical_layer_selection
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqmassbalancearea_polygon_populated, test_waqmassbalancearea_polygon_populated,
    !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
    !! named mass-balance area and assigns its integer ID to enclosed cells.
