@@ -1883,20 +1883,15 @@ contains
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
-      use m_waves, only: reset_offline_wave_input_providers
 
       integer :: iresult
 
-      call reset_offline_wave_input_providers()
       call setup(iresult)
       if (iresult == DFM_NOERR) then
          call init_new(iresult)
       end if
       if (iresult == DFM_NOERR) then
          call init_old(iresult)
-      end if
-      if (iresult == DFM_NOERR) then
-         call validate_offline_wave_input_providers(iresult)
       end if
       if (iresult == DFM_NOERR) then
          call finalize()
@@ -1974,6 +1969,7 @@ contains
       use m_bnd, only: alloc_bnd, dealloc_bndarr
       use messagehandling, only: msgbuf, LEVEL_WARN, mess
       use network_data, only: LINK_1D_BOUNDARY
+      use m_waves, only: reset_offline_wave_input_providers
 
       integer, intent(out) :: iresult
 
@@ -2669,6 +2665,8 @@ contains
          end if
       end if
 
+      call reset_offline_wave_input_providers()
+
       if (iresult /= DFM_NOERR) then
          call mess(LEVEL_WARN, 'Error during initialisation of External Forcings. See message:')
          call dfm_strerror(msgbuf, iresult)
@@ -2768,6 +2766,7 @@ contains
       end if
 
       call finalize_1dfield_global_values()
+      call validate_offline_wave_input_providers(ierr)
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
