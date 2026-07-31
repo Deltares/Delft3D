@@ -121,6 +121,31 @@ contains
       extfile_new_list = [trim(ext_file)]
    end subroutine setup_offline_radiation_stress_case
 
+   subroutine teardown_offline_radiation_stress_case()
+      use m_cell_geometry, only: xz, yz
+      use m_ec_module, only: ecFreeInstance
+      use m_flowgeom, only: kcs
+      use m_meteo, only: ecInstancePtr
+      use m_resetfullflowmodel, only: resetFullFlowModel
+      use m_waves, only: sxwav, sywav, twavcom
+
+      logical :: success
+
+      if (associated(ecInstancePtr)) then
+         success = ecFreeInstance(ecInstancePtr)
+         call f90_expect_true(success, 'EC instance cleanup should succeed')
+      end if
+
+      call resetFullFlowModel()
+
+      if (allocated(xz)) deallocate (xz)
+      if (allocated(yz)) deallocate (yz)
+      if (allocated(kcs)) deallocate (kcs)
+      if (allocated(twavcom)) deallocate (twavcom)
+      if (allocated(sxwav)) deallocate (sxwav)
+      if (allocated(sywav)) deallocate (sywav)
+   end subroutine teardown_offline_radiation_stress_case
+
    !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_radiation_stress_accepts_bcascii_without_inactive_inputs, test_radiation_stress_accepts_bcascii_without_inactive_inputs,
    !> A Wavemodelnr=7 radiation-stress configuration needs only period and the
    !! two force components. This verifies that current-format bcascii fields can
@@ -172,6 +197,8 @@ contains
       call f90_expect_near(twavcom(1), 5.0_dp, 1.0e-6_dp, 'waveperiod should be linearly interpolated from bcascii')
       call f90_expect_near(sxwav(1), 2.0_dp, 1.0e-6_dp, 'xwaveforce should be linearly interpolated from bcascii')
       call f90_expect_near(sywav(1), 0.0_dp, 1.0e-6_dp, 'ywaveforce should be linearly interpolated from bcascii')
+
+      call teardown_offline_radiation_stress_case()
    end subroutine test_radiation_stress_accepts_bcascii_without_inactive_inputs
    !$f90tw)
 
@@ -204,6 +231,8 @@ contains
                    'omitting ywaveforce must leave its required provider unregistered')
       call f90_expect_false(offline_wave_input_providers == offline_wave_input_requirements, &
                    'the incomplete forcing file must not satisfy all offline wave requirements')
+
+      call teardown_offline_radiation_stress_case()
    end subroutine test_radiation_stress_detects_missing_active_force_provider
    !$f90tw)
 
