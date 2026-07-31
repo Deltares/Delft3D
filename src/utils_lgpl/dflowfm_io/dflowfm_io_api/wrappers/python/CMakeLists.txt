@@ -13,7 +13,6 @@
 # (base/bindings.py and mdu/model.py are hand-maintained, not generated.)
 set(DFLOWFM_IO_GENERATOR_SUPPORT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generator_base.py")
 set(DFLOWFM_IO_SCHEMA_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_schema.py")
-cmake_path(SET DFLOWFM_IO_MDU_JSON NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../../json/mdu.json")
 set(DFLOWFM_IO_SCHEMA "${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_io/mdu/schema.py")
 
 # Runs generate_schema.py (re-runs only when mdu.json or the generator changes).
@@ -21,7 +20,7 @@ add_custom_command(
 	OUTPUT "${DFLOWFM_IO_SCHEMA}"
 	COMMAND ${Python3_EXECUTABLE} "${DFLOWFM_IO_SCHEMA_GENERATOR}"
 	DEPENDS "${DFLOWFM_IO_SCHEMA_GENERATOR}" "${DFLOWFM_IO_GENERATOR_SUPPORT}" "${DFLOWFM_IO_MDU_JSON}"
-	COMMENT "Generating dflowfm_io typed MDU schema (Layer 2) from mdu.json"
+	COMMENT "Generating dflowfm_io typed MDU schema from mdu.json"
 	VERBATIM
 )
 
@@ -38,7 +37,7 @@ add_custom_target(dflowfm_io_stage_lib ALL
 	-DLIB_DIR=${DFLOWFM_IO_LIB_STAGE_DIR}
 	-DLIB_FILE=$<TARGET_FILE:dflowfm_io_api>
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/stage_native_library.cmake
-	COMMENT "Staging dflowfm_io_api into the Python wheel package (_lib/)"
+	COMMENT "Staging dflowfm_io_api into ${DFLOWFM_IO_LIB_STAGE_DIR}"
 	VERBATIM
 )
 add_dependencies(dflowfm_io_stage_lib dflowfm_io_api)

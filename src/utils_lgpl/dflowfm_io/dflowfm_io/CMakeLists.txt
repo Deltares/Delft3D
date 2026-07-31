@@ -1,14 +1,13 @@
 # Generate the MDU schema C++ source from mdu.json at build time.
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-set(MDU_SCHEMA_JSON    ${CMAKE_CURRENT_SOURCE_DIR}/../json/mdu.json)
 set(MDU_SCHEMA_SCRIPT  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_mdu_schema.py)
 set(MDU_SCHEMA_GENERATED ${CMAKE_CURRENT_BINARY_DIR}/generated/dflowfm_io/MduSchemaGenerated.h)
 
 add_custom_command(
     OUTPUT  ${MDU_SCHEMA_GENERATED}
-    COMMAND ${Python3_EXECUTABLE} ${MDU_SCHEMA_SCRIPT} ${MDU_SCHEMA_JSON} ${MDU_SCHEMA_GENERATED}
-    DEPENDS ${MDU_SCHEMA_SCRIPT} ${MDU_SCHEMA_JSON}
+    COMMAND ${Python3_EXECUTABLE} ${MDU_SCHEMA_SCRIPT} ${DFLOWFM_IO_MDU_JSON} ${MDU_SCHEMA_GENERATED}
+    DEPENDS ${MDU_SCHEMA_SCRIPT} ${DFLOWFM_IO_MDU_JSON}
     COMMENT "Generating MduSchemaGenerated.h from mdu.json"
     VERBATIM
 )

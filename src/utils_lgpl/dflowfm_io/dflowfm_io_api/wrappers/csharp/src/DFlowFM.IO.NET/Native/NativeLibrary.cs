@@ -20,7 +20,7 @@ internal static class NativeLibrary
     /// Call this from a static constructor in a class that has DllImport external methods. This
     /// method uses LoadLibrary to load the correct dll for the current process (32bit or 64bit)
     /// before DllImport has the chance to resolve the external calls. As long as the dll name is
-    /// the same this works.
+    /// the same, this works.
     /// </remarks>
     /// <param name="dllFileName">The dll file to load.</param>
     /// <param name="directory">The directory to load the dll from.</param>

@@ -11,13 +11,6 @@
     <Description>.NET library for reading, writing, validating and migrating D-Flow FM model files.</Description>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <_NativeLibName>dflowfm_io_api.dll</_NativeLibName>
-    <_NativeLibRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</_NativeLibRoot>
-    <DFlowFM_IO_NativeLibrary Condition="'$(DFlowFM_IO_NativeLibrary)' == '' and Exists('$(_NativeLibRoot)build\dflowfm_io_api\$(_NativeLibName)')">$(_NativeLibRoot)build\dflowfm_io_api\$(_NativeLibName)</DFlowFM_IO_NativeLibrary>
-    <DFlowFM_IO_NativeLibrary Condition="'$(DFlowFM_IO_NativeLibrary)' == '' and Exists('$(_NativeLibRoot)build\dflowfm_io_api\$(Configuration)\$(_NativeLibName)')">$(_NativeLibRoot)build\$(Configuration)\$(_NativeLibName)</DFlowFM_IO_NativeLibrary>
-  </PropertyGroup>
-
   <Target Name="ValidateNativeLibrary" BeforeTargets="Build;Pack">
     <Message Text="DFlowFM_IO_NativeLibrary: $(DFlowFM_IO_NativeLibrary)"/>
     <Error Condition="'$(DFlowFM_IO_NativeLibrary)' == '' or !Exists('$(DFlowFM_IO_NativeLibrary)')"

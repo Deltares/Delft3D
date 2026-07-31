@@ -91,9 +91,10 @@ int main(int argc, char* argv[])
         });
 
         std::ostringstream stream;
+        document.Save(stream);
 
         cout << "\nSuccessfully saved to stream:\n\n";
-        cout << stream.str();
+        cout << stream.str(); 
 
         return 0;
     }

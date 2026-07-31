@@ -74,5 +74,4 @@ conan/**/test_package/**
 
 # dflowfm_io
 src/utils_lgpl/dflowfm_io/build/**
-src/utils_lgpl/dflowfm_io/**/bin/
-src/utils_lgpl/dflowfm_io/**/D-HYDRO.DotSettings
+src/utils_lgpl/dflowfm_io/out/**

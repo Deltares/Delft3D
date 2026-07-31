@@ -12,6 +12,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/options.cmake)
 
+set(DFLOWFM_IO_MDU_JSON "${CMAKE_CURRENT_SOURCE_DIR}/json/mdu.json" CACHE INTERNAL "Path to mdu.json schema")
+
 add_subdirectory(dflowfm_ini_parser)
 add_subdirectory(dflowfm_io)
 add_subdirectory(dflowfm_io_api)

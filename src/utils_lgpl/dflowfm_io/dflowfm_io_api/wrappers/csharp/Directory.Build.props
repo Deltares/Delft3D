@@ -1,5 +1,9 @@
 ﻿<Project>
 
+    <!-- CMake-generated paths -->
+  <Import Project="$(MSBuildThisFileDirectory)CMakeSettings.g.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)CMakeSettings.g.props')" />
+
   <!-- General metadata -->
   <PropertyGroup>
     <Company>Deltares</Company>
@@ -36,7 +40,8 @@
 
   <!-- Output configuration -->
   <PropertyGroup>
-    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''">$(MSBuildThisFileDirectory)bin\$(Configuration)\</OutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildThisFileDirectory)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
