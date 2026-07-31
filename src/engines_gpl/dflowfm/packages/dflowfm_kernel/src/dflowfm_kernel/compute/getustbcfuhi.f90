@@ -179,7 +179,7 @@ contains
                                  eta * log(c9of1) - 1.0_dp
 
                         u2dh = max(0.0_dp, ustbLL * logfac / vonkar)
-                  else
+                     else
                         u2dh = 0.0_dp
                      end if
                   else
@@ -243,7 +243,7 @@ contains
                      z0urou(LL) = 0.5_dp * hu(Lb) / &
                                   (exp(vonkar / sqcf) - 1.0_dp)
                   case default
-                  z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
+                     z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
                   end select
                   z0urou(LL) = min(z0urou(LL), 10.0_dp)
                else
@@ -254,7 +254,7 @@ contains
                end if
                z00 = z0urou(LL) ! wave enhanced z0 for turbulence
             else
-               if (sqcf > 0_dp) then
+               if (sqcf > 0.0_dp) then
                   ! taubu for too small wave case needs to be filled
                   z0urou(LL) = z00 ! just use current only z0
                   taubpuLL = ustbLL * ustbLL / umod ! use flow ustar
@@ -262,13 +262,15 @@ contains
                   taubu(LL) = taubpuLL * rhoL * (u1Lb + ustokes(Lb))
                   taubxu(LL) = taubxuLL
                else
-                  taubu(LL) = 0_dp
-                  taubxu(LL) = 0_dp
+                  taubu(LL) = 0.0_dp
+                  taubxu(LL) = 0.0_dp
                   z0urou(LL) = epsz0
                end if
             end if
             !
-            if (stm_included) wblt(LL) = deltau
+            if (stm_included) then
+               wblt(LL) = deltau
+            end if
             !
             ! Streaming below strlyrfac*deltau with linear distribution, see van Rijn 2011 p9.177
             ! Streaming acceleration decreases linearly from Dfuc at the bed
@@ -276,7 +278,7 @@ contains
             if (jawavestreaming /= WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then
                slfacdeltau = min(hu(LL), strlyrfac * deltau)
                if (slfacdeltau > 0.0_dp) then
-               do L = Lb, Ltop(LL)
+                  do L = Lb, Ltop(LL)
                      zbot = hu(L - 1)
                      dzu = hu(L) - zbot
                      if (dzu <= 0.0_dp) cycle
@@ -295,7 +297,7 @@ contains
                      adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1) * (htop - zbot) / dzu
                      !
                      if (hu(L) >= slfacdeltau) exit
-               end do
+                  end do
                end if
 
             end if
@@ -364,7 +366,7 @@ contains
 
       else if (friction_type == 11) then ! Noslip
 
-         !    advi(Lb) = advi(Lb) +  2_dp*(vicwwu(Lb)+vicouv)/hu(Lb)**2
+         !    advi(Lb) = advi(Lb) +  2.0_dp*(vicwwu(Lb)+vicouv)/hu(Lb)**2
          cfuhi3D = 2.0_dp * (vicwwu(Lb) + vicoww%get(LL)) / hu(Lb)**2
 
       end if

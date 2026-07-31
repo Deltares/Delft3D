@@ -84,13 +84,6 @@ contains
       ac1 = acL(LL)
       ac2 = 1.0_dp - ac1
 
-      !do L = Lb, 0 ! Lt
-      !   k = L - Lb + 1
-      !   k1 = ln(1, L)
-      !   k2 = ln(2, L)
-      !   dzv(k) = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1)) ! volume weighted dzu , ok for pillar
-      !end do
-
       jav3 = 0
       if (javau == 3) then
          jav3 = 1
@@ -138,12 +131,10 @@ contains
 
             ! adv = 0d0 ; adv1 = 0d0   ! noslip test
 
-            !tt     = vstress/dzu(k+1) + adv1/dzv(k+1)
             tt = (vstress + adv1) / dzu(k + 1)
             b(k + 1) = b(k + 1) + tt
             a(k + 1) = a(k + 1) - tt
 
-            !tt     = vstress/dzu(k  ) + adv/dzv(k  )
             tt = (vstress + adv) / dzu(k)
             b(k) = b(k) + tt
             c(k) = c(k) - tt
