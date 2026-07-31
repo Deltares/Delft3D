@@ -41,6 +41,7 @@ object TestBenchValidation : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     triggers {

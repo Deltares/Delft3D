@@ -160,7 +160,7 @@ target_link_libraries(${library_name} PRIVATE
                       precicef
                       trachytopes_io
                       trachytopes_kernel
-                      triangle_c
+                      triangle::triangle
                       waq_definition
                       wq_processes
                       waq_process
@@ -168,17 +168,12 @@ target_link_libraries(${library_name} PRIVATE
                       waq_utils_c
                       waq_utils_f
                       spherepack
+                      PETSc::PETSc
 )
 
-# Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
     target_link_libraries(${library_name} PRIVATE
                           interacter_stub
-                          PkgConfig::PETSC
                           uuid
     )
 endif(UNIX)
@@ -200,13 +195,10 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_libraries(${library_name} PRIVATE
-                            petsc
-    )
     if(NOT TARGET impi)
       message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
     endif()
-    target_link_libraries(${library_name} PRIVATE impi)
+    target_link_libraries(${library_name} PRIVATE impi mkl_sequential)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

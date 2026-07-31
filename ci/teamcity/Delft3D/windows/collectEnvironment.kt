@@ -16,7 +16,8 @@ object WindowsCollectEnvironment : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Delft3D collect environment container"

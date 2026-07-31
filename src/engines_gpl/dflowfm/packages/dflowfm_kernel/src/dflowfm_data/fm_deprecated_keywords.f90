@@ -33,6 +33,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterTem', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
@@ -71,6 +72,7 @@ contains
                                   'This keyword is replaced with rhoWaterInWindStress in the [Wind] block in the MDU-file.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'writeBalanceFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'wriWaqBot3dOutput', OBSOLETE, 'Remove it or use [Output] wriHis_wqBot3d and wriMap_wqBot3d instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Sediment', 'MasBalMinDep', OBSOLETE)
 
    end subroutine default_fm_deprecated_keywords
 

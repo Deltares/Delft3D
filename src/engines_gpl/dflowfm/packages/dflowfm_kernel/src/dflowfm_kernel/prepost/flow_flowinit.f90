@@ -230,7 +230,11 @@ contains
       end if
 
       call setFrictionForLongculverts()
-      call set_friction_coefficient_by_initial_fields()
+      call set_friction_coefficient_by_initial_fields(error)
+      if (is_error_at_any_processor(error)) then
+         return
+      end if
+
       call set_friction_uniform_value_on_links_where_friction_is_not_set()
       call set_internal_tides_friction_coefficient()
       call setupwslopes() ! set upwind slope pointers and weightfactors
@@ -676,8 +680,8 @@ contains
 
    end subroutine set_floodfill_water_levels_based_on_sample_file
 
-!> sert friction coefficient by initial fields
-   subroutine set_friction_coefficient_by_initial_fields()
+!> Insert friction coefficient by initial fields
+   subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
@@ -689,6 +693,7 @@ contains
       integer, parameter :: MANNING = 1
 
       integer :: link
+      integer, intent(inout) :: error
 
       do link = 1, lnx
          if (frcu(link) == dmiss) then
@@ -717,8 +722,74 @@ contains
             frcmax = frcu(link)
          end if
       end do
+      
+      call init_dynamic_vegetation_roughness(error)
 
    end subroutine set_friction_coefficient_by_initial_fields
+
+!> initialize dynamic vegetation roughness   
+!! All links with friction coefficient larger than frcu_no_vegetation are considered dynamic vegetation roughness
+!! This assumption is not valid for Chezy roughness, hence the limitation to Manning friction coefficient only.
+   subroutine init_dynamic_vegetation_roughness(error)
+      use dfm_error, only: DFM_WRONGINPUT
+      use m_flowgeom, only: lnx
+      use m_flow, only: frcu, frcu0, dynveg
+      use m_physcoef, only: frcu_no_vegetation, dynroughveg
+      use m_alloc
+      use unstruc_model, only: md_dynvegpol
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_links
+      use m_delpol
+      use MessageHandling
+
+      implicit none
+
+      integer, intent(inout) :: error
+      
+      integer :: link
+      integer :: k
+      integer :: pointscount
+      logical :: ex
+
+      integer, dimension(:), allocatable :: kp
+   
+      if (dynroughveg == 0) then
+         return
+      end if
+   
+      frcu0 = frcu
+      dynveg(:) = .false.
+      if (md_dynvegpol == ' ') then
+         do link = 1, lnx
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+         
+      else
+         inquire (file=trim(md_dynvegpol), exist=ex)
+         if (.not. ex) then
+            call mess(LEVEL_ERROR, 'Unable to access dynamic vegetation polygon file "'//trim(md_dynvegpol)//'"')
+            error = DFM_WRONGINPUT
+            return
+         end if   
+
+         allocate (kp(1:lnx))
+         kp = 0
+         ! find links inside polygon
+         call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
+         call delpol()
+         !
+         dynveg(:) = .false.
+         do k = 1, pointscount
+            link = kp(k)
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+      end if
+      
+   end subroutine init_dynamic_vegetation_roughness
 
 !> set friction uniform value on links where_friction_is_not_set
    subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()
