@@ -1902,7 +1902,7 @@ contains
       ibuf = 0
       call prop_get(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
       if (success .and. ibuf > 0) then
-         unc_writeopts = UG_WRITE_LATLON
+         unc_writeopts = ior(unc_writeopts, UG_WRITE_LATLON)
       end if
 
       call prop_get(md_ptr, 'output', 'MetaDataFile', unc_metadatafile, success)
@@ -3819,7 +3819,7 @@ contains
       end if
 
       if (writeall .or. unc_writeopts /= UG_WRITE_NOOPTS) then
-         if (iand(unc_writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON) then
+         if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
             ibuf = 1
          else
             ibuf = 0
