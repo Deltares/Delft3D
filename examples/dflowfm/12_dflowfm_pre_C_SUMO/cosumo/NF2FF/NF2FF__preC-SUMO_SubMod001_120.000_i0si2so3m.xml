@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+  <fileVersion>0.3</fileVersion>
+  <discharge>
+    <Qintake>10.0</Qintake>
+    <Qsource>10.0</Qsource>
+    <!-- Constituents in fixed order: Temperature, Salinity, Sediments, Tracers
+         Operator: "absolute" values or "excess" (dT,dS,d..) -->
+    <constituentsOperator>excess</constituentsOperator>
+    <constituents>10.0 0.0</constituents>
+  </discharge>
+  <NFResult>
+    <!--Intake(s) - total Q0(/U0?) will be taken from these locations and distributed over the number of rows of intakes. This water will be directly distributed over the sources (complimented with the entrained water from the sinks, if any).-->
+    <!--Sinks will use dS/dTr(ajectory) to determine entrainment sinks. If dS/dTr=0 no (additional) entrainment will take place.-->
+    <sinks>
+   250.000       350.087         9.700         1.000         0.000         0.000
+   251.500       350.048         9.700         2.000         0.250         0.380
+    </sinks>
+    <sources>
+   1050.000       350.365         5.100         5.400         5.7        15.100        1.0        270.0
+   1050.200       350.365         5.200         5.500         5.8        15.200        1.0        270.0
+   1050.400       350.365         5.300         5.600         5.9        15.300        1.0        270.0
+    </sources>
+  </NFResult>
+</NF2FF>
+
+<!--
+Data added to D-Flow FM arrays when run via DIMR:
+
+   n     , name        ,  si, si_zbot, si_ztop,     si_cos,     si_sin,  so, so_zbot, so_ztop,     so_cos,     so_sin,     discha,       area,     const1,   const2
+   1, "diffuser 0001 ,",  13,   -9.95,   -9.45,   0.00E+00,   0.00E+00,  78,   -5.10,   -5.10,   0.00E+00,   0.00E+00,   0.33E+01,   0.00E+00,   0.00E+00  0.00E+00
+   2, "diffuser 0001 ,",  13,   -9.95,   -9.45,   0.00E+00,   0.00E+00,  78,   -5.20,   -5.20,   0.00E+00,   0.00E+00,   0.33E+01,   0.00E+00,   0.00E+00  0.00E+00
+   3, "diffuser 0001 ,",  13,   -9.95,   -9.45,   0.00E+00,   0.00E+00,  78,   -5.30,   -5.30,   0.00E+00,   0.00E+00,   0.33E+01,   0.00E+00,   0.00E+00  0.00E+00
+   4, "diffuser 0001 ,",   0,    0.00,    0.00,   0.00E+00,   0.00E+00,  78,   -5.10,   -5.10,  -0.10E+01,  -0.12E-15,   0.33E+01,   0.30E+02,   0.25E+02  0.10E+01
+   5, "diffuser 0001 ,",   0,    0.00,    0.00,   0.00E+00,   0.00E+00,  78,   -5.20,   -5.20,  -0.10E+01,  -0.12E-15,   0.33E+01,   0.30E+02,   0.25E+02  0.10E+01
+   6, "diffuser 0001 ,",   0,    0.00,    0.00,   0.00E+00,   0.00E+00,  78,   -5.30,   -5.30,  -0.10E+01,  -0.12E-15,   0.33E+01,   0.30E+02,   0.25E+02  0.10E+01
+   7, "diffuser 0001 ,", 190,    0.00,    0.00,   0.00E+00,   0.00E+00,   0,    0.00,    0.00,   0.00E+00,   0.00E+00,   0.10E+02,   0.00E+00,   0.00E+00  0.00E+00
+  
+-->
