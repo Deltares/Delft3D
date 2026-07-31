@@ -34,8 +34,7 @@ submodule(fm_external_forcings) fm_external_forcings_init
    implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
-   real(dp), dimension(1), target, save :: global_target_x = [1.0_dp]
-   real(dp), dimension(1), target, save :: global_target_y = [1.0_dp]
+   real(dp), dimension(1), save, target :: GLOBAL_DUMMY_TARGET = [1.0_dp] !> dummy coordinate necessary for unc_loc_global to point to as a valid target.
 
 contains
 
@@ -1884,8 +1883,8 @@ contains
          target_y => yk(1:target_num_points)
       case (UNC_LOC_GLOBAL)
          target_num_points = 1
-         target_x => global_target_x
-         target_y => global_target_y
+         target_x => GLOBAL_DUMMY_TARGET
+         target_y => GLOBAL_DUMMY_TARGET
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
