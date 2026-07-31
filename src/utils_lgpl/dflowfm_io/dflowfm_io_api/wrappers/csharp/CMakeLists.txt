@@ -38,6 +38,23 @@ add_custom_target(dflowfm_io_csharp_build ALL
 )
 add_dependencies(dflowfm_io_csharp_build dflowfm_io_api dflowfm_io_csharp_stage_lib)
 
+if(DFLOWFM_IO_BUILD_WRAPPER_PACKAGES)
+    set(_dflowfm_io_csharp_pack_in_all ALL)
+else()
+    set(_dflowfm_io_csharp_pack_in_all "")
+endif()
+
+add_custom_target(dflowfm_io_csharp_pack ${_dflowfm_io_csharp_pack_in_all}
+    COMMAND dotnet pack
+        ${CSHARP_SOLUTION_FILE}
+        --configuration ${CSHARP_DOTNET_CONFIG}
+        -p:Platform=${CSHARP_PLATFORM}
+        --no-build
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Creating NuGet package for C# solution ${CSHARP_PROJECT_NAME} in ${CSHARP_OUTPUT_DIR}"
+)
+add_dependencies(dflowfm_io_csharp_pack dflowfm_io_csharp_build)
+
 add_test(NAME dflowfm_io_csharp_test
     COMMAND dotnet test
         ${CSHARP_SOLUTION_FILE}

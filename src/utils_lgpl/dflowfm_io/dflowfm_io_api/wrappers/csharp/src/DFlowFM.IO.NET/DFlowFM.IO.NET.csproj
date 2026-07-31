@@ -9,6 +9,7 @@
     <PackageId>DFlowFM.IO.NET</PackageId>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Description>.NET library for reading, writing, validating and migrating D-Flow FM model files.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <Target Name="ValidateNativeLibrary" BeforeTargets="Build;Pack">
@@ -18,7 +19,11 @@
   </Target>
 
   <ItemGroup>
-    <None Include="..\..\build\DFlowFM.IO.NET.targets" Visible="false">
+    <None Include="..\..\nuget\README.md" Visible="false">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\nuget\DFlowFM.IO.NET.targets" Visible="false">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>
     </None>

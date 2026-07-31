@@ -97,22 +97,29 @@ The build produces the C++ core and, for each language binding whose required to
 
 dflowfm_io is also built (and tested) as part of the Delft3D cmake build. For more information, refer to the build instructions in the Delft3D repository.
 
-### Building the Python wheel
+### Building the wrapper packages
 
-The Python wheel (the `dflowfm_io` package bundling the native library) is built by the `dflowfm_io_wheel` target. It is
-**not** part of the default build. Configure the project as above, then build the target explicitly:
+The wrapper packages — the Python wheel (`dflowfm_io`, bundling the native library) and the NuGet package
+(`DFlowFM.IO.NET`, bundling the C# bindings) — are not part of the default build. To build both as part of the
+default build instead, configure with `-D DFLOWFM_IO_BUILD_WRAPPER_PACKAGES=ON`.
+
+Alternatively, build one or both wrapper packages on demand via their individual targets, `dflowfm_io_wheel` and
+`dflowfm_io_csharp_pack` respectively:
 
 ```cmd
 cmake --build <path-to-build-dir> --target dflowfm_io_wheel --config Release
+cmake --build <path-to-build-dir> --target dflowfm_io_csharp_pack --config Release
 ```
 
-This compiles and stages the native library, generates the Python code, then runs `pip wheel`. The resulting wheel is
-written to `<path-to-build-dir>/dflowfm_io_api/wrappers/python/wheel/` (e.g.
-`dflowfm_io-0.1.0-py3-none-win_amd64.whl`).
-
-To build the wheel as part of the default build instead (no explicit `--target`), configure with
-`-D DFLOWFM_IO_BUILD_WRAPPER_PACKAGES=ON`. See
+`dflowfm_io_wheel` compiles and stages the native library, generates the Python code, then runs `pip wheel`. The
+resulting wheel is written to `<path-to-build-dir>/dflowfm_io_api/wrappers/python/wheel/` (e.g.
+`dflowfm_io-0.1.0-py3-none-win_amd64.whl`). See
 [`dflowfm_io_api/wrappers/python/README.md`](./dflowfm_io_api/wrappers/python/README.md) for details.
+
+`dflowfm_io_csharp_pack` builds the C# solution, then packs it via `dotnet pack`. The resulting package is written
+alongside the C# build output,
+`<path-to-build-dir>/dflowfm_io_api/wrappers/csharp/bin/<cfg>/` (e.g. `DFlowFM.IO.NET.0.1.0.nupkg`).
+
 
 ## Testing
 
