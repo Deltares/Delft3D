@@ -106,6 +106,8 @@ module m_fm_erosed
    integer, dimension(:, :), pointer :: floclist
    real(fp), pointer :: tbreakup
    real(fp), pointer :: tfloc
+   real(fp), pointer :: difparam
+   real(fp), pointer :: seddif_cal
 
    ! morpar
    real(fp), pointer :: thresh

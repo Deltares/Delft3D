@@ -55,7 +55,7 @@ class NetcdfConan(ConanFile):
 
     def requirements(self):
         if self._with_hdf5:
-            self.requires("hdf5/1.14.6")
+            self.requires("hdf5/1.14.2")
             self.requires("zlib/[>=1.2.11 <2]")
 
         if self.options.dap or self.options.byterange:

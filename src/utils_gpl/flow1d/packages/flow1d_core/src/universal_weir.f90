@@ -88,20 +88,22 @@ module m_Universal_Weir
    !> Compute the coefficients FU, RU and AU for this universal weir.
    subroutine ComputeUniversalWeir(uniweir, fum, rum, aum, dadsm, bob0, s1m1, s1m2, &
                                    qm, u1m, dxm, dt, changeStructureDimensions)
+      use precision_basics, only: equal
       implicit none
       !
       ! Global variables
       !
       type(t_uni_weir), pointer, intent(in)       :: uniweir  !< Universal weir object.
-      double precision, intent(  out)             :: fum      !< FU.
-      double precision, intent(  out)             :: rum      !< RU.
+      double precision, intent(inout)             :: fum      !< FU.
+      double precision, intent(inout)             :: rum      !< RU.
       double precision, intent(  out)             :: aum      !< Computed flow area at structure.
       double precision, intent(  out)             :: dadsm    !< Computed flow width at structure.
       double precision, intent(in   )             :: bob0(2)  !< BOB's of the channel
       double precision, intent(in   )             :: s1m2     !< Water level at left side of universal weir.
       double precision, intent(in   )             :: s1m1     !< Water level at right side of universal weir.
       double precision, intent(  out)             :: qm       !< Computed discharge at structure.
-      double precision, intent(inout)             :: u1m      !< Computed flow velocity.
+      double precision, intent(  out)             :: u1m      !< Computed new flow velocity. Note that current velocity will be recomputed first
+                                                              !! based on given fum and rum, in case this universal weir is part of a compound.
       double precision, intent(in   )             :: dxm      !< Length of flow link.
       double precision, intent(in   )             :: dt       !< Time step in seconds.
       logical,          intent(in   )             :: changeStructureDimensions !< Indicates whether the crest level of the weir can be changed when
@@ -132,7 +134,7 @@ module m_Universal_Weir
       !
       !
       u1m =  rum - fum*( s1m2 - s1m1 )
-      qm = aum * u1m
+
       !
       !     Find the flow direction
       if (s1m1  > s1m2) then
@@ -150,8 +152,10 @@ module m_Universal_Weir
       if ((allowedflowdir == 3) .or. (dir == 1 .and. allowedflowdir == 2) .or. (dir == -1 .and. allowedflowdir == 1)) then
          fum  = 0.0d0
          rum  = 0.0d0
-         u1m  = 0.0d0
+         aum  = 0.0d0
+         dadsm = 0.0d0
          qm   = 0.0d0
+         u1m  = 0.0d0
          return
       endif
       
@@ -161,11 +165,13 @@ module m_Universal_Weir
          uniweir%crestlevel_actual = uniweir%crestlevel
       endif
 
-      if (smax < uniweir%crestlevel_actual) then
+      if (smax < uniweir%crestlevel_actual .or. equal(smax, uniweir%crestlevel_actual)) then
          fum  = 0.0d0
          rum  = 0.0d0
-         u1m  = 0.0d0
+         aum  = 0.0d0
+         dadsm = 0.0d0
          qm   = 0.0d0
+         u1m  = 0.0d0
          return
       end if
       !
@@ -335,7 +341,7 @@ module m_Universal_Weir
 
    !> Calculate FU and RU
    subroutine uniweir_furu(s1m1, s1m2, qstru, qdh1, qdh2, dxm, dt, aum, fum, rum, u1m, qm)
-   
+
       use  m_struc_helper
    
       implicit none
@@ -354,10 +360,10 @@ module m_Universal_Weir
       double precision, intent(in   ) :: dxm      !< Delta X
       double precision, intent(in   ) :: dt       !< Time step
       double precision, intent(in   ) :: aum      !< Flow area at link
-      double precision, intent(inout) :: fum      !< FU at link
-      double precision, intent(inout) :: rum      !< RU at link
+      double precision, intent(  out) :: fum      !< FU at link
+      double precision, intent(  out) :: rum      !< RU at link
       double precision, intent(inout) :: u1m      !< Flow velocity at current time step
-      double precision, intent(inout) :: qm       !< Discharge
+      double precision, intent(  out) :: qm       !< Discharge
       !
       !
       ! Local variables
@@ -382,7 +388,7 @@ module m_Universal_Weir
       fr = cu / fuast
       rhsc = -rhsc + fr * ustru
       
-      call furu_iter(fum, rum, s1m2, s1m1, u1m, qm, aum, fr, cu, rhsc, dxdt, 0d0, 0d0, 0d0, 0d0)
+      call furu_iter(fum, rum, s1m2, s1m1, u1m, aum, fr, cu, rhsc, dxdt, 0d0, 0d0, 0d0, 0d0)
 
       qm = aum * u1m
       

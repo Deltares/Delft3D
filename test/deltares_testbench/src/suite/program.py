@@ -149,14 +149,14 @@ class Program:
 
             if completed_process.stderr:
                 prog_path = str(self.__program_config.path)
-                error_message = completed_process.stderr.decode().rstrip().replace("'", "")
+                error_message = completed_process.stderr.decode(errors="replace").rstrip().replace("'", "")
                 if self.__program_config.ignore_standard_error:
                     logger.debug(f"{prog_path} contained error message - {error_message}, but ignoring it")
                 else:
                     logger.warning(f"{prog_path} contained error message - {error_message}")
                     self.__error = subprocess.CalledProcessError(-1, self.__program_config.path, error_message)
         except Exception as e:
-            logger.exception(f"{repr(e)} Could not execute program: {e.filename}")
+            logger.exception(f"Could not execute program: {repr(e)}")
             self.__error = e
 
     def __handle_process_output(self, logger: ILogger, completed_process: subprocess.CompletedProcess) -> None:
@@ -177,7 +177,7 @@ class Program:
         logger.debug(f"Program output will be written to: {log_file}")
         file_logger = FileLogger(self.__settings.command_line_settings.log_level, unique_name, log_file)
         for line in completed_process.stdout.splitlines():
-            file_logger.debug(line.decode())
+            file_logger.debug(line.decode(errors="replace"))
 
     def __start_process(self, logger):
         execmd = self.__buildExeCommand__(logger)

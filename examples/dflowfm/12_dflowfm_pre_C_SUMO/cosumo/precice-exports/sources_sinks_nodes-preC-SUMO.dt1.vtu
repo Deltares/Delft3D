@@ -23,7 +23,7 @@
                
             </DataArray>
          </Cells>
-         <PointData Scalars="Rank sinks_x sinks_y sinks_z_min sinks_z_max sources_x sources_y sources_z_min sources_z_max sources_sinks_discharge " Vectors="">
+         <PointData Scalars="Rank sinks_x sinks_y sinks_z_min sinks_z_max sources_x sources_y sources_z_min sources_z_max sources_sinks_discharge sources_momentum_magnitude sources_momentum_direction " Vectors="">
             <DataArray type="UInt32" Name="Rank" NumberOfComponents="1" format="ascii">
                0 0 0 0 0 
             </DataArray>
@@ -53,6 +53,12 @@
             </DataArray>
             <DataArray type="Float64" Name="sources_sinks_discharge" NumberOfComponents="1" format="ascii">
                20 20 5 5 10 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_momentum_magnitude" NumberOfComponents="1" format="ascii">
+               0 0 0 0 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_momentum_direction" NumberOfComponents="1" format="ascii">
+               0 0 0 0 0 
             </DataArray>
          </PointData> 
       </Piece>

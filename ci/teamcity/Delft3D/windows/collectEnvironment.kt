@@ -16,7 +16,8 @@ object WindowsCollectEnvironment : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Delft3D collect environment container"
@@ -73,7 +74,7 @@ object WindowsCollectEnvironment : BuildType({
     triggers {
         vcs {
             triggerRules = """
-                +:ci/dockerfiles/windows/**
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-collect
                 +:ci/teamcity/Delft3D/windows/collectEnvironment.kt
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()

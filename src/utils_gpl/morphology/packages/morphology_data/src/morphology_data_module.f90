@@ -79,7 +79,7 @@ module morphology_data_module
    public get_one_transport_parameter
 
 ! define a missing value consistent with netCDF _fillvalue
-   real(fp), parameter, public :: missing_value = 9.9692099683868690e+36_fp
+   real(fp), parameter, public :: MISSING_VALUE = 9.9692099683868690e+36_fp
 
    integer, parameter, public :: CHARLEN = 40
 
@@ -610,8 +610,7 @@ module morphology_data_module
       ! doubles
       !
       real(fp) :: csoil !  concentration at bed used in hindered settling formulation
-      real(fp) :: mdcuni !  mud content / mud fraction uniform value (non-zero only
-      !  if mud is not included simulation)
+      real(fp) :: mdcuni !  mud content / mud fraction uniform value (non-zero only if mud is not included simulation)
       real(fp) :: kssilt !  ks value for silt for Soulsby 2004 formulation (used below sc_cmf1)
       real(fp) :: kssand !  ks value for sand (used above sc_cmf2)
       real(fp) :: sc_cmf1 !  lower critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
@@ -622,6 +621,8 @@ module morphology_data_module
       real(fp) :: d_micro !  characteristic diameter of micro flocs [m]
       real(fp) :: ustar_macro ! characteristic shear velocity of macro flocs [m/s]
       real(fp) :: version !  interpreter version
+      real(fp) :: seddif_cal ! calibration factor for susp. sed. diffusion, only applied if strictly positive
+      real(fp) :: difparam ! scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive
       !
       ! reals
       !
@@ -1325,6 +1326,8 @@ end subroutine clrsedtra
       sedpar%tfloc = 1e-10_fp
       sedpar%d_micro = 1e-4_fp
       sedpar%ustar_macro = 0.067_fp
+      sedpar%seddif_cal = 0.0_fp
+      sedpar%difparam = 10.0_fp
       !
       sedpar%flocmod = FLOC_NONE
       sedpar%nflocpop = 1

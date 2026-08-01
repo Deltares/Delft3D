@@ -32,6 +32,8 @@
 module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
+   use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   
    implicit none(type, external)
 
    private
@@ -45,7 +47,7 @@ module m_spatial_field
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
       integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      real(dp) :: rel_size = RCEL_DEFAULT !< averagingRelSize= negative = use EC default.
       integer :: num_min = 1 !< averagingNumMin=
       real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
@@ -119,26 +121,24 @@ contains
    subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use unstruc_inifields, only: averagingTypeStringToInteger
 
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_averaging_input), intent(out) :: avg
 
       logical :: is_read
+      character(len=256) :: averagingType
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
-      if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
+      call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
+      if (is_read) then
+         call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      end if
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
-
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (is_read .and. avg%num_min < 1) avg%num_min = 1
-
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
-
    end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
@@ -191,32 +191,40 @@ contains
       use unstruc_files, only: resolvePath
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
       use m_meteo, only: quantity_name_config_file_to_internal_name
+
+      ! Arguments
       type(t_spatial_field_input), intent(inout) :: input
       character(len=*), intent(in) :: file_name
       character(len=*), intent(in) :: group_name
       character(len=*), intent(in) :: base_dir
 
+      ! Local variables
       logical :: is_successful
-      logical :: has_interpolation_method, target_mask_file_exists
+      logical :: has_interpolation_method
+      logical :: target_mask_file_exists
+      character(len=:), allocatable :: trimmed_file_name
+      character(len=:), allocatable :: trimmed_group_name
 
       is_successful = .false.
+      trimmed_file_name = trim(file_name)
+      trimmed_group_name = trim(group_name)
 
       input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
       if (len_trim(input%quantity) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
 
       if (len_trim(input%forcing_file_type) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFileType'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' is missing.'
          call err_flush()
          return
       end if
 
       if (len_trim(input%forcing_file) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -226,7 +234,7 @@ contains
          call resolvePath(input%target_mask_file, base_dir)
          inquire (file=trim(input%target_mask_file), exist=target_mask_file_exists)
          if (.not. target_mask_file_exists) then
-            write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+            write (msgbuf, '(7a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
                ']. targetMaskFile ''', trim(input%target_mask_file), ''' does not exist.'
             call err_flush()
             return
@@ -234,7 +242,7 @@ contains
       end if
 
       if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
-         write (msgbuf, '(9a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+         write (msgbuf, '(9a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
             ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
             trim(input%forcing_file_type), '''.'
          call err_flush()
@@ -245,14 +253,14 @@ contains
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
          if (input%oper == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'Invalid block in file '''//file_name//''': ['//group_name//']. Unknown operand '''//trim(input%operand_string)//'''.'
+            write (msgbuf, '(a)') 'Invalid block in file '''//trimmed_file_name//''': ['//trimmed_group_name//']. Unknown operand '''//trim(input%operand_string)//'''.'
             call err_flush()
             return
          end if
 
          if (len_trim(input%operand_string) == 1) then
-            write (msgbuf, '(a)') 'Block in file '''//file_name//''': ['//group_name//']. Operand value '''//trim(input%operand_string)//'''. is deprecated, ' &
-               //'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            write (msgbuf, '(a)') 'In ['//trimmed_group_name//'] block in file '''//trimmed_file_name//''': operand value '''//trim(input%operand_string)//''' is deprecated. ' &
+               //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
       end if
@@ -268,9 +276,9 @@ contains
       if (input%method == -1) then
          if (has_interpolation_method) then
             write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', &
-               trim(input%interpolation_method), ' in block in file ''', file_name, ''': [', group_name, '].'
+               trim(input%interpolation_method), ' in block in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
          else
-            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
+            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
                '] nor an internal value associated with given ''forcingFileType'':', trim(input%forcing_file_type), '.'
          end if
          call err_flush()
@@ -286,7 +294,7 @@ contains
       select case (trim(input%quantity))
       case ('qext')
          if (jaQext == 0) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
                ']. quantity ''qext'' requires QExt=1 in MDU.'
             call err_flush()
             return

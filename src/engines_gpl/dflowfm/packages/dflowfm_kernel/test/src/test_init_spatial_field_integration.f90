@@ -64,6 +64,7 @@ contains
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_create, tree_destroy
       use properties, only: prop_file
+      use m_ec_interpolationsettings, only: RCEL_DEFAULT
 
       type(tree_data), pointer :: tree
       type(t_averaging_input) :: avg
@@ -78,7 +79,7 @@ contains
 
       ! ASSERT
       call f90_expect_eq(avg%averaging_type, 1, "default averaging_type should be 1 (mean)")
-      call f90_expect_lt(avg%rel_size, 0.0_dp, "default rel_size should be negative (use EC default)")
+      call f90_expect_eq(avg%rel_size, RCEL_DEFAULT, "default rel_size should be RCEL_DEFAULT (use EC default)")
       call f90_expect_eq(avg%num_min, 1, "default num_min should be 1")
       call f90_expect_eq(avg%percentile, 0.0_dp, "default percentile should be 0")
    end subroutine test_averaging_params_defaults
@@ -407,6 +408,7 @@ contains
       ! ARRANGE
 
       ndx2D = 0
+      call setup_minimal_grid()
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
@@ -414,7 +416,6 @@ contains
       tzone       = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
-      call setup_minimal_grid()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 

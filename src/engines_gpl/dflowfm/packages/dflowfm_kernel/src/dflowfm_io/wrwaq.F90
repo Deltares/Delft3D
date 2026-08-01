@@ -914,7 +914,7 @@ contains
       if (numl1d > 0) then ! there is a 1D grid
          ! count 1d mesh nodes and 1d2d contacts
          do L = 1, numl1d
-            if (kn(3, L) == 1 .or. kn(3, L) == 6) then
+            if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then
                ! Regular 1D net link, or: when no cells, all 1D2D-type net links will also be included with both start and end node.
                numk1d = max(numk1d, kn(1, l), kn(2, l))
             else
@@ -1628,7 +1628,7 @@ contains
                y2 = 0.0_dp
             else
                n = ln(1, Lf)
-               if (kn(3, L) == 1) then ! 1D link
+               if (kn(3, L) == LINK_1D) then ! 1D link
                   ! TODO: AvD: this is probably wrong for 1D2D links (kcu==3 or 4)
                   !                    n1 = abs(lne(1,L))             ! external 1D flow node
                   !                    n2 = abs(lne(2,L))             ! internal 1D flow node

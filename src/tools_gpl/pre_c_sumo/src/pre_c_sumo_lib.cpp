@@ -3,10 +3,12 @@
 #include <precice/precice.hpp>
 #include <print>
 #include <string_view>
+#include <stdexcept>
 #include <vector>
 #include <map>
 
 #include "csumo_settings_reader.hpp"
+#include "connected_sinks_sources.hpp"
 #include "coupling_steps.hpp"
 
 namespace
@@ -111,6 +113,7 @@ namespace pre_c_sumo
 {
     /**
      * @details Entry point into the preC-SUMO preCICE library.
+     * Note: Consider refactoring/clean up
      */
     int run(const std::string_view csumo_settings_file_name, const std::string_view precice_config_file_name)
     {
@@ -141,19 +144,35 @@ namespace pre_c_sumo
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
+        double current_time_seconds = 0.0;
+        waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+        const std::vector<NF2FFReader> initial_nf2ff_readers =
+            readNF2FFFiles(csumo_settings.value(), current_time_seconds);
+        ConnectedSinkSources initial_connected_sink_sources =
+            convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+
         // Set sources_sinks mesh
-        // TESTDATA based on file NF2FF__FlowFM_SubMod001_120.000.xml
-        // TODO: Just-In-Time remeshing?
         SourcesSinks sources_sinks;
-        sources_sinks.setCoordinatesDimension(5);
+        const std::size_t initial_sources_sinks_size = initial_connected_sink_sources.get_number_of_entries() == 0
+                                                           ? 1
+                                                           : initial_connected_sink_sources.get_number_of_entries();
+        sources_sinks.setCoordinatesDimension(initial_sources_sinks_size);
         participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
-            sendSourcesSinksToFF(participant, sources_sinks);
+            try
+            {
+                initial_connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes",
+                                                                sources_sinks.precice_ids);
+            }
+            catch (const std::exception& exception)
+            {
+                std::println(stderr, "Error: Unable to write initial sources/sinks data: {}", exception.what());
+                return -1;
+            }
         }
 
         participant.initialize();
-        double current_time_seconds = 0.0;
         while (participant.isCouplingOngoing())
         {
             double coupling_time_step = participant.getMaxTimeStepSize();
@@ -162,9 +181,19 @@ namespace pre_c_sumo
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
             waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-            convertNFToSourcesSinks(csumo_settings.value());
+            ConnectedSinkSources connected_sink_sources =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
 
-            sendSourcesSinksToFF(participant, sources_sinks);
+            try
+            {
+                connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
+            }
+            catch (const std::exception& exception)
+            {
+                std::println(stderr, "Error: Unable to write sources/sinks data at time {} s: {}", current_time_seconds,
+                             exception.what());
+                return -1;
+            }
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;

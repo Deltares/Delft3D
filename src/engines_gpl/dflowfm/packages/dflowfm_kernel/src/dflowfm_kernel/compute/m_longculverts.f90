@@ -294,7 +294,7 @@ contains
             end if
 
             call tree_create_node(block_ptr, 'frictionType', node_ptr)
-            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type),node_value), 'STRING')
+            call tree_put_data(node_ptr, transfer(frictionTypeIntegerToString(longculverts(nlongculverts)%friction_type), node_value), 'STRING')
 
             call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
             if (.not. success) then
@@ -821,7 +821,7 @@ contains
          do ilongc = 1, nlongculverts
             do i = 1, longculverts(ilongc)%numlinks
                Lf = abs(longculverts(ilongc)%flowlinks(i))
-               !if (kcu(lf) == 1) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
+               !if (kcu(lf) == LINK_1D) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
 
@@ -1017,7 +1017,7 @@ contains
       real(kind=dp), intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
 
-      integer :: jpoint, jstart, jend, ipoly
+      integer :: jpoint, jstart, jend, ipoly, inode
 
       if (meshgeom1d%numnode == -1 .and. meshgeom1d%nnodes == -1) then
          ! This is to allow more than one call to loadNetwork/unc_read_net_ugrid. Remove any previously read network state.
@@ -1027,6 +1027,19 @@ contains
          meshgeom1d%nnodes = 0
          meshgeom1d%numedge = 0
          meshgeom1d%numnode = 0
+      end if
+
+      if (.not. associated(meshgeom1d%nodeidx) .and. meshgeom1d%numnode > 0) then
+         !if an existing network is read but nodeidx and nodeidx_inverse are not allocated, fill them here.
+         allocate (meshgeom1d%nodeidx(meshgeom1d%numnode))
+         meshgeom1d%nodeidx = [(inode, inode=1, meshgeom1d%numnode)]
+         if (associated(meshgeom1d%nodeidx_inverse)) then
+            deallocate (meshgeom1d%nodeidx_inverse)
+         end if
+         allocate (meshgeom1d%nodeidx_inverse(meshgeom1d%numnode))
+         do inode = 1, meshgeom1d%numnode
+            meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(inode)) = inode
+         end do
       end if
 
       ipoly = 0
@@ -1217,8 +1230,8 @@ contains
 
       call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodex, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodey, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
 
       call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)
@@ -1362,6 +1375,7 @@ contains
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
 
       implicit none
 
@@ -1485,7 +1499,7 @@ contains
                      othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                      if (j <= ie) then
-                        if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
+                        if ((kcu(linkabs) == LINK_1D .or. kcu(linkabs) == LINK_1D2D_STREETINLET) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
                            longculvert%flowlinks(j) = -1 * linknum
                            exit
                         end if
@@ -1530,6 +1544,7 @@ contains
       use messageHandling
       use properties
       use unstruc_channel_flow
+      use m_unstruc_model_data, only: md_convertlongculverts
 
       character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
 
@@ -1574,6 +1589,7 @@ contains
          nlongculverts = num_longculverts
          if (num_newculverts > 0) then
             newculverts = .true.
+            md_convertlongculverts = 0
             if (num_newculverts /= num_longculverts) then
                call mess(LEVEL_ERROR, 'Error loading long culverts, only one input type is supported!')
             end if
@@ -1585,12 +1601,14 @@ contains
    subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files)
       use m_set_nod_adm, only: setnodadm
       use m_globalparameters, only: t_filenames
+      use network_data, only: numl1d
 
       type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       character(:), allocatable :: structure_files
       logical :: write_converted_files_
+      integer :: ilongc, num_longculvert_links
 
       write_converted_files_ = .false.
       if (present(write_converted_files)) then
@@ -1614,6 +1632,14 @@ contains
             end if
          end if
       end if
+
+      ! Determine whether all 1D netlinks belong to long culverts.
+      num_longculvert_links = 0
+      do ilongc = 1, nlongculverts
+         num_longculvert_links = num_longculvert_links + longculverts(ilongc)%numlinks
+      end do
+
+      only_longculvert_1D = (num_longculvert_links == numl1d)
 
    end subroutine initialize_long_culverts
 
@@ -1647,6 +1673,9 @@ contains
       use m_network, only: admin_network
       use m_1d_networkreader, only: construct_network_from_meshgeom
       use m_save_ugrid_state
+      use m_node, only: dealloc
+      use m_branch, only: dealloc
+      use m_unstruc_model_data, only: md_partugrid
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
@@ -1691,9 +1720,13 @@ contains
             call realloc(nodeids, meshgeom1d%numnode)
             call realloc(nodelongnames, meshgeom1d%numnode)
             network%numl = meshgeom1d%numedge
+            call dealloc(network%nds)
+            call dealloc(network%brs)
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+         else
+            md_partugrid = 1 ! set ugrid partitioning flag explicitly to true, so that the 2D-2D long culvert contact will be written to the partitioned ugrid file
          end if
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)

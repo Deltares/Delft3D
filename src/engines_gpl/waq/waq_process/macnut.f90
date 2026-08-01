@@ -242,7 +242,12 @@ contains
                             limnsm01b = cdinsm01b / (cdinsm01b + kmdinsm01b)
                         endif
                     endif
+
+                    !
+                    ! Consider the limitation via the water phase and the bottom
+                    !
                     limn = max(limnsm01w, limnsm01b)
+
                     if (cdinsm01w > 1e-10) then
                         if (cdinsm01b > 1e-10) then
                             frootuptn = .998 / (1. + 2.66 * (cdinsm01b / cdinsm01w)**(-0.83))
@@ -270,7 +275,11 @@ contains
                             limpsm01b = cpo4sm01b / (cpo4sm01b + kmpsm01b)
                         endif
                     endif
+                    !
+                    ! Consider the limitation via the water phase and the bottom
+                    !
                     limp = max(limpsm01w, limpsm01b)
+
                     if (cpo4sm01w > 1e-10) then
                         if (cpo4sm01b > 1e-10) then
                             frootuptp = .998 / (1. + 2.66 * (cpo4sm01b / cpo4sm01w)**(-0.83))

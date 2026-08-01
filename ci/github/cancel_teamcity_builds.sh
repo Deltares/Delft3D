@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# set -eou pipefail
-
 set -o errexit
 set -o errtrace
+set -o nounset
+set -o pipefail
 
 # Globals to be set by parse_args
 TEAMCITY_BASE_URL=""
@@ -35,7 +35,7 @@ function catch() {
   fi
 }
 
-trap 'catch $?' ERR
+trap 'catch "$?"' ERR
 
 function usage() {
   cat <<EOF
@@ -222,7 +222,11 @@ function query_trigger() {
     kill_em_all=1
     ;;
   *)
-    printf "     %b Unknown state '%s'. Cannot proceed.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
+    msg="$(printf "%b Unknown state '%s'." "${UNICODE_UNKNOWN}" "${build_state}")"
+    msg+=" If a build chain was triggered on this branch, the build state is likely not available yet in TeamCity."
+    msg+=" Trying again later may result in successful cancellation."
+    msg+=" If not, then there is no build chain to cancel."
+    printf "::warning::%s\n" "$msg" >&2
     kill_em_all=0
     ;;
   esac
@@ -234,7 +238,7 @@ function cancel_all_builds() {
 
   local trigger_id="$1"
 
-  printf "\nLooking up additional builds configurations..." >&2
+  printf "\nLooking up additional builds configurations...\n" >&2
 
   local locator
   printf -v locator \

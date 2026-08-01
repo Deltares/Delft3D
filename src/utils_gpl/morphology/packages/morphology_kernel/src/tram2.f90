@@ -50,7 +50,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module
+      use morphology_data_module ! for MISSING_VALUE and various RP_* parameters
       use sediment_basics_module, only: dsand, dgravel
       !
       implicit none
@@ -364,7 +364,7 @@ contains
          end do
          deltas = 0.05_fp
          epsmax = 0.0_fp
-         epsmxc = missing_value
+         epsmxc = MISSING_VALUE
       end if
       !
       ! Calculate equilibrium concentration profile for sediment
@@ -478,7 +478,7 @@ contains
                          & subiw, vcr, error, message, wform, &
                          & r, phi_phase, uwbih)
             ! van Rijn (2004) specific output
-            par = missing_value
+            par = MISSING_VALUE
             par(1) = tauc
             par(2) = tauwav
             par(3) = taubcw
@@ -506,7 +506,7 @@ contains
                        & screpr, strepr, pc, pt, occ, otc, ott, oct, tc, tt, &
                        & phicx, phitx, qsu, sk, as, &
                        & error, message)
-            par = -999.0_fp
+            par = MISSING_VALUE
             par(1) = uwc
             par(2) = uwt
             par(3) = rh
