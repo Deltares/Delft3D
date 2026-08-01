@@ -92,6 +92,8 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac,
                 burflxf(l,nm) = dfluff/dt
                 dbodsd(l,nm) = dbodsd(l,nm) + dfluff*morfac
              enddo
+          else
+             burflxf(:,nm) = 0.0_fp
           endif
        enddo
     endif
