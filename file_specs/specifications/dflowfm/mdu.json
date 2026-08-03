@@ -39,6 +39,7 @@
                 },
                 {
                     "key": "guiVersion",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Version number of GUI."
                 },
@@ -66,6 +67,7 @@
                 },
                 {
                     "key": "modelSpecific",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name).",
                     "status": {
@@ -104,6 +106,7 @@
             "ini_properties": [
                 {
                     "key": "mduFormatVersion",
+                    "default_value": "1.09",
                     "value_type": "string",
                     "description": "File version. Do not edit this.",
                     "status": {
@@ -126,6 +129,7 @@
                 },
                 {
                     "key": "guiVersion",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Version number of GUI."
                 },
@@ -148,6 +152,7 @@
                 },
                 {
                     "key": "modelSpecific",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name)."
                 },
@@ -170,6 +175,7 @@
             "ini_properties": [
                 {
                     "key": "netFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Net file (*_net.nc) containing mesh information.",
                     "validation": {
@@ -178,58 +184,69 @@
                 },
                 {
                     "key": "dryPointsFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Dry points file (*.xyz), third column dummy z values, or polygon file (*.pol)."
                 },
                 {
                     "key": "gridEnclosureFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Enclosure file (*.pol) to clip outer parts from the grid."
                 },
                 {
                     "key": "structureFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "File (*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
                 },
                 {
                     "key": "gulliesFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Polyline file (*_gul.pliz), containing lowest bed level along talweg x, y, z level."
                 },
                 {
                     "key": "roofsFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Polyline file (*_roof.pliz), containing roofgutter heights x, y, z level."
                 },
                 {
                     "key": "iniFieldFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Initial and parameter field file (*.ini)."
                 },
                 {
                     "key": "waterLevIniFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Initial water levels sample file (*.xyz)."
                 },
                 {
                     "key": "landBoundaryFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Land boundary file (*.ldb), only used for plotting."
                 },
                 {
                     "key": "thinDamFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Polyline file (*_thd.pli), containing polyline(s) for tracing thin dams."
                 },
                 {
                     "key": "fixedWeirFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Polyline file (*_fxw.pliz), containing polyline(s) with x, y, z where z = fixed weir top levels (formerly fixed weir)."
                 },
                 {
                     "key": "pillarFile",
+                    "default_value": [],
                     "value_type": "list[path]",
-                    "description": "Polyline file (*_pillar.pliz), containing four colums with x, y, diameter and Cd coefficient for bridge pillars."
+                    "description": "Polyline file (*_pillar.pliz), containing four columns with x, y, diameter and Cd coefficient for bridge pillars."
                 },
                 {
                     "key": "useCaching",
@@ -239,6 +256,7 @@
                 },
                 {
                     "key": "vertPlizFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
                     "status": {
@@ -247,26 +265,31 @@
                 },
                 {
                     "key": "frictFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Files with roughness data for 1D (space separated)."
                 },
                 {
                     "key": "crossDefFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File containing the cross section definitions for all cross section shapes."
                 },
                 {
                     "key": "crossLocFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File containing the location definitions of the cross sections on a 1D network."
                 },
                 {
                     "key": "storageNodeFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File containing the specification of storage nodes and/or manholes to add extra storage to 1D models."
                 },
                 {
                     "key": "1D2DLinkFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File containing the custom parameterization of 1D-2D links."
                 },
@@ -278,21 +301,25 @@
                 },
                 {
                     "key": "profLocFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "(*_proflocation.xyz) x, y, z, z = profile refnumber."
                 },
                 {
                     "key": "profDefFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "(*_profdefinition.def) definition for all profile nrs."
                 },
                 {
                     "key": "profDefXyzFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "(*_profdefinition.def) definition for all profile nrs."
                 },
                 {
                     "key": "partitionFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "(*_part.pol), polyline(s) x, y."
                 },
@@ -745,6 +772,7 @@
                 },
                 {
                     "key": "shipDefFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File *.shd containing ship definitions.",
                     "status": {
@@ -862,6 +890,7 @@
                 },
                 {
                     "key": "cutCellList",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File with names of cutcell polygons, e.g. cutcellpolygons.lst.",
                     "status": {
@@ -886,6 +915,7 @@
                 },
                 {
                     "key": "pipeFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File *.pliz containing pipe-based 'culverts'.",
                     "status": {
@@ -934,6 +964,7 @@
                 },
                 {
                     "key": "circumcenter",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -944,6 +975,7 @@
                 },
                 {
                     "key": "bathymetryFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -954,6 +986,7 @@
                 },
                 {
                     "key": "bedLevelFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -964,6 +997,7 @@
                 },
                 {
                     "key": "botLevUni",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -974,6 +1008,7 @@
                 },
                 {
                     "key": "botLevType",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -984,6 +1019,7 @@
                 },
                 {
                     "key": "manholeFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -994,6 +1030,7 @@
                 },
                 {
                     "key": "noOptimizedPolygon",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1004,6 +1041,7 @@
                 },
                 {
                     "key": "thinDykeFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1014,6 +1052,7 @@
                 },
                 {
                     "key": "iThinDykeScheme",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1024,6 +1063,7 @@
                 },
                 {
                     "key": "1dNetworkFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1034,6 +1074,7 @@
                 },
                 {
                     "key": "roughnessFiles",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1044,6 +1085,7 @@
                 },
                 {
                     "key": "nodeFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1054,6 +1096,7 @@
                 },
                 {
                     "key": "Grdang",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -1358,6 +1401,7 @@
                 },
                 {
                     "key": "filter",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2282,6 +2326,7 @@
                 },
                 {
                     "key": "ilutype",
+                    "default_value": 0,
                     "value_type": "string",
                     "description": "TODO.",
                     "status": {
@@ -2290,6 +2335,7 @@
                 },
                 {
                     "key": "nlevel",
+                    "default_value": 0,
                     "value_type": "string",
                     "description": "TODO.",
                     "status": {
@@ -2298,6 +2344,7 @@
                 },
                 {
                     "key": "dtol",
+                    "default_value": 0.0,
                     "value_type": "string",
                     "description": "TODO.",
                     "status": {
@@ -2322,6 +2369,7 @@
                 },
                 {
                     "key": "facLaxTurb",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2332,6 +2380,7 @@
                 },
                 {
                     "key": "facLaxTurbHor",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2342,6 +2391,7 @@
                 },
                 {
                     "key": "facLaxTurbVer",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2352,6 +2402,7 @@
                 },
                 {
                     "key": "barocZLayBed",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2362,6 +2413,7 @@
                 },
                 {
                     "key": "orgBarocKeywords",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2372,6 +2424,7 @@
                 },
                 {
                     "key": "barocTerm",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2382,6 +2435,7 @@
                 },
                 {
                     "key": "barocTimeInt",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2392,6 +2446,7 @@
                 },
                 {
                     "key": "jaDrhoDz",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2402,6 +2457,7 @@
                 },
                 {
                     "key": "epsTKE",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2412,6 +2468,7 @@
                 },
                 {
                     "key": "epsEPS",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2422,6 +2479,7 @@
                 },
                 {
                     "key": "transportTimeStepping",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2432,6 +2490,7 @@
                 },
                 {
                     "key": "transportMethod",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2442,6 +2501,7 @@
                 },
                 {
                     "key": "hkad",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2452,6 +2512,7 @@
                 },
                 {
                     "key": "iThinDykeScheme",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2462,6 +2523,7 @@
                 },
                 {
                     "key": "thinDykeContraction",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2472,6 +2534,7 @@
                 },
                 {
                     "key": "jaOrgSethu",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2482,6 +2545,7 @@
                 },
                 {
                     "key": "CFLWaveFrac",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2492,6 +2556,7 @@
                 },
                 {
                     "key": "jaEmbed1d",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2502,6 +2567,7 @@
                 },
                 {
                     "key": "sobekdfm_umin",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2512,6 +2578,7 @@
                 },
                 {
                     "key": "sobekdfm_umin_method",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2522,6 +2589,7 @@
                 },
                 {
                     "key": "sobekdfm_minimal_1d2d_embankment",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -2532,6 +2600,7 @@
                 },
                 {
                     "key": "wridia_viscosity_diffusivity_limit",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -3173,6 +3242,7 @@
                 },
                 {
                     "key": "allowCoolingBelowZero",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -3183,6 +3253,7 @@
                 },
                 {
                     "key": "rhoAirRhoWater",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -3193,6 +3264,7 @@
                 },
                 {
                     "key": "effectSpiral",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -3203,6 +3275,7 @@
                 },
                 {
                     "key": "stericCorrection",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -3233,11 +3306,13 @@
                 },
                 {
                     "key": "morFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Morphology settings file (*.mor)."
                 },
                 {
                     "key": "sedFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Sediment characteristics file (*.sed)."
                 },
@@ -3284,6 +3359,7 @@
                 },
                 {
                   "key": "dredgeFile",
+                  "default_value": "",
                   "value_type": "path",
                   "description": "Dredging/dumping settings file (*.dad)"
                 },
@@ -3380,8 +3456,9 @@
                 },
                 {
                   "key": "morphoPol",
+                  "default_value": "",
                   "value_type": "path",
-                  "description": "Only apply bed updating wihtin specified polygon (*.pol)"
+                  "description": "Only apply bed updating within specified polygon (*.pol)"
                 },
                 {
                   "key": "ws",
@@ -3433,6 +3510,7 @@
             "ini_properties": [
                 {
                     "key": "sedTrailsGrid",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Grid file for sedtrails output locations on corners.",
                     "status": {
@@ -3467,6 +3545,7 @@
                 },
                 {
                     "key": "sedtrailsOutputFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Sedtrails time-averaged output file.",
                     "status": {
@@ -3631,6 +3710,7 @@
                 },
                 {
                     "key": "gapres",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -3703,6 +3783,7 @@
                 },
                 {
                     "key": "surfBeatInput",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File with surf beat input conditions."
                 },
@@ -3838,6 +3919,7 @@
                 },
                 {
                     "key": "waveNikuradse",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -4095,6 +4177,7 @@
                 },
                 {
                     "key": "autoTimeStepDiff",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -4112,6 +4195,7 @@
             "ini_properties": [
                 {
                     "key": "restartFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Restart file, only from NetCDF-file, hence: either *_rst.nc or *_map.nc."
                 },
@@ -4139,11 +4223,13 @@
             "ini_properties": [
                 {
                     "key": "extForceFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification."
                 },
                 {
                     "key": "extForceFileNew",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "New format for external forcings file *.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
                 },
@@ -4191,11 +4277,13 @@
                 },
                 {
                     "key": "trtDef",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File (*.ttd) including trachytope definitions."
                 },
                 {
                     "key": "trtL",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File (*.arl) including distribution of trachytope definitions."
                 },
@@ -4234,6 +4322,7 @@
                 },
                 {
                     "key": "trtCll",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Calibration factor file for roughness from trachytopes.",
                     "status": {
@@ -4242,6 +4331,7 @@
                 },
                 {
                     "key": "trtdt",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -4348,21 +4438,25 @@
                 },
                 {
                     "key": "outputDir",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Output directory of map-, his-, rst-, dat- and timins files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir."
                 },
                 {
                     "key": "waqOutputDir",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Output directory of Water Quality files."
                 },
                 {
                     "key": "flowGeomFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "*_flowgeom.nc Flow geometry file in NetCDF format."
                 },
                 {
                     "key": "obsFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Space separated list of files, containing information about observation points."
                 },
@@ -4374,11 +4468,13 @@
                 },
                 {
                     "key": "crsFile",
+                    "default_value": [],
                     "value_type": "list[path]",
                     "description": "Space separated list of files, containing information about observation cross sections."
                 },
                 {
                     "key": "fouFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Name of attribute file that defines the *_fou.nc Fourier output file in NetCDF format."
                 },
@@ -4395,6 +4491,7 @@
                 },
                 {
                     "key": "hisFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "*_his.nc History file in NetCDF format."
                 },
@@ -4420,6 +4517,7 @@
                 },
                 {
                     "key": "mapFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "*_map.nc Map file in NetCDF format."
                 },
@@ -5176,11 +5274,13 @@
                 },
                 {
                     "key": "mapOutputTimeVector",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File (.mpt) containing fixed map output times (s) w.r.t. `refDate`."
                 },
                 {
                     "key": "comOutputTimeVector",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File (.ctv) containing fixed comfile write times (s) w.r.t. `refDate`."
                 },
@@ -5215,6 +5315,7 @@
                 },
                 {
                     "key": "classMapFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Name of class map file."
                 },
@@ -5316,6 +5417,7 @@
                 },
                 {
                     "key": "waqHorAggr",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "DELWAQ output horizontal aggregation file (*.dwq).",
                     "status": {
@@ -5332,6 +5434,7 @@
                 },
                 {
                     "key": "metadataFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).",
                     "status": {
@@ -5365,6 +5468,7 @@
                 },
                 {
                     "key": "timeSplitInterval",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Time splitting interval after which a new output file is started. Format: value+unit, e.g. '1M'.",
                     "unit": "Y, M, D, h, m, s",
@@ -5374,6 +5478,7 @@
                 },
                 {
                     "key": "rugFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Polyline file *_rug.pli defining runup gauges.",
                     "status": {
@@ -5406,6 +5511,7 @@
                 },
                 {
                     "key": "waqVertAggr",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "DELWAQ output vertical aggregation file (*.vag).",
                     "status": {
@@ -5438,6 +5544,7 @@
                 },
                 {
                     "key": "writeBalanceFile",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5448,6 +5555,7 @@
                 },
                 {
                     "key": "s1incInterval",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5458,6 +5566,7 @@
                 },
                 {
                     "key": "waqFileBase",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5468,6 +5577,7 @@
                 },
                 {
                     "key": "snapshotdir",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5478,6 +5588,7 @@
                 },
                 {
                     "key": "heatFluxesOnOutput",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5488,6 +5599,7 @@
                 },
                 {
                     "key": "wrimap_input_dt",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5498,6 +5610,7 @@
                 },
                 {
                     "key": "wrihis_heatflux",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5549,6 +5662,7 @@
                 },
                 {
                     "key": "definitionFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File (*.cld) containing calibration definitions.",
                     "status": {
@@ -5557,6 +5671,7 @@
                 },
                 {
                     "key": "areaFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "File (*.cll) containing area distribution of calibration definitions.",
                     "status": {
@@ -5572,6 +5687,7 @@
             "ini_properties": [
                 {
                     "key": "substanceFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Substance file name.",
                     "status": {
@@ -5588,6 +5704,7 @@
                 },
                 {
                     "key": "additionalHistoryOutputFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Extra history output filename.",
                     "status": {
@@ -5596,6 +5713,7 @@
                 },
                 {
                     "key": "statisticsFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Statistics definition file.",
                     "status": {
@@ -5661,6 +5779,7 @@
                 },
                 {
                     "key": "wriWaqBot3dOutput",
+                    "default_value": "",
                     "value_type": "string",
                     "description": "Keyword is obsolete.",
                     "status": {
@@ -5690,11 +5809,13 @@
             "ini_properties": [
                 {
                     "key": "particlesFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Initial particle locations file (*.xyz)."
                 },
                 {
                     "key": "particlesReleaseFile",
+                    "default_value": "",
                     "value_type": "path",
                     "description": "Particles release file (*.tim, 4 column)."
                 },

@@ -266,6 +266,9 @@ def get_default_value_formatted(ini_property: IniPropertySpec) -> str:
     if default_value is None:
         return ""
 
+    if isinstance(default_value, (str, list)) and not default_value:
+        return '`<empty>`'
+
     if isinstance(default_value, list):
         return f"`{' '.join(map(str, default_value))}`"
 

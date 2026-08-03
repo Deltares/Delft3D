@@ -52,10 +52,10 @@ This section contains the program name and its version.
 | `version` | Version number of computational kernel. | `1.2.60.64623M` |  |  |  |
 | `fileType` | File type. Do not edit this. | `modelDef` | <ul><li>**`modelDef`**: model definition file</li></ul> |  |  |
 | `fileVersion` | File version. Do not edit this. | `1.09` |  |  |  |
-| `guiVersion` | Version number of GUI. |  |  |  |  |
+| `guiVersion` | Version number of GUI. | `<empty>` |  |  |  |
 | `autoStart` ⚠️ | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
 | `pathsRelativeToParent` | Resolve file names (e.g. inside the \*.ext file) relative to their direct parent, instead of to the top-level MDU working dir. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `modelSpecific` 🔬 | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). |  |  |  |  |
+| `modelSpecific` 🔬 | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). | `<empty>` |  |  |  |
 | `inputSpecific` 🔬 | Use of hardcoded specific inputs, shall not be used by users. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `convertLongCulverts` ⚠️ | Convert long culvert input to 1D2D long culverts. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
@@ -67,13 +67,13 @@ This section contains the program name and its version.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `mduFormatVersion` ⚠️ | File version. Do not edit this. |  |  |  |  |
+| `mduFormatVersion` ⚠️ | File version. Do not edit this. | `1.09` |  |  |  |
 | `program` | Program. | `D-Flow FM` |  |  |  |
 | `version` | Version number of computational kernel. | `1.2.60.64623M` |  |  |  |
-| `guiVersion` | Version number of GUI. |  |  |  |  |
+| `guiVersion` | Version number of GUI. | `<empty>` |  |  |  |
 | `autoStart` | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
 | `pathsRelativeToParent` | Resolve file names (e.g. inside the \*.ext file) relative to their direct parent, instead of to the top-level MDU working dir. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `modelSpecific` | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). |  |  |  |  |
+| `modelSpecific` | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). | `<empty>` |  |  |  |
 | `inputSpecific` | Use of hardcoded specific inputs, shall not be used by users. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `convertLongCulverts` | Convert long culvert input to 1D2D long culverts. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
@@ -85,30 +85,30 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `netFile` | Net file (\*_net.nc) containing mesh information. |  |  |  |  |
-| `dryPointsFile` | Dry points file (\*.xyz), third column dummy z values, or polygon file (\*.pol). |  |  |  |  |
-| `gridEnclosureFile` | Enclosure file (\*.pol) to clip outer parts from the grid. |  |  |  |  |
-| `structureFile` | File (\*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. |  |  |  |  |
-| `gulliesFile` | Polyline file (\*_gul.pliz), containing lowest bed level along talweg x, y, z level. |  |  |  |  |
-| `roofsFile` | Polyline file (\*_roof.pliz), containing roofgutter heights x, y, z level. |  |  |  |  |
-| `iniFieldFile` | Initial and parameter field file (\*.ini). |  |  |  |  |
-| `waterLevIniFile` | Initial water levels sample file (\*.xyz). |  |  |  |  |
-| `landBoundaryFile` | Land boundary file (\*.ldb), only used for plotting. |  |  |  |  |
-| `thinDamFile` | Polyline file (\*_thd.pli), containing polyline(s) for tracing thin dams. |  |  |  |  |
-| `fixedWeirFile` | Polyline file (\*_fxw.pliz), containing polyline(s) with x, y, z where z = fixed weir top levels (formerly fixed weir). |  |  |  |  |
-| `pillarFile` | Polyline file (\*_pillar.pliz), containing four colums with x, y, diameter and Cd coefficient for bridge pillars. |  |  |  |  |
+| `netFile` | Net file (\*_net.nc) containing mesh information. | `<empty>` |  |  |  |
+| `dryPointsFile` | Dry points file (\*.xyz), third column dummy z values, or polygon file (\*.pol). | `<empty>` |  |  |  |
+| `gridEnclosureFile` | Enclosure file (\*.pol) to clip outer parts from the grid. | `<empty>` |  |  |  |
+| `structureFile` | File (\*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. | `<empty>` |  |  |  |
+| `gulliesFile` | Polyline file (\*_gul.pliz), containing lowest bed level along talweg x, y, z level. | `<empty>` |  |  |  |
+| `roofsFile` | Polyline file (\*_roof.pliz), containing roofgutter heights x, y, z level. | `<empty>` |  |  |  |
+| `iniFieldFile` | Initial and parameter field file (\*.ini). | `<empty>` |  |  |  |
+| `waterLevIniFile` | Initial water levels sample file (\*.xyz). | `<empty>` |  |  |  |
+| `landBoundaryFile` | Land boundary file (\*.ldb), only used for plotting. | `<empty>` |  |  |  |
+| `thinDamFile` | Polyline file (\*_thd.pli), containing polyline(s) for tracing thin dams. | `<empty>` |  |  |  |
+| `fixedWeirFile` | Polyline file (\*_fxw.pliz), containing polyline(s) with x, y, z where z = fixed weir top levels (formerly fixed weir). | `<empty>` |  |  |  |
+| `pillarFile` | Polyline file (\*_pillar.pliz), containing four columns with x, y, diameter and Cd coefficient for bridge pillars. | `<empty>` |  |  |  |
 | `useCaching` | Use caching for geometrical/network-related items. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `vertPlizFile` 🔬 | Polyline file (\*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions). |  |  |  |  |
-| `frictFile` | Files with roughness data for 1D (space separated). |  |  |  |  |
-| `crossDefFile` | File containing the cross section definitions for all cross section shapes. |  |  |  |  |
-| `crossLocFile` | File containing the location definitions of the cross sections on a 1D network. |  |  |  |  |
-| `storageNodeFile` | File containing the specification of storage nodes and/or manholes to add extra storage to 1D models. |  |  |  |  |
-| `1D2DLinkFile` | File containing the custom parameterization of 1D-2D links. |  |  |  |  |
+| `vertPlizFile` 🔬 | Polyline file (\*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions). | `<empty>` |  |  |  |
+| `frictFile` | Files with roughness data for 1D (space separated). | `<empty>` |  |  |  |
+| `crossDefFile` | File containing the cross section definitions for all cross section shapes. | `<empty>` |  |  |  |
+| `crossLocFile` | File containing the location definitions of the cross sections on a 1D network. | `<empty>` |  |  |  |
+| `storageNodeFile` | File containing the specification of storage nodes and/or manholes to add extra storage to 1D models. | `<empty>` |  |  |  |
+| `1D2DLinkFile` | File containing the custom parameterization of 1D-2D links. | `<empty>` |  |  |  |
 | `allowBndAtBifurcation` | Allow 1D boundary node when connecting branch leads to bifurcation. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `profLocFile` | (\*_proflocation.xyz) x, y, z, z = profile refnumber. |  |  |  |  |
-| `profDefFile` | (\*_profdefinition.def) definition for all profile nrs. |  |  |  |  |
-| `profDefXyzFile` | (\*_profdefinition.def) definition for all profile nrs. |  |  |  |  |
-| `partitionFile` | (\*_part.pol), polyline(s) x, y. |  |  |  |  |
+| `profLocFile` | (\*_proflocation.xyz) x, y, z, z = profile refnumber. | `<empty>` |  |  |  |
+| `profDefFile` | (\*_profdefinition.def) definition for all profile nrs. | `<empty>` |  |  |  |
+| `profDefXyzFile` | (\*_profdefinition.def) definition for all profile nrs. | `<empty>` |  |  |  |
+| `partitionFile` | (\*_part.pol), polyline(s) x, y. | `<empty>` |  |  |  |
 | `dxWuiMin2D` | Smallest fraction dx/wu , set dx > `dxWuiMin2D`\*wu. | `0.0` |  |  |  |
 | `waterLevIni` | Initial water level. | `0.0` |  | [m AD] |  |
 | `bedLevUni` | Uniform bed level (only if `bedLevType`>=3), used at missing z-values in `netFile`. | `-5.0` |  | [m AD] |  |
@@ -162,7 +162,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `helmert` 🔬 | Use Helmert. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `waterDepthIni1D` 🔬 | Initial waterdepth in 1D. |  |  |  |  |
 | `zLayerAtuByBob` 🔬 | Lowest connected cells governed by bob instead of by bL L/R. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `shipDefFile` 🔬 | File \*.shd containing ship definitions. |  |  |  |  |
+| `shipDefFile` 🔬 | File \*.shd containing ship definitions. | `<empty>` |  |  |  |
 | `bedWaveLength` 🔬 | Bed testcases. |  |  |  |  |
 | `removeSmallLinksTrsh` 🔬 | Remove small links. |  |  |  |  |
 | `createLinks1D2D` 🔬 | Rashly create links between 1D nodes and 2D cells when initializing model. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -174,10 +174,10 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `ihuzcSig` 🔬 | If `keepZLayeringAtBed`>=2. |  | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  |  |
 | `ihuz` 🔬 | TODO |  |  |  |  |
 | `cosphiutrsh` 🔬 | 1.0=no bad orthos. |  | `[0.0, 1.0]` |  |  |
-| `cutCellList` 🔬 | File with names of cutcell polygons, e.g. cutcellpolygons.lst. |  |  |  |  |
+| `cutCellList` 🔬 | File with names of cutcell polygons, e.g. cutcellpolygons.lst. | `<empty>` |  |  |  |
 | `uniformTyp1D` 🔬 | Uniform type for channel profiles not specified by profloc. |  |  |  |  |
 | `1D2DInternalLinkType` 🔬 | Link treatment method for type-3 internal links. |  |  |  |  |
-| `pipeFile` 🔬 | File \*.pliz containing pipe-based 'culverts'. |  |  |  |  |
+| `pipeFile` 🔬 | File \*.pliz containing pipe-based 'culverts'. | `<empty>` |  |  |  |
 | `groundLayerThickness` 🔬 | Only in pipes: groundlayer thickness. |  |  | [m] |  |
 | `extrBl` 🔬 | Extrapolate bed level at boundaries according to the slope. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `keepZLay1BedVol` 🔬 | Correct volumes when `keepZLayeringAtBed`=1. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -320,9 +320,9 @@ This section contains the settings of specific parts of the flow solver, such as
 | `vertAdvTypMom3OnBnd` 🔬 | Vertical advection type u1 bnd UpwimpL. | `0` | <ul><li>**`0`**: follow javau</li><li>**`1`**: on bnd</li><li>**`2`**: on and near bnd</li></ul> |  |  |
 | `noDerivedTypes` 🔬 | Use derived types. |  | <ul><li>**`0`**: use derived types</li><li>**`1`**: less</li><li>**`2`**: lesser</li><li>**`5`**: also deallocate derived types</li></ul> |  |  |
 | `jarhoxu` 🔬 | Include density gradient in advection term. | `0` | <ul><li>**`0`**: no (strongly advised)</li><li>**`1`**: yes</li><li>**`2`**: also in barotropic and baroclinic pressure term</li><li>**`3`**: also in vertical advection</li><li>**`4`**: also in vertical advection</li></ul> |  |  |
-| `ilutype` 🔬 | TODO. |  |  |  |  |
-| `nlevel` 🔬 | TODO. |  |  |  |  |
-| `dtol` 🔬 | TODO. |  |  |  |  |
+| `ilutype` 🔬 | TODO. | `0` |  |  |  |
+| `nlevel` 🔬 | TODO. | `0` |  |  |  |
+| `dtol` 🔬 | TODO. | `0.0` |  |  |  |
 | `pillarFarFieldVelocity` 🔬 | Use far-field velocity for pillars. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `minWaterlevelChangeBreak` | Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0). | `0.0` |  | [m] |  |
 | `maxSSC` | Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off) | `1000000.0` |  |  |  |
@@ -416,14 +416,14 @@ This section contains the setting for sediment transport and morphology.
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `sedimentModelNr` | Sediment model number. | `2` | <ul><li>**`0`**: no</li><li>**`1`**: Krone</li><li>**`2`**: SvR2007</li><li>**`3`**: E-H</li><li>**`4`**: MorphologyModule</li></ul> |  |  |
-| `morFile` | Morphology settings file (\*.mor). |  |  |  |  |
-| `sedFile` | Sediment characteristics file (\*.sed). |  |  |  |  |
+| `morFile` | Morphology settings file (\*.mor). | `<empty>` |  |  |  |
+| `sedFile` | Sediment characteristics file (\*.sed). | `<empty>` |  |  |  |
 | `jaceneqtr` | TODO |  |  |  |  |
 | `mxgrkrone` 🔬 | Highest fraction index treated by Krone. |  |  |  |  |
 | `sedDensCoupling` 🔬 | Sed rho coupling. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `implicitFallVelocity` 🔬 | Implicit or explicit fall velocity |  | <ul><li>**`0`**: implicit</li><li>**`1`**: explicit</li></ul> |  |  |
 | `nr_of_sedfractions` 🔬 | Number of sediment fractions. |  |  |  |  |
-| `dredgeFile` | Dredging/dumping settings file (\*.dad) |  |  |  |  |
+| `dredgeFile` | Dredging/dumping settings file (\*.dad) | `<empty>` |  |  |  |
 | `bndTreatment` | Separate treatment boundary links in upwinding transports. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `sourSink` | Switch off source or sink terms for sed advection. | `1` | <ul><li>**`0`**: off</li><li>**`1`**: source+sink</li><li>**`2`**: source</li><li>**`3`**: sink for sediment</li></ul> |  |  |
 | `cRefCav` | Calibration par only in jased==3, default=20.0 ( )  | `20.0` |  |  |  |
@@ -438,7 +438,7 @@ This section contains the setting for sediment transport and morphology.
 | `alfaSus` | Calibration par suspended load, default=1.0 ( )  |  |  |  |  |
 | `morCFL` | Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes) | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `DzbDtMax` | Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m) | `0.1` |  |  |  |
-| `morphoPol` | Only apply bed updating wihtin specified polygon (\*.pol) |  |  |  |  |
+| `morphoPol` | Only apply bed updating within specified polygon (\*.pol) | `<empty>` |  |  |  |
 | `ws` | Fall velocity (m/s), e.g. 0.0005 m/s |  |  |  |  |
 | `erosionPar` | Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s) |  |  |  |  |
 | `tauCre` | Critical shear stress for erosion    (N/m2), e.g. 0.3 |  |  |  |  |
@@ -454,10 +454,10 @@ Section for configuring the Sedtrails output.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `sedTrailsGrid` 🔬 | Grid file for sedtrails output locations on corners. |  |  |  |  |
+| `sedTrailsGrid` 🔬 | Grid file for sedtrails output locations on corners. | `<empty>` |  |  |  |
 | `sedtrailsAnalysis` 🔬 | Option for writing sedtrails to the output file. |  | <ul><li>**`all`**: write all quantities</li><li>**`transport`**: write bedload and suspended-load transport vectors per sediment fraction</li><li>**`flowvelocity`**: write depth-averaged velocity components at grid corners</li><li>**`soulsby`**: write quantities for the Soulsby sediment mobility method</li></ul> |  |  |
 | `sedtrailsInterval` 🔬 | Sedtrails output, given as 'interval' 'start period' 'end period'. |  |  |  |  |
-| `sedtrailsOutputFile` 🔬 | Sedtrails time-averaged output file. |  |  |  |  |
+| `sedtrailsOutputFile` 🔬 | Sedtrails time-averaged output file. | `<empty>` |  |  |  |
 
 
 <a id="supported-keywords-and-options-wind"></a>
@@ -496,7 +496,7 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`none`**: none</li><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |  |
 | `gammaX` | Maximum wave height/water depth ratio. | `0.5` |  |  |  |
 | `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `surfBeatInput` | File with surf beat input conditions. |  |  |  |  |
+| `surfBeatInput` | File with surf beat input conditions. | `<empty>` |  |  |  |
 | `waveSwartDelwaq` 🔬 | If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb. | `0` | <ul><li>**`0`**: Communicate only the current-related shear stress (taucur) to Delwaq.</li><li>**`1`**: Communicate the linear sum taucur + tauwave to Delwaq.</li><li>**`2`**: Communicate the maximum shear stress (taubxu) to Delwaq.</li></ul> |  |  |
 | `hwavuni` 🔬 | Root mean square wave height. |  |  | [m] |  |
 | `tiFetchComp` 🔬 | Time interval fetch comp if `waveModelNr`=1,2. |  |  | [s] |  |
@@ -575,7 +575,7 @@ This section contains the settings for restarting from a previous simulation.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `restartFile` | Restart file, only from NetCDF-file, hence: either \*_rst.nc or \*_map.nc. |  |  |  |  |
+| `restartFile` | Restart file, only from NetCDF-file, hence: either \*_rst.nc or \*_map.nc. | `<empty>` |  |  |  |
 | `restartDateTime` | Restart time, only relevant but obligatory in case of restart from \*_map.nc. |  |  |  | `yyyymmddhhmmss` |
 | `rstIgnoreBl` 🔬 | Ignore bed level from restart. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
@@ -587,8 +587,8 @@ This section contains the settings for external forcings.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `extForceFile` | Old format for external forcings file \*.ext, link with tim/cmp-format boundary conditions specification. |  |  |  |  |
-| `extForceFileNew` | New format for external forcings file \*.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. |  |  |  |  |
+| `extForceFile` | Old format for external forcings file \*.ext, link with tim/cmp-format boundary conditions specification. | `<empty>` |  |  |  |
+| `extForceFileNew` | New format for external forcings file \*.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. | `<empty>` |  |  |  |
 | `rainfall` | Include rainfall. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `qExt` | Include user Qin/out, externally provided. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `evaporation` | Include evaporation in water balance. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -603,13 +603,13 @@ This section contains the settings for trachytopes allowing the usage of differe
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `trtRou` | Flag for trachytopes. | `N` | <ul><li>**`Y`**: on</li><li>**`N`**: off</li></ul> |  |  |
-| `trtDef` | File (\*.ttd) including trachytope definitions. |  |  |  |  |
-| `trtL` | File (\*.arl) including distribution of trachytope definitions. |  |  |  |  |
+| `trtDef` | File (\*.ttd) including trachytope definitions. | `<empty>` |  |  |  |
+| `trtL` | File (\*.arl) including distribution of trachytope definitions. | `<empty>` |  |  |  |
 | `dtTrt` | Interval for updating of bottom roughness due to trachytopes in seconds. | `60.0` |  | [s] |  |
 | `trtMxR` | Maximum recursion level for composite trachytope definitions. | `8` |  |  |  |
 | `trtMth` 🔬 | Area averaging method. |  | <ul><li>**`1`**: Nikuradse k based</li><li>**`2`**: Chezy C based (parallel and serial)</li></ul> |  |  |
 | `trtMnh` 🔬 | Minimum water depth for roughness computations. |  |  |  |  |
-| `trtCll` 🔬 | Calibration factor file for roughness from trachytopes. |  |  |  |  |
+| `trtCll` 🔬 | Calibration factor file for roughness from trachytopes. | `<empty>` |  |  |  |
 
 
 <a id="supported-keywords-and-options-output"></a>
@@ -632,18 +632,18 @@ This section contains the settings for various output files.
 | `wrishp_thd` | Writing thin dams to shape file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wrishp_weir` | Writing weirs to shape file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `writeSurfaceDataToMapFile` | Only write surface data to map file for 3D quantities. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `outputDir` | Output directory of map-, his-, rst-, dat- and timins files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir. |  |  |  |  |
-| `waqOutputDir` | Output directory of Water Quality files. |  |  |  |  |
-| `flowGeomFile` | \*_flowgeom.nc Flow geometry file in NetCDF format. |  |  |  |  |
-| `obsFile` | Space separated list of files, containing information about observation points. |  |  |  |  |
+| `outputDir` | Output directory of map-, his-, rst-, dat- and timins files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir. | `<empty>` |  |  |  |
+| `waqOutputDir` | Output directory of Water Quality files. | `<empty>` |  |  |  |
+| `flowGeomFile` | \*_flowgeom.nc Flow geometry file in NetCDF format. | `<empty>` |  |  |  |
+| `obsFile` | Space separated list of files, containing information about observation points. | `<empty>` |  |  |  |
 | `deleteObsPointsOutsideGrid` | Delete observation points outside the grid. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `crsFile` | Space separated list of files, containing information about observation cross sections. |  |  |  |  |
-| `fouFile` | Name of attribute file that defines the \*_fou.nc Fourier output file in NetCDF format. |  |  |  |  |
+| `crsFile` | Space separated list of files, containing information about observation cross sections. | `<empty>` |  |  |  |
+| `fouFile` | Name of attribute file that defines the \*_fou.nc Fourier output file in NetCDF format. | `<empty>` |  |  |  |
 | `fouUpdateStep` | Fourier output type. | `0` | <ul><li>**`0`**: every user step</li><li>**`1`**: every computational step</li><li>**`2`**: equal to his output</li></ul> |  |  |
-| `hisFile` | \*_his.nc History file in NetCDF format. |  |  |  |  |
+| `hisFile` | \*_his.nc History file in NetCDF format. | `<empty>` |  |  |  |
 | `hisInterval` | History output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `xlsInterval` | Interval between XLS history. | `0.0` |  | [s] |  |
-| `mapFile` | \*_map.nc Map file in NetCDF format. |  |  |  |  |
+| `mapFile` | \*_map.nc Map file in NetCDF format. | `<empty>` |  |  |  |
 | `mapInterval` | Map file output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `rstInterval` | Restart file output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `comInterval` | Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`. | `300.0` |  | [s] |  |
@@ -760,12 +760,12 @@ This section contains the settings for various output files.
 | `wriMap_dtCell` | Write time step per cell based on CFL. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_wqBot3d` | Write 3D water quality bottom variables to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_every_dt` | Write output to map file every computational timestep, between start and stop time from `mapInterval`. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `mapOutputTimeVector` | File (.mpt) containing fixed map output times (s) w.r.t. `refDate`. |  |  |  |  |
-| `comOutputTimeVector` | File (.ctv) containing fixed comfile write times (s) w.r.t. `refDate`. |  |  |  |  |
+| `mapOutputTimeVector` | File (.mpt) containing fixed map output times (s) w.r.t. `refDate`. | `<empty>` |  |  |  |
+| `comOutputTimeVector` | File (.ctv) containing fixed comfile write times (s) w.r.t. `refDate`. | `<empty>` |  |  |  |
 | `fullGridOutput` | Full grid output mode for layer positions. | `0` | <ul><li>**`0`**: compact</li><li>**`1`**: full time-varying grid layer data</li></ul> |  |  |
 | `eulerVelocities` | Write Eulerian velocities. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `avgWaveOutputInterval` | Average wave output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
-| `classMapFile` | Name of class map file. |  |  |  |  |
+| `classMapFile` | Name of class map file. | `<empty>` |  |  |  |
 | `waterLevelClasses` | Series of values between which water level classes are computed. | `0.0` |  |  |  |
 | `waterDepthClasses` | Series of values between which water depth classes are computed. | `0.0` |  |  |  |
 | `classMapInterval` | Interval between class map file outputs, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
@@ -777,18 +777,18 @@ This section contains the settings for various output files.
 | `wrimap_nearfield` 🔬 | Write NearField parameters. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `writeDfmInterpretedValues` 🔬 | Write DFM interpreted values. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `mbaLumpBoundaries` 🔬 | Lump MBA boundary mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `waqHorAggr` 🔬 | DELWAQ output horizontal aggregation file (\*.dwq). |  |  |  |  |
+| `waqHorAggr` 🔬 | DELWAQ output horizontal aggregation file (\*.dwq). | `<empty>` |  |  |  |
 | `writeDetailedTimers` 🔬 | Write detailed timers output file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `metadataFile` 🔬 | Metadata NetCDF file with user-defined global dataset attributes (\*_meta.nc). |  |  |  |  |
+| `metadataFile` 🔬 | Metadata NetCDF file with user-defined global dataset attributes (\*_meta.nc). | `<empty>` |  |  |  |
 | `mbaInterval` 🔬 | Mass balance area output interval. |  |  | [s] |  |
 | `wrirst_bnd` 🔬 | Write water level. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `generateUuid` 🔬 | Generate UUID as unique dataset identifier and include in output NetCDF files. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `timeSplitInterval` 🔬 | Time splitting interval after which a new output file is started. Format: value+unit, e.g. '1M'. |  |  | [Y, M, D, h, m, s] |  |
-| `rugFile` 🔬 | Polyline file \*_rug.pli defining runup gauges. |  |  |  |  |
+| `timeSplitInterval` 🔬 | Time splitting interval after which a new output file is started. Format: value+unit, e.g. '1M'. | `<empty>` |  | [Y, M, D, h, m, s] |  |
+| `rugFile` 🔬 | Polyline file \*_rug.pli defining runup gauges. | `<empty>` |  |  |  |
 | `mbaWriteCsv` 🔬 | Write mass balance area output to a CSV file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `mbaLumpFromToMba` 🔬 | Lump MBA from/to other areas mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `mbaLumpProcesses` 🔬 | Lump MBA processes mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `waqVertAggr` 🔬 | DELWAQ output vertical aggregation file (\*.vag). |  |  |  |  |
+| `waqVertAggr` 🔬 | DELWAQ output vertical aggregation file (\*.vag). | `<empty>` |  |  |  |
 | `mbaWriteNetcdf` 🔬 | Write mass balance area output to a NetCDF file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `mbaWriteTxt` 🔬 | Write mass balance area output to a TXT file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wrimap_ice` 🔬 | Write output to map file for ice cover. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -807,8 +807,8 @@ This section contains roughness calibration settings.
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `useCalibration` 🔬 | Activate calibration factor friction multiplier. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `definitionFile` 🔬 | File (\*.cld) containing calibration definitions. |  |  |  |  |
-| `areaFile` 🔬 | File (\*.cll) containing area distribution of calibration definitions. |  |  |  |  |
+| `definitionFile` 🔬 | File (\*.cld) containing calibration definitions. | `<empty>` |  |  |  |
+| `areaFile` 🔬 | File (\*.cll) containing area distribution of calibration definitions. | `<empty>` |  |  |  |
 
 
 <a id="supported-keywords-and-options-processes"></a>
@@ -818,10 +818,10 @@ This section settings for online water quality processes.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `substanceFile` 🔬 | Substance file name. |  |  |  |  |
+| `substanceFile` 🔬 | Substance file name. | `<empty>` |  |  |  |
 | `substanceDensityCoupling` 🔬 | Substance rho coupling. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `additionalHistoryOutputFile` 🔬 | Extra history output filename. |  |  |  |  |
-| `statisticsFile` 🔬 | Statistics definition file. |  |  |  |  |
+| `additionalHistoryOutputFile` 🔬 | Extra history output filename. | `<empty>` |  |  |  |
+| `statisticsFile` 🔬 | Statistics definition file. | `<empty>` |  |  |  |
 | `thetaVertical` ⚠️ | Theta value for vertical transport of water quality substances. | `0.0` |  | [-] |  |
 | `dtProcesses` 🔬 | Waq processes time step. Must be a multiple of `dtUser`. If `dtProcesses` is negative, water quality processes are calculated with every hydrodynamic time step. | `0.0` |  | [s] |  |
 | `volumeDryThreshold` 🔬 | Volume below which segments are marked as dry. | `0.001` |  | [m³] |  |
@@ -836,8 +836,8 @@ This section contains settings for particle tracking.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `particlesFile` | Initial particle locations file (\*.xyz). |  |  |  |  |
-| `particlesReleaseFile` | Particles release file (\*.tim, 4 column). |  |  |  |  |
+| `particlesFile` | Initial particle locations file (\*.xyz). | `<empty>` |  |  |  |
+| `particlesReleaseFile` | Particles release file (\*.tim, 4 column). | `<empty>` |  |  |  |
 | `addTracer` | Add tracer or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `startTime` | Start time (if > 0). | `0.0` |  | [s] |  |
 | `timeStep` | Time step (if > 0) or every computational time step. | `0.0` |  | [s] |  |
