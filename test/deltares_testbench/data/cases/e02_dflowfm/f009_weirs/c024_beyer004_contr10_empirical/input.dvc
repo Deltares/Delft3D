@@ -1,0 +1,6 @@
+outs:
+- md5: 16686d5dd71b5fa5272add6f77feed27.dir
+  size: 67577
+  nfiles: 13
+  hash: md5
+  path: input
