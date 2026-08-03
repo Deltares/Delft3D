@@ -128,6 +128,7 @@ contains
    subroutine compute_general_structure(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, s1m1, s1m2, &
                                         qtotal, Cz, dxL, dt, SkipDimensionChecks)
       ! modules
+      use precision, only: compareReal
 
       ! Global variables
       type(t_GeneralStructure), pointer, intent(inout) :: genstr !< Derived type containing general structure information.
@@ -269,7 +270,9 @@ contains
       au = genstr%au(:, L0)
 
       width_correction_factor = 1.0_dp
-      if (genstr%au_max(l0) > 0.0_dp) then  ! Only width correc
+      ! In case no flow is possible due to coefficients set to 0 or allowed flow direction, all flow areas may be 0. This is to avoid division by 0.
+      if (  (comparereal(genstr%au_max(l0), 0.0_dp) == 1 ) .and. &
+            (comparereal(sum(au), 0.0_dp) == 1 ) ) then  ! Only width flow areas /= 0
          width_correction_factor = (sum(au)) / genstr%au_max(l0)
       end if
       if (gatefraction > GATE_FRACTION_EPS) then

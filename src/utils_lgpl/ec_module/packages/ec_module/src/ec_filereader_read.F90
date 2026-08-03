@@ -679,6 +679,7 @@ contains
    !> Read the next record from a NetCDF file.
    function ecNetcdfReadNextBlock(fileReaderPtr, item, t0t1, timesndx) result(success)
       use netcdf
+
       !
       logical :: success !< function status
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(in)
@@ -941,7 +942,7 @@ contains
       ! - Apply the scale factor and offset
       if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
          do i = 1, size(fieldPtr%arr1dPtr)
-            if (fieldPtr%arr1dPtr(i) /= dmiss_nc) then
+            if (fieldPtr%arr1dPtr(i) /= item%quantityPtr%fillvalue) then
                fieldPtr%arr1dPtr(i) = fieldPtr%arr1dPtr(i) * item%quantityPtr%factor + item%quantityPtr%offset
             end if
          end do
@@ -2293,6 +2294,8 @@ contains
                   start(ndims) = timesndx
                end if
                if (relndx > 0 .and. ndims >= 4) then
+                  ! UNST-10154: Limited support if variable contains an extra 'realization' dimension. 
+                  ! Pick the correct index relndx. For now, we assume length(dim) == 1.
                   start(3) = relndx
                end if
                if (n_layers /= 0) then
