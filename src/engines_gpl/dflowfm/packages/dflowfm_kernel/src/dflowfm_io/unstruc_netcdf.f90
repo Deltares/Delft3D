@@ -1456,7 +1456,7 @@ contains
          id_weirdte, &
          id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
          id_culvert_openh, id_longculvert_valveopen, &
-         id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
+         id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
          id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
          id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
          id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
@@ -2436,6 +2436,10 @@ contains
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'long_name', 'Crest width of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'units', 'm')
 
+            ierr = nf90_def_var(irstfile, 'general_structure_gate_height', nf90_double, [id_genstrudim, id_timedim], id_genstru_gateh)
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'long_name', 'Gate height of general structure')
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'units', 'm')
+
             ierr = nf90_def_var(irstfile, 'general_structure_gate_lower_edge_level', nf90_double, [id_genstrudim, id_timedim], id_genstru_edgel)
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'long_name', 'Gate lower edge level of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'units', 'm')
@@ -2676,6 +2680,7 @@ contains
          if (network%sts%numGeneralStructures > 0) then
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_level', id_genstru_crestl)
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_width', id_genstru_crestw)
+            ierr = nf90_inq_varid(irstfile, 'general_structure_gate_height', id_genstru_gateh)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_lower_edge_level', id_genstru_edgel)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_opening_width', id_genstru_openw)
             ierr = nf90_inq_varid(irstfile, 'general_structure_flow_area', id_genstru_area)
@@ -3336,6 +3341,7 @@ contains
          if (nlen > 0) then
             ierr = nf90_put_var(irstfile, id_genstru_crestl, valgenstru(9, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_crestw, valgenstru(10, 1:nlen), [1, itim], [nlen, 1])
+            ierr = nf90_put_var(irstfile, id_genstru_gateh, valgenstru(15, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_edgel, valgenstru(14, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_openw, valgenstru(13, 1:nlen), [1, itim], [nlen, 1])
 
@@ -11239,6 +11245,43 @@ contains
 !! Processing is done elsewhere.
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
+      use dfm_error, only: dfm_noerr
+
+      character(len=*), intent(in) :: filename !< Name of NetCDF file.
+      integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
+      integer, intent(inout) :: numl_keep !< Number of netlinks to keep in existing net.
+      integer, intent(out) :: numk_read !< Number of new netnodes read from file.
+      integer, intent(out) :: numl_read !< Number of new netlinks read from file.
+      integer, intent(out) :: ierr !< Return status (NetCDF operations)
+
+      call readyy('Reading net data', 0.0_dp)
+
+      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
+
+      !
+      ! Try and read as new UGRID NetCDF format
+      !
+      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      if (ierr /= dfm_noerr) then
+         ! No UGRID, but just try to use the 'old' format now.
+         call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      end if
+      
+      if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
+         ierr = detect_proj_string(crs)
+         if (ierr /= dfm_noerr) then
+            ierr = dfm_noerr
+            call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
+            if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
+               call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if projection string is unknown. Switched off.')
+               unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
+            end if
+         end if
+      end if
+   end subroutine unc_read_net
+      
+   subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      use precision, only: dp
       use network_data
       use m_sferic
       use m_missing
@@ -11266,26 +11309,10 @@ contains
 
       integer :: L
       real(kind=dp) :: zk_fillvalue
-
-      call readyy('Reading net data', 0.0_dp)
-
-      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
-
+      
       nerr_ = 0
       allocate (character(len=0) :: coordsyscheck)
-
-      !
-      ! Try and read as new UGRID NetCDF format
-      !
-      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
-      if (ierr == dfm_noerr) then
-         ! UGRID successfully read, we're done.
-         return
-      else
-         ! No UGRID, but just try to use the 'old' format now.
-         continue
-      end if
-
+      
       ierr = unc_open(filename, nf90_nowrite, inetfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
       if (nerr_ > 0) then
@@ -11421,7 +11448,7 @@ contains
       ierr = unc_close(inetfile)
       call readyy('Reading net data', -1.0_dp)
 
-   end subroutine unc_read_net
+   end subroutine unc_read_net_old
 
 !> print MD5 checksum for net file, based on netlinks only.
 !! Only in case of loglevel is debug or all.
@@ -13933,7 +13960,7 @@ contains
                flowgeom%mesh2d%interface_zs => interface_zs
             end if
 
-            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d)
+            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d, writeopts=unc_writeopts)
             call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom%edge_type)
 
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
@@ -15639,7 +15666,7 @@ contains
       integer, allocatable :: tmpvar3di(:, :, :), tmpvar2di(:, :)
       integer :: strucDimErr, i, nLinks, nStru, ierr, iStru, nfuru, numlinks, strucVarErr, L, L0, nstages, maxNumStages
       integer :: id_culvert_openh, id_longculvert_valveopen, &
-                 id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
+                 id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
                  id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
                  id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
                  id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
@@ -15753,6 +15780,19 @@ contains
                   genstr => network%sts%struct(istru)%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
+               end do
+            end if
+
+            ! read general_structure_gate_height
+            call realloc(tmpvar, nStru, stat=ierr, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, 'general_structure_gate_height', id_genstru_gateh)
+            ierr = nf90_get_var(ncid, id_genstru_gateh, tmpvar, start=[1, it_read], count=[nStru, 1])
+            call check_error(ierr, '"general_structure_gate_height", The simulation will continue but the results may not be reliable.', LEVEL_WARN)
+            if (ierr == 0) then
+               do i = 1, nStru
+                  istru = network%sts%generalStructureIndices(i)
+                  genstr => network%sts%struct(istru)%generalst
+                  genstr%gateDoorHeight = tmpvar(i)
                end do
             end if
 

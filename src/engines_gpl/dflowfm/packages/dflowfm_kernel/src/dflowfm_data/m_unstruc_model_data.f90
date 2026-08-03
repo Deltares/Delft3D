@@ -101,6 +101,7 @@ module m_unstruc_model_data
 
    character(len=max_prop_length) :: md_extfile = ' ' !< External forcing specification file (e.g., *.ext)
    character(len=max_prop_length) :: md_extfile_new = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
+   character(len=max_prop_length), dimension(:), allocatable :: extfile_new_list !< List of external forcing specification files new style (bct format), (e.g., *.ext)
    character(len=max_prop_length) :: md_extfile_dir = ' ' !< Directory containing the old-style external forcing specification file (e.g., *.ext) (relative to MDU/current working dir)
 
    character(len=max_prop_length) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
@@ -115,6 +116,7 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=max_prop_length) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
    character(len=max_prop_length) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
+   character(len=max_prop_length) :: md_dynvegpol = ' ' !< File containing extent of dynamic vegetation application
 
    character(len=max_prop_length) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete

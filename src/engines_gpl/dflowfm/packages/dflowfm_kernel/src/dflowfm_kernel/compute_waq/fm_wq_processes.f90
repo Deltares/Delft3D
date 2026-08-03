@@ -437,6 +437,7 @@ contains
 
       integer(4) :: i, j, ip, isys, icon, ipar, ifun, isfun, ivar
       integer :: ipoifmlayer, ipoifmktop, ipoifmkbot
+      integer :: ifallwaq ! counter for fall velocities
       integer(4) :: refdayNr ! reference day number, varying from 1 till 365
       logical :: no_reflection_wq
 
@@ -865,23 +866,19 @@ contains
       !    Prepare fall velocity array
       !    count number of substances with fall velocities
       nfallwaq = 0
-      if (perform_waq_sediment_transport_coupling == 1) then
-         do i = 1, num_substances_transported
-            if (ivpnw(i) > 0) then
-               nfallwaq = nfallwaq + 1
-            end if
-         end do
+      if (perform_waq_sediment_transport_coupling) then
+         nfallwaq = count( ivpnw(1:num_substances_transported) > 0 )
       end if
       call realloc(iconstituent_to_fall_velocity_waq, numconst, keepExisting=.true., fill=0)
       if (nfallwaq > 0) then
          call realloc(fall_velocity_waq, [Ndkx, nfallwaq], keepExisting=.false., fill=0.0_hp)
          call realloc(ifall_velocity_waq_to_vpnw, nfallwaq, keepExisting=.true., fill=0)
-         nfallwaq = 0
+         ifallwaq = 0
          do isys = 1, num_substances_transported
             if (ivpnw(isys) > 0) then
-               nfallwaq = nfallwaq + 1
-               iconstituent_to_fall_velocity_waq(isys2const(isys)) = nfallwaq
-               ifall_velocity_waq_to_vpnw(nfallwaq) = ivpnw(isys)
+               ifallwaq = ifallwaq + 1
+               iconstituent_to_fall_velocity_waq(isys2const(isys)) = ifallwaq
+               ifall_velocity_waq_to_vpnw(ifallwaq) = ivpnw(isys)
             end if
          end do
       end if
@@ -1381,13 +1378,14 @@ contains
          return
       end if
 
-      if (processselection == WQ_RUNADSSEDMOR) then
+      select case (processselection)
+      case (WQ_RUNADSSEDMOR)
          run_process = is_always_process .or. is_ads_sed_res_process
-      else if (processselection == WQ_RUNOTHER) then
+      case (WQ_RUNOTHER)
          run_process = .not. is_ads_sed_res_process
-      else !run all processes
+      case default !run all processes
          run_process = .true.
-      end if
+      end select
 
       if (timon) then
          call timstrt("fm_wq_processes_step", ithand0)

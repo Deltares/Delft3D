@@ -5,6 +5,7 @@ compiler.cppstd=20
 compiler.runtime=dynamic
 compiler.version=194
 fortran_compiler=ifx
+fortran_compiler.version=2024.2
 os=Windows
 
 [conf]

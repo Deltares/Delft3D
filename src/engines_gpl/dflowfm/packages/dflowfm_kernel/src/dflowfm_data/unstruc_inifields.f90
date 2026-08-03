@@ -1,4 +1,4 @@
-﻿ !----- AGPL --------------------------------------------------------------------
+!----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2026.
 !
@@ -853,7 +853,6 @@ contains
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=20) :: tracunit
       integer :: iconst, itrac, isednum, iwqbot, janew, iostat
-      integer :: indx !< Index of the quantity.
       
       target_array_3d => null()
       first_index = 1
@@ -882,11 +881,11 @@ contains
             success = .false.
             return
          end if
-         indx = iconst
+         first_index = iconst
          target_array_3d => constituents
 
       case ('initialsediment')
-         if (jased <= 0 .or. stm_included) then
+         if (jased /= 1 .or. jased /= 2 .or. jased /= 3) then
             success = .false.
             return
          end if

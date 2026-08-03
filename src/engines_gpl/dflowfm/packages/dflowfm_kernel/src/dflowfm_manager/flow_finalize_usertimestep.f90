@@ -87,10 +87,10 @@ contains
             if (jatimer == 1) then
                call starttimer(IFMWAQ)
             end if
-            if (perform_waq_sediment_transport_coupling == 0) then
-               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNALL)
-            else
+            if (perform_waq_sediment_transport_coupling) then
                call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNOTHER)
+            else
+               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNALL)
             end if
             if (jatimer == 1) then
                call stoptimer(IFMWAQ)

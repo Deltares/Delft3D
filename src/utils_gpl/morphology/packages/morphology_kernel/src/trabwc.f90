@@ -43,7 +43,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module, only: missing_value
+      use morphology_data_module, only: MISSING_VALUE
       !
       implicit none
 !
@@ -107,7 +107,7 @@ contains
       sbot = a * wistar * ustar**3 / (delta * ag)
       ! note: proportion of size fraction on surface (fi) is included elsewhere
       !
-      par = missing_value
+      par = MISSING_VALUE
       par(1) = wistar
       par(2) = ustar
       par(3) = phi
