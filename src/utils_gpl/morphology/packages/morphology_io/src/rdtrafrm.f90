@@ -1118,7 +1118,7 @@ contains
          pardef(12) = 1.0_fp
          parkeyw(13) = 'SL_effects'
          pardef(13) = 1.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 24
             outpar_name(1) = 'uwc'
             outpar_longname(1) = 'orbital velocity at crest' ! m/s
@@ -1211,7 +1211,7 @@ contains
          parkeyw(9) = 'Wform'
          pardef(9) = 1.0_fp
          ! NOTE PARAMETERS ADDED HERE MUST BE COPIED TO SANTOSS FORMULA -4: Numbers/parameters must match!
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 17
             outpar_name(1) = 'tauc'
             outpar_longname(1) = 'bed shear stress due to currents' ! kg/(m s2)
@@ -1267,7 +1267,7 @@ contains
          pardef(7) = 0.0_fp ! false
          parkeyw(8) = 'BetaM'
          pardef(8) = 3.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 16
             outpar_name(1) = 'tauc'
             outpar_longname(1) = 'bed shear stress due to currents' ! kg/(m s2)
@@ -1307,21 +1307,44 @@ contains
          nparreq = 1
          parkeyw(1) = 'ACal'
          nparopt = 2
-         parkeyw(2) = 'RouKs'
+         parkeyw(2) = 'RouKs' !obsolete, but don't remove: backward compatibility!
          pardef(2) = 1.0_fp
          parkeyw(3) = 'SusFac'
          pardef(3) = 0.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+         end if
       elseif (iform == 2) then
          name = 'Meyer-Peter-Mueller (1948)'
          nparreq = 1
          parkeyw(1) = 'ACal'
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 3
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+            outpar_name(3) = 'excess_theta'
+            outpar_longname(3) = 'Excess Shields parameter' ! -
+         end if
       elseif (iform == 3) then
          name = 'Swanby / Ackers-White'
          nparreq = 1
          parkeyw(1) = 'ACal'
          nparopt = 1
-         parkeyw(2) = 'RouKs'
+         parkeyw(2) = 'RouKs' !obsolete, but don't remove: backward compatibility!
          pardef(2) = 1.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'u_star'
+            outpar_longname(2) = 'Shear velocity' ! m/s
+         end if
       elseif (iform == 4) then
          name = 'General formula'
          nparreq = 5
@@ -1341,6 +1364,13 @@ contains
          pardef(9) = 1.0_fp
          parkeyw(10) = 'SusThetaC'
          pardef(10) = 0.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+         end if
       elseif (iform == 5) then
          name = 'Bijker (1971)'
          nparreq = 9
@@ -1423,7 +1453,7 @@ contains
          nparopt = 1
          parkeyw(1) = 'ACal'
          pardef(1) = 1.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 6
             outpar_name(1) = 'wistar'
             outpar_longname(1) = 'dimensionless bedload transport rate' ! -
