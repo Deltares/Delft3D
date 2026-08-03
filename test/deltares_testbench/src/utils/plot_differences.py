@@ -3,6 +3,7 @@
 import logging
 
 import pandas
+import pandas.plotting._matplotlib  # noqa
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()

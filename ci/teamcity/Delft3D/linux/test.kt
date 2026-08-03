@@ -114,6 +114,8 @@ object LinuxTest : BuildType({
                 --rm
                 --pull always
                 --shm-size 8G
+                --env LD_LIBRARY_PATH=
+                --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }
         dockerCommand {
