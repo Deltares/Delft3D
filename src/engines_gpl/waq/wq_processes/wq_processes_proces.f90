@@ -291,9 +291,8 @@ contains
         !     Now update the derivatives and the dumps of the fluxes from
         !     all processes together outside of the parallel region
         call update_derivaties_and_dump_fluxes (num_processes_activated, noflux, num_cells, &
-                num_substances_total, num_monitoring_cells, dts, iflux, &
-                volume, deriv, stochi, flux, &
-                prondt, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
+                num_substances_total, num_monitoring_cells, dts, iflux, volume, deriv, stochi, flux, &
+                prondt, run_process, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
 
         !     Set fractional step
         if (noflux > 0 .and. ifracs == 1) then
@@ -408,9 +407,8 @@ contains
     end
 
     subroutine update_derivaties_and_dump_fluxes (num_processes_activated, noflux, num_cells, &
-            num_substances_total, num_monitoring_cells, dts, iflux, &
-            volume, deriv, stochi, flux, &
-            prondt, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
+            num_substances_total, num_monitoring_cells, dts, iflux, volume, deriv, stochi, flux, &
+            prondt, run_process, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
 
         use m_wq_processes_derivatives
         use timers
@@ -432,6 +430,7 @@ contains
         real(kind = real_wp), intent(in) :: stochi(num_substances_total, noflux)          ! Stoichiometric factors per flux
         real(kind = real_wp), intent(in) :: flux  (noflux, num_cells)           ! Process fluxes
         integer(kind = int_wp), intent(in) :: prondt(num_processes_activated)                   ! Time step size of the process
+        logical, intent(in) :: run_process(num_processes_activated)                   ! If .true. then the process is active
         integer(kind = int_wp), intent(in) :: ibflag                           ! If > 0 then balances are required
         integer(kind = int_wp), intent(in) :: isdmp (num_cells)                   ! Segment to dumped segment pointer
         real(kind = dp), intent(inout) :: flxdmp(2, noflux, num_monitoring_cells)        ! Dumped fluxes
@@ -453,6 +452,7 @@ contains
         if (timon) call timstrt ("update_derivaties_and_dump_fluxes", ithndl)
 
         do iproc = 1, num_processes_activated
+            if (.not. run_process(iproc)) cycle
             if (iproc == bloom_status_ind) cycle
             if (mod(istep - 1, prondt(iproc)) /= 0) cycle
 
