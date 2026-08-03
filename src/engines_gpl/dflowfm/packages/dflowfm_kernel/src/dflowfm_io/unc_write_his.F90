@@ -70,7 +70,7 @@ module m_unc_write_his
       id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, id_statgeom_node_lon, id_statgeom_node_lat, &
       id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy, &
       id_weirgengeom_node_count, id_weirgengeom_node_coordx, id_weirgengeom_node_coordy, id_weirgen_xmid, id_weirgen_ymid, &
-      id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, id_crs_xmid, id_crs_ymid, &
+      id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, id_crsgeom_node_lat, id_crsgeom_node_lon, id_crs_xmid, id_crs_ymid, &
       id_orifgengeom_node_count, id_orifgengeom_node_coordx, id_orifgengeom_node_coordy, &
       id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy, id_genstru_xmid, id_genstru_ymid, &
       id_uniweirgeom_node_count, id_uniweirgeom_node_coordx, id_uniweirgeom_node_coordy, id_uniweir_xmid, id_uniweir_ymid, &
@@ -210,7 +210,7 @@ contains
 
       ! Only add auto-tranformed lat/lon coordinates if model is Cartesian and user has requested extra latlon output.
 #ifdef HAVE_PROJ
-      add_latlon = jsferic == 0 .and. iand(unc_writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON
+      add_latlon = jsferic == 0 .and. iand(unc_writeopts, UG_WRITE_LATLON) /= 0
 #else
       add_latlon = .false.
 #endif
@@ -314,10 +314,9 @@ contains
                                                   id_zcs, id_zws, id_zwu)
 
          end if
-
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_CROSS_SECTION, 1, ncrs, 'line', nNodesCrs, id_strlendim, &
                                                   id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, &
-                                                  id_poly_xmid=id_crs_xmid, id_poly_ymid=id_crs_ymid)
+                                                  add_latlon, id_crsgeom_node_lon, id_crsgeom_node_lat, id_poly_xmid=id_crs_xmid, id_poly_ymid=id_crs_ymid)
 
          ! Runup gauges
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_RUNUP_GAUGE, 1, num_rugs, 'none', 0, id_strlendim, &
@@ -684,6 +683,12 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_count, nodeCountCrs))
+#ifdef HAVE_PROJ
+               if (add_latlon) then
+                  call transform_and_put_latlon_coordinates(ihisfile, id_crsgeom_node_lon, id_crsgeom_node_lat, &
+                                                   nccrs%proj_string, geomXCrs, geomYCrs, start=[1], count=[nNodesCrs])
+               end if
+#endif
                if (allocated(geomXCrs)) then
                   deallocate (geomXCrs)
                end if
