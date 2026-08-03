@@ -66,6 +66,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
+   use m_alloc, only: realloc
 
    implicit none
 
@@ -358,6 +359,7 @@ contains
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx, lnx, csu, snu
       use m_get_surface_temperature, only: get_surface_temperature
+      use m_get_surface_salinity, only: get_surface_salinity, get_salinity_reduction_factor_saturation_humidity
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
       use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
       use m_relative_wind, only: compute_wind_relative_to_surface_on_link
@@ -367,7 +369,8 @@ contains
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity, &
                                   sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
-                                  air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff
+                                  air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
+                                  salinity_dependent_evaporation_method, SALINITY_DEPENDENT_EVAPORATION_LINEAR
 
 
       logical, intent(in) :: initialization !< initialization phase
@@ -375,6 +378,7 @@ contains
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature
       real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
+      real(kind=dp), dimension(:), allocatable, save :: surface_salinity
       real(kind=dp), dimension(lnx) :: windx_link, windy_link
       type(t_options) :: atm_stability_options
 
@@ -412,16 +416,27 @@ contains
          atm_stability_options%include_free_convection = .true.
       end if
 
-      atm_stability_options%fqsat = salinity_reduction_factor_saturation_humidity
       atm_stability_options%sensor_height_wind_velocity = sensor_height_wind_velocity
       atm_stability_options%sensor_height_air_temperature = sensor_height_air_temperature
       atm_stability_options%sensor_height_humidity = sensor_height_humidity
       atm_stability_options%alpha_m = air_viscous_momentum_coeff
       atm_stability_options%alpha_h = air_viscous_heat_coeff
       atm_stability_options%alpha_q = air_viscous_moisture_coeff
+      
+      if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR) then
+         if (.not. allocated(salinity_reduction_factor_saturation_humidity%values)) then
+            call realloc(salinity_reduction_factor_saturation_humidity%values, ndx, keepexisting=.false., fill=salinity_reduction_factor_saturation_humidity%scalar)
+         end if
+         if (.not. allocated(surface_salinity)) then
+            call realloc(surface_salinity, ndx, keepexisting=.false., fill=0.0_dp)
+         end if
+         call get_surface_salinity(surface_salinity, initialization)
+         call get_salinity_reduction_factor_saturation_humidity(surface_salinity, salinity_reduction_factor_saturation_humidity%values)
+      end if
 
       call compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
-                                     air_pressure, charnock, surface_temperature_kelvin, atm_stability_options)
+                                     air_pressure, charnock, surface_temperature_kelvin, salinity_reduction_factor_saturation_humidity, &
+                                     atm_stability_options)
    end subroutine compute_air_water_interaction_most_fluxes
 
    !> Update the relative humidity, dew point temperature, air temperature, cloudiness, solar radiation, and long wave radiation forcings used in the composite heat flux model
