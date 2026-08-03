@@ -89,6 +89,14 @@ class PreciceConan(ConanFile):
         tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(
             self.settings.build_type
         )
+        # cmake/DetectGitRevision.cmake adds a build step that runs
+        # `git describe` in the source folder to stamp the revision into
+        # versions.cpp. We build from a release tarball, so that folder is not a
+        # git repository and git writes "fatal: not a git repository" to stderr.
+        # The build still succeeds, but the message aborts the TeamCity job
+        # ("fatal:" is a build failure condition). Hiding Git makes preCICE
+        # configure the fallback versions.cpp instead.
+        tc.cache_variables["CMAKE_DISABLE_FIND_PACKAGE_Git"] = True
 
         tc.cache_variables["PRECICE_FEATURE_MPI_COMMUNICATION"] = self.options.mpi
         tc.cache_variables["PRECICE_BINDINGS_C"] = self.options.bindings_c
