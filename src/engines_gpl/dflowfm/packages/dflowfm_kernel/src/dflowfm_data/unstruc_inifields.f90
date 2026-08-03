@@ -853,7 +853,6 @@ contains
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=20) :: tracunit
       integer :: iconst, itrac, isednum, iwqbot, janew, iostat
-      integer :: indx !< Index of the quantity.
       
       target_array_3d => null()
       first_index = 1

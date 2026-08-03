@@ -181,7 +181,7 @@ contains
       end if
 
       ! Calculate WAQ processes at hydrodynamic time step (if ti_waqproc < 0.0)
-      if (ti_waqproc < 0.0_dp .or. perform_waq_sediment_transport_coupling == 1) then
+      if (ti_waqproc < 0.0_dp .or. perform_waq_sediment_transport_coupling) then
          if (jatimer == 1) then
             call starttimer(IFMWAQ)
          end if

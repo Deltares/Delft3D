@@ -160,7 +160,7 @@ contains
                            max_fall_velocity = 0.0_dp
                         end if
                         if (use_fall_velocity_waq) then
-                           max_fall_velocity = maxval([max_fall_velocity, fall_velocity_waq(k, :)])
+                           max_fall_velocity = max(max_fall_velocity, maxval (fall_velocity_waq(k, :)))
                         end if
                         sqtot = sqi(k) + max_fall_velocity * bak
                         if (squ(k) > EPS10 .or. sqtot > EPS10) then
@@ -184,7 +184,7 @@ contains
                            max_fall_velocity = 0.0_dp
                         end if
                         if (use_fall_velocity_waq) then
-                           max_fall_velocity = maxval([max_fall_velocity, fall_velocity_waq(k, :)])
+                           max_fall_velocity = max(max_fall_velocity, maxval(fall_velocity_waq(k, :)))
                         end if
                         sqtot = sqi(k) + max_fall_velocity * bak
                         if (sqtot > EPS10) then
