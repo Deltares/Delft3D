@@ -213,6 +213,7 @@ class Program:
 
         logger.debug("Creating subprocess")
         assert self.max_run_time is not None
+        logger.info(f"starting test: {self.__program_config.case_name}")
         completed_process = self._run_in_subprocess(
             execmd,
             working_dir=self.__program_config.working_directory,
