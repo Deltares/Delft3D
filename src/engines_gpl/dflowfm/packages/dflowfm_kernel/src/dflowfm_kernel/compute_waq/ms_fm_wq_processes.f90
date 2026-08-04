@@ -33,7 +33,7 @@ module m_fm_wq_processes_sub
    private
 
    public :: default_fm_wq_processes, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
-             get_waqinputname
+             get_waqinputname, WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER
 
    interface
 
@@ -49,11 +49,12 @@ module m_fm_wq_processes_sub
          implicit none
       end subroutine fm_wq_processes_ini_proc
 
-      module subroutine fm_wq_processes_step(dt, time)
+      module subroutine fm_wq_processes_step(dt, time, processselection)
          use precision, only: dp
          implicit none
          real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
          real(kind=dp), intent(in) :: time !< time     for waq in seconds
+         integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER)
       end subroutine fm_wq_processes_step
 
       module subroutine get_waqinputname(qid, inputname, qidname)
@@ -67,5 +68,9 @@ module m_fm_wq_processes_sub
       end subroutine get_waqinputname
 
    end interface
+
+   integer, parameter :: WQ_RUNALL = 0
+   integer, parameter :: WQ_RUNADSSEDMOR = 1
+   integer, parameter :: WQ_RUNOTHER = 2
 
 end module m_fm_wq_processes_sub

@@ -164,6 +164,9 @@ contains
          ! allocate vertical exchanges array
          call realloc(iexpnt, 4 * num_exchanges_z_dir, keepExisting=.false., fill=0)
 
+         ! allocate exchange to interface array
+         call realloc(iex2k, num_exchanges_z_dir, keepExisting=.false., fill=0)
+
          ! set vertical exchanges
          iex = 0
          do kk = 1, Ndxi
@@ -172,6 +175,7 @@ contains
                iex = iex + 1
                iexpnt(1 + 4 * (iex - 1)) = k - kbx + 1
                iexpnt(2 + 4 * (iex - 1)) = k - 1 - kbx + 1
+               iex2k(iex) = k - 1
             end do
          end do
       else
@@ -402,7 +406,7 @@ contains
       use m_wq_processes_pmsa_size
       use bloom_data_vtrans
       use m_alloc
-      use m_flow, only: kmx
+      use m_flow, only: kmx, Ndkx
       use m_flowgeom, only: Ndxi, ba
       use m_sferic, only: jsferic
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, jawave, &
@@ -431,8 +435,9 @@ contains
       integer :: nowarn !< count of warnings
       integer :: ierr, ierr2 !< error count
 
-      integer(4) :: i, j, ip, icon, ipar, ifun, isfun, ivar
+      integer(4) :: i, j, ip, isys, icon, ipar, ifun, isfun, ivar
       integer :: ipoifmlayer, ipoifmktop, ipoifmkbot
+      integer :: ifallwaq ! counter for fall velocities
       integer(4) :: refdayNr ! reference day number, varying from 1 till 365
       logical :: no_reflection_wq
 
@@ -504,7 +509,7 @@ contains
             isflatitude = num_spatial_time_fuctions
             call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
             call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
-         endif
+         end if
       else
          call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because ''latitude'' is not in the sub-file.')
          isflatitude = 0
@@ -842,8 +847,6 @@ contains
       if (ierr /= 0) then
          call mess(LEVEL_ERROR, 'Something went wrong during initialisation of the processes. Check the lsp-file: ', trim(proc_log_file))
       end if
-      call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
-      call mess(LEVEL_INFO, '==========================================================================')
 
       !     proces fractional step multiplier is 1 for all
       prondt = 1
@@ -859,6 +862,26 @@ contains
       call wq_processes_pmsa_size(lunlsp, num_cells, num_exchanges_z_dir, sizepmsa)
       !     And actually allocate and zero the A array
       call realloc(process_space_real, sizepmsa, keepExisting=.false., fill=0.0)
+
+      !    Prepare fall velocity array
+      !    count number of substances with fall velocities
+      nfallwaq = 0
+      if (perform_waq_sediment_transport_coupling) then
+         nfallwaq = count( ivpnw(1:num_substances_transported) > 0 )
+      end if
+      call realloc(iconstituent_to_fall_velocity_waq, numconst, keepExisting=.true., fill=0)
+      if (nfallwaq > 0) then
+         call realloc(fall_velocity_waq, [Ndkx, nfallwaq], keepExisting=.false., fill=0.0_hp)
+         call realloc(ifall_velocity_waq_to_vpnw, nfallwaq, keepExisting=.true., fill=0)
+         ifallwaq = 0
+         do isys = 1, num_substances_transported
+            if (ivpnw(isys) > 0) then
+               ifallwaq = ifallwaq + 1
+               iconstituent_to_fall_velocity_waq(isys2const(isys)) = ifallwaq
+               ifall_velocity_waq_to_vpnw(ifallwaq) = ivpnw(isys)
+            end if
+         end do
+      end if
 
       !     constants from the substance file
       ip = arrpoi(iicons)
@@ -947,6 +970,8 @@ contains
          end do
       end if
 
+      call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
+      call mess(LEVEL_INFO, '==========================================================================')
       jawaqproc = 2 ! processes succesfully initiated
 
       if (timon) then
@@ -1327,7 +1352,7 @@ contains
       end if
    end subroutine add_wqbot
 
-   module subroutine fm_wq_processes_step(dt, time)
+   module subroutine fm_wq_processes_step(dt, time, processselection)
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_areas
@@ -1338,6 +1363,7 @@ contains
 
       real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
+      integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER)
 
       integer :: ipoiconc
 
@@ -1351,6 +1377,15 @@ contains
       if (jawaqproc == 0) then
          return
       end if
+
+      select case (processselection)
+      case (WQ_RUNADSSEDMOR)
+         run_process = is_always_process .or. is_ads_sed_res_process
+      case (WQ_RUNOTHER)
+         run_process = .not. is_ads_sed_res_process
+      case default !run all processes
+         run_process = .true.
+      end select
 
       if (timon) then
          call timstrt("fm_wq_processes_step", ithand0)
@@ -1381,13 +1416,13 @@ contains
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
                                dsto, num_velocity_arrays_new, ivpnw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
                                process_space_real(ipoidefa), prondt, prvvar, prvtyp, vararr, varidx, arrpoi, arrknd, arrdm1, &
-                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf))
+                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), perform_waq_sediment_transport_coupling)
 
       ! copy data from WAQ to D-FlowFM
       if (timon) then
          call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
       end if
-      call copy_data_from_wq_processes_to_fm(dt, time)
+      call copy_data_from_wq_processes_to_fm(dt, time, process_space_real(ipoivelx))
       if (timon) then
          call timstop(ithand2)
       end if
@@ -1742,7 +1777,7 @@ contains
       return
    end subroutine copy_data_from_fm_to_wq_processes
 
-   subroutine copy_data_from_wq_processes_to_fm(dt, tim)
+   subroutine copy_data_from_wq_processes_to_fm(dt, tim, velowaq)
       !  copy data from WAQ to D-FlowFM
       use m_getkbotktopmax
       use m_missing, only: dmiss
@@ -1759,6 +1794,7 @@ contains
 
       real(kind=dp), intent(in) :: dt
       real(kind=dp), intent(in) :: tim
+      real(kind=real_wp), intent(in) :: velowaq(num_velocity_arrays_extra, num_exchanges_z_dir) !< array with additional velocities
 
       integer :: isys, iconst, iwqbot
       integer :: ivar, iarr, iv_idx
@@ -1767,6 +1803,7 @@ contains
       integer :: i, j, ip
       integer :: kk, k, kb, kt, ktmax
       logical :: copyoutput
+      integer :: iex, ifall
 
       integer(4), save :: ithand1 = 0
       integer(4), save :: ithand2 = 0
@@ -1789,6 +1826,16 @@ contains
       end do
       if (timon) then
          call timstop(ithand1)
+      end if
+
+      ! Copy fall velocities here
+      if (nfallwaq > 0) then
+         do iex = 1, num_exchanges_z_dir
+            k = iex2k(iex)
+            do ifall = 1, nfallwaq
+               fall_velocity_waq(k, ifall) = velowaq(ifall_velocity_waq_to_vpnw(ifall), iex)
+            end do
+         end do
       end if
 
       ! Ouputs to waq outputs array (only when his or map outputs will be written within the next timestep,
