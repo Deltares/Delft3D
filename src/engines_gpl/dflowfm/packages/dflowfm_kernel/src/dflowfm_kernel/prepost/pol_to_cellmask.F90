@@ -71,9 +71,9 @@ contains
 
    end function pol_to_cellmask
 
-!> Wrapper around pol_to_cellmask that loads a polygon from a file and returns a mask over all internal cells (ndxi). 
+!> Wrapper around pol_to_cellmask that loads polygons from space-separated files and returns a mask over all internal cells (ndxi).
 !! treating 1D and 2D separately. The mask is unallocated if no polygon is loaded. 2D cells are masked by x/y zw, and 1D cells are masked by x/y z.
-   function cell_mask_from_polygon_file(polygon_file) result(mask)
+   function cell_mask_from_polygon_file(polygon_input) result(mask)
       use m_flowgeom, only: ndxi, ndx2d, xz, yz
       use network_data, only: nump, xzw, yzw
       use m_polygon, only: npl, xpl, ypl, zpl, savepol, restorepol
@@ -82,21 +82,28 @@ contains
       use m_filez, only: oldfil
       use m_reapol, only: reapol
       use m_fix_global_polygons, only: fix_global_polygons
+      use string_module, only: strsplit
       implicit none
 
-      character(len=*), intent(in) :: polygon_file !< Path to polygon file defining the output region.
+      character(len=*), intent(in) :: polygon_input !< Space-separated paths to polygon files defining the output region.
       integer, allocatable :: mask(:) !< Output mask over ndxi internal cells (nonzero = include); unallocated when no polygon is loaded.
 
-      integer :: minp, ndx1d
+      integer :: minp, ndx1d, ifile, jadoorladen
+      character(len=len(polygon_input)), allocatable :: polygon_files(:)
 
-      if (len_trim(polygon_file) == 0) return
+      if (len_trim(polygon_input) == 0) return
 
       ndx1d = ndxi - ndx2d
 
-      ! Save any polygon currently in memory, load the output polygon, then restore afterwards.
+      ! Save any polygon currently in memory, load all output polygons, then restore afterwards.
       call savepol()
-      call oldfil(minp, polygon_file)
-      call reapol(minp, 0)
+      call strsplit(polygon_input, 1, polygon_files, 1)
+      jadoorladen = 0
+      do ifile = 1, size(polygon_files)
+         call oldfil(minp, polygon_files(ifile))
+         call reapol(minp, jadoorladen)
+         jadoorladen = 1
+      end do
 
       if (npl == 0) then
          call restorepol()
