@@ -1891,6 +1891,9 @@ contains
          call str_lower(quantityname)
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             ! History file
+            if (strcmpi(quantityname(1:9),'tracerbnd'          )) then
+               quantityname = quantityname(10:len(quantityname))
+            end if
             if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
             if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
             if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
@@ -2563,6 +2566,8 @@ contains
       use m_alloc
       use string_module, only: str_tolower
       use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
+      use netcdf_utils, only: ncu_inq_var_fill
+      use, intrinsic :: ieee_arithmetic
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2601,6 +2606,9 @@ contains
       real(dp), dimension(:), allocatable :: tgd_data_1d !< coordinate data along third dimension's axis
       real(dp), dimension(:), allocatable :: pdiri !<
       real(dp) :: var_miss !< missing data value in second dimension
+      real(dp) :: nan_value !< NaN value to replace missing data
+      integer  :: nofill !< For inquiring fill values
+      real(dp) :: fill_value !< For inquiring fill values
       character(len=NF90_MAX_NAME) :: grid_mapping !< name of the applied grid mapping
       character(len=NF90_MAX_NAME) :: units !< helper variable for variable's units
       character(len=NF90_MAX_NAME) :: coord_name !< helper variable
@@ -2622,14 +2630,13 @@ contains
       integer :: lon_varid, lon_dimid, lat_varid, lat_dimid, tim_varid, tim_dimid
       integer :: grid_lon_varid, grid_lat_varid
       integer :: x_varid, x_dimid, y_varid, y_dimid, z_varid, z_dimid, nod_varid, nod_dimid
-      integer :: realization_varid, realization_dimid, dim_offset
 
       integer, dimension(:, :), allocatable :: crd_dimids, crd_dimlen
       integer :: timeint
       integer :: expectedLength
       character(len=:), allocatable :: nameVar ! variable name in error message
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
-      integer :: nrow, ncol, nlay, nrel
+      integer :: nrow, ncol, nlay
       !
       success = .false.
       itemPtr => null()
@@ -2673,8 +2680,7 @@ contains
                                              x_varid, x_dimid, y_varid, y_dimid, &
                                              z_varid, z_dimid, &
                                              tim_varid, tim_dimid, &
-                                             nod_varid, nod_dimid, &
-                                             realization_varid, realization_dimid)) then
+                                             nod_varid, nod_dimid)) then
          ! Exception: inquiry of id's of required coordinate variables failed
          return
       end if
@@ -2916,13 +2922,33 @@ contains
             end if
 
             if (ndims == 2) then
+               nan_value = ieee_value(0.0_dp, ieee_quiet_nan)
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, fgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, fgd_id, fgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 1))
-               ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 2))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (fgd_data == fill_value) fgd_data = nan_value
+               end if
                fgd_data_1d = reshape(fgd_data, (/crd_dimlen(1, 1) * crd_dimlen(2, 1)/)) ! transform fgd and sgd here if necessary
+
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, sgd_id, nofill, fill_value, nan_value)
+               ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 2))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (sgd_data == fill_value) sgd_data = nan_value
+               end if
                sgd_data_1d = reshape(sgd_data, (/crd_dimlen(1, 2) * crd_dimlen(2, 2)/))
             else if (ndims == 1) then
+               nan_value = ieee_value(0.0_dp, ieee_quiet_nan)
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, fgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, fgd_id, fgd_data_1d(1:crd_dimlen(1, 1)), start=(/1/), count=(/crd_dimlen(1, 1)/))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (fgd_data_1d(1:crd_dimlen(1, 1)) == fill_value) fgd_data_1d(1:crd_dimlen(1, 1)) = nan_value
+               end if
+
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, sgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data_1d(1:crd_dimlen(1, 2)), start=(/1/), count=(/crd_dimlen(1, 2)/))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (sgd_data_1d(1:crd_dimlen(1, 2)) == fill_value) sgd_data_1d(1:crd_dimlen(1, 2)) = nan_value
+               end if
                ! Make a crossproduct array
                if (rotate_pole) then
                   do ifgd = 1, crd_dimlen(1, 1)
@@ -2954,13 +2980,6 @@ contains
                return
             end if
 
-            if (realization_dimid > 0) then
-               dim_offset = 1
-               nrel = fileReaderPtr%dim_length(dimids(1))
-            else
-               dim_offset = 0
-               nrel = 0
-            end if
             ! this goes wrong when time is defined before space in nc file
             if (grid_type == elmSetType_samples) then
                ncol = fileReaderPtr%dim_length(dimids(1))
@@ -2990,8 +3009,8 @@ contains
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
                   fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
-                  if (size(dimids) > 3 + dim_offset) then
-                     nlay = fileReaderPtr%dim_length(dimids(3 + dim_offset))
+                  if (size(dimids) > 3) then
+                     nlay = fileReaderPtr%dim_length(dimids(3))
                   end if
                end if
             end if

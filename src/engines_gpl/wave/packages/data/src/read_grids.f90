@@ -377,6 +377,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     real(hp), dimension(:,:,:),allocatable :: xy
     real(hp), dimension(4)                 :: xcell
     real(hp), dimension(4)                 :: ycell
+    real(hp), parameter                    :: TOL = 1.0e-6_hp
     integer                                :: etamax
     integer                                :: i
     integer                                :: ierr
@@ -392,7 +393,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
 !
 !! executable statements -------------------------------------------------------
 !
-    ! Default value for missing value: zero
+    ! Default value for missing value: zero in case no value is later assigned to xymiss
     !
     xymiss = 0.0_hp
     sferic = .false.
@@ -511,7 +512,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     !
     do i = 1, ksimax
        do j = 1, etamax
-          if (abs(xy(1, i, j))<1.0e-6_hp .and. abs(xy(2, i, j))<1.0e-6_hp) then
+          if (abs(xy(1, i, j)-xymiss)<TOL .and. abs(xy(2, i, j)-xymiss)<TOL) then
              codb(i,j) = 0
           endif
        enddo

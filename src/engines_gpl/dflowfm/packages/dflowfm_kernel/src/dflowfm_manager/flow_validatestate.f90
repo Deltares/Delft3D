@@ -48,7 +48,6 @@ contains
 
    subroutine flow_validatestate(iresult)
       use precision, only: dp
-      use m_missing, only: dmiss_pos
       use m_flow_validatestate_data
       use m_flow_externaloutput_direct, only: flow_externaloutput_direct
       use precision, only: dp
@@ -60,7 +59,7 @@ contains
       use m_transport
       use dfm_error
       use m_get_ucx_ucy_eul_mag
-      use m_missing, only: dmiss_neg
+      use m_missing, only: dmiss
 
       integer, intent(out) :: iresult ! validation result status
       real(kind=dp) :: dtavg
@@ -152,7 +151,7 @@ contains
       end if
 
       if (s01maxavg_min_err > 0.0_dp) then
-         s01maxavg_current = dmiss_neg
+         s01maxavg_current = dmiss
          do k = 1, ndx
             s1_s0 = abs(s1(k) - s0(k))
             if (s1_s0 > s01maxavg_current) then
