@@ -108,7 +108,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c002_frisianinlet_BLOOM" ref="dflowfm_default">
-  <path version="2026-04-30T14:00:06.435000">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
+  <path version="2026-07-28T21:00:06.435000">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_map.nc" type="netCDF">
       <parameters>
@@ -592,7 +592,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default_restart">
-  <path version="2026-07-07T15:36:10.279000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+  <path version="2026-07-28T21:36:10.279000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_restart_map.nc" type="netCDF">
       <parameters>
@@ -1024,7 +1024,7 @@
 </testCase>
 
 <testCase name="e02_f030_c043_frisianinlet_BLOOM_timestep" ref="dflowfm_default">
-  <path version="2026-05-01T08:36:45.640000">e02_dflowfm/f030_water_quality_processes/c043_frisianinlet_BLOOM_timestep</path>
+  <path version="2027-07-30T21:36:45.640000">e02_dflowfm/f030_water_quality_processes/c043_frisianinlet_BLOOM_timestep</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_map.nc" type="netCDF">
       <parameters>
