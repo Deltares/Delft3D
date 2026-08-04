@@ -21,329 +21,305 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sedim
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine sedim(process_space_real, fl, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
+      !>\file
+      !>       Sedimentation routine used for IMx
+      !
+      !     Description of the module :
+      !
+      !        General water quality module for DELWAQ:
+      !        SEDIMENTATION FORMULATIONS
+      !        MODULE VALID FOR IM, IM2, IM3
+      !
 
-    subroutine sedim  (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        !>\file
-        !>       Sedimentation routine used for IMx
+      use m_extract_waq_attribute
+      use bottomSet !  Module with definition of the waterbottom segments
 
-        !
-        !     Description of the module :
-        !
-        !        General water quality module for DELWAQ:
-        !        SEDIMENTATION FORMULATIONS
-        !        MODULE VALID FOR IM, IM2, IM3
-        !
-        ! Name    T   L I/O   Description                                    Units
-        ! ----    --- -  -    -------------------                            -----
-        ! CONC    R*4 1 I  concentration sedimenting material water        [gX/m3]
-        ! DEPTH   R*4 1 I  DELWAQ depth                                        [m]
-        ! FL (1)  R*4 1 O  sedimentation flux (water->mixinglayer)       [gX/m3/d]
-        ! MINDEP  R*4 1 I  minimal depth for sedimentation                     [m]
-        ! PSED    R*4 1 L  sedimentaion probability (0 - 1)                    [-]
-        ! POTSED  R*4 1 L  potential sedimentation flux                  [gX/m2/d]
-        ! TAU     R*4 1 I  calculated sheerstress                        [kg/m/s2]
-        ! TAUVEL  R*4 1 I  total velocity calcualted from tau                [m/s]
-        ! TCRSED  R*4 1 I  critical sheerstress sedimentation            [kg/m/s2]
-        ! VCRSED  R*4 1 I  critical velocity sedimentation                   [m/s]
-        ! VSED    R*4 1 O  first order sedimentaion rate (calculated)        [m/d]
-        ! ZERSED  R*4 1 I  zeroth order sedimentation flux               [gX/m2/d]
+      real(kind=real_wp) :: process_space_real(*), fl(*)
+      integer(kind=int_wp) :: ipoint(*), increm(*), num_cells, noflux, iexpnt(4, *), &
+                              iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, &
+                              num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        !     Logical Units : -
+      real(kind=real_wp) :: mindep, minde2, depth, depth2
 
-        !     Modules called : -
+      real(kind=real_wp) :: psedmin
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      real(kind=real_wp), parameter :: seconds_per_day = 86400.0
 
-        use m_extract_waq_attribute
-        USE BottomSet     !  Module with definition of the waterbottom segments
+      integer :: ip1, ip2, ip3, ip4, ip5, ip6, ip7, ip8, ip9, ip10, &
+                 ip11, ip12, ip13, ip14, ip15, ip16, ip17, &
+                 in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, &
+                 in11, in12, in13, in14, in15, in16, in17
+      integer :: ifrom, ito, ip, ipv, ipn, ipq, iq, iseg, iflux, ikmrkv, ikmrkn, iwa1, iwa2, ikmrk1, ikmrk2, ik, iwater
+      real(kind=real_wp) :: conc, zersed, vsed, tau, tcrsed, delt, psed, alpha, p, pmax, maxsed, potsed
+      real(kind=real_wp) :: flowrate, volume, surf
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+      ip1 = ipoint(1) ! Concentration inorganic matter
+      ip2 = ipoint(2) ! Zeroth-order flux -- at all useful?
+      ip3 = ipoint(3) ! Sedimentation velocity
+      ip4 = ipoint(4) ! Bottom shear stress
+      ip5 = ipoint(5) ! Critical shear stress for sedimentation
+      ip6 = ipoint(6) ! Depth of the segments
+      ip7 = ipoint(7) ! Time step (for limiting the deposition flux)
+      ip8 = ipoint(8) ! Minimum depth for sedimentation/resuspension -- obsolete!
+      ip9 = ipoint(9) ! Fraction going directly to layer S2
+      ip10 = ipoint(10) ! Fraction total inorganic matter (TIM) in layer S2
+      ip11 = ipoint(11) ! Maximum allowable fraction (TIM) in layer S2
+      ip12 = ipoint(12) ! Minimum sedimentation probability (force sedimentation) -- useful?
+      ip13 = ipoint(13) ! (exchange) sedimentation velocity per exchange
+      ip14 = ipoint(14) ! (output) Sedimentation probability (used for adsorbed substances)
+      ip15 = ipoint(15) ! (output) Sedimentation flux to layer S1
+      ip16 = ipoint(16) ! (output) Sedimentation flux to layer S2
+      ip17 = ipoint(17) ! (additional velocity) Sedimentation velocity
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      in1 = increm(1)
+      in2 = increm(2)
+      in3 = increm(3)
+      in4 = increm(4)
+      in5 = increm(5)
+      in6 = increm(6)
+      in7 = increm(7)
+      in8 = increm(8)
+      in9 = increm(9)
+      in10 = increm(10)
+      in11 = increm(11)
+      in12 = increm(12)
+      in13 = increm(13)
+      in14 = increm(14)
+      in15 = increm(15)
+      in16 = increm(16)
+      in17 = increm(17)
 
-        REAL(kind = real_wp) :: MINDEP, MINDE2, DEPTH, DEPTH2
+      iflux = 0
+      do iseg = 1, num_cells
 
-        REAL(kind = real_wp) :: PSEDMIN
+         !     zero output
+         process_space_real(ip14) = 0.0
+         process_space_real(ip15) = 0.0
+         process_space_real(ip16) = 0.0
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
-        IP12 = IPOINT(12)
-        IP13 = IPOINT(13)
-        IP14 = IPOINT(14)
-        IP15 = IPOINT(15)
-        IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
+         !     sedimentation towards the bottom
+         call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+         if (ikmrk1 == 1) then
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            if ((ikmrk2 == 0) .or. (ikmrk2 == 3)) then
+               !
+               conc = max(0.0, process_space_real(ip1))
+               zersed = process_space_real(ip2)
+               vsed = max(0.0, process_space_real(ip3)) ! Avoid inadvertent source if VSED negative (Delft3D-35562)
+               tau = process_space_real(ip4)
+               tcrsed = process_space_real(ip5)
+               depth = process_space_real(ip6)
+               delt = process_space_real(ip7)
+               mindep = process_space_real(ip8)
+               alpha = process_space_real(ip9)
+               p = process_space_real(ip10)
+               pmax = process_space_real(ip11)
+               psedmin = process_space_real(ip12)
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
-        IN8 = INCREM(8)
-        IN9 = INCREM(9)
-        IN10 = INCREM(10)
-        IN11 = INCREM(11)
-        IN12 = INCREM(12)
-        IN13 = INCREM(13)
-        IN14 = INCREM(14)
-        IN15 = INCREM(15)
-        IN16 = INCREM(16)
-        IN17 = INCREM(17)
+               !***********************************************************************
+               !**** Processes connected to the SEDIMENTATION
+               !***********************************************************************
 
-        IFLUX = 0
-        DO ISEG = 1, num_cells
+               !     if fraction IM1 in second layer P > PMAX then ALPHA = 0 meaning no sedimentations towards S2
+               if (p >= pmax) then
+                  alpha = 0.0
+               end if
 
-            !     zero output
+               !     Calculate sedimenation probability
+               if (tau == -1.0) then
+                  psed = 1.0
+               elseif (tcrsed < 1e-20) then
+                  psed = 0.0
+               else
+                  !         comparison with critical shear stress
+                  psed = max(0.0, (1.0 - tau / tcrsed))
+               end if
+               psed = max(psedmin, psed)
 
-            process_space_real (IP14) = 0.0
-            process_space_real (IP15) = 0.0
-            process_space_real (IP16) = 0.0
+               !     Calculate potential sedimentation fluxes
+               !     No sedimentation when depth below min depth
+               if (depth < mindep) then
+                  maxsed = 0.0
+                  fl(1 + iflux) = 0.0
+                  fl(2 + iflux) = 0.0
+               else
+                  potsed = zersed + (vsed * conc) * psed
 
-            !     sedimentation towards the bottom
+                  !        limit sedimentation to available mass
+                  maxsed = min(potsed, conc / delt * depth)
 
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            IF (IKMRK1==1) THEN
-                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
-                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
-                    !
-                    CONC = MAX (0.0, process_space_real(IP1))
-                    ZERSED = process_space_real(IP2)
-                    VSED = MAX (0.0, process_space_real(IP3))    ! Avoid inadvertent source if VSED negative (Delft3D-35562)
-                    TAU = process_space_real(IP4)
-                    TCRSED = process_space_real(IP5)
-                    DEPTH = process_space_real(IP6)
-                    DELT = process_space_real(IP7)
-                    MINDEP = process_space_real(IP8)
-                    ALPHA = process_space_real(IP9)
-                    P = process_space_real(IP10)
-                    PMAX = process_space_real(IP11)
-                    PSEDMIN = process_space_real(IP12)
+                  !        convert sedimentation to flux
+                  fl(1 + iflux) = maxsed * (1.-alpha) / depth
+                  fl(2 + iflux) = maxsed * alpha / depth
+               end if
 
-                    !***********************************************************************
-                    !**** Processes connected to the SEDIMENTATION
-                    !***********************************************************************
+               !     Output of calculated sedimentation rate
+               process_space_real(ip14) = psed
+               process_space_real(ip15) = maxsed * (1.-alpha)
+               process_space_real(ip16) = maxsed * alpha
+               !
+            end if
+         end if
+         !
+         iflux = iflux + noflux
+         ip1 = ip1 + in1
+         ip2 = ip2 + in2
+         ip3 = ip3 + in3
+         ip4 = ip4 + in4
+         ip5 = ip5 + in5
+         ip6 = ip6 + in6
+         ip7 = ip7 + in7
+         ip8 = ip8 + in8
+         ip9 = ip9 + in9
+         ip10 = ip10 + in10
+         ip11 = ip11 + in11
+         ip12 = ip12 + in12
+         ip14 = ip14 + in14
+         ip15 = ip15 + in15
+         ip16 = ip16 + in16
+      end do
+      !
+      ip1 = ipoint(1)
+      ip6 = ipoint(6)
+      ip8 = ipoint(8)
+      ip15 = ipoint(15)
 
-                    !     if fraction IM1 in second layer P > PMAX then ALPHA = 0 meaning no sedimentations towards S2
+      !.....Exchange loop over the horizontal direction
+      do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
-                    IF (P >= PMAX) THEN
-                        ALPHA = 0.0
-                    ENDIF
+         process_space_real(ip17) = 0.0
 
-                    !     Calculate sedimenation probability
+         ip17 = ip17 + in17
 
-                    IF (TAU == -1.0) THEN
-                        PSED = 1.0
-                    ELSEIF (TCRSED < 1E-20)  THEN
-                        PSED = 0.0
-                    ELSE
-                        !         vergelijking met critische schuifspanning
-                        PSED = MAX (0.0, (1.0 - TAU / TCRSED))
-                    ENDIF
-                    PSED = MAX(PSEDMIN, PSED)
+      end do
 
-                    !     Calculate potential sedimentation fluxes
-                    !     No sedimentation when depth below min depth
+      ip13 = ip13 + (num_exchanges_u_dir + num_exchanges_v_dir) * in13
 
-                    IF (DEPTH < MINDEP) THEN
-                        MAXSED = 0.0
-                        FL(1 + IFLUX) = 0.0
-                        FL(2 + IFLUX) = 0.0
-                    ELSE
-                        POTSED = ZERSED + (VSED * CONC) * PSED
+      !.....Exchange loop over the vertical direction
+      do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
 
-                        !        limit sedimentation to available mass (M/L2/DAY)
-                        MAXSED = MIN (POTSED, CONC / DELT * DEPTH)
+         ifrom = iexpnt(1, iq)
+         ito = iexpnt(2, iq)
 
-                        !        convert sedimentation to flux in M/L3/DAY
-                        FL(1 + IFLUX) = MAXSED * (1. - ALPHA) / DEPTH
-                        FL(2 + IFLUX) = MAXSED * ALPHA / DEPTH
-                    ENDIF
+         if (ifrom > 0 .and. ito > 0) then
 
-                    !     Output of calculated sedimentation rate
-                    process_space_real (IP14) = PSED
-                    process_space_real (IP15) = MAXSED * (1. - ALPHA)
-                    process_space_real (IP16) = MAXSED * ALPHA
-                    !
-                ENDIF
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + IN1
-            IP2 = IP2 + IN2
-            IP3 = IP3 + IN3
-            IP4 = IP4 + IN4
-            IP5 = IP5 + IN5
-            IP6 = IP6 + IN6
-            IP7 = IP7 + IN7
-            IP8 = IP8 + IN8
-            IP9 = IP9 + IN9
-            IP10 = IP10 + IN10
-            IP11 = IP11 + IN11
-            IP12 = IP12 + IN12
-            IP14 = IP14 + IN14
-            IP15 = IP15 + IN15
-            IP16 = IP16 + IN16
-        end do
-        !
-        IP1 = IPOINT(1)
-        IP6 = IPOINT(6)
-        IP8 = IPOINT(8)
-        IP15 = IPOINT(15)
+            !           Find first characteristic of from- and to-segments
+            call extract_waq_attribute(1, iknmrk(ifrom), ikmrkv)
+            call extract_waq_attribute(1, iknmrk(ito), ikmrkn)
+            if (ikmrkv == 1 .and. ikmrkn == 3) then
 
-        !.....Exchangeloop over de horizontale richting
-        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
+               !               Bottom-water exchange: ZERO FLUX TO ALSO BE ABLE TO USE OLD PDFs
+               !               Velocity does not need to be set (happens in TRASED)
 
-            process_space_real(IP17) = 0.0
+               !               maxsed = process_space_real (ip11+(ifrom-1)*in11)
+               !               conc   = max (1e-20, process_space_real(ip1+(ifrom-1)*in1) )
+               !               process_space_real(ip17) = maxsed/seconds_per_day/conc
+               fl(1 + (ifrom - 1) * noflux) = 0.0
 
-            IP17 = IP17 + IN17
+            elseif (ikmrkv == 1 .and. ikmrkn == 1) then
 
-        end do
+               !               Water-water exchange
+               !rs             note: sedimentation between water layers: no taucr correction,
+               !rs             only conversion from 1/d to 1/s. For the record:
+               !rs             scu (s) and aux-timer (d) are therefore fixed!
 
-        IP13 = IP13 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN13
+               depth = process_space_real(ip6 + (ifrom - 1) * in6)
+               depth2 = process_space_real(ip6 + (ito - 1) * in6)
+               mindep = process_space_real(ip8 + (ifrom - 1) * in8)
+               minde2 = process_space_real(ip8 + (ito - 1) * in8)
+               if (depth > mindep .and. depth2 > minde2) then
+                  process_space_real(ip17) = process_space_real(ip13) / seconds_per_day
+               else
+                  process_space_real(ip17) = 0.0
+               end if
+            else
+               process_space_real(ip17) = 0.0
+            end if
 
-        !.....Exchangeloop over de verticale richting
-        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
+         end if
 
-            IVAN = IEXPNT(1, IQ)
-            INAAR = IEXPNT(2, IQ)
+         ip13 = ip13 + in13
+         ip17 = ip17 + in17
 
-            IF (IVAN > 0 .AND. INAAR > 0) THEN
+      end do
 
-                !           Zoek eerste kenmerk van- en naar-segmenten
+      !     Handle velocity to the delwaq-g bottom
 
-                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
-                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
-                IF (IKMRKV==1.AND.IKMRKN==3) THEN
+      ip1 = ipoint(1)
+      ip2 = ipoint(2)
+      ip3 = ipoint(3)
+      ip4 = ipoint(4)
+      ip5 = ipoint(5)
+      ip6 = ipoint(6)
+      ip7 = ipoint(7)
+      ip8 = ipoint(8)
+      ip9 = ipoint(9)
+      ip10 = ipoint(10)
+      ip11 = ipoint(11)
+      ip12 = ipoint(12)
+      ip13 = ipoint(13)
+      ip14 = ipoint(14)
+      ip15 = ipoint(15)
+      ip16 = ipoint(16)
+      ip17 = ipoint(17)
 
-                    !               Bodem-water uitwisseling: NUL FLUX OM OOK OUDE PDF's
-                    !                                         TE KUNNEN GEBRUIKEN
-                    !               Snelheid behoeft niet gezet (gebeurt in TRASED)
+      do ik = 1, coll%current_size
 
-                    !               MAXSED = process_space_real (IP11+(IVAN-1)*IN11)
-                    !               CONC   = MAX (1E-20, process_space_real(IP1+(IVAN-1)*IN1) )
-                    !               process_space_real(IP17) = MAXSED/86400./CONC
-                    FL (1 + (IVAN - 1) * NOFLUX) = 0.0
+         iwa1 = coll%set(ik)%fstwatsed
+         iwa2 = coll%set(ik)%lstwatsed
 
-                ELSEIF (IKMRKV==1.AND.IKMRKN==1) THEN
+         do iq = iwa1, iwa2
+            iwater = iexpnt(1, iq)
 
-                    !               Water-water uitwisseling
-                    !rs             merk op: sedimentatie tussen waterlagen: geen taucr correctie,
-                    !rs             alleen conversie van 1/d naar 1/s. Ten overvloede:
-                    !rs             scu (s) en aux-timer (d) liggen dus vast!
+            conc = max(0.0, process_space_real(ip1 + (iwater - 1) * in1))
+            zersed = process_space_real(ip2 + (iwater - 1) * in2)
+            vsed = max(0.0, process_space_real(ip3 + (iwater - 1) * in3))
+            tau = process_space_real(ip4 + (iwater - 1) * in4)
+            tcrsed = process_space_real(ip5 + (iwater - 1) * in5)
+            depth = process_space_real(ip6 + (iwater - 1) * in6)
+            delt = process_space_real(ip7 + (iwater - 1) * in7)
+            mindep = process_space_real(ip8 + (iwater - 1) * in8)
 
-                    DEPTH = process_space_real(IP6 + (IVAN - 1) * IN6)
-                    DEPTH2 = process_space_real(IP6 + (INAAR - 1) * IN6)
-                    MINDEP = process_space_real(IP8 + (IVAN - 1) * IN8)
-                    MINDE2 = process_space_real(IP8 + (INAAR - 1) * IN8)
-                    IF (DEPTH > MINDEP .AND. DEPTH2 > MINDE2) THEN
-                        process_space_real(IP17) = process_space_real(IP13) / 86400.
-                    ELSE
-                        process_space_real(IP17) = 0.0
-                    ENDIF
-                ELSE
-                    process_space_real(IP17) = 0.0
-                ENDIF
+            !           Calculate sedimenation probability
 
-            ENDIF
+            if (tau == -1.0) then
+               psed = 1.0
+            elseif (tcrsed < 1e-20) then
+               psed = 0.0
+            else
+               !               comparison with critical shear stress
+               psed = max(0.0, (1.0 - tau / tcrsed))
+            end if
 
-            IP13 = IP13 + IN13
-            IP17 = IP17 + IN17
+            !           Calculate the potential sedimentation fluxes
+            !           No sedimentation below a minimum depth
 
-        end do
+            if (depth < mindep) then
+               maxsed = 0.0
+            else
+               potsed = zersed + (vsed * conc) * psed
 
-        !     Handle velocity to the delwaq-g bottom
+               !              sediment maximally the available amount
+               maxsed = min(potsed, conc / delt * depth)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
-        IP12 = IPOINT(12)
-        IP13 = IPOINT(13)
-        IP14 = IPOINT(14)
-        IP15 = IPOINT(15)
-        IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
+            end if
 
-        DO IK = 1, Coll%current_size
+            if (conc > 1.e-10) then
+               process_space_real(ip17 + (iq - 1) * in17) = maxsed / seconds_per_day / conc
+            end if
 
-            IWA1 = Coll%set(IK)%fstwatsed
-            IWA2 = Coll%set(IK)%lstwatsed
-
-            DO IQ = IWA1, IWA2
-                IWATER = IEXPNT(1, IQ)
-
-                CONC = MAX (0.0, process_space_real(IP1 + (IWATER - 1) * IN1))
-                ZERSED = process_space_real(IP2 + (IWATER - 1) * IN2)
-                VSED = MAX (0.0, process_space_real(IP3 + (IWATER - 1) * IN3))
-                TAU = process_space_real(IP4 + (IWATER - 1) * IN4)
-                TCRSED = process_space_real(IP5 + (IWATER - 1) * IN5)
-                DEPTH = process_space_real(IP6 + (IWATER - 1) * IN6)
-                DELT = process_space_real(IP7 + (IWATER - 1) * IN7)
-                MINDEP = process_space_real(IP8 + (IWATER - 1) * IN8)
-
-                !           Calculate sedimenation probability
-
-                IF (TAU == -1.0) THEN
-                    PSED = 1.0
-                ELSEIF (TCRSED < 1E-20)  THEN
-                    PSED = 0.0
-                ELSE
-                    !               vergelijking met critische schuifspanning
-                    PSED = MAX (0.0, (1.0 - TAU / TCRSED))
-                ENDIF
-
-                !           Bereken de potentiele sedimentatie fluxen
-                !           Geen sedimentatie onder een minimale diepte
-
-                IF (DEPTH < MINDEP) THEN
-                    MAXSED = 0.0
-                ELSE
-                    POTSED = ZERSED + (VSED * CONC) * PSED
-
-                    !              sedimenteer maximaal de aanwezige hoeveelheid (M/L2/DAY)
-                    MAXSED = MIN (POTSED, CONC / DELT * DEPTH)
-
-                ENDIF
-
-                IF (CONC > 1.E-10) THEN
-                    process_space_real(IP17 + (IQ - 1) * IN17) = MAXSED / 86400. / CONC
-                ENDIF
-
-            ENDDO
-
-        ENDDO
-        !
-        RETURN
-    END
-
+         end do
+      end do
+      !
+      return
+   end subroutine sedim
 end module m_sedim
