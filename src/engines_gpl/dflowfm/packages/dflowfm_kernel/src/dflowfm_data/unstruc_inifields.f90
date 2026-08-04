@@ -919,7 +919,7 @@ contains
       use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
-      use m_fm_wq_processes, only: wqbotnames, wqbot
+      use m_fm_wq_processes, only: register_waq_segment_number_index, wqbotnames, wqbot
       use m_flowgeom, only: ndx
       use m_missing, only: dmiss
       use m_alloc, only: realloc
@@ -1011,6 +1011,9 @@ contains
          target_location_type = UNC_LOC_S
          call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
                                     waq_values=painp, index_waq_input=first_index)
+         if (str_tolower(qid_base) == 'waqsegmentnumber') then
+            call register_waq_segment_number_index(first_index)
+         end if
          allocate (target_array_3d(first_index:first_index, size(painp, 2)))
          target_array_3d(first_index, :) = painp(first_index, :)
 
@@ -1403,6 +1406,7 @@ contains
    !> Register a WAQ input and allocate its target values when needed.
    subroutine register_waq_target(qid)
       use fm_external_forcings_utils, only: split_qid
+      use m_fm_wq_processes, only: register_waq_segment_number_index
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
@@ -1418,6 +1422,9 @@ contains
       case ('waqparameter', 'waqsegmentnumber')
          call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
                                     waq_values=painp, index_waq_input=index_waq_input)
+         if (str_tolower(qid_base) == 'waqsegmentnumber') then
+            call register_waq_segment_number_index(index_waq_input)
+         end if
       case ('waqfunction')
          call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., &
                                     waq_values_ptr=funinp, index_waq_input=index_waq_input)

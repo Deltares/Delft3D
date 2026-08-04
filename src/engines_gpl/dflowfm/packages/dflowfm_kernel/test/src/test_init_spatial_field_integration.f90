@@ -223,6 +223,75 @@ contains
    end subroutine test_waqparameter_polygon_populates_3d_layers
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqsegmentnumber_finalization, test_waqsegmentnumber_finalization,
+   !> Verifies that encoded serial WAQ segment numbers are converted to the local
+   !! process-space layer index and copied over each target water column.
+   subroutine test_waqsegmentnumber_finalization() bind(C)
+      use m_fm_wq_processes, only: kbx, reset_waq_segment_number_indices
+      use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
+      use m_flow, only: kbot, ktop, kmx, kmxn, ndkx
+      use m_flowgeom, only: ndxi
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      logical :: segment_number_registered
+
+      ndxi = 2
+      kmx = 3
+      ndkx = 7
+      kbx = 3
+      jampi = 0
+      call realloc(kbot, ndxi, keepExisting=.false.)
+      call realloc(ktop, ndxi, keepExisting=.false.)
+      call realloc(kmxn, ndxi, keepExisting=.false.)
+      kbot = [3, 6]
+      ktop = [5, 7]
+      kmxn = [3, 2]
+
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call reset_waq_segment_number_indices()
+      call register_waq_target('waqsegmentnumberSegment')
+      segment_number_registered = allocated(painp) .and. size(painp, 1) == 1
+      call f90_expect_true(segment_number_registered, 'WAQ segment-number target should be registered')
+
+      ! Global segment 5 is column 1, layer 3; global segment 4 is column 2, layer 2.
+      painp(1, :) = [5.0_dp, 4.0_dp, 5.0_dp, 5.0_dp, 5.0_dp, 4.0_dp, 4.0_dp]
+      call finalize_waq_spatial_fields()
+
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 1.0_dp, 'column 1 representative should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 1.0_dp, 'column 1 bottom layer should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 5), kind=dp), 1.0_dp, 'column 1 top layer should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, 'column 2 representative should map to process segment 4')
+      call f90_expect_eq(real(painp(1, 6), kind=dp), 4.0_dp, 'column 2 bottom layer should map to process segment 4')
+      call f90_expect_eq(real(painp(1, 7), kind=dp), 4.0_dp, 'column 2 top layer should map to process segment 4')
+
+      ! Layer 4 is outside the configured maximum of three layers.
+      painp(1, 1) = 7.0_dp
+      painp(1, 3:5) = 7.0_dp
+      call finalize_waq_spatial_fields()
+      call f90_expect_eq(real(painp(1, 1), kind=dp), -999.0_dp, 'an invalid encoded layer should be marked invalid')
+      call f90_expect_eq(real(painp(1, 3), kind=dp), -999.0_dp, 'an invalid encoded layer should fill the complete column')
+
+      num_spatial_parameters = 0
+      ndxi = 0
+      ndkx = 0
+      kmx = 0
+      kbx = 0
+      jampi = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+      call reset_waq_segment_number_indices()
+   end subroutine test_waqsegmentnumber_finalization
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
    !> When no averaging keywords are present, read_averaging_input must return
    !! the documented defaults: type=1 (mean), relSize=-1, numMin=1, percentile=0.
