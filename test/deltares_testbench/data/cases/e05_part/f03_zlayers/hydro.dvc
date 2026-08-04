@@ -1,0 +1,6 @@
+outs:
+- md5: 06ded7e90110dfac9ed63b562aff36a1.dir
+  size: 39220519
+  nfiles: 80
+  hash: md5
+  path: hydro
