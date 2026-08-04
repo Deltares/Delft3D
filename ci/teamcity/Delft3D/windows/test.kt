@@ -62,7 +62,6 @@ object WindowsTest : BuildType({
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
-
     }
 
     features {
@@ -75,34 +74,6 @@ object WindowsTest : BuildType({
     }
 
     steps {
-        step {
-            name = "Download artifact from Nexus"
-            type = "RawDownloadNexusWindows2"
-            executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
-            param("nexus_repo", "/delft3d-dev")
-            param("nexus_username", "%nexus_username%")
-            param("download_to", "/downloads")
-            param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
-        }
-        powerShell {
-            name = "Extract artifact"
-            enabled = false
-            scriptMode = script {
-                content = """
-                    ${'$'}ErrorActionPreference = "Stop"
-
-                    ${'$'}dest = "test/deltares_testbench/data/engines/teamcity_artifacts/x64"
-
-                    Write-Host "Extracting %file_path% ..."
-
-                    Expand-Archive -Path %file_path% -DestinationPath "temp_extract"
-
-                    robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
-                """.trimIndent()
-            }
-        }
         python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
@@ -123,7 +94,7 @@ object WindowsTest : BuildType({
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
-            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount% --mount type=bind,source=C:/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache"
         }
         script {
             name = "Copy cases"

@@ -78,32 +78,6 @@ object WindowsCollect : BuildType({
                 matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
-        powerShell {
-            name = "Prepare artifact to upload"
-            scriptMode = script {
-                content = """
-                    ${'$'}ErrorActionPreference = "Stop"
-
-                    Write-Host "Creating %file_path% ..."
-
-                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath %file_path% -Force
-
-                    Write-Host "ZIP created: %file_path%"
-                """.trimIndent()
-            }
-        }
-        step {
-            name = "Upload artifact to Nexus"
-            type = "RawUploadNexusWindowsNative"
-            executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("file_path", "%file_path%")
-            param("nexus_username", "%nexus_username%")
-            param("nexus_password", "%nexus_password%")
-            param("nexus_repo", "/delft3d-dev")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("retention_period", "07_day_retention")
-            param("target_path", "/dimrset/%file_path%")
-        }
     }
 
     failureConditions {
