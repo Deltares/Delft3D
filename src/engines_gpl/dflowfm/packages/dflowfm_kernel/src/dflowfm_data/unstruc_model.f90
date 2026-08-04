@@ -1914,11 +1914,12 @@ contains
       call prop_get(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success) ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
       call prop_get(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
       call prop_get(md_ptr, 'output', 'NcNoForcedFlush', unc_noforcedflush, success)
+      call prop_get(md_ptr, 'output', 'MapOutputPolygonFile', md_map_output_polyfile, success)
 
       ibuf = 0
       call prop_get(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
       if (success .and. ibuf > 0) then
-         unc_writeopts = UG_WRITE_LATLON
+         unc_writeopts = ior(unc_writeopts, UG_WRITE_LATLON)
       end if
 
       call prop_get(md_ptr, 'output', 'MetaDataFile', unc_metadatafile, success)
@@ -3742,6 +3743,7 @@ contains
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
       call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
+      call prop_set(prop_ptr, 'output', 'MapOutputPolygonFile', trim(md_map_output_polyfile), 'Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)')
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss
@@ -3835,7 +3837,7 @@ contains
       end if
 
       if (writeall .or. unc_writeopts /= UG_WRITE_NOOPTS) then
-         if (iand(unc_writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON) then
+         if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
             ibuf = 1
          else
             ibuf = 0
