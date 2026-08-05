@@ -1913,7 +1913,7 @@
                         if ( abs(energy(ik,ip) - AGNC_DUMMY) > epsilon(1.)) then
                         energy(ik,ip) = nint(energy(ik,ip) / scale_energy(ip))
                         else
-                            energy(ik,ip) = AGNC_FILL_SHORT
+                            energy(ik,ip) = NF90_FILL_SHORT
                         end if
                     end do
                 end do
