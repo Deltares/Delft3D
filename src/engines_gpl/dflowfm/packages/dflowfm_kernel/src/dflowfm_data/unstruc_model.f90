@@ -4277,13 +4277,13 @@ contains
       character(len=*), intent(in) :: nc_map_data_precision
       character(len=*), intent(in) :: circumcenter_method_name
 
-      call notify_default_change('wind', 'windhuorzwsbased', '2026.01', 0, windhuorzwsbased, has_windhuorzwsbased, kmx == 0)
-      call notify_default_change('numerics', 'barocponbnd', '2026.01', 1, barocponbnd, has_barocponbnd, kmx > 0)
-      call notify_default_change('numerics', 'keepstbndonoutflow', '2026.01', 1, keepstbndonoutflow, has_keepstbndonoutflow, kmx > 0)
+      call notify_default_change('wind', 'windHuOrZwsBased', '2026.01', 0, windhuorzwsbased, has_windhuorzwsbased, kmx == 0)
+      call notify_default_change('numerics', 'barocPOnBnd', '2026.01', 1, barocponbnd, has_barocponbnd, kmx > 0)
+      call notify_default_change('numerics', 'keepSTBndOnOutflow', '2026.01', 1, keepstbndonoutflow, has_keepstbndonoutflow, kmx > 0)
 
       call notify_default_change('geometry', 'circumcenterMethod', '2026.02', 'allNetlinksLoop', trim(circumcenter_method_name), has_circumcenter_method, .true.)
-      call notify_default_change('output', 'NcHisDataPrecision', '2026.02', 'single', trim(nc_his_data_precision), has_nc_his_data_precision, ti_his > 0.0_dp)
-      call notify_default_change('output', 'NcMapDataPrecision', '2026.02', 'single', trim(nc_map_data_precision), has_nc_map_data_precision, ti_map > 0.0_dp .and. md_mapformat == IFORMAT_UGRID)
+      call notify_default_change('output', 'ncHisDataPrecision', '2026.02', 'single', trim(nc_his_data_precision), has_nc_his_data_precision, ti_his > 0.0_dp)
+      call notify_default_change('output', 'ncMapDataPrecision', '2026.02', 'single', trim(nc_map_data_precision), has_nc_map_data_precision, ti_map > 0.0_dp .and. md_mapformat == IFORMAT_UGRID)
    end subroutine notify_recent_default_changes
 
    subroutine notify_default_change_int(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
