@@ -59,7 +59,7 @@ contains
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_dslim, only: dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
@@ -76,6 +76,14 @@ contains
       use m_nod2liny, only: nod2liny
       use network_data, only: LINK_1D, LINK_1D2D_INTERNAL
 
+      
+      
+      use m_transportdata, only: numconst
+      use m_flowtimes, only: time1
+      integer :: iconst
+      
+      
+      
       ! locals
       integer :: L, k1, k2 ! link, nd1, nd2
       real(kind=dp) :: v12t
@@ -316,6 +324,36 @@ contains
       if (jarhoxu > 0) then
          sqa = sqa * rho
       end if
+      
+      
+      if (mod(time1,2400.0_dp) < 1.0e-6_dp) then
+         write(44, '(2a,f15.3)') NEW_LINE('a'), "source_sink, time:", time1
+         write(44, '(a)') "   n, name            ,  si,              si_zbot,              si_ztop,                  si_cos,                  si_sin,  so,              so_zbot,              so_ztop,                  so_cos,                  so_sin,                  discha,                    area,                  const1,                const2"
+         do n = 1, source_sinks%num_total
+            write(44,'(i4, 3a, i3, 2(a,f20.15), 2(a, e23.15), a, i3, 2(a,f20.15), 4(a, e23.15), a, 2e23.15)') n, ', ', &
+               """"//source_sinks%name(n)(1:15)//"""", ', ', &
+               source_sinks%indices(n, 1), ', ', &
+               source_sinks%z_bottom(n, 1), ', ', &
+               source_sinks%z_top(n, 1), ', ', &
+               source_sinks%discharge_cosine(n,1),', ', &
+               source_sinks%discharge_sine(n,1),', ', &
+               source_sinks%indices(n, 4), ', ', &
+               source_sinks%z_bottom(n, 2), ', ', &
+               source_sinks%z_top(n, 2), ', ', &
+               source_sinks%discharge_cosine(n,2),', ', &
+               source_sinks%discharge_sine(n,2),', ', &
+               source_sink_all_discharges(1, n), ', ', &
+               source_sinks%area(n), ', ', &
+               (source_sink_all_discharges(iconst + 1, n),iconst = 1, numconst)
+         enddo
+      end if
+         
+         
+      
+      
+         
+         
+         
 
       do n = 1, source_sinks%num_total ! momentum
          if (source_sinks%area(n) > 0) then ! if momentum desired
