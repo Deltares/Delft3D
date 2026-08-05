@@ -4064,8 +4064,11 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: interval_input(3)
-      real(kind=dp), intent(out) :: interval_start, interval_step, interval_end
-      real(kind=dp), intent(in) :: simulation_start, simulation_stop
+      real(kind=dp), intent(out) :: interval_start
+      real(kind=dp), intent(out) :: interval_step
+      real(kind=dp), intent(out) :: interval_end
+      real(kind=dp), intent(in) :: simulation_start
+      real(kind=dp), intent(in) :: simulation_stop
       logical, intent(in) :: read_interval_input
       character(len=*), optional, intent(in) :: interval_name
 
@@ -4259,7 +4262,7 @@ contains
       has_circumcenter_method, circumcenter_method_name)
 
       use m_flowtimes, only: ti_his, ti_map
-      use m_flow, only: kmx
+      use m_flow, only: kmx     
 
       logical, intent(in) :: has_windhuorzwsbased
       logical, intent(in) :: has_barocponbnd
@@ -4270,7 +4273,9 @@ contains
       integer, intent(in) :: windhuorzwsbased
       integer, intent(in) :: barocponbnd
       integer, intent(in) :: keepstbndonoutflow
-      character(len=*), intent(in) :: nc_his_data_precision, nc_map_data_precision, circumcenter_method_name
+      character(len=*), intent(in) :: nc_his_data_precision
+      character(len=*), intent(in) :: nc_map_data_precision
+      character(len=*), intent(in) :: circumcenter_method_name
 
       call notify_default_change('wind', 'windhuorzwsbased', '2026.01', 0, windhuorzwsbased, has_windhuorzwsbased, kmx == 0)
       call notify_default_change('numerics', 'barocponbnd', '2026.01', 1, barocponbnd, has_barocponbnd, kmx > 0)
@@ -4286,7 +4291,8 @@ contains
       character(len=*), intent(in) :: chapter
       character(len=*), intent(in) :: keyword
       character(len=*), intent(in) :: release_version
-      integer, intent(in) :: new_default, user_value
+      integer, intent(in) :: new_default
+      integer, intent(in) :: user_value
       logical, intent(in) :: keyword_is_specified
       logical, intent(in) :: keyword_is_relevant
 
