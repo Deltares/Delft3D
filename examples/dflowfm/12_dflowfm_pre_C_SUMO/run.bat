@@ -1,7 +1,7 @@
 @ echo off
 
 setlocal
-set cleanupOnly=1
+set cleanupOnly=0
 set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
@@ -33,10 +33,11 @@ del /f /q precice_debug_output.txt >del.log 2>&1
 del /f /q precice-profiling\*.* >del.log 2>&1
 rmdir /s /q precice-run >del.log 2>&1
 del /f /q del.log
-echo ... done
+echo ... Cleaning done
 if "%cleanupOnly%"=="1" goto :eof
 
 if %usePreCICE% EQU 1 (
+    echo Start computation using preCICE ...
     if %startPreCSUMO% EQU 1 (
         cd cosumo
         set PATH=..\%bindir%
@@ -54,8 +55,11 @@ if %usePreCICE% EQU 1 (
     ) else (
         echo Please start D-Flow FM
     )
+    echo ... Computation using preCICE done
 ) else (
+    echo Start computation using DIMR ...
     call %bindir%\run_dimr.bat
+    echo ... Computation using DIMR done
 )
 endlocal
 
