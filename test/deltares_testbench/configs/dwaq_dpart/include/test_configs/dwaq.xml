@@ -1,6 +1,5 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
-    <dependency version="DVC" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
     <path version="DVC">e03_waq/f02_hongkong/c04_statistics</path>
     <maxRunTime>3000.0</maxRunTime>
     <checks>
@@ -23,7 +22,6 @@
     </checks>
   </testCase>
   <testCase name="e03_f02_c02_scheme21" ref="dwaq_default">
-    <dependency version="DVC" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
     <path version="DVC">e03_waq/f02_hongkong/c02_scheme21</path>
     <checks>
       <file name="group2-test002.ada" type="NEFIS">
@@ -45,7 +43,6 @@
     </checks>
   </testCase>
   <testCase name="e03_f02_c01_eutrophication" ref="dwaq_default">
-    <dependency version="DVC" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
     <path version="DVC">e03_waq/f02_hongkong/c01_eutrophication</path>
     <checks>
       <file name="group2-test001.ada" type="NEFIS">
@@ -2523,7 +2520,6 @@
     </checks>
   </testCase>
   <testCase name="e03_f02_c03_loadscenario1" ref="dwaq_default">
-    <dependency version="DVC" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
     <path version="DVC">e03_waq/f02_hongkong/c03_loadscenario1</path>
     <checks>
       <file name="group2-test003.ada" type="NEFIS">
@@ -2629,7 +2625,6 @@
     </checks>
   </testCase>
   <testCase name="e03_f02_c05_eutrophication_scheme15" ref="dwaq_default">
-    <dependency version="DVC" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
     <path version="DVC">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
     <checks>
       <file name="group2-test005.ada" type="NEFIS">
