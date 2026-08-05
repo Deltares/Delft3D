@@ -276,12 +276,9 @@ namespace pre_c_sumo
                     // Momentum is only defined for the source points, not for the entrainment part
                     // Entrainment related momentum should be switched on in D-Flow FM using "NFEntrainmentMomentum = 1"
                     // (not implemented for coupling via preCICE yet)
-                    double source_moment_magnitude_weighted = 0.0;
-                    double source_moment_direction = 0.0;
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, source_moment_magnitude_weighted,
-                                                   source_moment_direction);
+                                                   source_z_top, discharge, 0.0, 0.0);
                 }
             }
 
