@@ -410,7 +410,7 @@ contains
          allocate (pillar(i))
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
-            call reapol(minp, 1)
+            call reapol(minp, 0)
             allocate (pillar(ifil)%xcor(npl))
             pillar(ifil)%xcor = dmiss
             allocate (pillar(ifil)%ycor(npl))
@@ -1898,6 +1898,7 @@ contains
       call prop_get(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success) ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
       call prop_get(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
       call prop_get(md_ptr, 'output', 'NcNoForcedFlush', unc_noforcedflush, success)
+      call prop_get(md_ptr, 'output', 'MapOutputPolygonFile', md_map_output_polyfile, success)
 
       ibuf = 0
       call prop_get(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
@@ -3726,6 +3727,7 @@ contains
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
       call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
+      call prop_set(prop_ptr, 'output', 'MapOutputPolygonFile', trim(md_map_output_polyfile), 'Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)')
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss
