@@ -823,9 +823,7 @@ contains
       end select
    end function resolve_integer_target
 
-   !> Resolve a named mass-balance area to a temporary cell-centre coverage field.
-   !! The interpolated values only indicate coverage; finish_mass_balance_area_target
-   !! converts covered cells to the registered integer area ID.
+   !> Resolve a named mass-balance area and allocate a work array to hold the result of the polygon mask.
    function resolve_mass_balance_area_target(qid, target_location_type, target_array) result(success)
       use fm_external_forcings_utils, only: split_qid
       use fm_location_types, only: UNC_LOC_S
@@ -836,9 +834,9 @@ contains
       use m_missing, only: dmiss
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: qid
-      integer, intent(out) :: target_location_type
-      real(kind=dp), dimension(:), pointer, intent(out) :: target_array
+      character(len=*), intent(in) :: qid !< quantity id to resolve.
+      integer, intent(out) :: target_location_type !< output target location type, always UNC_LOC_S for mass-balance areas.
+      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< output target array, to be allocated if target is mass-balance area.
       logical :: success
 
       character(len=256) :: qid_base, qid_specific
@@ -876,9 +874,9 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: qid_base
-      character(len=*), intent(in) :: qid_specific
-      real(kind=dp), dimension(:), pointer, intent(inout) :: target_array
+      character(len=*), intent(in) :: qid_base !< base quantity id, e.g. 'massbalancearea' or 'waqmassbalancearea'.
+      character(len=*), intent(in) :: qid_specific !< specific quantity id, e.g. 'area1'.
+      real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< input/output target array, to be converted to integer area IDs and then nullified.
       logical :: success
 
       integer :: area_index
@@ -1410,7 +1408,7 @@ contains
                                  sfunname, sfuninp, num_spatial_time_fuctions
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: qid
+      character(len=*), intent(in) :: qid !< name of the quantity to register if it is a waq target.
 
       character(len=256) :: qid_base, qid_specific
       integer :: index_waq_input

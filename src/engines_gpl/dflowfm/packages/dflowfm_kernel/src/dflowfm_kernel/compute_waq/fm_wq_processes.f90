@@ -396,6 +396,9 @@ contains
       end if
    end subroutine fm_wq_processes_ini_sub
 
+   !> Finalizes all registered waqsegmentnumber inputs by translating their
+   !! global segment numbers to local WAQ segment indices and filling the
+   !! corresponding vertical painp entries for each D-Flow FM water column.
    module subroutine finalize_waq_spatial_fields()
       use m_fm_wq_processes, only: kbx, waq_segment_number_indices
       use m_flow, only: kmx, kmxn
