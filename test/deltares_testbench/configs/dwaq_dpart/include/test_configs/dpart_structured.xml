@@ -2195,7 +2195,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                 </checks>
         </testCase>
         <testCase name="e05_f08_c10_leeway_zlayers_p100" ref="part_default">
-                <path version="DVC">e05_part/f08_leeway_zlayers/e05_f08_c10_leeway_zlayers_p100</path>
+                <path version="DVC">e05_part/f08_leeway_zlayers/c10_leeway_zlayers_p100</path>
                 <checks>
                         <file name="p100.out" type="NUMBERTEXT">
                    <skipline>|</skipline>
