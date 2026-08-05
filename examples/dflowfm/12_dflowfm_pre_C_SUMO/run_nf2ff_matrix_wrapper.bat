@@ -13,7 +13,7 @@
 ::
 :: Arguments:
 ::   [case_list] Optional. One case or comma-separated cases.
-::              Allowed: i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si42so1
+::              Allowed: i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si40so1 i0si2so2m i0si2so3m
 ::              Example: i0si2so2,i1si2so2
 ::              If omitted: all allowed cases are run.
 ::   [mode] Optional. precice | dimr | both | cleanupOnly
@@ -43,7 +43,7 @@ set "LOGDIR=%RESULTS%\logs"
 set "SUMMARY=%RESULTS%\summary.csv"
 set "MATRIX=%RESULTS%\matrix.md"
 
-set "ALL_CASES=i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si42so1"
+set "ALL_CASES=i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si40so1 i0si2so2m i0si2so3m"
 set "CASES=%ALL_CASES%"
 set "RUN_MODES=precice dimr"
 if defined MATRIX_RUN_MODES set "RUN_MODES=%MATRIX_RUN_MODES%"
@@ -78,7 +78,7 @@ if %ARG_COUNT% GTR 0 (
             for %%K in (!CASE_TOKEN_SPLIT!) do (
                 call :validate_case "%%~K"
                 if errorlevel 1 (
-                    echo ERROR: Case folder not found: "%NFROOT%\%%~K"
+                    echo ERROR: Case file not found: "%NFROOT%\NF2FF__%%~K.xml"
                     popd
                     exit /b 4
                 )
@@ -178,7 +178,7 @@ popd
 exit /b %OVERALL_RC%
 
 :validate_case
-if exist "%NFROOT%\%~1" exit /b 0
+if exist "%NFROOT%\NF2FF__%~1.xml" exit /b 0
 exit /b 1
 
 :is_mode
@@ -232,6 +232,8 @@ if /i "%DELETE_REPLY%"=="y" (
         if exist "%RESULTS%" rmdir /s /q "%RESULTS%"
         set "CLEANUP_ONLY_OVERRIDE=1"
         call "%RUNBAT%"
+        rem Set the NF2FF files to the default ones
+        call :sync_case i0si2so2
         echo ... Finished with cleanupOnly
         exit /b 1
     )
@@ -246,12 +248,10 @@ exit /b 0
 set "MISSING_ANY=0"
 for %%C in (%CASES%) do (
     set "CASE_MISSING=0"
-    for %%F in (%REQUIRED_FILES%) do (
-        if not exist "%NFROOT%\%%C\%%F" (
-            set "CASE_MISSING=1"
-            set "MISSING_ANY=1"
-            echo MISSING: %NFROOT%\%%C\%%F
-        )
+    if not exist "%NFROOT%\NF2FF__%%C.xml" (
+        set "CASE_MISSING=1"
+        set "MISSING_ANY=1"
+        echo MISSING: %NFROOT%\NF2FF__%%C.xml
     )
 
     if "%WRITE_AGGREGATES%"=="1" (
@@ -318,6 +318,7 @@ for %%C in (%CASES%) do (
         copy /y "%FMROOT%\*.nc" "!CASE_OUT!\" >nul 2>nul
         if exist "%FMROOT%\precice_debug_output.txt" copy /y "%FMROOT%\precice_debug_output.txt" "!CASE_OUT!\precice_debug_output_fm.txt" >nul 2>nul
         if exist "%ROOT%cosumo\precice_debug_output.txt" copy /y "%ROOT%cosumo\precice_debug_output.txt" "!CASE_OUT!\precice_debug_output_csumo.txt" >nul 2>nul
+        if exist "%ROOT%pictures_compare_dimr_precice.qplog" copy /y "%ROOT%pictures_compare_dimr_precice.qplog" "%RESULTS%\%%C\" >nul 2>nul
         if /i "%MODE%"=="precice" (
             if exist "%FMROOT%\precice_debug_output.txt" copy /y "%FMROOT%\precice_debug_output.txt" "%RESULTS%\%%C_precice_debug_output_fm.txt" >nul 2>nul
             if exist "%ROOT%cosumo\precice_debug_output.txt" copy /y "%ROOT%cosumo\precice_debug_output.txt" "%RESULTS%\%%C_precice_debug_output_csumo.txt" >nul 2>nul
@@ -336,7 +337,7 @@ exit /b 0
 :sync_case
 set "CASE_NAME=%~1"
 for %%F in (%REQUIRED_FILES%) do (
-    copy /y "%NFROOT%\%CASE_NAME%\%%F" "%NFROOT%\%%F" >nul
+    copy /y "%NFROOT%\NF2FF__%CASE_NAME%.xml" "%NFROOT%\%%F" >nul
     if errorlevel 1 exit /b 1
 )
 
