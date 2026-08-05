@@ -35,6 +35,14 @@ add_library(${library_name} ${headers}
                             ${source}
                             ${ini_version_file})
 
+# The d3d4-suite also builds nefis_dll with OUTPUT_NAME nefis. On Windows,
+# that DLL's import library would otherwise overwrite this static archive
+# (nefis.lib) in a multi-configuration build directory. Keep the target name
+# unchanged so consumers still link to the static library target.
+if (WIN32)
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME nefis_static)
+endif()
+
 # Set additional dependencies
 target_include_directories(${library_name}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" ${version_include_dir})
 

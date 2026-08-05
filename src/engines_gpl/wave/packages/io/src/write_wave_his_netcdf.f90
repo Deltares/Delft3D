@@ -324,13 +324,13 @@ subroutine write_wave_his_netcdf(sg, sof, n_swan_grids, i_swan, wavedata, nautic
       idvar_statid = nc_def_var(idfile, 'station_id', nf90_char, 2, [iddim_statnamlen, iddim_nstat], '', 'Observation station identifier', '', .false., filename)
       ierror = nc_put_att_and_check(idfile, idvar_statid, 'cf_role', 'timeseries_id', filename, "put_att station_id cf_role")
       idvar_depth = nc_def_var(idfile, 'depth', precision, 2, [iddim_nstat, iddim_time], '', 'Water depth', 'm', .true., filename)
-      idvar_hsig = nc_def_var(idfile, 'hsign', precision, 2, [iddim_nstat, iddim_time], '', 'Significant wave height', 'm', .true., filename)
+      idvar_hsig = nc_def_var(idfile, 'hsig', precision, 2, [iddim_nstat, iddim_time], '', 'Significant wave height', 'm', .true., filename)
       if (nautical_convention) then
          idvar_dir = nc_def_var(idfile, 'dir', precision, 2, [iddim_nstat, iddim_time], 'sea_surface_wave_from_direction', 'Mean wave direction', 'deg', .true., filename)
       else
          idvar_dir = nc_def_var(idfile, 'dir', precision, 2, [iddim_nstat, iddim_time], 'sea_surface_wave_to_direction', 'Mean wave direction', 'deg', .true., filename)
       end if
-      idvar_rtpeak = nc_def_var(idfile, 'rtp', precision, 2, [iddim_nstat, iddim_time], '', 'Relative peak wave period', 'sec', .true., filename)
+      idvar_rtpeak = nc_def_var(idfile, 'rtpeak', precision, 2, [iddim_nstat, iddim_time], '', 'Relative peak wave period', 'sec', .true., filename)
       idvar_tm01 = nc_def_var(idfile, 'tm01', precision, 2, [iddim_nstat, iddim_time], '', 'Mean absolute wave period', 'sec', .true., filename)
       idvar_dspr = nc_def_var(idfile, 'dspr', precision, 2, [iddim_nstat, iddim_time], '', 'Directional spreading of the waves', 'deg', .true., filename)
       idvar_ubot = nc_def_var(idfile, 'ubot', precision, 2, [iddim_nstat, iddim_time], '', 'Rms value maximum of the orbital velocity near bed level', 'm/s', .true., filename)

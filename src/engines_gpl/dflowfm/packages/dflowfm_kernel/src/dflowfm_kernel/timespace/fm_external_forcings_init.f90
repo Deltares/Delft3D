@@ -647,6 +647,7 @@ contains
       use tree_data_types, only: tree_data
       use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat, nlatnd, apply_transport
       use m_flowgeom, only: ndxi, xz, yz
+      use m_flow, only: kmx
       use m_alloc, only: realloc, reserve_sufficient_space
       use fm_external_forcings_data, only: kx, qid
       use fm_location_types, only: parse_spatial_location_type, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
@@ -738,7 +739,7 @@ contains
 
       qid = 'lateral_discharge' ! New quantity name in .bc files
       is_read = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
-                                               kx, qplat(1, :))
+                                               kx, qplat(max(1, kmx), :))
       if (is_read) then
          jaqin = 1
          lat_ids(numlatsg) = loc_id
@@ -1118,7 +1119,7 @@ contains
             end if
             res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
          else
-            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
                ''': ['//group_name//']. Check previous log lines for details.'
             call err_flush()
          end if

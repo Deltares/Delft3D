@@ -13,6 +13,18 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
 if (WIN32)
     add_compile_definitions(NOMINMAX)
+
+    if(NOT DEFINED ENV{ONEAPI_ROOT} OR "$ENV{ONEAPI_ROOT}" STREQUAL "")
+        message(FATAL_ERROR
+            "ONEAPI_ROOT is not set. Configure from an Intel OneApi command prompt or manually set the environment."
+        )
+    endif()
+
+    if(NOT IS_DIRECTORY "$ENV{ONEAPI_ROOT}")
+        message(FATAL_ERROR
+            "ONEAPI_ROOT does not point to an existing directory: '$ENV{ONEAPI_ROOT}'."
+        )
+    endif()
 endif()
 
 message(STATUS "Configuring")
@@ -216,7 +228,6 @@ set(testbench-waq_configuration "WAQ-TESTBENCH")
 set(testbench-part_configuration "PART-TESTBENCH")
 set(testbench-wave_configuration "WAVE-TESTBENCH")
 set(testbench-tc_configuration "TC-TESTBENCH")
-set(testbench-qp_configuration "QP-TESTBENCH")
 
 # Combined (multi-component) configurations
 # For products that we release
@@ -253,8 +264,7 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
      OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
      OR ${configuration_type} STREQUAL ${testbench-part_configuration}
      OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-qp_configuration}))
+     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
 
@@ -393,12 +403,6 @@ if(${configuration_type} STREQUAL ${testbench-tc_configuration})
     include(configurations/testbench/waq_configuration.cmake)
 endif()
 
-# QUICKPLOT configuration
-if(${configuration_type} STREQUAL ${testbench-qp_configuration})
-    message(STATUS "Generating solution for QUICKPLOT testbench ...")
-    include(configurations/testbench/waq_configuration.cmake)
-endif()
-
 ### Composed configurations for releases
 
 # Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
@@ -423,3 +427,9 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
               ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
               ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
               DESTINATION share)
+
+# Install proj.db only if PROJ library is found and being used
+if(TARGET PROJ::proj)
+    install(FILES "$<IF:$<CONFIG:Debug>,${proj_PACKAGE_FOLDER_DEBUG},$<IF:$<CONFIG:RelWithDebInfo>,${proj_PACKAGE_FOLDER_RELWITHDEBINFO},${proj_PACKAGE_FOLDER_RELEASE}>>/res/proj.db" 
+            DESTINATION share/proj)
+endif()

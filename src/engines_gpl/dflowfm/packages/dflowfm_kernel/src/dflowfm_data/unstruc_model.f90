@@ -61,6 +61,7 @@ contains
       use unstruc_channel_flow
       use m_start_parameters, only: md_jaautostart, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       use unstruc_display, only: jagui
+      use m_alloc, only: realloc
 
       call tree_destroy(md_ptr)
       nullify (trtdef_ptr) ! trtdef_ptr was only pointing to subtree of md_ptr, so is now a dangling pointer: model's responsibility to nullify it here.
@@ -100,10 +101,12 @@ contains
       md_profdefxyzfile = ' '
       md_1d2dlinkfile = ' '
       md_shipdeffile = ' '
+      md_inifieldfile = ' '
       md_restartfile = ' '
       md_extfile = ' '
       md_extfile_new = ' '
       md_extfile_dir = ' '
+      call realloc(extfile_new_list, 0)
       md_structurefile = ' '
       md_structurefile_dir = ' '
       md_wavefile = ' '
@@ -115,6 +118,7 @@ contains
       md_bedformfile = ' '
       md_morphopol = ' '
       md_sedtrailsfile = ' '
+      md_dynvegpol = ' '
 
       md_obsfile = ' '
       md_delete_observation_points_outside_grid = 0
@@ -406,7 +410,7 @@ contains
          allocate (pillar(i))
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
-            call reapol(minp, 1)
+            call reapol(minp, 0)
             allocate (pillar(ifil)%xcor(npl))
             pillar(ifil)%xcor = dmiss
             allocate (pillar(ifil)%ycor(npl))
@@ -1172,6 +1176,25 @@ contains
          jafrculin = 1
       end if
 
+      ! Additions for dynamic roughness for storm impacts with morphology
+      call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynroughveg)
+      if (dynroughveg /= 0) then
+         if (ifrctypuni /= 1) then
+            call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness. Switched off.')
+            dynroughveg = 0
+         else
+            call prop_get(md_ptr, 'physics', 'dRoot', droot)
+            call prop_get(md_ptr, 'physics', 'dStem', dstem)
+            if (droot <= 0.0_dp .or. dstem <= 0.0_dp) then
+               call mess(LEVEL_WARN, 'Dynamic vegetation roughness requires dRoot>0 and dStem>0. Switched off.')
+               dynroughveg = 0
+            else
+               call prop_get(md_ptr, 'physics', 'unifFrictCoefNoVeg', frcu_no_vegetation)
+               call prop_get(md_ptr, 'physics', 'dynVegPol', md_dynvegpol, success)
+            end if
+         end if
+      end if
+
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
@@ -1426,7 +1449,17 @@ contains
       call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
       call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
       call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
-      call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity)
+      call prop_get(md_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, success)
+      if (success) then
+         if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
+            call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
+         elseif (.not. ANY(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE,SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
+            call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod can only be set to 0, 1 or 2')
+         end if
+         if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
+            call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod set to 2 but Salinity is turned off in mdu.')
+         end if
+      end if
       call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
       call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
       call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
@@ -1894,11 +1927,12 @@ contains
       call prop_get(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success) ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
       call prop_get(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
       call prop_get(md_ptr, 'output', 'NcNoForcedFlush', unc_noforcedflush, success)
+      call prop_get(md_ptr, 'output', 'MapOutputPolygonFile', md_map_output_polyfile, success)
 
       ibuf = 0
       call prop_get(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
       if (success .and. ibuf > 0) then
-         unc_writeopts = UG_WRITE_LATLON
+         unc_writeopts = ior(unc_writeopts, UG_WRITE_LATLON)
       end if
 
       call prop_get(md_ptr, 'output', 'MetaDataFile', unc_metadatafile, success)
@@ -3252,6 +3286,12 @@ contains
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
+      call prop_set(prop_ptr, 'physics', 'dynRoughVeg', dynroughveg, 'Switch for dynamic vegetation roughness. Default 0.')
+      call prop_set(prop_ptr, 'physics', 'dRoot', droot, 'Root depth (m)')
+      call prop_set(prop_ptr, 'physics', 'dStem', dstem, 'Stem height (m)')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoefNoVeg', frcu_no_vegetation, 'Uniform friction (Manning) coefficient without vegetation (s/m^{1/3})')
+      call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
+
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
@@ -3381,7 +3421,10 @@ contains
       call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air water interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
       call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
       call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
-      call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity, 'Salinity reduction factor for saturation humidity in bulk formulae.')      
+      call prop_set(prop_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
+      if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
+         call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')      
+      end if
       call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
       call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
       call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
@@ -3728,6 +3771,7 @@ contains
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
       call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
+      call prop_set(prop_ptr, 'output', 'MapOutputPolygonFile', trim(md_map_output_polyfile), 'Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)')
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss
@@ -3821,7 +3865,7 @@ contains
       end if
 
       if (writeall .or. unc_writeopts /= UG_WRITE_NOOPTS) then
-         if (iand(unc_writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON) then
+         if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
             ibuf = 1
          else
             ibuf = 0

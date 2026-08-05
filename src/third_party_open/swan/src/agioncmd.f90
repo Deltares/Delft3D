@@ -278,7 +278,7 @@
             call nccheck ( nf90_create( ncfile, NF90_NOCLOBBER + NF90_NETCDF4, ncid) )
             if ( recordaxe%nstatm ) then
                 call nccheck ( nf90_def_dim( ncid, 'time', NF90_UNLIMITED, recordaxe%dimid ) );
-                call nccheck ( nf90_def_var( ncid, 'time', NF90_INT, recordaxe%dimid, recordaxe%varid ) )
+                call nccheck ( nf90_def_var( ncid, 'time', NF90_INT64, recordaxe%dimid, recordaxe%varid ) )
                 call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'units', 'seconds since 1970-01-01') )
                 call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'calendar', 'gregorian') )
                 call nccheck ( nf90_put_att( ncid, recordaxe%varid, 'standard_name', 'time') )
@@ -2571,7 +2571,7 @@
 
         function timeindex64(tarr, t) result (ti)
             integer(kind=8), dimension(:), intent( in)  :: tarr
-            integer,                       intent( in)  :: t
+            integer(kind=8),               intent( in)  :: t
             integer                                     :: ti
             if ( t >= minval(tarr) .and. t <= maxval(tarr) ) then
                 ! somewhere in the existing time axe  .and. (t <= max(tarr,1))
@@ -2619,7 +2619,8 @@
 
         function datevec_from_epoch( t_in ) result (datevec)
             integer(kind=8), intent( in)  :: t_in
-            integer                       :: t, year, month, s
+            integer(kind=8)               :: t, s
+            integer                       :: year, month
             integer                       :: datevec(6)
             ! number of days per month
             integer, save           :: ndpm(12)
@@ -2632,7 +2633,8 @@
             t = t - datevec(5)*60
             datevec(4) = mod(t,86400)/3600
             t = t-datevec(4)*3600
-            do year = 1970, 2038
+            year = 1970
+            do
                 if ( (mod(year,400) == 0) .or. ( (mod(year,4) == 0) .and. (mod(year,100) /= 0 )) ) then
                     s = 366*86400
                 else
@@ -2642,6 +2644,7 @@
                     exit
                 else
                     t = t-s
+                    year = year + 1
                 end if
             end do
             datevec(1) = year

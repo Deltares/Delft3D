@@ -307,10 +307,10 @@ contains
 !
       logical                             :: lopen, file_exists, &
                                              EQREAL, STPNOW
-      integer                             :: ip, ierr, otype, xpctime2, &
-                                             i, tmip, binnr, irq, &
-                                             tip, ips(MIP), iproc, nref, ilpos, &
-                                             nread, nunique
+      integer                             :: ip, ierr, otype, i, tmip, binnr, irq, &
+                                             tip, ips(MIP), iproc, nref, ilpos, nread, nunique
+      integer(kind=8)                     :: xpctime2
+                                             
       integer, save                       :: IENT=0
       character(len=80)                   :: binfile, ncfile, basefile
       character(len=256)                  :: errmsg
@@ -621,9 +621,10 @@ contains
 !
       logical                                        :: EQREAL, lopen, do_open_files, write_header, &
                                                         direct_compgrid_spectrum, direct_done
-      integer                                        :: ip, ierr, otype, xpctmp(2), xpctime, &
+      integer                                        :: ip, ierr, otype, xpctmp(2), &
                                                         pnr, ri, i, tmip, irq, iproc, &
                                                         binnr, xi, yi, npnts, id, is, local_ip
+      integer(kind=8)                                :: xpctime
       integer, allocatable                           :: ips(:)
       integer, save                                  :: IENT=0
       character(len=80)                              :: outfile
@@ -803,7 +804,7 @@ contains
 
         write(OQI(1), IOSTAT=ierr) xpctime, tmip
         if (ierr /= 0) then
-          write(errmsg, '(A, "-> IOSTAT=", I3, " time=", I10, " TMIP=", I4, " OQI(1)=", I3)') &
+          write(errmsg, '(A, "-> IOSTAT=", I3, " time=", I20, " TMIP=", I4, " OQI(1)=", I3)') &
                   trim(outfile), ierr, xpctime, tmip, oqi(1)
           call MSGERR(4, errmsg)
           return
@@ -1001,12 +1002,12 @@ contains
 !
       integer,                      intent(   in) :: oqi(4)
       type(spcaux_type), target,    intent(inout) :: spcaux
-      integer,           optional,  intent(   in) :: xpctime2
+      integer(kind=8),   optional,  intent(   in) :: xpctime2
 !
 !  5. Local variables
 !
-      integer                             :: ierr, xpctmp(2), xpctime, pnr, ri, irq, i, &
-                                             ncid
+      integer                             :: ierr, xpctmp(2), ri, irq, i, ncid
+      integer(kind=8)                     :: xpctime, pnr
       character(len=256)                  :: errmsg
       integer, save                       :: IENT=0
       logical                             :: spc_as_map, wetnode_list, noaux
@@ -1054,7 +1055,7 @@ contains
           ! If provided, check the time against a reference time
           if ( present(xpctime2) ) then
             if ( xpctime2 /= xpctime ) then
-                write(errmsg, '(I12, " does not equal ", I12)') xpctime2, xpctime
+                write(errmsg, '(I20, " does not equal ", I20)') xpctime2, xpctime
                 call MSGERR(4, errmsg)
                 return
             end if
@@ -1446,8 +1447,8 @@ contains
         integer,                intent(   in) :: irq, ivtype, nref, col, myk, mxk
         real,                   intent(   in) :: data(mxk * myk), excv
 
-        integer                               :: ri, pnr, xpctmp(2), i, &
-                                                 xpctime, ilpos, ncid
+        integer                               :: ri, xpctmp(2), i, ilpos, ncid
+        integer(kind=8)                       :: xpctime, pnr
         integer, save                         :: IENT=0
         character(len=40)                     :: name
         if (LTRACE) call STRACE (IENT,'swn_outnc_appendblock')
@@ -1506,7 +1507,8 @@ contains
     end subroutine swn_outnc_close_on_end
 
     subroutine record_index(ncid, recordaxe, xpctime, ri, reading, filename)
-        integer,                              intent(   in) :: ncid, xpctime
+        integer,                              intent(   in) :: ncid
+        integer(kind=8),                      intent(   in) :: xpctime
         type(recordaxe_type),                 intent(inout) :: recordaxe
         integer,                              intent(  out) :: ri
         logical,                              intent(   in) :: reading  !< ncfile used for reading

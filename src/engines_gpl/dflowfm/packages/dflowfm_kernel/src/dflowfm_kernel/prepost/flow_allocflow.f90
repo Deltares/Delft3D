@@ -58,13 +58,13 @@ contains
                         dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
-                        au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -96,6 +96,7 @@ contains
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
       use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
+      use m_physcoef, only: dynroughveg, frcuni
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -957,6 +958,8 @@ contains
       call aerr('au_nostrucs(lnkx)', ierr, lnkx)
       call realloc(viu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('viu(lnkx)', ierr, lnkx)
+      call realloc(vius, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+      call aerr('vius(ndkx)', ierr, ndkx)
       call realloc(vicLu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('vicLu(lnkx)', ierr, lnkx)
       call realloc(suu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -997,6 +1000,12 @@ contains
       if (map_write_settings%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
+      end if
+      if (dynroughveg > 0) then
+         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
+         call aerr('frcu0(lnx)', ierr, lnx)
+         call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
+         call aerr('dynveg(lnx)', ierr, lnx)
       end if
 
       if (jarhoxu > 0 .or. jased > 0) then
