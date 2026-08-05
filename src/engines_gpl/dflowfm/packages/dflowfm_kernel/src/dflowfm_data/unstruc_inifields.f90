@@ -47,7 +47,7 @@ module unstruc_inifields
    private
 
    public :: init1dField, spaceInit1dField, &
-             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_vertical_position, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
+             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
              resolve_mass_balance_area_target, finish_mass_balance_area_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
@@ -1765,7 +1765,7 @@ contains
    end subroutine initialfield2Dto3D_dbl_slice
 
    !> Parse and apply a WAQ-bottom vertical position using the legacy LAYER convention.
-   function apply_waqbot_vertical_position(input_array_2d, output_array_3d, vertical_position, quantity, operand) result(success)
+   function apply_waqbot_target_layer(input_array_2d, output_array_3d, target_layer, quantity, operand) result(success)
       use m_flow, only: kmx, kbot, ktop, kmxn
       use m_missing, only: dmiss
       use messageHandling, only: err_flush, msgbuf
@@ -1774,22 +1774,22 @@ contains
 
       real(kind=dp), dimension(:), intent(in) :: input_array_2d
       real(kind=dp), dimension(:), intent(inout) :: output_array_3d
-      character(len=*), intent(in) :: vertical_position
+      character(len=*), intent(in) :: target_layer
       character(len=*), intent(in) :: quantity
       integer, intent(in) :: operand
       logical :: success
 
       integer :: n, k, kb, kt, ktmax, layer, read_status
 
-      select case (str_tolower(trim(vertical_position)))
-      case ('', 'kbot')
+      select case (str_tolower(trim(target_layer)))
+      case ('', 'bottom')
          layer = -1
       case ('all')
          layer = 0
       case default
-         read (vertical_position, *, iostat=read_status) layer
+         read (target_layer, *, iostat=read_status) layer
          if (read_status /= 0 .or. layer <= 0) then
-            write (msgbuf, '(a)') 'Invalid verticalPosition '''//trim(vertical_position)//''' for quantity '''//trim(quantity)//'''. Expected ''kbot'', ''all'', or a positive layer number.'
+            write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''kbot'', ''all'', or a positive layer number.'
             call err_flush()
             success = .false.
             return
@@ -1797,7 +1797,7 @@ contains
       end select
 
       if (layer > max(kmx, 1)) then
-         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid verticalPosition ', layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
+         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid targetLayer ', layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
          call err_flush()
          success = .false.
          return
@@ -1825,5 +1825,5 @@ contains
          end if
       end do
       success = .true.
-   end function apply_waqbot_vertical_position
+   end function apply_waqbot_target_layer
 end module unstruc_inifields

@@ -158,7 +158,7 @@ contains
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_populates_3d_layers, test_waqparameter_polygon_populates_3d_layers,
    subroutine test_waqparameter_polygon_populates_3d_layers() bind(C)
-      use m_flow, only: kmx, ndkx, kbot, ktop, zws
+      use m_flow, only: kmx, ndkx, kbot, ktop, kmxn, zws
       use m_polygon, only: m_polygon_destructor
       use processes_input, only: num_spatial_parameters, painp, paname
       use unstruc_inifields, only: register_waq_target
@@ -190,7 +190,8 @@ contains
       kmx = 2
       ndkx = 3
       call realloc(kbot, ndx, fill=2, keepExisting=.false.)
-      call realloc(ktop, ndx, fill=3, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=2, keepExisting=.false.)
+      call realloc(kmxn, ndx, fill=2, keepExisting=.false.)
       call realloc(zws, ndkx, fill=0.0_dp, keepExisting=.false.)
       zws = [-2.0_dp, -1.0_dp, 0.0_dp]
       num_spatial_parameters = 0
@@ -208,7 +209,8 @@ contains
       call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
       call f90_expect_eq(real(painp(1, 1), kind=dp), 4.0_dp, "the 2D representative should receive the polygon value")
       call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, "the bottom layer should receive the polygon value")
-      call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, "the top layer should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, &
+                "the inactive layer above the water surface should receive the polygon value")
 
       num_spatial_parameters = 0
       kmx = 0
@@ -217,6 +219,7 @@ contains
       if (allocated(painp)) deallocate (painp)
       if (allocated(kbot)) deallocate (kbot)
       if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
       if (allocated(zws)) deallocate (zws)
       ierr = m_polygon_destructor()
       call teardown_minimal_grid()
@@ -1141,7 +1144,7 @@ contains
    subroutine test_waqbot_vertical_layer_selection() bind(C)
       use m_flow, only: kmx, kbot, ktop, kmxn
       use timespace_parameters, only: OPERAND_OVERRIDE
-      use unstruc_inifields, only: apply_waqbot_vertical_position
+      use unstruc_inifields, only: apply_waqbot_target_layer
 
       real(dp) :: input_2d(1), output_3d(9)
       logical :: success
@@ -1153,19 +1156,19 @@ contains
       input_2d = 1.0_dp
 
       output_3d = 0.0_dp
-      success = apply_waqbot_vertical_position(input_2d, output_3d, 'kbot', 'initialwaqbottestbot', OPERAND_OVERRIDE)
-      call f90_expect_true(success, "kbot should be accepted")
-      call f90_expect_eq(output_3d(2), 1.0_dp, "kbot should select the active bottom layer")
-      call f90_expect_eq(sum(output_3d), 1.0_dp, "kbot should update one layer")
+      success = apply_waqbot_target_layer(input_2d, output_3d, 'bottom', 'initialwaqbottestbot', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "targetLayer should be accepted")
+      call f90_expect_eq(output_3d(2), 1.0_dp, "targetLayer should select the active bottom layer")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "targetLayer should update one layer")
 
       output_3d = 0.0_dp
-      success = apply_waqbot_vertical_position(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
       call f90_expect_true(success, "layer 4 should be accepted")
       call f90_expect_eq(output_3d(5), 1.0_dp, "layer 4 should be counted from the deepest model plane")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "a fixed layer should update one layer")
 
       output_3d = 0.0_dp
-      success = apply_waqbot_vertical_position(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
       call f90_expect_true(success, "layer 8 should be accepted")
       call f90_expect_eq(output_3d(9), 1.0_dp, "an inactive maximum layer should be initialized for restart")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "a maximum fixed layer should update one layer")
