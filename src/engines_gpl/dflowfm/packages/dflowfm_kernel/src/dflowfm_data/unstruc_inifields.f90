@@ -1718,7 +1718,7 @@ contains
    !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
    subroutine initialfield2Dto3D_dbl_slice(input_array_2d, output_array_3d, vertical_range_min, vertical_range_max, operand)
       use precision_basics
-      use m_flow, only: kmx, kbot, ktop, zws
+      use m_flow, only: kmx, kbot, ktop, zws, kmxn
       use m_missing
       use timespace, only: operate
 
@@ -1751,7 +1751,9 @@ contains
                kb = kbot(n)
                kt = ktop(n)
                call operate(output_array_3d(n), input_array_2d(n), operand)
-               do k = kb, kt
+               ! intentionally fill all levels, even those above the water surface. 
+               ! This is necessary for waq variables, and is harmless for quantities like salinity.
+               do k = kb, kb + kmxn(n) - 1
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))
                   if (level_at_pressure_point > lower_limit .and. level_at_pressure_point < upper_limit) then
                      call operate(output_array_3d(k), input_array_2d(n), operand)

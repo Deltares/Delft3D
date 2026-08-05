@@ -134,10 +134,12 @@ contains
             block_ptr => bnd_ptr%child_nodes(i)%node_ptr
             group_name = trim(tree_get_name(block_ptr))
             select case (str_tolower(group_name))
-            case ('spatial', 'meteo', 'parameter', 'initial')
+            case ('spatial', 'parameter', 'initial')
                quantity = ''
                call prop_get(block_ptr, '', 'quantity', quantity, is_read)
-               if (is_read) call register_waq_target(quantity)
+               if (is_read) then
+                  call register_waq_target(quantity)
+               end if
             end select
          end do
       end do
