@@ -635,6 +635,7 @@ This section contains the settings for various output files.
 | `outputDir` | Output directory of map-, his-, rst-, dat- and timins files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir. | `<empty>` |  |  |  |
 | `waqOutputDir` | Output directory of Water Quality files. | `<empty>` |  |  |  |
 | `flowGeomFile` | \*_flowgeom.nc Flow geometry file in NetCDF format. | `<empty>` |  |  |  |
+| `mapOutputPolygonFile` | Space-separated list of output polygon files to restrict map output to (e.g., \*_out.pol) | `<empty>` |  |  |  |
 | `obsFile` | Space separated list of files, containing information about observation points. | `<empty>` |  |  |  |
 | `deleteObsPointsOutsideGrid` | Delete observation points outside the grid. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `crsFile` | Space separated list of files, containing information about observation cross sections. | `<empty>` |  |  |  |

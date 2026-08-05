@@ -4545,6 +4545,12 @@
                     "value_type": "path",
                     "description": "*_flowgeom.nc Flow geometry file in NetCDF format."
                 },
+               {
+                  "key": "mapOutputPolygonFile",
+                  "default_value": [],
+                  "value_type": "list[path]",
+                  "description": "Space-separated list of output polygon files to restrict map output to (e.g., *_out.pol)"
+               },
                 {
                     "key": "obsFile",
                     "default_value": [],
