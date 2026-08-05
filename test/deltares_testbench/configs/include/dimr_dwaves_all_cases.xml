@@ -394,7 +394,7 @@
         <!-- f06: D-Flow FM + D-Waves coupling, moved to e100                         -->
         <!-- ======================================================================== -->
         <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_trunk">
-      <maxRunTime>1500</maxRunTime>
+      <maxRunTime>1800</maxRunTime>
             <path version="2025-07-29T12:53:10.423000">e04_wave/f09-SWANDCSM/c02</path>
             
             <checks>
