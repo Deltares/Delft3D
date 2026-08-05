@@ -276,7 +276,7 @@
     <processCount>2</processCount>
   </testCase>
   <testCase name="e02_f114_c090_dar-es-salaam_mapmerge" ref="dimr_trunk_2">
-    <path version="DVC">e02_dflowfm/f114_parallel_1D/c090_dar-es-salaam</path>
+    <path version="DVC">e02_dflowfm/f114_parallel_1D/c090_dar-es-salaam_mapmerge</path>
     <programs>
       <program ref="dflowfm" seq="1">
         <arguments>
