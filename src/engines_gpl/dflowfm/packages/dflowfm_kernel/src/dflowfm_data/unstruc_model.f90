@@ -50,6 +50,12 @@ module unstruc_model
    integer, private :: ifixedweirscheme_input !< input value of ifixedweirscheme in mdu file
    real(kind=dp), private :: cdb_user(2) !< User provided Charnock coefficient (and optionally the viscous term)
 
+   interface notify_default_change
+      module procedure notify_default_change_int
+      module procedure notify_default_change_real
+      module procedure notify_default_change_char
+   end interface
+
 contains
 
 !> Resets current model variables, generally prior to loading a new MDU.
@@ -554,6 +560,13 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
+      logical :: has_windhuorzwsbased = .false.
+      logical :: has_barocponbnd = .false.
+      logical :: has_keepstbndonoutflow = .false.
+      logical :: has_nc_his_data_precision = .false.
+      logical :: has_nc_map_data_precision = .false.
+      logical :: has_circumcenter_method = .false.
+
       ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
       integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
       integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
@@ -821,6 +834,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
       call prop_get(md_ptr, 'geometry', 'circumcenterMethod', md_circumcenter_method, success)
+      has_circumcenter_method = success
       circumcenter_method = extract_circumcenter_method(md_circumcenter_method, success)
       call prop_get(md_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, success)
 
@@ -991,7 +1005,8 @@ contains
          end if
       end if !jaextrapbl
       call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
-      call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow)
+      call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow, success)
+      has_keepstbndonoutflow = success
       call prop_get(md_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd)
       call prop_get(md_ptr, 'numerics', 'tSpinupTurbLogProf', t_spinup_turb_log_prof)
       call prop_get(md_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin)
@@ -1042,7 +1057,8 @@ contains
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
-      call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
+      call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd, success)
+      has_barocponbnd = success
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
@@ -1507,7 +1523,8 @@ contains
       end if
 
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
-      call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
+      call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased, success)
+      has_windhuorzwsbased = success
       call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
 
       call prop_get(md_ptr, 'wind', 'Rhoair', rhoair)
@@ -1884,11 +1901,13 @@ contains
       call prop_get(md_ptr, 'output', 'NcFormat', md_ncformat, success)
       call unc_set_ncformat(md_ncformat)
       call prop_get(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+      has_nc_map_data_precision = success
       if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
          call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
       end if
-      
+
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+      has_nc_his_data_precision = success
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
          call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
@@ -2437,6 +2456,14 @@ contains
             istat = ierror
          end if
       end if
+
+      call notify_recent_default_changes( &
+         has_windhuorzwsbased, jawindhuorzwsbased, &
+         has_barocponbnd, jabarocponbnd, &
+         has_keepstbndonoutflow, keepstbndonoutflow, &
+         has_nc_his_data_precision, md_nc_his_precision, &
+         has_nc_map_data_precision, md_nc_map_precision, &
+         has_circumcenter_method, md_circumcenter_method)
 
       ! calculate derived coefficients taking into account data from MDU file
       call calculate_derived_physcoef()
@@ -4220,6 +4247,149 @@ contains
       end if
 
    end subroutine set_output_time_vector
+
+   ! Insert these new subroutines before validate_density_and_thermobaricity_settings.
+
+   subroutine notify_recent_default_changes( &
+      has_windhuorzwsbased, windhuorzwsbased, &
+      has_barocponbnd, barocponbnd, &
+      has_keepstbndonoutflow, keepstbndonoutflow, &
+      has_nc_his_data_precision, nc_his_data_precision, &
+      has_nc_map_data_precision, nc_map_data_precision, &
+      has_circumcenter_method, circumcenter_method_name)
+
+      use m_flowtimes, only: ti_his, ti_map
+      use m_flow, only: kmx
+
+      logical, intent(in) :: has_windhuorzwsbased
+      logical, intent(in) :: has_barocponbnd
+      logical, intent(in) :: has_keepstbndonoutflow
+      logical, intent(in) :: has_nc_his_data_precision
+      logical, intent(in) :: has_nc_map_data_precision
+      logical, intent(in) :: has_circumcenter_method
+      integer, intent(in) :: windhuorzwsbased
+      integer, intent(in) :: barocponbnd
+      integer, intent(in) :: keepstbndonoutflow
+      character(len=*), intent(in) :: nc_his_data_precision, nc_map_data_precision, circumcenter_method_name
+
+      call notify_default_change('wind', 'windhuorzwsbased', '2026.01', 0, windhuorzwsbased, has_windhuorzwsbased, kmx == 0)
+      call notify_default_change('numerics', 'barocponbnd', '2026.01', 1, barocponbnd, has_barocponbnd, kmx > 0)
+      call notify_default_change('numerics', 'keepstbndonoutflow', '2026.01', 1, keepstbndonoutflow, has_keepstbndonoutflow, kmx > 0)
+
+      call notify_default_change('geometry', 'circumcenterMethod', '2026.02', 'allNetlinksLoop', trim(circumcenter_method_name), has_circumcenter_method, .true.)
+      call notify_default_change('output', 'NcHisDataPrecision', '2026.02', 'single', trim(nc_his_data_precision), has_nc_his_data_precision, ti_his > 0.0_dp)
+      call notify_default_change('output', 'NcMapDataPrecision', '2026.02', 'single', trim(nc_map_data_precision), has_nc_map_data_precision, ti_map > 0.0_dp .and. md_mapformat == IFORMAT_UGRID)
+   end subroutine notify_recent_default_changes
+
+   subroutine notify_default_change_int(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      integer, intent(in) :: new_default, user_value
+      logical, intent(in) :: keyword_is_specified
+      logical, intent(in) :: keyword_is_relevant
+
+      character(len=64) :: new_default_str, user_value_str
+
+      write (new_default_str, '(i0)') new_default
+      write (user_value_str, '(i0)') user_value
+
+      call notify_default_change_impl( &
+         chapter, keyword, release_version, &
+         trim(new_default_str), trim(user_value_str), &
+         keyword_is_specified, keyword_is_relevant, &
+         user_value /= new_default, .false.)
+
+   end subroutine notify_default_change_int
+
+   subroutine notify_default_change_real(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      real(kind=dp), intent(in) :: new_default
+      real(kind=dp), intent(in) :: user_value
+      logical, intent(in) :: keyword_is_specified
+      logical, intent(in) :: keyword_is_relevant
+
+      character(len=64) :: new_default_str, user_value_str
+
+      write (new_default_str, '(g0)') new_default
+      write (user_value_str, '(g0)') user_value
+
+      call notify_default_change_impl( &
+         chapter, keyword, release_version, &
+         trim(new_default_str), trim(user_value_str), &
+         keyword_is_specified, keyword_is_relevant, &
+         comparereal(user_value, new_default) /= 0, .false.)
+
+   end subroutine notify_default_change_real
+
+   subroutine notify_default_change_char(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
+
+      use string_module, only: strcmpi
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      character(len=*), intent(in) :: new_default
+      character(len=*), intent(in) :: user_value
+      logical, intent(in) :: keyword_is_specified
+      logical, intent(in) :: keyword_is_relevant
+
+      call notify_default_change_impl( &
+         chapter, keyword, release_version, &
+         trim(new_default), trim(user_value), &
+         keyword_is_specified, keyword_is_relevant, &
+         .not. strcmpi(trim(user_value), trim(new_default)), .true.)
+
+   end subroutine notify_default_change_char
+
+   subroutine notify_default_change_impl(chapter, keyword, release_version, new_default, user_value, &
+                                         keyword_is_specified, keyword_is_relevant, &
+                                         values_differ, quote_values)
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      character(len=*), intent(in) :: new_default
+      character(len=*), intent(in) :: user_value
+      logical, intent(in) :: keyword_is_specified
+      logical, intent(in) :: keyword_is_relevant
+      logical, intent(in) :: values_differ
+      logical, intent(in) :: quote_values
+
+      character(len=1024) :: default_value_text, user_value_text
+
+      if (.not. keyword_is_relevant) then
+         return
+      end if
+
+      if (quote_values) then
+         default_value_text = '"'//trim(new_default)//'"'
+         user_value_text = '"'//trim(user_value)//'"'
+      else
+         default_value_text = trim(new_default)
+         user_value_text = trim(user_value)
+      end if
+
+      if (.not. keyword_is_specified) then
+         msgbuf = 'Keyword ['//trim(chapter)//'] '//trim(keyword)//' is not specified. Since release '//trim(release_version)// &
+                  ', the default value is '//trim(default_value_text)//'. Results may differ from older releases.'
+         call mess(LEVEL_WARN, trim(msgbuf))
+         return
+      end if
+
+      if (.not. values_differ) then
+         return
+      end if
+
+      msgbuf = 'The default value of ['//trim(chapter)//'] '//trim(keyword)//' changed in release '//trim(release_version)// &
+               ' to '//trim(default_value_text)//'. The current model uses: '//trim(user_value_text)//'. Consider using the new default.'
+      call mess(LEVEL_INFO, trim(msgbuf))
+
+   end subroutine notify_default_change_impl
 
    !> Validate the user input for the density formula
    subroutine validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
