@@ -866,8 +866,7 @@ contains
    end function resolve_mass_balance_area_target
 
    !> Convert a mass-balance area's temporary coverage field to integer area IDs.
-   function finish_mass_balance_area_target(qid, target_array) result(success)
-      use fm_external_forcings_utils, only: split_qid
+   function finish_mass_balance_area_target(qid_base, qid_specific, target_array) result(success)
       use m_find_name, only: find_name
       use m_flowgeom, only: ndxi
       use m_flowtimes, only: ti_mba
@@ -877,20 +876,19 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: qid
+      character(len=*), intent(in) :: qid_base
+      character(len=*), intent(in) :: qid_specific
       real(kind=dp), dimension(:), pointer, intent(inout) :: target_array
       logical :: success
 
-      character(len=256) :: qid_base, qid_specific
       integer :: area_index
       integer :: kk, kb, kt
 
       success = .false.
-      call split_qid(qid, qid_base, qid_specific)
       if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') return
 
       if (ti_mba <= 0.0_dp) then
-         write (msgbuf, '(a)') 'Quantity '''//trim(qid)//''' requires MbaInterval to be specified in the MDU file.'
+         write (msgbuf, '(a)') 'Quantity '''//trim(qid_specific)//''' requires MbaInterval to be specified in the MDU file.'
          call err_flush()
          success = .false.
       else

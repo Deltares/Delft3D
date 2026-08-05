@@ -1181,7 +1181,7 @@ contains
       case ('frictioncoefficient')
          success = set_friction_type_values_explicit(block_ptr, operand)
       case ('massbalancearea', 'waqmassbalancearea')
-         success = finish_mass_balance_area_target(quantity, target_data)
+         success = finish_mass_balance_area_target(quantity_base, quantity_specific, target_data)
       case default
          success = .false.
       end select
