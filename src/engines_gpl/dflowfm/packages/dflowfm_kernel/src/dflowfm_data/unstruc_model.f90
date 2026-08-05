@@ -55,7 +55,7 @@ module unstruc_model
       module procedure notify_default_change_real
       module procedure notify_default_change_char
    end interface
-
+   private :: notify_default_change, notify_recent_default_changes, notify_default_change_int, notify_default_change_real, notify_default_change_char, notify_default_change_impl
 contains
 
 !> Resets current model variables, generally prior to loading a new MDU.
