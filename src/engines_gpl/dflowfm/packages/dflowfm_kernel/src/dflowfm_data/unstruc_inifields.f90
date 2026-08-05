@@ -1764,7 +1764,7 @@ contains
       end do
    end subroutine initialfield2Dto3D_dbl_slice
 
-   !> Parse and apply a WAQ-bottom vertical position using the legacy LAYER convention.
+   !> Parse and apply a WAQ-bottom vertical position by parsing target_layer.
    function apply_waqbot_target_layer(input_array_2d, output_array_3d, target_layer, quantity, operand) result(success)
       use m_flow, only: kmx, kbot, ktop, kmxn
       use m_missing, only: dmiss
@@ -1772,10 +1772,10 @@ contains
       use string_module, only: str_tolower
       use timespace, only: operate
 
-      real(kind=dp), dimension(:), intent(in) :: input_array_2d
-      real(kind=dp), dimension(:), intent(inout) :: output_array_3d
-      character(len=*), intent(in) :: target_layer
-      character(len=*), intent(in) :: quantity
+      real(kind=dp), dimension(:), intent(in) :: input_array_2d !< input array on 2D grid cells
+      real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< target 3D array to be updated
+      character(len=*), intent(in) :: target_layer !< the target layer, should be "kbot", "all", or a positive integer.
+      character(len=*), intent(in) :: quantity !< the quantity name, should be "waqbot", parsed and checked at call site.
       integer, intent(in) :: operand
       logical :: success
 
@@ -1786,7 +1786,7 @@ contains
          layer = -1
       case ('all')
          layer = 0
-      case default
+      case default !> read string as integer
          read (target_layer, *, iostat=read_status) layer
          if (read_status /= 0 .or. layer <= 0) then
             write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''kbot'', ''all'', or a positive layer number.'
