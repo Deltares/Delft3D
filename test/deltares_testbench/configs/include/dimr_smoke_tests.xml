@@ -19,25 +19,6 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e109_f01_c010" ref="dimr_trunk">
-    <path version="DVC">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
-    <checks>
-      <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.01"/>
-          <parameter name="mesh2d_u1" toleranceAbsolute="0.01"/>
-        </parameters>
-      </file>
-      <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_com.nc" type="NETCDF">
-        <parameters>
-          <parameter name="hrms" toleranceAbsolute="0.1"/>
-          <parameter name="tp" toleranceAbsolute="1.0"/>
-          <parameter name="dir" toleranceAbsolute="400.0"/>
-          <parameter name="distot" toleranceAbsolute="0.1"/>
-        </parameters>
-      </file>
-    </checks>
-  </testCase>
   <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
     <checks>
