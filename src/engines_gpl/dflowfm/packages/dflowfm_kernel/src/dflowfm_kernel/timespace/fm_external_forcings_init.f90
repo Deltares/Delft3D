@@ -185,7 +185,7 @@ contains
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_names(i_ext), ''': [', group_name, ']. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(file_names(i_ext)), ''': [', trim(group_name), ']. Ignoring this block.'
                call warn_flush()
             end select
          end do
@@ -408,7 +408,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -417,7 +417,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -428,13 +428,13 @@ contains
          operand = convert_operand_string_to_integer(property_value)
 
          if (len_trim(property_value) == 1) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': operand value '''//trim(property_value)//''' is deprecated. ' &
                //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
 
          if (operand == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
          end if 
