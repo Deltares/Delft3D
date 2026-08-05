@@ -179,6 +179,7 @@
             },
             "required": [
                 "key",
+                "default_value",
                 "value_type",
                 "description"
             ],
