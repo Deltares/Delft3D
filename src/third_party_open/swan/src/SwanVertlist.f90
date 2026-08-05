@@ -54,7 +54,7 @@ subroutine SwanVertlist ( compda )
 !   Modules used
 !
     use ocpcomm4
-    use swcomm2, only: COSWC, SINWC, VARWI
+    use swcomm2, only: COSWC, SINWC, VARWI, IFLDYN
     use swcomm3, only: MCMVAR, JWX2, JWY2, JWX3, JWY3
     use m_genarr
     use m_parall
@@ -76,12 +76,14 @@ subroutine SwanVertlist ( compda )
     integer                           :: itmp       ! temporary stored integer for swapping
     integer                           :: j          ! loop counter over vertices
     integer                           :: k          ! counter
+    integer                           :: ktot       ! global counter
     integer, dimension(1)             :: kd         ! location of minimum value in array dist
     integer                           :: swpdir     ! sweep counter
     !
     real                              :: rtmp       ! temporary stored real for swapping
     real                              :: sdir       ! sweep direction
     real                              :: wdsum      ! total sum of wind direction
+    real                              :: wdsumtot   ! global total sum of wind direction
     real                              :: wx         ! wind velocity in x-direction
     real                              :: wy         ! wind velocity in y-direction
     !
@@ -115,8 +117,12 @@ subroutine SwanVertlist ( compda )
     if ( .not. asort > -999. ) then
 !      if asort still does not have a value, try space-varying wind and take the mean of wind direction
        if ( VARWI ) then
-!         retrieve current wind field
-          if ( NSTATM == 1 ) call FLFILE ( 5, 6, WXI, WYI, 0, JWX2, JWX3, 0, JWY2, JWY3, COSWC, SINWC, compda, XCGRID, YCGRID, KGRPNT, ierr )
+!         retrieve current wind field if the wind input is dynamic;
+!         stationary wind has already been read into compda
+          if ( NSTATM == 1 .and. IFLDYN(5) == 1 ) call FLFILE ( 5, 6, WXI, WYI, 0, JWX2, JWX3, &
+                                                                 0, JWY2, JWY3, COSWC, SINWC,  &
+                                                                 compda, XCGRID, YCGRID,       &
+                                                                 KGRPNT, ierr )
           k     = 0
           wdsum = 0.
           do j = 1, nverts
@@ -130,9 +136,16 @@ subroutine SwanVertlist ( compda )
                 endif
              endif
           enddo
-          asort = wdsum / real(k)
-          call SWREDUCE( asort, 1, SWREAL, SWSUM )
-          asort = asort / real(NPROC)
+          ktot     = k
+          wdsumtot = wdsum
+          call SWREDUCE( ktot    , 1, SWINT , SWSUM )
+          call SWREDUCE( wdsumtot, 1, SWREAL, SWSUM )
+          if ( ktot > 0 ) then
+             asort = wdsumtot / real(ktot)
+          else
+!            final attempt: set sweep direction to zero
+             asort = 0.
+          endif
        else
 !         final attempt: set sweep direction to zero
           asort = 0.

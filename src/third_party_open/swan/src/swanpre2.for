@@ -2500,7 +2500,7 @@
       USE SwanGriddata                                                    40.80
       USE SwanGridobjects                                                 40.80
       USE SwanCompdata                                                    40.80
-!METIS      USE SwanParallel                                                    43.01
+      USE SwanParallel                                                    43.01
 !
       IMPLICIT NONE                                                       43.01
 !
@@ -2614,7 +2614,6 @@
 
       LOGICAL   KEYWIS, LOCGRI, CCW, BPARF, BOUNPT, DONALL
       LOGICAL   LFRST1, LFRST2, LFRST3                                    40.31
-      LOGICAL, SAVE :: BNDDONE = .FALSE.                                  43.01
       LOGICAL   SwanPointinMesh                                           43.01
 
       INTEGER   NUMP
@@ -2718,11 +2717,11 @@
 !
             CALL SwanBpntlist                                             40.80
             IF (STPNOW()) RETURN                                          41.39
-!METIS!
-!METIS!           next, gather the lists of boundary points to all processes    43.01
-!METIS!
-!METIS            CALL SwanCollBpntlist                                         43.01
-!METIS            IF (STPNOW()) RETURN                                          43.01
+!
+!           next, gather the lists of boundary points to all processes    43.01
+!
+            CALL SwanCollBpntlist                                         43.01
+            IF (STPNOW()) RETURN                                          43.01
 !
             IF (ITEST.GE.50.AND.IAMMASTER) THEN                           43.01
                NB = SIZE(blist,1)                                         43.01
@@ -2777,7 +2776,6 @@
                   ENDIF                                                   43.01
                ENDDO                                                      43.01
             ENDIF                                                         43.01
-!
          ELSE                                                             41.14
 !
 !           generate output curves BOUNDARY and BOUND_** for structured grids
@@ -3126,12 +3124,14 @@
      &                                ') not part of computational grid'  40.80
                     CALL MSGERR( 2, TRIM(MSGSTR) )                        40.80
                  ENDIF                                                    40.80
-                 IF ( IX2.GT.0 .AND. vert(IX2)%atti(VMARKER) /= 1 ) THEN  43.01 40.80
-                    WRITE (MSGSTR, '(A,F12.4,A,F12.4,A)')                 40.80
+                  IF ( IX2.GT.0 ) THEN                                     43.01
+                     IF ( vert(IX2)%atti(VMARKER) /= 1 ) THEN              43.01 40.80
+                        WRITE (MSGSTR, '(A,F12.4,A,F12.4,A)')              40.80
      &                                ' Vertex (',XP+XOFFS,',',YP+YOFFS,  40.80
      &                                 ') is not a valid boundary point'  40.80
-                    CALL MSGERR( 2, TRIM(MSGSTR) )                        40.80
-                 ENDIF                                                    40.80
+                        CALL MSGERR( 2, TRIM(MSGSTR) )                     40.80
+                     ENDIF                                                 40.80
+                  ENDIF                                                    40.80
               ENDIF                                                       40.80
             ELSE
               IF (OPTG.NE.5) THEN                                         40.80
@@ -3155,11 +3155,13 @@
                  ELSE                                                     43.01
                     IX2 = IXG2                                            43.01
                  ENDIF                                                    43.01
-                 IF ( IX2.GT.0 .AND. vert(IX2)%atti(VMARKER) /= 1 ) THEN  43.01 40.80
-                   WRITE (MSGSTR,'(A,I4,A)') ' Vertex with index ',IXG2,  43.01 40.80
-     &                                  ' is not a valid boundary point'  40.80
-                   CALL MSGERR( 2, TRIM(MSGSTR) )                         40.80
-                 ENDIF                                                    40.80
+                  IF ( IX2.GT.0 ) THEN                                     43.01
+                     IF ( vert(IX2)%atti(VMARKER) /= 1 ) THEN              43.01 40.80
+                       WRITE (MSGSTR,'(A,I4,A)') ' Vertex with index ',  43.01 40.80
+     &                           IXG2, ' is not a valid boundary point' 40.80
+                       CALL MSGERR( 2, TRIM(MSGSTR) )                      40.80
+                     ENDIF                                                 40.80
+                  ENDIF                                                    40.80
               ENDIF                                                       40.80
             ENDIF
             IF (ITEST.GE.80 .AND. OPTG.NE.5) WRITE (PRTEST, 38)           40.00

@@ -65,6 +65,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_laterals, only: numlatsg
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
+   use m_flowparameters, only: jawavewarnmissingdata
    use m_waveconst
    use m_alloc, only: realloc
 
@@ -214,7 +215,7 @@ contains
                zcgen(i * 4 + 4) = merge(zcgen_legacy_kx3(i * 3 + 3), zcgen(i * 4 + 4), zcgen_legacy_kx3(i * 3 + 3) /= dmiss)
             end do
          else
-            call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
+         call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
          end if
 
          call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
@@ -568,8 +569,9 @@ contains
    subroutine set_wave_parameters(initialization)
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_flowparameters, only: jawavewarnmissingdata
       use unstruc_messages, only: callback_msg
-      use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush, err_flush
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_WARN, msgbuf, warn_flush, err_flush
 
       logical, intent(in) :: initialization !< initialization phase
 
@@ -611,7 +613,11 @@ contains
                   ! - Just try it the next timestep again
                   ! - success must be set to .true., otherwise the calculation is aborted
                   !
+                  if (jawavewarnmissingdata /= 0) then
                   message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+                  else
+                     message = dump_ec_message_stack(LEVEL_DEBUG, callback_msg)
+                  end if
                   success = .true.
                end if
             end if

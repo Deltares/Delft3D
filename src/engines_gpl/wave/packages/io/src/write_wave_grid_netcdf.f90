@@ -102,7 +102,13 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     ! Cartesian:
     !
     !
-    if (sg%sferic) then
+    if (sg%unstructured) then
+       ncell = sg%ncell
+       nnode = sg%mmax
+       allocate (grid_corner(2,nnode), STAT=ierror)
+       allocate ( elemconn  (3,ncell), STAT=ierror)
+       allocate (nelemconn  (ncell)  , STAT=ierror)
+    elseif (sg%sferic) then
        ncell = sg%mmax * sg%nmax
        nnode = (sg%mmax+1) * (sg%nmax+1)
        allocate(ncellarray  (ncell)  , stat=ierror)
@@ -120,7 +126,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        allocate ( elemconn  (4,ncell), STAT=ierror)
        allocate (nelemconn  (ncell)  , STAT=ierror)
     endif
-    if (sg%sferic) then
+    if (sg%sferic .and. .not.sg%unstructured) then
        !
        ! Create shifted grid, having the SWAN grid points as cell centres
        !
@@ -313,14 +319,14 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     ierror = nf90_put_att(idfile, nf90_global,  'history', &
            'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
            ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename)
-    if (.not.sg%sferic) then
+    if (.not.sg%sferic .or. sg%unstructured) then
        ierror = nf90_put_att(idfile, nf90_global,  'gridType', 'unstructured'); call nc_check_err(ierror, "put_att global gridType", filename)
        ierror = nf90_put_att(idfile, nf90_global,  'version', '0.9'); call nc_check_err(ierror, "put_att global version", filename)
     endif
     !
     ! dimensions
     !
-    if (sg%sferic) then
+    if (sg%sferic .and. .not.sg%unstructured) then
        ! SCRIP format
        ierror = nf90_def_dim(idfile, 'grid_size', ncell, iddim_ncell); call nc_check_err(ierror, "def_dim grid_size", filename)
        ierror = nf90_def_dim(idfile, 'grid_corners', 4, iddim_corners); call nc_check_err(ierror, "def_dim grid_corners", filename)
@@ -329,13 +335,17 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        ! ESMFgrid format
        ierror = nf90_def_dim(idfile, 'elementCount', ncell, iddim_ncell); call nc_check_err(ierror, "def_dim elementCount", filename)
        ierror = nf90_def_dim(idfile, 'nodeCount', nnode, iddim_corners); call nc_check_err(ierror, "def_dim nodeCount", filename)
-       ierror = nf90_def_dim(idfile, 'maxNodePElement', 4, iddim_nemax); call nc_check_err(ierror, "def_dim maxNodePElement", filename)
+       if (sg%unstructured) then
+          ierror = nf90_def_dim(idfile, 'maxNodePElement', 3, iddim_nemax); call nc_check_err(ierror, "def_dim maxNodePElement", filename)
+       else
+          ierror = nf90_def_dim(idfile, 'maxNodePElement', 4, iddim_nemax); call nc_check_err(ierror, "def_dim maxNodePElement", filename)
+       endif
        ierror = nf90_def_dim(idfile, 'coordDim', 2, iddim_rank); call nc_check_err(ierror, "def_dim coordDim", filename)
     endif
     !
     ! define vars
     !
-    if (sg%sferic) then
+    if (sg%sferic .and. .not.sg%unstructured) then
        idvar_griddims = nc_def_var(idfile, 'grid_dims'       , nf90_int   , 1, (/iddim_rank/), '', '', '', .false., filename)
        idvar_y        = nc_def_var(idfile, 'grid_center_lat' , nf90_double, 1, (/iddim_ncell/), '', '', "degrees", .false., filename)
        idvar_x        = nc_def_var(idfile, 'grid_center_lon' , nf90_double, 1, (/iddim_ncell/), '', '', "degrees", .false., filename)
@@ -346,7 +356,11 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        idvar_mask     = nc_def_var(idfile, 'grid_imask' , nf90_double, 1, (/iddim_ncell/), '', '', '', .false., filename)
        ! ierror         = nf90_def_var_fill(idfile, idvar_mask,  0, -9999); call nc_check_err(ierror, "put_att _FillValue", trim(filename))
     else
-       idvar_coords   = nc_def_var(idfile, 'nodeCoords'    , nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename)
+       if (sg%sferic) then
+          idvar_coords = nc_def_var(idfile, 'nodeCoords', nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "degrees", .false., filename)
+       else
+          idvar_coords = nc_def_var(idfile, 'nodeCoords', nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename)
+       endif
        idvar_eConn    = nc_def_var(idfile, 'elementConn'   , nf90_int   , 2, (/iddim_nemax,iddim_ncell/)  , '', 'Node Indices that define the element connectivity', '', .false., filename)
        ierror         = nf90_put_att(idfile, idvar_eConn,  '_FillValue', -1); call nc_check_err(ierror, "put_att elementConn fillVal", filename)
        idvar_neConn   = nc_def_var(idfile, 'numElementConn', nf90_int  , 1, (/iddim_ncell/)              , '', 'Number of nodes per element', '', .false., filename)
@@ -356,7 +370,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     !
     ! put vars
     !
-    if (sg%sferic) then
+    if (sg%sferic .and. .not.sg%unstructured) then
        !
        ! ESMF sferic:
        ! Write x,y to destination.nc
@@ -405,7 +419,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        ierror = nf90_put_var(idfile, idvar_mask, ncellarray  , start=(/1/), count=(/ncell/)); call nc_check_err(ierror, "put_var imask", filename)
     else
        !
-       ! ESMF Cartesian:
+       ! ESMF mesh: SWAN values are carried at the mesh corner/node locations.
        !
        grid_corner = -999.0_hp
        do i=1, sg%mmax
@@ -416,26 +430,32 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
           enddo
        enddo
        ierror = nf90_put_var(idfile, idvar_coords, grid_corner, start=(/1,1/), count=(/2,nnode/));   call nc_check_err(ierror, "put_var nodeCoords", filename)
-       do i=1, sg%mmax - 1
-          do j=1, sg%nmax - 1
-             ! Counter-clockwise!
-             ! cell i,j consists of the 4 nodes i,j   i+1,j    i+1,j+1    i,j+1
-             !
-             ij = (j-1)*(sg%mmax-1) + i
-             elemconn(1,ij) = (j-1)*sg%mmax + i
-             elemconn(2,ij) = (j-1)*sg%mmax + i+1
-             elemconn(3,ij) = (j  )*sg%mmax + i+1
-             elemconn(4,ij) = (j  )*sg%mmax + i
+       if (sg%unstructured) then
+          elemconn = sg%kvertc
+          ierror = nf90_put_var(idfile, idvar_eConn , elemconn , start=(/1,1/), count=(/3,ncell/)); call nc_check_err(ierror, "put_var elementConn", filename)
+          nelemconn = 3
+       else
+          do i=1, sg%mmax - 1
+             do j=1, sg%nmax - 1
+                ! Counter-clockwise!
+                ! cell i,j consists of the 4 nodes i,j   i+1,j    i+1,j+1    i,j+1
+                !
+                ij = (j-1)*(sg%mmax-1) + i
+                elemconn(1,ij) = (j-1)*sg%mmax + i
+                elemconn(2,ij) = (j-1)*sg%mmax + i+1
+                elemconn(3,ij) = (j  )*sg%mmax + i+1
+                elemconn(4,ij) = (j  )*sg%mmax + i
+             enddo
           enddo
-       enddo
-       ierror = nf90_put_var(idfile, idvar_eConn , elemconn , start=(/1,1/), count=(/4,ncell/)); call nc_check_err(ierror, "put_var elementConn", filename)
-       nelemconn = 4
+          ierror = nf90_put_var(idfile, idvar_eConn , elemconn , start=(/1,1/), count=(/4,ncell/)); call nc_check_err(ierror, "put_var elementConn", filename)
+          nelemconn = 4
+       endif
        ierror = nf90_put_var(idfile, idvar_neConn , nelemconn , start=(/1,1/), count=(/ncell/)); call nc_check_err(ierror, "put_var numElementConn", filename)
     endif
     !
     ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename)
     !
-    if (sg%sferic) then
+    if (sg%sferic .and. .not.sg%unstructured) then
        deallocate(gridcor   , stat=ierror)
        deallocate(ncellarray, stat=ierror)
     else
@@ -443,6 +463,6 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        deallocate (  nelemconn, STAT=ierror)
        deallocate (grid_corner, STAT=ierror)
     endif
-    deallocate(xshift    , stat=ierror)
-    deallocate(yshift    , stat=ierror)
+    if (allocated(xshift)) deallocate(xshift, stat=ierror)
+    if (allocated(yshift)) deallocate(yshift, stat=ierror)
 end subroutine write_wave_grid_netcdf

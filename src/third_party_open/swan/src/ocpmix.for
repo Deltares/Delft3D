@@ -650,11 +650,11 @@
 !     HEDLIN : Content of a header line
 !     KEYWIS : ??
 !
-      LOGICAL   KEYWIS, BNEW
+      LOGICAL   KEYWIS, BNEW, LOPEN
 !
 !     OLDFIL : ??
 !
-      CHARACTER HEDLIN*80, OLDFIL *36
+      CHARACTER HEDLIN*80, OLDFIL *36, CURNAM*256
 !                                                                         30.82
 !  8. SUBROUTINE USED
 !
@@ -696,6 +696,18 @@
         OLDFIL = FILENM
       ELSE
         BNEW = .FALSE.
+        CURNAM = ' '
+        INQUIRE (UNIT=NDSD, OPENED=LOPEN, NAME=CURNAM)
+        IF (.NOT.LOPEN .OR.
+     &      INDEX(CURNAM, TRIM(FILENM)).EQ.0) THEN
+          BNEW = .TRUE.
+          NDSD = 0
+          IDLA = 1
+          IDFM = 0
+          RFORM = ' '
+          NHEDF = 0
+          OLDFIL = FILENM
+        ENDIF
       ENDIF
 !
       CALL INKEYW ('STA', ' ')

@@ -75,6 +75,11 @@ if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
 
+# metis
+if(NOT TARGET metis)
+    add_subdirectory(${checkout_src_root}/${metis_module} metis)
+endif()
+
 # kdtree2
 if(NOT TARGET kdtree2)
     add_subdirectory(${checkout_src_root}/${kdtree_module} kdtree2)

@@ -7905,6 +7905,8 @@ contains
             end if
          end if
 
+         idims = [id_flowelemdim(iid), id_timedim(iid)]
+
          if (map_write_settings%wind > 0 .and. air_pressure_available) then
             call definencvar(imapfile, id_air_pressure(iid), nf90_double, idims, 'Patm', 'Atmospheric Pressure', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
          end if
@@ -16435,7 +16437,11 @@ contains
          add_gridmapping_ = .false.
       end if
 
-      call check_netcdf_error(nf90_def_var(ncid, name, itype, idims, idq))
+      ierr = nf90_def_var(ncid, name, itype, idims, idq)
+      call check_netcdf_error(ierr)
+      if (ierr /= nf90_noerr) then
+         return
+      end if
       if (present(namecoord)) then
          call check_netcdf_error(nf90_put_att(ncid, idq, 'coordinates', namecoord))
       end if

@@ -15,4 +15,6 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/morphology)
 
-add_subdirectory(test)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()

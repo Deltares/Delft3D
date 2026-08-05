@@ -428,7 +428,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          hwavcom(kb) = hwavcom(ki)
-         twav(kb) = twav(ki)
+         twavcom(kb) = twavcom(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
          sxwav(kb) = sxwav(ki)
@@ -466,7 +466,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          hwavcom(kb) = hwavcom(ki)
-         twav(kb) = twav(ki)
+         twavcom(kb) = twavcom(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
          sxwav(kb) = sxwav(ki)
@@ -542,15 +542,14 @@ contains
          if (len(trim(extfile_new_list(i_ext))) > 0) then
             inquire (file=trim(extfile_new_list(i_ext)), exist=jawel)
 
-            if (jawel) then
-               ext_force_bnd_used = .true.
-            else
+         if (jawel) then
+            ext_force_bnd_used = .true.
+         else
                call qnerror('External forcing file '''//trim(extfile_new_list(i_ext))//''' not found.', '  ', ' ')
                write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(extfile_new_list(i_ext)), ''' not found.'
-               call err_flush()
-            end if
-
+            call err_flush()
          end if
+      end if
       end do
 
       if (allocated(xe)) then
@@ -683,7 +682,7 @@ contains
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          do i_ext = 1, size(extfile_new_list)
             call read_location_files_from_boundary_blocks(trim(extfile_new_list(i_ext)), nx, kce, num_bc_ini_blocks, &
-               numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
 
             call read_initialtracer_properties(trim(extfile_new_list(i_ext)), nx)
          end do
@@ -1846,7 +1845,6 @@ contains
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
-
       integer :: iresult
 
       call setup(iresult)
@@ -2633,9 +2631,9 @@ contains
       ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
       ! capacity, while is_source_sink_bubblescreen is sized to num_total.
       if (allocated(source_sinks%is_normal)) then
-          source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
-          source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
-          source_sinks%num_normal = count(source_sinks%is_normal)
+         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+         source_sinks%num_normal = count(source_sinks%is_normal)
       end if
 
       call fill_geometry_source_sinks()

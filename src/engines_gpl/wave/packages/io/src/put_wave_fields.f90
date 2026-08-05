@@ -757,6 +757,7 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     integer                                     :: mmax_read
     integer                                     :: precision
     integer, external                           :: nc_def_var
+    logical                                     :: define_vars
     real(hp), dimension(1)                      :: time_read
     character(50)                               :: string
     character(256)                              :: filename
@@ -790,6 +791,7 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     ierror = nf90_inq_dimid(idfile, 'nFlowElemWithBnd', iddim_n); call nc_check_err(ierror, "inq_dimid nFlowElemWithBnd", filename)
     ierror = nf90_inq_dimid(idfile, 'time' , iddim_time); call nc_check_err(ierror, "inq_dimid time", filename)
     ierror = nf90_inq_varid(idfile, 'time' , idvar_time   ); call nc_check_err(ierror, "inq_varid time   ", filename)
+    define_vars = .false.
     if (localcomcount == 0) then
        localcomcount = 1
        !
@@ -802,58 +804,56 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
           call wavestop(1, "ERROR: dimension on com-file is not the same as the dimension to write")
        endif
        !
-       ierror = nf90_redef(idfile); call nc_check_err(ierror, "redef file", filename)
-       !
-       ! define vars
-       !
-       if (fg%sferic) then
-          string = 'deg'
+       ! A previous aborted run may already have added the WAVE variables while
+       ! the in-memory comcount is still zero. Reuse those variables instead of
+       ! trying to define them again for every partition COM file.
+       ierror = nf90_inq_varid(idfile, 'hrms', idvar_hrms)
+       if (ierror == nf90_noerr) then
+          call inq_wave_varids()
+       elseif (ierror == nf90_enotvar) then
+          define_vars = .true.
        else
-          string = 'm'
+          call nc_check_err(ierror, "inq_varid hrms", filename)
        endif
-       ! name, type, dims, standardname, longname, unit, xycoordinates
-       idvar_x       = nc_def_var(idfile, 'x'       , nf90_double, 1, (/iddim_n/), '', 'x coordinate output grid', trim(string), .false., filename)
-       idvar_y       = nc_def_var(idfile, 'y'       , nf90_double, 1, (/iddim_n/), '', 'y coordinate output grid', trim(string), .false., filename)
-       idvar_hrms    = nc_def_var(idfile, 'hrms'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Root mean square wave height'                               , 'm'         , .true., filename)
-       idvar_tp      = nc_def_var(idfile, 'tp'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Peak wave period'                                           , 's'         , .true., filename)
-       idvar_dir     = nc_def_var(idfile, 'dir'    , precision  , 2, (/iddim_n, iddim_time/), '', 'Mean direction of wave propagation relative to ksi-dir. ccw', 'deg'       , .true., filename)
-       idvar_distot  = nc_def_var(idfile, 'distot' , precision  , 2, (/iddim_n, iddim_time/), '', 'Total wave energy dissipation rate'                         , 'w m-2'     , .true., filename)
-       idvar_dissurf = nc_def_var(idfile, 'dissurf', precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate at the free surface'           , 'w m-2'     , .true., filename)
-       idvar_diswcap = nc_def_var(idfile, 'diswcap', precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate due to white capping'          , 'w m-2'     , .true., filename)
-       idvar_disbot  = nc_def_var(idfile, 'disbot' , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate at the bedlevel'               , 'w m-2'     , .true., filename)
-       idvar_fx      = nc_def_var(idfile, 'fx'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term at the free surface in x-direction'       , 'n m-2'     , .true., filename)
-       idvar_fy      = nc_def_var(idfile, 'fy'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term at the free surface in y-direction'       , 'n m-2'     , .true., filename)
-       idvar_wsbu    = nc_def_var(idfile, 'wsbu'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term in water body in x-direction'             , 'n m-2'     , .true., filename)
-       idvar_wsbv    = nc_def_var(idfile, 'wsbv'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term in water body in y-direction'             , 'n m-2'     , .true., filename)
-       idvar_mx      = nc_def_var(idfile, 'mx'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave-induced volume flux in x-direction'                    , 'm3 s-1 m-1', .true., filename)
-       idvar_my      = nc_def_var(idfile, 'my'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave-induced volume flux in y-direction'                    , 'm3 s-1 m-1', .true., filename)
-       idvar_tps     = nc_def_var(idfile, 'tps'    , precision  , 2, (/iddim_n, iddim_time/), '', 'Smoothed peak period'                                       , 's'         , .true., filename)
-       idvar_ubot    = nc_def_var(idfile, 'ubot'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Orbital motion near the bottom'                             , 'm s-1'     , .true., filename)
-       idvar_wlen    = nc_def_var(idfile, 'wlen'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Mean wave length'                                           , 'm'         , .true., filename)
-       !
-       ierror = nf90_enddef(idfile); call nc_check_err(ierror, "enddef", filename)
-       !
-       ! put vars (time independent)
-       !
-       ierror = nf90_put_var(idfile, idvar_x  , fg%x  , start=(/ 1 /), count = (/ mmax /)); call nc_check_err(ierror, "put_var x", filename)
-       ierror = nf90_put_var(idfile, idvar_y  , fg%y  , start=(/ 1 /), count = (/ mmax /)); call nc_check_err(ierror, "put_var y", filename)
+       if (define_vars) then
+          ierror = nf90_redef(idfile); call nc_check_err(ierror, "redef file", filename)
+          !
+          ! define vars
+          !
+          if (fg%sferic) then
+             string = 'deg'
+          else
+             string = 'm'
+          endif
+          ! name, type, dims, standardname, longname, unit, xycoordinates
+          idvar_x       = nc_def_var(idfile, 'x'       , nf90_double, 1, (/iddim_n/), '', 'x coordinate output grid', trim(string), .false., filename)
+          idvar_y       = nc_def_var(idfile, 'y'       , nf90_double, 1, (/iddim_n/), '', 'y coordinate output grid', trim(string), .false., filename)
+          idvar_hrms    = nc_def_var(idfile, 'hrms'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Root mean square wave height'                               , 'm'         , .true., filename)
+          idvar_tp      = nc_def_var(idfile, 'tp'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Peak wave period'                                           , 's'         , .true., filename)
+          idvar_dir     = nc_def_var(idfile, 'dir'    , precision  , 2, (/iddim_n, iddim_time/), '', 'Mean direction of wave propagation relative to ksi-dir. ccw', 'deg'       , .true., filename)
+          idvar_distot  = nc_def_var(idfile, 'distot' , precision  , 2, (/iddim_n, iddim_time/), '', 'Total wave energy dissipation rate'                         , 'w m-2'     , .true., filename)
+          idvar_dissurf = nc_def_var(idfile, 'dissurf', precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate at the free surface'           , 'w m-2'     , .true., filename)
+          idvar_diswcap = nc_def_var(idfile, 'diswcap', precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate due to white capping'          , 'w m-2'     , .true., filename)
+          idvar_disbot  = nc_def_var(idfile, 'disbot' , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate at the bedlevel'               , 'w m-2'     , .true., filename)
+          idvar_fx      = nc_def_var(idfile, 'fx'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term at the free surface in x-direction'       , 'n m-2'     , .true., filename)
+          idvar_fy      = nc_def_var(idfile, 'fy'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term at the free surface in y-direction'       , 'n m-2'     , .true., filename)
+          idvar_wsbu    = nc_def_var(idfile, 'wsbu'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term in water body in x-direction'             , 'n m-2'     , .true., filename)
+          idvar_wsbv    = nc_def_var(idfile, 'wsbv'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term in water body in y-direction'             , 'n m-2'     , .true., filename)
+          idvar_mx      = nc_def_var(idfile, 'mx'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave-induced volume flux in x-direction'                    , 'm3 s-1 m-1', .true., filename)
+          idvar_my      = nc_def_var(idfile, 'my'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave-induced volume flux in y-direction'                    , 'm3 s-1 m-1', .true., filename)
+          idvar_tps     = nc_def_var(idfile, 'tps'    , precision  , 2, (/iddim_n, iddim_time/), '', 'Smoothed peak period'                                       , 's'         , .true., filename)
+          idvar_ubot    = nc_def_var(idfile, 'ubot'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Orbital motion near the bottom'                             , 'm s-1'     , .true., filename)
+          idvar_wlen    = nc_def_var(idfile, 'wlen'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Mean wave length'                                           , 'm'         , .true., filename)
+          !
+          ierror = nf90_enddef(idfile); call nc_check_err(ierror, "enddef", filename)
+          !
+          ! put vars (time independent)
+          !
+          ierror = nf90_put_var(idfile, idvar_x  , fg%x  , start=(/ 1 /), count = (/ mmax /)); call nc_check_err(ierror, "put_var x", filename)
+          ierror = nf90_put_var(idfile, idvar_y  , fg%y  , start=(/ 1 /), count = (/ mmax /)); call nc_check_err(ierror, "put_var y", filename)
+       endif
     else
-       ierror = nf90_inq_varid(idfile, 'hrms'   , idvar_hrms   ); call nc_check_err(ierror, "inq_varid hrms   ", filename)
-       ierror = nf90_inq_varid(idfile, 'tp'     , idvar_tp     ); call nc_check_err(ierror, "inq_varid tp     ", filename)
-       ierror = nf90_inq_varid(idfile, 'dir'    , idvar_dir    ); call nc_check_err(ierror, "inq_varid dir    ", filename)
-       ierror = nf90_inq_varid(idfile, 'distot' , idvar_distot ); call nc_check_err(ierror, "inq_varid distot ", filename)
-       ierror = nf90_inq_varid(idfile, 'dissurf', idvar_dissurf); call nc_check_err(ierror, "inq_varid dissurf", filename)
-       ierror = nf90_inq_varid(idfile, 'diswcap', idvar_diswcap); call nc_check_err(ierror, "inq_varid diswcap", filename)
-       ierror = nf90_inq_varid(idfile, 'disbot' , idvar_disbot ); call nc_check_err(ierror, "inq_varid disbot ", filename)
-       ierror = nf90_inq_varid(idfile, 'fx'     , idvar_fx     ); call nc_check_err(ierror, "inq_varid fx     ", filename)
-       ierror = nf90_inq_varid(idfile, 'fy'     , idvar_fy     ); call nc_check_err(ierror, "inq_varid fy     ", filename)
-       ierror = nf90_inq_varid(idfile, 'wsbu'   , idvar_wsbu   ); call nc_check_err(ierror, "inq_varid wsbu   ", filename)
-       ierror = nf90_inq_varid(idfile, 'wsbv'   , idvar_wsbv   ); call nc_check_err(ierror, "inq_varid wsbv   ", filename)
-       ierror = nf90_inq_varid(idfile, 'mx'     , idvar_mx     ); call nc_check_err(ierror, "inq_varid mx     ", filename)
-       ierror = nf90_inq_varid(idfile, 'my'     , idvar_my     ); call nc_check_err(ierror, "inq_varid my     ", filename)
-       ierror = nf90_inq_varid(idfile, 'tps'    , idvar_tps    ); call nc_check_err(ierror, "inq_varid tps    ", filename)
-       ierror = nf90_inq_varid(idfile, 'ubot'   , idvar_ubot   ); call nc_check_err(ierror, "inq_varid ubot   ", filename)
-       ierror = nf90_inq_varid(idfile, 'wlen'   , idvar_wlen   ); call nc_check_err(ierror, "inq_varid wlen   ", filename)
+       call inq_wave_varids()
     endif
     ierror = nf90_get_var(idfile, idvar_time , time_read        , start=(/ localcomcount /)   , count=(/ 1 /))
     if (localcomcount == 1) then
@@ -884,4 +884,26 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     ierror = nf90_put_var(idfile, idvar_wlen   , wlen           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var wlen   ", filename)
     !
     ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename)
+
+contains
+
+    subroutine inq_wave_varids()
+       ierror = nf90_inq_varid(idfile, 'hrms'   , idvar_hrms   ); call nc_check_err(ierror, "inq_varid hrms   ", filename)
+       ierror = nf90_inq_varid(idfile, 'tp'     , idvar_tp     ); call nc_check_err(ierror, "inq_varid tp     ", filename)
+       ierror = nf90_inq_varid(idfile, 'dir'    , idvar_dir    ); call nc_check_err(ierror, "inq_varid dir    ", filename)
+       ierror = nf90_inq_varid(idfile, 'distot' , idvar_distot ); call nc_check_err(ierror, "inq_varid distot ", filename)
+       ierror = nf90_inq_varid(idfile, 'dissurf', idvar_dissurf); call nc_check_err(ierror, "inq_varid dissurf", filename)
+       ierror = nf90_inq_varid(idfile, 'diswcap', idvar_diswcap); call nc_check_err(ierror, "inq_varid diswcap", filename)
+       ierror = nf90_inq_varid(idfile, 'disbot' , idvar_disbot ); call nc_check_err(ierror, "inq_varid disbot ", filename)
+       ierror = nf90_inq_varid(idfile, 'fx'     , idvar_fx     ); call nc_check_err(ierror, "inq_varid fx     ", filename)
+       ierror = nf90_inq_varid(idfile, 'fy'     , idvar_fy     ); call nc_check_err(ierror, "inq_varid fy     ", filename)
+       ierror = nf90_inq_varid(idfile, 'wsbu'   , idvar_wsbu   ); call nc_check_err(ierror, "inq_varid wsbu   ", filename)
+       ierror = nf90_inq_varid(idfile, 'wsbv'   , idvar_wsbv   ); call nc_check_err(ierror, "inq_varid wsbv   ", filename)
+       ierror = nf90_inq_varid(idfile, 'mx'     , idvar_mx     ); call nc_check_err(ierror, "inq_varid mx     ", filename)
+       ierror = nf90_inq_varid(idfile, 'my'     , idvar_my     ); call nc_check_err(ierror, "inq_varid my     ", filename)
+       ierror = nf90_inq_varid(idfile, 'tps'    , idvar_tps    ); call nc_check_err(ierror, "inq_varid tps    ", filename)
+       ierror = nf90_inq_varid(idfile, 'ubot'   , idvar_ubot   ); call nc_check_err(ierror, "inq_varid ubot   ", filename)
+       ierror = nf90_inq_varid(idfile, 'wlen'   , idvar_wlen   ); call nc_check_err(ierror, "inq_varid wlen   ", filename)
+    end subroutine inq_wave_varids
+
 end subroutine crewav_netcdf

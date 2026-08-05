@@ -44,6 +44,7 @@ module swan_flow_grid_maps
       integer :: msurpnts ! minimum number of surrounding valid source-points for a target-point to be covered.
       ! = 3: (default)
       ! = 4: when comparing to Delft3D
+      integer :: provider_index ! domain index used to mark covered receiver points
       integer :: npts_provider ! number of points provider grid
       integer :: npts_receiver ! number of points receiver grid
       integer, dimension(:, :), pointer :: ref_table ! reference table from client grid point
@@ -65,20 +66,26 @@ module swan_flow_grid_maps
       integer :: nmax ! number of rows
       integer :: kmax ! number of layers
       integer :: npts ! number of points
+      integer :: ncell ! number of cells
+      integer :: unstructured_grid_generator ! 1: Triangle, 2: Easymesh
       integer :: numenclpts ! total number of enclosure points
       integer :: numenclparts ! number of parts of grid enclosure (exteriors+interior rings)
-      integer, dimension(:, :), pointer :: kcs ! mask-array inactive points
-      integer, dimension(:, :), pointer :: covered ! mask-array points covered by "other" program
-      integer, dimension(:), pointer :: numenclptsppart ! number of enclosure points per enclosure part
+      integer, dimension(:, :), pointer :: kcs => null() ! mask-array inactive points
+      integer, dimension(:, :), pointer :: covered => null() ! mask-array points covered by "other" program
+      integer, dimension(:), pointer :: numenclptsppart => null() ! number of enclosure points per enclosure part
+      integer, dimension(:, :), pointer :: kvertc => null() ! unstructured cell-to-vertex connectivity
+      integer, dimension(:), pointer :: vmark => null() ! unstructured vertex boundary markers
       real(kind=hp) :: xymiss ! missing value
-      real(kind=hp), dimension(:, :), pointer :: x ! x-coordinates cell center
-      real(kind=hp), dimension(:, :), pointer :: y ! y-coordinates cell center
-      real(kind=hp), dimension(:), pointer :: bndx ! x-coordinates boundary link corners
-      real(kind=hp), dimension(:), pointer :: bndy ! y-coordinates boundary link corners
-      real, dimension(:, :), pointer :: alfas ! grid direction cell center
-      real, dimension(:, :), pointer :: guu ! grid size u-cell wall
-      real, dimension(:, :), pointer :: gvv ! grid size v-cell wall
+      real(kind=hp), dimension(:, :), pointer :: x => null() ! x-coordinates cell center
+      real(kind=hp), dimension(:, :), pointer :: y => null() ! y-coordinates cell center
+      real(kind=hp), dimension(:), pointer :: bndx => null() ! x-coordinates boundary link corners
+      real(kind=hp), dimension(:), pointer :: bndy => null() ! y-coordinates boundary link corners
+      real, dimension(:, :), pointer :: alfas => null() ! grid direction cell center
+      real, dimension(:, :), pointer :: guu => null() ! grid size u-cell wall
+      real, dimension(:, :), pointer :: gvv => null() ! grid size v-cell wall
+      logical :: esmf_mesh ! .true.: temporary ESMF_RegridWeightGen file is an ESMF mesh
       logical :: sferic ! spherical coordinate system (t/f)
+      logical :: unstructured ! unstructured SWAN grid
       character(256) :: grid_name ! name of grid
       character(37) :: tmp_name ! temporary filename
       character(4) :: grid_file_type ! type of grid file (SWAN/FLOW/COM/TRIM)
@@ -180,7 +187,7 @@ contains
 !
 !
 !==============================================================================
-   subroutine alloc_and_get_grid(i_grid, g, grid_name, grid_file_type, xy_loc, flowLinkConnectivity, filename)
+   subroutine alloc_and_get_grid(i_grid, g, grid_name, grid_file_type, xy_loc, flowLinkConnectivity, filename, sfericPointMesh)
       use read_grids
       !
       implicit none
@@ -192,12 +199,18 @@ contains
       character(6), intent(in) :: xy_loc ! location of xy coords (CORNER/CENTER)
       logical, intent(in) :: flowLinkConnectivity
       character(*), optional :: filename
+      logical, optional :: sfericPointMesh
       !
       ! Assign attributes to grid structure
       !
       g%grid_name = grid_name
       g%grid_file_type = grid_file_type
       g%xy_loc = xy_loc
+      g%esmf_mesh = .false.
+      g%sferic = .false.
+      g%unstructured = .false.
+      g%unstructured_grid_generator = 0
+      g%ncell = 0
       !
       ! Obtain grid dimensions
       !
@@ -210,6 +223,7 @@ contains
          call get_gri(g%grid_name, g%x, g%y, g%guu, g%gvv, &
              &        g%alfas, g%kcs, g%covered, g%mmax, g%nmax, &
              &        g%kmax, g%xymiss, g%layer_model)
+         g%esmf_mesh = .not. g%sferic
          !
          ! In case of DomainDecomposition, some adaptions are necessary
          !
@@ -224,6 +238,16 @@ contains
          ! read data from grd-file
          !
          call read_grd(g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%sferic, g%xymiss)
+         g%esmf_mesh = .not. g%sferic
+      case ('UNST')
+         !
+         ! This is an unstructured SWAN grid
+         ! read data from Triangle or Easymesh files
+         !
+         call read_unswan_grid(g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%sferic, &
+                             & g%xymiss, g%kvertc, g%ncell, g%vmark, g%unstructured_grid_generator)
+         g%unstructured = .true.
+         g%esmf_mesh = .true.
       case ('NC')
          !
          ! This is an unstructured grid from D-FLOWFM
@@ -232,7 +256,12 @@ contains
             write (*, '(a)') '*** ERROR: on calling read_netcdf_grd: filename not specified.'
             call wavestop(1, '*** ERROR: on calling read_netcdf_grd: filename not specified.')
          end if
-         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, g%numenclpts, g%numenclparts, g%numenclptsppart, filename, flowLinkConnectivity)
+         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, &
+            & g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, &
+            & g%numenclpts, g%numenclparts, g%numenclptsppart, filename, &
+            & flowLinkConnectivity, sfericPointMesh)
+         g%esmf_mesh = .not. g%sferic
+         if (present(sfericPointMesh)) g%esmf_mesh = g%esmf_mesh .or. (g%sferic .and. sfericPointMesh)
       case default
          ! grid type not supported
          write (*, '(3a)') '*** ERROR: Grid type ''', trim(grid_file_type), ''' not supported.'
@@ -326,6 +355,7 @@ contains
       integer :: i
       integer :: j
       integer :: n
+      integer :: mincontrib
       integer :: ierror
       integer :: in
       integer :: ind
@@ -357,24 +387,19 @@ contains
       else
          gm%ext_mapper = .false.
       end if
-      gm%sferic = g1%sferic
+      gm%sferic = g2%sferic
       gm%grids_linked = .false.
+      gm%provider_index = i1
+      gm%provider_name = g1%grid_name
+      gm%receiver_name = g2%grid_name
       !
       if (gm%ext_mapper) then
          gm%grids_linked = .true.
          !
-         ! The following weights filename will do as long as there is only one Flow-source file involved
+         ! The following weights filename must be unique for both FLOW->SWAN and SWAN->FLOW maps.
          !
-         gm%w_tmp_filename = trim(gm%r_tmp_filename)
-         write (searchstring, '(a,i4.4,a)') "destination_", i2, ".nc"
-         ind = index(gm%w_tmp_filename, trim(searchstring), back=.true.)
-         if (ind > 0) then
-            tmpstr = gm%w_tmp_filename(1:ind - 1) ! Cannot write and read from w_tmp_filename at the same time.
-            write (gm%w_tmp_filename, '(2a,i4.4,a,i4.4,a)') tmpstr(1:ind - 1), 'weights_', i1, 'to', i2, '.nc'
-         else
-            write (*, '(4a)') '*** ERROR: unable to locate "', trim(searchstring), '" in "', trim(gm%w_tmp_filename), '"'
-            call wavestop(1, 'unable to locate "'//trim(searchstring)//'" in "'//trim(gm%w_tmp_filename)//'"')
-         end if
+         write (gm%w_tmp_filename, '(a,a,i4.4,a,a,i4.4,a)') 'TMP_ESMF_RegridWeightGen_weights_', &
+            trim(g1%grid_file_type), i1, '_to_', trim(g2%grid_file_type), i2, '.nc'
          write (*, '(a)') '<<Run ESMF_RegridWeightGen...'
          if (ARCH == 'linux') then
             write (*, '(a)') '>>...Check file esmf_sh.log'
@@ -384,8 +409,14 @@ contains
             write (command, '(a)') 'ESMF_RegridWeightGen_in_Delft3D-WAVE.bat'
          end if
          command = trim(command)//' '//trim(gm%p_tmp_filename)//' '//trim(gm%r_tmp_filename)//' '//trim(gm%w_tmp_filename)
-         if (.not. g1%sferic) then
-            write (command, '(2a)') trim(command), " CARTESIAN"
+         if (g1%sferic .and. (g1%unstructured .or. (g1%grid_file_type == 'NC' .and. g1%esmf_mesh))) then
+            write (command, '(2a)') trim(command), " NEARESTSTOD"
+         endif
+         if (g1%esmf_mesh) then
+            write (command, '(2a)') trim(command), " SRC_CORNERS"
+         endif
+         if (g2%esmf_mesh) then
+            write (command, '(2a)') trim(command), " DST_CORNERS"
          end if
          write (*, '(3a)') 'Executing command: "', trim(command), '"'
          !
@@ -416,8 +447,10 @@ contains
          ! 2D Cartesian grids => n_b = mmax * nmax
          !
          if (gm%n_b /= g2%mmax * g2%nmax) then
-            write (*, '(a,i0,a,i0,a)') "ERROR dimension n_b (", gm%n_b, ") from ESMF_RegridWeight file does not match the WAVE grid dimension (", (g2%mmax - 1) * (g2%nmax - 1), ")."
-            call wavestop(1, "Dimension n_b from ESMF_RegridWeight file does not match the WAVE grid dimension.")
+            write (*, '(a,i0,a,i0,3a)') "ERROR dimension n_b (", gm%n_b, &
+               ") from ESMF_RegridWeight file does not match the receiver grid dimension (", &
+               g2%mmax * g2%nmax, ") for grid '", trim(g2%grid_name), "'."
+            call wavestop(1, "Dimension n_b from ESMF_RegridWeight file does not match the receiver grid dimension.")
          end if
          if (gm%n_s == 0) then
             !write(*,'(3a)') "ERROR dimension n_s from ESMF_RegridWeight is zero."
@@ -450,6 +483,8 @@ contains
          end if
          testfield = 0.0_sp
          ncontrib = 0
+         mincontrib = gm%msurpnts
+         if (g1%unstructured .or. g2%unstructured) mincontrib = 1
          if (g2%sferic) then
             do n = 1, gm%n_s
                i = floor(real(gm%row(n) - 1) / real(g2%nmax)) + 1
@@ -470,45 +505,53 @@ contains
             end do
          end if
          !
-         ! Make polygon administration of domain enclosure
-         !
-         ! safety
-         call savepol()
-         !
-         ! saved in m_polygon::xpl, ypl, zpl
-         call makedomainbndpol(g1%bndx, g1%bndy, g1%numenclpts, g1%numenclparts, g1%numenclptsppart)
-         keepExisting = .false.
-         !
-         ! poly with bounding box
-         call pol_to_tpoly(numpli, pli_loc, keepExisting)
-         !
-         do i = 1, g2%mmax
-            do j = 1, g2%nmax
-               ! This point is only covered when it is surrounded by at least msurpnts valid points
-               ! Also, check if the point was not covered by another partition
-               if (ncontrib(i, j) < gm%msurpnts .and. .not. (g2%covered(i, j) > 0)) then
-                  g2%covered(i, j) = 0
-               else
-                  ! old serial way:
-                  !g2%covered(i,j) = nint(testfield(i,j))
-                  !endif
-                  ! Parallel AND serial approach FM:
-                  in = -1 ! init, needed
-                  call dbpinpol_tpolies(pli_loc, g2%x(i, j), g2%y(i, j), in)
-                  if (in == 1) then
-                     g2%covered(i, j) = i1
+         if (associated(g1%bndx) .and. associated(g1%bndy) .and. associated(g1%numenclptsppart)) then
+            !
+            ! Make polygon administration of domain enclosure
+            !
+            ! safety
+            call savepol()
+            !
+            ! saved in m_polygon::xpl, ypl, zpl
+            call makedomainbndpol(g1%bndx, g1%bndy, g1%numenclpts, g1%numenclparts, g1%numenclptsppart)
+            keepExisting = .false.
+            !
+            ! poly with bounding box
+            call pol_to_tpoly(numpli, pli_loc, keepExisting)
+            !
+            do i = 1, g2%mmax
+               do j = 1, g2%nmax
+                  ! This point is only covered when it is surrounded by at least msurpnts valid points
+                  ! Also, check if the point was not covered by another partition
+                  if (ncontrib(i, j) < mincontrib .and. .not. (g2%covered(i, j) > 0)) then
+                     g2%covered(i, j) = 0
+                  else
+                     ! Parallel AND serial approach FM:
+                     in = -1 ! init, needed
+                     call dbpinpol_tpolies(pli_loc, g2%x(i, j), g2%y(i, j), in)
+                     if (in == 1) then
+                        g2%covered(i, j) = i1
+                     end if
                   end if
-               end if
+               end do
             end do
-         end do
-         !
-         call restorepol()
+            !
+            call restorepol()
+            !
+            ! gets allocated in pol_to_tpoly
+            deallocate (pli_loc, stat=ierror)
+         else
+            do i = 1, g2%mmax
+               do j = 1, g2%nmax
+                  if (ncontrib(i, j) >= mincontrib) then
+                     g2%covered(i, j) = i1
+                  endif
+               enddo
+            enddo
+         endif
          !
          deallocate (testfield, stat=ierror)
          deallocate (ncontrib, stat=ierror)
-         !
-         ! gets allocated in pol_to_tpoly
-         deallocate (pli_loc, stat=ierror)
       else
          ! No external mapper
          !
@@ -527,8 +570,6 @@ contains
          !
          ! Set gridmap attributes
          !
-         gm%provider_name = g1%grid_name
-         gm%receiver_name = g2%grid_name
          gm%npts_provider = g1%npts
          gm%npts_receiver = g2%npts
          gm%n_surr_points = 4

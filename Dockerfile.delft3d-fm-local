@@ -1,0 +1,52 @@
+ARG THIRDPARTYLIBS_IMAGE=localhost/third-party-libs:oneapi-2024-ifx-release
+ARG RUNTIME_BASE_IMAGE=containers.deltares.nl/base_linux_containers/8-base:latest
+
+FROM ${THIRDPARTYLIBS_IMAGE} AS build
+
+ARG BUILD_TYPE=Release
+ARG CONFIGURATION_TYPE=fm-suite
+ARG CMAKE_BUILD_PARALLEL_LEVEL
+
+WORKDIR /source
+COPY . .
+
+SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
+
+RUN source /etc/bashrc && \
+    export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-} && \
+    export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:-} && \
+    export CMAKE_PREFIX_PATH=/usr/local:${CMAKE_PREFIX_PATH:-} && \
+    export CMAKE_INCLUDE_PATH=/usr/local/include:${CMAKE_INCLUDE_PATH:-} && \
+    export CMAKE_LIBRARY_PATH=/usr/local/lib:${CMAKE_LIBRARY_PATH:-} && \
+    cmake -S src/cmake -B build_docker \
+        -G "Unix Makefiles" \
+        -D CONFIGURATION_TYPE:STRING="${CONFIGURATION_TYPE}" \
+        -D BUILD_TESTING:BOOL=OFF \
+        -D CMAKE_BUILD_TYPE:STRING="${BUILD_TYPE}" \
+        -D CMAKE_INSTALL_PREFIX:PATH=/opt/dimrset && \
+    cmake --build build_docker --target install --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-$(nproc)}"
+
+FROM ${RUNTIME_BASE_IMAGE} AS runtime
+
+ARG GIT_COMMIT=unknown
+ARG GIT_BRANCH=unknown
+ARG INTEL_MPI_PATH=/opt/intel/oneapi/mpi/latest/bin
+
+COPY --from=build /opt/dimrset/ /opt/dimrset/
+COPY --from=build ${INTEL_MPI_PATH}/hydra_* ${INTEL_MPI_PATH}/mpiexec* ${INTEL_MPI_PATH}/mpirun /opt/intel/mpi/bin/
+
+RUN dnf --assumeyes update && \
+    dnf --assumeyes install libgomp libfabric && \
+    dnf clean all && \
+    rm --recursive --force /var/cache/dnf
+
+ENV LD_LIBRARY_PATH=/opt/dimrset/lib
+ENV PATH=/opt/dimrset/bin:/opt/intel/mpi/bin:$PATH
+ENV PROC_DEF_DIR=/opt/dimrset/share/delft3d
+ENV OMP_NUM_THREADS=1
+
+LABEL delft3d-git-commit=${GIT_COMMIT}
+LABEL delft3d-git-branch=${GIT_BRANCH}
+
+WORKDIR /data
+CMD ["run_dimr.sh"]

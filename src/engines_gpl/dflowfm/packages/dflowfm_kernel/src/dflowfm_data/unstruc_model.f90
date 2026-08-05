@@ -480,7 +480,8 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_dambreak_breach, only: set_dambreak_widening_method
-      use m_waves, only: rouwav, gammax, hminlw, jauorb
+      use m_waves, only: rouwav, gammax, hminlw, jauorb, wavefric_hmin, wavefric_hfull, &
+                         wavefric_uorbmin, wavefric_uorbfull
       use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
                         jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext, jaevap, jawind, &
                         wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
@@ -1521,6 +1522,8 @@ contains
       call prop_get(md_ptr, 'waves', 'Wavemodelnr', jawave)
       call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
       call prop_get(md_ptr, 'waves', 'WavePeakEnhancementFactor', JONSWAPgamma0)
+      call prop_get(md_ptr, 'waves', 'WarnMissingWaveData', jawavewarnmissingdata)
+
       if (jawave == 6) then ! backward compatibility
          write (msgbuf, '(a,i0,a)') 'Wavemodelnr = ', jawave, ' is now merged with the offline wave functionality (wavemodelnr=7), and option 6 is deprecated.'
          call mess(LEVEL_WARN, msgbuf)
@@ -1559,6 +1562,10 @@ contains
       call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
+      call prop_get(md_ptr, 'waves', 'WaveFrictionHmin', wavefric_hmin) ! Hrms below which wave-current bed friction is current-only
+      call prop_get(md_ptr, 'waves', 'WaveFrictionHfull', wavefric_hfull) ! Hrms where wave-current bed friction is fully active
+      call prop_get(md_ptr, 'waves', 'WaveFrictionUorbmin', wavefric_uorbmin) ! Uorb current-only threshold
+      call prop_get(md_ptr, 'waves', 'WaveFrictionUorbfull', wavefric_uorbfull) ! Uorb fully active threshold
       if (ftauw < 0.0_dp) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0, reset to 0.0. Bed shear stress due to waves switched off.')
          ftauw = 0.0_dp
@@ -1570,6 +1577,28 @@ contains
       if (fbreak < 0.0_dp) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0.0, reset to 0.0. Wave breaking contribution to tke switched off.')
          fbreak = 0.0_dp
+      end if
+      if (wavefric_hmin < 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: WaveFrictionHmin<0.0, reset to 0.0.')
+         wavefric_hmin = 0.0_dp
+      end if
+      if (wavefric_hfull < 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: WaveFrictionHfull<0.0, reset to 0.0.')
+         wavefric_hfull = 0.0_dp
+      end if
+      if (wavefric_uorbmin < 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: WaveFrictionUorbmin<0.0, reset to 0.0.')
+         wavefric_uorbmin = 0.0_dp
+      end if
+      if (wavefric_uorbfull < 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: WaveFrictionUorbfull<0.0, reset to 0.0.')
+         wavefric_uorbfull = 0.0_dp
+      end if
+      if (wavefric_hfull > 0.0_dp .and. wavefric_hfull <= wavefric_hmin) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: WaveFrictionHfull<=WaveFrictionHmin; Hrms gate disabled.')
+      end if
+      if (wavefric_uorbfull > 0.0_dp .and. wavefric_uorbfull <= wavefric_uorbmin) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: WaveFrictionUorbfull<=WaveFrictionUorbmin; Uorb gate disabled.')
       end if
 
       if (jawave <= WAVE_FETCH_YOUNG) then
@@ -2537,6 +2566,7 @@ contains
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
+      use m_waves, only: wavefric_hmin, wavefric_hfull, wavefric_uorbmin, wavefric_uorbfull
       use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
                         pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
                         CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
@@ -3206,7 +3236,7 @@ contains
       if (writeall .or. locsaltmax /= 10.0_dp) then
          call prop_set(prop_ptr, 'numerics', 'LocSaltMax', locsaltmax, 'maximum salinity for case of lock exchange')
       end if
-      call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
+         call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
       if (writeall .or. baorgfracmin > 0) then
          call prop_set(prop_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin, 'Cell area = max(orgcellarea*Baorgfracmin, cutcell area) ')
       end if
@@ -3557,12 +3587,26 @@ contains
          call prop_set(prop_ptr, 'waves', 'jahissigwav', his_write_settings%sigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
          call prop_set(prop_ptr, 'waves', 'jamapsigwav', map_write_settings%sigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
          call prop_set(prop_ptr, 'waves', 'hminlw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
+         if (writeall .or. wavefric_hmin /= 0.0_dp .or. wavefric_hfull /= 0.0_dp) then
+            call prop_set(prop_ptr, 'waves', 'WaveFrictionHmin', wavefric_hmin, &
+                          'Hrms below which wave-current bed friction is current-only')
+            call prop_set(prop_ptr, 'waves', 'WaveFrictionHfull', wavefric_hfull, &
+                          'Hrms where wave-current bed friction is fully active')
+         end if
+         if (writeall .or. wavefric_uorbmin /= 0.0_dp .or. wavefric_uorbfull /= 0.0_dp) then
+            call prop_set(prop_ptr, 'waves', 'WaveFrictionUorbmin', wavefric_uorbmin, &
+                          'Orbital velocity below which wave-current bed friction is current-only')
+            call prop_set(prop_ptr, 'waves', 'WaveFrictionUorbfull', wavefric_uorbfull, &
+                          'Orbital velocity where wave-current bed friction is fully active')
+         end if
          if (flow_without_waves) then
             fww = 1
          else
             fww = 0
          end if
          call prop_set(prop_ptr, 'waves', 'FlowWithoutWaves', fww, '1: Do not use wave data in the flow computations, it will only be passed through to D-WAQ; 0: use wave information. Default 0.')
+         call prop_set(prop_ptr, 'waves', 'WarnMissingWaveData', jawavewarnmissingdata, &
+                       '1: warn when online WAVE data is not available from the COM file yet; 0: suppress this warning. Default 1.')
          if (writeall .or. hwavuni /= 0.0_dp) then
             call prop_set(prop_ptr, 'waves', 'Hwavuni', hwavuni, 'root mean square wave height (m)')
             call prop_set(prop_ptr, 'waves', 'Twavuni', twavuni, 'root mean square wave period (s)')

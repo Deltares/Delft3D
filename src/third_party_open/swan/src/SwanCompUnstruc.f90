@@ -95,7 +95,7 @@ subroutine SwanCompUnstruc ( ac2, ac1, compda, spcsig, spcdir, xytst, cross, it 
     use SwanQCM
     use m_snl3
     use m_parall
-!METIS    use SwanParallel
+    use SwanParallel
 !
     implicit none
 !
@@ -1352,7 +1352,7 @@ subroutine SwanCompUnstruc ( ac2, ac1, compda, spcsig, spcdir, xytst, cross, it 
           do id = 1, MDC
              do is = 1, MSC
                 temp(:) = ac2(id,is,:)
-!METIS                call SwanUvExchgR ( temp )
+                call SwanUvExchgR ( temp )
                 ac2(id,is,:) = temp(:)
              enddo
           enddo
@@ -1454,7 +1454,7 @@ subroutine SwanCompUnstruc ( ac2, ac1, compda, spcsig, spcdir, xytst, cross, it 
 !TIMG          call SWTSTA(213)
           do j = 1, MCMVAR
              temp(:) = compda(:,j)
-!METIS             call SwanUvExchgR ( temp )
+             call SwanUvExchgR ( temp )
              compda(:,j) = temp(:)
           enddo
 !TIMG          call SWTSTO(213)
@@ -1464,7 +1464,7 @@ subroutine SwanCompUnstruc ( ac2, ac1, compda, spcsig, spcdir, xytst, cross, it 
        !
        if ( ISURF > 0 .and. IGEN == 4 ) then
           disbk0 = disbk1
-!METIS          if ( PARLL ) call SwanUvExchgR ( disbk0 )
+          if ( PARLL ) call SwanUvExchgR ( disbk0 )
        endif
        !
        ! info regarding the iteration process and the accuracy

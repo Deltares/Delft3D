@@ -1,17 +1,4 @@
-subroutine get_swan_depth (sif,botfil)
-!
-! Head routine for calling read_bot
-!
-use swan_flow_grid_maps
-implicit none
-type(input_fields)          :: sif
-character(*)                :: botfil
-real                        :: fac =1.
-   call read_bot (sif%dps     ,sif%mmax  ,sif%nmax  ,botfil    ,fac )
-end subroutine get_swan_depth
-
-
-subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
+subroutine get_swan_bot (sif, botfil, unstructured)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -45,6 +32,26 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+!
+use swan_flow_grid_maps
+
+implicit none
+
+type(input_fields)          :: sif
+character(*), intent(in)    :: botfil
+logical, intent(in)         :: unstructured
+!
+real                        :: fac =1.
+   if (unstructured) then
+      call read_bot_unstructured(sif%dps, sif%mmax, sif%nmax, botfil, fac)
+   else
+      call read_bot(sif%dps, sif%mmax, sif%nmax, botfil, fac)
+   endif
+end subroutine get_swan_bot
+
+
+subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
+!
     implicit none
 !
 ! Global variables
@@ -80,3 +87,70 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
     close (lunbot)
     call wavestop(1, ' Premature end of file while reading file: '//trim(botfil))
 end subroutine read_bot 
+
+
+subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
+!----- GPL ---------------------------------------------------------------------
+!!--description-----------------------------------------------------------------
+! Read unSWAN bathymetry. Triangle/Easymesh bottom files commonly start with
+! a one-line point count, matching SWAN READINP BOTTOM ... NHEDF=1.
+!!--declarations----------------------------------------------------------------
+    implicit none
+!
+! Global variables
+!
+    integer                , intent(in)  :: mb
+    integer                , intent(in)  :: nb
+    real                   , intent(in)  :: fac
+    real, dimension(mb, nb)              :: dpb
+    character(*)           , intent(in)  :: botfil
+!
+! Local variables
+!
+    integer               :: i
+    integer               :: ios
+    integer               :: j
+    integer               :: lunbot
+    integer               :: ndata
+    integer               :: nwords
+    logical               :: inword
+    character(1024)       :: firstline
+!
+!! executable statements -------------------------------------------------------
+!
+    open (newunit = lunbot, file = botfil, status = 'old', action = 'read')
+    read (lunbot, '(A)', end = 999, err = 998) firstline
+    nwords = 0
+    inword = .false.
+    do i = 1, len_trim(firstline)
+       if (firstline(i:i) /= ' ' .and. firstline(i:i) /= achar(9)) then
+          if (.not. inword) nwords = nwords + 1
+          inword = .true.
+       else
+          inword = .false.
+       endif
+    enddo
+    read (firstline, *, iostat = ios) ndata
+    if (ios /= 0 .or. nwords /= 1 .or. ndata /= mb*nb) then
+       rewind(lunbot)
+    endif
+    do j = 1, nb
+       read (lunbot, *, end = 999, err = 998) (dpb(i, j), i = 1, mb)
+    enddo
+    close (lunbot)
+    do j = 1, nb
+       do i = 1, mb
+          dpb(i, j) = dpb(i, j)*fac
+       enddo
+    enddo
+    return
+  998 continue
+    write (*, '('' Error while reading unSWAN bathymetry file: '',A)') botfil
+    close (lunbot)
+    call wavestop(1, ' Error while reading unSWAN bathymetry file: '//trim(botfil))
+    return
+  999 continue
+    write (*, '('' Premature end of file while reading unSWAN bathymetry file: '',A)') botfil
+    close (lunbot)
+    call wavestop(1, ' Premature end of file while reading unSWAN bathymetry file: '//trim(botfil))
+end subroutine read_bot_unstructured

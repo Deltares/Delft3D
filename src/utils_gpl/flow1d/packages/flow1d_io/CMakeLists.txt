@@ -23,4 +23,6 @@ endif(WIN32)
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/flow1d_library)
 
-add_subdirectory(test)
+if(BUILD_TESTING)
+   add_subdirectory(test)
+endif()

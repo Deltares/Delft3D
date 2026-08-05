@@ -27,7 +27,9 @@ list(REMOVE_ITEM source ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/nef-xdr.c)
 
 # Define library
 set(library_name nefis)
-add_subdirectory(test)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()
 
 add_library(${library_name} ${headers}
                             ${source}

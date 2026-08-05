@@ -11,6 +11,7 @@ setlocal enabledelayedexpansion
 set workdir=%CD%
 set scriptdir=%~dp0
 set exedir=%scriptdir%\..\bin
+set libdir=%scriptdir%\..\lib
 set regridexec="%exedir%\ESMF_RegridWeightGen.exe"
 
 echo Executing batchscript "ESMF_RegridWeightGen_in_Delft3D-WAVE.bat" for Delft3D-WAVE >>esmf_bat.log
@@ -25,15 +26,27 @@ if [%3] EQU [] (
 set srcfile=%1
 set destfile=%2
 set wfile=%3
-set addflags=--method bilinear
-if [%4] EQU [CARTESIAN] (
-    set addflags=%addflags% --src_loc corner --dst_loc corner
+set methodflag=--method bilinear
+set srclocflag=
+set dstlocflag=
+for %%A in (%4 %5 %6 %7) do (
+    if /I [%%A] EQU [NEARESTSTOD] set methodflag=--method neareststod
+    if /I [%%A] EQU [CARTESIAN] (
+        set srclocflag=--src_loc corner
+        set dstlocflag=--dst_loc corner
+    )
+    if /I [%%A] EQU [CORNERS] (
+        set srclocflag=--src_loc corner
+        set dstlocflag=--dst_loc corner
+    )
+    if /I [%%A] EQU [SRC_CORNERS] set srclocflag=--src_loc corner
+    if /I [%%A] EQU [DST_CORNERS] set dstlocflag=--dst_loc corner
 )
 
 set defaultflags=--ignore_unmapped
-set arguments=%defaultflags% %addflags% --source %srcfile% --destination %destfile% --weight %wfile%
+set arguments=%defaultflags% %methodflag% %srclocflag% %dstlocflag% --source %srcfile% --destination %destfile% --weight %wfile%
 
-set PATH=%exedir%;%PATH%
+set PATH=%exedir%;%libdir%;%PATH%
 
     rem Remove output file
 if exist %wfile% del %wfile%
@@ -45,7 +58,10 @@ if not exist %regridexec% goto errorexec
 
    rem RUN
 echo Calling ESMF_RegridWeightGen with arguments: %arguments% >>esmf_bat.log
-%regridexec% %arguments% >>esmf_bat.log
+%regridexec% %arguments% >>esmf_bat.log 2>&1
+if ERRORLEVEL 1 (
+    echo ESMF_RegridWeightGen failed with exit code %ERRORLEVEL% >>esmf_bat.log
+)
 
 goto end
 
@@ -57,7 +73,7 @@ echo "ESMF_RegridWeightGen_in_Delft3D-WAVE.bat <sourcefile> <destfile> <weightfi
 echo "   <sourcefile>: (input)    name of source file      (NetCDF)" >>esmf_bat.log
 echo "   <destfile>  : (input)    name of destination file (NetCDF)" >>esmf_bat.log
 echo "   <weightfile>: (output)   name of weight file      (NetCDF)" >>esmf_bat.log
-echo "   [addflags]  : (optional) additional flags. Possible values: CARTESIAN" >>esmf_bat.log
+echo "   [addflags]  : (optional) additional flags. Possible values: CARTESIAN, CORNERS, SRC_CORNERS, DST_CORNERS, NEARESTSTOD" >>esmf_bat.log
 goto end
 
 :error1

@@ -20,7 +20,7 @@ set(library_source_list     ${headers}
                             ${swan_sourcefiles})
 add_library(${library_name} ${library_source_list})
 
-target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings metis)
 
 # Add dependencies
 if (UNIX)
@@ -46,6 +46,7 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ocpids.F
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/swancom1.F
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/swanmain.F
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/swanparll.F
+                            ${CMAKE_CURRENT_SOURCE_DIR}/src/SwanParallel.f90
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/swmod2.F
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
@@ -69,11 +70,11 @@ endif(UNIX)
 
 # Define preprocessor definitions 
 if (WIN32)
-    target_compile_definitions(${library_name} PRIVATE "WIN32;USE_MPI")
+    target_compile_definitions(${library_name} PRIVATE "WIN32;USE_MPI;HAVE_METIS")
 endif(WIN32)
 
 if (UNIX)
-    target_compile_definitions(${library_name} PRIVATE "USE_MPI")
+    target_compile_definitions(${library_name} PRIVATE "USE_MPI;HAVE_METIS")
 endif(UNIX)
 
 # Create the folder structure in vfproj

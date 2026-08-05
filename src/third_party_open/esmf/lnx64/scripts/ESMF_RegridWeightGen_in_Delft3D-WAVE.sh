@@ -21,7 +21,7 @@ echo "ESMF_RegridWeightGen_in_Delft3D-WAVE.bat <sourcefile> <destfile> <weightfi
 echo "   <sourcefile>: (input)    name of source file      (NetCDF)" >>esmf_sh.log
 echo "   <destfile>  : (input)    name of destination file (NetCDF)" >>esmf_sh.log
 echo "   <weightfile>: (output)   name of weight file      (NetCDF)" >>esmf_sh.log
-echo "   [addflags]  : (optional) additional flags. Possible values: CARTESIAN" >>esmf_sh.log
+echo "   [addflags]  : (optional) additional flags. Possible values: CARTESIAN, CORNERS, SRC_CORNERS, DST_CORNERS, NEARESTSTOD" >>esmf_sh.log
 }
 
 function error1 () {
@@ -51,6 +51,7 @@ scriptdirname=`readlink \-f \$0`
 scriptdir=`dirname $scriptdirname`
 D3D_HOME=$scriptdir/..
 regridexec=$D3D_HOME/bin/ESMF_RegridWeightGen
+export LD_LIBRARY_PATH=$D3D_HOME/lib:${LD_LIBRARY_PATH:-}
 
 echo Executing batchscript "ESMF_RegridWeightGen_in_Delft3D-WAVE.sh" for Delft3D-WAVE >>esmf_sh.log
 echo This script is located in directory $scriptdir >>esmf_sh.log
@@ -65,13 +66,28 @@ fi
 srcfile=$1
 destfile=$2
 wfile=$3
-addflags='--method bilinear'
-if [ "$4" == 'CARTESIAN' ]; then
-    addflags="$addflags --src_loc corner --dst_loc corner"
-fi
+methodflag='--method bilinear'
+srclocflag=''
+dstlocflag=''
+for flag in "$4" "$5" "$6" "$7"; do
+    flag_upper=$(echo "$flag" | tr '[:lower:]' '[:upper:]')
+    if [ "$flag_upper" == 'NEARESTSTOD' ]; then
+        methodflag='--method neareststod'
+    fi
+    if [ "$flag_upper" == 'CARTESIAN' ] || [ "$flag_upper" == 'CORNERS' ]; then
+        srclocflag='--src_loc corner'
+        dstlocflag='--dst_loc corner'
+    fi
+    if [ "$flag_upper" == 'SRC_CORNERS' ]; then
+        srclocflag='--src_loc corner'
+    fi
+    if [ "$flag_upper" == 'DST_CORNERS' ]; then
+        dstlocflag='--dst_loc corner'
+    fi
+done
 
 defaultflags=--ignore_unmapped
-arguments="$defaultflags $addflags --source $srcfile --destination $destfile --weight $wfile"
+arguments="$defaultflags $methodflag $srclocflag $dstlocflag --source $srcfile --destination $destfile --weight $wfile"
 
     # Remove output file
 if [ -f $wfile ]; then
@@ -92,4 +108,9 @@ if [ ! -f $regridexec ]; then
 fi
    # RUN
 echo Calling ESMF_RegridWeightGen with arguments: $arguments >>esmf_sh.log
-$regridexec $arguments >>esmf_sh.log
+$regridexec $arguments >>esmf_sh.log 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+    echo ESMF_RegridWeightGen failed with exit code $retval >>esmf_sh.log
+fi
+exit $retval

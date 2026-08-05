@@ -31,6 +31,7 @@ module write_swan_datafile
 !
 !!--module declarations---------------------------------------------------------
 public write_swan_file
+public write_swan_unstructured_depth_file
 
     interface write_swan_file
        module procedure write_swan_file1
@@ -324,5 +325,40 @@ subroutine write_swan_file2 (var1  , var2       , mmax   , nmax, covered, &
     endif
     close (lunfil)
 end subroutine write_swan_file2
+
+
+subroutine write_swan_unstructured_depth_file(var1, var2, mmax, nmax, filnam, minval)
+!!--description-----------------------------------------------------------------
+! Write unSWAN depth values with the one-line point-count header used by
+! READINP BOTTOM ... for unstructured grids.
+!!--declarations----------------------------------------------------------------
+    implicit none
+!
+! Global variables
+!
+    integer                       , intent(in)  :: mmax
+    integer                       , intent(in)  :: nmax
+    real   , optional             , intent(in)  :: minval
+    real   , dimension(mmax, nmax), intent(in)  :: var1
+    real   , dimension(mmax, nmax), intent(in)  :: var2
+    character(*)                  , intent(in)  :: filnam
+!
+! Local variables
+!
+    integer                                :: i
+    integer                                :: j
+    integer                                :: lunfil
+!
+!! executable statements -------------------------------------------------------
+!
+    open (newunit = lunfil, file = filnam, status = 'unknown')
+    write (lunfil, '(I0)') mmax*nmax
+    if (present(minval)) then
+       write (lunfil,'(4(3X,E13.6))') ( ( max(var1(i,j)+var2(i,j),minval), i=1,mmax), j=1,nmax )
+    else
+       write (lunfil,'(4(3X,E13.6))') ( ( var1(i,j)+var2(i,j), i=1,mmax), j=1,nmax )
+    endif
+    close (lunfil)
+end subroutine write_swan_unstructured_depth_file
 
 end module write_swan_datafile

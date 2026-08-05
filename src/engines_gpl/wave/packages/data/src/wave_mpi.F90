@@ -47,6 +47,7 @@ use check_mpi_env
 !
 #ifndef HAVE_MPI
 integer, parameter    :: MPI_COMM_NULL = -999
+integer, parameter    :: MPI_COMM_SELF = -998
 #endif
 integer, parameter    :: master = 0                          !< rank of master process
 !
