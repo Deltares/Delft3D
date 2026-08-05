@@ -56,8 +56,8 @@ This section contains the program name and its version.
 | `autoStart` ⚠️ | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
 | `pathsRelativeToParent` | Resolve file names (e.g. inside the \*.ext file) relative to their direct parent, instead of to the top-level MDU working dir. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `modelSpecific` 🔬 | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). | `<empty>` |  |  |  |
-| `inputSpecific` 🔬 | Use of hardcoded specific inputs, shall not be used by users. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `convertLongCulverts` ⚠️ | Convert long culvert input to 1D2D long culverts. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `inputSpecific` 🔬 | Use of hardcoded specific inputs, shall not be used by users. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `convertLongCulverts` ⚠️ | Convert long culvert input to 1D2D long culverts. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
 <a id="supported-keywords-and-options-model"></a>
@@ -74,8 +74,8 @@ This section contains the program name and its version.
 | `autoStart` | Autostart simulation after loading MDU or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: autostart</li><li>**`2`**: autostartstop</li></ul> |  |  |
 | `pathsRelativeToParent` | Resolve file names (e.g. inside the \*.ext file) relative to their direct parent, instead of to the top-level MDU working dir. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `modelSpecific` | Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name). | `<empty>` |  |  |  |
-| `inputSpecific` | Use of hardcoded specific inputs, shall not be used by users. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `convertLongCulverts` | Convert long culvert input to 1D2D long culverts. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `inputSpecific` | Use of hardcoded specific inputs, shall not be used by users. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `convertLongCulverts` | Convert long culvert input to 1D2D long culverts. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
 <a id="supported-keywords-and-options-geometry"></a>
@@ -151,38 +151,38 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `zLayBot` | If specified, first z-layer starts from `zLayBot`, if not, it starts from the lowest bed point. | `-999.0` |  | [m] |  |
 | `zLayTop` | If specified, highest z-layer starts from `zLayTop`, if not, it ends at the initial water level. | `-999.0` |  | [m] |  |
 | `stretchType` | Stretching type for non-uniform layers. | `-1` | <ul><li>**`-1`**: uniform</li><li>**`0`**: uniform</li><li>**`1`**: user defined</li><li>**`2`**: exponential</li></ul> |  |  |
-| `stretchCoef` | Coefficients for sigma layer. For `stretchType`=1: percentages of the layers, user defined, laycof(`kmx`). For `stretchType`=2: Stretching level, and two coefficients for layer growth, laycof(3). |  |  | [-] |  |
+| `stretchCoef` | Coefficients for sigma layer. For `stretchType`=1: percentages of the layers, user defined, laycof(`kmx`). For `stretchType`=2: Stretching level, and two coefficients for layer growth, laycof(3). | `<empty>` |  | [-] |  |
 | `dxMin1D` | Minimum 1D link length. | `0.001` |  | [m] |  |
 | `dxDoubleAt1DEndNodes` | Extend a 1D grid cell at the end of a network with 0.5∆x. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `changeVelocityAtStructures` | Ignore structure dimensions for the velocity at hydraulic structures, when calculating the surrounding cell centered flow velocities. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `changeStructureDimensions` | Change the structure dimensions in case these are inconsistent with the channel dimensions. ⋄ weirs, orifices, general structures: 1. In case the crest width exceeds the surface width, the crest width is set to the surface width; 2. In case the crest level is lower than the bed level, the crest level is set to the bed level. ⋄ bridges: 1. In case the crest width exceeds the surface width, the crest width is set to the surface width; 2. In case the flow area of the bridge exceeds the upstream flow area the flow area of the bridge is set to the upstream flow area. ⋄ universal weirs: only the crest level is checked and changed. NOTE: It is strongly advised not to change this parameter (true). Since turning this option off can lead to instabilities and unrealistic results. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `calculateBedLevelOverNonActiveLinks` 🔬 | Specifies whether the bed levels must be computed over all links of a cell including the closed boundaries, thin dams and dry points (= 0), or only the flow links. (= 1) | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `stripMesh` 🔬 | Strip unused nodes and links from the mesh after clipping. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `topLayMinThick` 🔬 | Minimum top layer thickness, only for Z-layers. |  |  | [m] |  |
-| `helmert` 🔬 | Use Helmert. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `waterDepthIni1D` 🔬 | Initial waterdepth in 1D. |  |  |  |  |
-| `zLayerAtuByBob` 🔬 | Lowest connected cells governed by bob instead of by bL L/R. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `topLayMinThick` 🔬 | Minimum top layer thickness, only for Z-layers. | `0.01` |  | [m] |  |
+| `helmert` 🔬 | Use Helmert. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `waterDepthIni1D` 🔬 | Initial waterdepth in 1D. | `-999.0` |  |  |  |
+| `zLayerAtuByBob` 🔬 | Lowest connected cells governed by bob instead of by bL L/R. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `shipDefFile` 🔬 | File \*.shd containing ship definitions. | `<empty>` |  |  |  |
-| `bedWaveLength` 🔬 | Bed testcases. |  |  |  |  |
-| `removeSmallLinksTrsh` 🔬 | Remove small links. |  |  |  |  |
-| `createLinks1D2D` 🔬 | Rashly create links between 1D nodes and 2D cells when initializing model. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `bedWaveAmplitude` 🔬 | Bed testcases. |  |  |  |  |
-| `uniformHu` 🔬 | Waterdepth in rigid-lid-like solution. |  |  |  |  |
-| `tSigma` 🔬 | Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers). |  |  | [s] |  |
+| `bedWaveLength` 🔬 | Bed testcases. | `0.0` |  |  |  |
+| `removeSmallLinksTrsh` 🔬 | Remove small links. | `0.1` |  |  |  |
+| `createLinks1D2D` 🔬 | Rashly create links between 1D nodes and 2D cells when initializing model. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `bedWaveAmplitude` 🔬 | Bed testcases. | `0.0` |  |  |  |
+| `uniformHu` 🔬 | Waterdepth in rigid-lid-like solution. | `-999.0` |  |  |  |
+| `tSigma` 🔬 | Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers). | `100.0` |  | [s] |  |
 | `dpuopt` 🔬 | Bed level interpolation at velocity point in case of tile approach bed level. | `1` | <ul><li>**`1`**: max</li><li>**`2`**: mean</li></ul> |  |  |
 | `keepZLayeringAtBed` | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  |  |
-| `ihuzcSig` 🔬 | If `keepZLayeringAtBed`>=2. |  | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  |  |
-| `ihuz` 🔬 | TODO |  |  |  |  |
-| `cosphiutrsh` 🔬 | 1.0=no bad orthos. |  | `[0.0, 1.0]` |  |  |
+| `ihuzcSig` 🔬 | If `keepZLayeringAtBed`>=2. | `3` | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  |  |
+| `ihuz` 🔬 | TODO | `4` |  |  |  |
+| `cosphiutrsh` 🔬 | 1.0=no bad orthos. | `0.5` | `[0.0, 1.0]` |  |  |
 | `cutCellList` 🔬 | File with names of cutcell polygons, e.g. cutcellpolygons.lst. | `<empty>` |  |  |  |
-| `uniformTyp1D` 🔬 | Uniform type for channel profiles not specified by profloc. |  |  |  |  |
-| `1D2DInternalLinkType` 🔬 | Link treatment method for type-3 internal links. |  |  |  |  |
+| `uniformTyp1D` 🔬 | Uniform type for channel profiles not specified by profloc. | `3` |  |  |  |
+| `1D2DInternalLinkType` 🔬 | Link treatment method for type-3 internal links. | `1` |  |  |  |
 | `pipeFile` 🔬 | File \*.pliz containing pipe-based 'culverts'. | `<empty>` |  |  |  |
-| `groundLayerThickness` 🔬 | Only in pipes: groundlayer thickness. |  |  | [m] |  |
-| `extrBl` 🔬 | Extrapolate bed level at boundaries according to the slope. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `keepZLay1BedVol` 🔬 | Correct volumes when `keepZLayeringAtBed`=1. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `orgFloorLevTopLayDef` ⚠️ | Backward compatibility option: floorlevtoplay is dztop below specified level. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `bedLevMode` | Bed level mode. |  |  |  |  |
+| `groundLayerThickness` 🔬 | Only in pipes: groundlayer thickness. | `-999.0` |  | [m] |  |
+| `extrBl` 🔬 | Extrapolate bed level at boundaries according to the slope. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `keepZLay1BedVol` 🔬 | Correct volumes when `keepZLayeringAtBed`=1. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `orgFloorLevTopLayDef` ⚠️ | Backward compatibility option: floorlevtoplay is dztop below specified level. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `bedLevMode` | Bed level mode. | `1` |  |  |  |
 
 
 <a id="supported-keywords-and-options-volumetables"></a>
@@ -222,7 +222,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `fixedWeirContraction` | flow width = flow width\*`fixedWeirContraction`. | `1.0` |  | [-] |  |
 | `fixedWeirTopWidth` | Uniform width of the groyne part of fixed weirs. | `3.0` |  | [m] |  |
 | `fixedWeirTalud` | Uniform talud slope of fixed weirs. | `4.0` |  |  |  |
-| `fixedWeirTopFrictCoef` | Uniform friction coefficient of the groyne part of fixed weirs. |  |  | [depends on frictiontype] |  |
+| `fixedWeirTopFrictCoef` | Uniform friction coefficient of the groyne part of fixed weirs. | `-999.0` |  | [depends on frictiontype] |  |
 | `fixedWeirRelaxationCoef` | Fixed weir relaxation coefficient for computation of energy loss. | `0.6` |  |  |  |
 | `fixedWeirScheme1D2D` | Fixed weir scheme for 1D2D links. | `0` | <ul><li>**`0`**: same as `fixedWeirScheme`</li><li>**`1`**: lateral iterative fixed weir scheme</li></ul> |  |  |
 | `fixedWeir1D2D_dx` | Extra delta x for lateral 1D2D fixed weirs. | `50.0` |  |  |  |
@@ -261,13 +261,13 @@ This section contains the settings of specific parts of the flow solver, such as
 | `jasfer3D` | Corrections for spherical coordinates. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `cfFacVer` 🔬 | Factor for including (1-CFL) in HO term vertical. | `0.0` | `[0.0, 1.0]` |  |  |
 | `eddyViscosityBedFacmax` 🔬 | Limit eddy viscosity at bed by factor of first layer above. | `0.0` | `[0.0, 1.0]` |  |  |
-| `lateral_fixedweir_umin_method` 🔬 | Method for minimal velocity threshold for weir losses in iterative lateral 1D2D weir coupling. |  |  |  |  |
-| `lateral_fixedweir_minimal_1d2d_embankment` 🔬 | Minimal crest height of 1D2D SOBEK-DFM embankments. |  |  |  |  |
-| `testFixedWeirs` 🔬 | Test for fixed weir algorithms. |  | <ul><li>**`0`**: original Villemonte (Sieben2010) approach</li><li>**`1`**: Sieben2007</li></ul> |  |  |
+| `lateral_fixedweir_umin_method` 🔬 | Method for minimal velocity threshold for weir losses in iterative lateral 1D2D weir coupling. | `0` |  |  |  |
+| `lateral_fixedweir_minimal_1d2d_embankment` 🔬 | Minimal crest height of 1D2D SOBEK-DFM embankments. | `0.0` |  |  |  |
+| `testFixedWeirs` 🔬 | Test for fixed weir algorithms. | `0` | <ul><li>**`0`**: original Villemonte (Sieben2010) approach</li><li>**`1`**: Sieben2007</li></ul> |  |  |
 | `jposhchk` 🔬 | Check for positive waterdepth. | `2` | <ul><li>**`0`**: no</li><li>**`1`**: 0.7dts, just redo</li><li>**`2`**: 1.0dts, close all links</li><li>**`3`**: 0.7dts, close all links</li><li>**`4`**: 1.0dts, reduce au</li><li>**`5`**: 0.7dts, reduce au</li><li>**`6`**: 1.0dts, close outflowing links</li><li>**`7`**: 0.7dts, close outflowing links</li></ul> |  |  |
-| `cfConHorMom` 🔬 | Constant for including (1-CFL) in HO term horizontal momentum. |  |  |  |  |
-| `cfFacHorMom` 🔬 | Factor for including (1-CFL) in HO term horizontal momentum. |  | `[0.0, 1.0]` |  |  |
-| `trsh_u1lb` 🔬 | 2D bedfriction in 3D below this threshold. |  | `[0.0, 1.0]` | [m] |  |
+| `cfConHorMom` 🔬 | Constant for including (1-CFL) in HO term horizontal momentum. | `0.0` |  |  |  |
+| `cfFacHorMom` 🔬 | Factor for including (1-CFL) in HO term horizontal momentum. | `1.0` | `[0.0, 1.0]` |  |  |
+| `trsh_u1lb` 🔬 | 2D bedfriction in 3D below this threshold. | `0.0` | `[0.0, 1.0]` | [m] |  |
 | `jaupwindsrc` 🔬 | Upwind advection discretization at sources/sinks. | `1` | <ul><li>**`0`**: no (higher-order)</li><li>**`1`**: yes (first-order)</li></ul> |  |  |
 | `corioAdamsBashfordFac` 🔬 | Only when `newCorio`=1, Adams-Bashford factor in Coriolis term. | `0.5` |  |  |  |
 | `corioConstant` 🔬 | Coriolis constant. | `0` | <ul><li>**`0`**: no change in Coriolis</li><li>**`1`**: Coriolis constant in Spherical models</li><li>**`2`**: beta plane approach both in Cartesian and Spherical coordinates</li></ul> |  |  |
@@ -276,7 +276,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `horAdvTypZLayer` 🔬 | Horizontal advection treatment of z-layers for dambreaks. | `0` | <ul><li>**`0`**: default</li><li>**`2`**: sigma-like</li></ul> |  |  |
 | `iCoriolisType` 🔬 | Coriolis type. | `5` | <ul><li>**`0`**: no Coriolis force</li><li>**`5`**: default approach for Coriolis (depth dependent and similar to Delft3D-FLOW)</li></ul> |  |  |
 | `zwsbTol` 🔬 | Tolerance for zws(kb-1) at bed. | `0.0` |  |  |  |
-| `cfExpHu` 🔬 | Exponent for including (1-CFL) in sethu. |  |  |  |  |
+| `cfExpHu` 🔬 | Exponent for including (1-CFL) in sethu. | `1.0` |  |  |  |
 | `jbasqbnddownwindhs` 🔬 | Water depth scheme at discharge boundaries. | `0` | <ul><li>**`0`**: original hu</li><li>**`1`**: downwind hs</li></ul> |  |  |
 | `filterOrder` 🔬 | First-order or second order filter to suppress checkerboarding. | `2` | <ul><li>**`1`**: first order</li><li>**`2`**: second order</li></ul> |  |  |
 | `keepSTBndOnOutflow` 🔬 | Keep salinity and temperature signals on boundary cells at outflow. | `1` | <ul><li>**`0`**: no (like Thatcher-Harleman)</li><li>**`1`**: yes (use prescribed boundary conditions)</li></ul> |  |  |
@@ -288,7 +288,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `newCorio` 🔬 | New standard way of Coriolis term calculation. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `barrierAdvection` 🔬 | Advection modelling at barriers. | `1` | <ul><li>**`1`**: no correction</li><li>**`2`**: advection correction</li></ul> |  |  |
 | `rhoInterfaces` 🔬 | Estimate rho at 3D layer interfaces for baroclinic pressure gradient method. | `-1` | <ul><li>**`-1`**: Original linear interpolation</li><li>**`0`**: Improved linear interpolation</li><li>**`1`**: Recompute from salinity and temperature</li><li>**`2`**: Use cell density</li></ul> |  |  |
-| `chkdifd` 🔬 | Check diffusion terms if depth < `chkdifd`, only if `transportAutoTimeStepDiff`=1. |  |  |  |  |
+| `chkdifd` 🔬 | Check diffusion terms if depth < `chkdifd`, only if `transportAutoTimeStepDiff`=1. | `0.01` |  |  |  |
 | `fixedWeirFrictScheme` 🔬 | Fixed weir friction scheme. | `0` | <ul><li>**`0`**: friction based on hu</li><li>**`1`**: friction based on subgrid weir friction scheme</li><li>**`2`**: without weir (like WAQUA)</li><li>**`3`**: full undisturbed velocity reconstruction</li><li>**`4`**: full undisturbed velocity reconstruction</li></ul> |  |  |
 | `testDryingFlooding` 🔬 | Drying flooding algorithm. | `0` | <ul><li>**`0`**: D-Flow FM</li><li>**`1`**: Delft3D-FLOW</li><li>**`2`**: similar to `0`, and volume limitation in the transport solver based on `epshu`</li></ul> |  |  |
 | `turbulenceAdvection` 🔬 | Turbulence advection. | `3` | <ul><li>**`0`**: none</li><li>**`1`**: upwind explicit</li><li>**`2`**: central explicit</li><li>**`3`**: horizontally explicit and vertically implicit</li><li>**`4`**: central implicit</li></ul> |  |  |
@@ -306,19 +306,19 @@ This section contains the settings of specific parts of the flow solver, such as
 | `locSaltMax` 🔬 | Maximum salinity for case of lock exchange. | `10.0` |  |  |  |
 | `locSaltLev` 🔬 | Salinity level for case of lock exchange. | `1.0` |  |  |  |
 | `linContin` 🔬 | Linear continuity. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `cfExpHorMom` 🔬 | Exponent for including (1-CFL) in HO term horizontal momentum. |  |  |  |  |
-| `coriohhtrsh` 🔬 | Only when `newCorio`=1, 0.0=no safety in hu/hus weightings. |  | `≥0.0` |  |  |
-| `limTypW` 🔬 | Limiter type for wave action transport. |  | <ul><li>**`0`**: no</li><li>**`1`**: minmod</li><li>**`2`**: vanLeer</li><li>**`3`**: Koren</li><li>**`4`**: Monotone Central</li></ul> |  |  |
-| `huWeirRegular` 🔬 | For Villemonte and Tabellenboek, regular hu below `huWeirRegular`. |  |  |  |  |
-| `structureLayersActive` 🔬 | For Villemonte and Tabellenboek, regular hu below `huWeirRegular`. |  | <ul><li>**`0`**: structure flow through all layers</li><li>**`1`**: structure flow only through open layers</li></ul> |  |  |
-| `baOrgFracMin` 🔬 | Cell area = max(orgcellarea\*`baOrgFracMin`, cut cell area). |  |  |  |  |
-| `subsuplupdates1` 🔬 | Update water levels (s1) due to subsidence/uplift. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `linkDriedMx` 🔬 | Maximum number of Au growth steps after having dried. |  |  |  |  |
-| `lateral_fixedweir_relax` 🔬 | Relaxation factor for iterative lateral 1D2D weir coupling algorithm. |  |  |  |  |
-| `numlimdt_baorg` 🔬 | If previous numlimdt > `numlimdt_baorg` keep original cell area ba in cut cell. |  |  |  |  |
-| `cfFacHu` 🔬 | Factor for including (1-CFL) in sethu. |  |  |  |  |
+| `cfExpHorMom` 🔬 | Exponent for including (1-CFL) in HO term horizontal momentum. | `1.0` |  |  |  |
+| `coriohhtrsh` 🔬 | Only when `newCorio`=1, 0.0=no safety in hu/hus weightings. | `0.0` | `≥0.0` |  |  |
+| `limTypW` 🔬 | Limiter type for wave action transport. | `4` | <ul><li>**`0`**: no</li><li>**`1`**: minmod</li><li>**`2`**: vanLeer</li><li>**`3`**: Koren</li><li>**`4`**: Monotone Central</li></ul> |  |  |
+| `huWeirRegular` 🔬 | For Villemonte and Tabellenboek, regular hu below `huWeirRegular`. | `0.0` |  |  |  |
+| `structureLayersActive` 🔬 | For Villemonte and Tabellenboek, regular hu below `huWeirRegular`. | `1` | <ul><li>**`0`**: structure flow through all layers</li><li>**`1`**: structure flow only through open layers</li></ul> |  |  |
+| `baOrgFracMin` 🔬 | Cell area = max(orgcellarea\*`baOrgFracMin`, cut cell area). | `0.0` |  |  |  |
+| `subsuplupdates1` 🔬 | Update water levels (s1) due to subsidence/uplift. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `linkDriedMx` 🔬 | Maximum number of Au growth steps after having dried. | `0` |  |  |  |
+| `lateral_fixedweir_relax` 🔬 | Relaxation factor for iterative lateral 1D2D weir coupling algorithm. | `0.1` |  |  |  |
+| `numlimdt_baorg` 🔬 | If previous numlimdt > `numlimdt_baorg` keep original cell area ba in cut cell. | `0` |  |  |  |
+| `cfFacHu` 🔬 | Factor for including (1-CFL) in sethu. | `1.0` |  |  |  |
 | `vertAdvTypMom3OnBnd` 🔬 | Vertical advection type u1 bnd UpwimpL. | `0` | <ul><li>**`0`**: follow javau</li><li>**`1`**: on bnd</li><li>**`2`**: on and near bnd</li></ul> |  |  |
-| `noDerivedTypes` 🔬 | Use derived types. |  | <ul><li>**`0`**: use derived types</li><li>**`1`**: less</li><li>**`2`**: lesser</li><li>**`5`**: also deallocate derived types</li></ul> |  |  |
+| `noDerivedTypes` 🔬 | Use derived types. | `5` | <ul><li>**`0`**: use derived types</li><li>**`1`**: less</li><li>**`2`**: lesser</li><li>**`5`**: also deallocate derived types</li></ul> |  |  |
 | `jarhoxu` 🔬 | Include density gradient in advection term. | `0` | <ul><li>**`0`**: no (strongly advised)</li><li>**`1`**: yes</li><li>**`2`**: also in barotropic and baroclinic pressure term</li><li>**`3`**: also in vertical advection</li><li>**`4`**: also in vertical advection</li></ul> |  |  |
 | `ilutype` 🔬 | TODO. | `0` |  |  |  |
 | `nlevel` 🔬 | TODO. | `0` |  |  |  |
@@ -326,8 +326,8 @@ This section contains the settings of specific parts of the flow solver, such as
 | `pillarFarFieldVelocity` 🔬 | Use far-field velocity for pillars. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `minWaterlevelChangeBreak` | Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0). | `0.0` |  | [m] |  |
 | `maxSSC` | Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off) | `1000000.0` |  |  |  |
-| `perotWeightUpdate` | Perot weight update option. |  |  |  |  |
-| `perotType` | Perot discretization type. |  |  |  |  |
+| `perotWeightUpdate` | Perot weight update option. | `0` |  |  |  |
+| `perotType` | Perot discretization type. | `1` |  |  |  |
 
 
 <a id="supported-keywords-and-options-physics"></a>
@@ -393,9 +393,9 @@ In this field, physical model parameters can be inserted, for instance related t
 | `betaSpiral` | Weight factor of the spiral flow intensity on flow dispersion stresses. 0.0=disabled. | `0.0` |  | [-] |  |
 | `breachGrowth` | Method for distributing dam breach width over dam break flow links. | `symmetric-asymmetric` | <ul><li>**`symmetric`**: symmetrical growth</li><li>**`proportional`**: proportional growth relative to available width</li><li>**`symmetric-asymmetric`**: symmetrical growth until end reached on one side</li></ul> |  |  |
 | `thermobaricityInPressureGradient` 🔬 | Apply thermobaricity in computing the baroclinic pressure gradient. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `surfTempSmoFac` 🔬 | Horizontal smoothing factor for surface water in heatflux computations. |  | `[0.0, 1.0]` |  |  |
+| `surfTempSmoFac` 🔬 | Horizontal smoothing factor for surface water in heatflux computations. | `0.0` | `[0.0, 1.0]` |  |  |
 | `selfAttractionLoading_correct_wl_with_ini` 🔬 | Correct water level with initial water level in self attraction and loading. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `nfEntrainmentMomentum` 🔬 | Use momentum transfer in NearField related entrainment. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `nfEntrainmentMomentum` 🔬 | Use momentum transfer in NearField related entrainment. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `equili` 🔬 | Equilibrium spiral flow intensity. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `soilTempThick` 🔬 | Use soil temperature buffer if >0.0 | `0.0` |  | [m] |  |
 | `selfAttractionLoading` 🔬 | Use self attraction and loading. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li><li>**`2`**: only self attraction</li></ul> |  |  |
@@ -418,30 +418,30 @@ This section contains the setting for sediment transport and morphology.
 | `sedimentModelNr` | Sediment model number. | `2` | <ul><li>**`0`**: no</li><li>**`1`**: Krone</li><li>**`2`**: SvR2007</li><li>**`3`**: E-H</li><li>**`4`**: MorphologyModule</li></ul> |  |  |
 | `morFile` | Morphology settings file (\*.mor). | `<empty>` |  |  |  |
 | `sedFile` | Sediment characteristics file (\*.sed). | `<empty>` |  |  |  |
-| `jaceneqtr` | TODO |  |  |  |  |
-| `mxgrkrone` 🔬 | Highest fraction index treated by Krone. |  |  |  |  |
-| `sedDensCoupling` 🔬 | Sed rho coupling. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `implicitFallVelocity` 🔬 | Implicit or explicit fall velocity |  | <ul><li>**`0`**: implicit</li><li>**`1`**: explicit</li></ul> |  |  |
-| `nr_of_sedfractions` 🔬 | Number of sediment fractions. |  |  |  |  |
+| `jaceneqtr` | TODO | `2` |  |  |  |
+| `mxgrkrone` 🔬 | Highest fraction index treated by Krone. | `-1` |  |  |  |
+| `sedDensCoupling` 🔬 | Sed rho coupling. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `implicitFallVelocity` 🔬 | Implicit or explicit fall velocity | `1` | <ul><li>**`0`**: implicit</li><li>**`1`**: explicit</li></ul> |  |  |
+| `nr_of_sedfractions` 🔬 | Number of sediment fractions. | `0` |  |  |  |
 | `dredgeFile` | Dredging/dumping settings file (\*.dad) | `<empty>` |  |  |  |
 | `bndTreatment` | Separate treatment boundary links in upwinding transports. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `sourSink` | Switch off source or sink terms for sed advection. | `1` | <ul><li>**`0`**: off</li><li>**`1`**: source+sink</li><li>**`2`**: source</li><li>**`3`**: sink for sediment</li></ul> |  |  |
 | `cRefCav` | Calibration par only in jased==3, default=20.0 ( )  | `20.0` |  |  |  |
-| `d50` | Mean Sandgrain diameter (m), e.g. 0.0001 |  |  |  |  |
-| `morFac` | Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc |  |  |  |  |
-| `rhoSed` | Mean Sandgrain rho (kg/m3) , e.g. 2650 |  |  |  |  |
-| `numIntVerticalEinstein` | Number of vertical intervals in Einstein integrals ( )  |  |  |  |  |
-| `alfaBed` | Calibration par bed      load, default=1.0 ( )  |  |  |  |  |
-| `tMorfSpinup` | Spin up time for morphological adaptations (s) |  |  |  |  |
-| `initialSedimentConcentration` | Initial Sediment Concentration in jased==3 (kg/m3)   |  |  |  |  |
-| `uniformErodableThickness` | Uniform erodable layer thickness (m) |  |  |  |  |
-| `alfaSus` | Calibration par suspended load, default=1.0 ( )  |  |  |  |  |
+| `d50` | Mean Sandgrain diameter (m), e.g. 0.0001 | `0.0002` |  |  |  |
+| `morFac` | Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc | `1.0` |  |  |  |
+| `rhoSed` | Mean Sandgrain rho (kg/m3) , e.g. 2650 | `2650.0` |  |  |  |
+| `numIntVerticalEinstein` | Number of vertical intervals in Einstein integrals ( )  | `10` |  |  |  |
+| `alfaBed` | Calibration par bed      load, default=1.0 ( )  | `1.0` |  |  |  |
+| `tMorfSpinup` | Spin up time for morphological adaptations (s) | `0.0` |  |  |  |
+| `initialSedimentConcentration` | Initial Sediment Concentration in jased==3 (kg/m3)   | `0.0` |  |  |  |
+| `uniformErodableThickness` | Uniform erodable layer thickness (m) | `1.0` |  |  |  |
+| `alfaSus` | Calibration par suspended load, default=1.0 ( )  | `1.0` |  |  |  |
 | `morCFL` | Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes) | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `DzbDtMax` | Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m) | `0.1` |  |  |  |
 | `morphoPol` | Only apply bed updating within specified polygon (\*.pol) | `<empty>` |  |  |  |
-| `ws` | Fall velocity (m/s), e.g. 0.0005 m/s |  |  |  |  |
-| `erosionPar` | Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s) |  |  |  |  |
-| `tauCre` | Critical shear stress for erosion    (N/m2), e.g. 0.3 |  |  |  |  |
+| `ws` | Fall velocity (m/s), e.g. 0.0005 m/s | `0.0003` |  |  |  |
+| `erosionPar` | Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s) | `0.0001` |  |  |  |
+| `tauCre` | Critical shear stress for erosion    (N/m2), e.g. 0.3 | `0.3` |  |  |  |
 | `inMorphoPol` | Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update) | `1` | <ul><li>**`0`**: inside polygon no update</li><li>**`1`**: inside polygon yes update</li></ul> |  |  |
 | `mormergeDtUser` | Mormerge operation | `0` | <ul><li>**`0`**: at dts</li><li>**`1`**: at dtuser timesteps</li></ul> |  |  |
 | `upperLimitSSC` | Upper limit of cell centre SSC concentration after transport timestep. | `1e-06` |  |  |  |
@@ -455,8 +455,8 @@ Section for configuring the Sedtrails output.
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `sedTrailsGrid` 🔬 | Grid file for sedtrails output locations on corners. | `<empty>` |  |  |  |
-| `sedtrailsAnalysis` 🔬 | Option for writing sedtrails to the output file. |  | <ul><li>**`all`**: write all quantities</li><li>**`transport`**: write bedload and suspended-load transport vectors per sediment fraction</li><li>**`flowvelocity`**: write depth-averaged velocity components at grid corners</li><li>**`soulsby`**: write quantities for the Soulsby sediment mobility method</li></ul> |  |  |
-| `sedtrailsInterval` 🔬 | Sedtrails output, given as 'interval' 'start period' 'end period'. |  |  |  |  |
+| `sedtrailsAnalysis` 🔬 | Option for writing sedtrails to the output file. | `all` | <ul><li>**`all`**: write all quantities</li><li>**`transport`**: write bedload and suspended-load transport vectors per sediment fraction</li><li>**`flowvelocity`**: write depth-averaged velocity components at grid corners</li><li>**`soulsby`**: write quantities for the Soulsby sediment mobility method</li></ul> |  |  |
+| `sedtrailsInterval` 🔬 | Sedtrails output, given as 'interval' 'start period' 'end period'. | `0.0` |  |  |  |
 | `sedtrailsOutputFile` 🔬 | Sedtrails time-averaged output file. | `<empty>` |  |  |  |
 
 
@@ -491,23 +491,23 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `waveModelNr` | Wave model nr. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited Hurdle-Stive</li><li>**`2`**: fetch/depth limited Young-Verhagen</li><li>**`3`**: SWAN</li><li>**`5`**: uniform</li><li>**`7`**: Offline Wave Coupling</li></ul> |  |  |
-| `waveforcing` | Wave forcing mode (only supported for waveModelNr = 7). |  |  |  |  |
+| `waveforcing` | Wave forcing mode (only supported for waveModelNr = 7). | `0` |  |  |  |
 | `3Dwavebreakerturbulence` | Add wave-induced production terms in turbulence modelling | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`none`**: none</li><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |  |
 | `gammaX` | Maximum wave height/water depth ratio. | `0.5` |  |  |  |
 | `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `surfBeatInput` | File with surf beat input conditions. | `<empty>` |  |  |  |
 | `waveSwartDelwaq` 🔬 | If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb. | `0` | <ul><li>**`0`**: Communicate only the current-related shear stress (taucur) to Delwaq.</li><li>**`1`**: Communicate the linear sum taucur + tauwave to Delwaq.</li><li>**`2`**: Communicate the maximum shear stress (taubxu) to Delwaq.</li></ul> |  |  |
-| `hwavuni` 🔬 | Root mean square wave height. |  |  | [m] |  |
-| `tiFetchComp` 🔬 | Time interval fetch comp if `waveModelNr`=1,2. |  |  | [s] |  |
-| `phiwavuni` 🔬 | Root mean square wave direction, math convention. |  |  | [deg] |  |
-| `3DWaveStreaming` 🔬 | Influence of wave streaming. 0: no, 1: added to adve. |  |  |  |  |
-| `3DWaveBoundaryLayer` 🔬 | Boundary layer formulation. |  | <ul><li>**`0`**: none</li><li>**`1`**: Sana</li></ul> |  |  |
-| `twavuni` 🔬 | Root mean square wave period. |  |  | [s] |  |
-| `uorbfac` 🔬 | Orbital velocities. |  | <ul><li>**`0`**: D3D style</li><li>**`1`**: Guza style</li></ul> |  |  |
-| `3DStokesProfile` 🔬 | Stokes profile. |  | <ul><li>**`0`**: no</li><li>**`1`**: uniform over depth</li><li>**`2`**: second-order Stokes theory</li><li>**`3`**: `2` with vertical stokes gradient in adve.</li></ul> |  |  |
+| `hwavuni` 🔬 | Root mean square wave height. | `0.0` |  | [m] |  |
+| `tiFetchComp` 🔬 | Time interval fetch comp if `waveModelNr`=1,2. | `0.0` |  | [s] |  |
+| `phiwavuni` 🔬 | Root mean square wave direction, math convention. | `0.0` |  | [deg] |  |
+| `3DWaveStreaming` 🔬 | Influence of wave streaming. 0: no, 1: added to adve. | `0` |  |  |  |
+| `3DWaveBoundaryLayer` 🔬 | Boundary layer formulation. | `1` | <ul><li>**`0`**: none</li><li>**`1`**: Sana</li></ul> |  |  |
+| `twavuni` 🔬 | Root mean square wave period. | `0.0` |  | [s] |  |
+| `uorbfac` 🔬 | Orbital velocities. | `0` | <ul><li>**`0`**: D3D style</li><li>**`1`**: Guza style</li></ul> |  |  |
+| `3DStokesProfile` 🔬 | Stokes profile. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: uniform over depth</li><li>**`2`**: second-order Stokes theory</li><li>**`3`**: `2` with vertical stokes gradient in adve.</li></ul> |  |  |
 | `jamapsigwav` 🔬 | Wave height on map output | `0` | <ul><li>**`0`**: hrms wave height</li><li>**`1`**: sign wave height</li></ul> |  |  |
-| `hminlw` 🔬 | Cut-off depth for application of wave forces in momentum balance. |  |  |  |  |
+| `hminlw` 🔬 | Cut-off depth for application of wave forces in momentum balance. | `0.2` |  |  |  |
 | `jahissigwav` 🔬 | Wave height on his output | `1` | <ul><li>**`0`**: hrms wave height</li><li>**`1`**: sign wave height</li></ul> |  |  |
 
 
@@ -555,17 +555,17 @@ This section contains the time settings for the model, such as start and stop ti
 | `dtInit` | Initial timestep in seconds. | `1.0` |  | [s] |  |
 | `tStart` | Start time w.r.t. `refDate`. | `0.0` |  | [tUnit] |  |
 | `tStop` | Stop time w.r.t. `refDate`. | `86400.0` |  | [tUnit] |  |
-| `startDateTime` | Computation start datetime, when specified, overrides `tStart`. |  |  |  | `yyyymmddhhmmss` |
-| `stopDateTime` | Computation stop datetime, when specified, overrides `tStop`. |  |  |  | `yyyymmddhhmmss` |
+| `startDateTime` | Computation start datetime, when specified, overrides `tStart`. | `<empty>` |  |  | `yyyymmddhhmmss` |
+| `stopDateTime` | Computation stop datetime, when specified, overrides `tStop`. | `<empty>` |  |  | `yyyymmddhhmmss` |
 | `updateRoughnessInterval` | Update interval for time dependent roughness parameters. | `86400.0` |  | [s] |  |
 | `tStartTlfsmo` | Start time w.r.t. `refDate` of Fourier smoothing time on water level boundaries. | `0.0` |  | [tUnit] |  |
-| `startDateTimeTlfsmo` | Computation start datetime w.r.t. `refDate` of Fourier smoothing time on water level boundaries, when specified, overrides `tStartTlfsmo`. |  |  |  | `yyyymmddhhmmss` |
+| `startDateTimeTlfsmo` | Computation start datetime w.r.t. `refDate` of Fourier smoothing time on water level boundaries, when specified, overrides `tStartTlfsmo`. | `<empty>` |  |  | `yyyymmddhhmmss` |
 | `autoTimestep` | Automatic timestepping limited by the CFL condition. Several options are available controlling which flows are used in the CFL limit. Options 1 and 5 are the default for 2D and 3D models, respectively. | `1` | <ul><li>**`0`**: Use no CFL timestep limit (use constant timestepping)</li><li>**`1`**: For 2D-models; use outflows in CFL timestep limit</li><li>**`3`**: For 3D-models; use horizontal outflows (per cell-layer) in CFL timestep limit</li><li>**`4`**: For 3D-models; use horizontal in- and outflows (per cell-layer) in CFL timestep limit</li><li>**`5`**: For 3D-models; use in- or outflows (per cell-column) in CFL timestep limit</li></ul> |  |  |
 | `autoTimestepNoStruct` | Exclude structure links (and neighbours) from time step limitation. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `autoTimestepNoQOut` | Exclude negative qin terms from time step limitation. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `dtFacMax` | Max timestep increase factor in successive time steps. | `1.1` |  |  |  |
 | `timeStepAnalysis` 🔬 | Write time steps analysis file \*.steps. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `autoTimeStepVisc` 🔬 | Use time step limitation based on explicit diffusive term. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `autoTimeStepVisc` 🔬 | Use time step limitation based on explicit diffusive term. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
 <a id="supported-keywords-and-options-restart"></a>
@@ -576,7 +576,7 @@ This section contains the settings for restarting from a previous simulation.
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `restartFile` | Restart file, only from NetCDF-file, hence: either \*_rst.nc or \*_map.nc. | `<empty>` |  |  |  |
-| `restartDateTime` | Restart time, only relevant but obligatory in case of restart from \*_map.nc. |  |  |  | `yyyymmddhhmmss` |
+| `restartDateTime` | Restart time, only relevant but obligatory in case of restart from \*_map.nc. | `<empty>` |  |  | `yyyymmddhhmmss` |
 | `rstIgnoreBl` 🔬 | Ignore bed level from restart. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
@@ -589,10 +589,10 @@ This section contains the settings for external forcings.
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `extForceFile` | Old format for external forcings file \*.ext, link with tim/cmp-format boundary conditions specification. | `<empty>` |  |  |  |
 | `extForceFileNew` | New format for external forcings file \*.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. | `<empty>` |  |  |  |
-| `rainfall` | Include rainfall. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `qExt` | Include user Qin/out, externally provided. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `evaporation` | Include evaporation in water balance. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `windExt` | Include wind, externally provided. |  | <ul><li>**`0`**: no</li><li>**`1`**: reserved for EC</li><li>**`2`**: yes</li></ul> |  |  |
+| `rainfall` | Include rainfall. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `qExt` | Include user Qin/out, externally provided. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `evaporation` | Include evaporation in water balance. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `windExt` | Include wind, externally provided. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: reserved for EC</li><li>**`2`**: yes</li></ul> |  |  |
 
 
 <a id="supported-keywords-and-options-trachytopes"></a>
@@ -607,8 +607,8 @@ This section contains the settings for trachytopes allowing the usage of differe
 | `trtL` | File (\*.arl) including distribution of trachytope definitions. | `<empty>` |  |  |  |
 | `dtTrt` | Interval for updating of bottom roughness due to trachytopes in seconds. | `60.0` |  | [s] |  |
 | `trtMxR` | Maximum recursion level for composite trachytope definitions. | `8` |  |  |  |
-| `trtMth` 🔬 | Area averaging method. |  | <ul><li>**`1`**: Nikuradse k based</li><li>**`2`**: Chezy C based (parallel and serial)</li></ul> |  |  |
-| `trtMnh` 🔬 | Minimum water depth for roughness computations. |  |  |  |  |
+| `trtMth` 🔬 | Area averaging method. | `1` | <ul><li>**`1`**: Nikuradse k based</li><li>**`2`**: Chezy C based (parallel and serial)</li></ul> |  |  |
+| `trtMnh` 🔬 | Minimum water depth for roughness computations. | `0.1` |  |  |  |
 | `trtCll` 🔬 | Calibration factor file for roughness from trachytopes. | `<empty>` |  |  |  |
 
 
@@ -714,7 +714,7 @@ This section contains the settings for various output files.
 | `wriMap_chezy_on_flow_links` | Write chezy roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `writePart_domain` | Write interpreted network file (DFM_interpreted_idomain_\*.nc) containing domain partition info. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `velocityDirectionClassesInterval` | Class map's step size of class values for velocity direction. | `0.0` |  |  |  |
-| `velocityMagnitudeClasses` | Class map's list of class values for velocity magnitudes. | `0.0` |  |  |  |
+| `velocityMagnitudeClasses` | Class map's list of class values for velocity magnitudes. | `<empty>` |  |  |  |
 | `wriMap_input_roughness` | Write chezy input roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_turbulence` | Write turbulence to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_rain` | Write rainfall rate to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -766,37 +766,37 @@ This section contains the settings for various output files.
 | `eulerVelocities` | Write Eulerian velocities. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `avgWaveOutputInterval` | Average wave output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `classMapFile` | Name of class map file. | `<empty>` |  |  |  |
-| `waterLevelClasses` | Series of values between which water level classes are computed. | `0.0` |  |  |  |
-| `waterDepthClasses` | Series of values between which water depth classes are computed. | `0.0` |  |  |  |
+| `waterLevelClasses` | Series of values between which water level classes are computed. | `<empty>` |  |  |  |
+| `waterDepthClasses` | Series of values between which water depth classes are computed. | `<empty>` |  |  |  |
 | `classMapInterval` | Interval between class map file outputs, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `waqInterval` | Interval between DELWAQ file outputs, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |  |
 | `statsInterval` | Interval between screen step outputs in seconds simulation time, if negative in seconds wall clock time. | `-60.0` |  | [s] |  |
 | `timingsInterval` | Timings output interval. | `0.0` |  | [s] |  |
 | `richardsonOnOutput` | Write Richardson number. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `mbaLumpSourceSinks` 🔬 | Lump MBA source/sink mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wrimap_nearfield` 🔬 | Write NearField parameters. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `writeDfmInterpretedValues` 🔬 | Write DFM interpreted values. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `mbaLumpBoundaries` 🔬 | Lump MBA boundary mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaLumpSourceSinks` 🔬 | Lump MBA source/sink mass balance terms. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wrimap_nearfield` 🔬 | Write NearField parameters. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `writeDfmInterpretedValues` 🔬 | Write DFM interpreted values. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaLumpBoundaries` 🔬 | Lump MBA boundary mass balance terms. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `waqHorAggr` 🔬 | DELWAQ output horizontal aggregation file (\*.dwq). | `<empty>` |  |  |  |
-| `writeDetailedTimers` 🔬 | Write detailed timers output file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `writeDetailedTimers` 🔬 | Write detailed timers output file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `metadataFile` 🔬 | Metadata NetCDF file with user-defined global dataset attributes (\*_meta.nc). | `<empty>` |  |  |  |
-| `mbaInterval` 🔬 | Mass balance area output interval. |  |  | [s] |  |
-| `wrirst_bnd` 🔬 | Write water level. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `generateUuid` 🔬 | Generate UUID as unique dataset identifier and include in output NetCDF files. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaInterval` 🔬 | Mass balance area output interval. | `0.0` |  | [s] |  |
+| `wrirst_bnd` 🔬 | Write water level. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `generateUuid` 🔬 | Generate UUID as unique dataset identifier and include in output NetCDF files. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `timeSplitInterval` 🔬 | Time splitting interval after which a new output file is started. Format: value+unit, e.g. '1M'. | `<empty>` |  | [Y, M, D, h, m, s] |  |
 | `rugFile` 🔬 | Polyline file \*_rug.pli defining runup gauges. | `<empty>` |  |  |  |
-| `mbaWriteCsv` 🔬 | Write mass balance area output to a CSV file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `mbaLumpFromToMba` 🔬 | Lump MBA from/to other areas mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `mbaLumpProcesses` 🔬 | Lump MBA processes mass balance terms. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaWriteCsv` 🔬 | Write mass balance area output to a CSV file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaLumpFromToMba` 🔬 | Lump MBA from/to other areas mass balance terms. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaLumpProcesses` 🔬 | Lump MBA processes mass balance terms. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `waqVertAggr` 🔬 | DELWAQ output vertical aggregation file (\*.vag). | `<empty>` |  |  |  |
-| `mbaWriteNetcdf` 🔬 | Write mass balance area output to a NetCDF file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `mbaWriteTxt` 🔬 | Write mass balance area output to a TXT file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wrimap_ice` 🔬 | Write output to map file for ice cover. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `enableDebugArrays` | Enable debug arrays in output. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriHis_crs_flow` | Write cross-section flow output to history file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriHis_crs_constituents` | Write cross-section constituents output to history file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriHis_water_quality_output` | Write water quality output to history file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriHis_runupgauge` | Write runup gauge output to history file. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaWriteNetcdf` 🔬 | Write mass balance area output to a NetCDF file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `mbaWriteTxt` 🔬 | Write mass balance area output to a TXT file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wrimap_ice` 🔬 | Write output to map file for ice cover. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `enableDebugArrays` | Enable debug arrays in output. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriHis_crs_flow` | Write cross-section flow output to history file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriHis_crs_constituents` | Write cross-section constituents output to history file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriHis_water_quality_output` | Write water quality output to history file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriHis_runupgauge` | Write runup gauge output to history file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
 <a id="supported-keywords-and-options-calibration"></a>
@@ -819,7 +819,7 @@ This section settings for online water quality processes.
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
 | `substanceFile` 🔬 | Substance file name. | `<empty>` |  |  |  |
-| `substanceDensityCoupling` 🔬 | Substance rho coupling. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `substanceDensityCoupling` 🔬 | Substance rho coupling. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `additionalHistoryOutputFile` 🔬 | Extra history output filename. | `<empty>` |  |  |  |
 | `statisticsFile` 🔬 | Statistics definition file. | `<empty>` |  |  |  |
 | `thetaVertical` ⚠️ | Theta value for vertical transport of water quality substances. | `0.0` |  | [-] |  |
