@@ -5,15 +5,15 @@ subroutine write_bnd_loc (inest,sg)
 use swan_flow_grid_maps
 use read_grids
 implicit none
-type (grid)                 :: sg       ! actual swan grid
-integer                     :: inest    ! swan nested grid no.
-   call write_bnd(sg%x        ,sg%y       ,sg%mmax   ,sg%nmax   , &
+   type (grid) :: sg       ! actual swan grid
+   integer     :: inest    ! swan nested grid no.
+   call write_bnd(sg%x        ,sg%y       ,sg%kcs     ,sg%xymiss  ,sg%mmax   ,sg%nmax   , &
                 & inest      )
    call write_swan_grid (sg%x,sg%y,sg%mmax,sg%nmax,inest,sg%tmp_name)
 end subroutine write_bnd_loc
 
 
-subroutine write_bnd(xc        ,yc        ,mc        ,nc        , &
+subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc        , &
                 & inest      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -57,8 +57,10 @@ subroutine write_bnd(xc        ,yc        ,mc        ,nc        , &
     integer                   , intent(in)  :: inest
     integer                   , intent(in)  :: mc
     integer                   , intent(in)  :: nc
+    integer                   , dimension(mc, nc), intent(in) :: kcs
     real(kind=hp)   , dimension(mc, nc)     :: xc
     real(kind=hp)   , dimension(mc, nc)     :: yc
+    real(kind=hp)   , intent(in)            :: xymiss
 !
 ! Local variables
 !
@@ -66,6 +68,7 @@ subroutine write_bnd(xc        ,yc        ,mc        ,nc        , &
     integer           :: j
     integer           :: lunbot
     character(37)     :: fname
+    real(kind=hp), parameter :: TOL = 1.0e-6_hp
 !
 !! executable statements -------------------------------------------------------
 !
@@ -74,18 +77,35 @@ subroutine write_bnd(xc        ,yc        ,mc        ,nc        , &
        fname(1:12) = 'SWANIN_NGRID'
        write (fname(13:15),'(I3.3)') inest
        open (newunit=lunbot, file=fname(1:15))
+       ! Exclude inactive points and coordinate pairs equal to the declared
+       ! grid missing value. Do not pass those points to SWAN as nesting
+       ! locations.
        do i=1,mc
-          if (xc(i,1)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(i,1) ,yc(i,1)
+          if (valid_bnd_point(xc(i,1), yc(i,1), kcs(i,1), xymiss)) &
+             write(lunbot,'(2(F15.6,3X))') xc(i,1), yc(i,1)
        enddo
        do j=2,nc
-          if (xc(mc,j)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(mc,j),yc(mc,j)
+          if (valid_bnd_point(xc(mc,j), yc(mc,j), kcs(mc,j), xymiss)) &
+             write(lunbot,'(2(F15.6,3X))') xc(mc,j), yc(mc,j)
        enddo
        do i=mc-1,1,-1
-          if (xc(i,nc)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(i,nc),yc(i,nc)
+          if (valid_bnd_point(xc(i,nc), yc(i,nc), kcs(i,nc), xymiss)) &
+             write(lunbot,'(2(F15.6,3X))') xc(i,nc), yc(i,nc)
        enddo
        do j=nc-1,2,-1
-          if (xc(1,j)/=0.) write(lunbot,'(2(F15.6,3X))')  xc(1,j) ,yc(1,j)
+          if (valid_bnd_point(xc(1,j), yc(1,j), kcs(1,j), xymiss)) &
+             write(lunbot,'(2(F15.6,3X))') xc(1,j), yc(1,j)
        enddo
        close(lunbot)
     endif
+contains
+    logical function valid_bnd_point(x, y, mask, missing)
+        real(kind=hp), intent(in) :: x
+        real(kind=hp), intent(in) :: y
+        real(kind=hp), intent(in) :: missing
+        integer, intent(in) :: mask
+
+        valid_bnd_point = mask > 0 .and. &
+            .not. (abs(x - missing) < TOL .and. abs(y - missing) < TOL)
+    end function valid_bnd_point
 end subroutine write_bnd
