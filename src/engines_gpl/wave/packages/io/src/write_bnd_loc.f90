@@ -73,6 +73,10 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
     integer, allocatable :: boundary_m(:)
     integer, allocatable :: boundary_n(:)
     character(37)     :: fname
+    integer, parameter :: TOPOLOGY_VALID = 0
+    integer, parameter :: TOPOLOGY_NO_ACTIVE_POINTS = 1
+    integer, parameter :: TOPOLOGY_DISCONNECTED_REGIONS = 2
+    integer, parameter :: TOPOLOGY_UNSUPPORTED_ONE_CELL = 3
     real(kind=hp), parameter :: TOL = 1.0e-6_hp
     ! Move each location by a small fraction of its incoming edge. This makes
     ! every child boundary point belong to one nesting segment only; SWAN can
@@ -85,13 +89,13 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
     if (inest>1) then
        call validate_active_topology(topology_status)
        select case (topology_status)
-       case (1)
+       case (TOPOLOGY_NO_ACTIVE_POINTS)
           call wavestop(1, '*** ERROR: SWAN nesting grid has no active points')
           return
-       case (2)
+       case (TOPOLOGY_DISCONNECTED_REGIONS)
           call wavestop(1, '*** ERROR: SWAN nesting grid has disconnected active regions')
           return
-       case (3)
+       case (TOPOLOGY_UNSUPPORTED_ONE_CELL)
           call wavestop(1, '*** ERROR: SWAN nesting grid has unsupported one-cell-wide active topology')
           return
        end select
@@ -243,7 +247,7 @@ contains
         integer, allocatable :: queue_m(:)
         integer, allocatable :: queue_n(:)
 
-        status = 0
+        status = TOPOLOGY_VALID
         component_count = 0
         allocate(visited(mc,nc), queue_m(mc*nc), queue_n(mc*nc))
         visited = .false.
@@ -254,7 +258,7 @@ contains
                     cycle
                 end if
                 if (.not. swan_valid_boundary_point(m, n)) then
-                    status = 3
+                    status = TOPOLOGY_UNSUPPORTED_ONE_CELL
                     deallocate(visited, queue_m, queue_n)
                     return
                 endif
@@ -265,7 +269,7 @@ contains
                         swan_valid_boundary_point(neighbour_m, neighbour_n)
                 enddo
                 if (.not. any(neighbour_is_valid)) then
-                    status = 3
+                    status = TOPOLOGY_UNSUPPORTED_ONE_CELL
                     deallocate(visited, queue_m, queue_n)
                     return
                 endif
@@ -279,7 +283,7 @@ contains
                 end if
                 component_count = component_count + 1
                 if (component_count > 1) then
-                    status = 2
+                    status = TOPOLOGY_DISCONNECTED_REGIONS
                     deallocate(visited, queue_m, queue_n)
                     return
                 endif
@@ -312,7 +316,7 @@ contains
         enddo
 
         if (component_count == 0) then
-            status = 1
+            status = TOPOLOGY_NO_ACTIVE_POINTS
         end if
         deallocate(visited, queue_m, queue_n)
     end subroutine validate_active_topology
