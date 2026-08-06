@@ -22,7 +22,7 @@ project {
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "DslContext.getParameter("s3_dsctestbench_secret")")
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
 
         param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
         password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))

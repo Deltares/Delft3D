@@ -21,7 +21,7 @@ object TemplateFunctionalityDocumentation : Template({
 
     params {
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "DslContext.getParameter("s3_dsctestbench_secret")")
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
     }
 
     vcs {
