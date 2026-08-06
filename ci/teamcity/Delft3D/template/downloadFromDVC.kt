@@ -14,6 +14,8 @@ object TemplateDownloadFromDVC : Template({
         // DVC remote credentials (s3://delft3d-testbench)
         param("env.AWS_ACCESS_KEY_ID", "%dvc_testbench_accesskey%")
         password("env.AWS_SECRET_ACCESS_KEY", "%dvc_testbench_secret%")
+        // Avoid IMDS hangs on non-EC2 Windows agents
+        param("env.AWS_EC2_METADATA_DISABLED", "true")
     }
 
     steps {
@@ -21,9 +23,17 @@ object TemplateDownloadFromDVC : Template({
             name = "split engine_name_and_dir"
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
-        script {
+        // Build-side install: TeamCity creates a venv and pip-installs dvc + dvc-s3
+        // so agents do not need a preinstalled dvc on PATH.
+        python {
             name = "DVC Pull all doc.dvc files recursively"
-            scriptContent = """powershell.exe -NoProfile -ExecutionPolicy Bypass -File "ci/teamcity/Delft3D/windows/scripts/pullDocsForEngine.ps1" -EngineDir "%engine_dir%" """
+            environment = venv {
+                requirementsFile = "ci/teamcity/Delft3D/windows/scripts/dvc-docs-requirements.txt"
+            }
+            command = file {
+                filename = "ci/teamcity/Delft3D/windows/scripts/pull_docs_for_engine.py"
+                scriptArguments = "--engine-dir %engine_dir%"
+            }
         }
     }
 })

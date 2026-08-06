@@ -1,6 +1,13 @@
+# Legacy PowerShell entrypoint. TeamCity documentation builds now use
+# pull_docs_for_engine.py via a Python venv step (build-side dvc install).
+# This script keeps the same behaviour for local/manual runs: install dvc into
+# a local venv if needed, then pull.
+
 param(
     [string]$EngineDir = $env:engine_dir
 )
+
+$ErrorActionPreference = "Stop"
 
 $REPO_ROOT = (Get-Location).Path
 $BASE_PATH = Join-Path $REPO_ROOT "test\deltares_testbench\data\cases\$EngineDir"
@@ -13,7 +20,66 @@ if (-not (Test-Path $BASE_PATH)) {
     exit 1
 }
 
-Push-Location $BASE_PATH
+function Get-PythonCommand {
+    foreach ($candidate in @("python", "py", "python3")) {
+        $cmd = Get-Command $candidate -ErrorAction SilentlyContinue
+        if ($cmd) {
+            if ($candidate -eq "py") {
+                return @("py", "-3")
+            }
+            return @($cmd.Source)
+        }
+    }
+    return $null
+}
+
+function Install-DvcInVenv {
+    $venvDir = Join-Path $REPO_ROOT ".venv-dvc-docs"
+    $dvcExe = Join-Path $venvDir "Scripts\dvc.exe"
+    if (Test-Path $dvcExe) {
+        Write-Host "[INFO] Reusing DVC venv: $dvcExe"
+        return $dvcExe
+    }
+
+    $pythonCmd = Get-PythonCommand
+    if (-not $pythonCmd) {
+        Write-Host "[ERROR] No Python found on PATH; cannot install dvc"
+        "##teamcity[buildProblem description='Python not found for build-side dvc install' identity='dvc_python_missing']"
+        exit 1
+    }
+
+    Write-Host "[INFO] Creating venv at $venvDir with: $($pythonCmd -join ' ')"
+    if ($pythonCmd.Count -gt 1) {
+        & $pythonCmd[0] $pythonCmd[1..($pythonCmd.Length - 1)] -m venv $venvDir
+    } else {
+        & $pythonCmd[0] -m venv $venvDir
+    }
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    $venvPython = Join-Path $venvDir "Scripts\python.exe"
+    $reqFile = Join-Path $REPO_ROOT "ci\teamcity\Delft3D\windows\scripts\dvc-docs-requirements.txt"
+
+    Write-Host "[INFO] Installing dvc from $reqFile"
+    & $venvPython -m pip install --upgrade pip
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    & $venvPython -m pip install -r $reqFile
+    if ($LASTEXITCODE -ne 0) {
+        "##teamcity[buildProblem description='pip install dvc failed' identity='dvc_pip_install_failed']"
+        exit $LASTEXITCODE
+    }
+
+    if (-not (Test-Path $dvcExe)) {
+        Write-Host "[ERROR] dvc.exe not found after install: $dvcExe"
+        "##teamcity[buildProblem description='dvc.exe missing after pip install' identity='dvc_exe_missing']"
+        exit 1
+    }
+
+    Write-Host "[INFO] Installed $(& $dvcExe --version)"
+    return $dvcExe
+}
+
+$env:AWS_EC2_METADATA_DISABLED = "true"
+$DvcExe = Install-DvcInVenv
 
 Write-Host "[INFO] Pulling root doc.dvc (brings /doc/functionalities/) + all under fNNN folders..."
 
@@ -29,7 +95,7 @@ if (Test-Path $rootDocDvc) {
 }
 
 # 2. All doc.dvc under fNNN folders
-$featureDocs = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
+$featureDocs = Get-ChildItem -Path $BASE_PATH -Recurse -Filter "doc.dvc" -ErrorAction SilentlyContinue | Where-Object {
     $fullName = $_.FullName
     if ($fullName -match 'doc\\doc\.dvc$') { return $false }
     $segments = $fullName -split '[\\\/]'
@@ -38,31 +104,31 @@ $featureDocs = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
 $allDocDvc += $featureDocs
 
 $totalDetected = $allDocDvc.Count
-$batch = @()
+$batch = [System.Collections.Generic.List[string]]::new()
 $batchCount = 0
 
 foreach ($file in $allDocDvc) {
     Write-Host "[INCLUDED] $($file.FullName)"
-    $batch += "`"$($file.FullName)`""
+    $batch.Add($file.FullName) | Out-Null
 
     if ($batch.Count -eq 100) {
         $batchCount++
         Write-Host "[BATCH $batchCount] Pulling next 100..."
-        & dvc pull $batch
+        & $DvcExe pull @($batch.ToArray())
         if ($LASTEXITCODE -ne 0) {
             Write-Host "[ERROR] Failed to pull batch $batchCount"
             "##teamcity[buildProblem description='DVC pull failed: batch $batchCount ($EngineDir)' identity='dvc_pull_batch_$batchCount']"
             exit 1
         }
         Write-Host "[PULL OK] Batch $batchCount completed"
-        $batch = @()
+        $batch.Clear()
     }
 }
 
 if ($batch.Count -gt 0) {
     $batchCount++
     Write-Host "[BATCH $batchCount] Pulling remaining files..."
-    & dvc pull $batch
+    & $DvcExe pull @($batch.ToArray())
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[ERROR] Failed to pull final batch"
         "##teamcity[buildProblem description='DVC pull failed: final batch ($EngineDir)' identity='dvc_pull_final']"
@@ -90,8 +156,6 @@ foreach ($file in $allDocDvc) {
 }
 
 Write-Host "[VERIFICATION END] Verified: $verified   Missing: $missing"
-
-Pop-Location
 Write-Host "=== DVC doc pull completed ==="
 
 if ($missing -gt 0) {
