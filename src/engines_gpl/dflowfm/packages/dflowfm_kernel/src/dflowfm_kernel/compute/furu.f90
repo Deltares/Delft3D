@@ -87,7 +87,7 @@ contains
       fsqrtt = sqrt(0.5_dp)
       call timstrt('Furu', handle_furu)
 
-      if (kmx == 0) then ! original 2D coding
+      ! if (kmx == 0) then ! original 2D coding
 
          call calculate_manhole_losses(network%storS, advi)
 
@@ -268,7 +268,7 @@ contains
 
          call furu_structures()
 
-      end if
+      ! end if
 
       if (kmx > 0) then
 
