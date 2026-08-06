@@ -416,7 +416,7 @@ contains
          allocate (pillar(i))
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
-            call reapol(minp, 1)
+            call reapol(minp, 0)
             allocate (pillar(ifil)%xcor(npl))
             pillar(ifil)%xcor = dmiss
             allocate (pillar(ifil)%ycor(npl))
