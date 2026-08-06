@@ -131,7 +131,9 @@ contains
         integer, intent(in) :: mask
 
         valid_bnd_point = .false.
-        if (mask <= 0) return
+        if (mask <= 0) then
+            return
+        end if
         valid_bnd_point = .not. (abs(x - missing) < TOL .and. &
                                 abs(y - missing) < TOL)
     end function valid_bnd_point
@@ -141,7 +143,9 @@ contains
         integer, intent(in) :: n
 
         active_grid_point = .false.
-        if (m < 1 .or. m > mc .or. n < 1 .or. n > nc) return
+        if (m < 1 .or. m > mc .or. n < 1 .or. n > nc) then
+            return
+        end if
         active_grid_point = valid_bnd_point(xc(m,n), yc(m,n), kcs(m,n), xymiss)
     end function active_grid_point
 
@@ -159,7 +163,9 @@ contains
         logical :: upper_right
 
         swan_valid_boundary_point = .false.
-        if (.not. active_grid_point(m, n)) return
+        if (.not. active_grid_point(m, n)) then
+            return
+        end if
 
         left = active_grid_point(m - 1, n)
         down = active_grid_point(m, n - 1)
@@ -170,24 +176,52 @@ contains
         upper_left = active_grid_point(m - 1, n + 1)
         upper_right = active_grid_point(m + 1, n + 1)
         num_active_neighbours = 0
-        if (left) num_active_neighbours = num_active_neighbours + 1
-        if (down) num_active_neighbours = num_active_neighbours + 1
-        if (right) num_active_neighbours = num_active_neighbours + 1
-        if (up) num_active_neighbours = num_active_neighbours + 1
+        if (left) then
+            num_active_neighbours = num_active_neighbours + 1
+        end if
+        if (down) then
+            num_active_neighbours = num_active_neighbours + 1
+        end if
+        if (right) then
+            num_active_neighbours = num_active_neighbours + 1
+        end if
+        if (up) then
+            num_active_neighbours = num_active_neighbours + 1
+        end if
 
-        if (num_active_neighbours <= 1) return
+        if (num_active_neighbours <= 1) then
+            return
+        end if
         if (num_active_neighbours == 2) then
-            if ((down .and. up) .or. (left .and. right)) return
-            if (left .and. up .and. .not. upper_left) return
-            if (left .and. down .and. .not. lower_left) return
-            if (right .and. down .and. .not. lower_right) return
-            if (right .and. up .and. .not. upper_right) return
+            if ((down .and. up) .or. (left .and. right)) then
+                return
+            end if
+            if (left .and. up .and. .not. upper_left) then
+                return
+            end if
+            if (left .and. down .and. .not. lower_left) then
+                return
+            end if
+            if (right .and. down .and. .not. lower_right) then
+                return
+            end if
+            if (right .and. up .and. .not. upper_right) then
+                return
+            end if
         endif
         if (num_active_neighbours == 3) then
-            if (.not. left .and. .not. lower_right .and. .not. upper_right) return
-            if (.not. right .and. .not. lower_left .and. .not. upper_left) return
-            if (.not. down .and. .not. upper_left .and. .not. upper_right) return
-            if (.not. up .and. .not. lower_left .and. .not. lower_right) return
+            if (.not. left .and. .not. lower_right .and. .not. upper_right) then
+                return
+            end if
+            if (.not. right .and. .not. lower_left .and. .not. upper_left) then
+                return
+            end if
+            if (.not. down .and. .not. upper_left .and. .not. upper_right) then
+                return
+            end if
+            if (.not. up .and. .not. lower_left .and. .not. lower_right) then
+                return
+            end if
         endif
         swan_valid_boundary_point = .true.
     end function swan_valid_boundary_point
@@ -216,7 +250,9 @@ contains
 
         do m = 1, mc
             do n = 1, nc
-                if (.not. active_grid_point(m, n)) cycle
+                if (.not. active_grid_point(m, n)) then
+                    cycle
+                end if
                 if (.not. swan_valid_boundary_point(m, n)) then
                     status = 3
                     deallocate(visited, queue_m, queue_n)
@@ -238,7 +274,9 @@ contains
 
         do m = 1, mc
             do n = 1, nc
-                if (.not. active_grid_point(m, n) .or. visited(m,n)) cycle
+                if (.not. active_grid_point(m, n) .or. visited(m,n)) then
+                    cycle
+                end if
                 component_count = component_count + 1
                 if (component_count > 1) then
                     status = 2
@@ -258,8 +296,12 @@ contains
                         call neighbouring_point(current_m, current_n, &
                                                 topology_direction, &
                                                 neighbour_m, neighbour_n)
-                        if (.not. active_grid_point(neighbour_m, neighbour_n)) cycle
-                        if (visited(neighbour_m,neighbour_n)) cycle
+                        if (.not. active_grid_point(neighbour_m, neighbour_n)) then
+                            cycle
+                        end if
+                        if (visited(neighbour_m,neighbour_n)) then
+                            cycle
+                        end if
                         tail = tail + 1
                         queue_m(tail) = neighbour_m
                         queue_n(tail) = neighbour_n
@@ -269,7 +311,9 @@ contains
             enddo
         enddo
 
-        if (component_count == 0) status = 1
+        if (component_count == 0) then
+            status = 1
+        end if
         deallocate(visited, queue_m, queue_n)
     end subroutine validate_active_topology
 
@@ -404,19 +448,27 @@ contains
                             current_m = mnext
                             current_n = nnext
                             direction = direction - 1
-                            if (direction == 0) direction = 4
+                            if (direction == 0) then
+                                direction = 4
+                            end if
                         endif
                     endif
                     found = .true.
                     exit
                 endif
                 direction = direction + 1
-                if (direction == 5) direction = 1
+                if (direction == 5) then
+                    direction = 1
+                end if
             enddo
-            if (.not. found .or. num_points == 0) exit
+            if (.not. found .or. num_points == 0) then
+                exit
+            end if
         enddo
 
-        if (.not. closed) num_points = 0
+        if (.not. closed) then
+            num_points = 0
+        end if
         deallocate(visited)
     end subroutine trace_active_boundary
 
@@ -434,7 +486,9 @@ contains
         real(kind=hp) :: xout
         real(kind=hp) :: yout
 
-        if (.not. valid_bnd_point(x, y, mask, xymiss)) return
+        if (.not. valid_bnd_point(x, y, mask, xymiss)) then
+            return
+        end if
 
         xout = x
         yout = y
