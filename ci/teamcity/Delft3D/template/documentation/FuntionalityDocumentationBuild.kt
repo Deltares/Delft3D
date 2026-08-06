@@ -36,7 +36,7 @@ object TemplateFunctionalityDocumentation : Template({
                 module = "ci_tools.documentation.generate_functionality_report"
                 scriptArguments = """
                     --engine-dir=test\\deltares_testbench\\data\\cases\\%engine_dir%
-                    --max-workers=8
+                    --max-workers=1
                     --teamcity
                 """.trimIndent()
             }
