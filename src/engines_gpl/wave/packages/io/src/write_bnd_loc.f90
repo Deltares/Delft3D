@@ -58,8 +58,8 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
     integer                   , intent(in)  :: mc
     integer                   , intent(in)  :: nc
     integer                   , dimension(mc, nc), intent(in) :: kcs
-    real(kind=hp)   , dimension(mc, nc)     :: xc
-    real(kind=hp)   , dimension(mc, nc)     :: yc
+    real(kind=hp), dimension(mc, nc), intent(in) :: xc
+    real(kind=hp), dimension(mc, nc), intent(in) :: yc
     real(kind=hp)   , intent(in)            :: xymiss
 !
 ! Local variables
