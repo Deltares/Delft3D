@@ -77,6 +77,10 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
     integer, parameter :: TOPOLOGY_NO_ACTIVE_POINTS = 1
     integer, parameter :: TOPOLOGY_DISCONNECTED_REGIONS = 2
     integer, parameter :: TOPOLOGY_UNSUPPORTED_ONE_CELL = 3
+    integer, parameter :: ORIENTATION_RIGHT = 1
+    integer, parameter :: ORIENTATION_UP = 2
+    integer, parameter :: ORIENTATION_LEFT = 3
+    integer, parameter :: ORIENTATION_DOWN = 4
     real(kind=hp), parameter :: TOL = 1.0e-6_hp
     ! Move each location by a small fraction of its incoming edge. This makes
     ! every child boundary point belong to one nesting segment only; SWAN can
@@ -242,7 +246,7 @@ contains
         integer :: neighbour_n
         integer :: tail
         integer :: topology_direction
-        logical :: neighbour_is_valid(4)
+        logical :: neighbour_is_valid(ORIENTATION_RIGHT:ORIENTATION_DOWN)
         logical, allocatable :: visited(:,:)
         integer, allocatable :: queue_m(:)
         integer, allocatable :: queue_n(:)
@@ -262,7 +266,7 @@ contains
                     deallocate(visited, queue_m, queue_n)
                     return
                 endif
-                do topology_direction = 1, 4
+                do topology_direction = ORIENTATION_RIGHT, ORIENTATION_DOWN
                     call neighbouring_point(m, n, topology_direction, &
                                             neighbour_m, neighbour_n)
                     neighbour_is_valid(topology_direction) = &
@@ -296,7 +300,7 @@ contains
                     current_m = queue_m(head)
                     current_n = queue_n(head)
                     head = head + 1
-                    do topology_direction = 1, 4
+                    do topology_direction = ORIENTATION_RIGHT, ORIENTATION_DOWN
                         call neighbouring_point(current_m, current_n, &
                                                 topology_direction, &
                                                 neighbour_m, neighbour_n)
@@ -334,7 +338,7 @@ contains
             if (active_grid_point(m, 1)) then
                 mstart = m
                 nstart = 1
-                direction = 4
+                direction = ORIENTATION_DOWN
                 return
             endif
         enddo
@@ -342,7 +346,7 @@ contains
             if (active_grid_point(mc, n)) then
                 mstart = mc
                 nstart = n
-                direction = 1
+                direction = ORIENTATION_RIGHT
                 return
             endif
         enddo
@@ -350,7 +354,7 @@ contains
             if (active_grid_point(m, nc)) then
                 mstart = m
                 nstart = nc
-                direction = 2
+                direction = ORIENTATION_UP
                 return
             endif
         enddo
@@ -358,7 +362,7 @@ contains
             if (active_grid_point(1, n)) then
                 mstart = 1
                 nstart = n
-                direction = 3
+                direction = ORIENTATION_LEFT
                 return
             endif
         enddo
@@ -371,7 +375,7 @@ contains
                     .not. active_grid_point(m - 1, n)) then
                     mstart = m
                     nstart = n
-                    direction = 4
+                    direction = ORIENTATION_DOWN
                     return
                 endif
             enddo
@@ -389,13 +393,13 @@ contains
         mnext = m
         nnext = n
         select case (direction)
-        case (1)
+        case (ORIENTATION_RIGHT)
             mnext = m + 1
-        case (2)
+        case (ORIENTATION_UP)
             nnext = n + 1
-        case (3)
+        case (ORIENTATION_LEFT)
             mnext = m - 1
-        case (4)
+        case (ORIENTATION_DOWN)
             nnext = n - 1
         end select
     end subroutine neighbouring_point
@@ -434,7 +438,7 @@ contains
 
         do while (.not. closed)
             found = .false.
-            do turn = 1, 4
+            do turn = ORIENTATION_RIGHT, ORIENTATION_DOWN
                 call neighbouring_point(current_m, current_n, direction, mnext, nnext)
                 if (active_grid_point(mnext, nnext)) then
                     if (mnext == start_m .and. nnext == start_n) then
@@ -452,8 +456,8 @@ contains
                             current_m = mnext
                             current_n = nnext
                             direction = direction - 1
-                            if (direction == 0) then
-                                direction = 4
+                            if (direction < ORIENTATION_RIGHT) then
+                                direction = ORIENTATION_DOWN
                             end if
                         endif
                     endif
@@ -461,8 +465,8 @@ contains
                     exit
                 endif
                 direction = direction + 1
-                if (direction == 5) then
-                    direction = 1
+                if (direction > ORIENTATION_DOWN) then
+                    direction = ORIENTATION_RIGHT
                 end if
             enddo
             if (.not. found .or. num_points == 0) then
