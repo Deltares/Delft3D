@@ -20,9 +20,9 @@ rm -rf "$VERSCHILLENTOOL_DIR"
 mkdir "$VERSCHILLENTOOL_DIR"
 
 docker login \
-    --username="robot\$verschillentool+h7" \
+    --username="robot\$verschillentool-dev+h7" \
     --password-stdin \
-    containers.deltares.nl <"${HOME}/.harbor/verschillentool"
+    containers.deltares.nl <"${HOME}/.harbor/verschillentool-dev"
 
 # Run verschillentool (all configs).
 find "${VAHOME}/${JSON_CONFIGS_PATH}" -type f -name '*.json' -iregex "${MODEL_REGEX}" -print0 |
