@@ -73,9 +73,7 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
     ! every child boundary point belong to one nesting segment only; SWAN can
     ! otherwise see a point at the end of both adjacent segments when
     ! BOUN NEST is CLOSED (most visibly at corners and local edge kinks).
-    real(kind=hp), parameter :: CORNER_OFFSET = 0.001_hp
-    real(kind=hp)           :: xout
-    real(kind=hp)           :: yout
+    real(kind=hp), parameter :: BOUNDARY_OFFSET_FRACTION = 0.001_hp
 !
 !! executable statements -------------------------------------------------------
 !
@@ -88,48 +86,64 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
        ! grid missing value. Do not pass those points to SWAN as nesting
        ! locations.
        do i=1,mc
-          xout = xc(i,1)
-          yout = yc(i,1)
           if (i == 1) then
-             call offset_corner(xc(1,2), yc(1,2), xout, yout)
+             call write_bnd_point(xc(i,1), yc(i,1), kcs(i,1), &
+                                  xc(1,2), yc(1,2), kcs(1,2), &
+                                  xc(2,1), yc(2,1), kcs(2,1))
+          else if (i == mc) then
+             call write_bnd_point(xc(i,1), yc(i,1), kcs(i,1), &
+                                  xc(i-1,1), yc(i-1,1), kcs(i-1,1), &
+                                  xc(mc,2), yc(mc,2), kcs(mc,2))
           else
-             call offset_corner(xc(i-1,1), yc(i-1,1), xout, yout)
+             call write_bnd_point(xc(i,1), yc(i,1), kcs(i,1), &
+                                  xc(i-1,1), yc(i-1,1), kcs(i-1,1), &
+                                  xc(i+1,1), yc(i+1,1), kcs(i+1,1))
           endif
-          if (valid_bnd_point(xout, yout, kcs(i,1), xymiss)) &
-             write(lunbot,'(2(F15.6,3X))') xout, yout
        enddo
        do j=2,nc
-          xout = xc(mc,j)
-          yout = yc(mc,j)
           if (j == 2) then
-             call offset_corner(xc(mc-1,1), yc(mc-1,1), xout, yout)
+             call write_bnd_point(xc(mc,j), yc(mc,j), kcs(mc,j), &
+                                  xc(mc-1,1), yc(mc-1,1), kcs(mc-1,1), &
+                                  xc(mc,3), yc(mc,3), kcs(mc,3))
+          else if (j == nc) then
+             call write_bnd_point(xc(mc,j), yc(mc,j), kcs(mc,j), &
+                                  xc(mc,j-1), yc(mc,j-1), kcs(mc,j-1), &
+                                  xc(mc-1,nc), yc(mc-1,nc), kcs(mc-1,nc))
           else
-             call offset_corner(xc(mc,j-1), yc(mc,j-1), xout, yout)
+             call write_bnd_point(xc(mc,j), yc(mc,j), kcs(mc,j), &
+                                  xc(mc,j-1), yc(mc,j-1), kcs(mc,j-1), &
+                                  xc(mc,j+1), yc(mc,j+1), kcs(mc,j+1))
           endif
-          if (valid_bnd_point(xout, yout, kcs(mc,j), xymiss)) &
-             write(lunbot,'(2(F15.6,3X))') xout, yout
        enddo
        do i=mc-1,1,-1
-          xout = xc(i,nc)
-          yout = yc(i,nc)
           if (i == mc-1) then
-             call offset_corner(xc(mc,nc-1), yc(mc,nc-1), xout, yout)
+             call write_bnd_point(xc(i,nc), yc(i,nc), kcs(i,nc), &
+                                  xc(mc,nc-1), yc(mc,nc-1), kcs(mc,nc-1), &
+                                  xc(mc-2,nc), yc(mc-2,nc), kcs(mc-2,nc))
+          else if (i == 1) then
+             call write_bnd_point(xc(i,nc), yc(i,nc), kcs(i,nc), &
+                                  xc(i+1,nc), yc(i+1,nc), kcs(i+1,nc), &
+                                  xc(1,nc-1), yc(1,nc-1), kcs(1,nc-1))
           else
-             call offset_corner(xc(i+1,nc), yc(i+1,nc), xout, yout)
+             call write_bnd_point(xc(i,nc), yc(i,nc), kcs(i,nc), &
+                                  xc(i+1,nc), yc(i+1,nc), kcs(i+1,nc), &
+                                  xc(i-1,nc), yc(i-1,nc), kcs(i-1,nc))
           endif
-          if (valid_bnd_point(xout, yout, kcs(i,nc), xymiss)) &
-             write(lunbot,'(2(F15.6,3X))') xout, yout
        enddo
        do j=nc-1,2,-1
-          xout = xc(1,j)
-          yout = yc(1,j)
           if (j == nc-1) then
-             call offset_corner(xc(1,nc), yc(1,nc), xout, yout)
+             call write_bnd_point(xc(1,j), yc(1,j), kcs(1,j), &
+                                  xc(1,nc), yc(1,nc), kcs(1,nc), &
+                                  xc(1,nc-2), yc(1,nc-2), kcs(1,nc-2))
+          else if (j == 2) then
+             call write_bnd_point(xc(1,j), yc(1,j), kcs(1,j), &
+                                  xc(1,j+1), yc(1,j+1), kcs(1,j+1), &
+                                  xc(1,1), yc(1,1), kcs(1,1))
           else
-             call offset_corner(xc(1,j+1), yc(1,j+1), xout, yout)
+             call write_bnd_point(xc(1,j), yc(1,j), kcs(1,j), &
+                                  xc(1,j+1), yc(1,j+1), kcs(1,j+1), &
+                                  xc(1,j-1), yc(1,j-1), kcs(1,j-1))
           endif
-          if (valid_bnd_point(xout, yout, kcs(1,j), xymiss)) &
-             write(lunbot,'(2(F15.6,3X))') xout, yout
        enddo
        close(lunbot)
     endif
@@ -144,12 +158,34 @@ contains
             .not. (abs(x - missing) < TOL .and. abs(y - missing) < TOL)
     end function valid_bnd_point
 
-    subroutine offset_corner(xprevious, yprevious, xcorner, ycorner)
+    subroutine write_bnd_point(x, y, mask, xprevious, yprevious, previous_mask, &
+                               xnext, ynext, next_mask)
+        real(kind=hp), intent(in) :: x
+        real(kind=hp), intent(in) :: y
+        integer, intent(in) :: mask
         real(kind=hp), intent(in)    :: xprevious
         real(kind=hp), intent(in)    :: yprevious
-        real(kind=hp), intent(inout) :: xcorner
-        real(kind=hp), intent(inout) :: ycorner
-        xcorner = xcorner + CORNER_OFFSET * (xcorner - xprevious)
-        ycorner = ycorner + CORNER_OFFSET * (ycorner - yprevious)
-    end subroutine offset_corner
+        integer, intent(in) :: previous_mask
+        real(kind=hp), intent(in)    :: xnext
+        real(kind=hp), intent(in)    :: ynext
+        integer, intent(in) :: next_mask
+        real(kind=hp) :: xout
+        real(kind=hp) :: yout
+
+        if (.not. valid_bnd_point(x, y, mask, xymiss)) return
+
+        xout = x
+        yout = y
+        ! Coordinates at inactive points are undefined. Use the other local
+        ! edge when the predecessor is invalid, so the point remains offset
+        ! without using undefined coordinates.
+        if (valid_bnd_point(xprevious, yprevious, previous_mask, xymiss)) then
+            xout = xout + BOUNDARY_OFFSET_FRACTION * (xout - xprevious)
+            yout = yout + BOUNDARY_OFFSET_FRACTION * (yout - yprevious)
+        else if (valid_bnd_point(xnext, ynext, next_mask, xymiss)) then
+            xout = xout + BOUNDARY_OFFSET_FRACTION * (xnext - xout)
+            yout = yout + BOUNDARY_OFFSET_FRACTION * (ynext - yout)
+        endif
+        write(lunbot,'(2(F15.6,3X))') xout, yout
+    end subroutine write_bnd_point
 end subroutine write_bnd
