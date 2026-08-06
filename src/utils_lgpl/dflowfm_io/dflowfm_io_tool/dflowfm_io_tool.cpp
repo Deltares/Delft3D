@@ -12,16 +12,30 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    const string path = argv[1];
+    string path;
+    bool validateOnly = false;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        const string arg = argv[i];
+        if (arg == "--validate-only")
+        {
+            validateOnly = true;
+        }
+        else if (path.empty())
+        {
+            path = arg;
+        }
+    }
+
+    if (path.empty())
+    {
+        cerr << "Usage: dflowfm_io_tool [--validate-only] <path_to_mdu_file>\n";
+        return 1;
+    }
 
     try
     {
-        if (argc != 2)
-        {
-            cerr << "Usage: dflowfm_io_tool <path_to_mdu_file>\n";
-            return 1;
-        }
-
         MduDocument document;
         document.Load(path);
 
@@ -32,6 +46,11 @@ int main(int argc, char* argv[])
         {
             cout << "Validation report:" << "\n\n";
             cout << report.Format(Severity::Info) << "\n";
+        }
+
+        if (validateOnly)
+        {
+            return 0;
         }
 
         struct PrintValue
