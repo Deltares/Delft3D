@@ -8,39 +8,6 @@
 
 namespace dflowfm_io
 {
-
-    namespace
-    {
-        // TODO this is a temporary solution to provide default values for properties that do not have a default value
-        // defined in the schema. Eventually every property should have a default value defined in the schema, and this
-        // function can be removed.
-        std::string GetDummyDefault(const PropertySchema& schema)
-        {
-            switch (schema.value_type)
-            {
-                case ValueType::Int:
-                    return "0";
-                case ValueType::Float:
-                    return "0.0";
-                case ValueType::IntBool:
-                    return "false";
-                case ValueType::String:
-                case ValueType::Path:
-                case ValueType::DateTime:
-                case ValueType::StringList:
-                case ValueType::PathList:
-                case ValueType::FloatList:
-                    return "";
-                case ValueType::StringEnum:
-                case ValueType::IntEnum:
-                    return schema.enum_values.front().value;
-                default:
-                    throw std::logic_error(
-                        std::format("Unhandled ValueType for property '{}'.", schema.key));
-            }
-        }
-    } // namespace
-
     MduSchema::MduSchema(std::string description, std::vector<SectionSchema> sections)
         : description(std::move(description)), sections(std::move(sections))
     {
@@ -101,11 +68,7 @@ namespace dflowfm_io
             {
                 if (IsObsolete(propertySchema, propertySchema.default_value)) continue;
 
-                const std::string default_value = propertySchema.default_value.empty()
-                                                       ? GetDummyDefault(propertySchema)
-                                                       : propertySchema.default_value;
-
-                Value value = MduConverter::ValueFromString(propertySchema, default_value);
+                Value value = MduConverter::ValueFromString(propertySchema, propertySchema.default_value);
                 const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                 entries[key] = std::move(value);
             }
