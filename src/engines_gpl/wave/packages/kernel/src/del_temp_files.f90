@@ -69,29 +69,25 @@ subroutine del_temp_files(n_swan_grids)
        !
        ! Remove temporary swan grid files
        !
-       ! Keep generated nesting files when KeepINPUT is enabled so the
-       ! parent spectra and child boundary locations can be inspected.
-       if (.not.swan_run%keepinput) then
-          filnam = swan_grids(igrid)%tmp_name
+       filnam = swan_grids(igrid)%tmp_name
+       inquire (file = trim(filnam), exist = ex, iostat = istat)
+       if (istat==0 .and. ex) then
+          open (newunit=fillun, file=trim(filnam), status='unknown')
+          close(fillun, status='delete')
+       endif
+       !
+       ! Remove tempgrid<igrid> files, created by WAVE for nesting
+       ! tempgrid001 will not exist (only tempgrid002, tempgrid003, etc.)
+       ! But it will not harm when checking/deleting it
+       !
+       do i=1,numtempgrid
+          write (filnam,'(a,i3.3)') trim(tmpfiles(i)), igrid
           inquire (file = trim(filnam), exist = ex, iostat = istat)
           if (istat==0 .and. ex) then
              open (newunit=fillun, file=trim(filnam), status='unknown')
              close(fillun, status='delete')
           endif
-          !
-          ! Remove tempgrid<igrid> files, created by WAVE for nesting
-          ! tempgrid001 will not exist (only tempgrid002, tempgrid003, etc.)
-          ! But it will not harm when checking/deleting it
-          !
-          do i=1,numtempgrid
-             write (filnam,'(a,i3.3)') trim(tmpfiles(i)), igrid
-             inquire (file = trim(filnam), exist = ex, iostat = istat)
-             if (istat==0 .and. ex) then
-                open (newunit=fillun, file=trim(filnam), status='unknown')
-                close(fillun, status='delete')
-             endif
-          enddo
-       endif
+       enddo
     enddo
     !
     ! Remove hot files

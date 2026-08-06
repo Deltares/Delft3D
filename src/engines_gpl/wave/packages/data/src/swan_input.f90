@@ -4326,9 +4326,7 @@ contains
       close (luninp)
       !
       ! keepinput:
-      ! keepinput = true : keep a copy of the swan INPUT file and generated
-      !                    nesting files (NEST###, SWANIN_NGRID###, and
-      !                    temporary SWAN grid files) for diagnostics
+      ! keepinput = true : keep a copy of the swan INPUT file
       !
       if (sr%keepinput) then
          copy = 'copy'
