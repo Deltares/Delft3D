@@ -1,0 +1,10 @@
+configs/dimr/dimr_dflowfm_drtc_1d-network_win64.xml
+configs/dimr/dimr_dflowfm_dsle_win64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_1D2D_win64.xml
+configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml
+configs/dimr/dimr_drr_dnam_win64.xml
+configs/dimr/dimr_drr_walrus_win64.xml
+configs/dimr/dimr_dwaves_hongkong_win64.xml
+configs/dwaq_dpart/win64/dwaq_validation.xml
+configs/dwaq_dpart/win64/dwaq_openpb.xml
+configs/delft3d4/delft3d_win64_hp_flow_wave.xml

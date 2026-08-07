@@ -3147,6 +3147,8 @@ contains
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
       case (LOCTP_POLYGON_XY)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from input arrays
          call increasepol(numcoord, 0)
          xpl(1:numcoord) = xpin(1:numcoord)
@@ -3197,7 +3199,7 @@ contains
             end if
          end do
       end if
-      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+      if (loc_spec_type == LOCTP_POLYGON_FILE .or. loc_spec_type == LOCTP_POLYGON_XY) then
          call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
