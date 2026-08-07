@@ -9608,4 +9608,19 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f044_c04_waveforcing_custom_vars" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f044_offline_waves/c04_waveforcing_custom_vars</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="output/Borkum_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_hwav" toleranceAbsolute="0.01"/>
+          <parameter name="mesh2d_uorb" toleranceAbsolute="0.01"/>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.01"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.01"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
 </testCases>
