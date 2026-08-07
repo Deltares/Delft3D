@@ -25,12 +25,13 @@ object LinuxConanPackages : BuildType({
 
     name = "Conan packages"
     buildNumberPattern = "%build.vcs.number%"
-
     allowExternalStatus = true
 
     params {
+        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2024")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
+        param("conan_build_option", "--build-missing")
         param("env.CONAN_HOME", "/conan-cache")
     }
 
@@ -49,8 +50,9 @@ object LinuxConanPackages : BuildType({
                 set -eo pipefail
 
                 python run_conan.py initialize deltares --ci
+                conan remote disable deltares-conan-center-proxy
 
-                python run_conan.py install --rebuild-packages --ci --output-folder build
+                python run_conan.py install %conan_build_option% --ci --output-folder build
 
                 python run_conan.py upload --remote=delft3d-conan-dev --ci
             """.trimIndent()
@@ -71,6 +73,9 @@ object LinuxConanPackages : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
+            buildParams {
+                param("conan_build_option", "--rebuild-packages")
+            }
         }
     }
 

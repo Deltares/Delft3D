@@ -1891,6 +1891,9 @@ contains
          call str_lower(quantityname)
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             ! History file
+            if (strcmpi(quantityname(1:9),'tracerbnd'          )) then
+               quantityname = quantityname(10:len(quantityname))
+            end if
             if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
             if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
             if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
@@ -2563,6 +2566,8 @@ contains
       use m_alloc
       use string_module, only: str_tolower
       use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
+      use netcdf_utils, only: ncu_inq_var_fill
+      use, intrinsic :: ieee_arithmetic
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2601,6 +2606,9 @@ contains
       real(dp), dimension(:), allocatable :: tgd_data_1d !< coordinate data along third dimension's axis
       real(dp), dimension(:), allocatable :: pdiri !<
       real(dp) :: var_miss !< missing data value in second dimension
+      real(dp) :: nan_value !< NaN value to replace missing data
+      integer  :: nofill !< For inquiring fill values
+      real(dp) :: fill_value !< For inquiring fill values
       character(len=NF90_MAX_NAME) :: grid_mapping !< name of the applied grid mapping
       character(len=NF90_MAX_NAME) :: units !< helper variable for variable's units
       character(len=NF90_MAX_NAME) :: coord_name !< helper variable
@@ -2914,13 +2922,33 @@ contains
             end if
 
             if (ndims == 2) then
+               nan_value = ieee_value(0.0_dp, ieee_quiet_nan)
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, fgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, fgd_id, fgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 1))
-               ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 2))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (fgd_data == fill_value) fgd_data = nan_value
+               end if
                fgd_data_1d = reshape(fgd_data, (/crd_dimlen(1, 1) * crd_dimlen(2, 1)/)) ! transform fgd and sgd here if necessary
+
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, sgd_id, nofill, fill_value, nan_value)
+               ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 2))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (sgd_data == fill_value) sgd_data = nan_value
+               end if
                sgd_data_1d = reshape(sgd_data, (/crd_dimlen(1, 2) * crd_dimlen(2, 2)/))
             else if (ndims == 1) then
+               nan_value = ieee_value(0.0_dp, ieee_quiet_nan)
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, fgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, fgd_id, fgd_data_1d(1:crd_dimlen(1, 1)), start=(/1/), count=(/crd_dimlen(1, 1)/))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (fgd_data_1d(1:crd_dimlen(1, 1)) == fill_value) fgd_data_1d(1:crd_dimlen(1, 1)) = nan_value
+               end if
+
+               ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, sgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data_1d(1:crd_dimlen(1, 2)), start=(/1/), count=(/crd_dimlen(1, 2)/))
+               if (.not. ieee_is_nan(fill_value)) then
+                  where (sgd_data_1d(1:crd_dimlen(1, 2)) == fill_value) sgd_data_1d(1:crd_dimlen(1, 2)) = nan_value
+               end if
                ! Make a crossproduct array
                if (rotate_pole) then
                   do ifgd = 1, crd_dimlen(1, 1)

@@ -160,7 +160,7 @@ target_link_libraries(${library_name} PRIVATE
                       precicef
                       trachytopes_io
                       trachytopes_kernel
-                      triangle_c
+                      triangle::triangle
                       waq_definition
                       wq_processes
                       waq_process
@@ -199,7 +199,7 @@ if (WIN32)
     if(NOT TARGET impi)
       message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
     endif()
-    target_link_libraries(${library_name} PRIVATE impi)
+    target_link_libraries(${library_name} PRIVATE impi mkl_sequential)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
