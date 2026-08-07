@@ -48,27 +48,38 @@ module m_update_waq_lateral_fluxes
 contains
 
    subroutine update_waq_lateral_fluxes()
-      use waq
+      use waq, only: waqpar
       use m_partitioninfo, only: is_ghost_node
+      use m_getkbotktopmax
       use m_flow
       use m_flowgeom
       use m_flowtimes
       use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat, qlatwaq
 
-      integer :: i_node, k1
-      integer :: i_lat, i_latwaq, i_layer
+      integer :: k, k1
+      integer :: i_lat, i_latwaq, i_layer, i_layer_latwaq, index_active_bottom_layer, index_max_top_layer, layer_index
 
 ! Accumulate lateral discharges for waq
       i_latwaq = 0
       do i_lat = 1, numlatsg
          do k1 = n1latsg(i_lat), n2latsg(i_lat)
-            i_node = nnlat(k1)
-            if (i_node > 0) then
-               if (.not. is_ghost_node(i_node)) then
-                  i_latwaq = i_latwaq + 1
+            k = nnlat(k1)
+            if (k > 0) then
+               if (.not. is_ghost_node(k)) then
+                  index_active_bottom_layer = max(1, kmx) - kmxn(k) + 1
+                  index_max_top_layer = kbot(k) + kmxn(k) - 1
                   do i_layer = 1, num_layers
-                     qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, k1)
+                     layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                     ! Redirect discharges to the nearest active layer
+                     if (layer_index < kbot(k)) then
+                        layer_index = kbot(k)
+                     else if (layer_index > ktop(k)) then
+                        layer_index = ktop(k)
+                     end if
+                     i_layer_latwaq = i_latwaq + waqpar%ilaggr(index_max_top_layer - layer_index + 1)
+                     qlatwaq(i_layer_latwaq) = qlatwaq(i_layer_latwaq) + dts * qqLat(i_layer, k1)
                   end do
+                  i_latwaq = i_latwaq + waqpar%kmxnxa
                end if
             end if
          end do

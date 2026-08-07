@@ -34,10 +34,10 @@ contains
     !    Compute primary production and associated fluxes
 
     subroutine blprim (biomas, cnh4, cno3, cpo4, csio, &
-            cdetn, cdetp, cco2, ctic, &
+            cdetn, cdetp, cco2, ctic, rcresp, tcresp, &
             flmora, fldetn, tstepi, extot, exalg, temp, &
-            rad, depth, dayl, id, nset, &
-            deat4, totnut, chltot, flprpa, fluptn, faclim, &
+            rad, depth, dayl, id, nset, deat4, totnut, &
+            chltot, flgppr, flresp, fluptn, faclim, &
             uptnit, fracam, fbod5, ratgro, ratmor, algdm, &
             iseg, cgroup, lmixo, lfixn, lcarb, nutcon, &
             flxcon, noutlim, outlim, nunucom, nuecogm, &
@@ -67,6 +67,8 @@ contains
         real(kind = real_wp) :: cdetp            ! Concentration DetP (gP/m3)
         real(kind = real_wp) :: cco2             ! Concentration CO2 (g/m3)
         real(kind = real_wp) :: ctic             ! Concentration TIC (gC/m3)
+        real(kind = real_wp) :: rcresp(nuspec)   ! Respiration rate (1/d)
+        real(kind = real_wp) :: tcresp(nuspec)   ! Temperature correction for respiration rate (-)
         real(kind = real_wp) :: flmora(nuspec)   ! Mortality fluxes (gC/m3/d)
         real(kind = real_wp) :: fldetn(4)        ! Detritus production (g/m3/d)
         real(kind = real_wp) :: tstepi           ! Time step (d)
@@ -81,7 +83,9 @@ contains
         real(kind = real_wp) :: deat4            ! ??
         real(kind = real_wp) :: totnut(4)        ! Total C,N,P,Si in algae (g/m3)
         real(kind = real_wp) :: chltot           ! Total chlorophyl in algae (mgChl/m3)
-        real(kind = real_wp) :: flprpa(nuspec)   ! Primary production fluxes (gC/m3/d)
+        real(kind = real_wp) :: flnppr(nuspec)   ! Net primary production fluxes (gC/m3/d)
+        real(kind = real_wp) :: flgppr(nuspec)   ! Gross primary production fluxes (gC/m3/d)
+        real(kind = real_wp) :: flresp(nuspec)   ! Respiration fluxes (gC/m3/d)
         real(kind = real_wp) :: fluptn(10)       ! Uptake fluxes (g/m3/d)
         real(kind = real_wp) :: faclim(6)        ! Limiting factors (-)
         real(kind = real_wp) :: uptnit           ! Nitrogen uptake per day
@@ -130,6 +134,7 @@ contains
         real(kind = dp) :: totchl           ! Real version of output parameter
         real(kind = dp) :: totdry           ! Real version of output parameter
         real(kind = dp) :: totcar           ! Real version of output parameter
+        real(kind = dp) :: flresp8          ! Double precision of respiration fluxes (gC/m3/d)
         real(kind = real_wp) :: uptake           ! Nitrogen uptake (gN/m3/d)
         real(kind = real_wp) :: frmixx           ! Fraction of mixotrophy in production
 
@@ -297,8 +302,11 @@ contains
         ! Added: Calculate uptake fluxes (JvG, June 2006)
 
         do j = 1, nuspec
-            flprpa(j) = real((xdef(j + nurows) - x(j)) / ctodry(j)) / tstepi
-            if (.not.lcarb) fluptn(1) = fluptn(1) + flprpa(j)
+            flresp8 = real(rcresp(j), kind=dp) * real(tcresp(j), kind=dp)**temp8 * (xdef(j + nurows) / ctodry(j))
+            flnppr(j) = real(((xdef(j + nurows) - x(j)) / ctodry(j)) / tstep, kind=real_wp)
+            flresp(j) = real(flresp8, kind=real_wp)
+            flgppr(j) = real(((xdef(j + nurows) - x(j)) / ctodry(j)) / tstep + flresp8, kind=real_wp)
+            if (.not.lcarb) fluptn(1) = fluptn(1) + flnppr(j)
             fbod5 = fbod5 + real(xdef(j + nurows) / ctodry(j)) * (1. - exp(-5.0 * rmort(j)))
             do k = 1, nunuco
                 i = nutcon(k)
@@ -306,7 +314,7 @@ contains
                 if (i<=3) then
                     totnut(i + 1) = totnut(i + 1) + real(xdef(j + nurows) * aa(k, j))
                 endif
-                fluptn(i2) = fluptn(i2) + flprpa(j) * aa(k, j) * ctodry(j)
+                fluptn(i2) = fluptn(i2) + flnppr(j) * aa(k, j) * ctodry(j)
             enddo
 
             ! Determine carbon uptake mixotrophy
@@ -321,9 +329,9 @@ contains
                     frmixp = aa(5, j) / (aa(2, j) + aa(5, j))
                 endif
                 frmix = max(frmixn, frmixp)
-                fluptn(9) = fluptn(9) + frmix * flprpa(j)
+                fluptn(9) = fluptn(9) + frmix * flnppr(j)
                 !           Uptake of DetC should be subtracted from total C-uptake
-                fluptn(1) = fluptn(1) - frmix * flprpa(j)
+                fluptn(1) = fluptn(1) - frmix * flnppr(j)
             endif
         enddo
 
