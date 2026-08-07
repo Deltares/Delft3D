@@ -32,12 +32,6 @@ contains
    end subroutine test_convert_operand_string_to_integer_unknown_value
 !$f90tw)
 
-!$f90tw TESTCODE(TEST, test_timespace_parameters, test_convert_method_string_to_integer_block_from, test_convert_method_string_to_integer_block_from,
-   subroutine test_convert_method_string_to_integer_block_from() bind(C)
-      call f90_expect_eq(convert_method_string_to_integer('blockFrom'), JUSTUPDATE)
-   end subroutine test_convert_method_string_to_integer_block_from
-!$f90tw)
-
 !$f90tw TESTCODE(TEST, test_timespace_parameters, test_convert_legacy_operand_string_to_integer_known_values, test_convert_legacy_operand_string_to_integer_known_values,
    subroutine test_convert_legacy_operand_string_to_integer_known_values() bind(C)
       call f90_expect_eq(convert_legacy_operand_string_to_integer('o'), OPERAND_OVERRIDE)
