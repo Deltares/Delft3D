@@ -6,6 +6,10 @@ set startFM=1
 set startPreCSUMO=1
 set installDir=install_fm-suite
 
+if defined USE_PRECICE_OVERRIDE set usePreCICE=%USE_PRECICE_OVERRIDE%
+if defined START_FM_OVERRIDE set startFM=%START_FM_OVERRIDE%
+if defined START_PRECSUMO_OVERRIDE set startPreCSUMO=%START_PRECSUMO_OVERRIDE%
+
 set bindir=..\..\..\%installDir%\bin
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
@@ -47,6 +51,8 @@ if %usePreCICE% EQU 1 (
     call %bindir%\run_dimr.bat
 )
 endlocal
+
+if "%NO_PAUSE%"=="1" goto :eof
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 pause

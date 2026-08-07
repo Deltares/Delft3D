@@ -3,7 +3,7 @@ module m_tranb3
 
 contains
 
-   subroutine tranb3(utot, d35, c, h, npar, &
+   subroutine tranb3(utot, d35, chezy, water_depth, npar, &
                    & par, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
@@ -41,15 +41,15 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      implicit none
+      use morphology_data_module, only: MISSING_VALUE
 !
 ! Arguments
 !
       integer, intent(in) :: npar
-      real(fp), intent(in) :: c
+      real(fp), intent(in) :: chezy
       real(fp), intent(in) :: d35
-      real(fp), intent(in) :: h
-      real(fp), dimension(npar), intent(in) :: par
+      real(fp), intent(in) :: water_depth
+      real(fp), dimension(npar), intent(inout) :: par
       real(fp), intent(in) :: utot
       !
       real(fp), intent(out) :: sbot
@@ -61,18 +61,16 @@ contains
       real(fp) :: a
       real(fp) :: acal
       real(fp) :: ag ! gravity acceleration
-      real(fp) :: cc
       real(fp) :: ccc
-      real(fp) :: cd
+      real(fp) :: chezy_grain ! grain related Chezy value
       real(fp) :: cf
       real(fp) :: delta ! relative density of sediment particle
       real(fp) :: dgr
       real(fp) :: f ! real help array
       real(fp) :: fwc
-      real(fp) :: rk
       real(fp) :: rm
       real(fp) :: rn
-      real(fp) :: uster
+      real(fp) :: u_star
 !
 !
 !! executable statements -------------------------------------------------------
@@ -83,29 +81,29 @@ contains
       ag = par(1)
       delta = par(4)
       acal = par(11)
-      rk = par(12)
       !
-      if ((utot < 1.e-6) .or. (h < .001)) then
-         return
-      end if
-      if (c < 1.e-6) then
-         cc = 18.*log10(12.*h / rk)
-      else
-         cc = c
-      end if
-      cf = ag / cc / cc
-      dgr = 25300 * d35
-      rn = 1.0 - .2432 * log(dgr)
-      rm = 9.66 / dgr + 1.34
-      a = .23 / sqrt(dgr) + .14
+      cf = ag / chezy / chezy
+      u_star = sqrt(cf) * utot
+      chezy_grain = 18.0_fp * log10(12.0_fp * max(water_depth / d35, 1.0_fp))
+      !
+      dgr = 25300.0_fp * d35
       ccc = log(dgr)
-      ccc = exp(2.86 * ccc - .4343 * ccc * ccc - 8.128)
-      cd = 18.*log10(12.*h / d35)
-      uster = sqrt(cf) * utot
-      f = utot**(1.-rn) * uster**rn / cd**(1.-rn) / ag**(rn / 2.) / sqrt(delta * d35)
-      fwc = (f - a) / a
-      if (fwc > 0.) sbot = acal * utot * d35 * (utot / uster)**rn * ccc * fwc**rm
-      ssus = 0.0
+      ccc = exp(2.86_fp * ccc - 0.4343_fp * ccc * ccc - 8.128_fp)
+      !
+      rn = 1.0_fp - 0.2432_fp * log(dgr)
+      rm = 9.66_fp / dgr + 1.34_fp
+      !
+      f = utot**(1.0_fp-rn) * u_star**rn / chezy_grain**(1.0_fp-rn) / ag**(rn / 2.0_fp) / sqrt(delta * d35)
+      a = 0.23_fp / sqrt(dgr) + 0.14_fp
+      fwc = max((f - a) / a, 0.0_fp)
+      !
+      sbot = acal * utot * d35 * (utot / max(u_star, 1.0e-12_fp))**rn * ccc * fwc**rm
+      ssus = 0.0_fp
+      !
+      ! Swanby (Ackers-White) specific output
+      par = MISSING_VALUE
+      par(1) = chezy
+      par(2) = u_star
    end subroutine tranb3
 
 end module m_tranb3

@@ -1,0 +1,6 @@
+outs:
+- md5: 54061cd6674d1b1f142bfa3f5974cadd.dir
+  size: 1647849
+  nfiles: 256
+  hash: md5
+  path: input

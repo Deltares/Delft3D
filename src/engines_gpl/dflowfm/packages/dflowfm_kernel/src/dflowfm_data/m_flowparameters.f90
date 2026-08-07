@@ -33,6 +33,7 @@ module m_flowparameters
    use m_missing
    use m_waveconst
    use messagehandling, only: idlen
+   use m_array_or_scalar, only: t_array_or_scalar
 
    implicit none(type, external)
 
@@ -134,10 +135,18 @@ module m_flowparameters
    integer, parameter :: FREE_CONVECTION_OFF = 0 !< Free convection off
    integer, parameter :: FREE_CONVECTION_ON = 1 !< Free convection on
    
-   real(kind=dp) :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
+   integer :: salinity_dependent_evaporation_method !< Switch for methods for determining salinity_reduction_factor_saturation_humidity
+   integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_NONE = 0 !< salinity_reduction_factor_saturation_humidity is 1.0 (no reduction)
+   integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_CONSTANT = 1 !< salinity_reduction_factor_saturation_humidity is constant
+   integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
+   type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
+   
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
    real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
+   real(kind=dp) :: air_viscous_momentum_coeff !< Air viscous momentum coefficient [-]
+   real(kind=dp) :: air_viscous_heat_coeff !< Air viscous heat coefficient [-]
+   real(kind=dp) :: air_viscous_moisture_coeff !< Air viscous moisture coefficient [-]
 
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
@@ -480,7 +489,7 @@ module m_flowparameters
       integer :: bubblescreens = 1 !< Write bubble screen parameters to his file, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
       integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
-      integer :: windstress = 1 !< Write wind stress to his file, 0: no, 1: yes
+      integer :: windstress = 0 !< Write wind stress to his file, 0: no, 1: yes
       integer :: bulk_exchange_coeff = 1 !< Write bulk exchange coefficients to his file, 0: no, 1: yes
       integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
       integer :: infilt = 1 !< Write infiltration rate to this file, 0: no, 1: yes
@@ -764,10 +773,14 @@ contains
       air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model
-      salinity_reduction_factor_saturation_humidity = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
+      salinity_dependent_evaporation_method = SALINITY_DEPENDENT_EVAPORATION_NONE ! Switch for methods for determining salinity_reduction_factor_saturation_humidity
+      salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
       sensor_height_wind_velocity = 10.0_dp ! Height of prescribed wind velocity
       sensor_height_air_temperature = 2.0_dp ! Height of prescribed air temperature
       sensor_height_humidity = 2.0_dp ! Height of prescribed humidity
+      air_viscous_momentum_coeff = 0.11_dp ! Air viscous momentum coefficient
+      air_viscous_heat_coeff = 0.40_dp ! Air viscous heat coefficient
+      air_viscous_moisture_coeff = 0.62_dp ! Air viscous moisture coefficient
 
       janudge = 0 ! temperature and salinity nudging
       jainiwithnudge = 0 !< initialize salinity and temperature with nudge variables

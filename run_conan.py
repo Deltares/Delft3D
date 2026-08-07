@@ -168,6 +168,9 @@ def conan_install(
         f"build_type={build_type}",
         f"--output-folder={output_folder}",
         f"--lockfile={LOCKFILE}",
+        # Large source archives can exceed Conan's default 60-second read timeout.
+        "--core-conf",
+        "core.net.http:timeout=300",
     ]
 
     if build_policy == BuildPolicy.ALL:

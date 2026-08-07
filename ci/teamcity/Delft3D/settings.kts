@@ -22,7 +22,7 @@ project {
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
 
         param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
         password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
@@ -32,7 +32,7 @@ project {
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
         param("nexus_iq_username", DslContext.getParameter("nexus_iq_username"))
         password("nexus_iq_password", DslContext.getParameter("nexus_iq_password"))
-        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
+        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@internal-artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }
