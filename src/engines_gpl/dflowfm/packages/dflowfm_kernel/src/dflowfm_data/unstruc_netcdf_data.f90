@@ -6,7 +6,7 @@ module m_unstruc_netcdf_data
    use m_ug_network, only: t_ug_network
    use m_ug_contacts, only: t_ug_contact
    use m_ug_crs, only: t_crs
-   use m_unstruc_netcdf_types, only: t_fm_flowgeom
+   use m_unstruc_netcdf_types, only: t_fm_flowgeom, reset_fm_flowgeom
 
    implicit none(type, external)
 
@@ -508,13 +508,33 @@ module m_unstruc_netcdf_data
       integer, allocatable :: ilink_merge(:) !< like ilink_own, but from the merged restart file
    end type t_unc_merged
 
-   type(t_fm_flowgeom) :: flowgeom !< global flow geometry object to be built by build_flowgeom_2d and build_flowgeom_1d.
-
+   type(t_fm_flowgeom), pointer :: flowgeom_map => null() !< map output geometry object, either instantiated if an map output polygon is present, or pointers to flowgeom_full if not.
+   type(t_fm_flowgeom), target :: flowgeom_full !< global complete flow geometry object to be built by build_flowgeom during modelinit. Contains ugrid 1D and 2D geometry plus FM specific data.
    type(t_unc_mapids) :: mapids !< Global descriptor for the (open) map-file
    integer :: ihisfile = 0 !< Global netcdf ID of the his-file
 
    type(t_crs), target :: crs !< crs read from net file, to be written to flowgeom. TODO: AvD: temp, move this global CRS into ug_meshgeom (now a bit difficult with old and new file format)
 
    character(len=:), allocatable :: face_z_stdname
+
+   contains
+
+   !> Reset the model-specific m_unstruc_netcdf_data module variables to default values.
+   subroutine default_unstruc_netcdf_data()
+      implicit none
+
+      if (associated(flowgeom_map) .and. .not. associated(flowgeom_map, flowgeom_full)) then
+         call reset_fm_flowgeom(flowgeom_map)
+         deallocate(flowgeom_map)
+      else         
+         nullify(flowgeom_map)
+      end if
+      call reset_fm_flowgeom(flowgeom_full)
+
+      mapids = t_unc_mapids()
+      ihisfile = 0
+      face_z_stdname = "face_z"
+
+   end subroutine default_unstruc_netcdf_data
 
 end module m_unstruc_netcdf_data
