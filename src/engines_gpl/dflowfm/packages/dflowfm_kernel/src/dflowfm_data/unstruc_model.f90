@@ -55,7 +55,7 @@ module unstruc_model
       module procedure notify_default_change_real
       module procedure notify_default_change_char
    end interface
-   private :: notify_default_change, notify_recent_default_changes, notify_default_change_int, notify_default_change_real, notify_default_change_char, notify_default_change_impl
+   private :: notify_default_change, notify_default_change_int, notify_default_change_real, notify_default_change_char, notify_default_change_impl
 contains
 
 !> Resets current model variables, generally prior to loading a new MDU.
@@ -560,13 +560,6 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
-      logical :: has_windhuorzwsbased = .false.
-      logical :: has_barocponbnd = .false.
-      logical :: has_keepstbndonoutflow = .false.
-      logical :: has_nc_his_data_precision = .false.
-      logical :: has_nc_map_data_precision = .false.
-      logical :: has_circumcenter_method = .false.
-
       ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
       integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
       integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
@@ -834,7 +827,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
       call prop_get(md_ptr, 'geometry', 'circumcenterMethod', md_circumcenter_method, success)
-      has_circumcenter_method = success
+      call notify_default_change('geometry', 'circumcenterMethod', '2026.02', 'allNetlinksLoop', md_circumcenter_method, success)
       circumcenter_method = extract_circumcenter_method(md_circumcenter_method, success)
       call prop_get(md_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, success)
 
@@ -1006,7 +999,9 @@ contains
       end if !jaextrapbl
       call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
       call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow, success)
-      has_keepstbndonoutflow = success
+      if (kmx > 0) then
+         call notify_default_change('numerics', 'keepSTBndOnOutflow', '2026.01', 1, keepstbndonoutflow, success)
+      end if
       call prop_get(md_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd)
       call prop_get(md_ptr, 'numerics', 'tSpinupTurbLogProf', t_spinup_turb_log_prof)
       call prop_get(md_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin)
@@ -1058,7 +1053,9 @@ contains
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
       call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd, success)
-      has_barocponbnd = success
+      if (kmx > 0) then
+         call notify_default_change('numerics', 'barocPOnBnd', '2026.01', 1, jaBarocponbnd, success)
+      end if
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
@@ -1524,7 +1521,9 @@ contains
 
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased, success)
-      has_windhuorzwsbased = success
+      if (kmx == 0) then
+         call notify_default_change('wind', 'windHuOrZwsBased', '2026.01', 0, jawindhuorzwsbased, success)
+      end if
       call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
 
       call prop_get(md_ptr, 'wind', 'Rhoair', rhoair)
@@ -1901,13 +1900,19 @@ contains
       call prop_get(md_ptr, 'output', 'NcFormat', md_ncformat, success)
       call unc_set_ncformat(md_ncformat)
       call prop_get(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
-      has_nc_map_data_precision = success
+      if (ti_map > 0.0_dp .and. md_mapformat == IFORMAT_UGRID) then
+         call notify_default_change('output', 'ncMapDataPrecision', '2026.02', 'single', md_nc_map_precision, success)
+      end if
+
       if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
          call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
       end if
 
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
-      has_nc_his_data_precision = success
+      if (ti_his > 0.0_dp) then
+         call notify_default_change('output', 'ncHisDataPrecision', '2026.02', 'single', md_nc_his_precision, success)
+      end if
+
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
          call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
@@ -2456,14 +2461,6 @@ contains
             istat = ierror
          end if
       end if
-
-      call notify_recent_default_changes( &
-         has_windhuorzwsbased, jawindhuorzwsbased, &
-         has_barocponbnd, jabarocponbnd, &
-         has_keepstbndonoutflow, keepstbndonoutflow, &
-         has_nc_his_data_precision, md_nc_his_precision, &
-         has_nc_map_data_precision, md_nc_map_precision, &
-         has_circumcenter_method, md_circumcenter_method)
 
       ! calculate derived coefficients taking into account data from MDU file
       call calculate_derived_physcoef()
@@ -4251,42 +4248,7 @@ contains
 
    end subroutine set_output_time_vector
 
-   ! Insert these new subroutines before validate_density_and_thermobaricity_settings.
-
-   subroutine notify_recent_default_changes( &
-      has_windhuorzwsbased, windhuorzwsbased, &
-      has_barocponbnd, barocponbnd, &
-      has_keepstbndonoutflow, keepstbndonoutflow, &
-      has_nc_his_data_precision, nc_his_data_precision, &
-      has_nc_map_data_precision, nc_map_data_precision, &
-      has_circumcenter_method, circumcenter_method_name)
-
-      use m_flowtimes, only: ti_his, ti_map
-      use m_flow, only: kmx     
-
-      logical, intent(in) :: has_windhuorzwsbased
-      logical, intent(in) :: has_barocponbnd
-      logical, intent(in) :: has_keepstbndonoutflow
-      logical, intent(in) :: has_nc_his_data_precision
-      logical, intent(in) :: has_nc_map_data_precision
-      logical, intent(in) :: has_circumcenter_method
-      integer, intent(in) :: windhuorzwsbased
-      integer, intent(in) :: barocponbnd
-      integer, intent(in) :: keepstbndonoutflow
-      character(len=*), intent(in) :: nc_his_data_precision
-      character(len=*), intent(in) :: nc_map_data_precision
-      character(len=*), intent(in) :: circumcenter_method_name
-
-      call notify_default_change('wind', 'windHuOrZwsBased', '2026.01', 0, windhuorzwsbased, has_windhuorzwsbased, kmx == 0)
-      call notify_default_change('numerics', 'barocPOnBnd', '2026.01', 1, barocponbnd, has_barocponbnd, kmx > 0)
-      call notify_default_change('numerics', 'keepSTBndOnOutflow', '2026.01', 1, keepstbndonoutflow, has_keepstbndonoutflow, kmx > 0)
-
-      call notify_default_change('geometry', 'circumcenterMethod', '2026.02', 'allNetlinksLoop', trim(circumcenter_method_name), has_circumcenter_method, .true.)
-      call notify_default_change('output', 'ncHisDataPrecision', '2026.02', 'single', trim(nc_his_data_precision), has_nc_his_data_precision, ti_his > 0.0_dp)
-      call notify_default_change('output', 'ncMapDataPrecision', '2026.02', 'single', trim(nc_map_data_precision), has_nc_map_data_precision, ti_map > 0.0_dp .and. md_mapformat == IFORMAT_UGRID)
-   end subroutine notify_recent_default_changes
-
-   subroutine notify_default_change_int(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
+   subroutine notify_default_change_int(chapter, keyword, release_version, new_default, user_value, keyword_is_specified)
 
       character(len=*), intent(in) :: chapter
       character(len=*), intent(in) :: keyword
@@ -4294,7 +4256,6 @@ contains
       integer, intent(in) :: new_default
       integer, intent(in) :: user_value
       logical, intent(in) :: keyword_is_specified
-      logical, intent(in) :: keyword_is_relevant
 
       character(len=64) :: new_default_str, user_value_str
 
@@ -4304,12 +4265,11 @@ contains
       call notify_default_change_impl( &
          chapter, keyword, release_version, &
          trim(new_default_str), trim(user_value_str), &
-         keyword_is_specified, keyword_is_relevant, &
-         user_value /= new_default, .false.)
+         keyword_is_specified, user_value /= new_default, .false.)
 
    end subroutine notify_default_change_int
 
-   subroutine notify_default_change_real(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
+   subroutine notify_default_change_real(chapter, keyword, release_version, new_default, user_value, keyword_is_specified)
 
       character(len=*), intent(in) :: chapter
       character(len=*), intent(in) :: keyword
@@ -4317,7 +4277,6 @@ contains
       real(kind=dp), intent(in) :: new_default
       real(kind=dp), intent(in) :: user_value
       logical, intent(in) :: keyword_is_specified
-      logical, intent(in) :: keyword_is_relevant
 
       character(len=64) :: new_default_str, user_value_str
 
@@ -4327,12 +4286,11 @@ contains
       call notify_default_change_impl( &
          chapter, keyword, release_version, &
          trim(new_default_str), trim(user_value_str), &
-         keyword_is_specified, keyword_is_relevant, &
-         comparereal(user_value, new_default) /= 0, .false.)
+         keyword_is_specified, comparereal(user_value, new_default) /= 0, .false.)
 
    end subroutine notify_default_change_real
 
-   subroutine notify_default_change_char(chapter, keyword, release_version, new_default, user_value, keyword_is_specified, keyword_is_relevant)
+   subroutine notify_default_change_char(chapter, keyword, release_version, new_default, user_value, keyword_is_specified)
 
       use string_module, only: strcmpi
 
@@ -4342,19 +4300,16 @@ contains
       character(len=*), intent(in) :: new_default
       character(len=*), intent(in) :: user_value
       logical, intent(in) :: keyword_is_specified
-      logical, intent(in) :: keyword_is_relevant
 
       call notify_default_change_impl( &
          chapter, keyword, release_version, &
          trim(new_default), trim(user_value), &
-         keyword_is_specified, keyword_is_relevant, &
-         .not. strcmpi(trim(user_value), trim(new_default)), .true.)
+         keyword_is_specified,.not. strcmpi(trim(user_value), trim(new_default)), .true.)
 
    end subroutine notify_default_change_char
 
    subroutine notify_default_change_impl(chapter, keyword, release_version, new_default, user_value, &
-                                         keyword_is_specified, keyword_is_relevant, &
-                                         values_differ, quote_values)
+                                         keyword_is_specified, values_differ, quote_values)
 
       character(len=*), intent(in) :: chapter
       character(len=*), intent(in) :: keyword
@@ -4362,15 +4317,10 @@ contains
       character(len=*), intent(in) :: new_default
       character(len=*), intent(in) :: user_value
       logical, intent(in) :: keyword_is_specified
-      logical, intent(in) :: keyword_is_relevant
       logical, intent(in) :: values_differ
       logical, intent(in) :: quote_values
 
       character(len=1024) :: default_value_text, user_value_text
-
-      if (.not. keyword_is_relevant) then
-         return
-      end if
 
       if (quote_values) then
          default_value_text = '"'//trim(new_default)//'"'
@@ -4383,7 +4333,7 @@ contains
       if (.not. keyword_is_specified) then
          msgbuf = 'Keyword ['//trim(chapter)//'] '//trim(keyword)//' is not specified. Since release '//trim(release_version)// &
                   ', the default value is '//trim(default_value_text)//'. Results may differ from older releases.'
-         call mess(LEVEL_WARN, trim(msgbuf))
+         call mess(LEVEL_INFO, trim(msgbuf))
          return
       end if
 
