@@ -1867,14 +1867,14 @@ contains
       use dfm_error, only: DFM_NOERR
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
-      use m_mass_balance_areas, only: mbaname
+      use m_mass_balance_area_data, only: mbaname
       use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
-      use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
+      use m_mass_balance_area_data, only: mbadef, mbadefdomain, mbaname
       use dfm_error, only: dfm_extforcerror, dfm_wronginput, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
@@ -2651,7 +2651,7 @@ contains
       use m_meteo
       use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
       use m_transport, only: numconst_mdu, numconst
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
+      use m_mass_balance_area_data, only: mbaname, nomba, mbadef, mbadefdomain
       use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum, set_japartqbnd
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance

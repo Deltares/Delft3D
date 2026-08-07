@@ -1330,7 +1330,7 @@ contains
    module subroutine fm_wq_processes_step(dt, time)
       use m_fm_wq_processes
       use m_wq_processes_proces
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_flow, only: vol1
       use timers
 

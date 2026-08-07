@@ -53,7 +53,7 @@ contains
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+      use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
