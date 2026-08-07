@@ -12,7 +12,6 @@
 #include <limits>
 #include <numbers> // for std::numbers::pi
 #include <cmath>   // for atan2,sin,cos
-#include <cstdlib> // for std::abort
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -263,8 +262,8 @@ namespace pre_c_sumo
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
                 if (delta_s < 0.0)
                 {
-                    std::println(stderr, "Error: negative entrainment factor for sink {}: {}", sink_index, delta_s);
-                    std::abort();
+                    throw std::runtime_error("Negative entrainment factor for sink " + std::to_string(sink_index) +
+                                             ": " + std::to_string(delta_s));
                 }
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
