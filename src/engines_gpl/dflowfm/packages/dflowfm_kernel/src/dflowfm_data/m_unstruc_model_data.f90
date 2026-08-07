@@ -127,6 +127,7 @@ module m_unstruc_model_data
 
    character(len=max_prop_length) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
    character(len=max_prop_length) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
+   character(len=max_prop_length) :: md_mbafile = ' ' !< Output space separated list of files, containing information about mass balance areas.
    character(len=max_prop_length) :: md_classmapfile = ' ' !< Output classmap file for full flow fields in classes (formerly: incremental file) (e.g., *_clm.nc)
    character(len=max_prop_length) :: md_comfile = ' ' !< Output com     file for communication (e.g., *_com.nc)
    character(len=max_prop_length) :: md_timingsfile = ' ' !< Output timings file (auto-set)
