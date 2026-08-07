@@ -75,8 +75,8 @@ object LinuxTest : BuildType({
         checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("s3_dsctestbench_secret", DslContext.getParameter("dvc_testbench_secret"))
     }
 
     features {
@@ -121,6 +121,7 @@ object LinuxTest : BuildType({
             --rm
             --pull always
             --shm-size 8G
+            --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
         """.trimIndent()
         }
         
