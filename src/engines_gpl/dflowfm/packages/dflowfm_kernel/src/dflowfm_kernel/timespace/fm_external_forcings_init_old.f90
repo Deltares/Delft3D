@@ -80,7 +80,7 @@ contains
 
       integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat, nselected, node
       integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
@@ -95,6 +95,7 @@ contains
       real(kind=dp), external :: ran0
       character(len=256) :: rec
       integer, allocatable :: mask(:)
+      integer, allocatable :: selected_nodes(:)
       real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
@@ -1245,26 +1246,28 @@ contains
                      imba = nomba
                      call realloc(mbaname, nomba, keepExisting=.true., fill=mbainputname)
                   end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., Fill=dmiss)
 
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
+                  allocate (selected_nodes(ndxi))
+                  call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
+                                                  LOCTP_POLYGON_FILE, filename)
 
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           if (mbadef(kk) /= -999) then
-                              ! warn that segment nn at xx, yy is nog mon area imba
-                           end if
-                           mbadef(kk) = imba
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mbadef(k) = imba
-                           end do
-                        end if
+                  do kk = 1, nselected
+                     node = selected_nodes(kk)
+                     if (mbadef(node) /= -999) then
+                        ! warn that segment nn at xx, yy is nog mon area imba
+                     end if
+
+                     mbadef(node) = imba
+                     call getkbotktop(node, kb, kt)
+
+                     do k = kb, kb + kmxn(node) - 1
+                        mbadef(k) = imba
                      end do
-                  end if
-                  deallocate (viuh)
+                  end do
+
+                  deallocate (selected_nodes)
+                  success = .true.
+
                else
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
