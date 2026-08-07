@@ -68,6 +68,7 @@ def _dvc_pull(targets: list[Path], repo_root: Path, batch_label: str, engine_dir
 
 
 def main() -> int:
+    """CLI entrypoint: parse args and pull documentation via DVC."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--engine-dir",
