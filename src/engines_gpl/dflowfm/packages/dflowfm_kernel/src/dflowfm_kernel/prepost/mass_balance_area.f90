@@ -132,7 +132,7 @@ contains
 
     end subroutine open_mass_balance_area_file
 
-    ! Reads the mass balance area file and processes its blocks.
+    !> Reads the mass balance area file and processes its blocks.
     subroutine read_mass_balance_area_file(mba_ptr)
         use string_module, only: str_tolower
         use tree_structures, only: tree_num_nodes, tree_get_name
@@ -173,7 +173,7 @@ contains
 
     end subroutine read_mass_balance_area_file
 
-
+    !> Reads a mass balance area block and updates the mass balance area definitions.
     subroutine read_mass_balance_area_block(block_ptr)
         use m_alloc, only: realloc
         use m_cell_geometry, only: xz, yz
@@ -199,7 +199,7 @@ contains
         real(kind=dp), allocatable :: z_coordinates(:) !< Z coordinates of the polygon defining the mass balance area.
 
         logical :: success
-        integer :: k, kk, kt, kb, node
+        integer :: k, kt, kb, node
         integer :: imba !< Index of the mass balance area in the list of mass balance areas.
         integer :: nselected !< Number of selected internal nodes within the polygon defined in the location file.
         integer, allocatable :: selected_nodes(:) !< Array of selected internal nodes within the polygon defined in the location file.
@@ -235,15 +235,12 @@ contains
         call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
                                         LOCTP_POLYGON_XY, numcoord=num_coordinates, xpin=x_coordinates, ypin=y_coordinates)
 
-        do kk = 1, nselected
-            node = selected_nodes(kk)
+        do k = 1, nselected
+            node = selected_nodes(k)
 
             mbadef(node) = imba
             call getkbotktop(node, kb, kt)
-
-            do k = kb, kb + kmxn(node) - 1
-                mbadef(k) = imba
-            end do
+            mbadef(kb:kb + kmxn(node) - 1) = imba
         end do
 
         deallocate (selected_nodes)
