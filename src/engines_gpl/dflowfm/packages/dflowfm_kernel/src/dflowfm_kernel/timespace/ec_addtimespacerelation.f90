@@ -1631,8 +1631,6 @@ contains
       end if
 
       ec_addtimespacerelation = .true.
-
-      
       return
 
       ! Error handling.

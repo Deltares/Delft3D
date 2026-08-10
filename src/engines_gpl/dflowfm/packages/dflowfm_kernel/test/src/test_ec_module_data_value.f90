@@ -29,12 +29,11 @@ contains
       integer, parameter :: IREFDATE = 20000101
       real(dp), parameter :: WINDSPEEDFACTOR = 0.8_dp
       character(len=MAXNAMELEN) :: quantity_name
-
-
       real(dp) :: x(1), y(1)
       integer  :: mask(1)
       logical  :: ok, mjd_ok
 
+      ! Arrange
       allocate(wx(1), wy(1))
       wx = dmiss
       wy = dmiss
@@ -67,18 +66,16 @@ contains
          "100 2.0" &
       ])
 
-      !call F90_ASSERT_EQ(iostat, 0, cstr("Create scratch file failed."))
-
       mjd_ok = ymd2modified_jul(IREFDATE, refdate_mjd)
       tzone  = 0.0_dp
       jsferic = 0
       call initialize_ec_module()
 
-      x    = [0.0_dp]
-      y    = [0.0_dp]
-      mask = [1]
+      x = 0.0_dp
+      y = 0.0_dp
+      mask = 1
 
-
+      ! Act
       quantity_name = "windx"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
@@ -93,15 +90,18 @@ contains
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
          DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=WINDSPEEDFACTOR)
 
+      ! Assert
       ok = ec_gettimespacevalue(ecInstancePtr, item_windx, IREFDATE, tzone, tunit, 50.0_dp)
-      call f90_expect_near(wx(1), 1.0_dp, 1.0e-6_dp, cstr("windxy_x@50")) ! Halfway between -1.0 and 3.0
+      call f90_expect_near(wx(1), 1.0_dp, 1.0e-6_dp, cstr("windxy_x@50")) ! 1.0 is halfway between -1.0 and 3.0
 
       ok = ec_gettimespacevalue(ecInstancePtr, item_windy, IREFDATE, tzone, tunit, 50.0_dp)
-      call f90_expect_near(wy(1), -1.0_dp, 1.0e-6_dp, cstr("windxy_y@50")) ! Halfway between -4.0 and 2.0
+      call f90_expect_near(wy(1), -1.0_dp, 1.0e-6_dp, cstr("windxy_y@50")) ! -1.0 is halfway between -4.0 and 2.0
 
       ok = ec_gettimespacevalue(ecInstancePtr, item_windxy_x, IREFDATE, tzone, tunit, 50.0_dp)
-      call f90_expect_near(wx(1), WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_x@50")) ! Halfway between 0.0 and 2.0
-      call f90_expect_near(wy(1), -WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_y@50")) ! Halfway between 0.0 and 2.0
+      call f90_expect_near(wx(1), WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_x@50"))
+      call f90_expect_near(wy(1), -WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_y@50"))
+
+      deallocate(wx, wy)
    end subroutine test_data_value__windx_windy
    !$f90tw )
 
@@ -129,6 +129,7 @@ contains
       integer  :: mask(1)
       logical  :: ok, mjd_ok
 
+      ! Arrange
       allocate(wx(1), wy(1))
       wx = dmiss
       wy = dmiss
@@ -158,23 +159,26 @@ contains
       jsferic = 0
       call initialize_ec_module()
 
-      x    = [0.0_dp]
-      y    = [0.0_dp]
-      mask = [1]
+      x = 0.0_dp
+      y = 0.0_dp
+      mask = 1
 
+      ! Act
       quantity_name = "windxy"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
       call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windxy"))
 
-      quantity_name = "windxy"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
          DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=WINDSPEEDFACTOR)
       call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windxy dataValue"))
 
+      ! Assert
       ok = ec_gettimespacevalue(ecInstancePtr, item_windxy_x, IREFDATE, tzone, tunit, 50.0_dp)
       call f90_expect_near(wx(1), WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_x@50")) ! 0.8 * halfway between -1.0 and 3.0
       call f90_expect_near(wy(1), -WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_y@50")) ! 0.8 * halfway between -4.0 and 2.0
+
+      deallocate(wx, wy)
    end subroutine test_data_value__windxy
    !$f90tw )
 
@@ -202,6 +206,7 @@ contains
       integer  :: mask(1)
       logical  :: ok, mjd_ok
 
+      ! Arrange
       allocate(solar_radiation(1))
       solar_radiation = dmiss
 
@@ -227,23 +232,25 @@ contains
       jsferic = 0
       call initialize_ec_module()
 
-      x    = [0.0_dp]
-      y    = [0.0_dp]
-      mask = [1]
+      x = 0.0_dp
+      y = 0.0_dp
+      mask = 1
 
+      ! Act
       quantity_name = "solarradiation"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
       call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for solarradiation"))
 
-      quantity_name = "solarradiation"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
          DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=SOLARRADIATIONFACTOR)
       call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for solarradiation dataValue"))
 
-      ! ok = ec_gettimespacevalue(ecInstancePtr, item_solar_radiation, IREFDATE, tzone, tunit, 50.0_dp)
-      ! call f90_expect_near(solar_radiation(1), SOLARRADIATIONFACTOR * 200.0_dp, 1.0e-6_dp, &
-      !    cstr("solarradiation@50")) ! 0.8 * halfway between 100.0 and 300.0
+      ! Assert
+      ok = ec_gettimespacevalue(ecInstancePtr, item_solar_radiation, IREFDATE, tzone, tunit, 50.0_dp)
+      call f90_expect_near(solar_radiation(1), SOLARRADIATIONFACTOR * 200.0_dp, 1.0e-6_dp, cstr("solarradiation@50"))
+
+      deallocate(solar_radiation)
    end subroutine test_data_value__solarradiation
    !$f90tw )
 
