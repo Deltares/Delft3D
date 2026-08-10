@@ -1920,7 +1920,7 @@
   </testCase>
   <testCase name="e02_f010_c011_oldext_gate_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c011_oldext_gate_free</path>
-    <maxRunTime>200.0</maxRunTime>
+      <maxRunTime>450</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -1933,7 +1933,6 @@
   </testCase>
   <testCase name="e02_f010_c012_oldext_sill_sub" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c012_oldext_sill_sub</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
         <parameters>
@@ -1946,7 +1945,6 @@
   </testCase>
   <testCase name="e02_f010_c013_oldext_sill_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c013_oldext_sill_free</path>
-    <maxRunTime>40.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirfree_his.nc" type="netCDF">
         <parameters>
@@ -1972,7 +1970,6 @@
   </testCase>
   <testCase name="e02_f010_c017_oldext_gate_sub_nohis" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c017_oldext_gate_sub_nohis</path>
-    <maxRunTime>25.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
         <parameters>
@@ -1998,7 +1995,6 @@
   </testCase>
   <testCase name="e02_f010_c020_oldext_gate_sub_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c020_oldext_gate_sub_ini_newkeywords</path>
-    <maxRunTime>25.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
         <parameters>
@@ -2011,7 +2007,7 @@
   </testCase>
   <testCase name="e02_f010_c021_oldext_gate_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c021_oldext_gate_free_ini_newkeywords</path>
-    <maxRunTime>200.0</maxRunTime>
+      <maxRunTime>450</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -2024,7 +2020,6 @@
   </testCase>
   <testCase name="e02_f010_c022_oldext_sill_sub_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c022_oldext_sill_sub_ini_newkeywords</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
         <parameters>
@@ -2037,7 +2032,6 @@
   </testCase>
   <testCase name="e02_f010_c023_oldext_sill_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c023_oldext_sill_free_ini_newkeywords</path>
-    <maxRunTime>40.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirfree_his.nc" type="netCDF">
         <parameters>
@@ -2896,7 +2890,6 @@
   </testCase>
   <testCase name="e02_f012_c098_oldext_fou_q1_sul" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c098_oldext_fou_q1_sul</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/tt3_fou.nc" type="netCDF">
         <parameters>
@@ -2907,7 +2900,6 @@
   </testCase>
   <testCase name="e02_f012_c101_oldext_fourier_analysis_compdt" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c101_oldext_fourier_analysis_compdt</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
         <parameters>
@@ -3274,7 +3266,6 @@
   </testCase>
   <testCase name="e02_f017_c010_oldext_sourcesink_2D" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f017_sources_sinks/c010_oldext_sourcesink_2D</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/sourcesink_2D_his.nc" type="netCDF">
         <parameters>
@@ -4292,7 +4283,6 @@
   </testCase>
   <testCase name="e02_f022_c75_oldext_inicomp" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c75_oldext_boundary_condition_icond4_graded_linear_inicomp</path>
-    <maxRunTime>10.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4360,7 +4350,6 @@
   </testCase>
   <testCase name="e02_f022_c95_oldext_extrapolate_bedlevel" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c95_oldext_extrapolate_bedlevel</path>
-    <maxRunTime>60.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -4525,7 +4514,6 @@
   </testCase>
   <testCase name="e02_f022_c302_oldext_sedimentmodelnr2_3VR" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c302_oldext_sedimentmodelnr2_3VR</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>

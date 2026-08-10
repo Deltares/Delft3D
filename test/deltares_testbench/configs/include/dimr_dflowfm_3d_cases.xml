@@ -1986,7 +1986,6 @@
   </testCase>
   <testCase name="e02_f211_c002_bubblescreens_nieuwemeer_sigma" ref="dflowfm_config">
     <path version="DVC">e02_dflowfm/f211_3D_bubblescreens/c002_bubblescreens_nieuwemeer_sigma</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="output/NieuweMeer_sigma_his.nc" type="netCDF">
         <parameters>

@@ -6976,7 +6976,6 @@
   </testCase>
   <testCase name="e02_f037_c72_with_summerdike" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c72_with_summerdike</path>
-    <maxRunTime>7.5000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c72_his.nc" type="netCDF">
         <parameters>

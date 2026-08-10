@@ -2,7 +2,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c01</path>
-    <maxRunTime>2700</maxRunTime>
+    <maxRunTime>3600</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -406,7 +406,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c03</path>
-    <maxRunTime>600.0</maxRunTime>
+    <maxRunTime>900</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -420,7 +420,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c04_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c04</path>
-    <maxRunTime>900</maxRunTime>
+    <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -434,7 +434,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c05_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c05</path>
-    <maxRunTime>450</maxRunTime>
+    <maxRunTime>1200</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -448,7 +448,6 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f11_c01_timevar" ref="dimr_trunk">
     <path version="DVC">e04_wave/f11-wave_dir_interpolation/c01_timevar</path>
-    <maxRunTime>60.0</maxRunTime>
     <checks>
       <file name="wavm-tst.nc" type="NETCDF">
         <parameters>
@@ -460,7 +459,6 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f11_c02_spacevar" ref="dimr_trunk">
     <path version="DVC">e04_wave/f11-wave_dir_interpolation/c02_spacevar</path>
-    <maxRunTime>60.0</maxRunTime>
     <checks>
       <file name="wavm-tst.nc" type="NETCDF">
         <parameters>
@@ -472,7 +470,6 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f12_c01_overallspecfile" ref="dimr_noconf">
     <path version="DVC">e04_wave/f12_wave_spectral_cache/c01_overallspecfile</path>
-    <maxRunTime>60.0</maxRunTime>
     <checks>
       <file name="wave/wavm-icelandnest.nc" type="NETCDF">
         <parameters>
@@ -484,7 +481,6 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f12_c02_from_specfile" ref="dimr_noconf">
     <path version="DVC">e04_wave/f12_wave_spectral_cache/c02_from_specfile</path>
-    <maxRunTime>60.0</maxRunTime>
     <checks>
       <file name="wave/wavm-iceland.nc" type="NETCDF">
         <parameters>

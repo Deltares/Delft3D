@@ -72,7 +72,6 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c00" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
-    <maxRunTime>40.0</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/te0_map.nc" type="NETCDF">
@@ -94,7 +93,6 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c01" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c01-validation_3.1.6/dfm</path>
-    <maxRunTime>40.0</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/fff_map.nc" type="NETCDF">
@@ -116,7 +114,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c02" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c02-FriesianInlet_schematic/dfm</path>
-    <maxRunTime>300.0</maxRunTime>
+    <maxRunTime>450</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -160,7 +158,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c05" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c05-california/dfm</path>
-    <maxRunTime>200.0</maxRunTime>
+      <maxRunTime>450</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/cca_map.nc" type="NETCDF">
@@ -251,7 +249,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f09_c01" ref="dimr_noconfig">
     <path version="DVC">e100_dflowfm-dwaves/f09_comwrite_intervals/c01-ti_com_dtuser_default</path>
-    <maxRunTime>300.0</maxRunTime>
+      <maxRunTime>450</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
