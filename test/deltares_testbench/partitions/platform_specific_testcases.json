@@ -1,0 +1,476 @@
+[
+  {
+    "name": "e02_f009_c050_zandloper30m_villemonte",
+    "path": "e02_dflowfm/f009_weirs/c050_zandloper30m_villemonte",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": [
+      "2024-01-11T13:10:00",
+      "2025-10-15T15:16:08.780000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f014_c102",
+    "path": "e02_dflowfm/f014_parallel/c102_baltic_bedlevtype1_on_netfile",
+    "ref": [
+      "generic_platform_specific"
+    ],
+    "version": "2025-09-08T14:50:00",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64_parallel.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_win64_parallel.xml"
+    ]
+  },
+  {
+    "name": "e02_f019_c030_lock_exchange_2m_3d",
+    "path": "e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2026-07-06T14:49:25.460000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f019_c033_lock_exchange_300m_unst_3d",
+    "path": "e02_dflowfm/f019_transport/c033_lock_exchange_300m_unst_3d",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2026-07-06T14:49:31.161000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f022_c106_flow_wave_morpho_straightcoast",
+    "path": "e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2025-10-09T07:30:00",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dmorphology_validation_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dmorphology_validation_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f029_c202_hyd_file_westerschelde_3d_s_vag",
+    "path": "e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-09T09:08:59.359000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f029_c203_hyd_file_westerschelde_3d_s_hvag",
+    "path": "e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-09T09:09:04.208000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom",
+    "path": "e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-09T09:09:20.382000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom",
+    "path": "e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-09T09:09:26.016000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom",
+    "path": "e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-09T09:09:31.929000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c003_westernscheldt_dynamo_2D",
+    "path": "e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-08T12:01:15.268000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c004_westernscheldt_noproc_2D",
+    "path": "e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-08T12:01:19.033000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c013_westernscheldt_dynamo_2D_restart",
+    "path": "e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart",
+    "ref": [
+      "dflowfm_platform_specific_refs_restart"
+    ],
+    "version": "2026-07-09T09:10:41.572000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c109_westernscheldt_dynamo_2D_statistics",
+    "path": "e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-08T12:01:59.440000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c401_Course_tracers",
+    "path": "e02_dflowfm/f030_water_quality_processes/c401_Course_tracers",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-03-18T10:42:20.535000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c402_Course_bacteria",
+    "path": "e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-07T15:36:20.453000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c403_Course_eutrophication",
+    "path": "e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-07-07T15:36:25.497000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f030_c404_Course_river_BOD",
+    "path": "e02_dflowfm/f030_water_quality_processes/c404_Course_river_BOD",
+    "ref": [
+      "dflowfm_platform_specific_refs"
+    ],
+    "version": "2026-03-18T10:43:42.482000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_processes_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f208_c011_gate_sub_3Dz",
+    "path": "e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2025-10-16T07:22:38.995000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f208_c015_gate_free_3Dz",
+    "path": "e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2025-10-07T07:02:17.211000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f208_c016_gate_free_3Dzsigma1",
+    "path": "e02_dflowfm/f208_3D_hydraulic_structures/c016_gate_free_3Dzsigma1",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2025-10-09T12:55:24.339000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f208_c017_gate_free_3Dzsigma2",
+    "path": "e02_dflowfm/f208_3D_hydraulic_structures/c017_gate_free_3Dzsigma2",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2025-10-13T09:55:24",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f208_c023_sill_free_3Dz",
+    "path": "e02_dflowfm/f208_3D_hydraulic_structures/c023_sill_free_3Dz",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2025-10-07T17:43:20.250000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c50_fixed_layer_Unstr",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c50_fixed_layer_Unstr",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": [
+      "2024-12-12T08:02:05.245000",
+      "2025-10-15T15:30:37.406000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c60_oldext_thindams",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c60_oldext_thindams",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": "2026-06-17T10:07:54.517000",
+    "lnx64_configs": [],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c60_thindams",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c60_thindams",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": "2026-07-09T13:59:21.218000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c76_wrihis_sediment",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c76_wrihis_sediment",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": [
+      "2024-12-12T10:57:26.449000",
+      "2025-04-09T14:25:11.235000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c82_morupdtrue_cmpupdtrue",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c82_morupdtrue_cmpupdtrue",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": [
+      "2024-12-12T10:57:40.236000",
+      "2025-10-15T15:31:24.132000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c83_BedCmpStt_smaller_than_Morstt",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c83_BedCmpStt_smaller_than_Morstt",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": [
+      "2024-12-12T10:57:51.715000",
+      "2025-10-15T15:31:26.640000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c84_bed_composition_hisfile",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c84_bed_composition_hisfile",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": [
+      "2024-12-12T10:58:02.807000",
+      "2025-10-15T15:31:28.731000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f422_c94_fractions_cmpupd_only_fraction2",
+    "path": "e02_dflowfm/f422_morphology_2D_restart/c94_fractions_cmpupd_only_fraction2",
+    "ref": [
+      "dflowfm_restart_platform"
+    ],
+    "version": [
+      "2024-12-12T10:58:12.998000",
+      "2025-10-15T15:31:43.513000"
+    ],
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_oldext_win64.xml",
+      "configs/dimr/dimr_dflowfm_win64.xml"
+    ]
+  },
+  {
+    "name": "e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d",
+    "path": "e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d",
+    "ref": [
+      "platform_specific"
+    ],
+    "version": "2026-06-01T08:29:36.870000",
+    "lnx64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_lnx64.xml"
+    ],
+    "win64_configs": [
+      "configs/dimr/dimr_dflowfm_3d_win64.xml"
+    ]
+  }
+]

@@ -1,122 +1,122 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:xi="http://www.w3.org/2001/XInclude"
-    xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xi="http://www.w3.org/2001/XInclude" xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
   <config>
     <localPaths>
       <testCasesDir>./data/cases</testCasesDir>
       <enginesDir>./data/engines</enginesDir>
-      <referenceDir>./data/references</referenceDir>
+      <referenceDir>./data/cases</referenceDir>
     </localPaths>
     <locations>
       <location name="dsctestbench-cases">
-        <credential ref="commandline" />
-        <root>{server_base_url}/cases</root>
+        <credential ref="commandline"/>
+        <root>./data/cases</root>
       </location>
       <location name="dsctestbench-references">
-        <credential ref="commandline" />
-        <root>{server_base_url}/references</root>
+        <credential ref="commandline"/>
+        <root>./data/cases</root>
       </location>
       <location name="reference_engines">
         <credential ref="commandline"/>
         <root>{server_base_url}/references/bin</root>
-        </location>
+      </location>
       <location name="local">
         <root>./data/engines</root>
       </location>
     </locations>
   </config>
-      <!--
+  <!--
     Programs
     -->
-    <programs>
-        <!--
+  <programs>
+    <!--
         The order is important. Start with the following programs:
             command_prompt
             mpi
         -->
-        <program name="command_prompt">
-            <path>/bin/bash</path>
-            <arguments>
-                <argument>-c</argument>
-            </arguments>
-        </program>
-        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-            <location ref="reference_engines" type="reference">
-                <from>lnx64</from>
-            </location>
-            <location ref="local" type="check">
-                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
-            </location>
-            <path>bin/run_dimr.sh</path>
-            <environments>
-                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-            </environments>
-            <arguments>
-                <argument>-m dimr.xml</argument>
-            </arguments>
-        </program>
-        <program name="dimr_waq" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-            <location ref="reference_engines" type="reference">
-                <from>lnx64</from>
-            </location>
-            <location ref="local" type="check">
-                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
-            </location>
-            <path>bin/run_dimr.sh</path>
-            <environments>
-                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-            </environments>
-            <arguments>
-                <argument>-m dimr_waq.xml</argument>
-            </arguments>
-        </program>
-        <program name="dimr-mpi" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-            <location ref="reference_engines" type="reference">
-                <from>lnx64</from>
-            </location>
-            <location ref="local" type="check">
-                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
-            </location>
-            <path>bin/run_dimr.sh</path>
-            <environments>
-                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-            </environments>
-            <arguments>
-                <argument>-c 3</argument>
-                <argument>-m dimr.xml</argument>
-            </arguments>
-        </program>
-        <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-            <shell ref="command_prompt"/>
-            <path>thirdparty/vs/lnx64/vs</path>
-            <environments>
-                <environment name="PAGER" type="raw">more</environment>
-            </environments>
-        </program>
-        <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >
-            <location ref="local" type="check">
-                <from>teamcity_artifacts/lnx64</from>
-            </location>
-            <path>bin/run_waqmerge.sh</path>
-        </program>
-        <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
-            <path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
-        </program>
-        <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
-            <location ref="local" type="check">
-               <from>teamcity_artifacts/lnx64</from>
-            </location>
-            <path>bin/run_maptonetcdf.sh</path>
-        </program>
-        <program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
-            <path>thirdparty/poi2asc/lnx64/run_poi2asc.sh</path>
-        </program>
-    </programs>
+    <program name="command_prompt">
+      <path>/bin/bash</path>
+      <arguments>
+        <argument>-c</argument>
+      </arguments>
+    </program>
+    <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+      <location ref="reference_engines" type="reference">
+        <from>lnx64</from>
+      </location>
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/lnx64</from>
+        <!-- just the first part of the directory structure, wil be file by TeamCity -->
+      </location>
+      <path>bin/run_dimr.sh</path>
+      <environments>
+        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
+      <arguments>
+        <argument>-m dimr.xml</argument>
+      </arguments>
+    </program>
+    <program name="dimr_waq" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+      <location ref="reference_engines" type="reference">
+        <from>lnx64</from>
+      </location>
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/lnx64</from>
+        <!-- just the first part of the directory structure, wil be file by TeamCity -->
+      </location>
+      <path>bin/run_dimr.sh</path>
+      <environments>
+        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
+      <arguments>
+        <argument>-m dimr_waq.xml</argument>
+      </arguments>
+    </program>
+    <program name="dimr-mpi" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+      <location ref="reference_engines" type="reference">
+        <from>lnx64</from>
+      </location>
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/lnx64</from>
+        <!-- just the first part of the directory structure, wil be file by TeamCity -->
+      </location>
+      <path>bin/run_dimr.sh</path>
+      <environments>
+        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
+      <arguments>
+        <argument>-c 3</argument>
+        <argument>-m dimr.xml</argument>
+      </arguments>
+    </program>
+    <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+      <shell ref="command_prompt"/>
+      <path>thirdparty/vs/lnx64/vs</path>
+      <environments>
+        <environment name="PAGER" type="raw">more</environment>
+      </environments>
+    </program>
+    <program name="waqmerge" addSearchPaths="false" logOutputToFile="true">
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/lnx64</from>
+      </location>
+      <path>bin/run_waqmerge.sh</path>
+    </program>
+    <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
+      <path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
+    </program>
+    <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/lnx64</from>
+      </location>
+      <path>bin/run_maptonetcdf.sh</path>
+    </program>
+    <program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
+      <path>thirdparty/poi2asc/lnx64/run_poi2asc.sh</path>
+    </program>
+  </programs>
   <defaultTestCases>
     <testCase name="dflowfm_default">
       <location ref="dsctestbench-cases" type="input">
