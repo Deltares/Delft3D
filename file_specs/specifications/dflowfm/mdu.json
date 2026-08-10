@@ -220,7 +220,12 @@
                     "key": "iniFieldFile",
                     "default_value": "",
                     "value_type": "path",
-                    "description": "Initial and parameter field file (*.ini)."
+                    "description": "Initial and parameter field file (*.ini).",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.",
+                        "date": "2026-08-06"
+                    }
                 },
                 {
                     "key": "waterLevIniFile",
@@ -4310,7 +4315,12 @@
                     "key": "extForceFile",
                     "default_value": "",
                     "value_type": "path",
-                    "description": "Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification."
+                    "description": "Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.",
+                        "date": "2026-08-06"
+                    }
                 },
                 {
                     "key": "extForceFileNew",

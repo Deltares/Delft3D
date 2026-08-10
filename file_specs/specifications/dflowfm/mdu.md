@@ -91,7 +91,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `structureFile` | File (\*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. | `<empty>` |  |  |  |
 | `gulliesFile` | Polyline file (\*_gul.pliz), containing lowest bed level along talweg x, y, z level. | `<empty>` |  |  |  |
 | `roofsFile` | Polyline file (\*_roof.pliz), containing roofgutter heights x, y, z level. | `<empty>` |  |  |  |
-| `iniFieldFile` | Initial and parameter field file (\*.ini). | `<empty>` |  |  |  |
+| `iniFieldFile` ⚠️ | Initial and parameter field file (\*.ini). | `<empty>` |  |  |  |
 | `waterLevIniFile` | Initial water levels sample file (\*.xyz). | `<empty>` |  |  |  |
 | `landBoundaryFile` | Land boundary file (\*.ldb), only used for plotting. | `<empty>` |  |  |  |
 | `thinDamFile` | Polyline file (\*_thd.pli), containing polyline(s) for tracing thin dams. | `<empty>` |  |  |  |
@@ -587,7 +587,7 @@ This section contains the settings for external forcings.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `extForceFile` | Old format for external forcings file \*.ext, link with tim/cmp-format boundary conditions specification. | `<empty>` |  |  |  |
+| `extForceFile` ⚠️ | Old format for external forcings file \*.ext, link with tim/cmp-format boundary conditions specification. | `<empty>` |  |  |  |
 | `extForceFileNew` | New format for external forcings file \*.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. | `<empty>` |  |  |  |
 | `rainfall` | Include rainfall. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `qExt` | Include user Qin/out, externally provided. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -1077,10 +1077,12 @@ The keywords and options listed below are deprecated and will be removed in a fu
 
 | Keyword/value | Notes |
 | ------------- | ----- |
+| `[external forcing] extForceFile` | Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details. |
 | `[general] autoStart` | Keyword will be removed in a future release. |
 | `[general] convertLongCulverts` | Unconverted long culverts (convertLongCulverts=0) will be removed in a future release. |
 | `[geometry] circumcenterMethod` | Once the keyword is removed/becomes obsolete, the `allNetlinksLoop` method will be used. |
 | `[geometry] circumcenterTolerance` | Once the keyword is removed/becomes obsolete, a fixed tolerance will be used. |
+| `[geometry] iniFieldFile` | Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details. |
 | `[geometry] orgFloorLevTopLayDef` | Use `[geometry] floorLevTopLay` instead. |
 | `[geometry] sigmaGrowthFactor` | Use `[geometry] zLayerGrowthFactor` instead. |
 | `[model]` | Section has been replaced with `[general]` section. |
