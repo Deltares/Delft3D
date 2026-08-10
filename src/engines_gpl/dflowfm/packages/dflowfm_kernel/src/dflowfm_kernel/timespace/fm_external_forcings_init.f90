@@ -1155,7 +1155,7 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper, target_data)
+            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper)
             res = .true. ! Successful loading is sufficient; not every quantity requires an enablement action.
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
@@ -1167,7 +1167,7 @@ contains
    end function init_spatial_fields
 
    !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
-   function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
+   function enable_special_quantity(quantity, block_ptr, operand) result(success)
       use fm_external_forcings_utils, only: split_qid
       use tree_data_types, only: tree_data
       use unstruc_inifields, only: set_friction_type_values_explicit
@@ -1176,7 +1176,6 @@ contains
       character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
       type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
       integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
-      real(dp), dimension(:), pointer, intent(inout) :: target_data !< pointer to the target data array, for now only used for mass_balance_area
       logical :: success
 
       character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
