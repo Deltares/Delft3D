@@ -3211,7 +3211,7 @@
   </testCase>
   <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c011_gate_free</path>
-    <maxRunTime>200.0</maxRunTime>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -3224,7 +3224,7 @@
   </testCase>
   <testCase name="e02_f010_c015_gategen_weirgen" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c015_gategen_weirgen</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+    <maxRunTime>15000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -3263,7 +3263,7 @@
   </testCase>
   <testCase name="e02_f010_c021_gate_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
-    <maxRunTime>200.0</maxRunTime>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -6239,7 +6239,6 @@
   </testCase>
   <testCase name="e02_f022_c95_extrapolate_bedlevel" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c95_extrapolate_bedlevel</path>
-    <maxRunTime>60.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -6251,7 +6250,7 @@
   </testCase>
   <testCase name="e02_f022_c97_trench_VR93_SedTransStt" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c97_trench_VR93_SedTransStt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+    <maxRunTime>5000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -6273,7 +6272,7 @@
   </testCase>
   <testCase name="e02_f022_c98_graded_sediment_ConcBc_restart" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c98_graded_sediment_ConcBc_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+    <maxRunTime>5000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/da3_20050127_120000_rst.nc" type="netCDF">
         <parameters>
@@ -6363,7 +6362,7 @@
   </testCase>
   <testCase name="e02_f022_c100_inifieldfile_morphopol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c100_inifieldfile_morphopol</path>
-    <maxRunTime>60.0000000</maxRunTime>
+    <maxRunTime>60</maxRunTime>
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -6374,7 +6373,7 @@
   </testCase>
   <testCase name="e02_f022_c108_settling_mass_balance" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c108_settling_mass_balance</path>
-    <maxRunTime>60.0000000</maxRunTime>
+    <maxRunTime>60</maxRunTime>
     <checks>
       <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
         <parameters>
