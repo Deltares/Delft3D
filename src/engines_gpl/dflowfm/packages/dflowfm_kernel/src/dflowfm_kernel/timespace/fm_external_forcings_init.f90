@@ -974,7 +974,7 @@ contains
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
-                                   resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
+                                   initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -1058,9 +1058,6 @@ contains
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
-         end if
-         if (.not. res) then
-            res = resolve_mass_balance_area_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             if (str_tolower(quantity) == 'bedlevel') then
@@ -1173,7 +1170,7 @@ contains
    function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
       use fm_external_forcings_utils, only: split_qid
       use tree_data_types, only: tree_data
-      use unstruc_inifields, only: finish_mass_balance_area_target, set_friction_type_values_explicit
+      use unstruc_inifields, only: set_friction_type_values_explicit
       use string_module, only: str_tolower
 
       character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
@@ -1188,8 +1185,6 @@ contains
       select case (str_tolower(quantity_base))
       case ('frictioncoefficient')
          success = set_friction_type_values_explicit(block_ptr, operand)
-      case ('massbalancearea', 'waqmassbalancearea')
-         success = finish_mass_balance_area_target(quantity, quantity_base, quantity_specific, target_data)
       case default
          success = .false.
       end select

@@ -1187,7 +1187,7 @@ contains
       use m_flow, only: ndkx
       use m_flowgeom, only: ndx2D, ndxi
       use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
-      use m_mass_balance_areas, only: mbadef, mbaname, nomba
+      use m_mass_balance_area_data, only: mbadef, mbaname, nomba
       use m_polygon, only: m_polygon_destructor
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
