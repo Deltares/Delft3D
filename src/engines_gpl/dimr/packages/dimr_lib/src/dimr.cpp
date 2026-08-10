@@ -1368,9 +1368,12 @@ void Dimr::receive(const char* name, int compType, BMI_SETVAR dllSetVar, BMI_GET
                             // targetProcess=-1: no process can accept this item
                             // targetProcess=my_rank: this process is registered to be able to accept this item but
                             // something goes wrong
-                            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED,
-                                            "ABORT: Dimr::receive: get_var function not defined while processing %s",
-                                            name);
+                            throw Exception(
+                                Exception::ERR_INVALID_INPUT,
+                                "ABORT: Dimr::receive: pointer target \"%s\" could not be resolved: get_var did not "
+                                "return an address. Check that the target variable is exposed by the component and "
+                                "that scalar variables are not declared as type=\"pointer\".",
+                                name);
                         }
                     }
                     else
@@ -1423,8 +1426,12 @@ void Dimr::receive_ptr(const char* name, const char* sourceName, int compType, B
         {
             // targetProcess=-1: no process can accept this item
             // targetProcess=my_rank: this process is registered to be able to accept this item but something goes wrong
-            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED,
-                            "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
+            throw Exception(
+                Exception::ERR_INVALID_INPUT,
+                "ABORT: Dimr::receive: pointer target \"%s\" could not be resolved: get_var did not return an "
+                "address. Check that the target variable is exposed by the component and that scalar variables are "
+                "not declared as type=\"pointer\".",
+                name);
         }
     }
 }
@@ -1464,10 +1471,19 @@ void Dimr::getAddress(const char* name, int compType, BMI_GETVAR dllGetVar, doub
         if (dllGetVar == NULL)
         {
             throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED,
-                            "ABORT: get_var function not defined while processing %s", name);
+                            "ABORT: Dimr::getAddress: component does not export get_var while resolving \"%s\"", name);
         }
         log->Write(ALL, my_rank, "Dimr::getAddress -- calling");
         (dllGetVar)(name, (void**)(sourceVarPtr));
+        if (*sourceVarPtr == NULL)
+        {
+            throw Exception(
+                Exception::ERR_INVALID_INPUT,
+                "ABORT: Dimr::getAddress: get_var returned no address for \"%s\". The callback exists, but the "
+                "variable is not exposed by the component or the coupling item is incorrectly declared as "
+                "type=\"pointer\".",
+                name);
+        }
     }
     else
     {
