@@ -422,18 +422,27 @@ contains
       integer :: number_of_layers
       real(dp) :: global_segment_number
 
-      if (.not. allocated(waq_segment_number_indices)) return
-      if (.not. allocated(painp)) return
-      if (size(waq_segment_number_indices) == 0 .or. size(painp, 1) == 0 .or. Ndxi <= 0) return
+      if (.not. allocated(waq_segment_number_indices)) then
+         return
+      end if
+      if (.not. allocated(painp)) then
+         return
+      end if
+      if (size(waq_segment_number_indices) == 0 .or. size(painp, 1) == 0 .or. Ndxi <= 0) then
+         return
+      end if
 
       do waq_index_position = 1, size(waq_segment_number_indices)
-         if (waq_segment_number_indices(waq_index_position) < 1 .or. waq_segment_number_indices(waq_index_position) > size(painp, 1)) cycle
+         if (waq_segment_number_indices(waq_index_position) < 1 .or. waq_segment_number_indices(waq_index_position) > size(painp, 1)) then
+            cycle
+         end if
 
          waq_input_index = waq_segment_number_indices(waq_index_position)
          do horizontal_index = 1, Ndxi
             global_segment_number = painp(waq_input_index, horizontal_index)
-            if (global_segment_number == dmiss) cycle
-
+            if (global_segment_number == dmiss) then
+               cycle
+            end if
             if (jampi == 0) then
                global_segment_2d = mod(int(global_segment_number) - 1, Ndxi) + 1
                segment_layer = (int(global_segment_number) - 1) / Ndxi + 1
@@ -464,8 +473,9 @@ contains
 
    contains
 
-      integer function global_to_local_segment(global_segment_index)
-         integer, intent(in) :: global_segment_index
+      !> Translates a global waqsegmentfunction index to a local segment index based on the iglobal_s mapping.
+      integer elemental function global_to_local_segment(global_segment_index)
+         integer, intent(in) :: global_segment_index !< The global segment index to be translated to a local segment index.
 
          integer :: global_index
 
@@ -484,8 +494,9 @@ contains
          end if
       end function global_to_local_segment
 
-      integer function get_number_of_layers(horizontal_index)
-         integer, intent(in) :: horizontal_index
+      !> Tiny helper function to avoid a 5-line if-statement. Returns kmxn if allocated, otherwise returns 1.
+      integer elemental function get_number_of_layers(horizontal_index)
+         integer, intent(in) :: horizontal_index !< The horizontal index for which to retrieve the number of layers.
 
          if (allocated(kmxn)) then
             get_number_of_layers = kmxn(horizontal_index)
@@ -605,7 +616,7 @@ contains
             isflatitude = num_spatial_time_fuctions
             call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
             call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
-         endif
+         end if
       else
          call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because ''latitude'' is not in the sub-file.')
          isflatitude = 0

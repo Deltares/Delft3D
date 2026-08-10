@@ -864,7 +864,7 @@ contains
    end function resolve_mass_balance_area_target
 
    !> Convert a mass-balance area's temporary coverage field to integer area IDs.
-   function finish_mass_balance_area_target(qid_base, qid_specific, target_array) result(success)
+   function finish_mass_balance_area_target(qid, qid_base, qid_specific, target_array) result(success)
       use m_find_name, only: find_name
       use m_flowgeom, only: ndxi
       use m_flowtimes, only: ti_mba
@@ -874,6 +874,7 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use string_module, only: str_tolower
 
+      character(len=*), intent(in) :: qid !< full quantity id, e.g. 'waqmassbalanceareaarea1'.
       character(len=*), intent(in) :: qid_base !< base quantity id, e.g. 'massbalancearea' or 'waqmassbalancearea'.
       character(len=*), intent(in) :: qid_specific !< specific quantity id, e.g. 'area1'.
       real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< input/output target array, to be converted to integer area IDs and then nullified.
@@ -886,7 +887,7 @@ contains
       if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') return
 
       if (ti_mba <= 0.0_dp) then
-         write (msgbuf, '(a)') 'Quantity '''//trim(qid_specific)//''' requires MbaInterval to be specified in the MDU file.'
+         write (msgbuf, '(a)') 'Quantity '''//qid//''' requires MbaInterval to be specified in the MDU file.'
          call err_flush()
          success = .false.
       else
@@ -1787,7 +1788,7 @@ contains
       case default !> read string as integer
          read (target_layer, *, iostat=read_status) layer
          if (read_status /= 0 .or. layer <= 0) then
-            write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''kbot'', ''all'', or a positive layer number.'
+            write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''bottom'', ''all'', or a positive layer number.'
             call err_flush()
             success = .false.
             return

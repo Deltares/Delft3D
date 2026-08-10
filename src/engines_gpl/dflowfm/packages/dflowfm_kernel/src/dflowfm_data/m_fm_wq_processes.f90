@@ -150,6 +150,7 @@ module m_fm_wq_processes
 
 contains
 
+   !> reset "waq_segment_number_indices" but keep it allocated with size 0.
    subroutine reset_waq_segment_number_indices()
       if (allocated(waq_segment_number_indices)) then
          deallocate (waq_segment_number_indices)
@@ -157,6 +158,7 @@ contains
       allocate (waq_segment_number_indices(0))
    end subroutine reset_waq_segment_number_indices
 
+   !> Register a new waq index in the list of indices if it is not already present.
    subroutine register_waq_segment_number_index(waq_input_index)
       integer, intent(in) :: waq_input_index
 
