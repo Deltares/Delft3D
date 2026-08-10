@@ -182,8 +182,9 @@ contains
         use m_flowgeom, only: ndxi, kcs
         use m_get_kbot_ktop, only: getkbotktop
         use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
+        use m_read_location_info, only: read_polyline_coordinates
         use properties, only: prop_get, max_prop_length
-        use timespace, only: selectelset_internal_nodes, LOCTP_POLYGON_FILE
+        use timespace, only: selectelset_internal_nodes, LOCTP_POLYGON_XY
 
         ! Arguments
         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to the mass balance area block in the tree structure.
@@ -191,6 +192,13 @@ contains
         ! Local variables
         character(len=max_prop_length) :: name !< Name of the mass balance area.
         character(len=max_prop_length) :: location_file !< Location file for the mass balance area
+        integer :: num_columns !< Number of columns in the location file (2D or 3D).
+        integer :: num_coordinates !< Number of coordinates defining the polygon of the mass balance area.
+        real(kind=dp), allocatable :: x_coordinates(:) !< X coordinates of the polygon defining the mass balance area.
+        real(kind=dp), allocatable :: y_coordinates(:) !< Y coordinates of the polygon defining the mass balance area.
+        real(kind=dp), allocatable :: z_coordinates(:) !< Z coordinates of the polygon defining the mass balance area.
+
+        logical :: success
         integer :: k, kk, kt, kb, node
         integer :: imba !< Index of the mass balance area in the list of mass balance areas.
         integer :: nselected !< Number of selected internal nodes within the polygon defined in the location file.
@@ -198,53 +206,47 @@ contains
 
         ! Initialization
         imba = 0
+        location_file = ''
 
         ! Get name and locationFile of mass balance area block
         call prop_get(block_ptr, '', 'name', name)
-        call prop_get(block_ptr, '', 'locationFile', location_file)
 
-        if (index(location_file, '.pol') > 0) then
+        call read_polyline_coordinates(block_ptr, name, md_mbafile, '', 'massbalancearea', x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+        num_coordinates = size(x_coordinates)
 
-            ! Check if the mass balance area name array is allocated, if not allocate it with size 0
-            if (.not. allocated(mbaname)) then
-                allocate (mbaname(0))
-            end if
-
-            ! Check if the mass balance area name already exists in the list of mass balance areas
-            imba = find_name(mbaname, name)
-
-            ! If the mass balance area name does not exist, add it to the list of mass balance areas
-            if (imba == 0) then
-                nomba = nomba + 1
-                imba = nomba
-                call realloc(mbaname, nomba, keepExisting=.true., fill=name)
-            end if
-
-            ! Read the location file and select the internal nodes within the polygon defined in the location file
-            allocate (selected_nodes(ndxi))
-            call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
-                                            LOCTP_POLYGON_FILE, location_file)
-
-            do kk = 1, nselected
-                node = selected_nodes(kk)
-
-                mbadef(node) = imba
-                call getkbotktop(node, kb, kt)
-
-                do k = kb, kb + kmxn(node) - 1
-                    mbadef(k) = imba
-                end do
-            end do
-
-            deallocate (selected_nodes)
-
-        else
-
-            write (msgbuf, '(A)') 'Error while reading mass balance area block '''//trim(name)//''': locationFile must be a .pol file.'
-            call err_flush()
-            return
-
+        ! Check if the mass balance area name array is allocated, if not allocate it with size 0
+        if (.not. allocated(mbaname)) then
+            allocate (mbaname(0))
         end if
+
+        ! Check if the mass balance area name already exists in the list of mass balance areas
+        imba = find_name(mbaname, name)
+
+        ! If the mass balance area name does not exist, add it to the list of mass balance areas
+        if (imba == 0) then
+            nomba = nomba + 1
+            imba = nomba
+            call realloc(mbaname, nomba, keepExisting=.true., fill=name)
+        end if
+
+        ! Read the location file and select the internal nodes within the polygon defined in the location file
+        allocate (selected_nodes(ndxi))
+
+        call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
+                                        LOCTP_POLYGON_XY, numcoord=num_coordinates, xpin=x_coordinates, ypin=y_coordinates)
+
+        do kk = 1, nselected
+            node = selected_nodes(kk)
+
+            mbadef(node) = imba
+            call getkbotktop(node, kb, kt)
+
+            do k = kb, kb + kmxn(node) - 1
+                mbadef(k) = imba
+            end do
+        end do
+
+        deallocate (selected_nodes)
 
     end subroutine read_mass_balance_area_block
 
