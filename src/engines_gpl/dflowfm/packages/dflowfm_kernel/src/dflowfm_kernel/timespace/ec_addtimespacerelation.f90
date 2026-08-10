@@ -257,7 +257,6 @@ contains
                      success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
                      if (present(data_value)) then
-                        ! UNST-8900: Data value must be added as extra argument to ecSetFileReaderProperties
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, data_value=data_value)
                      else if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
@@ -1447,10 +1446,10 @@ contains
       case ('solarradiation')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'surface_downwelling_shortwave_flux_in_air'
-         else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'solarradiation'
-         else
+         else if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
             sourceItemName = 'sw_radiation_flux'
+         else
+            sourceItemName = 'solarradiation'
          end if
       case ('longwaveradiation')
          sourceItemName = 'surface_net_downward_longwave_flux'
