@@ -415,6 +415,11 @@ contains
                longculvertindex = longculvertindex + 1
                if (longculvertindex == i) then
                   ncoords = size(longculverts(i)%xcoords)
+                  if (ncoords == 0) then
+                     write (msgbuf, '(A,I0)') 'Error: No coordinates found for structure #', j
+                     call err_flush()
+                     exit
+                  end if
                   call tree_remove_child_by_name(current, 'xCoordinates', ierror)
                   if (ierror /= 0) then
                      write (msgbuf, '(A,I0)') 'Error Removing xCoordinates from structure #', j
