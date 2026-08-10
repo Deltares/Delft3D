@@ -69,14 +69,18 @@ contains
       case (UNC_LOC_U)
          num_elements = lnx
       case (UNC_LOC_GLOBAL)
-         num_elements = 0
+         num_elements = 1
       case default
          call mess(LEVEL_FATAL, 'm_flowgeom_mask::construct_mask: Unsupported location type: ', location_type)
       end select
 
       call realloc(mask, num_elements, keepExisting=.false., fill=0)
 
-      call apply_spatial_location_mask(mask, location_type, spatial_location_type)
+      if (location_type == UNC_LOC_GLOBAL .or. spatial_location_type == SPATIAL_LOCATION_INVALID) then
+         mask = 1
+      else
+         call apply_spatial_location_mask(mask, location_type, spatial_location_type)
+      end if
 
       if (present(target_mask_file) .and. present(ierr)) then
          call apply_polygon_mask(mask, location_type, target_mask_file, ierr)
