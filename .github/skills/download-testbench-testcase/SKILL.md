@@ -13,21 +13,31 @@ argument-hint: '[partial-testcase-name ...] [config-path] [timestamp]'
 
 ## What this skill does
 
-It uses the _MinIO tools_ to download test cases from our [MinIO bucket](https://s3.deltares.nl/dsc-testbench)
-to the directory `/test/deltares_testbench/data/`. It can download the _test case input_ to the `cases`
-subdirectory, and the _test case references_ to the `reference_results` or `references` subdirectory (
-depending on what's configured in the config XML file). If not specified by the user, download the
-_test case input_.
+It uses the _DVC_ to download test case data from our [MinIO bucket](https://s3.deltares.nl/delft3d-testbench)
+to the local filesystem. It can download the _input files_, the _reference output files_ and the
+_documentation_ of a test case to the `/test/deltares_testbench/data/cases` directory.
 
 ## Preconditions
 
-Similar pre-conditions to running `TestBench.py`, since the _MinIO tools_ are in the same code-base:
-
-1. The working directory must be `/test/deltares_testbench/`. *Always* run `TestBench.py` from this directory.
-2. Virtual environment `.venv` exists and must be activate. *Always* activate it before running the MinIO tools.
-3. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
-   in an activated venv. Or if `uv` is not installed: `pip install -r pip/win-requirements.txt`.
-4. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
+1. The virtual environment `.venv` exists in `/test/deltares_testbench` with the python dependencies
+   installed. The `dvc` cli tool is installed in this venv so you *must* activate the venv to use it.
+   Only if the create the venv and install the dependencies using the following steps:
+   If `uv` is installed:
+   On Windows:
+```powershell
+# From working directory `/test/deltares_testbench`
+uv venv --python 3.12
+.venv/Scripts/activate
+uv pip install pip/win-requirements.txt
+```
+   On Linux:
+```bash
+# From working directory `/test/deltares_testbench`
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install pip/lnx-requirements.txt
+```
+3. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
    home directory in the file `~/.aws/credentials`. If there are `minio`/`s3` auth errors please direct
    the user towards the `minio` 
    [UI page where they can create access keys](https://s3-console.deltares.nl/access-keys) and suggest
