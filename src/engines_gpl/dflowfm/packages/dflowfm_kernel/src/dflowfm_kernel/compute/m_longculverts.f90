@@ -790,7 +790,7 @@ contains
       ! local orientation. Therefore this mapping must also be refreshed when
       ! skiplinks is true.
       do ilongc = 1, nlongculverts
-         call setLongCulvertFlowDirectionSign(ilongc)
+         call set_longculvert_flow_direction(ilongc)
       end do
 
       if (newculverts) then
@@ -864,12 +864,12 @@ contains
    end subroutine longculvertsToProfs
 
    !> Reconstruct the flow link orientation based on input polyline
-   subroutine setLongCulvertFlowDirectionSign(ilongc)
+   subroutine set_longculvert_flow_direction(ilongc)
       use network_data, only: kn, xk, yk
       use precision_basics, only: equal
 
       integer, intent(in) :: ilongc
-      integer :: Lnet, k1, k2
+      integer :: L_net, netnode_1, netnode_2
       logical :: endpoint_is_first_node, endpoint_is_second_node
 
       longculverts(ilongc)%flow_dir = 1
@@ -886,19 +886,19 @@ contains
          return
       end if
 
-      Lnet = longculverts(ilongc)%netlinks(1)
-      if (Lnet <= 0 .or. Lnet > size(kn, dim=2)) then
+      L_net = longculverts(ilongc)%netlinks(1)
+      if (L_net <= 0 .or. L_net > size(kn, dim=2)) then
          return
       end if
 
-      k1 = kn(1, Lnet)
-      k2 = kn(2, Lnet)
-      if (k1 <= 0 .or. k2 <= 0) then
+      netnode_1 = kn(1, L_net)
+      netnode_2 = kn(2, L_net)
+      if (netnode_1 <= 0 .or. netnode_2 <= 0) then
          return
       end if
 
-      endpoint_is_first_node = equal(xk(k1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(k1), longculverts(ilongc)%ycoords(2))
-      endpoint_is_second_node = equal(xk(k2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(k2), longculverts(ilongc)%ycoords(2))
+      endpoint_is_first_node = equal(xk(netnode_1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_1), longculverts(ilongc)%ycoords(2))
+      endpoint_is_second_node = equal(xk(netnode_2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_2), longculverts(ilongc)%ycoords(2))
 
       if (endpoint_is_first_node .and. .not. endpoint_is_second_node) then
          longculverts(ilongc)%flow_dir = -1
@@ -906,7 +906,7 @@ contains
          call mess(LEVEL_WARN, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
                    ' to either endpoint of its first flow link;')
       end if
-   end subroutine setLongCulvertFlowDirectionSign
+   end subroutine set_longculvert_flow_direction
 
    !> Fill frcu and icrctyp for the corresponding flow link numbers of the long culverts
    subroutine setFrictionForLongculverts()
@@ -1438,6 +1438,7 @@ contains
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
       use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
+      use m_1d_structures, only: FLOWDIR_POSITIVE
 
       implicit none
 
@@ -1450,7 +1451,7 @@ contains
       integer :: ierror
 
       longculvert%flowlinks = 0
-      longculvert%flow_dir = 1
+      longculvert%flow_dir = FLOWDIR_POSITIVE
       direction_target = 0
       jafounds = 0 ! Found the starting node or not
       jafounde = 0 ! Found the ending node or not
