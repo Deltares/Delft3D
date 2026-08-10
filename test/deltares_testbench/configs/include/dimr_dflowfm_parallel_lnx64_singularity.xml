@@ -208,7 +208,6 @@
            </arguments>
         </program>
       </programs>
-      
       <checks>
         <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
            <parameters>

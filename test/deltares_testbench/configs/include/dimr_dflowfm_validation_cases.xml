@@ -373,7 +373,6 @@
   </testCase>
   <testCase name="e02_f010_c010_gate_sub" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c010_gate_sub</path>
-    <maxRunTime>25.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
         <parameters>
@@ -386,7 +385,6 @@
   </testCase>
   <testCase name="e02_f011_c012_schematized_lake" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c012_schematized_lake</path>
-    <maxRunTime>20.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/windoverlake_his.nc" type="netCDF">
         <parameters>

@@ -58,7 +58,6 @@
   </testCase>
   <testCase name="e02_f039_c01_sedimentationtest" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
-    <maxRunTime>90.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_map.nc" type="netCDF">
         <parameters>

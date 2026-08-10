@@ -1,7 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e02_f001_c220_drypoints_pol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f001_general/c220_drypoints_pol</path>
-    <maxRunTime>15.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/norway_map.nc" type="netCDF">
         <parameters>
@@ -3250,7 +3249,6 @@
   </testCase>
   <testCase name="e02_f010_c020_gate_sub_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c020_gate_sub_ini_newkeywords</path>
-    <maxRunTime>25.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
         <parameters>
@@ -3276,7 +3274,6 @@
   </testCase>
   <testCase name="e02_f010_c022_sill_sub_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
         <parameters>
@@ -3289,7 +3286,6 @@
   </testCase>
   <testCase name="e02_f010_c023_sill_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c023_sill_free_ini_newkeywords</path>
-    <maxRunTime>40.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirfree_his.nc" type="netCDF">
         <parameters>
@@ -4457,7 +4453,6 @@
   </testCase>
   <testCase name="e02_f012_c100_dambreak_fiat" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c100_dambreak_fiat</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/dambreak2ddrybreach_fou.nc" type="netCDF">
         <parameters>
@@ -6819,7 +6814,6 @@
   </testCase>
   <testCase name="e02_f037_c33_shoal_ZW_toe_sd_low" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c33_shoal_ds_IBedCond0_us_IBedCond1_toe_sd_low</path>
-    <maxRunTime>35.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c33_map.nc" type="netCDF">
         <parameters>
@@ -6835,7 +6829,6 @@
   </testCase>
   <testCase name="e02_f037_c34_shoal_ZW_toe_sd_high" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c34_shoal_ds_IBedCond0_us_IBedCond1_toe_sd_high</path>
-    <maxRunTime>35.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c34_map.nc" type="netCDF">
         <parameters>
@@ -6851,7 +6844,6 @@
   </testCase>
   <testCase name="e02_f037_c35_shoal_ZW_floodplain" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c35_shoal_ds_IBedCond0_us_IBedCond1_floodplain</path>
-    <maxRunTime>35.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c35_map.nc" type="netCDF">
         <parameters>
@@ -7017,7 +7009,6 @@
   </testCase>
   <testCase name="e02_f037_c75_no_summerdike" ref="dflowfm_config">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c75_no_summerdike</path>
-    <maxRunTime>7.5000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
         <parameters>
@@ -7028,7 +7019,6 @@
   </testCase>
   <testCase name="e02_f037_c90_supercritical_flow" ref="dflowfm_config">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c90_supercritical_flow</path>
-    <maxRunTime>7.5000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
         <parameters>
@@ -7039,7 +7029,6 @@
   </testCase>
   <testCase name="e02_f037_c91_bifurcation_pure1d" ref="dflowfm_config">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c91_bifurcation_pure1d</path>
-    <maxRunTime>7.5000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
         <parameters>

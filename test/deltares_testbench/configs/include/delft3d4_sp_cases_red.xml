@@ -620,7 +620,6 @@
 		</testCase>
 		<testCase name="e01_f02_c08-t01" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f02_spillways/c08-t01</path>
-			
 			<checks>
 				<file name="trih-t01.dat" type="NEFIS">
 					<parameters name="his-series">

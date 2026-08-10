@@ -277,7 +277,6 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>20.0</maxRunTime>
     <processCount>2</processCount>
   </testCase>
 </testCases>

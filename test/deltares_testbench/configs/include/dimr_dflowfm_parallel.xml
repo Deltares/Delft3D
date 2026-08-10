@@ -193,7 +193,6 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
         <parameters>

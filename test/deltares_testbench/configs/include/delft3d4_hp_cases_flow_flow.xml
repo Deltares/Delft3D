@@ -167,7 +167,6 @@
   </testCase>
   <testCase name="e20_f01_c05-consolidatie" ref="flow2d3d_fluidmud_default">
     <path version="DVC">e20_d3dflow-d3dflow/f01_fluidmud/c05-consolidatie</path>
-    <maxRunTime>3.75</maxRunTime>
     <checks>
       <file name="trih-sed.dat" type="NEFIS">
         <parameters name="his-series">

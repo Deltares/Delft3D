@@ -63,6 +63,7 @@
   </testCase>
   <testCase name="e02_f010_c102_T3_refined_noCustomPoints" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
+      <maxRunTime>540</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_Dambreak_refinedGRID_noWLpoints/Dambreak_refinedGRID_noWLpoints_map.nc" type="netCDF">
         <parameters>

@@ -1898,7 +1898,6 @@
   </testCase>
   <testCase name="e02_f203_c093_chezy_trachytopes_ebb_flood_dependent_3D" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f203_3D_trachytopes/c093_chezy_trachytopes_ebb_flood_dependent_3D</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>

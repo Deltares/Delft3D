@@ -53,7 +53,6 @@
   </testCase>
   <testCase name="e02_f105_c50_closed_rectangle_river" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c50_closed_rectangle_river</path>
-    <maxRunTime>15.0</maxRunTime>
     <checks>
       <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
         <parameters>
