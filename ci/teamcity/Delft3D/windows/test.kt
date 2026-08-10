@@ -61,8 +61,8 @@ object WindowsTest : BuildType({
         checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("s3_dsctestbench_secret", DslContext.getParameter("dvc_testbench_secret"))
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
 
     }
@@ -143,6 +143,11 @@ object WindowsTest : BuildType({
                 call C:\venv\Scripts\activate.bat
                 uv pip sync pip/win-requirements.txt
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
+
+                rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
+                rem been dealing with during the module import phase of "Python TestBench.py"
+                ping -n 5 -w 1000 localhost > nul
+
                 python TestBench.py %%argsList%%
             """.trimIndent()
 
@@ -154,6 +159,7 @@ object WindowsTest : BuildType({
                 --cpus %teamcity.agent.hardware.cpuCount%
                 --env UV_LINK_MODE=copy
                 --volume test-environment-uv-cache:C:\uv\cache
+                --mount type=bind,source=C:/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }
         script {
