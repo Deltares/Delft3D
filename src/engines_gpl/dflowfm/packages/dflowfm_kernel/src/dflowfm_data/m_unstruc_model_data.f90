@@ -125,7 +125,7 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
    character(len=max_prop_length) :: md_map_output_polyfile = ' ' !< Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)
 
-   character(len=max_prop_length) :: md_mbafile = ' ' !< Output space separated list of files, containing information about mass balance areas.
+  character(len=max_prop_length) :: md_mbafile = ' ' !< Input file containing mass balance area definitions.
    integer, parameter :: MBA_MAJOR_FILE_VERSION = 1 !< Major version of the mass balance area file format.
    integer, parameter :: MBA_MINOR_FILE_VERSION = 0 !< Minor version of the mass balance area file format.
 
