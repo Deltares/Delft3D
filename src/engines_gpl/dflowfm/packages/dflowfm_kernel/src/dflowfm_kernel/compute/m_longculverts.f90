@@ -903,7 +903,7 @@ contains
       if (endpoint_is_first_node .and. .not. endpoint_is_second_node) then
          longculverts(ilongc)%flow_dir = -1
       else if (.not. endpoint_is_second_node) then
-         call mess(LEVEL_WARN, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
+         call mess(LEVEL_ERROR, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
                    ' to either endpoint of its first flow link;')
       end if
    end subroutine set_longculvert_flow_direction
