@@ -96,38 +96,30 @@ contains
         call prop_file('ini', md_mbafile, mba_ptr, istat)
 
         if (istat /= 0) then
-
             write (msgbuf, '(A)') 'Error reading mass balance area file '''//trim(md_mbafile)//'''.'
             call err_flush()
             return
-
         end if
 
         ! Check if the mbaInterval is specified in the .mdu file, if not raise an error
         if (.not. (ti_mba > 0)) then
-
             write (msgbuf, '(A)') 'A mass balance area file has been specified in the .mdu, but no mbaInterval was specified. Please specify a mbaInterval in the .mdu file.'
             call err_flush()
             return
-
         end if
 
         ! Check the version number of the mass balance area file
         call get_version_number(mba_ptr, major=major, minor=minor, success=success)
 
         if (.not. success) then
-
             write (msgbuf, '(A)') 'File version number not found in mass balance area file '''//trim(md_mbafile)//'''.'
             call warn_flush()
             return
-
         else if (major > MBA_MAJOR_FILE_VERSION .or. (major == MBA_MAJOR_FILE_VERSION .and. minor > MBA_MINOR_FILE_VERSION)) then
-            
             write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported mass balance area file version in file '''//trim(md_mbafile)//'''. v', &
                 major, minor, 'Current format: v', MBA_MAJOR_FILE_VERSION, MBA_MINOR_FILE_VERSION, '.'
             call err_flush()
             return
-
         end if
 
     end subroutine open_mass_balance_area_file
@@ -206,13 +198,20 @@ contains
 
         ! Initialization
         imba = 0
+        name = ''
         location_file = ''
 
         ! Get name and locationFile of mass balance area block
         call prop_get(block_ptr, '', 'name', name)
 
         call read_polyline_coordinates(block_ptr, name, md_mbafile, '', 'massbalancearea', x_coordinates, y_coordinates, z_coordinates, num_columns, success)
-        num_coordinates = size(x_coordinates)
+
+        if (success) then
+            num_coordinates = size(x_coordinates)
+        else
+            write (msgbuf, '(A)') 'Error reading location file for mass balance area '''//trim(name)//''' in mass balance area file '''//trim(md_mbafile)//'''.'
+            return
+        end if
 
         ! Check if the mass balance area name array is allocated, if not allocate it with size 0
         if (.not. allocated(mbaname)) then
