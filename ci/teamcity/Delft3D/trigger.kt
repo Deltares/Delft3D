@@ -278,13 +278,12 @@ object Trigger : BuildType({
         script {
             name = "Start DVC diff report build"
 
-	    // it's taking up too many TC resources, so this is disabled until we can 
-	    // diagnose and fix that
-	    enabled = false
+            // it's taking up too many TC resources, so this is disabled until we can 
+            // diagnose and fix that
+            enabled = false
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
                 startsWith("teamcity.build.branch", "pull")
-
             }
 
             scriptContent = """
