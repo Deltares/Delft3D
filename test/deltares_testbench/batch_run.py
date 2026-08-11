@@ -19,6 +19,7 @@ class BatchRunArgs:
         self.test_name_list: str = ""
         self.ci_csv: str = ""
         self.configs_root: str = ""
+        self.cmd: str = ""
 
 
 class TestWithConfig:
@@ -27,6 +28,15 @@ class TestWithConfig:
     def __init__(self, test: TestCaseConfig, config_path: str):
         self.test: TestCaseConfig = test
         self.config_path: str = config_path
+
+
+class Params:
+    """Structure for parameters."""
+
+    def __init__(self):
+        self.test_name: str = ""
+        self.test_path: Path | None = None
+        self.test_config: str = ""
 
 
 def parse_batch_run_arguments() -> BatchRunArgs:
@@ -62,6 +72,12 @@ def parse_batch_run_arguments() -> BatchRunArgs:
         help="Path to configs root directory",
         dest="configs_root",
     )
+    parser.add_argument(
+        "--cmd",
+        default="python TestBench.py --compare --config $test_config --filter testcase=$testname",
+        help="Command to execute",
+        dest="cmd",
+    )
 
     args: Namespace = parser.parse_args()
 
@@ -70,6 +86,7 @@ def parse_batch_run_arguments() -> BatchRunArgs:
     result.test_name_list = args.test_name_list
     result.ci_csv = args.ci_csv
     result.configs_root = args.configs_root
+    result.cmd = args.cmd
 
     return result
 
@@ -133,8 +150,19 @@ if __name__ == "__main__":
     for test_name in test_names:
         try:
             test_case_config = find_test_config(test_name, args, platform="lnx64")
-            print(
-                f"Found configuration for test '{test_name}': {test_case_config.test.name}, config: {test_case_config.config_path}"
-            )
+            params = Params()
+            params.test_name = test_case_config.test.name
+            if test_case_config.test.path:
+                params.test_path = Path("data") / "cates" / test_case_config.test.path.path
+
+            if not params.test_path:
+                print(
+                    f"Warning: Test case {test_case_config.test.name} does not have a valid path specified. Path: {params.test_path}"
+                )
+                continue
+
+            params.test_config = test_case_config.config_path
+
+            print(f"Batch Params {params}")
         except ValueError as e:
             print(e)
