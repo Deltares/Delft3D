@@ -74,7 +74,7 @@ def parse_batch_run_arguments() -> BatchRunArgs:
     )
     parser.add_argument(
         "--cmd",
-        default="python TestBench.py --compare --config $test_config --filter testcase=$testname",
+        default="python TestBench.py --compare --config {test_config} --filter testcase={test_name}",
         help="Command to execute",
         dest="cmd",
     )
@@ -163,6 +163,12 @@ if __name__ == "__main__":
 
             params.test_config = test_case_config.config_path
 
-            print(f"Batch Params {params}")
+            cmd = args.cmd.format(
+                test_name=params.test_name, test_config=params.test_config, test_path=params.test_path
+            )
+            print(
+                f"Batch Params: test_name={params.test_name}, test_config={params.test_config}, test_path={params.test_path}"
+            )
+            print(f"Command: {cmd}")
         except ValueError as e:
             print(e)
