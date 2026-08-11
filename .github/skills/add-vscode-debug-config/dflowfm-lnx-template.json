@@ -1,5 +1,5 @@
 {
-    "name": "DFlow FM: {{TESTCASE_NAME}}",
+    "name": "DFlow FM: {{TEST_CASE_NAME}}",
     "type": "cppdbg",
     "request": "launch",
     "MIMode": "gdb",
@@ -8,7 +8,7 @@
     "args": [
         "{{MDU_FILE}}"
     ],
-    "cwd": "${workspaceFolder:Delft3D}/test/deltares_testbench/data/cases/{{TESTCASE_NAME}}",
+    "cwd": "${workspaceFolder:Delft3D}/test/deltares_testbench/data/cases/{{TEST_CASE_PATH}}/input_work",
     "stopAtEntry": false,
     "externalConsole": false,
     "environment": [],

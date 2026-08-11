@@ -75,6 +75,6 @@ python build.py [--config CONFIG] [--build-type {Debug,Release,RelWithDebInfo}] 
   It skips the actual `cmake` build (which takes the longest). But the `--build` flag tells `build.py` to
   also run the _build_ and _install_ phases.
 - **`--keep-build`**: By default `build.py` removes the _build_ and _install_ directories. So it runs a
-  "clean" build. Builds can take pretty long, so this is actually kind of wasteful. If the build and
-  install directories exist, please default to passing the `--keep-build` flag unless explicitly told
+  "clean" build. Builds can take pretty long, so this is actually kind of wasteful. *Always* default to
+  passing the `--keep-build` flag unless explicitly told
   not to.

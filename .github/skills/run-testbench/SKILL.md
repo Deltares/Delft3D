@@ -13,57 +13,53 @@ argument-hint: '[config-path] [testcase-filter1, testcase-filter2, ...]'
 
 ## What this skill does
 
-Runs `test/deltares_testbench/TestBench.py` to verify that the output of a _test case model_ is still
-within tolerance of the _reference output_.
+Runs `test/deltares_testbench/TestBench.py` to verify that the output of a 
+_test case model_ is still within tolerance of the _reference output_.
 
-The test case data of the test cases is stored in our `minio` bucket. This data, which includes the 
-_test case input_ and the _reference output_, will be downloaded by `TestBench.py` before running a test case.
+The test case data of the test cases is stored in our `delft3d-testbench` bucket on 
+MinIO. This data includes the _test case input_ and the _reference output_. Both are
+downloaded by `TestBench.py` before running a test case.
+
+The `config-path` is a path to an XML file containing the test cases. Each test case
+in the config has a `name`, `path`, `programs` and `checks`. The `path` of a test case
+is stored in the `<path>` element. It is relative to
+`/test/deltares_testbench/data/cases`. This is where the _test case data_ is downloaded.
 
 A `TestBench.py` comparison run performs roughly follows these steps for each test case:
-1. Download the _test case input_ and stores it in `/test/deltares_testbench/data/cases/<test-case-name>`.
-2. Download the _test case references_ and stores them in
-   `/test/deltares_testbench/data/{reference_results,reference}/{win64,lnx64}/<test-case-name>`.
-   It is one of the four combinations, depending on what's configured in the XML config.
-   Most test cases only use one set of reference data for both platforms. But there are test cases
-   that have a separate set for Windows and Linux.
-3. Make a copy of the input data to `/test/deltares_testbench/data/cases/<test-case-name>_work`
-   and runs the test case's list of _programs_ on the input data. This produces output files in the
-   work directory.
-4. Run the _checks_ for this test case. The checks are comparisons between the files in the _work
-   directory_ and the files in the _references_. Based on file type, `TestBench.py` supports many
-   types of comparisons. But the most common comparisons are between _NetCDF_ files. Most notably
-   the _his_ and _map_ files that "DflowFM" produces as output. The checks on `.nc` files are done
-   by taking the difference of one _variable_ present in both the _reference_ and the _case_ output.
-   The variables are (possibly multidimensional) arrays of numbers. The difference must not exceed
-   the configured maximum allowed _absolute_ or _relative_ difference.
 
-After running all the tests, `TestBench.py` prints the _result table_ with the result of all checks
-in all test cases.
+1. Download the _test case input_ and stores it in `/test/deltares_testbench/data/cases/${TEST_CASE_PATH}/input/`.
+
+2. Download the _test case references_ and stores them in
+`/test/deltares_testbench/data/cases/${TEST_CASE_PATH}/reference_{win,lnx}64/`.
+Most test cases only use one set of reference data for both platforms. But there are test cases that have a separate set of reference files for Windows and Linux.
+
+3. Make a copy of the input data to 
+`/test/deltares_testbench/data/cases/${TEST_CASE_PATH}/input_work`
+(the _work directory_) and runs the test case's list of _programs_ in the
+_work directory_. This produces the output files in the work directory and leaves the
+_input directory_ in a clean state.
+
+4. Run the _checks_ for this test case. The checks are comparisons between the files
+in the _work directory_ and the files in the _references_. `TestBench.py` supports many
+types of comparisons. But the most common comparisons are between _NetCDF_ files. notably
+the _his_ and _map_ files that `DFlowFM` produces as output. The checks on `.nc` are done
+by taking the difference of one _variable_ present in both the _reference_ and _case_ 
+output. The variables are (possibly multidimensional) arrays of numbers. The difference
+not exceed the configured maximum allowed _absolute_ or _relative_ difference.
+
+After running all the tests, `TestBench.py` prints the _result table_ with the result of
+all checks in all test cases.
 
 ## Preconditions
 
-1. The working directory must be `/test/deltares_testbench/`. *Always* run `TestBench.py` from this directory.
-2. Virtual environment `.venv` exists and must be activate. *Always* activate it before running `TestBench.py`.
-3. Python dependencies must be installed. If not, run `uv pip sync pip/win-requirements.txt`
-   in an activated venv. Or if `uv` is not installed: `pip install -r pip/win-requirements.txt`.
-4. The credentials for downloading the test case data in our `minio` bucket are installed in the user's
-   home directory in the file `~/.aws/credentials`. If there are `minio`/`s3` auth errors please direct
-   the user towards the `minio` 
-   [UI page where they can create access keys](https://s3-console.deltares.nl/access-keys) and suggest
-   the format of the credentials file. It is a standard AWS credentials file.
-5. The Delft3D binaries must be installed. `TestBench.py` uses these to run the test cases. It expects to
-   find them in the _engines directory_:
-   - Windows: `/test/deltares_testbench/data/engines/teamcity_artifacts/x64/`
-   - Linux: `/test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/`
-   If the binaries are missing, use the `build-delft3d` skill to build them. Unless explicitly specified, 
-   build config `fm-suite` build-type `Release` mode and do a full _build_ including an _install_. 
-   After the build finishes the _install directory_ will be here:
-   - Windows: `/install_fm-suite`
-   - Linux: `/build_fm-suite_release/install`
-   If it doesn't already exist: Create a sym-link from the _engines directory_ to the _install directory_. 
-   Notice that the name of the sym-link is `x64` on Windows and `lnx64` on Linux. Prefer absolute paths when
-   creating the link. On Windows creating a sym-link requires elevated privileges, so users need to run the 
-   command as administrator.
+1. The TestBench must be installed properly. *Always* check if the "venv" exists in
+`/test/deltares_testbench/.venv` and run `TestBench.py` in the activated "venv". If
+there is any errors finding `python`, activating the "venv", auth errors or if programs
+can't be found: Please use the `install-testbench` skill to troubleshoot and install the
+TestBench properly.
+
+2. *Always* run `TestBench.py` from the `/test/deltares_testbench` directory. Otherwise it
+runs into problems with relative paths.
 
 ## Command anatomy
 
@@ -71,20 +67,25 @@ in all test cases.
 python TestBench.py --compare --config <config-path> [--filter testcase=<testcase-filter1,testcase-filter2>] [--parallel]
 ```
 
-The user may not actually supply a `config-path`, which is a required argument of `TestBench.py`. In this case,
-use the `find-testbench-configs` skill to find a suitable config. `find-testbench-configs` may return multiple
-configs. Let the user select one to use. If there are multiple test cases to run, simply separate their names
-by commas and use the `--filter testcase=<comma-sep-list>` argument. Use the `--parallel` flag when running 
-more then one test case in a single config.
+The user may not actually supply a `config-path`, which is a required argument of
+`TestBench.py`. In this case, use the `find-testbench-configs` skill to find a suitable
+config. `find-testbench-configs` may return multiple configs. Let the user select one to
+use. If there are multiple test cases to run, simply separate their names by commas and
+use the `--filter testcase=<comma-sep-list>` argument. Use the `--parallel` flag when
+running more then one test case in a single config.
 
 ## Interpreting `TestBench.py` results.
-The _result table_ of the most recent `TestBench.py` run is stored in `/test/deltares_testbench/logs/testbench.log`.
-Users are most interested in the test cases that contain `NOK` results, or `ERROR` results. `ERROR` results usually
-indicate a crash, or some problem with the model input or config. Look in the _logs_ directory for that test case to
-see if you can find any errors or stacktraces and let the user know if you find a problem there.
+The _result table_ of the most recent `TestBench.py` run is stored in 
+`/test/deltares_testbench/logs/testbench.log`.
+Users are most interested in the test cases that contain `NOK` results, or `ERROR`
+results. `ERROR` results usually indicate a crash, or some problem with the model input
+or config. Look in the `/test/deltares_testbench/logs/${TEST_CASE_NAME}/` directory to
+see if you can find any errors or stacktraces and let the user know if you find a problem
+there. There may also be logs left in the _work directory_ of the test case.
 
-`NOK` results signify that the comparison failed. The _result table_ will tell you which check failed. In case it's
-a _NetCDF_ file (with `.nc` extension), it's usually a difference above tolerance in a certain variable. In Linux you
-can use `ncdump` to inspect the values (the `-v` flag is useful for this). `TestBench.py` also has `NetCDF4`, `numpy`
-and `matplotlib` installed. So, if requested, you may write a script to plot results, provided you run it in the 
-activated `venv`.
+`NOK` results signify that the comparison failed. The _result table_ will tell you which
+check failed. In case it's a _NetCDF_ file (with `.nc` extension), it's usually a
+difference above tolerance in a certain variable. You can use `ncdump` to inspect the
+values (the `-v` flag is useful for this). `TestBench.py` also has `NetCDF4`, `numpy`
+and `matplotlib` installed. So, if requested, you may write a script to plot results, 
+provided you run it in the activated "venv".

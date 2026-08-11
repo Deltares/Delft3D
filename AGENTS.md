@@ -37,3 +37,4 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
   - JSON: `jq`
 - Python: `uv` with Python 3.12 installed
 - CI: `teamcity` (TeamCity CLI tool)
+- Debugger: `gdb-oneapi` (GDB like interface, but used for `ifx` compiled Fortran binaries)
