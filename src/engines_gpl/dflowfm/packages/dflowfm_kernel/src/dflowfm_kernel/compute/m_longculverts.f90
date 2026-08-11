@@ -63,7 +63,7 @@ module m_longculverts
    interface realloc
       module procedure reallocLongCulverts
    end interface
-
+   
 contains
 
    !> Sets ALL (scalar) variables in this module to their default values.
@@ -870,9 +870,9 @@ contains
 
       integer, intent(in) :: ilongc
       integer :: L_net, netnode_1, netnode_2
-      logical :: endpoint_is_first_node, endpoint_is_second_node
+      logical :: flownode_2_is_LC_node_1, flownode_2_is_LC_node_2
 
-      longculverts(ilongc)%flow_dir = 1
+      longculverts(ilongc)%orientation = 1
 
       if (longculverts(ilongc)%numlinks <= 0) then
          return
@@ -897,12 +897,12 @@ contains
          return
       end if
 
-      endpoint_is_first_node = equal(xk(netnode_1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_1), longculverts(ilongc)%ycoords(2))
-      endpoint_is_second_node = equal(xk(netnode_2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_2), longculverts(ilongc)%ycoords(2))
+      flownode_2_is_LC_node_1 = equal(xk(netnode_1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_1), longculverts(ilongc)%ycoords(2))
+      flownode_2_is_LC_node_2 = equal(xk(netnode_2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_2), longculverts(ilongc)%ycoords(2))
 
-      if (endpoint_is_first_node .and. .not. endpoint_is_second_node) then
-         longculverts(ilongc)%flow_dir = -1
-      else if (.not. endpoint_is_second_node) then
+      if (flownode_2_is_LC_node_1 .and. .not. flownode_2_is_LC_node_2) then
+         longculverts(ilongc)%orientation = -1
+      else ! neither or both match, which is an error
          call mess(LEVEL_ERROR, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
                    ' to either endpoint of its first flow link;')
       end if
@@ -948,7 +948,7 @@ contains
                longculverts(i)%valve_relative_opening = max(longculverts(i)%valve_relative_opening, 0.0_dp)
                au(L) = longculverts(i)%valve_relative_opening * au(L)
                call getflowdir(L, L_dir)
-               L_dir = longculverts(i)%flow_dir * L_dir
+               L_dir = longculverts(i)%orientation * L_dir
                allowed_flowdir = longculverts(i)%allowed_flowdir
                if (allowed_flowdir == FLOWDIR_NONE &
                    .or. L_dir < 0 .and. allowed_flowdir == FLOWDIR_POSITIVE &
@@ -1451,7 +1451,7 @@ contains
       integer :: ierror
 
       longculvert%flowlinks = 0
-      longculvert%flow_dir = FLOWDIR_POSITIVE
+      longculvert%orientation = 1
       direction_target = 0
       jafounds = 0 ! Found the starting node or not
       jafounde = 0 ! Found the ending node or not
@@ -1470,7 +1470,7 @@ contains
          return
       end if
       !Find the last 1D node of the branch
-      if (branch_idx > 0 .and. network%BRS%size >= i) then
+      if (branch_idx > 0 .and. network%BRS%size >= branch_idx) then
          inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
          inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
       else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
@@ -1582,7 +1582,7 @@ contains
       if (longculvert%flowlinks(1) /= 0) then
          linkabs = abs(longculvert%flowlinks(1))
          if (direction_target == ln(1, linkabs)) then
-            longculvert%flow_dir = -1
+            longculvert%orientation = -1
          end if
       end if
    end subroutine

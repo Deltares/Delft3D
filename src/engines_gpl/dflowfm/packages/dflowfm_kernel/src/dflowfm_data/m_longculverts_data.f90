@@ -55,7 +55,7 @@ module m_longculverts_data
       !< 1 only positive flow
       !< 2 only negative flow
       !< 3 no flow allowed
-      integer :: flow_dir = 1 !< Maps the flow-link direction to the first-to-last coordinate direction.
+      integer :: orientation = 1 !< Orientation of the long culverts representative link, 1 = positive (from coordinate 1 to coordinate 2), -1 = negative
       real(kind=dp) :: friction_value = -999.0_dp !< Friction value
       real(kind=dp), dimension(:), allocatable :: xcoords !< X-coordinates of the numlinks+1 points
       real(kind=dp), dimension(:), allocatable :: ycoords !< Y-coordinates of the numlinks+1 points

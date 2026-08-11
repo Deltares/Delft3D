@@ -684,19 +684,19 @@ contains
 
       call find1d2dculvertlinks(network, longculverts(1), size(longculverts(1)%xcoords))
       lc_link = longculverts(1)%flowlinks(1)
-      flow_dir_before = longculverts(1)%flow_dir
+      flow_dir_before = longculverts(1)%orientation
       node = ln(1, lc_link)
       ln(1, lc_link) = ln(2, lc_link)
       ln(2, lc_link) = node
       call find1d2dculvertlinks(network, longculverts(1), size(longculverts(1)%xcoords))
 
-      call f90_expect_true(longculverts(1)%flow_dir == -flow_dir_before, &
+      call f90_expect_true(longculverts(1)%orientation == -flow_dir_before, &
                   cstr("reversing the flow link must reverse its mapping to input-coordinate direction"))
 
       longculverts(1)%allowed_flowdir = FLOWDIR_POSITIVE
       longculverts(1)%valve_relative_opening = 1.0_dp
       au(lc_link) = 1.0_dp
-      u1(lc_link) = real(longculverts(1)%flow_dir, dp)
+      u1(lc_link) = real(longculverts(1)%orientation, dp)
       call reduceFlowAreaAtLongculverts()
 
       call f90_expect_true(au(lc_link) > 0.0_dp, &
