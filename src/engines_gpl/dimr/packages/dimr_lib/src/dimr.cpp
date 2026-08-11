@@ -1456,7 +1456,7 @@ void Dimr::getAddress(const char* name, int compType, BMI_GETVAR dllGetVar, doub
         if (dllGetVar == NULL)
         {
             throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED,
-                            "ABORT: get_var function not defined while processing %s", name);
+                            "ABORT: Dimr::getAddress: component does not export get_var while resolving \"%s\"", name);
         }
         // Wanda does not use pointers to internal structures:
         // - Use the DIMR-transfer array
