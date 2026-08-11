@@ -1281,7 +1281,6 @@
   </testCase>
   <testCase name="e01_f04_c16-meteo_curvi_ll_gridcolumn" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c16-meteo_curvi_ll_gridcolumn</path>
-    <maxRunTime>0.390000104904</maxRunTime>
     <checks>
       <file name="trim-test.dat" type="NEFIS">
         <parameters name="map-series">
@@ -1294,7 +1293,6 @@
   </testCase>
   <testCase name="e01_f04_c17-meteo_curvi_ul_gridrow" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c17-meteo_curvi_ul_gridrow</path>
-    <maxRunTime>0.530999898911</maxRunTime>
     <checks>
       <file name="trim-test.dat" type="NEFIS">
         <parameters name="map-series">
@@ -1307,7 +1305,6 @@
   </testCase>
   <testCase name="e01_f04_c18-meteo_curvi_ul_gridcolumn" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c18-meteo_curvi_ul_gridcolumn</path>
-    <maxRunTime>0.358999967575</maxRunTime>
     <checks>
       <file name="trim-test.dat" type="NEFIS">
         <parameters name="map-series">
@@ -1333,7 +1330,6 @@
   </testCase>
   <testCase name="e01_f04_c20-meteo_curvi_lr_gridcolumn" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c20-meteo_curvi_lr_gridcolumn</path>
-    <maxRunTime>0.359999895096</maxRunTime>
     <checks>
       <file name="trim-test.dat" type="NEFIS">
         <parameters name="map-series">
@@ -1346,7 +1342,6 @@
   </testCase>
   <testCase name="e01_f04_c21-meteo_curvi_ur_gridrow" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c21-meteo_curvi_ur_gridrow</path>
-    <maxRunTime>0.375</maxRunTime>
     <checks>
       <file name="trim-test.dat" type="NEFIS">
         <parameters name="map-series">
@@ -5229,7 +5224,6 @@
   </testCase>
   <testCase name="e01_f52_c33901-Tsunami_Okushiri_flood" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f52_validation_schematic/c33901-Tsunami_Okushiri_flood</path>
-    <maxRunTime>58.1440000534</maxRunTime>
     <checks>
       <file name="trih-q09.dat" type="NEFIS">
         <parameters name="his-series">

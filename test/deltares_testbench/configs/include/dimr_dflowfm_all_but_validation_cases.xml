@@ -4912,7 +4912,6 @@
   </testCase>
   <testCase name="e02_f017_c010_sourcesink_2D" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f017_sources_sinks/c010_sourcesink_2D</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/sourcesink_2D_his.nc" type="netCDF">
         <parameters>

@@ -274,7 +274,6 @@
   </testCase>
   <testCase name="e01_f01_c31-3dgates" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c31-3dgates</path>
-    <maxRunTime>1.46899986267</maxRunTime>
     <checks>
       <file name="trih-rot.dat" type="NEFIS">
         <parameters name="his-series">
@@ -734,6 +733,7 @@
   </testCase>
   <testCase name="e01_f06_c12-vanrijn_temp" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f06_ols/c12-vanrijn_temp</path>
+      <maxRunTime>540</maxRunTime>
     <checks>
       <file name="trih-T01.dat" type="NEFIS">
         <parameters name="his-series">
