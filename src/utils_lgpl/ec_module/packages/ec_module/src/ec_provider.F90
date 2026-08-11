@@ -2715,7 +2715,7 @@ contains
       end if
 
       do i = 1, expectedLength
-         call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames)
+         call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames, ignore_case=.true.)
          if (idvar <= 0 .and. allocated(ncstdnames_fallback)) then
             call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames_fallback, ncvarnames)
          end if

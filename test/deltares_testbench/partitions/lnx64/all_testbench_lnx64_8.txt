@@ -1,9 +1,0 @@
-configs/dimr/dimr_dflowfm_1d_rivers_lnx64.xml
-configs/dimr/dimr_dflowfm_dwaves_lnx64.xml
-configs/dimr/dimr_dflowfm_processes_lnx64.xml
-configs/dimr/dimr_dflowfm_waq_coupling_1D2D_lnx64.xml
-configs/dimr/dimr_smoke_tests_lnx64.xml
-configs/dimr/dimr_dwaves_hongkong_lnx64.xml
-configs/dwaq_dpart/lnx64/dpart_structured.xml
-configs/dwaq_dpart/lnx64/dwaq_openpb.xml
-configs/delft3d4/delft3d_lnx64_hp_flow_flow.xml

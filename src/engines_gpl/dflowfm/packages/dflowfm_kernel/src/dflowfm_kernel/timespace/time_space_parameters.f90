@@ -234,7 +234,7 @@ contains
       case ('uniform')
          method = SPACEANDTIME
       case ('polygon')
-         method = INSIDE_POLYGON
+         method = METHOD_CONSTANT
       case ('1dfield')
          method = JUSTUPDATE
       case default
