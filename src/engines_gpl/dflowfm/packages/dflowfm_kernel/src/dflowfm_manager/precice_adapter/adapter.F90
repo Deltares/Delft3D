@@ -7,9 +7,11 @@
 !! It also contains utilities to publish model quantities to preCICE meshes.
 module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
-   use precision, only: dp
-   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double, c_null_char
    use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use precision, only: dp
+   use precision_basics, only: comparereal
+   use mathconsts, only: degrad
+   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double, c_null_char
 
    implicit none(type, external)
 
@@ -46,6 +48,8 @@ module precice_adapter
       type(quantity_t) :: sources_z_min = quantity_t(standard_name="sources_z_min", is_active=.false.)
       type(quantity_t) :: sources_z_max = quantity_t(standard_name="sources_z_max", is_active=.false.)
       type(quantity_t) :: sources_sinks_discharge = quantity_t(standard_name="sources_sinks_discharge", is_active=.false.)
+      type(quantity_t) :: sources_momentum_magnitude_weighted = quantity_t(standard_name="sources_momentum_magnitude_weighted", is_active=.false.)
+      type(quantity_t) :: sources_momentum_direction = quantity_t(standard_name="sources_momentum_direction", is_active=.false.)
    end type quantities_t
 
    !> Concrete preCICE adapter implementation.
@@ -80,6 +84,8 @@ module precice_adapter
       real(kind=c_double), dimension(:), allocatable :: sources_z_min
       real(kind=c_double), dimension(:), allocatable :: sources_z_max
       real(kind=c_double), dimension(:), allocatable :: sources_sinks_discharge
+      real(kind=c_double), dimension(:), allocatable :: sources_momentum_magnitude_weighted
+      real(kind=c_double), dimension(:), allocatable :: sources_momentum_direction
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -277,6 +283,8 @@ contains
       if (allocated(self%sources_z_min)) deallocate(self%sources_z_min)
       if (allocated(self%sources_z_max)) deallocate(self%sources_z_max)
       if (allocated(self%sources_sinks_discharge)) deallocate(self%sources_sinks_discharge)
+      if (allocated(self%sources_momentum_magnitude_weighted)) deallocate(self%sources_momentum_magnitude_weighted)
+      if (allocated(self%sources_momentum_direction)) deallocate(self%sources_momentum_direction)
    end subroutine precice_adapter_deallocate_read_arrays
 
 
@@ -303,6 +311,8 @@ contains
       call realloc(self%sources_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_momentum_magnitude_weighted, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_momentum_direction, self%mesh_sources_sinks_size, keepExisting=.false.)
    end subroutine precice_adapter_allocate_read_arrays
 
 
@@ -447,6 +457,22 @@ contains
                               current_time_in_window, &
                               self%sources_sinks_discharge, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_sinks_discharge%standard_name)))
+      ! Read sources_momentum_magnitude_weighted
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_momentum_magnitude_weighted%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_momentum_magnitude_weighted, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_momentum_magnitude_weighted%standard_name)))
+      ! Read sources_momentum_direction
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_momentum_direction%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_momentum_direction, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_momentum_direction%standard_name)))
    end subroutine precice_adapter_read_data
 
 
@@ -491,6 +517,16 @@ contains
          source_sinks%z_bottom(source_sinks%num_total, 2) = self%sources_z_min(i)
          source_sinks%z_top(source_sinks%num_total, 2) = self%sources_z_max(i)
          source_sink_all_discharges(1, source_sinks%num_total) = ABS(self%sources_sinks_discharge(i))
+         if (comparereal(self%sources_momentum_magnitude_weighted(i), 0.0_dp) == 0) then
+            source_sinks%discharge_cosine(source_sinks%num_total,2) = 0.0_dp
+            source_sinks%discharge_sine(source_sinks%num_total,2) = 0.0_dp
+            source_sinks%area(source_sinks%num_total) = 0.0_dp
+         else
+            source_sinks%discharge_cosine(source_sinks%num_total,2) = cos(degrad * (90.0_dp - self%sources_momentum_direction(i)))
+            source_sinks%discharge_sine(source_sinks%num_total,2) = sin(degrad * (90.0_dp - self%sources_momentum_direction(i)))
+            ! TODO: Check whether the area needs to be set at all. It might only be needed if momentum needs to be passed through from the source location to the sink location.
+            source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
+         end if
       end do
 
       call cleanup_cell_geom_polylines()
