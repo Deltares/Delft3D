@@ -69,6 +69,7 @@ contains
       ! NONE
     !!--declarations----------------------------------------------------------------
       use mathconsts, only: sqrt2_hp, degrad_hp
+      use ieee_arithmetic, only: ieee_is_nan
       use precision
       implicit none
       !
@@ -132,6 +133,17 @@ contains
       !
       npnt = m * n
       do lcount = 1, npnt
+         if (ieee_is_nan(hs(lcount)) .or. ieee_is_nan(period(lcount))) then
+            hrms(lcount) = 0.0_hp
+            tp(lcount) = 0.0_hp
+            fx(lcount) = 0.0_hp
+            fy(lcount) = 0.0_hp
+            mx(lcount) = 0.0_hp
+            my(lcount) = 0.0_hp
+            wsbodyu(lcount) = 0.0_hp
+            wsbodyv(lcount) = 0.0_hp
+            cycle
+         end if
          hrm = hs(lcount) / sqrt2_hp
          dirh = dir(lcount)
          deph = depth(lcount)

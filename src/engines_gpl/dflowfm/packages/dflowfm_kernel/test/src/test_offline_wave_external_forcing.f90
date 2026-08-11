@@ -87,7 +87,7 @@ contains
       use m_meteo, only: initialize_ec_module
       use m_unstruc_model_data, only: extfile_new_list
       use m_waveconst, only: NO_STOKES_DRIFT, WAVE_BOUNDARYLAYER_OFF, WAVE_FORCES_ON, WAVE_NC_OFFLINE, &
-                              WAVE_STREAMING_OFF, WAVEFORCING_RADIATION_STRESS, get_offline_wave_input_requirements
+                             WAVE_STREAMING_OFF, WAVEFORCING_RADIATION_STRESS, get_offline_wave_input_requirements
       use m_waves, only: default_waves, offline_wave_input_requirements, sxwav, sywav, twavcom
 
       character(len=*), intent(in) :: ext_file
@@ -111,8 +111,8 @@ contains
       flow_without_waves = .false.
       call default_waves()
       offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
-                                                                              jawavestreaming, jawavedelta, .false., &
-                                                                              flow_without_waves)
+                                                                            jawavestreaming, jawavedelta, .false., &
+                                                                            flow_without_waves)
       call realloc(twavcom, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(sxwav, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(sywav, ndx, fill=0.0_dp, keepExisting=.false.)
@@ -155,7 +155,7 @@ contains
       use fm_external_forcings, only: init_new
       use m_meteo, only: ec_gettimespacevalue, ecInstancePtr, item_fx, item_fy, item_tp
       use m_waveconst, only: WAVE_INPUT_DIRECTION, WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_PERIOD, &
-                              WAVE_INPUT_SIGNIFICANT_HEIGHT, wave_input_is_required
+                             WAVE_INPUT_SIGNIFICANT_HEIGHT, wave_input_is_required
       use m_waves, only: offline_wave_input_providers, offline_wave_input_requirements, sxwav, sywav, twavcom
       use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
@@ -226,14 +226,99 @@ contains
 
       call f90_expect_eq(iresult, DFM_NOERR, 'current-format external forcing initialization should succeed')
       call f90_expect_true(wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y), &
-                  'ywaveforce must be required by the configured radiation-stress forcing')
+                           'ywaveforce must be required by the configured radiation-stress forcing')
       call f90_expect_false(wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_FORCE_Y), &
-                   'omitting ywaveforce must leave its required provider unregistered')
+                            'omitting ywaveforce must leave its required provider unregistered')
       call f90_expect_false(offline_wave_input_providers == offline_wave_input_requirements, &
-                   'the incomplete forcing file must not satisfy all offline wave requirements')
+                            'the incomplete forcing file must not satisfy all offline wave requirements')
 
       call teardown_offline_radiation_stress_case()
    end subroutine test_radiation_stress_detects_missing_active_force_provider
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_flow_without_waves_recalculates_derived_ht, test_flow_without_waves_recalculates_derived_ht,
+   !> Raw EC wave height and period must remain unchanged while FM recalculates
+   !! the derived fields for the current water depth, including open boundaries.
+   subroutine test_flow_without_waves_recalculates_derived_ht() bind(C)
+      use m_alloc, only: realloc
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_flow, only: epshu, flow_without_waves, hs, jawave, jawavestokes, kmx, s1
+      use m_flowgeom, only: bl, ndx
+      use fm_external_forcings_data, only: nbndn, nbndt, nbndu, nbndz, kbndz
+      use m_physcoef, only: ag
+      use m_sferic, only: pi
+      use m_waveconst, only: NO_STOKES_DRIFT, WAVE_INPUT_PERIOD, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_NC_OFFLINE
+      use m_waves, only: default_waves, gammax, hwav, hwavcom, jauorbfromswan, offline_wave_input_requirements, rlabda, &
+                         twav, twavcom, uorb
+
+      call default_waves()
+      ndx = 2
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hwav, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(twav, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hwavcom, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(twavcom, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(uorb, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(rlabda, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(kbndz, [6, 1], fill=0, keepExisting=.false.)
+
+      jawave = WAVE_NC_OFFLINE
+      flow_without_waves = .true.
+      jawavestokes = NO_STOKES_DRIFT
+      kmx = 0
+      epshu = 1.0e-4_dp
+      ag = 9.81_dp
+      pi = acos(-1.0_dp)
+      gammax = 1.0_dp
+      jauorbfromswan = 0
+      offline_wave_input_requirements = ior(WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD)
+      hwavcom = [0.0_dp, 4.0_dp]
+      twavcom = [0.0_dp, 8.0_dp]
+      hs = 10.0_dp
+      s1 = 10.0_dp
+      nbndu = 0
+      nbndn = 0
+      nbndt = 0
+      nbndz = 1
+      kbndz(1:2, 1) = [1, 2]
+
+      call compute_wave_parameters()
+
+      call f90_expect_near(hwavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave height must remain unchanged after calculation')
+      call f90_expect_near(twavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave period must remain unchanged after calculation')
+      call f90_expect_near(hwavcom(2), 4.0_dp, 1.0e-12_dp, 'raw inner wave height must remain unchanged after calculation')
+      call f90_expect_near(twavcom(2), 8.0_dp, 1.0e-12_dp, 'raw inner wave period must remain unchanged after calculation')
+      call f90_expect_near(hwav(1), 4.0_dp / sqrt(2.0_dp), 1.0e-12_dp, 'derived boundary wave height must copy the inner value')
+      call f90_expect_near(twav(1), 8.0_dp, 1.0e-12_dp, 'derived boundary wave period must copy the inner value')
+
+      hs = 1.0_dp
+      s1 = 1.0_dp
+      call compute_wave_parameters()
+
+      call f90_expect_near(hwavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave height must survive a second calculation')
+      call f90_expect_near(twavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave period must survive a second calculation')
+      call f90_expect_near(hwavcom(2), 4.0_dp, 1.0e-12_dp, 'raw inner wave height must survive a second calculation')
+      call f90_expect_near(twavcom(2), 8.0_dp, 1.0e-12_dp, 'raw inner wave period must survive a second calculation')
+      call f90_expect_near(hwav(1), 1.0_dp, 1.0e-12_dp, 'derived boundary wave height must be recalculated and depth-limited')
+      call f90_expect_near(twav(1), 8.0_dp, 1.0e-12_dp, 'derived boundary wave period must be recalculated from the inner value')
+
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(hs)) deallocate (hs)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(hwav)) deallocate (hwav)
+      if (allocated(twav)) deallocate (twav)
+      if (allocated(hwavcom)) deallocate (hwavcom)
+      if (allocated(twavcom)) deallocate (twavcom)
+      if (allocated(uorb)) deallocate (uorb)
+      if (allocated(rlabda)) deallocate (rlabda)
+      if (allocated(kbndz)) deallocate (kbndz)
+      ndx = 0
+      nbndz = 0
+      flow_without_waves = .false.
+      call default_waves()
+   end subroutine test_flow_without_waves_recalculates_derived_ht
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_wave_requirements_survive_flow_state_reset, test_wave_requirements_survive_flow_state_reset,

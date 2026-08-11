@@ -427,7 +427,7 @@ contains
       do link = 1, number_of_links
          kb = link2cell(1, link)
          ki = link2cell(2, link)
-         hwavcom(kb) = hwavcom(ki)
+         hwav(kb) = hwav(ki)
          twav(kb) = twav(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
@@ -447,8 +447,8 @@ contains
    subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
       use m_waves
       use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
-                WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
-                WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+                             WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                             WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
 
       integer, intent(in) :: number_of_links !< number of links
       integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
@@ -480,7 +480,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          if (significant_height_required) then
-            hwavcom(kb) = hwavcom(ki)
+            hwav(kb) = hwav(ki)
          end if
          if (period_required) then
             twav(kb) = twav(ki)
@@ -720,7 +720,7 @@ contains
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          do i_ext = 1, size(extfile_new_list)
             call read_location_files_from_boundary_blocks(trim(extfile_new_list(i_ext)), nx, kce, num_bc_ini_blocks, &
-               numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                          numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
 
             call read_initialtracer_properties(trim(extfile_new_list(i_ext)), nx)
          end do
@@ -2720,9 +2720,9 @@ contains
       ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
       ! capacity, while is_source_sink_bubblescreen is sized to num_total.
       if (allocated(source_sinks%is_normal)) then
-          source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
-          source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
-          source_sinks%num_normal = count(source_sinks%is_normal)
+         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+         source_sinks%num_normal = count(source_sinks%is_normal)
       end if
 
       call fill_geometry_source_sinks()

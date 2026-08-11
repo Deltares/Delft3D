@@ -43,7 +43,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_solar_radiation, item_cloudiness, &
                       item_long_wave_radiation, item_sensible_heat_flux, item_latent_heat_flux, &
                       relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
-                      dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
+                      dump_ec_message_stack, level_error, hwav, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
                       twavcom, flow_without_waves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
                       item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
@@ -119,14 +119,14 @@ contains
       integer :: i
       integer :: i_const
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
-         real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
+      real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
 
       call timstrt('External forcings', handle_ext)
 
       success = .true.
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
-         allocate(zcgen_legacy_kx3(ncgensg * 3))
+         allocate (zcgen_legacy_kx3(ncgensg * 3))
          zcgen_legacy_kx3 = dmiss
       end if
 
@@ -149,7 +149,7 @@ contains
       if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       end if
-      
+
       if (ja_computed_airdensity == 1) then
          ! Compute air_density based on air_pressure, air_temperature and dew_point_temperature
          call get_airdensity(air_pressure, air_temperature, dew_point_temperature, air_density, iresult)
@@ -159,7 +159,7 @@ contains
       if (iresult /= DFM_NOERR) then
          return
       end if
-      
+
       ! Update nudging temperature (and salinity)
       if (item_nudge_temperature /= ec_undef_int .and. janudge > 0) then
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_temperature, irefdate, tzone, tunit, time_in_seconds)
@@ -373,9 +373,8 @@ contains
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
                                   salinity_dependent_evaporation_method, SALINITY_DEPENDENT_EVAPORATION_LINEAR
 
-
       logical, intent(in) :: initialization !< initialization phase
-      
+
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature
       real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
@@ -383,19 +382,18 @@ contains
       real(kind=dp), dimension(lnx) :: windx_link, windy_link
       type(t_options) :: atm_stability_options
 
-
       if (.not. allocated(windx)) then
-         allocate(windx(ndx))
-         allocate(windy(ndx))
-         allocate(charnock(ndx))
-         allocate(surface_temperature(ndx))
-         allocate(surface_temperature_kelvin(ndx))
-         allocate(air_temperature_kelvin(ndx))
-         allocate(dew_point_temperature_kelvin(ndx))
+         allocate (windx(ndx))
+         allocate (windy(ndx))
+         allocate (charnock(ndx))
+         allocate (surface_temperature(ndx))
+         allocate (surface_temperature_kelvin(ndx))
+         allocate (air_temperature_kelvin(ndx))
+         allocate (dew_point_temperature_kelvin(ndx))
       end if
 
       call compute_wind_relative_to_surface_on_link(wx(1:lnx), wy(1:lnx), relativewind, u1(ltop(1:lnx)), v(ltop(1:lnx)), &
-                               csu(1:lnx), snu(1:lnx), windx_link, windy_link)
+                                                    csu(1:lnx), snu(1:lnx), windx_link, windy_link)
       call link_to_node_vector(windx_link, windy_link, windx, windy, ndx)
       if (.not. allocated(wcharnock%values)) then
          call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
@@ -423,7 +421,7 @@ contains
       atm_stability_options%alpha_m = air_viscous_momentum_coeff
       atm_stability_options%alpha_h = air_viscous_heat_coeff
       atm_stability_options%alpha_q = air_viscous_moisture_coeff
-      
+
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR) then
          if (.not. allocated(salinity_reduction_factor_saturation_humidity%values)) then
             call realloc(salinity_reduction_factor_saturation_humidity%values, ndx, keepexisting=.false., fill=salinity_reduction_factor_saturation_humidity%scalar)
@@ -632,8 +630,6 @@ contains
                    ieee_is_nan(mxwav(k)) .or. &
                    ieee_is_nan(mywav(k)) .or. &
                    hs(k) <= epshu) then
-                  hwavcom(k) = 0.0_dp
-                  twavcom(k) = 0.0_dp
                   sxwav(k) = 0.0_dp
                   sywav(k) = 0.0_dp
                   sbxwav(k) = 0.0_dp
@@ -774,12 +770,9 @@ contains
    !> Read only the offline wave quantities required by the active configuration.
    subroutine set_offline_wave_parameters()
 
-      ! Clear all offline source and intermediate fields before asking EC to
-      ! populate the required subset. This prevents values from a previously
-      ! wet or covered cell surviving when the current external field does not
-      ! cover it.
-      hwavcom(:) = 0.0_dp
-      twavcom(:) = 0.0_dp
+      ! EC owns the raw source fields. Reset only FM-derived fields before
+      ! calculating them from the values EC provides.
+      hwav(:) = 0.0_dp
       twav(:) = 0.0_dp
       phiwav(:) = 270.0_dp
       sxwav(:) = 0.0_dp
@@ -938,10 +931,10 @@ contains
 !> prepare_air_pressure_temperature_dew_point_temperature
    module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
-       item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
+                         item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
-      
+
       ! air pressure items
       call get_timespace_value_by_item_and_consider_success_value(item_apwxwy_p, time_in_seconds)
       call get_timespace_value_by_item_and_consider_success_value(item_atmosphericpressure, time_in_seconds)

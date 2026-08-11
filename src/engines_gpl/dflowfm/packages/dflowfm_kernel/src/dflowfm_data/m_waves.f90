@@ -42,10 +42,10 @@ module m_waves
    real(kind=dp), allocatable :: fetdp(:, :) !< wind dir dep. waterdepth (m)   of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
    real(kind=dp), allocatable :: fett(:, :) !< reduce array, (2,ndx)
 
-   real(kind=dp), allocatable, target :: hwav(:) !< [m] root mean square wave height (m) from external source, {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] root mean square wave height (m) from external source
-   real(kind=dp), allocatable, target :: twav(:) !< [s] wave period {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: twavcom(:) !< [s] wave period from external source {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwav(:) !< [m] FM-derived root mean square wave height, {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] raw root mean square wave height from external source
+   real(kind=dp), allocatable, target :: twav(:) !< [s] FM-derived wave period {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: twavcom(:) !< [s] raw wave period from external source {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: phiwav(:) !< [degree] mean wave direction (degrees) from external source
    real(kind=dp), allocatable, target :: uorb(:) !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: ustokes(:) !< [m/s] wave induced velocity, link-based and link-oriented

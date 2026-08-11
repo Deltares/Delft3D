@@ -47,8 +47,9 @@ contains
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
       use precision, only: dp
-      use m_waves, only: hwav, gammax, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, &
-                distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni, offline_wave_input_requirements
+      use ieee_arithmetic, only: ieee_is_nan
+      use m_waves, only: hwav, gammax, uorb, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, &
+                         distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni, offline_wave_input_requirements
       use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flow_without_waves, epshu, ag, hs, waveforcing, jawaveforces
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
@@ -150,6 +151,10 @@ contains
          vstokes = 0.0_dp
       end if
 
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
+         call copy_derived_wave_parameters_to_boundary_cells()
+      end if
+
 1234  continue
       return
 
@@ -159,6 +164,9 @@ contains
       subroutine compute_offline_wave_parameters()
          integer :: forcing_for_transformation
          logical :: complete_wave_kinematics
+
+         hwav = 0.0_dp
+         twav = 0.0_dp
 
          complete_wave_kinematics = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT) .and. &
                                     wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD) .and. &
@@ -176,10 +184,12 @@ contains
                                            ndx, 1, hwav, twav, &
                                            ag, .true., forcing_for_transformation, &
                                            JONSWAPgamma0, sbxwav, sbywav, ierror)
-            ! Offline forcing is updated at dt_user, while the FLOW depth can
-            ! change every dts. Apply the limiter after the transformation so
-            ! it uses the current depth and is not overwritten.
+            ! Limit only FM-derived fields. Raw H/T remain EC-owned inputs.
             hwav = min(hwav, gammax * hs)
+            where (hs <= epshu)
+               hwav = 0.0_dp
+               twav = 0.0_dp
+            end where
             call wave_uorbrlabda()
 
             if (kmx == 0 .and. .not. flow_without_waves) then
@@ -192,6 +202,10 @@ contains
             ! Wavemodelnr=6 files use the SWAN peak-period field (tps), so converting it as a mean period would apply the JONSWAP factor a second time.
             hwav = min(hwavcom / sqrt2_hp, gammax * hs)
             twav = twavcom
+            where (ieee_is_nan(hwavcom) .or. ieee_is_nan(twavcom) .or. hs <= epshu)
+               hwav = 0.0_dp
+               twav = 0.0_dp
+            end where
             call wave_uorbrlabda()
          else
             hwav = 0.0_dp
@@ -202,11 +216,62 @@ contains
 
             if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)) then
                call transform_wave_period_hp(twavcom, ndx, 1, JONSWAPgamma0, twav, ierror)
+               where (ieee_is_nan(twavcom) .or. hs <= epshu)
+                  twav = 0.0_dp
+               end where
             else
-               twav = 0.0_dp  
+               twav = 0.0_dp
             end if
          end if
       end subroutine compute_offline_wave_parameters
+
+      !> boundary mirrors need special copy of derived wave parameters, as they are not part of the normal cell list.
+      subroutine copy_derived_wave_parameters_to_boundary_cells()
+         use fm_external_forcings_data, only: nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, nbndt, kbndt
+
+         logical :: wave_kinematics_required
+
+         wave_kinematics_required = jawave == WAVE_SWAN_ONLINE .or. &
+                                    (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT) .and. &
+                                     wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD) .and. &
+                                     wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION))
+
+         if (nbndu > 0) then
+            call copy_derived_wave_parameters(nbndu, kbndu, wave_kinematics_required)
+         end if
+         if (nbndz > 0) then
+            call copy_derived_wave_parameters(nbndz, kbndz, wave_kinematics_required)
+         end if
+         if (nbndn > 0) then
+            call copy_derived_wave_parameters(nbndn, kbndn, wave_kinematics_required)
+         end if
+         if (nbndt > 0) then
+            call copy_derived_wave_parameters(nbndt, kbndt, wave_kinematics_required)
+         end if
+
+      end subroutine copy_derived_wave_parameters_to_boundary_cells
+
+      subroutine copy_derived_wave_parameters(number_of_links, link2cell, wave_kinematics_required)
+         integer, intent(in) :: number_of_links
+         integer, intent(in) :: link2cell(:, :)
+         logical, intent(in) :: wave_kinematics_required
+
+         integer :: boundary_cell
+         integer :: inner_cell
+         integer :: link
+
+         do link = 1, number_of_links
+            boundary_cell = link2cell(1, link)
+            inner_cell = link2cell(2, link)
+            hwav(boundary_cell) = hwav(inner_cell)
+            twav(boundary_cell) = twav(inner_cell)
+            uorb(boundary_cell) = uorb(inner_cell)
+            if (wave_kinematics_required) then
+               mxwav(boundary_cell) = mxwav(inner_cell)
+               mywav(boundary_cell) = mywav(inner_cell)
+            end if
+         end do
+      end subroutine copy_derived_wave_parameters
 
    end subroutine compute_wave_parameters
 
