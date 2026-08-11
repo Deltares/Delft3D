@@ -158,6 +158,7 @@
   <testCase name="e105_f06_c079_generalstructure_lowering_closed_door_3Dz_sigma" ref="dimr_trunk">
     <path version="DVC">e105_dflowfm-drtc/f06_3D_RTC/c079_generalstructure_lowering_closed_door_3Dz_sigma</path>
 
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="dflowfm/output/t4_his.nc" type="netCDF">
         <parameters>

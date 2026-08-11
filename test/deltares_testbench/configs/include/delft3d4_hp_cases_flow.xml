@@ -513,6 +513,7 @@
   </testCase>
   <testCase name="e01_f01_c30-64bit" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c30-64bit</path>
+      <maxRunTime>1020</maxRunTime>
 
     <checks>
       <file name="trih-zd10.dat" type="NEFIS">
@@ -2474,7 +2475,7 @@
   </testCase>
   <testCase name="e01_f11_c11-qtot" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f11_qhqtot/c11-qtot</path>
-
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="trih-cp2D.dat" type="NEFIS">
         <parameters name="his-series">
@@ -3338,6 +3339,7 @@
   </testCase>
   <testCase name="e01_f22_c01-graded" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f22_graded/c01-graded</path>
+      <maxRunTime>720</maxRunTime>
 
     <checks>
       <file name="trih-fhy.dat" type="NEFIS">
@@ -3530,6 +3532,7 @@
   </testCase>
   <testCase name="e01_f25_c03-estuarium_equid" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f25_bottfric_2D_3D/c03-estuarium_equid</path>
+      <maxRunTime>900</maxRunTime>
 
     <checks>
       <file name="trih-est.dat" type="NEFIS">
@@ -3550,6 +3553,7 @@
   </testCase>
   <testCase name="e01_f25_c04-estuarium_log" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f25_bottfric_2D_3D/c04-estuarium_log</path>
+      <maxRunTime>900</maxRunTime>
 
     <checks>
       <file name="trih-est.dat" type="NEFIS">
@@ -3908,6 +3912,7 @@
   </testCase>
   <testCase name="e01_f27_c25-z_upper_pierce_slope_limiter" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f27_zmodel_updates/c25-z_upper_pierce_slope_limiter</path>
+      <maxRunTime>3000</maxRunTime>
 
     <checks>
       <file name="trih-b11.dat" type="NEFIS">

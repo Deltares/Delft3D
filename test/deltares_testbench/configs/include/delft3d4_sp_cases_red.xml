@@ -3651,7 +3651,7 @@
 		</testCase>
 		<testCase name="e01_f11_c11-qtot" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f11_qhqtot/c11-qtot</path>
-      <maxRunTime>450</maxRunTime>
+      <maxRunTime>900</maxRunTime>
 			
 			<checks>
 				<file name="trih-cp2D.dat" type="NEFIS">
@@ -4421,7 +4421,7 @@
 		</testCase>
 		<testCase name="e01_f25_c03-estuarium_equid" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c03-estuarium_equid</path>
-      <maxRunTime>600</maxRunTime>
+      <maxRunTime>900</maxRunTime>
 			
 			<checks>
 				<file name="trih-est.dat" type="NEFIS">

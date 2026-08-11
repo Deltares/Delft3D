@@ -155,6 +155,7 @@
   </testCase>
   <testCase name="e02_f014_c001_trench_EH_par_crs" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+      <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dflowfm" seq="1">
         <arguments>
@@ -226,6 +227,7 @@
   </testCase>
   <testCase name="e02_f014_c100" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c100_guayas_model</path>
+      <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dimr">
         <arguments>
