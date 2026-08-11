@@ -47,9 +47,11 @@ module unstruc_inifields
    private
 
    public :: init1dField, spaceInit1dField, &
-             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
+             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
-             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger
+             resolve_mass_balance_area_target, finish_mass_balance_area_target, &
+             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
+             register_waq_target
 
    !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -821,6 +823,89 @@ contains
       end select
    end function resolve_integer_target
 
+   !> Resolve a named mass-balance area and allocate a work array to hold the result of the polygon mask.
+   function resolve_mass_balance_area_target(qid, target_location_type, target_array) result(success)
+      use fm_external_forcings_utils, only: split_qid
+      use fm_location_types, only: UNC_LOC_S
+      use m_alloc, only: realloc, reallocP
+      use m_find_name, only: find_name
+      use m_flowgeom, only: ndx
+      use m_mass_balance_areas, only: mbaname, nomba
+      use m_missing, only: dmiss
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: qid !< quantity id to resolve.
+      integer, intent(out) :: target_location_type !< output target location type, always UNC_LOC_S for mass-balance areas.
+      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< output target array, to be allocated if target is mass-balance area.
+      logical :: success
+
+      character(len=256) :: qid_base, qid_specific
+      integer :: area_index
+
+      target_array => null()
+      target_location_type = 0
+      success = .false.
+
+      call split_qid(qid, qid_base, qid_specific)
+      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') then
+         return
+      end if
+
+      if (.not. allocated(mbaname)) allocate (mbaname(0))
+      area_index = find_name(mbaname, qid_specific)
+      if (area_index == 0) then
+         nomba = nomba + 1
+         call realloc(mbaname, nomba, keepExisting=.true., fill=qid_specific)
+      end if
+
+      target_location_type = UNC_LOC_S
+      call reallocP(target_array, ndx, fill=dmiss, keepExisting=.false.)
+      success = .true.
+   end function resolve_mass_balance_area_target
+
+   !> Convert a mass-balance area's temporary coverage field to integer area IDs.
+   function finish_mass_balance_area_target(qid, qid_base, qid_specific, target_array) result(success)
+      use m_find_name, only: find_name
+      use m_flowgeom, only: ndxi
+      use m_flowtimes, only: ti_mba
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_mass_balance_areas, only: mbadef, mbaname
+      use m_missing, only: dmiss
+      use messageHandling, only: err_flush, msgbuf
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: qid !< full quantity id, e.g. 'waqmassbalanceareaarea1'.
+      character(len=*), intent(in) :: qid_base !< base quantity id, e.g. 'massbalancearea' or 'waqmassbalancearea'.
+      character(len=*), intent(in) :: qid_specific !< specific quantity id, e.g. 'area1'.
+      real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< input/output target array, to be converted to integer area IDs and then nullified.
+      logical :: success
+
+      integer :: area_index
+      integer :: kk, kb, kt
+
+      success = .false.
+      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') return
+
+      if (ti_mba <= 0.0_dp) then
+         write (msgbuf, '(a)') 'Quantity '''//qid//''' requires MbaInterval to be specified in the MDU file.'
+         call err_flush()
+         success = .false.
+      else
+         area_index = find_name(mbaname, qid_specific)
+         do kk = 1, ndxi
+            if (target_array(kk) /= dmiss) then
+               call getkbotktop(kk, kb, kt)
+               mbadef(kk) = area_index
+               mbadef(kb:kt) = area_index
+            end if
+         end do
+         success = .true.
+      end if
+
+      deallocate (target_array)
+      nullify (target_array)
+   end function finish_mass_balance_area_target
+
 !> Resolve the target array and location type for quantities that need to be stored in a 3D array.
 !! Returns .true. if the quantity was recognized and target_array is associated.
    function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
@@ -831,7 +916,7 @@ contains
       use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
-      use m_fm_wq_processes, only: wqbotnames, wqbot
+      use m_fm_wq_processes, only: register_waq_segment_number_index, wqbotnames, wqbot
       use m_flowgeom, only: ndx
       use m_missing, only: dmiss
       use m_alloc, only: realloc
@@ -923,7 +1008,11 @@ contains
          target_location_type = UNC_LOC_S
          call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
                                     waq_values=painp, index_waq_input=first_index)
+         if (str_tolower(qid_base) == 'waqsegmentnumber') then
+            call register_waq_segment_number_index(first_index)
+         end if
          allocate (target_array_3d(first_index:first_index, size(painp, 2)))
+         target_array_3d(first_index, :) = painp(first_index, :)
 
       case default
          success = .false.
@@ -1309,6 +1398,37 @@ contains
       call realloc(nudge_rate, ndx, fill=dmiss)
    end subroutine alloc_nudging
 
+   !> Register a WAQ input and allocate its target values when needed.
+   subroutine register_waq_target(qid)
+      use fm_external_forcings_utils, only: split_qid
+      use m_fm_wq_processes, only: register_waq_segment_number_index
+      use processes_input, only: paname, painp, num_spatial_parameters, &
+                                 funame, funinp, num_time_functions, &
+                                 sfunname, sfuninp, num_spatial_time_fuctions
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: qid !< name of the quantity to register if it is a waq target.
+
+      character(len=256) :: qid_base, qid_specific
+      integer :: index_waq_input
+
+      call split_qid(qid, qid_base, qid_specific)
+      select case (str_tolower(qid_base))
+      case ('waqparameter', 'waqsegmentnumber')
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
+                                    waq_values=painp, index_waq_input=index_waq_input)
+         if (str_tolower(qid_base) == 'waqsegmentnumber') then
+            call register_waq_segment_number_index(index_waq_input)
+         end if
+      case ('waqfunction')
+         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., &
+                                    waq_values_ptr=funinp, index_waq_input=index_waq_input)
+      case ('waqsegmentfunction')
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., &
+                                    waq_values_ptr=sfuninp, index_waq_input=index_waq_input)
+      end select
+   end subroutine register_waq_target
+
    !> Search a particular water quality input name in a list of names,
    !! and if not found, add it to the list, also increasing the associated value array.
    subroutine find_or_add_waq_input(waq_input_name, waq_names, waq_input_count, is_spatial, waq_values, waq_values_ptr, index_waq_input)
@@ -1589,4 +1709,118 @@ contains
          end if
       end do
    end subroutine initialfield2Dto3D_dbl_indx
+
+   !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
+   !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
+   !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
+   subroutine initialfield2Dto3D_dbl_slice(input_array_2d, output_array_3d, vertical_range_min, vertical_range_max, operand)
+      use precision_basics
+      use m_flow, only: kmx, kbot, ktop, zws, kmxn
+      use m_missing
+      use timespace, only: operate
+
+      implicit none
+
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
+      real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
+      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
+      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
+      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
+
+      real(kind=dp) :: lower_limit, upper_limit, level_at_pressure_point
+      integer :: n, k, kb, kt
+
+      lower_limit = -huge(1.0_dp)
+      upper_limit = huge(1.0_dp)
+      if (vertical_range_min /= dmiss) then
+         lower_limit = vertical_range_min
+      end if
+      if (vertical_range_max /= dmiss) then
+         upper_limit = vertical_range_max
+      end if
+      do n = 1, size(input_array_2d)
+         if (input_array_2d(n) /= dmiss) then
+            if (kmx == 0) then
+               call operate(output_array_3d(n), input_array_2d(n), operand)
+            else
+               kb = kbot(n)
+               kt = ktop(n)
+               call operate(output_array_3d(n), input_array_2d(n), operand)
+               ! intentionally fill all levels, even those above the water surface. 
+               ! This is necessary for waq variables, and is harmless for quantities like salinity.
+               do k = kb, kb + kmxn(n) - 1
+                  level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))
+                  if (level_at_pressure_point > lower_limit .and. level_at_pressure_point < upper_limit) then
+                     call operate(output_array_3d(k), input_array_2d(n), operand)
+                  end if
+               end do
+            end if
+         end if
+      end do
+   end subroutine initialfield2Dto3D_dbl_slice
+
+   !> Parse and apply a WAQ-bottom vertical position by parsing target_layer.
+   function apply_waqbot_target_layer(input_array_2d, output_array_3d, target_layer, quantity, operand) result(success)
+      use m_flow, only: kmx, kbot, ktop, kmxn
+      use m_missing, only: dmiss
+      use messageHandling, only: err_flush, msgbuf
+      use string_module, only: str_tolower
+      use timespace, only: operate
+
+      real(kind=dp), dimension(:), intent(in) :: input_array_2d !< input array on 2D grid cells
+      real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< target 3D array to be updated
+      character(len=*), intent(in) :: target_layer !< the target layer, should be "kbot", "all", or a positive integer.
+      character(len=*), intent(in) :: quantity !< the quantity name, should be "waqbot", parsed and checked at call site.
+      integer, intent(in) :: operand
+      logical :: success
+
+      integer :: n, k, kb, kt, ktmax, layer, read_status
+
+      select case (str_tolower(trim(target_layer)))
+      case ('', 'bottom')
+         layer = -1
+      case ('all')
+         layer = 0
+      case default !> read string as integer
+         read (target_layer, *, iostat=read_status) layer
+         if (read_status /= 0 .or. layer <= 0) then
+            write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''bottom'', ''all'', or a positive layer number.'
+            call err_flush()
+            success = .false.
+            return
+         end if
+      end select
+
+      if (layer > max(kmx, 1)) then
+         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid targetLayer ', layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
+         call err_flush()
+         success = .false.
+         return
+      end if
+
+      do n = 1, size(input_array_2d)
+         if (input_array_2d(n) == dmiss) cycle
+         if (kmx == 0) then
+            call operate(output_array_3d(n), input_array_2d(n), operand)
+            cycle
+         end if
+
+         kb = kbot(n)
+         kt = ktop(n)
+         ktmax = kb + kmxn(n) - 1
+         if (layer < 0) then
+            call operate(output_array_3d(kb), input_array_2d(n), operand)
+         else if (layer > 0) then
+            k = ktmax - max(kmx, 1) + layer
+            if (k >= kb) call operate(output_array_3d(k), input_array_2d(n), operand)
+         else
+            do k = kb, kt
+               call operate(output_array_3d(k), input_array_2d(n), operand)
+            end do
+         end if
+      end do
+      success = .true.
+   end function apply_waqbot_target_layer
 end module unstruc_inifields

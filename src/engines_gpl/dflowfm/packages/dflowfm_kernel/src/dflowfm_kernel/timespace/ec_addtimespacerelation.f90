@@ -402,13 +402,12 @@ contains
             dataPtr4 => tgt_data4
          end if
       end if
-      
+
       ! When a multuni item is provided from the call site, we assume that those
       ! multuni1..4 item(s) are the ones to be used. Any targetItemPtr1..4 just set
       ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
       ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
       ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
-
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
@@ -1478,11 +1477,14 @@ contains
             success = ecAddItemConnection(ecInstancePtr, item_nudge_salinity, connectionId)
          end if
       case ('waqfunction')
-         if (.not. checkFileType(ec_filetype, provFile_uniform, target_name)) then
+         if (ec_filetype == provFile_uniform) then
+            sourceItemName = 'uniform_item'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = name
+            call str_upper(sourceItemName)
+         else
             return
          end if
-         ! the file reader will have created an item called 'polytim_item'
-         sourceItemName = 'uniform_item'
       case ('waqsegmentfunction')
          ! the name of the source item depends on the file reader
          if (ec_filetype == provFile_netcdf) then

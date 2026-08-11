@@ -38,6 +38,43 @@ contains
    end subroutine test_validate_unrecognized_interpolation_method
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_inline_polygon_selection_restores_polygon_state, test_inline_polygon_selection_restores_polygon_state,
+   subroutine test_inline_polygon_selection_restores_polygon_state() bind(C)
+      use m_polygon, only: increasepol, npl, xpl, ypl, zpl
+      use timespace, only: selectelset_internal_nodes
+      use timespace_parameters, only: LOCTP_POLYGON_XY
+
+      real(dp), parameter :: target_x(2) = [5.0_dp, 15.0_dp]
+      real(dp), parameter :: target_y(2) = [5.0_dp, 5.0_dp]
+      integer, parameter :: mask(2) = [1, 1]
+      integer :: selected_nodes(2)
+      integer :: num_selected
+      real(dp), parameter :: selection_x(4) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      real(dp), parameter :: selection_y(4) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      real(dp), parameter :: sentinel_x(2) = [101.0_dp, 102.0_dp]
+      real(dp), parameter :: sentinel_y(2) = [201.0_dp, 202.0_dp]
+      real(dp), parameter :: sentinel_z(2) = [301.0_dp, 302.0_dp]
+
+      call increasepol(size(sentinel_x), 0)
+      xpl(1:size(sentinel_x)) = sentinel_x
+      ypl(1:size(sentinel_y)) = sentinel_y
+      zpl(1:size(sentinel_z)) = sentinel_z
+      npl = size(sentinel_x)
+
+      call selectelset_internal_nodes(target_x, target_y, mask, size(target_x), selected_nodes, num_selected, &
+                                      LOCTP_POLYGON_XY, numcoord=size(selection_x), xpin=selection_x, ypin=selection_y)
+
+      call F90_ASSERT_EQ(num_selected, 1)
+      if (num_selected == 1) then
+         call F90_ASSERT_EQ(selected_nodes(1), 1)
+      end if
+      call F90_ASSERT_EQ(npl, size(sentinel_x))
+      call F90_ASSERT_TRUE(all(xpl(1:npl) == sentinel_x))
+      call F90_ASSERT_TRUE(all(ypl(1:npl) == sentinel_y))
+      call F90_ASSERT_TRUE(all(zpl(1:npl) == sentinel_z))
+   end subroutine test_inline_polygon_selection_restores_polygon_state
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_file_type_extension_mismatch, test_validate_file_type_extension_mismatch,
    subroutine test_validate_file_type_extension_mismatch() bind(C)
       type(t_spatial_field_input) :: input

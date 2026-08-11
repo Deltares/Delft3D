@@ -2731,6 +2731,7 @@ contains
 
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
    subroutine finalize()
+      use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
       use m_flowtimes, only: ti_mba
       use m_storage, only: t_storage, get_surface
@@ -2760,6 +2761,7 @@ contains
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
 
+      call finalize_waq_spatial_fields()
       call finalize_source_sinks()
       if (allocated(thrtt)) then
          call init_threttimes()

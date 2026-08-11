@@ -3147,6 +3147,8 @@ contains
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
       case (LOCTP_POLYGON_XY)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from input arrays
          call increasepol(numcoord, 0)
          xpl(1:numcoord) = xpin(1:numcoord)
@@ -3197,7 +3199,7 @@ contains
             end if
          end do
       end if
-      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+      if (loc_spec_type == LOCTP_POLYGON_FILE .or. loc_spec_type == LOCTP_POLYGON_XY) then
          call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
@@ -3260,13 +3262,22 @@ contains
       use m_filez, only: oldfil, doclose, newfil
 
       ! Arguments
-      real(kind=dp), dimension(nx), intent(in) :: xu
-      real(kind=dp), dimension(nx), intent(in) :: yu
-      real(kind=dp), dimension(nx), intent(out) :: zu
+
       integer, intent(in) :: nx
-      character(*), intent(in) :: filename !< file name for meteo data file
-      integer, intent(in) :: filetype !< spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method !< time/space interpolation method
+
+      real(kind=dp), intent(in) :: xu(nx)
+      real(kind=dp), intent(in) :: yu(nx)
+      real(kind=dp), intent(inout) :: zu(nx)
+
+      character(*), intent(in) :: filename ! file name for meteo data file
+      integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
+      integer, intent(in) :: method ! time/space interpolation method
+      ! 4 : inside polygon
+      ! 5 : triangulation
+      ! 6 : averaging
+      ! 7 : index triangulation
+      ! 8 : smoothing
+      ! 9 : internal diffusion
       integer, intent(in) :: operand
       real(kind=dp), dimension(:), intent(in) :: transformcoef !< Transformation coefficients
       integer, intent(in) :: iprimpos !< only needed for averaging, position of primitive variables in network
