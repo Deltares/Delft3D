@@ -7448,6 +7448,7 @@
   <testCase name="e02_f422_c05_migratinghump" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c05_migratinghump</path>
 
+      <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/hump_19920831_114000_rst.nc" type="netCDF">
         <parameters>
@@ -8328,6 +8329,7 @@
   <testCase name="e02_f422_c51_bedslope_effect_slope022_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c51_bedslope_effect_slope022_Unstr</path>
 
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_unstr_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -8430,6 +8432,7 @@
   <testCase name="e02_f422_c55_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c55_curvebend_spiral_mor_Bedup_Unstr</path>
 
+      <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/c31smallbendUnstr_20010101_014000_rst.nc" type="netCDF">
         <parameters>

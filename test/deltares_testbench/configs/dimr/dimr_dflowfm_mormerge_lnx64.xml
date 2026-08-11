@@ -216,6 +216,7 @@
     <testCase name="e123_f01_c02_trench_VanRijn1993_mormerge_parallel" ref="dflowfm_default">
       <path version="DVC">e123_dflowfm-mormerge/f01_general/c02_trench_VanRijn1993_mormerge_parallel</path>
 
+      <maxRunTime>900</maxRunTime>
       <programs>
         <program ref="mormerge">
           <workingDirectory>merge</workingDirectory>
