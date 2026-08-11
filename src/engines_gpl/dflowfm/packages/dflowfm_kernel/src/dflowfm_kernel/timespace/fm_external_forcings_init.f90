@@ -34,6 +34,7 @@ submodule(fm_external_forcings) fm_external_forcings_init
    implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
+   real(dp), dimension(1), save, target :: GLOBAL_DUMMY_TARGET = [1.0_dp] !> dummy coordinate necessary for unc_loc_global to point to as a valid target.
 
 contains
 
@@ -47,14 +48,18 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_flow, only: kmx
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
+      use m_meteo, only: item_waqfun, item_waqsfun
+      use m_ec_parameters, only: ec_undef_int
       use m_source_sink, only: source_sinks
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use properties, only: MAX_PROP_LENGTH
+      use processes_input, only: num_time_functions, num_spatial_time_fuctions, nosfunext
+      use properties, only: MAX_PROP_LENGTH, prop_get
       use string_module, only: str_tolower
       use system_utils, only: split_filename
       use tree_data_types, only: tree_data_ptr
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use unstruc_inifields, only: register_waq_target
       use unstruc_messages, only: threshold_abort
 
       ! Arguments
@@ -80,6 +85,8 @@ contains
       integer :: num_laterals !< Total number of laterals in all external forcing files
       integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
       integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
+      logical :: is_read
+      character(len=INI_VALUE_LEN) :: quantity
 
       character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: file_names !< List of file names
       character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: base_dirs !< List of base directories
@@ -101,7 +108,7 @@ contains
       do i_ext = 1, size(extfile_new_list)
 
          call check_version_number_and_open_external_forcing_file(trim(extfile_new_list(i_ext)), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
-         
+
          ! Abort initialization if an external forcing file could not be validated or opened.
          if (iresult /= DFM_NOERR) then
 
@@ -117,6 +124,28 @@ contains
          call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
 
       end do
+
+      ! Register all global WAQ functions before creating any EC target fields.
+      ! Growing funinp after a field points into it would invalidate that pointer.
+      do i_ext = 1, size(extfile_new_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+         num_items_in_file = tree_num_nodes(bnd_ptr)
+         do i = 1, num_items_in_file
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(block_ptr))
+            select case (str_tolower(group_name))
+            case ('spatial', 'parameter', 'initial')
+               quantity = ''
+               call prop_get(block_ptr, '', 'quantity', quantity, is_read)
+               if (is_read) then
+                  call register_waq_target(quantity)
+               end if
+            end select
+         end do
+      end do
+      call realloc(item_waqfun, num_time_functions, keepExisting=.false., fill=ec_undef_int)
+      nosfunext = num_spatial_time_fuctions
+      call realloc(item_waqsfun, nosfunext, keepExisting=.false., fill=ec_undef_int)
 
       ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
       i_bubblescreen = 0
@@ -317,7 +346,7 @@ contains
 
    end subroutine build_itpenzr_and_itpenur
 
-   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array. 
+   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array.
    !! The lateral bed area is computed as the sum of the bed areas of all nodes that belong to the lateral, excluding ghost nodes.
    subroutine compute_lateral_bed_areas()
       use m_flowgeom, only: ba
@@ -437,7 +466,7 @@ contains
             write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
-         end if 
+         end if
       end if
 
       num_items_in_block = 0
@@ -927,7 +956,7 @@ contains
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower, strcmpi
+      use string_module, only: str_tolower
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
@@ -938,8 +967,9 @@ contains
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
-                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
+                                   resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -965,12 +995,15 @@ contains
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
+      character(len=256) :: target_layer
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
       integer :: oper_backup
+
+      target_layer = ''
 
       res = .false.
       ec_item = ec_undef_int
@@ -1022,6 +1055,9 @@ contains
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
          end if
          if (.not. res) then
+            res = resolve_mass_balance_area_target(quantity, target_location_type, target_data)
+         end if
+         if (.not. res) then
             if (str_tolower(quantity) == 'bedlevel') then
                ! Ugly special case, bedlevel must not throw an error as it is read elsewhere.
                res = .true.
@@ -1029,7 +1065,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
             call err_flush()
             return
          end if
@@ -1053,6 +1089,7 @@ contains
                   call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
+                  call prop_get(block_ptr, '', 'targetLayer', target_layer)
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
@@ -1071,10 +1108,14 @@ contains
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      oper = oper_backup
-                     call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
+                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
+                        res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
+                     else
+                        call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                     end if
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
-                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
-                        painp(first_index, 1:target_num_points) = target_data(1:target_num_points)
+                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:16)) == 'waqsegmentnumber') then
+                        painp(first_index, :) = target_array_3d(first_index, :)
                         deallocate (target_array_3D)
                      end if
                      deallocate (target_data)
@@ -1112,20 +1153,42 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) then ! Friction coefficient is a special case, requires additional reading
-               if (strcmpi(quantity, 'frictioncoefficient')) then
-                  res = set_friction_type_values_explicit(block_ptr, input%oper)
-               end if
-            end if
-            res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
+            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper, target_data)
+            res = .true. ! Successful loading is sufficient; not every quantity requires an enablement action.
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
-               ''': ['//group_name//']. Check previous log lines for details.'
+               ''': ['//trim(group_name)//']. Check previous log lines for details.'
             call err_flush()
          end if
       end associate
 
    end function init_spatial_fields
+
+   !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
+   function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
+      use fm_external_forcings_utils, only: split_qid
+      use tree_data_types, only: tree_data
+      use unstruc_inifields, only: finish_mass_balance_area_target, set_friction_type_values_explicit
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
+      type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
+      integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
+      real(dp), dimension(:), pointer, intent(inout) :: target_data !< pointer to the target data array, for now only used for mass_balance_area
+      logical :: success
+
+      character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
+
+      call split_qid(quantity, quantity_base, quantity_specific)
+      select case (str_tolower(quantity_base))
+      case ('frictioncoefficient')
+         success = set_friction_type_values_explicit(block_ptr, operand)
+      case ('massbalancearea', 'waqmassbalancearea')
+         success = finish_mass_balance_area_target(quantity, quantity_base, quantity_specific, target_data)
+      case default
+         success = .false.
+      end select
+   end function enable_special_quantity
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
    !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
@@ -1556,7 +1619,7 @@ contains
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens 
+      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens
       integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
@@ -1824,9 +1887,9 @@ contains
          target_x => xk(1:target_num_points)
          target_y => yk(1:target_num_points)
       case (UNC_LOC_GLOBAL)
-         target_num_points = 0
-         target_x => null()
-         target_y => null()
+         target_num_points = 1
+         target_x => GLOBAL_DUMMY_TARGET
+         target_y => GLOBAL_DUMMY_TARGET
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
