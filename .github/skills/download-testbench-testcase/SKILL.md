@@ -38,5 +38,8 @@ The `dvc pull` command accepts a list of target `.dvc` files. These `.dvc` files
 directory structure under the _cases path_: `/test/deltares_testbench/data/cases`.
 The user may mention a `target-type` as an argument to this skill. This can be one `input`, 
 `reference` or `doc`. If the `target-type` is not mentioned please use the `input` targets, so
-only the test case input files are downloaded. If the `reference` target type is passed, please
-download the `reference_win64.dvc` target on Windows and the `reference_lnx64.dvc` target on Linux.
+only the test case input files are downloaded. If the `reference` target type is passed and both
+`reference_win64.dvc` and `reference_lnx64.dvc` are available, download the appropriate one for
+the platform. Most of the time only one of these files is available. In that case just download
+the available one. Even if you're on Linux and the only target is `reference_win64.dvc`. This
+is a common occurence when both platforms are using the same set of reference files.
