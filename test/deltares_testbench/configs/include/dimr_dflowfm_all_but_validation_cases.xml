@@ -5937,7 +5937,7 @@
   </testCase>
   <testCase name="e02_f022_c55_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c55_curvebend_spiral_mor_Bedup_Unstr</path>
-
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c31smallbendUnstr_map.nc" type="netCDF">
         <parameters>

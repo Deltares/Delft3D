@@ -1092,6 +1092,7 @@
   <testCase name="e01_f03_c13-foumod_scs" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f03_original/c13-foumod_scs</path>
 
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="trih-test_foumod.dat" type="NEFIS">
         <parameters name="his-series">
@@ -3955,7 +3956,7 @@
   </testCase>
   <testCase name="e01_f27_c27-turb_bound_z" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f27_zmodel_updates/c27-turb_bound_z</path>
-
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="trih-Stal-2dv_15.dat" type="NEFIS">
         <parameters name="his-series">

@@ -957,6 +957,7 @@
   </testCase>
   <testCase name="e02_f029_c103_westerschelde_3d_z_three_domains" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c103_westerschelde_3d_z_3dom</path>
+    <maxRunTime>3600</maxRunTime>
     <programs>
       <program ref="dimr-mpi" seq="1">
         </program>

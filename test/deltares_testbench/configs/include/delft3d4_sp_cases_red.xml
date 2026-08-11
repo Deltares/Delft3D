@@ -870,6 +870,7 @@
 		<testCase name="e01_f03_c13-foumod_scs" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f03_original/c13-foumod_scs</path>
 			
+      <maxRunTime>900</maxRunTime>
 			<checks>
 				<file name="trih-test_foumod.dat" type="NEFIS">
 					<parameters name="his-series">
