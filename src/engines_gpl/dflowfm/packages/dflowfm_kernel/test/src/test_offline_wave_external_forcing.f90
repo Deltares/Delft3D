@@ -238,7 +238,8 @@ contains
 
    !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_flow_without_waves_recalculates_derived_ht, test_flow_without_waves_recalculates_derived_ht,
    !> Raw EC wave height and period must remain unchanged while FM recalculates
-   !! the derived fields for the current water depth, including open boundaries.
+   !! the derived fields for the current water depth. FlowWithoutWaves keeps
+   !! boundary fields local because its external inputs are passed through to D-WAQ.
    subroutine test_flow_without_waves_recalculates_derived_ht() bind(C)
       use m_alloc, only: realloc
       use m_compute_wave_parameters, only: compute_wave_parameters
@@ -290,8 +291,10 @@ contains
       call f90_expect_near(twavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave period must remain unchanged after calculation')
       call f90_expect_near(hwavcom(2), 4.0_dp, 1.0e-12_dp, 'raw inner wave height must remain unchanged after calculation')
       call f90_expect_near(twavcom(2), 8.0_dp, 1.0e-12_dp, 'raw inner wave period must remain unchanged after calculation')
-      call f90_expect_near(hwav(1), 4.0_dp / sqrt(2.0_dp), 1.0e-12_dp, 'derived boundary wave height must copy the inner value')
-      call f90_expect_near(twav(1), 8.0_dp, 1.0e-12_dp, 'derived boundary wave period must copy the inner value')
+      call f90_expect_near(hwav(1), 0.0_dp, 1.0e-12_dp, 'FlowWithoutWaves boundary wave height must not copy the inner value')
+      call f90_expect_near(twav(1), 0.0_dp, 1.0e-12_dp, 'FlowWithoutWaves boundary wave period must not copy the inner value')
+      call f90_expect_near(hwav(2), 4.0_dp / sqrt(2.0_dp), 1.0e-12_dp, 'derived inner wave height must be recalculated')
+      call f90_expect_near(twav(2), 8.0_dp, 1.0e-12_dp, 'derived inner wave period must be recalculated')
 
       hs = 1.0_dp
       s1 = 1.0_dp
@@ -301,8 +304,10 @@ contains
       call f90_expect_near(twavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave period must survive a second calculation')
       call f90_expect_near(hwavcom(2), 4.0_dp, 1.0e-12_dp, 'raw inner wave height must survive a second calculation')
       call f90_expect_near(twavcom(2), 8.0_dp, 1.0e-12_dp, 'raw inner wave period must survive a second calculation')
-      call f90_expect_near(hwav(1), 1.0_dp, 1.0e-12_dp, 'derived boundary wave height must be recalculated and depth-limited')
-      call f90_expect_near(twav(1), 8.0_dp, 1.0e-12_dp, 'derived boundary wave period must be recalculated from the inner value')
+      call f90_expect_near(hwav(1), 0.0_dp, 1.0e-12_dp, 'FlowWithoutWaves boundary wave height must not copy the depth-limited inner value')
+      call f90_expect_near(twav(1), 0.0_dp, 1.0e-12_dp, 'FlowWithoutWaves boundary wave period must not copy the inner value')
+      call f90_expect_near(hwav(2), 1.0_dp, 1.0e-12_dp, 'derived inner wave height must be recalculated and depth-limited')
+      call f90_expect_near(twav(2), 8.0_dp, 1.0e-12_dp, 'derived inner wave period must survive recalculation')
 
       if (allocated(bl)) deallocate (bl)
       if (allocated(hs)) deallocate (hs)
