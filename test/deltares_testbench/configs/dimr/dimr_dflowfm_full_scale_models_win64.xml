@@ -293,6 +293,7 @@
     </testCase>
     <testCase name="e02_f150_c32_pudong_2D" ref="dimr_default">
       <path version="DVC">e02_dflowfm/f150_1d2d_acceptance_urban/c32_pudong-2d</path>
+      <maxRunTime>1500</maxRunTime>
       <checks>
         <file name="output/DFlowFM_his.nc" type="netCDF">
           <parameters>

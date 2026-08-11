@@ -74,6 +74,7 @@
   </testCase>
   <testCase name="e02_f029_c202_hyd_file_westerschelde_3d_s_vag" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
+      <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
     </program>
@@ -142,6 +143,7 @@
   </testCase>
   <testCase name="e02_f029_c203_hyd_file_westerschelde_3d_s_hvag" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
+    <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
     </program>
