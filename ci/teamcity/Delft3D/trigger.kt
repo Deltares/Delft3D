@@ -281,6 +281,12 @@ object Trigger : BuildType({
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
                 startsWith("teamcity.build.branch", "pull")
+
+		// only way to disable a step as far as I'm aware
+		// it's taking up too many TC resources, so this is disabled until we can 
+		// diagnose and fix that
+		equals("env.disabled", "false") 
+		
             }
 
             scriptContent = """
