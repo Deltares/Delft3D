@@ -1428,7 +1428,7 @@ void Dimr::receive_ptr(const char* name, const char* sourceName, int compType, B
             // targetProcess=my_rank: this process is registered to be able to accept this item but something goes wrong
             throw Exception(
                 Exception::ERR_INVALID_INPUT,
-                "ABORT: Dimr::receive: pointer target \"%s\" could not be resolved: get_var did not return an "
+                "ABORT: Dimr::receive_ptr: pointer target \"%s\" could not be resolved: get_var did not return an "
                 "address. Check that the target variable is exposed by the component and that scalar variables are "
                 "not declared as type=\"pointer\".",
                 name);
