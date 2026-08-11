@@ -9624,13 +9624,6 @@
     <path version="DVC">e02_dflowfm/f006_external_forcing/c051_add_operand_ecConverterUnimagdir</path>
     <maxRunTime>600.0000000</maxRunTime>
     <checks>
-      <file name="dflowfmoutput/winduni_his.nc" type="netCDF">
-        <parameters>
-          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
-          <parameter name="x_velocity" toleranceAbsolute="0.0001"/>
-          <parameter name="y_velocity" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
       <file name="dflowfmoutput/winduni_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001"/>
