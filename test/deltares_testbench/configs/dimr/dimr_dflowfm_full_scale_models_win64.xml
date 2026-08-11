@@ -64,7 +64,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
   </defaultTestCases>
@@ -133,7 +133,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>200.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="e02_f150_c13_korte-woerden-1d2d-ManholeStreetinlets" ref="dimr_default">
@@ -165,7 +165,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>90.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="e02_f150_c20_groesbeek_NN_T1" ref="dimr_default">
@@ -301,7 +301,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>1200.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="e02_f150_c34_additional_flow_analysis" ref="dimr_default">

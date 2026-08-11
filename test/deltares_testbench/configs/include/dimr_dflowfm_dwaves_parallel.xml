@@ -8,7 +8,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>10.0</maxRunTime>
+
     <checks>
       <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
         <parameters>

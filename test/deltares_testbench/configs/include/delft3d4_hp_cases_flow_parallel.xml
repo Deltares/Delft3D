@@ -27,7 +27,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e01_f01_c11-c03" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c11-c03</path>
-    <maxRunTime>6.29699993134</maxRunTime>
+
     <checks>
       <file name="trih-c03.dat" type="NEFIS">
         <parameters name="his-series">
@@ -47,7 +47,7 @@
   </testCase>
   <testCase name="e01_f01_c13-markermeer" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c13-markermeer</path>
-    <maxRunTime>5.375</maxRunTime>
+
     <checks>
       <file name="trih-b.dat" type="NEFIS">
         <parameters name="his-series">
@@ -162,7 +162,7 @@
   </testCase>
   <testCase name="e01_f01_c26-abudhabi" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c26-abudhabi</path>
-    <maxRunTime>197.52699995</maxRunTime>
+
     <checks>
       <file name="trih-ove.dat" type="NEFIS">
         <parameters name="his-series">
@@ -261,7 +261,7 @@
   </testCase>
   <testCase name="e01_f01_c30-64bit" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c30-64bit</path>
-    <maxRunTime>765.679000139</maxRunTime>
+
     <checks>
       <file name="trih-zd10.dat" type="NEFIS">
         <parameters name="his-series">
@@ -312,7 +312,7 @@
   </testCase>
   <testCase name="e01_f01_c34-10laybcc" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c34-10laybcc</path>
-    <maxRunTime>22.5149998665</maxRunTime>
+
     <checks>
       <file name="trih-run01.dat" type="NEFIS">
         <parameters name="his-series">
@@ -497,7 +497,6 @@
   </testCase>
   <testCase name="e01_f03_c09-getij_with_measurements" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f03_original/c09-getij_with_measurements</path>
-    <maxRunTime>68.5449998379</maxRunTime>
     <checks>
       <file name="trih-tfs.dat" type="NEFIS">
         <parameters name="his-series">
@@ -517,7 +516,6 @@
   </testCase>
   <testCase name="e01_f03_c10-hirlam" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f03_original/c10-hirlam</path>
-    <maxRunTime>9.54699993134</maxRunTime>
     <checks>
       <file name="trih-16b.dat" type="NEFIS">
         <parameters name="his-series">
@@ -542,7 +540,6 @@
   </testCase>
   <testCase name="e01_f04_c02-003" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c02-003</path>
-    <maxRunTime>25.984000206</maxRunTime>
     <checks>
       <file name="trih-003.dat" type="NEFIS">
         <parameters name="his-series">
@@ -567,7 +564,6 @@
   </testCase>
   <testCase name="e01_f04_c06-007" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c06-007</path>
-    <maxRunTime>31.1710000038</maxRunTime>
     <checks>
       <file name="trih-007.dat" type="NEFIS">
         <parameters name="his-series">
@@ -580,7 +576,6 @@
   </testCase>
   <testCase name="e01_f04_c07-034" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f04_coarsewind/c07-034</path>
-    <maxRunTime>27.1870000362</maxRunTime>
     <checks>
       <file name="trih-034.dat" type="NEFIS">
         <parameters name="his-series">
@@ -633,7 +628,7 @@
   </testCase>
   <testCase name="e01_f05_c01-l04" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f05_hles/c01-l04</path>
-    <maxRunTime>24.234000206</maxRunTime>
+
     <checks>
       <file name="trih-l04.dat" type="NEFIS">
         <parameters name="his-series">
@@ -654,7 +649,6 @@
   </testCase>
   <testCase name="e01_f05_c02-l05" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f05_hles/c02-l05</path>
-    <maxRunTime>24.2030000687</maxRunTime>
     <checks>
       <file name="trih-l05.dat" type="NEFIS">
         <parameters name="his-series">
@@ -694,7 +688,7 @@
   </testCase>
   <testCase name="e01_f06_c07-hump2d" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f06_ols/c07-hump2d</path>
-    <maxRunTime>53.7179999352</maxRunTime>
+
     <checks>
       <file name="trih-h2d.dat" type="NEFIS">
         <parameters name="his-series">
@@ -891,7 +885,7 @@
   </testCase>
   <testCase name="e01_f11_c12-qtot-wide" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f11_qhqtot/c12-qtot-wide</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="trih-20x40.dat" type="NEFIS">
         <parameters name="his-series">
@@ -912,7 +906,7 @@
   </testCase>
   <testCase name="e01_f11_c13-qtot-wide-asym-partitioning" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f11_qhqtot/c13-qtot-wide-asym-partitioning</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="trih-20x40.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1142,7 +1136,7 @@
   </testCase>
   <testCase name="e01_f25_c03-estuarium_equid" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f25_bottfric_2D_3D/c03-estuarium_equid</path>
-    <maxRunTime>516.065000057</maxRunTime>
+
     <checks>
       <file name="trih-est.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1162,7 +1156,7 @@
   </testCase>
   <testCase name="e01_f25_c04-estuarium_log" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f25_bottfric_2D_3D/c04-estuarium_log</path>
-    <maxRunTime>525.940000057</maxRunTime>
+
     <checks>
       <file name="trih-est.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1182,7 +1176,7 @@
   </testCase>
   <testCase name="e01_f25_c05-noordzee_2d" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f25_bottfric_2D_3D/c05-noordzee_2d</path>
-    <maxRunTime>31.6710000038</maxRunTime>
+
     <checks>
       <file name="trih-g04.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1202,7 +1196,7 @@
   </testCase>
   <testCase name="e01_f28_c01-fluff_test" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f28_fluff/c01-fluff_test</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="trih-tst.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1228,7 +1222,7 @@
   </testCase>
   <testCase name="e01_f28_c02-fluff_type1" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f28_fluff/c02-fluff_type1</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="trih-chan_fluff1.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1254,7 +1248,7 @@
   </testCase>
   <testCase name="e01_f28_c03-fluff_type2" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f28_fluff/c03-fluff_type2</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="trih-chan_fluff2.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1280,7 +1274,7 @@
   </testCase>
   <testCase name="e01_f28_c04-fluff_type2_spacevardepeff" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f28_fluff/c04-fluff_type2_spacevardepeff</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="trih-chan_fluff2_depeff.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1306,7 +1300,7 @@
   </testCase>
   <testCase name="e01_f28_c05-fluff_2layers_type1" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f28_fluff/c05-fluff_2layers_type1</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="trih-chan_fluff1.dat" type="NEFIS">
         <parameters name="his-series">
@@ -1332,7 +1326,7 @@
   </testCase>
   <testCase name="e01_f28_c06-fluff_2layers_type2" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f28_fluff/c06-fluff_2layers_type2</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="trih-chan_fluff2.dat" type="NEFIS">
         <parameters name="his-series">

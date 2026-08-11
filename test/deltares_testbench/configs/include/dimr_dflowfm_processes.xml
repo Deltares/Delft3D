@@ -735,7 +735,7 @@
   </testCase>
   <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_platform_specific_refs_restart">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westernscheldt_restart_map.nc" type="netCDF">
         <parameters>

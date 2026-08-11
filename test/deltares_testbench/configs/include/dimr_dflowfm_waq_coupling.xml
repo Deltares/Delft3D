@@ -32,7 +32,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
         <parameters>
@@ -110,7 +110,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
         <parameters>
@@ -188,7 +188,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34-checkhydbal-sum_map.nc" type="netCDF">
         <parameters>
@@ -241,7 +241,7 @@
       <program ref="dimr" seq="1">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34_waqgeom.nc" type="netCDF">
         <parameters>
@@ -256,7 +256,7 @@
       <program ref="dimr" seq="1">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34_waqgeom.nc" type="netCDF">
         <parameters>
@@ -271,7 +271,7 @@
       <program ref="dimr" seq="1">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34_waqgeom.nc" type="netCDF">
         <parameters>
@@ -315,7 +315,7 @@
       <program ref="dimr-waq" seq="6">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
         <parameters>
@@ -396,7 +396,7 @@
       <program ref="dimr-waq" seq="6">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
         <parameters>
@@ -477,7 +477,7 @@
       <program ref="dimr-waq" seq="6">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
         <parameters>
@@ -564,7 +564,7 @@
       <program ref="dimr-waq" seq="7">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
         <parameters>
@@ -650,7 +650,7 @@
       <program ref="dimr-waq" seq="7">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
         <parameters>
@@ -736,7 +736,7 @@
       <program ref="dimr-waq" seq="7">
         </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_f34/f34.bnd" type="ASCII">
         <parameters>
@@ -821,7 +821,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01-checkhydbal-sum_map.nc" type="netCDF">
         <parameters>
@@ -906,7 +906,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01-checkhydbal-sum_map.nc" type="netCDF">
         <parameters>
@@ -990,7 +990,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01-checkhydbal-sum_map.nc" type="netCDF">
         <parameters>

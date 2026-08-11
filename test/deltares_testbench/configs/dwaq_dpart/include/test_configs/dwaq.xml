@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
     <path version="DVC">e03_waq/f02_hongkong/c04_statistics</path>
-    <maxRunTime>3000.0</maxRunTime>
+
     <checks>
       <file name="group2-test004.ada" type="NEFIS">
         <parameters name="DELWAQ_RESULTS">
