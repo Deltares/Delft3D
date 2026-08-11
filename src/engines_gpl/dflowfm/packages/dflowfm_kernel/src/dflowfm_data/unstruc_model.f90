@@ -4308,17 +4308,23 @@ contains
 
    end subroutine notify_default_change_char
 
+   !> Inform user about changed default values, if applicable. To make users aware
+   !! they're not using the currently recommended settings.
+   !!
+   !! When user has not provided a particular keyword, always inform about the changed
+   !! default. When user has provided a particular keyword, only inform if that value
+   !! is not the same as the current default. 
    subroutine notify_default_change_impl(chapter, keyword, release_version, new_default, user_value, &
                                          keyword_is_specified, values_differ, quote_values)
 
-      character(len=*), intent(in) :: chapter
-      character(len=*), intent(in) :: keyword
-      character(len=*), intent(in) :: release_version
-      character(len=*), intent(in) :: new_default
-      character(len=*), intent(in) :: user_value
-      logical, intent(in) :: keyword_is_specified
-      logical, intent(in) :: values_differ
-      logical, intent(in) :: quote_values
+      character(len=*), intent(in) :: chapter !< Block name in MDU under which this keyword appeared.
+      character(len=*), intent(in) :: keyword !< Keyword name.
+      character(len=*), intent(in) :: release_version !< Release version in which the default changed.
+      character(len=*), intent(in) :: new_default !< Current default value (string representation)
+      character(len=*), intent(in) :: user_value !< Value provided in user input (string representation)
+      logical, intent(in) :: keyword_is_specified !< Whether or not a non-empty value was in user's input at all.
+      logical, intent(in) :: values_differ !< Whether or not the user's and default value differ.
+      logical, intent(in) :: quote_values !< Whether or not to quote the values in the printed messages.
 
       character(len=1024) :: default_value_text, user_value_text
 
