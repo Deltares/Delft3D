@@ -1633,7 +1633,6 @@ contains
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
-      character(len=:), allocatable :: id !< Bubblescreen id
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
