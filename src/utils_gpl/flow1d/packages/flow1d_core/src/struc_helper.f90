@@ -86,6 +86,7 @@ module m_struc_helper
       hu = s1ml
       hd = s1mr
       !
+      velheight = .false.
       if (velheight) then
          if (alm < 1.0D-6) then
             uu = 0.D0
