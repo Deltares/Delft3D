@@ -435,6 +435,18 @@ contains
       ! if Bdf keyword turned out to be NO,
       ! then try to read only Van Rijn 2004 bedform roughness height parameters.
       !
+      write (mdia, '(a)') '*** Start of bedform input'
+      !
+      if (.not. stm_included) then
+         write (mdia, '(a)') 'Morphology module not active in present simulation.'
+         txtput1 = 'Using characteristic sediment diameters'
+         write (mdia, '(a,a)') txtput1, ':'
+         txtput1 = '  D50 (m)'
+         write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD50
+         txtput1 = '  D90 (m)'
+         write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD90
+      end if
+      !
       if (.not. lfbedfrm) then
          goto 8888
       end if
@@ -501,7 +513,7 @@ contains
       cdpar = 0.0_fp
       !-----------------------------------------------------
       !
-      write (mdia, '(a)') '*** Start of bedform input'
+      !write (mdia, '(a)') '*** Start of bedform input'
       !
       ! If BdfMor then the morphological time scale is used for bedform adaptation.
       ! By default the hydrodynamic time scale is used for bedform adaptation.
@@ -515,14 +527,6 @@ contains
          else
             write (mdia, '(a,a)') txtput1, ': hydrodynamic time scale'
          end if
-      else
-         write (mdia, '(a)') 'Morphology module not active in present simulation.'
-         txtput1 = 'Using characteristic sediment diameters'
-         write (mdia, '(a,a)') txtput1, ':'
-         txtput1 = '  D50 (m)'
-         write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD50
-         txtput1 = '  D90 (m)'
-         write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD90
       end if
       !
       !---------------------------
@@ -779,10 +783,17 @@ contains
          bdfrpt = 1
          txtput2 = 'Van Rijn (1984)'
       end select
-      txtput1 = 'Dune roughness height predictor'
-      write (mdia, '(a,a,a)') txtput1, ': ', txtput2
+      !txtput1 = 'Dune roughness height predictor'
+      !write (mdia, '(a,a,a)') txtput1, ': ', txtput2
       !
 8888  continue
+      !
+      ! Take care of jump
+      if (.not. lfbedfrm .and. bdfrpt == 0) then
+         txtput2 = 'Van Rijn (2007)'
+      end if
+      txtput1 = 'Dune roughness height predictor'
+      write (mdia, '(a,a,a)') txtput1, ': ', txtput2
       ! if Bdf keyword turned out to be NO, then bdfrpt will be 0 (Van Rijn 2004).
       ! read those parameters
       !
@@ -804,7 +815,7 @@ contains
          call prop_get(md_bfmptr, 'bedform', 'BdfMrR', kdpar(5))
          call prop_get(md_bfmptr, 'bedform', 'BdfDnR', kdpar(6))
          !
-         if (lfbedfrm) then
+         !if (lfbedfrm) then
             txtput1 = '  Ripple calibration (-)'
             write (mdia, '(a,a,e20.4)') txtput1, ':', kdpar(1)
             txtput1 = '  Ripple relaxation factor (-)'
@@ -819,7 +830,7 @@ contains
             write (mdia, '(a,a,e20.4)') txtput1, ':', kdpar(3)
             txtput1 = '  Dune relaxation factor (-)'
             write (mdia, '(a,a,e20.4)') txtput1, ':', kdpar(6)
-         end if
+         !end if
       case (2)
          kdpar(1) = 0.0_fp
          kdpar(2) = 1.0_fp
@@ -897,11 +908,10 @@ contains
          write (mdia, '(a,a,e20.4)') txtput1, ':', 0.0_fp
       end if
       !
+9999  continue
       write (mdia, '(a)') '*** End of bedform input'
       write (mdia, *)
       !
-9999  continue
-
    end subroutine fm_rdbedformpar
 
 end module m_bedform_io
