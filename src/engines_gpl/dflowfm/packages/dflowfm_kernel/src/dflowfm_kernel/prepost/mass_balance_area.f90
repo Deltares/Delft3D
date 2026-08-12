@@ -46,24 +46,27 @@ module m_mass_balance_area
 contains
 
    !> Reads and initializes the user-specified mass balance areas
-   subroutine read_and_initialize_mass_balance_area()
+   subroutine read_and_initialize_mass_balance_area(mass_balance_area_file)
       use tree_structures, only: tree_destroy
+
+      ! Arguments
+      character(len=*), intent(in) :: mass_balance_area_file !< Name of the mass balance area file.
 
       ! Local variables
       type(tree_data), pointer :: mba_ptr !< Pointer to the mass balance area tree structure.
 
-      if (len_trim(md_mbafile) == 0) then
+      if (len_trim(mass_balance_area_file) == 0) then
 
          ! When no mass balance area file is specified, return without doing anything
          return
 
-      elseif (index(md_mbafile, '.ini') > 0) then
+      elseif (index(mass_balance_area_file, '.ini') > 0) then
 
          call initialize_mass_balance_area_arrays()
 
-         call open_mass_balance_area_file(mba_ptr)
+         call open_mass_balance_area_file(mass_balance_area_file, mba_ptr)
 
-         call read_mass_balance_area_file(mba_ptr)
+         call read_mass_balance_area_file(mass_balance_area_file, mba_ptr)
 
          call tree_destroy(mba_ptr)
 
@@ -71,7 +74,7 @@ contains
 
       else
 
-         write (msgbuf, '(A)') 'Error while reading mass balance area file '''//trim(md_mbafile)//''': must be an .ini file.'
+         write (msgbuf, '(A)') 'Error while reading mass balance area file '''//trim(mass_balance_area_file)//''': must be an .ini file.'
          call err_flush()
 
       end if
@@ -95,13 +98,14 @@ contains
    end subroutine initialize_mass_balance_area_arrays
 
    !> Opens the mass balance area file and creates a tree structure from it.
-   subroutine open_mass_balance_area_file(mba_ptr)
+   subroutine open_mass_balance_area_file(mass_balance_area_file, mba_ptr)
       use m_flowtimes, only: ti_mba
       use m_unstruc_model_data, only: MBA_MAJOR_FILE_VERSION, MBA_MINOR_FILE_VERSION
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_create
 
       ! Arguments
+      character(len=*), intent(in) :: mass_balance_area_file !< Name of the mass balance area file.
       type(tree_data), pointer, intent(out) :: mba_ptr !< Pointer to the mass balance area tree structure.
 
       ! Local variables
@@ -115,11 +119,11 @@ contains
       minor = 0
 
       ! Read the mass balance area file and create the tree structure
-      call tree_create(md_mbafile, mba_ptr)
-      call prop_file('ini', md_mbafile, mba_ptr, istat)
+      call tree_create(mass_balance_area_file, mba_ptr)
+      call prop_file('ini', mass_balance_area_file, mba_ptr, istat)
 
       if (istat /= 0) then
-         write (msgbuf, '(A)') 'Error reading mass balance area file '''//trim(md_mbafile)//'''.'
+         write (msgbuf, '(A)') 'Error reading mass balance area file '''//trim(mass_balance_area_file)//'''.'
          call err_flush()
          return
       end if
@@ -135,11 +139,11 @@ contains
       call get_version_number(mba_ptr, major=major, minor=minor, success=success)
 
       if (.not. success) then
-         write (msgbuf, '(A)') 'File version number not found in mass balance area file '''//trim(md_mbafile)//'''.'
+         write (msgbuf, '(A)') 'File version number not found in mass balance area file '''//trim(mass_balance_area_file)//'''.'
          call warn_flush()
          return
       else if (major > MBA_MAJOR_FILE_VERSION .or. (major == MBA_MAJOR_FILE_VERSION .and. minor > MBA_MINOR_FILE_VERSION)) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported mass balance area file version in file '''//trim(md_mbafile)//'''. v', &
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported mass balance area file version in file '''//trim(mass_balance_area_file)//'''. v', &
                major, minor, 'Current format: v', MBA_MAJOR_FILE_VERSION, MBA_MINOR_FILE_VERSION, '.'
          call err_flush()
          return
@@ -148,11 +152,12 @@ contains
    end subroutine open_mass_balance_area_file
 
    !> Reads the mass balance area file and processes its blocks.
-   subroutine read_mass_balance_area_file(mba_ptr)
+   subroutine read_mass_balance_area_file(mass_balance_area_file, mba_ptr)
       use string_module, only: str_tolower
       use tree_structures, only: tree_num_nodes, tree_get_name
 
       ! Arguments
+      character(len=*), intent(in) :: mass_balance_area_file !< Name of the mass balance area file.
       type(tree_data), pointer, intent(in) :: mba_ptr !< Pointer to the mass balance area tree structure.
 
       ! Local variables
@@ -176,11 +181,11 @@ contains
             case ('massbalancearea')
 
                ! Read the mass balance area block
-               call read_mass_balance_area_block(block_ptr)
+               call read_mass_balance_area_block(mass_balance_area_file, block_ptr)
 
             case default
 
-               write (msgbuf, '(A)') 'Unknown block '''//trim(block_name)//''' in mass balance area file '''//trim(md_mbafile)//'''.'
+               write (msgbuf, '(A)') 'Unknown block '''//trim(block_name)//''' in mass balance area file '''//trim(mass_balance_area_file)//'''.'
                call warn_flush()
 
          end select
@@ -189,7 +194,7 @@ contains
    end subroutine read_mass_balance_area_file
 
    !> Reads a mass balance area block and updates the mass balance area definitions.
-   subroutine read_mass_balance_area_block(block_ptr)
+   subroutine read_mass_balance_area_block(mass_balance_area_file, block_ptr)
       use m_alloc, only: realloc
       use m_cell_geometry, only: xz, yz
       use m_find_name, only: find_name
@@ -202,6 +207,7 @@ contains
       use timespace, only: selectelset_internal_nodes, LOCTP_POLYGON_XY
 
       ! Arguments
+      character(len=*), intent(in) :: mass_balance_area_file !< Name of the mass balance area file.
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to the mass balance area block in the tree structure.
 
       ! Local variables
@@ -227,12 +233,12 @@ contains
       ! Get name and locationFile of mass balance area block
       call prop_get(block_ptr, '', 'name', name)
 
-      call read_polyline_coordinates(block_ptr, name, md_mbafile, '', 'massbalancearea', x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+      call read_polyline_coordinates(block_ptr, name, mass_balance_area_file, '', 'massbalancearea', x_coordinates, y_coordinates, z_coordinates, num_columns, success)
 
       if (success) then
          num_coordinates = size(x_coordinates)
       else
-         write (msgbuf, '(A)') 'Error reading location file for mass balance area '''//trim(name)//''' in mass balance area file '''//trim(md_mbafile)//'''.'
+         write (msgbuf, '(A)') 'Error reading location file for mass balance area '''//trim(name)//''' in mass balance area file '''//trim(mass_balance_area_file)//'''.'
          return
       end if
 
