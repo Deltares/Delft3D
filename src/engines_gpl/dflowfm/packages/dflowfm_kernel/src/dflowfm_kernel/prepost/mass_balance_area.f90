@@ -14,7 +14,7 @@
 !  GNU Affero General Public License for more details.
 !
 !  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.6
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
 !
 !  contact: delft3d.support@deltares.nl
 !  Stichting Deltares
