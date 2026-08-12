@@ -214,7 +214,7 @@ contains
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_names(i_ext), ''': [', group_name, ']. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(file_names(i_ext)), ''': [', trim(group_name), ']. Ignoring this block.'
                call warn_flush()
             end select
          end do
@@ -418,7 +418,7 @@ contains
       ! First check for required input:
       call prop_get(block_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
@@ -437,7 +437,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -446,7 +446,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -457,13 +457,13 @@ contains
          operand = convert_operand_string_to_integer(property_value)
 
          if (len_trim(property_value) == 1) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': operand value '''//trim(property_value)//''' is deprecated. ' &
                //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
 
          if (operand == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
          end if
@@ -1525,7 +1525,7 @@ contains
       ! Create the actual source/sink based on the parsed data
       call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
@@ -1633,7 +1633,6 @@ contains
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
-      character(len=:), allocatable :: id !< Bubblescreen id
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
@@ -1679,7 +1678,7 @@ contains
             if (is_successful) then
                if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
                   if (any(polygon_z_coordinates /= dmiss)) then
-                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(bubblescreen%id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
                         'use zLevel to specify Bubblescreen location.'
                      call warn_flush()
                   end if
