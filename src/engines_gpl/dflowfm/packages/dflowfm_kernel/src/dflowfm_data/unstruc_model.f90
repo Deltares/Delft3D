@@ -50,6 +50,12 @@ module unstruc_model
    integer, private :: ifixedweirscheme_input !< input value of ifixedweirscheme in mdu file
    real(kind=dp), private :: cdb_user(2) !< User provided Charnock coefficient (and optionally the viscous term)
 
+   interface notify_default_change
+      module procedure notify_default_change_int
+      module procedure notify_default_change_real
+      module procedure notify_default_change_char
+   end interface
+   private :: notify_default_change, notify_default_change_int, notify_default_change_real, notify_default_change_char, notify_default_change_impl
 contains
 
 !> Resets current model variables, generally prior to loading a new MDU.
@@ -738,7 +744,7 @@ contains
       sl = slotw1D
 
       call prop_get(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
-      
+
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
 
@@ -821,6 +827,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
       call prop_get(md_ptr, 'geometry', 'circumcenterMethod', md_circumcenter_method, success)
+      call notify_default_change('geometry', 'circumcenterMethod', '2026.02', 'allNetlinksLoop', md_circumcenter_method, success)
       circumcenter_method = extract_circumcenter_method(md_circumcenter_method, success)
       call prop_get(md_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, success)
 
@@ -991,7 +998,10 @@ contains
          end if
       end if !jaextrapbl
       call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
-      call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow)
+      call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow, success)
+      if (kmx > 0) then
+         call notify_default_change('numerics', 'keepSTBndOnOutflow', '2026.01', 1, keepstbndonoutflow, success)
+      end if
       call prop_get(md_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd)
       call prop_get(md_ptr, 'numerics', 'tSpinupTurbLogProf', t_spinup_turb_log_prof)
       call prop_get(md_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin)
@@ -1042,7 +1052,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
-      call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
+      call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd, success)
+      if (kmx > 0) then
+         call notify_default_change('numerics', 'barocPOnBnd', '2026.01', 1, jaBarocponbnd, success)
+      end if
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
@@ -1220,7 +1233,7 @@ contains
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
       wall_z0 = wall_ks / 30.0_dp
-      
+
       call prop_get(md_ptr, 'physics', 'TidalForcing', jatidep)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading', jaselfal)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading_correct_wl_with_ini', jaSELFALcorrectWLwithIni)
@@ -1260,7 +1273,7 @@ contains
       call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2))
 
       diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
-      
+
       if (secchi_depth(2) > 0) then
          diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
          secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
@@ -1344,7 +1357,7 @@ contains
       if (jadpuopt == 2 .and. jased /= 4) then
          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and sedimentModelNr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
       end if
-      
+
       call prop_get(md_ptr, 'sediment', 'sedFile', md_sedfile, success)
       call prop_get(md_ptr, 'sediment', 'morFile', md_morfile, success)
       stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased == 4)
@@ -1427,7 +1440,7 @@ contains
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
             ti_st_array = 0.0_dp
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-            
+
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
@@ -1452,7 +1465,7 @@ contains
       if (success) then
          if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
             call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
-         elseif (.not. ANY(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE,SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
+         elseif (.not. any(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE, SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
             call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod can only be set to 0, 1 or 2')
          end if
          if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
@@ -1507,7 +1520,10 @@ contains
       end if
 
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
-      call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
+      call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased, success)
+      if (kmx == 0) then
+         call notify_default_change('wind', 'windHuOrZwsBased', '2026.01', 0, jawindhuorzwsbased, success)
+      end if
       call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
 
       call prop_get(md_ptr, 'wind', 'Rhoair', rhoair)
@@ -1757,18 +1773,18 @@ contains
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
 
       if (allocated(extfile_new_list)) then
-         deallocate(extfile_new_list)
+         deallocate (extfile_new_list)
       end if
 
-      if (len_trim(md_extfile_new) > 0) then        
+      if (len_trim(md_extfile_new) > 0) then
          call strsplit(md_extfile_new, 1, extfile_new_list, 1)
       end if
 
       if (.not. allocated(extfile_new_list)) then
          ! If no new external forcing files were specified, allocate an empty list so functions can still 'loop' over this list.
-         allocate(extfile_new_list(0))
+         allocate (extfile_new_list(0))
       end if
-      
+
       ! IniFieldFile is treated entirely by ExtForceFileNew code (during deprecation phase)
       if (len_trim(md_inifieldfile) > 0) then
          call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
@@ -1851,7 +1867,7 @@ contains
          call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
          call set_time_interval(ti_com_array, ti_coms, ti_com, ti_come, tstart_user, tstop_user, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
-   
+
          call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
          if (success) then
             ti_com = huge(0.0_hp)
@@ -1885,11 +1901,19 @@ contains
       call prop_get(md_ptr, 'output', 'NcFormat', md_ncformat, success)
       call unc_set_ncformat(md_ncformat)
       call prop_get(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+      if (ti_map > 0.0_dp .and. md_mapformat == IFORMAT_UGRID) then
+         call notify_default_change('output', 'ncMapDataPrecision', '2026.02', 'single', md_nc_map_precision, success)
+      end if
+
       if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
          call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
       end if
-      
+
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+      if (ti_his > 0.0_dp) then
+         call notify_default_change('output', 'ncHisDataPrecision', '2026.02', 'single', md_nc_his_precision, success)
+      end if
+
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
          call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
@@ -2208,14 +2232,14 @@ contains
             call mess(LEVEL_WARN, '''EulerVelocities'' is set to 0, because 3Dstokesprofile is set to 0.')
             jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          end if
-      end if     
+      end if
 
       if (jawave == WAVE_SURFBEAT) then ! not for Delta Shell
          call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
          call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
          ti_wav_array = 0.0_dp
          call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
-         
+
          if (ti_wav_array(2) < 0.0_dp) then
             ti_wav_array(2) = 0.0_dp
             ti_wav_array(3) = 0.0_dp
@@ -2483,7 +2507,7 @@ contains
    subroutine create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
       use MessageHandling, only: mess, LEVEL_FATAL
       use m_alloc, only: aerr
-      
+
       ! Parameters
       real(kind=dp), allocatable, intent(inout) :: map_classes_ucdir(:) !< the constructed classes
       real(kind=dp), intent(in) :: map_classes_ucdirstep !< the input step size
@@ -2508,7 +2532,7 @@ contains
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
-      
+
    end subroutine create_direction_classes
 
 !> Write a model definition to a file.
@@ -2597,7 +2621,7 @@ contains
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
-      if (md_convertlongculverts /= 1) then !> hidden keyword, only write when not default.      
+      if (md_convertlongculverts /= 1) then !> hidden keyword, only write when not default.
          call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Whether or not (1/0) to convert long culvert input to 1D2D long culverts')
       end if
       ! Geometry
@@ -2991,7 +3015,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
       end if
       if (writeall .or. Noderivedtypes > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes,  '0=use der. types. , 1,2,3,4,5 etc = do use them')
+         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes, '0=use der. types. , 1,2,3,4,5 etc = do use them')
       end if
       if (writeall .or. jposhchk /= 2) then
          call prop_set(prop_ptr, 'numerics', 'jposhchk', jposhchk, 'Check for positive waterdepth (0: no, 1: 0.7*dts, just redo, 2: 1.0*dts, close all links, 3: 0.7*dts, close all links, 4: 1.0*dts, reduce au, 5: 0.7*dts, reduce au, 6: 1.0*dts, close outflowing links, 7: 0.7*dts, close outflowing links)')
@@ -3394,7 +3418,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
       call prop_set(prop_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
-         call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')      
+         call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
       call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
       call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
@@ -3403,7 +3427,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
       call prop_set(prop_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
       call prop_set(prop_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
-      
+
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
          call prop_set(prop_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')
@@ -3474,7 +3498,7 @@ contains
 
       if (jaspacevarcharn .and. (wind_drag_type /= CD_TYPE_CHARNOCK1955 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS)) then
          write (msgbuf, '(a,i0,a)') &
-            'Inconsistent configuration: a time- and space-varying Charnock coefficient was ' // &
+            'Inconsistent configuration: a time- and space-varying Charnock coefficient was '// &
             'specified in the .ext file, but [wind] ICdtyp is set to ', &
             wind_drag_type, '. Expected ICdtyp = 4 (Charnock) or 8 (Charnock + viscous term).'
          call mess(LEVEL_ERROR, msgbuf)
@@ -3717,7 +3741,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'OutputDir', trim(md_OutputDir), 'Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.')
       call prop_set(prop_ptr, 'output', 'FlowGeomFile', trim(md_flowgeomfile), 'Flow geometry NetCDF *_flowgeom.nc')
-      
+
       call prop_set(prop_ptr, 'output', 'ObsFile', trim(md_obsfile), 'Points file *.xyn with observation stations with rows x, y, station name')
       call prop_set(prop_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, '0 - do not delete, 1 - delete')
       call prop_set(prop_ptr, 'output', 'CrsFile', trim(md_crsfile), 'Polyline file *_crs.pli defining observation cross sections')
@@ -4030,8 +4054,8 @@ contains
 
    !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, as read from the MDU file.
    ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
-   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 
-   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds. 
+   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the
+   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds.
    ! If `read_interval_input` is `.false.`. Don't read `interval_input`, and only set the defaults.
    subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, read_interval_input, interval_name)
       use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
@@ -4039,8 +4063,11 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: interval_input(3)
-      real(kind=dp), intent(out) :: interval_start, interval_step, interval_end
-      real(kind=dp), intent(in) :: simulation_start, simulation_stop
+      real(kind=dp), intent(out) :: interval_start
+      real(kind=dp), intent(out) :: interval_step
+      real(kind=dp), intent(out) :: interval_end
+      real(kind=dp), intent(in) :: simulation_start
+      real(kind=dp), intent(in) :: simulation_stop
       logical, intent(in) :: read_interval_input
       character(len=*), optional, intent(in) :: interval_name
 
@@ -4048,7 +4075,7 @@ contains
 
       interval_name_ = ''
       if (present(interval_name)) then
-         interval_name_ = ' ' // trim(interval_name)  ! Prepend extra space to get nice string formatting.
+         interval_name_ = ' '//trim(interval_name) ! Prepend extra space to get nice string formatting.
       end if
 
       ! If `read_interval_input` is `.false.`: Only set `interval_start/stop` to `simulation_start/stop`.
@@ -4060,24 +4087,24 @@ contains
 
       interval_step = interval_input(1)
 
-      if (.not. equal(interval_input(2), 0.0_dp)) then  ! A value of zero means: Use `simulation_start`.
+      if (.not. equal(interval_input(2), 0.0_dp)) then ! A value of zero means: Use `simulation_start`.
          if (simulation_start <= interval_input(2) .and. interval_input(2) <= simulation_stop) then
             interval_start = interval_input(2)
          else
-            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Start time (', floor(interval_input(2)), &
-               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
-               '). Setting' // trim(interval_name_) // ' start time to TStart.'
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid'//trim(interval_name_)//': Start time (', floor(interval_input(2)), &
+               ') must lie between TStart (', floor(simulation_start), ') and TStop (', floor(simulation_stop), &
+               '). Setting'//trim(interval_name_)//' start time to TStart.'
             call warn_flush()
          end if
       end if
 
-      if (.not. equal(interval_input(3), 0.0_dp)) then  ! A value of zero means: Use `simulation_stop`.
+      if (.not. equal(interval_input(3), 0.0_dp)) then ! A value of zero means: Use `simulation_stop`.
          if (simulation_start <= interval_input(3) .and. interval_input(3) <= simulation_stop) then
             interval_end = interval_input(3)
          else
-            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Stop time (', floor(interval_input(3)), &
-               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
-               '). Setting' // trim(interval_name_) // ' stop time to TStop.'
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid'//trim(interval_name_)//': Stop time (', floor(interval_input(3)), &
+               ') must lie between TStart (', floor(simulation_start), ') and TStop (', floor(simulation_stop), &
+               '). Setting'//trim(interval_name_)//' stop time to TStop.'
             call warn_flush()
          end if
       end if
@@ -4222,6 +4249,111 @@ contains
       end if
 
    end subroutine set_output_time_vector
+
+   subroutine notify_default_change_int(chapter, keyword, release_version, new_default, user_value, keyword_is_specified)
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      integer, intent(in) :: new_default
+      integer, intent(in) :: user_value
+      logical, intent(in) :: keyword_is_specified
+
+      character(len=64) :: new_default_str, user_value_str
+
+      write (new_default_str, '(i0)') new_default
+      write (user_value_str, '(i0)') user_value
+
+      call notify_default_change_impl( &
+         chapter, keyword, release_version, &
+         trim(new_default_str), trim(user_value_str), &
+         keyword_is_specified, user_value /= new_default, .false.)
+
+   end subroutine notify_default_change_int
+
+   subroutine notify_default_change_real(chapter, keyword, release_version, new_default, user_value, keyword_is_specified)
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      real(kind=dp), intent(in) :: new_default
+      real(kind=dp), intent(in) :: user_value
+      logical, intent(in) :: keyword_is_specified
+
+      character(len=64) :: new_default_str, user_value_str
+
+      write (new_default_str, '(g0)') new_default
+      write (user_value_str, '(g0)') user_value
+
+      call notify_default_change_impl( &
+         chapter, keyword, release_version, &
+         trim(new_default_str), trim(user_value_str), &
+         keyword_is_specified, comparereal(user_value, new_default) /= 0, .false.)
+
+   end subroutine notify_default_change_real
+
+   subroutine notify_default_change_char(chapter, keyword, release_version, new_default, user_value, keyword_is_specified)
+
+      use string_module, only: strcmpi
+
+      character(len=*), intent(in) :: chapter
+      character(len=*), intent(in) :: keyword
+      character(len=*), intent(in) :: release_version
+      character(len=*), intent(in) :: new_default
+      character(len=*), intent(in) :: user_value
+      logical, intent(in) :: keyword_is_specified
+
+      call notify_default_change_impl( &
+         chapter, keyword, release_version, &
+         trim(new_default), trim(user_value), &
+         keyword_is_specified,.not. strcmpi(trim(user_value), trim(new_default)), .true.)
+
+   end subroutine notify_default_change_char
+
+   !> Inform user about changed default values, if applicable. To make users aware
+   !! they're not using the currently recommended settings.
+   !!
+   !! When user has not provided a particular keyword, always inform about the changed
+   !! default. When user has provided a particular keyword, only inform if that value
+   !! is not the same as the current default. 
+   subroutine notify_default_change_impl(chapter, keyword, release_version, new_default, user_value, &
+                                         keyword_is_specified, values_differ, quote_values)
+
+      character(len=*), intent(in) :: chapter !< Block name in MDU under which this keyword appeared.
+      character(len=*), intent(in) :: keyword !< Keyword name.
+      character(len=*), intent(in) :: release_version !< Release version in which the default changed.
+      character(len=*), intent(in) :: new_default !< Current default value (string representation)
+      character(len=*), intent(in) :: user_value !< Value provided in user input (string representation)
+      logical, intent(in) :: keyword_is_specified !< Whether or not a non-empty value was in user's input at all.
+      logical, intent(in) :: values_differ !< Whether or not the user's and default value differ.
+      logical, intent(in) :: quote_values !< Whether or not to quote the values in the printed messages.
+
+      character(len=1024) :: default_value_text, user_value_text
+
+      if (quote_values) then
+         default_value_text = '"'//trim(new_default)//'"'
+         user_value_text = '"'//trim(user_value)//'"'
+      else
+         default_value_text = trim(new_default)
+         user_value_text = trim(user_value)
+      end if
+
+      if (.not. keyword_is_specified) then
+         msgbuf = 'Keyword ['//trim(chapter)//'] '//trim(keyword)//' is not specified. Since release '//trim(release_version)// &
+                  ', the default value is '//trim(default_value_text)//'. Results may differ from older releases.'
+         call mess(LEVEL_INFO, trim(msgbuf))
+         return
+      end if
+
+      if (.not. values_differ) then
+         return
+      end if
+
+      msgbuf = 'The default value of ['//trim(chapter)//'] '//trim(keyword)//' changed in release '//trim(release_version)// &
+               ' to '//trim(default_value_text)//'. The current model uses: '//trim(user_value_text)//'. Consider using the new default.'
+      call mess(LEVEL_INFO, trim(msgbuf))
+
+   end subroutine notify_default_change_impl
 
    !> Validate the user input for the density formula
    subroutine validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
