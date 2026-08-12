@@ -59,6 +59,7 @@ contains
       logical, pointer :: lfbedfrmCFL
       logical, pointer :: lfbedfrmADV
       logical, pointer :: lfbdfmor
+      logical, pointer :: seddia_from_bfm
       !
       integer, pointer :: bedformheighttype
       integer, pointer :: bedformlengthtype
@@ -93,6 +94,7 @@ contains
       lfbedfrmCFL => bfmpar%lfbedfrmCFL
       lfbedfrmADV => bfmpar%lfbedfrmADV
       lfbdfmor => bfmpar%lfbdfmor
+      seddia_from_bfm => bfmpar%seddia_from_bfm
       !
       bedformheighttype => bfmpar%bedformheighttype
       bedformlengthtype => bfmpar%bedformlengthtype
@@ -137,6 +139,7 @@ contains
       lfbdfmor = .false.
       lfbedfrmADV = .true.
       lfbedfrmCFL = .false.
+      seddia_from_bfm = .false.
       !
       bedformheighttype = 0
       bedformlengthtype = 0
