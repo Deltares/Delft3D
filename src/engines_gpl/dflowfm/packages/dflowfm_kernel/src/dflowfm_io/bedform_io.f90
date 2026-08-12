@@ -214,6 +214,7 @@ contains
       logical, pointer :: lfbedfrmADV
       logical, pointer :: lfbdfmor
       logical, pointer :: spatial_bedform
+      logical, pointer :: seddia_from_bfm
       integer, pointer :: bedformheighttype
       integer, pointer :: bedformlengthtype
       integer, pointer :: bdfrpt
@@ -283,6 +284,7 @@ contains
       bdfrlxtype => bfmpar%bdfrlxtype
       bdfuni => bfmpar%bdfuni
       spatial_bedform => bfmpar%spatial_bedform
+      seddia_from_bfm => bfmpar%seddia_from_bfm
       flnmD50 => bfmpar%flnmD50
       flnmD90 => bfmpar%flnmD90
       bedformheighttype => bfmpar%bedformheighttype
@@ -313,7 +315,9 @@ contains
       !
       ! Read Bedform sediment diameter
       !
-      if (.not. stm_included) then
+      call prop_get(md_bfmptr, 'bedform', 'SedDiaFromBfm', seddia_from_bfm, success)
+      !
+      if (.not. stm_included .or. (stm_included .and. seddia_from_bfm)) then
          call prop_get(md_bfmptr, 'bedform', 'BdfD50', flnmD50, successD50)
          call prop_get(md_bfmptr, 'bedform', 'BdfD90', flnmD90, successD90)
          !
@@ -349,7 +353,7 @@ contains
             end if
          end if
          if (istat /= 0) then
-            call write_error('RDBEDFORMPAR: Could not allocate memory for D50/D90 arrays', unit=mdia)
+            call write_error('bedform_io::fm_rdbedformpar: Could not allocate memory for D50/D90 arrays', unit=mdia)
             error = .true.
             return
          end if
@@ -365,7 +369,7 @@ contains
             if (.not. existD50) then
                call prop_get(md_bfmptr, 'bedform', 'BdfD50', bedformD50(1), success)
                if (.not. success) then
-                  write (errmsg, '(a,a,a)') 'Error in rdbedformpar: ', trim(flnmD50), ' is not a file and not a value.'
+                  write (errmsg, '(a,a,a)') 'Error in bedform_io::fm_rdbedformpar: ', trim(flnmD50), ' is not a file and not a value.'
                   call write_error(errmsg, unit=mdia)
                   error = .true.
                   return
@@ -390,7 +394,7 @@ contains
             if (.not. existD90) then
                call prop_get(md_bfmptr, 'bedform', 'BdfD90', bedformD90(1), success)
                if (.not. success) then
-                  write (errmsg, '(a,a,a)') 'Error in rdbedformpar: ', trim(flnmD90), ' is not a file and not a value.'
+                  write (errmsg, '(a,a,a)') 'Error in bedform_io::fm_rdbedformpar: ', trim(flnmD90), ' is not a file and not a value.'
                   call write_error(errmsg, unit=mdia)
                   error = .true.
                   return
@@ -437,6 +441,9 @@ contains
       !
       write (mdia, '(a)') '*** Start of bedform input'
       !
+      if (.not. lfbedfrm) then
+         write (mdia, '(a)') 'Bedform height predictor not active in present simulation.'
+      end if
       if (.not. stm_included) then
          write (mdia, '(a)') 'Morphology module not active in present simulation.'
          txtput1 = 'Using characteristic sediment diameters'
@@ -484,7 +491,7 @@ contains
       end if
       !
       if (istat /= 0) then
-         write (errmsg, '(a)') 'Error in rdbedformpar: could not allocate memory.'
+         write (errmsg, '(a)') 'Error in bedform_io::fm_rdbedformpar: could not allocate memory.'
          call write_error(errmsg, unit=mdia)
          error = .true.
          return
@@ -580,7 +587,7 @@ contains
          call prop_get(md_bfmptr, 'bedform', 'BdfaH', hdpar(1))
          call prop_get(md_bfmptr, 'bedform', 'BdfbH', hdpar(2))
          if (hdpar(1) <= 0.0) then
-            write (errmsg, '(a)') 'Error in rdbedformpar: bedform height BdfaH <= 0.0 m.'
+            write (errmsg, '(a)') 'Error in bedform_io::fm_rdbedformpar: bedform height BdfaH <= 0.0 m.'
             call write_error(errmsg, unit=mdia)
             error = .true.
             return
@@ -610,7 +617,7 @@ contains
          txtput2 = 'T_H = L_H / C_H'
       case ('lhchhmax')
          if (.not. stm_included) then
-            write (errmsg, '(a)') 'Error in rdbedformpar: lhchhmax bedfrom relaxation specified without sediment transport.'
+            write (errmsg, '(a)') 'Error in bedform_io::fm_rdbedformpar: lhchhmax bedfrom relaxation specified without sediment transport.'
             call write_error(errmsg, unit=mdia)
             error = .true.
             return
@@ -751,7 +758,7 @@ contains
          call prop_get(md_bfmptr, 'bedform', 'BdfaL', ldpar(1))
          call prop_get(md_bfmptr, 'bedform', 'BdfbL', ldpar(2))
          if (ldpar(1) <= 0.0) then
-            write (errmsg, '(a)') 'Error in rdbedformpar: Dune length coefficients in .mdu <= 0.0 m.'
+            write (errmsg, '(a)') 'Error in bedform_io::fm_rdbedformpar: Dune length coefficients in .mdu <= 0.0 m.'
             call write_error(errmsg, unit=mdia)
             error = .true.
             return
@@ -792,7 +799,7 @@ contains
       if (.not. lfbedfrm .and. bdfrpt == 0) then
          txtput2 = 'Van Rijn (2007)'
       end if
-      txtput1 = 'Dune roughness height predictor'
+      txtput1 = 'Bedform roughness height predictor'
       write (mdia, '(a,a,a)') txtput1, ': ', txtput2
       ! if Bdf keyword turned out to be NO, then bdfrpt will be 0 (Van Rijn 2004).
       ! read those parameters
@@ -815,7 +822,7 @@ contains
          call prop_get(md_bfmptr, 'bedform', 'BdfMrR', kdpar(5))
          call prop_get(md_bfmptr, 'bedform', 'BdfDnR', kdpar(6))
          !
-         !if (lfbedfrm) then
+         !if (lfbedfrm) then                   JRE: always needed I think
             txtput1 = '  Ripple calibration (-)'
             write (mdia, '(a,a,e20.4)') txtput1, ':', kdpar(1)
             txtput1 = '  Ripple relaxation factor (-)'
@@ -838,7 +845,7 @@ contains
          call prop_get(md_bfmptr, 'bedform', 'BdfaR', kdpar(1))
          call prop_get(md_bfmptr, 'bedform', 'BdfbR', kdpar(2))
          if (kdpar(1) <= 0.0) then
-            write (errmsg, '(a)') 'Error in rdbedformpar: Dune roughness coefficients <= 0.0 m.'
+            write (errmsg, '(a)') 'Error in bedform_io::fm_rdbedformpar: Dune roughness coefficients <= 0.0 m.'
             call write_error(errmsg, unit=mdia)
             error = .true.
             return

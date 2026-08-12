@@ -677,6 +677,7 @@ contains
       use m_setucxucy_mor, only: setucxucy_mor
       !
       logical, pointer :: spatial_bedform
+      logical, pointer :: seddia_from_bfm
       real(fp), dimension(:), pointer :: sedd50
       real(fp), dimension(:), pointer :: sedd50fld
       real(fp), dimension(:), pointer :: sedd90
@@ -717,6 +718,7 @@ contains
       bedformD50 => bfmpar%bedformD50
       bedformD90 => bfmpar%bedformD90
       spatial_bedform => bfmpar%spatial_bedform
+      seddia_from_bfm => bfmpar%seddia_from_bfm
       duneheight => bfmpar%duneheight
       dunelength => bfmpar%dunelength
       rksr => bfmpar%rksr
@@ -855,7 +857,9 @@ contains
                   uwbih = 0.0_fp
                end if
 
-               if (stm_included) then
+               if (stm_included .and. (.not. seddia_from_bfm)) then
+                  d50l = 0.0002_fp    ! provide default values
+                  d90l = 0.0003_fp
                   if (lsedtot > 0) then
                      d50l = dxx(k, i50)
                      d90l = dxx(k, i90)
