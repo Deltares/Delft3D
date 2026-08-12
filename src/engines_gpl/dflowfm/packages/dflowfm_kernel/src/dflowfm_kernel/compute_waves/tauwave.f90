@@ -74,7 +74,7 @@ contains
       waveps = 1.0e-4_dp ! see taubot
       astarc = 30.*pi**2 ! critical value for astar
       fsqrtt = sqrt(0.5_dp)
-      javegczu = javeg > 1 .and. jabaptist > 1
+      javegczu = javeg == 1 .and. jabaptist > 1
 
       ! parameterized bottom friction models
 
