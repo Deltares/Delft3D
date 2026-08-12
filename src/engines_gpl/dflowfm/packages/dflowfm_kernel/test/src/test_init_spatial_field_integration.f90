@@ -3,7 +3,7 @@ module test_init_spatial_fields_integration
    use iso_c_utils, only: cstr
    use fm_external_forcings, only: init_spatial_fields
    use m_meteo, only: initialize_ec_module, jarain
-   use m_wind, only: rain
+   use m_wind, only: air_pressure, rain
    use m_cell_geometry, only: xz, yz, ndx
    use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
@@ -42,6 +42,7 @@ contains
       if (allocated(yz)) deallocate (yz)
       if (allocated(kcs)) deallocate (kcs)
       if (allocated(rain)) deallocate (rain)
+      if (allocated(air_pressure)) deallocate (air_pressure)
    end subroutine teardown_minimal_grid
 
    !> Parse a mini ext-file containing a single [Spatial] block and return
@@ -403,6 +404,67 @@ contains
       call f90_expect_true(ecInstancePtr%nItems > 0, "EC instance should have at least one registered item after init_spatial_fields")
       call teardown_minimal_grid()
    end subroutine test_rainfall_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airpressure_bcascii_uses_generic_source_fallback, test_airpressure_bcascii_uses_generic_source_fallback,
+   !> Verifies that a simple recognized scalar can use the generic source-item
+   !! connection when its provider-specific source mapping does not support BC.
+   subroutine test_airpressure_bcascii_uses_generic_source_fallback() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_atmosphericpressure
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      real(dp) :: value_at_t0, value_at_t50
+      character(len=*), parameter :: AIRPRESSURE_BC = "test_airpressure.bc"
+      character(len=*), parameter :: AIRPRESSURE_EXT = "test_airpressure.ext"
+
+      call create_file(AIRPRESSURE_BC, [ &
+                       "[General]", &
+                       "    fileVersion           = 1.01", &
+                       "    fileType              = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name                  = global", &
+                       "    function              = timeseries", &
+                       "    timeInterpolation     = linear", &
+                       "    quantity              = time", &
+                       "    unit                  = seconds since 2000-01-01 00:00:00", &
+                       "    quantity              = airpressure", &
+                       "    unit                  = Pa", &
+                       "    0    101325.0", &
+                       "    100  101300.0"])
+
+      call create_file(AIRPRESSURE_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = airpressure", &
+                       "    forcingFile     = "//AIRPRESSURE_BC, &
+                       "    forcingFileType = bcascii"])
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(AIRPRESSURE_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, AIRPRESSURE_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "init_spatial_fields should use the generic fallback for bcascii airpressure")
+      call f90_expect_true(item_atmosphericpressure /= -999, "airpressure should have an EC target item")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 0.0_dp)
+      value_at_t0 = air_pressure(1)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 50.0_dp)
+      value_at_t50 = air_pressure(1)
+
+      call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "airpressure at t=0 should be read from the BC file")
+      call f90_expect_near(value_at_t50, 101312.5_dp, 1.0e-6_dp, "airpressure at t=50 should be linearly interpolated")
+
+      call teardown_minimal_grid()
+   end subroutine test_airpressure_bcascii_uses_generic_source_fallback
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_unknown_quantity_returns_error, test_unknown_quantity_returns_error,

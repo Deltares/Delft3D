@@ -137,6 +137,7 @@ contains
 
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress, quantity_found
+      logical :: source_connection_created
 
       real(kind=dp) :: relrow, relcol
       real(kind=dp), allocatable :: transformcoef(:)
@@ -694,6 +695,7 @@ contains
       sourceItemId_2 = 0
       sourceItemId_3 = 0
       sourceItemId_4 = 0
+      source_connection_created = .false.
 
       select case (str_tolower(trim(target_name)))
       case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
@@ -761,6 +763,9 @@ contains
          if (.not. ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)) then
             return
          end if
+         if (sourceItemName == ' ') then
+            source_connection_created = .true.
+         end if
       case ('qhbnd')
          if ((.not. checkFileType(ec_filetype, provFile_poly_tim, target_name)) .and. &
              (.not. checkFileType(ec_filetype, provFile_qhtable, target_name)) .and. &
@@ -795,6 +800,7 @@ contains
             if (.not. success) then
                goto 1234
             end if
+            source_connection_created = .true.
          end if
       case ('velocitybnd', 'dischargebnd', 'waterlevelbnd', 'salinitybnd', 'tracerbnd', &
             'neumannbnd', 'riemannbnd', 'absgenbnd', 'outflowbnd', &
@@ -821,7 +827,7 @@ contains
          else if (ec_filetype == provFile_curvi) then
             sourceItemName = 'curvi_source_item_1'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity rainfall.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for special quantity rainfall; provider-specific time conversion is required.')
             return
          end if
          if (.not. (ecQuantitySet(ecInstancePtr, quantityId, timeint=timeint_rainfall))) then
@@ -838,7 +844,7 @@ contains
          else if (ec_filetype == provFile_curvi) then
             sourceItemName = 'curvi_source_item_1'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity rainfall_rate.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for special quantity rainfall_rate; provider-specific time conversion is required.')
             return
          end if
       case ('hrms', 'tp', 'tps', 'rtp', 'dir', 'fx', 'fy', 'wsbu', 'wsbv', 'mx', 'my', 'dissurf', 'diswcap', 'ubot')
@@ -861,82 +867,6 @@ contains
          ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
          ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
-      case ('airpressure', 'atmosphericpressure')
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = 'wind_p'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_spiderweb) then
-            sourceItemName = 'p_drop'
-         else if (ec_filetype == provFile_netcdf) then
-            ! the arc-info file contains 'air_pressure', which is also the standard_name
-            sourceItemName = 'air_pressure'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity wind_p.')
-            return
-         end if
-      case ('pseudoairpressure')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'air_pressure'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-      case ('waterlevelcorrection')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'sea_surface_height'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-      case ('windx')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = 'wind_u'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'eastward_wind'
-         else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'WINDX'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windx.')
-            return
-         end if
-      case ('windy')
-         ! the name of the source item depends on the file reader
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = 'wind_v'
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'northward_wind'
-         else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'WINDY'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windy.')
-            return
-         end if
-      case ('stressx')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_downward_eastward_stress'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: stressx only implemented for NetCDF.')
-            return
-         end if
-      case ('stressy')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_downward_northward_stress'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: stressy only implemented for NetCDF.')
-            return
-         end if
       case ('stressxy')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_downward_eastward_stress')
@@ -964,36 +894,10 @@ contains
          if (success) then
             success = ecAddItemConnection(ecInstancePtr, item_stressxy_y, connectionId)
          end if
-      case ('charnock')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
-            if (success) then
-               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
+         if (.not. success) then
+            goto 1234
          end if
-         if (success) then
-            success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
-         end if
-         if (success) then
-            success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
-         end if
-      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'friction_coefficient'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent frictioncoefficient only implemented for NetCDF.')
-            return
-         end if
-      case ('secchidepth')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'secchi_depth'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent secchidepth only implemented for NetCDF.')
-            return
-         end if
+         source_connection_created = .true.
       case ('windxy')
          ! special case: m:n converter, (for now) handle here in case switch
          if (ec_filetype == provFile_unimagdir) then
@@ -1052,6 +956,10 @@ contains
          if (success) then
             success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
          end if
+         if (.not. success) then
+            goto 1234
+         end if
+         source_connection_created = .true.
       case ('airpressure_windx_windy', 'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy')
          withCharnock = (target_name == 'airpressure_windx_windy_charnock')
          withStress = (target_name == 'airpressure_stressx_stressy')
@@ -1146,6 +1054,7 @@ contains
          if (.not. success) then
             goto 1234
          end if
+         source_connection_created = .true.
       case ('humidity_airtemperature_cloudiness')
          ! special case: m:n converter, (for now) handle seperately
          if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform .or. ec_filetype == provFile_netcdf) then
@@ -1205,6 +1114,7 @@ contains
             if (.not. success) then
                goto 1234
             end if
+            source_connection_created = .true.
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity humidity_airtemperature_cloudiness.')
             return
@@ -1285,6 +1195,7 @@ contains
          if (.not. success) then
             goto 1234
          end if
+         source_connection_created = .true.
       case ('dewpoint_airtemperature_cloudiness')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'dew_point_temperature')
@@ -1330,6 +1241,10 @@ contains
          if (success) then
             success = ecAddItemConnection(ecInstancePtr, item_dac_cloudiness, connectionId)
          end if
+         if (.not. success) then
+            goto 1234
+         end if
+         source_connection_created = .true.
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'dew_point_temperature')
@@ -1382,70 +1297,10 @@ contains
          if (success) then
             success = ecAddItemConnection(ecInstancePtr, item_dacs_solar_radiation, connectionId)
          end if
-      case ('humidity')
-         sourceItemName = 'relative_humidity'
-      case ('dewpoint')
-         sourceItemName = 'dew_point_temperature'
-      case ('airtemperature')
-         if (ec_filetype == provFile_uniform) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
-            if (sourceItemId == ec_undef_int) then
-               goto 1234
-            end if
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) then
-               success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_air_temperature)
-            end if
-            if (success) then
-               success = ecAddItemConnection(ecInstancePtr, item_air_temperature, connectionId)
-            end if
-         elseif (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            if (success) then
-               success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_air_temperature)
-            end if
-            if (success) then
-               success = ecAddItemConnection(ecInstancePtr, item_air_temperature, connectionId)
-            end if
-            if (.not. success) then
-               goto 1234
-            end if
-         else
-            sourceItemName = 'air_temperature'
+         if (.not. success) then
+            goto 1234
          end if
-      case ('cloudiness')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'cloud_area_fraction'
-         else
-            sourceItemName = 'cloudiness'
-         end if
-      case ('airdensity')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
-            return
-         end if
-         if (success) then
-            success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_air_density)
-         end if
-         if (success) then
-            success = ecAddItemConnection(ecInstancePtr, item_air_density, connectionId)
-         end if
-      case ('solarradiation')
-         if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_downwelling_shortwave_flux_in_air'
-         else
-            sourceItemName = 'sw_radiation_flux'
-         end if
-      case ('longwaveradiation')
-         sourceItemName = 'surface_net_downward_longwave_flux'
-      case ('sensibleheatflux')
-         sourceItemName = 'surface_upward_sensible_heat_flux'
-      case ('latentheatflux')
-         sourceItemName = 'surface_upward_latent_heat_flux'
+         source_connection_created = .true.
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')
@@ -1472,6 +1327,10 @@ contains
          if (success) then
             success = ecAddItemConnection(ecInstancePtr, item_nudge_salinity, connectionId)
          end if
+         if (.not. success) then
+            goto 1234
+         end if
+         source_connection_created = .true.
       case ('waqfunction')
          if (ec_filetype == provFile_uniform) then
             sourceItemName = 'uniform_item'
@@ -1493,77 +1352,8 @@ contains
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = name(14:)
          end if
-      case ('bedrock_surface_elevation', 'sea_ice_area_fraction', 'sea_ice_thickness')
-         if (ec_filetype == provFile_arcinfo) then
-            sourceItemName = name
-         else if (ec_filetype == provFile_curvi) then
-            sourceItemName = 'curvi_source_item_1'
-         else if (ec_filetype == provFile_netcdf) then
-            sourceItemName = name
-         else if (ec_filetype == provFile_uniform) then
-            sourceItemName = 'uniform_item'
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(name)//'.')
-            return
-         end if
       case default
-         fileReaderPtr => ecFindFileReader(ecInstancePtr, fileReaderId)
-         if (fileReaderPtr%nitems >= 1) then
-            sourceItemId = fileReaderPtr%items(1)%ptr%id
-            if (success) then
-               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-            end if
-            if (success) then
-               success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
-            end if
-            if (success) then
-               success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
-            end if
-            if (fileReaderPtr%nitems >= 2) then
-               sourceItemId_2 = fileReaderPtr%items(2)%ptr%id
-               if (success) then
-                  success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-               end if
-               if (success) then
-                  success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr2)
-               end if
-               if (success) then
-                  success = ecAddItemConnection(ecInstancePtr, targetItemPtr2, connectionId)
-               end if
-               if (fileReaderPtr%nitems >= 3) then
-                  sourceItemId_3 = fileReaderPtr%items(3)%ptr%id
-                  if (success) then
-                     success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
-                  end if
-                  if (success) then
-                     success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr3)
-                  end if
-                  if (success) then
-                     success = ecAddItemConnection(ecInstancePtr, targetItemPtr3, connectionId)
-                  end if
-                  if (fileReaderPtr%nitems >= 4) then
-                     sourceItemId_4 = fileReaderPtr%items(4)%ptr%id
-                     if (success) then
-                        success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_4)
-                     end if
-                     if (success) then
-                        success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr4)
-                     end if
-                     if (success) then
-                        success = ecAddItemConnection(ecInstancePtr, targetItemPtr4, connectionId)
-                     end if
-                  end if
-               end if
-            end if
-            if (success) then
-               ! all statements executed successfully ... this must be good
-               ec_addtimespacerelation = .true.
-            else
-               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Error while default processing of ext-file (connect source and target) for : '//trim(target_name)//'.')
-            end if
-         else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported quantity specified in ext-file (connect source and target): '//trim(target_name)//'.')
-         end if
+         ! Simple quantities use the generic source connection below.
       end select
 
       if (sourceItemName /= ' ') then
@@ -1575,29 +1365,74 @@ contains
             ! The second is made for nesting to be able to interpolate z-values in time
             sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
             if (.not. allocated(sourceItemIds)) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: No source item '''//trim(sourceItemName)//''' found for quantity '''//trim(target_name)//'''.')
                goto 1234
-            end if
+            else
+               do idIdx = 1, size(sourceItemIds)
+                  sourceItemId = sourceItemIds(idIdx)
+                  success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+                  if (.not. success) then
+                     goto 1234
+                  end if
+                  if (present(targetIndex)) then
+                     if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
+                        goto 1234
+                     end if
+                  end if
+               end do
 
-            do idIdx = 1, size(sourceItemIds)
-               sourceItemId = sourceItemIds(idIdx)
-               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (success) then
+                  success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
+               end if
+               if (success) then
+                  success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
+               end if
                if (.not. success) then
                   goto 1234
                end if
-               if (present(targetIndex)) then
-                  if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
-                     goto 1234
-                  end if
-               end if
-            end do
+               source_connection_created = .true.
+            end if
 
+         end block
+      end if
+
+      if (.not. source_connection_created) then
+         block
+            integer :: num_generic_source_items
+
+            fileReaderPtr => ecFindFileReader(ecInstancePtr, fileReaderId)
+            if (.not. associated(fileReaderPtr)) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Cannot use generic source connection for quantity '''//trim(target_name)//'''; file reader is unavailable.')
+               goto 1234
+            end if
+
+            num_generic_source_items = fileReaderPtr%nitems
+            if (num_generic_source_items < 1) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Cannot use generic source connection for quantity '''//trim(target_name)//'''; provider created no source items.')
+               goto 1234
+            end if
+            if (.not. associated(targetItemPtr1)) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection for quantity '''//trim(target_name)//''' has no target item.')
+               goto 1234
+            end if
+            if (associated(targetItemPtr2) .or. associated(targetItemPtr3) .or. associated(targetItemPtr4)) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection supports one target item only; quantity '''//trim(target_name)//''' requires special handling.')
+               goto 1234
+            end if
+
+            sourceItemId = fileReaderPtr%items(1)%ptr%id
+            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
             if (success) then
                success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
             end if
             if (success) then
                success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
             end if
-
+            if (.not. success) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection failed for quantity '''//trim(target_name)//'''.')
+               goto 1234
+            end if
+            source_connection_created = .true.
          end block
       end if
 
