@@ -53,6 +53,7 @@ contains
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
+      use m_mass_balance_area, only: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
       use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
       use m_fm_wq_processes, only: wqbotnames, wqbot
@@ -109,6 +110,9 @@ contains
       xdum = 1.0_dp
       ydum = 1.0_dp
       kdum = 1
+
+      ! Deprecated: mass balance area array initialization. This is placed here for old ext file support.
+      call initialize_mass_balance_area_arrays()
 
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
@@ -1236,9 +1240,6 @@ contains
 
             else if (qid(1:15) == 'massbalancearea' .or. qid(1:18) == 'waqmassbalancearea') then
                if (ti_mba > 0) then
-                  if (.not. allocated(mbaname)) then
-                     allocate (mbaname(0))
-                  end if
                   imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
@@ -1461,6 +1462,9 @@ contains
 
       end do
       call timstop(handle_extra(50)) ! extforcefile old
+
+      ! Deprecated: finalization of mass balance area arrays. Placed here for old ext support.
+      call finalize_mass_balance_area_arrays()
 
       call init_misc(iresult)
 

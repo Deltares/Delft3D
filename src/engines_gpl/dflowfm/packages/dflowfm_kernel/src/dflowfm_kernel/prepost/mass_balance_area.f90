@@ -40,6 +40,9 @@ module m_mass_balance_area
 
    public :: read_and_initialize_mass_balance_area
 
+   ! These are only public to support the deprecated old extfile mass balance area. Can be removed when support for the old extfile is removed.
+   public :: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
+
 contains
 
    !> Reads and initializes the user-specified mass balance areas
@@ -56,7 +59,7 @@ contains
 
       elseif (index(md_mbafile, '.ini') > 0) then
 
-         call initialize_mba_data_arrays()
+         call initialize_mass_balance_area_arrays()
 
          call open_mass_balance_area_file(mba_ptr)
 
@@ -64,7 +67,7 @@ contains
 
          call tree_destroy(mba_ptr)
 
-         call finalize_mba_data_arrays()
+         call finalize_mass_balance_area_arrays()
 
       else
 
@@ -76,7 +79,7 @@ contains
    end subroutine read_and_initialize_mass_balance_area
 
    !> Initializes the mass balance area data arrays.
-   subroutine initialize_mba_data_arrays()
+   subroutine initialize_mass_balance_area_arrays()
       use m_alloc, only: realloc
       use m_flow, only: ndkx
       use m_mass_balance_area_data, only: mbadef, mbadefdomain, mbaname
@@ -89,7 +92,7 @@ contains
          allocate (mbaname(0))
       end if
 
-   end subroutine initialize_mba_data_arrays
+   end subroutine initialize_mass_balance_area_arrays
 
    !> Opens the mass balance area file and creates a tree structure from it.
    subroutine open_mass_balance_area_file(mba_ptr)
@@ -262,7 +265,7 @@ contains
    end subroutine read_mass_balance_area_block
 
    !> Finalizes the mass balance area data arrays by checking for unassigned cells and assigning them to an extra mass balance area if needed.
-   subroutine finalize_mba_data_arrays()
+   subroutine finalize_mass_balance_area_arrays()
       use m_alloc, only: realloc
       use m_flow, only: kmxn
       use m_flowgeom, only: ndxi
@@ -324,6 +327,6 @@ contains
          end do
       end if
 
-   end subroutine finalize_mba_data_arrays
+   end subroutine finalize_mass_balance_area_arrays
 
 end module m_mass_balance_area
