@@ -872,8 +872,6 @@ contains
       integer :: L_net, netnode_1, netnode_2
       logical :: flownode_2_is_LC_node_1, flownode_2_is_LC_node_2
 
-      longculverts(ilongc)%orientation = 1
-
       if (longculverts(ilongc)%numlinks <= 0) then
          return
       end if
@@ -902,6 +900,8 @@ contains
 
       if (flownode_2_is_LC_node_1 .and. .not. flownode_2_is_LC_node_2) then
          longculverts(ilongc)%orientation = -1
+      else if (.not. flownode_2_is_LC_node_1 .and. flownode_2_is_LC_node_2) then
+         longculverts(ilongc)%orientation = 1
       else ! neither or both match, which is an error
          call mess(LEVEL_ERROR, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
                    ' to either endpoint of its first flow link;')
