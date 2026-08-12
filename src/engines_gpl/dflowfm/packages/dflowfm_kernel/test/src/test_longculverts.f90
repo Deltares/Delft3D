@@ -431,7 +431,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid (> 0)"))
       call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge through culvert should be positive (left to right)"))
 
-      call default_longculverts
+      call default_longculverts()
 
    end subroutine test_flow_modelinit_with_longculvert
    !$f90tw)
@@ -492,7 +492,7 @@ contains
       call f90_expect_eq(nlongculverts, 1, cstr("one long culvert should be registered"))
       call f90_expect_true(longculverts(1)%flowlinks(1) > 0, cstr("culvert should have a valid flow link"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_modelinit_succeeds
    !$f90tw)
 
@@ -535,7 +535,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge should be positive (left to right)"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_flow_head_difference_drives_discharge
    !$f90tw)
 
@@ -566,7 +566,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero with no head difference"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_flow_no_head_difference_no_discharge
    !$f90tw)
 
@@ -610,7 +610,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero when valve is closed"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_valve_closed_blocks_flow
    !$f90tw)
 
@@ -652,8 +652,58 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_true(q1(lc_link) < 0.0_dp, cstr("discharge should be negative (right to left)"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_flow_reverse_head_gives_negative_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_allowed_flowdir_follows_coordinate_order, test_allowed_flowdir_follows_coordinate_order,
+   !> Verifies that direction reconstruction and allowedFlowDir follow the
+   !! input-coordinate order when the local flow-link orientation changes.
+   subroutine test_allowed_flowdir_follows_coordinate_order() bind(C)
+      use m_1d_structures, only: FLOWDIR_POSITIVE
+      use m_flow, only: au, u1
+      use m_flowgeom, only: ln
+      use m_longculverts, only: default_longculverts, find1d2dculvertlinks, reduceFlowAreaAtLongculverts
+      use m_longculverts_data, only: longculverts
+      use unstruc_channel_flow, only: network
+      use dfm_error, only: DFM_NOERR
+      use precision, only: dp
+
+      integer :: iresult, lc_link, node, flow_dir_before
+      character(len=*), parameter :: NET_FILE = "test_lc_allowed_flowdir_net.nc"
+      character(len=*), parameter :: STR_FILE = "test_lc_allowed_flowdir_str.ini"
+      character(len=256) :: mdu_file
+
+      mdu_file = "test_lc_allowed_flowdir.mdu"
+      call create_structure_file(STR_FILE)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("converted model init must succeed"))
+
+      call find1d2dculvertlinks(network, longculverts(1), size(longculverts(1)%xcoords))
+      lc_link = longculverts(1)%flowlinks(1)
+      flow_dir_before = longculverts(1)%orientation
+      node = ln(1, lc_link)
+      ln(1, lc_link) = ln(2, lc_link)
+      ln(2, lc_link) = node
+      call find1d2dculvertlinks(network, longculverts(1), size(longculverts(1)%xcoords))
+
+      call f90_expect_true(longculverts(1)%orientation == -flow_dir_before, &
+                  cstr("reversing the flow link must reverse its mapping to input-coordinate direction"))
+
+      longculverts(1)%allowed_flowdir = FLOWDIR_POSITIVE
+      longculverts(1)%valve_relative_opening = 1.0_dp
+      au(lc_link) = 1.0_dp
+      u1(lc_link) = real(longculverts(1)%orientation, dp)
+      call reduceFlowAreaAtLongculverts()
+
+      call f90_expect_true(au(lc_link) > 0.0_dp, &
+                           cstr("positive flow in input-coordinate direction must remain open"))
+
+      call default_longculverts()
+   end subroutine test_allowed_flowdir_follows_coordinate_order
    !$f90tw)
 
    !> Create a 5x3-node UGRID net (4 cells wide, 2 rows).
@@ -872,7 +922,7 @@ contains
       call f90_expect_true(q_full > 0.0_dp, cstr("full-open discharge should be positive"))
       call f90_expect_true(q_half > 0.0_dp, cstr("half-open discharge should be positive"))
       call f90_expect_true(q_half < q_full, cstr("half-open discharge should be less than fully-open"))
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_valve_half_open_reduces_discharge
    !$f90tw)
 
@@ -938,7 +988,7 @@ contains
       call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
       call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_true(q_high_friction < q_low_friction, cstr("higher Manning friction should produce less discharge"))
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_friction_higher_value_reduces_discharge
    !$f90tw)
 
@@ -1007,7 +1057,7 @@ contains
       call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
       call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_true(q_high_friction < q_low_friction, cstr("higher Manning friction should produce less discharge"))
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_2pt_friction_converted
    !$f90tw)
 
@@ -1074,7 +1124,7 @@ contains
       call f90_expect_true(q_low_friction > 0.0_dp, cstr("low-friction discharge should be positive"))
       call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_near(q_high_friction, q_low_friction, 1.0e-10_dp, cstr("discharge should be equal due to equal roughness"))
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_2pt_default_friction_converted
    !$f90tw)
 
@@ -1141,7 +1191,7 @@ contains
       call f90_expect_true(q_colebrook > 0.0_dp, cstr("WhiteColebrook culvert discharge should be positive"))
       call f90_expect_true(abs(q_manning - q_colebrook) > 1.0e-6_dp, &
                            cstr("different friction types with same coefficient should give different discharge"))
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_friction_type_affects_discharge
    !$f90tw)
 
@@ -1205,7 +1255,7 @@ contains
       call f90_expect_true(q_large > 0.0_dp, "large culvert discharge should be positive")
       call f90_expect_true(q_large > q_small, &
                            "larger cross-section should give more discharge")
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_larger_cross_section_increases_discharge
    !$f90tw)
 
@@ -1292,7 +1342,7 @@ contains
       call f90_expect_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
       call f90_expect_eq(longculverts(1)%numlinks, 2, cstr("3-point culvert should have 2 links"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_3pt_modelinit_succeeds
    !$f90tw)
 
@@ -1317,7 +1367,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge should be positive (left to right)"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_3pt_head_difference_drives_discharge
    !$f90tw)
 
@@ -1344,7 +1394,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero when valve is closed"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_3pt_valve_closed_blocks_flow
    !$f90tw)
 
@@ -1411,7 +1461,7 @@ contains
       call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_true(q_high_friction < q_low_friction, &
                            cstr("higher Manning friction should produce less discharge"))
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_3pt_friction_higher_value_reduces_discharge
    !$f90tw)
 
@@ -1557,7 +1607,7 @@ contains
       call f90_expect_eq(nlongculverts, 2, cstr("two long culverts should be registered"))
       call f90_expect_eq(longculverts(1)%numlinks, 3, cstr("4-point culvert should have 3 links"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_4pt_modelinit_succeeds
    !$f90tw)
 
@@ -1582,7 +1632,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_true(q1(lc_link) > 0.0_dp, cstr("discharge should be positive (left to right)"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_4pt_head_difference_drives_discharge
    !$f90tw)
 
@@ -1609,7 +1659,7 @@ contains
       call f90_expect_true(lc_link > 0, cstr("culvert flow link should be valid"))
       call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, cstr("discharge should be ~zero when valve is closed"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_4pt_valve_closed_blocks_flow
    !$f90tw)
 
@@ -1676,7 +1726,7 @@ contains
       call f90_expect_true(q_high_friction > 0.0_dp, cstr("high-friction discharge should be positive"))
       call f90_expect_true(q_high_friction < q_low_friction, &
                            cstr("higher Manning friction should produce less discharge"))
-      call default_longculverts
+      call default_longculverts()
 
    end subroutine test_4pt_friction_higher_value_reduces_discharge
    !$f90tw)
@@ -1715,7 +1765,7 @@ contains
       call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
                            cstr("discharge at links 2 and 3 should be similar (continuity)"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_4pt_flow_continuity_across_links
    !$f90tw)
 
@@ -1760,7 +1810,7 @@ contains
       call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
                            cstr("discharge at links 2 and 3 should be similar (continuity)"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_4pt_flow_continuity_converted
    !$f90tw)
 
@@ -1817,7 +1867,7 @@ contains
       call f90_expect_true(au(L2) > 0.0_dp, cstr("au on interior link should be > 0 with existing 1D network"))
       call f90_expect_true(q1(L1) > 0.0_dp, cstr("discharge at entry should be positive with existing 1D network"))
 
-      call default_longculverts
+      call default_longculverts()
    end subroutine test_4pt_with_existing_1d_network
    !$f90tw)
 
@@ -2170,7 +2220,7 @@ contains
       end if
 
       call resetFullFlowModel()
-      call default_longculverts
+      call default_longculverts()
       call timini()
       timon = .false.
       jampi = 0
@@ -2193,7 +2243,7 @@ contains
       md_convertlongculverts = 0
       call writeMDUfile(mdufile_local, ierr)
       mdufile = mdufile_local
-      call default_longculverts !> not automatically reset
+      call default_longculverts() !> not automatically reset
       numfiles = 0 !> not automatically reset
       md_japartition = 0 !> not automatically reset
 
