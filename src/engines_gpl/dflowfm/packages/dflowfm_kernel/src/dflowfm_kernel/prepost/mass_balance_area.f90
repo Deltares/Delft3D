@@ -49,13 +49,14 @@ contains
       ! Local variables
       type(tree_data), pointer :: mba_ptr !< Pointer to the mass balance area tree structure.
 
-      call initialize_mba_data_arrays()
-
       if (len_trim(md_mbafile) == 0) then
 
-         ! When no mass balance area file is specified do nothing
+         ! When no mass balance area file is specified, return without doing anything
+         return
 
       elseif (index(md_mbafile, '.ini') > 0) then
+
+         call initialize_mba_data_arrays()
 
          call open_mass_balance_area_file(mba_ptr)
 
@@ -63,14 +64,14 @@ contains
 
          call tree_destroy(mba_ptr)
 
+         call finalize_mba_data_arrays()
+
       else
 
          write (msgbuf, '(A)') 'Error while reading mass balance area file '''//trim(md_mbafile)//''': must be an .ini file.'
          call err_flush()
 
       end if
-
-      call finalize_mba_data_arrays()
 
    end subroutine read_and_initialize_mass_balance_area
 
