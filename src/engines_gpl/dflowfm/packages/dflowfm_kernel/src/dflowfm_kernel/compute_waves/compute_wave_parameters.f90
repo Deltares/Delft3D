@@ -151,7 +151,7 @@ contains
          vstokes = 0.0_dp
       end if
 
-      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
+      if (jawave == WAVE_NC_OFFLINE .and. .not. flow_without_waves) then
          call copy_derived_wave_parameters_to_boundary_cells()
       end if
 

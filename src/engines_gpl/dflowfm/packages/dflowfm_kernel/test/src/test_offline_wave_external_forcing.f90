@@ -326,6 +326,78 @@ contains
    end subroutine test_flow_without_waves_recalculates_derived_ht
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_online_wave_boundary_uses_local_raw_values, test_online_wave_boundary_uses_local_raw_values,
+   !> Online wave coupling must keep EC-owned source H/T unchanged and derive
+   !! every cell, including boundaries, from its local external source value.
+   subroutine test_online_wave_boundary_uses_local_raw_values() bind(C)
+      use m_alloc, only: realloc
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_flow, only: epshu, flow_without_waves, hs, jawave, jawavestokes, kmx, s1
+      use m_flowgeom, only: bl, ndx
+      use fm_external_forcings_data, only: nbndn, nbndt, nbndu, nbndz, kbndz
+      use m_physcoef, only: ag
+      use m_sferic, only: pi
+      use m_waveconst, only: NO_STOKES_DRIFT, WAVE_SWAN_ONLINE
+      use m_waves, only: default_waves, gammax, hwav, hwavcom, jauorbfromswan, rlabda, twav, twavcom, uorb
+
+      call default_waves()
+      ndx = 2
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hwav, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(twav, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hwavcom, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(twavcom, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(uorb, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(rlabda, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(kbndz, [6, 1], fill=0, keepExisting=.false.)
+
+      jawave = WAVE_SWAN_ONLINE
+      flow_without_waves = .false.
+      jawavestokes = NO_STOKES_DRIFT
+      kmx = 0
+      epshu = 1.0e-4_dp
+      ag = 9.81_dp
+      pi = acos(-1.0_dp)
+      gammax = 1.0_dp
+      jauorbfromswan = 0
+      hwavcom = [0.0_dp, 4.0_dp]
+      twavcom = [0.0_dp, 8.0_dp]
+      hs = [1.0_dp, 10.0_dp]
+      s1 = hs
+      nbndu = 0
+      nbndn = 0
+      nbndt = 0
+      nbndz = 1
+      kbndz(1:2, 1) = [1, 2]
+
+      call compute_wave_parameters()
+
+      call f90_expect_near(hwavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave height must remain unchanged')
+      call f90_expect_near(twavcom(1), 0.0_dp, 1.0e-12_dp, 'raw boundary wave period must remain unchanged')
+      call f90_expect_near(hwavcom(2), 4.0_dp, 1.0e-12_dp, 'raw inner wave height must remain unchanged')
+      call f90_expect_near(twavcom(2), 8.0_dp, 1.0e-12_dp, 'raw inner wave period must remain unchanged')
+      call f90_expect_near(hwav(1), 0.0_dp, 1.0e-12_dp, 'derived boundary height must use its local source value')
+      call f90_expect_near(twav(1), 0.0_dp, 1.0e-12_dp, 'derived boundary period must use its local source value')
+      call f90_expect_near(hwav(2), 4.0_dp, 1.0e-12_dp, 'derived inner height must use its local source value')
+
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(hs)) deallocate (hs)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(hwav)) deallocate (hwav)
+      if (allocated(twav)) deallocate (twav)
+      if (allocated(hwavcom)) deallocate (hwavcom)
+      if (allocated(twavcom)) deallocate (twavcom)
+      if (allocated(uorb)) deallocate (uorb)
+      if (allocated(rlabda)) deallocate (rlabda)
+      if (allocated(kbndz)) deallocate (kbndz)
+      ndx = 0
+      nbndz = 0
+      call default_waves()
+   end subroutine test_online_wave_boundary_uses_local_raw_values
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_offline_wave_external_forcing, test_wave_requirements_survive_flow_state_reset, test_wave_requirements_survive_flow_state_reset,
    subroutine test_wave_requirements_survive_flow_state_reset() bind(C)
       use m_waveconst, only: WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_PERIOD
