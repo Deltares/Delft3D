@@ -48,7 +48,6 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_flow, only: kmx
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
-      use m_mass_balance_area, only: read_and_initialize_mass_balance_area
       use m_meteo, only: item_waqfun, item_waqsfun
       use m_ec_parameters, only: ec_undef_int
       use m_source_sink, only: source_sinks
@@ -104,10 +103,6 @@ contains
       allocate (base_dirs(size(extfile_new_list)))
 
       call init_registered_items()
-
-      ! Mass balance areas are read in init_new() since they need to be read after setup() and before finalize() in fm_initexternalforcings()
-      ! to ensure that the mass balance areas are available for use in the external forcing files.
-      call read_and_initialize_mass_balance_area()
 
       ! First loop, validate all external forcing files and add their contents to the bnd_ptrs list.
       do i_ext = 1, size(extfile_new_list)
