@@ -47,7 +47,7 @@ contains
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr, md_mbafile
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
@@ -111,8 +111,9 @@ contains
       ydum = 1.0_dp
       kdum = 1
 
-      ! Deprecated: mass balance area array initialization. This is placed here for old ext file support.
-      call initialize_mass_balance_area_arrays()
+      if (len_trim(md_mbafile) == 0) then
+         call initialize_mass_balance_area_arrays()
+      end if
 
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
@@ -1463,8 +1464,9 @@ contains
       end do
       call timstop(handle_extra(50)) ! extforcefile old
 
-      ! Deprecated: finalization of mass balance area arrays. Placed here for old ext support.
-      call finalize_mass_balance_area_arrays()
+      if (len_trim(md_mbafile) == 0) then
+         call finalize_mass_balance_area_arrays()
+      end if
 
       call init_misc(iresult)
 

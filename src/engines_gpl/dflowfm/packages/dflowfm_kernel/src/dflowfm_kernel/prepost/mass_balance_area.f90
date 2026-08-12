@@ -204,6 +204,7 @@ contains
       use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use m_read_location_info, only: read_polyline_coordinates
       use properties, only: prop_get, max_prop_length
+      use system_utils, only: split_filename
       use timespace, only: selectelset_internal_nodes, LOCTP_POLYGON_XY
 
       ! Arguments
@@ -213,6 +214,8 @@ contains
       ! Local variables
       character(len=max_prop_length) :: name !< Name of the mass balance area.
       character(len=max_prop_length) :: location_file !< Location file for the mass balance area
+      character(len=max_prop_length) :: base_dir
+      character(len=max_prop_length) :: file_name
       integer :: num_columns !< Number of columns in the location file (2D or 3D).
       integer :: num_coordinates !< Number of coordinates defining the polygon of the mass balance area.
       real(kind=dp), allocatable :: x_coordinates(:) !< X coordinates of the polygon defining the mass balance area.
@@ -229,11 +232,14 @@ contains
       imba = 0
       name = ''
       location_file = ''
+      base_dir = ''
+      file_name = ''
+      call split_filename(mass_balance_area_file, base_dir, file_name)
 
       ! Get name and locationFile of mass balance area block
       call prop_get(block_ptr, '', 'name', name)
 
-      call read_polyline_coordinates(block_ptr, name, mass_balance_area_file, '', 'massbalancearea', x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+      call read_polyline_coordinates(block_ptr, name, mass_balance_area_file, base_dir, 'massbalancearea', x_coordinates, y_coordinates, z_coordinates, num_columns, success)
 
       if (success) then
          num_coordinates = size(x_coordinates)
