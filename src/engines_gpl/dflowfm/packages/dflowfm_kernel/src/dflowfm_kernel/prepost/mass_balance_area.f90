@@ -51,7 +51,7 @@ contains
 
         if (len_trim(md_mbafile) == 0) then
 
-            ! When nog mass balance area file is specified, return without reading
+            ! When no mass balance area file is specified, return without reading
             return
 
         elseif (index(md_mbafile, '.ini') > 0) then
