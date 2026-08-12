@@ -273,33 +273,49 @@ namespace pre_c_sumo
                         single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
                     double source_z_bottom =
                         single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
-                    double source_moment_direction = source.has_u ? source.u_direction : 0.0;
+                    // Momentum is only defined for the source points, not for the entrainment part
+                    // Entrainment related momentum should be switched on in D-Flow FM using "NFEntrainmentMomentum = 1"
+                    // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, source_moment_magnitude,
-                                                   source_moment_direction);
+                                                   source_z_top, discharge, 0.0, 0.0);
                 }
             }
 
             // Match nearfield dischargeToSrc behavior: add explicit source discharge
             // terms independent of entrainment sink deltas.
+            //
+            // momentum_magnitude must be scaled by weight_fraction^2 to match the behavior of the original
+            // DIMR-exchange:
+            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude_weighted
+            // - Comment copied from nearfield.f90::dischargeToSrc, line 828:
+            //       Area of this fraction is total area divided by the weight factor:
+            //       Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2,
+            //       ...):
+            //                  Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
+            //       Since w1+w2+...=1.0, we can write this as:
+            //               w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
+            //       =>
+            //               wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
+            //       =>
+            //               ai = Atot / wi
             if (!sources.empty())
             {
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 for (const auto& source : sources)
                 {
-                    double discharge =
-                        source_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double weight_fraction = (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double discharge = source_flow_rate * weight_fraction;
                     double source_z_top =
                         single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
                     double source_z_bottom =
                         single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
+                    double source_moment_magnitude_weighted =
+                        source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge, source_moment_magnitude,
-                                                   source_moment_direction);
+                                                   source_z_bottom, source_z_top, discharge,
+                                                   source_moment_magnitude_weighted, source_moment_direction);
                 }
             }
 
@@ -318,11 +334,11 @@ namespace pre_c_sumo
                 {
                     // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
                     const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
-                    intakes.push_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
-                                                 .y_coordinate = intake_xy.y_coordinate,
-                                                 .z_coordinate = 0.0,
-                                                 .weight = 0.0,
-                                                 .has_weight = false});
+                    intakes.emplace_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
+                                                    .y_coordinate = intake_xy.y_coordinate,
+                                                    .z_coordinate = 0.0,
+                                                    .weight = 0.0,
+                                                    .has_weight = false});
                 }
                 if (!intakes.empty())
                 {
