@@ -1,4 +1,5 @@
 import csv
+import subprocess
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
@@ -20,6 +21,8 @@ class BatchRunArgs:
         self.ci_csv: str = ""
         self.configs_root: str = ""
         self.cmd: str = ""
+        self.cmd_file: str | None = None
+        self.search_mdu: bool = False
 
 
 class TestWithConfig:
@@ -37,6 +40,7 @@ class Params:
         self.test_name: str = ""
         self.test_path: Path | None = None
         self.test_config: str = ""
+        self.mdu: Path | None = None
 
 
 def parse_batch_run_arguments() -> BatchRunArgs:
@@ -78,6 +82,19 @@ def parse_batch_run_arguments() -> BatchRunArgs:
         help="Command to execute",
         dest="cmd",
     )
+    parser.add_argument(
+        "--cmd-file",
+        help="Command file to execute",
+        dest="cmd_file",
+    )
+
+    parser.add_argument(
+        "--search-mdu",
+        default=False,
+        help="Search MDU flag",
+        dest="search_mdu",
+        action="store_true",
+    )
 
     args: Namespace = parser.parse_args()
 
@@ -87,8 +104,36 @@ def parse_batch_run_arguments() -> BatchRunArgs:
     result.ci_csv = args.ci_csv
     result.configs_root = args.configs_root
     result.cmd = args.cmd
+    result.search_mdu = args.search_mdu
+    result.cmd_file = args.cmd_file
 
     return result
+
+
+def execute_command_template(cmd: str, params: Params):
+    """Execute a command and print its output.
+
+    Parameters
+    ----------
+    cmd : str
+        The command to execute.
+    params : Params
+        The parameters for the command.
+    """
+    cmd = cmd.format(
+        test_name=params.test_name,
+        test_config=params.test_config,
+        test_path=params.test_path,
+        mdu=mdu_file,
+    )
+    print(f"Command: {cmd}")
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    print(f"Return code: {result.returncode}")
+    # Execute the command
+    if result.stdout:
+        print(f"Output:\n{result.stdout}")
+    if result.stderr:
+        print(f"Error:\n{result.stderr}")
 
 
 def find_test_config(test_name: str, args: BatchRunArgs, platform: str = "lnx64") -> TestWithConfig:
@@ -153,7 +198,7 @@ if __name__ == "__main__":
             params = Params()
             params.test_name = test_case_config.test.name
             if test_case_config.test.path:
-                params.test_path = Path("data") / "cates" / test_case_config.test.path.path
+                params.test_path = Path("data") / "cases" / test_case_config.test.path.path
 
             if not params.test_path:
                 print(
@@ -162,13 +207,27 @@ if __name__ == "__main__":
                 continue
 
             params.test_config = test_case_config.config_path
+            cmd = None
+            if args.cmd_file and Path(args.cmd_file).is_file():
+                with open(args.cmd_file, "r") as cmd_file:
+                    cmd = cmd_file.read().strip()
+            else:
+                cmd = args.cmd
 
-            cmd = args.cmd.format(
-                test_name=params.test_name, test_config=params.test_config, test_path=params.test_path
-            )
-            print(
-                f"Batch Params: test_name={params.test_name}, test_config={params.test_config}, test_path={params.test_path}"
-            )
-            print(f"Command: {cmd}")
+            if args.search_mdu:
+                input_path = params.test_path / "input"
+                mdu_files = list(input_path.rglob("*.mdu"))
+                if not mdu_files:
+                    print(f"Warning: No MDU files found in {input_path} for test case {params.test_name}.")
+                    continue
+                else:
+                    print(f"Found MDU files in {input_path}: {[str(mdu) for mdu in mdu_files]}")
+                for mdu_file in mdu_files:
+                    params.mdu = mdu_file
+                    execute_command_template(cmd, params)
+
+            else:
+                execute_command_template(cmd, params)
+
         except ValueError as e:
             print(e)
