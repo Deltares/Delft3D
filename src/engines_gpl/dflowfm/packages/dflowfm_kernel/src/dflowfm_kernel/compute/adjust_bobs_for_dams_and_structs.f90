@@ -77,6 +77,7 @@ contains
             k2 = kcgen(2, n)
             L = kcgen(3, n)
             blmx = max(bl(k1), bl(k2))
+            bob0(:,L) = blmx
             bob(1, L) = max(zcdamn, blmx)
             bob(2, L) = max(zcdamn, blmx)
             call switchiadvnearlink(L)
