@@ -20,6 +20,22 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: EXT_FILENAME = "test_spatial.ext"
    character(len=*), parameter :: BC_FILENAME = "test_rain.bc"
    character(len=*), parameter :: BASE_DIR = "."
+   integer, parameter :: NUM_SCALAR_METEO_CASES = 15
+   character(len=32), parameter :: SCALAR_METEO_QUANTITIES(NUM_SCALAR_METEO_CASES) = [character(len=32) :: &
+      'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
+      'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
+      'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
+   character(len=48), parameter :: SCALAR_METEO_VARIABLES(NUM_SCALAR_METEO_CASES) = [character(len=48) :: &
+      'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
+      'sshf', 'tauu', 'tauv', 'u10', 'v10']
+   character(len=64), parameter :: SCALAR_METEO_STANDARD_NAMES(NUM_SCALAR_METEO_CASES) = [character(len=64) :: &
+      'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
+      'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
+      'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
+      'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
+   real(dp), parameter :: SCALAR_METEO_VALUES(NUM_SCALAR_METEO_CASES) = [ &
+      1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
+      50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
 
 contains
 
@@ -1683,5 +1699,322 @@ contains
    !   integer, intent(in) :: ierr
    !   if (ierr /= NF90_NOERR) error stop nf90_strerror(ierr)
    !end subroutine check_nc
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_bcascii_matrix, test_scalar_meteo_bcascii_matrix,
+   subroutine test_scalar_meteo_bcascii_matrix() bind(C)
+      character(len=*), parameter :: BC_FILE = 'test_scalar_meteo.bc'
+      character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo.ext'
+      integer :: i
+
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call reset_scalar_meteo_state()
+         call create_scalar_meteo_bc(BC_FILE, SCALAR_METEO_QUANTITIES(i), SCALAR_METEO_VALUES(i))
+         call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), BC_FILE, 'bcascii', EXT_FILE, SCALAR_METEO_VALUES(i))
+      end do
+
+      call cleanup_scalar_meteo_state()
+   end subroutine test_scalar_meteo_bcascii_matrix
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_netcdf_matrix, test_scalar_meteo_netcdf_matrix,
+   subroutine test_scalar_meteo_netcdf_matrix() bind(C)
+      character(len=*), parameter :: NC_FILE = 'test_scalar_meteo.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo_netcdf.ext'
+      integer :: i
+
+      call create_scalar_meteo_netcdf(NC_FILE)
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call reset_scalar_meteo_state()
+         call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), NC_FILE, 'netcdf', EXT_FILE, SCALAR_METEO_VALUES(i))
+      end do
+
+      call cleanup_scalar_meteo_state()
+   end subroutine test_scalar_meteo_netcdf_matrix
+   !$f90tw)
+
+   subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, initialize_ec_module
+      use m_ec_parameters, only: ec_undef_int
+
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: forcing_file
+      character(len=*), intent(in) :: forcing_file_type
+      character(len=*), intent(in) :: ext_file
+      real(dp), intent(in) :: expected_value
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      real(dp), pointer :: target_data(:)
+      integer :: item_id
+      logical :: success
+
+      call create_file(ext_file, [ &
+                       '[Spatial]', &
+                       '    quantity        = '//trim(quantity), &
+                       '    forcingFile     = '//trim(forcing_file), &
+                       '    forcingFileType = '//trim(forcing_file_type)])
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call parse_spatial_block(ext_file, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, ext_file, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, trim(quantity)//' should initialize from '//trim(forcing_file_type))
+      if (.not. success) return
+
+      call scalar_meteo_target(quantity, item_id, target_data)
+      call f90_expect_true(item_id /= ec_undef_int, trim(quantity)//' should have a target item')
+      call f90_expect_true(associated(target_data), trim(quantity)//' should have target storage')
+      if (item_id == ec_undef_int .or. .not. associated(target_data)) return
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_id, irefdate, tzone, tunit, 0.0_dp, target_array=target_data)
+      call f90_expect_true(success, trim(quantity)//' should update at t=0')
+      if (trim(forcing_file_type) == 'netcdf') then
+         call f90_expect_near(ecInstancePtr%ecFileReadersPtr(1)%ptr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr(1), expected_value, &
+                  1.0e-6_dp, trim(quantity)//' source value at t=0')
+      end if
+      call f90_expect_near(target_data(1), expected_value, 1.0e-6_dp, trim(quantity)//' value at t=0')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_id, irefdate, tzone, tunit, 50.0_dp, target_array=target_data)
+      call f90_expect_true(success, trim(quantity)//' should update at t=50')
+      call f90_expect_near(target_data(1), expected_value + 1.0_dp, 1.0e-6_dp, trim(quantity)//' interpolated value at t=50')
+   end subroutine run_scalar_meteo_case
+
+   subroutine scalar_meteo_target(quantity, item_id, target_data)
+      use m_meteo, only: item_air_density, item_atmosphericpressure, item_air_temperature, item_cloudiness, &
+                         item_dew_point_temperature, item_relative_humidity, item_latent_heat_flux, item_long_wave_radiation, &
+                         item_solar_radiation, item_sensible_heat_flux, item_stressx, item_stressy, item_windx, item_windy
+      use m_wind, only: air_density, air_pressure, air_temperature, cloudiness, dew_point_temperature, relative_humidity, &
+                        latent_heat_flux, long_wave_radiation, solar_radiation, sensible_heat_flux, wx, wy
+      use m_flow, only: wdsu_x, wdsu_y
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity
+      integer, intent(out) :: item_id
+      real(dp), pointer, intent(out) :: target_data(:)
+
+      item_id = -999
+      target_data => null()
+      select case (str_tolower(quantity))
+      case ('airdensity')
+         item_id = item_air_density
+         target_data => air_density
+      case ('airpressure')
+         item_id = item_atmosphericpressure
+         target_data => air_pressure
+      case ('airtemperature')
+         item_id = item_air_temperature
+         target_data => air_temperature
+      case ('cloudiness')
+         item_id = item_cloudiness
+         target_data => cloudiness
+      case ('dewpoint')
+         item_id = item_dew_point_temperature
+         target_data => dew_point_temperature
+      case ('humidity')
+         item_id = item_relative_humidity
+         target_data => relative_humidity
+      case ('latentheatflux')
+         item_id = item_latent_heat_flux
+         target_data => latent_heat_flux
+      case ('longwaveradiation')
+         item_id = item_long_wave_radiation
+         target_data => long_wave_radiation
+      case ('netsolarradiation', 'solarradiation')
+         item_id = item_solar_radiation
+         target_data => solar_radiation
+      case ('sensibleheatflux')
+         item_id = item_sensible_heat_flux
+         target_data => sensible_heat_flux
+      case ('stressx')
+         item_id = item_stressx
+         target_data => wdsu_x
+      case ('stressy')
+         item_id = item_stressy
+         target_data => wdsu_y
+      case ('windx')
+         item_id = item_windx
+         target_data => wx
+      case ('windy')
+         item_id = item_windy
+         target_data => wy
+      end select
+   end subroutine scalar_meteo_target
+
+   subroutine create_scalar_meteo_bc(filename, quantity, initial_value)
+      character(len=*), intent(in) :: filename
+      character(len=*), intent(in) :: quantity
+      real(dp), intent(in) :: initial_value
+      character(len=64) :: value0, value1
+
+      write (value0, '(es24.16)') initial_value
+      write (value1, '(es24.16)') initial_value + 2.0_dp
+      call create_file(filename, [ &
+                       '[General]', &
+                       '    fileVersion           = 1.01', &
+                       '    fileType              = boundConds', &
+                       '', &
+                       '[forcing]', &
+                       '    name                  = global', &
+                       '    function              = timeseries', &
+                       '    timeInterpolation     = linear', &
+                       '    quantity              = time', &
+                       '    unit                  = seconds since 2000-01-01 00:00:00', &
+                       '    quantity              = '//trim(quantity), &
+                       '    unit                  = 1', &
+                       '    0    '//trim(value0), &
+                       '    100  '//trim(value1)])
+   end subroutine create_scalar_meteo_bc
+
+   subroutine create_scalar_meteo_netcdf(filename)
+      use netcdf
+
+      character(len=*), intent(in) :: filename
+      integer :: ncid, time_dimid, x_dimid, y_dimid, time_varid, x_varid, y_varid
+      integer :: variable_ids(NUM_SCALAR_METEO_CASES)
+      integer :: i, ierr
+      real(dp) :: times(2), x_coord(2), y_coord(2), values(2, 2, 2)
+
+      call check_scalar_meteo_netcdf(nf90_create(filename, NF90_CLOBBER, ncid), 'create NetCDF file')
+      call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid), 'define time dimension')
+      call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid), 'define x dimension')
+      call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid), 'define y dimension')
+
+      call check_scalar_meteo_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid), 'define time')
+      call check_scalar_meteo_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'), 'set time standard name')
+      call check_scalar_meteo_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'), 'set time units')
+      call check_scalar_meteo_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid), 'define x')
+      call check_scalar_meteo_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'), 'set x standard name')
+      call check_scalar_meteo_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid), 'define y')
+      call check_scalar_meteo_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'), 'set y standard name')
+
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call check_scalar_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
+                                                      [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
+                                        'define '//trim(SCALAR_METEO_VARIABLES(i)))
+         call check_scalar_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'standard_name', trim(SCALAR_METEO_STANDARD_NAMES(i))), &
+                                        'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
+         call check_scalar_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'coordinates', 'x y'), &
+                                        'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
+      end do
+
+      call check_scalar_meteo_netcdf(nf90_enddef(ncid), 'finish NetCDF definition')
+      times = [0.0_dp, 100.0_dp]
+      x_coord = [-1.0_dp, 1.0_dp]
+      y_coord = [-1.0_dp, 1.0_dp]
+      call check_scalar_meteo_netcdf(nf90_put_var(ncid, time_varid, times), 'write time')
+      call check_scalar_meteo_netcdf(nf90_put_var(ncid, x_varid, x_coord), 'write x')
+      call check_scalar_meteo_netcdf(nf90_put_var(ncid, y_varid, y_coord), 'write y')
+      do i = 1, NUM_SCALAR_METEO_CASES
+         values(:, :, 1) = SCALAR_METEO_VALUES(i)
+         values(:, :, 2) = SCALAR_METEO_VALUES(i) + 2.0_dp
+         ierr = nf90_put_var(ncid, variable_ids(i), values)
+         call check_scalar_meteo_netcdf(ierr, 'write '//trim(SCALAR_METEO_VARIABLES(i)))
+      end do
+      call check_scalar_meteo_netcdf(nf90_close(ncid), 'close NetCDF file')
+   end subroutine create_scalar_meteo_netcdf
+
+   subroutine check_scalar_meteo_netcdf(ierr, operation)
+      use netcdf, only: nf90_noerr
+
+      integer, intent(in) :: ierr
+      character(len=*), intent(in) :: operation
+
+      call f90_expect_eq(ierr, nf90_noerr, operation)
+   end subroutine check_scalar_meteo_netcdf
+
+   subroutine reset_scalar_meteo_state()
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flowparameters, only: itempforcingtyp
+      use m_meteo, only: initialize_ec_module
+      use m_wind, only: wx, wy, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
+                        air_pressure, pseudo_air_pressure, water_level_correction, rain, qext, air_temperature, &
+                        dew_point_temperature, relative_humidity, cloudiness, air_density, solar_radiation, &
+                        net_solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux, &
+                        jawind, jaspacevarcharn, jawindstressgiven, jastresstowind, ja_airdensity, jarain, jaevap, jaqin, jaQext, &
+                        solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        sensible_heat_flux_available, latent_heat_flux_available, air_pressure_available, &
+                        pseudo_air_pressure_available, water_level_correction_available
+
+      call initialize_ec_module()
+      call release_scalar_meteo_arrays()
+      jawind = 0
+      jaspacevarcharn = 0
+      jawindstressgiven = 0
+      jastresstowind = 0
+      ja_airdensity = 0
+      jarain = 0
+      jaevap = 0
+      jaqin = 0
+      jaQext = 0
+      solar_radiation_available = .false.
+      net_solar_radiation_available = .false.
+      long_wave_radiation_available = .false.
+      sensible_heat_flux_available = .false.
+      latent_heat_flux_available = .false.
+      air_pressure_available = .false.
+      pseudo_air_pressure_available = .false.
+      water_level_correction_available = .false.
+      itempforcingtyp = 0
+
+      call setup_minimal_grid()
+      lnx = 1
+      allocate (xu(lnx), yu(lnx))
+      xu = 0.0_dp
+      yu = 0.0_dp
+   end subroutine reset_scalar_meteo_state
+
+   subroutine cleanup_scalar_meteo_state()
+      use m_flowgeom, only: lnx
+      use m_meteo, only: initialize_ec_module
+
+      call initialize_ec_module()
+      call release_scalar_meteo_arrays()
+      lnx = 0
+   end subroutine cleanup_scalar_meteo_state
+
+   subroutine release_scalar_meteo_arrays()
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_wind, only: wx, wy, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
+                        air_pressure, pseudo_air_pressure, water_level_correction, rain, qext, air_temperature, &
+                        dew_point_temperature, relative_humidity, cloudiness, air_density, solar_radiation, &
+                        net_solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
+
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      if (allocated(ec_pwxwy_x)) deallocate (ec_pwxwy_x)
+      if (allocated(ec_pwxwy_y)) deallocate (ec_pwxwy_y)
+      if (allocated(ec_pwxwy_c)) deallocate (ec_pwxwy_c)
+      if (allocated(ec_charnock)) deallocate (ec_charnock)
+      if (allocated(wcharnock%values)) deallocate (wcharnock%values)
+      if (allocated(air_pressure)) deallocate (air_pressure)
+      if (allocated(pseudo_air_pressure)) deallocate (pseudo_air_pressure)
+      if (allocated(water_level_correction)) deallocate (water_level_correction)
+      if (allocated(rain)) deallocate (rain)
+      if (allocated(qext)) deallocate (qext)
+      if (allocated(air_temperature)) deallocate (air_temperature)
+      if (allocated(dew_point_temperature)) deallocate (dew_point_temperature)
+      if (allocated(relative_humidity)) deallocate (relative_humidity)
+      if (allocated(cloudiness)) deallocate (cloudiness)
+      if (allocated(air_density)) deallocate (air_density)
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      if (allocated(net_solar_radiation)) deallocate (net_solar_radiation)
+      if (allocated(long_wave_radiation)) deallocate (long_wave_radiation)
+      if (allocated(sensible_heat_flux)) deallocate (sensible_heat_flux)
+      if (allocated(latent_heat_flux)) deallocate (latent_heat_flux)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      call teardown_minimal_grid()
+      lnx = 0
+      ndxi = 0
+   end subroutine release_scalar_meteo_arrays
 
 end module test_init_spatial_fields_integration
