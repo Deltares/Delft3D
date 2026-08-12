@@ -687,6 +687,18 @@ subroutine esm_alloc_real(lundia, error, gdp)
     ierr = mkfpnt(pntnam, lstsc, gdp)
     if (ierr <= -9) goto 9999
     !
+    pntnam = 'umod'          !  Modulus of depth-averaged velocity at water-level points
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= -9) goto 9999
+    !
+    pntnam = 'uuu'          !  depth-averaged u-velocity at water-level points
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= -9) goto 9999
+    !
+    pntnam = 'vvv'          !  depth-averaged v-velocity at water-level points
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= -9) goto 9999
+    !
     !
     !-----arrays for: subgrid viscosity model
     !

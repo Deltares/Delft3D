@@ -43,6 +43,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     use precision
     use meteo
     use flow_tables
+    use m_trtrou, only: trtrou
+    use m_umod, only: compute_umod
     !
     use globaldata
     use dfparall
@@ -375,7 +377,19 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     logical                              , pointer :: flbcc
     logical                              , pointer :: fldis
     include 'tri-dyn.igd'
-    real(fp)      , dimension(:)         , pointer :: rhosol
+    real(fp)                             , pointer :: vonkar
+    real(fp)                             , pointer :: vicmol
+    real(fp)                             , pointer :: dryflc
+    real(fp)     , dimension(:)          , pointer :: rhosol
+    real(fp)     , dimension(:)          , pointer :: bedformD50
+    real(fp)     , dimension(:)          , pointer :: bedformD90
+    real(fp)     , dimension(:)          , pointer :: rksr
+    real(fp)     , dimension(:)          , pointer :: rksmr
+    real(fp)     , dimension(:)          , pointer :: rksd
+    logical                              , pointer :: spatial_bedform
+    real(fp), dimension(:,:)             , pointer :: dxx
+    
+    type(trachy_type)          , pointer :: gdtrachy
 !
 ! Global variables
 !
@@ -403,6 +417,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer                            :: ierror
     integer                            :: itype
     integer                            :: nmaxddb
+    integer                            :: nxx
     integer                            :: nst          ! Current time step counter
     integer                            :: ntoftoq      ! Number of open boundary sections before the time series type:
                                                        ! ntoftoq = ntof + ntoq
@@ -415,6 +430,17 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     character(8)                       :: stage        ! First or second half time step
                                                        ! Stage = 'both' means that in F0ISF1 the layering administration
                                                        ! is copied for both the U- and the V-direction
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: umod
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: uuu
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) :: vvv
+    
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, 0) , target :: wrk
+    real(fp), dimension(gdp%d%lsedtot) , target :: wrk2
+    real(fp), dimension(:,:)             , pointer :: dxx_tmp => NULL()
+    real(fp), dimension(:)             , pointer :: rhosol_tmp => NULL()
+
+    logical                 :: assoc_dxx
+    logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
 !
 !! executable statements -------------------------------------------------------
 !
@@ -499,6 +525,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     z0v                 => gdp%gdphysco%z0v
     iro                 => gdp%gdphysco%iro
     irov                => gdp%gdphysco%irov
+    vonkar              => gdp%gdphysco%vonkar
+    vicmol              => gdp%gdphysco%vicmol
     wind                => gdp%gdprocs%wind
     temp                => gdp%gdprocs%temp
     const               => gdp%gdprocs%const
@@ -738,10 +766,31 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     flbcc               => gdp%gdtmpfil%flbcc
     fldis               => gdp%gdtmpfil%fldis
     rhosol              => gdp%gdsedpar%rhosol
+    spatial_bedform     => gdp%gdbedformpar%spatial_bedform
+    bedformD50          => gdp%gdbedformpar%bedformD50
+    bedformD90          => gdp%gdbedformpar%bedformD90
+    rksr                => gdp%gdbedformpar%rksr
+    rksmr               => gdp%gdbedformpar%rksmr
+    rksd                => gdp%gdbedformpar%rksd
+    dryflc              => gdp%gdnumeco%dryflc
+    gdtrachy            => gdp%gdtrachy
+    dxx                 => gdp%gderosed%dxx
     !
     icx     = 0
     icy     = 0
     nmaxddb = nmax + 2*gdp%d%ddbound
+    assoc_dxx=associated(gdp%gderosed%dxx)
+    if (assoc_dxx) then
+        nxx=SIZE(gdp%gderosed%dxx,2)
+        dxx_tmp=>dxx
+        rhosol_tmp=>rhosol
+    else
+        !real(fp), dimension(nmlbc:nmubc, nxx)
+        nxx=0
+        dxx_tmp=>wrk
+        rhosol_tmp=>wrk2
+    endif
+
     allocate(kcucopy(nmlb:nmub))
     allocate(kcvcopy(nmlb:nmub))
     call copykcuv(i(kcu), kcucopy, gdp)
@@ -1082,15 +1131,43 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     !         called for U/V-direction.
     !
     if (lftrto) then
-       call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                 & r(cfurou) ,rouflo    ,.true.    ,r(guu)    ,r(gvu)    , &
-                 & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
-                 & r(z0urou) ,r(deltau) ,1         ,gdp       )
+          call compute_umod(nmmax , kmax , icx       , &
+                          & i(kcs)   , i(kfu)  , i(kfv)       , i(kcu)    , i(kcv), &
+                          & d(dps)   , r(s1)   , r(deltau)    , r(deltav) , &
+                          & r(u1)    , r(v1)   , r(sig), &
+                          & gdp      , &
+                          !output
+                          & umod     , uuu     , vvv) 
+          !write(*,*) umod
+          call trtrou(lundia    ,kmax      ,nmmax   , &
+                    & r(cfurou) ,rouflo    ,.true.   ,r(gvu)    , &
+                    & r(hu)     ,i(kcu)    ,r(sig)    , &
+                    & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
+                    & umod      ,nmlb      ,nmub      ,nmlb      , nmub    , & 
+                    & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                    & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                    & rksr      ,rksmr     ,rksd      ,error, & 
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx_tmp       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & rhosol_tmp        )
+       !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+       !          & r(cfurou) ,rouflo    ,.true.    ,r(guu)    ,r(gvu)    , &
+       !          & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
+       !          & r(z0urou) ,r(deltau) ,1         ,gdp       )
        if (error) goto 9999
-       call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                 & r(cfvrou) ,rouflo    ,.true.    ,r(gvv)    ,r(guv)    , &
-                 & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
-                 & r(z0vrou) ,r(deltav) ,2         ,gdp       )
+          call trtrou(lundia    ,kmax      ,nmmax   , &
+                    & r(cfurou) ,rouflo    ,.true.   ,r(gvu)    , &
+                    & r(hu)     ,i(kcu)    ,r(sig)    , &
+                    & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
+                    & umod      ,nmlb      ,nmub      ,nmlb      ,nmub    , & 
+                    & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                    & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                    & rksr      ,rksmr     ,rksd      ,error, & 
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx_tmp       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & rhosol_tmp        )
+       !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+       !          & r(cfvrou) ,rouflo    ,.true.    ,r(gvv)    ,r(guv)    , &
+       !          & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
+       !          & r(z0vrou) ,r(deltav) ,2         ,gdp       )
        if (error) goto 9999
     endif
     !

@@ -1,4 +1,4 @@
-subroutine clrtrachy(istat, gdp)
+module m_d3d_chktrt
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -23,42 +23,43 @@ subroutine clrtrachy(istat, gdp)
 !  All indications and logos of, and references to, "Delft3D" and "Deltares"    
 !  are registered trademarks of Stichting Deltares, and remain the property of  
 !  Stichting Deltares. All rights reserved.                                     
-!                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
-    use precision
+
+implicit none 
+
+private
+public :: d3d4_chktrt
+
+contains
+
+subroutine d3d4_chktrt(lundia, error, kcu, kcv, gdp)
     use globaldata
-    !
-    implicit none
-    !
-    type(globdat),target :: gdp
-!
-! Global variables
-!
-    integer,intent(out) :: istat
-!
-!! executable statements -------------------------------------------------------
-!
-    if (associated(gdp%gdtrachy%ittaru))      deallocate (gdp%gdtrachy%ittaru      , STAT = istat)
-    if (associated(gdp%gdtrachy%ittarv))      deallocate (gdp%gdtrachy%ittarv      , STAT = istat)
-    if (associated(gdp%gdtrachy%ittdef))      deallocate (gdp%gdtrachy%ittdef      , STAT = istat)
-    if (associated(gdp%gdtrachy%itrt_list))   deallocate (gdp%gdtrachy%itrt_list   , STAT = istat)
-    !
-    if (associated(gdp%gdtrachy%fraccu_list)) deallocate (gdp%gdtrachy%fraccu_list , STAT = istat)
-    if (associated(gdp%gdtrachy%rgcalu))      deallocate (gdp%gdtrachy%rgcalu      , STAT = istat)
-    if (associated(gdp%gdtrachy%rgcalv))      deallocate (gdp%gdtrachy%rgcalv      , STAT = istat)
-    if (associated(gdp%gdtrachy%rttaru))      deallocate (gdp%gdtrachy%rttaru      , STAT = istat)
-    if (associated(gdp%gdtrachy%rttarv))      deallocate (gdp%gdtrachy%rttarv      , STAT = istat)
-    if (associated(gdp%gdtrachy%rttdef))      deallocate (gdp%gdtrachy%rttdef      , STAT = istat)
-    if (associated(gdp%gdtrachy%rttfu))       deallocate (gdp%gdtrachy%rttfu       , STAT = istat)
-    if (associated(gdp%gdtrachy%rttfv))       deallocate (gdp%gdtrachy%rttfv       , STAT = istat)
-    !
-    if (associated(gdp%gdtrachy%vegh2d))      deallocate (gdp%gdtrachy%vegh2d      , STAT = istat)
-    if (associated(gdp%gdtrachy%vden2d))      deallocate (gdp%gdtrachy%vden2d      , STAT = istat)
-end subroutine clrtrachy
+    use trachytopes_data_module, only: trachy_type
+    use grid_dimens_module, only: griddimtype
+    use m_trtrou, only: chktrt
+
+    ! Arguments
+    type(globdat), target :: gdp
+    integer, intent(in) :: lundia
+    logical, intent(out) :: error
+    integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in) :: kcu
+    integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in) :: kcv
+    
+    ! Local variables
+    integer :: m, n, nm
+
+    do m = gdp%d%mlb, gdp%d%mub
+        do n = gdp%d%nlb, gdp%d%nub
+            call n_and_m_to_nm(n, m, nm, gdp)
+            gdp%gdtrachy%dir(1)%kcu_trt(nm) = kcu(n, m)
+            gdp%gdtrachy%dir(2)%kcu_trt(nm) = kcv(n, m)
+        end do
+    end do
+
+    call chktrt(lundia, error, gdp%griddim, &
+                gdp%gdtrachy, gdp%gdbedformpar%flnmD50, gdp%gdbedformpar%flnmD90, &
+                gdp%gdbedformpar%lfbedfrmrou, gdp%gdprocs%sedim, gdp%d%ddbound)
+
+end subroutine d3d4_chktrt
+
+end module m_d3d_chktrt

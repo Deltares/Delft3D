@@ -81,8 +81,8 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp), dimension(:,:,:) , pointer :: rttfu
-    real(fp), dimension(:,:,:) , pointer :: rttfv
+    real(fp), dimension(:,:) , pointer :: rttfu
+    real(fp), dimension(:,:) , pointer :: rttfv
     real(fp), dimension(:,:)   , pointer :: ustokes
     real(fp), dimension(:,:)   , pointer :: vstokes
     include 'flow_steps_f.inc'
@@ -267,8 +267,8 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
 !
 !! executable statements -------------------------------------------------------
 !
-    rttfu         => gdp%gdtrachy%rttfu
-    rttfv         => gdp%gdtrachy%rttfv
+    rttfu         => gdp%gdtrachy%dir(1)%rttfu
+    rttfv         => gdp%gdtrachy%dir(2)%rttfu
     ustokes       => gdp%gdtrisol%ustokes
     vstokes       => gdp%gdtrisol%vstokes
     !

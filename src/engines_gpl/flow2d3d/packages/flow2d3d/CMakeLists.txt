@@ -96,6 +96,8 @@ set(oss_dependencies_general flow2d3d_manager
                              morphology_kernel
                              morphology_plugins_c
                              morphology_data
+							 trachytopes_io
+							 trachytopes_kernel
                              gridgeom
                              ec_module
                              delftio

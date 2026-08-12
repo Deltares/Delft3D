@@ -89,7 +89,9 @@ set(oss_dependencies_general    delftio
                                 kdtree_wrapper
                                 morphology_data
                                 morphology_kernel
-                                morphology_plugins_c)
+                                morphology_plugins_c
+								trachytopes_io
+								trachytopes_kernel)
 # Add dependencies
 if (UNIX)
     set(oss_dependencies ${oss_dependencies_general}

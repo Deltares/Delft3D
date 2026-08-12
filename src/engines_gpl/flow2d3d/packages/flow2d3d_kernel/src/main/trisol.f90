@@ -47,6 +47,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use SyncRtcFlow
     use flow2d3d_timers
     use flow_tables
+    use m_trtrou, only: trtrou
+    use trachytopes_data_module, only: trachy_type
+    use m_umod, only: compute_umod
     use m_erosed, only: erosed
     use m_bott3d, only: bott3d
     use m_fallve, only: fallve
@@ -104,6 +107,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     real(fp)                             , pointer :: f_lam
     logical                              , pointer :: lfbedfrm
     logical                              , pointer :: lfbedfrmrou
+    logical                              , pointer :: spatial_bedform
     integer                              , pointer :: ncmax
     integer                              , pointer :: nmax
     integer                              , pointer :: mmax
@@ -172,6 +176,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     real(fp)                             , pointer :: hdt
     real(fp)                             , pointer :: rhow
     real(fp)                             , pointer :: ag
+    real(fp)                             , pointer :: vonkar
+    real(fp)                             , pointer :: vicmol
+    real(fp)                             , pointer :: dryflc
     real(fp)                             , pointer :: z0
     real(fp)                             , pointer :: z0v
     integer                              , pointer :: iro
@@ -537,6 +544,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: tprofu
     integer(pntrsize)                    , pointer :: namcon
     integer(pntrsize)                    , pointer :: ubnd
+    integer(pntrsize)                    , pointer :: umod
+    integer(pntrsize)                    , pointer :: uuu
+    integer(pntrsize)                    , pointer :: vvv
     integer(pntrsize), dimension(:, :)   , pointer :: nprptr
     integer                              , pointer :: nrcmp
     integer                              , pointer :: ifirst
@@ -549,10 +559,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer      , dimension(:)          , pointer :: sedtyp
     real(fp)     , dimension(:)          , pointer :: rcousr
     real(fp)     , dimension(:)          , pointer :: rhosol
+    real(fp)     , dimension(:)          , pointer :: bedformD50
+    real(fp)     , dimension(:)          , pointer :: bedformD90
+    real(fp)     , dimension(:)          , pointer :: rksr
+    real(fp)     , dimension(:)          , pointer :: rksmr
+    real(fp)     , dimension(:)          , pointer :: rksd
     character(20), dimension(:)          , pointer :: procs
     logical                              , pointer :: dryrun
     logical                              , pointer :: eulerisoglm
     integer(pntrsize)                    , pointer :: typbnd
+    type(trachy_type)          , pointer :: gdtrachy
 !
     include 'tri-dyn.igd'
 !
@@ -602,11 +618,17 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                 :: nmaxddb
     integer                 :: nreal       ! Pointer to real array RCOUSR for UDF particle wind factor parameters 
     integer                 :: ifirst_dens ! Flag to initialize the water density array
+    integer                 :: nxx
     integer(pntrsize)       :: umor
     integer(pntrsize)       :: vmor
     logical                 :: sscomp
     logical                 :: success
+    logical                 :: assoc_dxx
     character(8)            :: stage       ! First or second half time step 
+    real(fp), dimension(:,:), allocatable :: dxx
+    !real(fp), dimension(:), allocatable :: rhosol_tmp
+    
+    logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
 !
 !! executable statements -------------------------------------------------------
 !
@@ -652,6 +674,12 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     f_lam               => gdp%gdbetaro%f_lam
     lfbedfrm            => gdp%gdbedformpar%lfbedfrm
     lfbedfrmrou         => gdp%gdbedformpar%lfbedfrmrou
+    spatial_bedform     => gdp%gdbedformpar%spatial_bedform
+    bedformD50          => gdp%gdbedformpar%bedformD50
+    bedformD90          => gdp%gdbedformpar%bedformD90
+    rksr                => gdp%gdbedformpar%rksr
+    rksmr               => gdp%gdbedformpar%rksmr
+    rksd                => gdp%gdbedformpar%rksd
     ncmax               => gdp%d%ncmax
     nmax                => gdp%d%nmax
     mmax                => gdp%d%mmax
@@ -719,12 +747,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     eulerisoglm         => gdp%gdmorpar%eulerisoglm
     iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     hdt                 => gdp%gdnumeco%hdt
+    dryflc              => gdp%gdnumeco%dryflc
     rhow                => gdp%gdphysco%rhow
     ag                  => gdp%gdphysco%ag
     z0                  => gdp%gdphysco%z0
     z0v                 => gdp%gdphysco%z0v
     iro                 => gdp%gdphysco%iro
     irov                => gdp%gdphysco%irov
+    vonkar              => gdp%gdphysco%vonkar
+    vicmol              => gdp%gdphysco%vicmol
     wind                => gdp%gdprocs%wind
     salin               => gdp%gdprocs%salin
     temp                => gdp%gdprocs%temp
@@ -956,7 +987,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     umnldf              => gdp%gdr_i_ch%umnldf
     uorb                => gdp%gdr_i_ch%uorb
     ubot                => gdp%gdr_i_ch%ubot
+    umod                => gdp%gdr_i_ch%umod
     usus                => gdp%gdr_i_ch%usus
+    uuu                 => gdp%gdr_i_ch%uuu
     uwtypu              => gdp%gdr_i_ch%uwtypu
     uwtypv              => gdp%gdr_i_ch%uwtypv
     v0                  => gdp%gdr_i_ch%v0
@@ -974,6 +1007,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     volum1              => gdp%gdr_i_ch%volum1
     vortic              => gdp%gdr_i_ch%vortic
     vsus                => gdp%gdr_i_ch%vsus
+    vvv                 => gdp%gdr_i_ch%vvv
     w1                  => gdp%gdr_i_ch%w1
     w10mag              => gdp%gdr_i_ch%w10mag
     wenf                => gdp%gdr_i_ch%wenf
@@ -1100,10 +1134,26 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
+    gdtrachy            => gdp%gdtrachy
     !
     icx     = 0
     icy     = 0
     nmaxddb = nmax + 2*gdp%d%ddbound
+    assoc_dxx=associated(gdp%gderosed%dxx)
+    
+    !if (assoc_dxx) then
+    !    nxx=SIZE(gdp%gderosed%dxx,2)
+    !    dxx=gdp%gderosed%dxx
+    !    rhosol_tmp=rhosol
+    !else
+    !    nxx=0
+    !    if (allocated(dxx)) then
+    !        deallocate(dxx)
+    !    endif
+    !    allocate(dxx(gdp%d%nmlb:gdp%d%nmub,nxx))
+    !    rhosol_tmp= 0.0
+    !endif
+    
     !
     ! Domain decomposition:
     ! D3dFlowMap_InitTimeStep: set up virtual points for next time step
@@ -2808,10 +2858,40 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        if (lftrto .and. (nst + 1)==ittrtu) then
           call timer_start(timer_trtrou, gdp)
-          call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                    & r(cfurou) ,rouflo    ,.false.   ,r(guu)    ,r(gvu)    , &
-                    & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
-                    & r(z0urou) ,r(deltau) ,1         ,gdp       )
+          call compute_umod(nmmax , kmax , icx       , &
+                          & i(kcs)   , i(kfu)  , i(kfv)       , i(kcu)    , i(kcv), &
+                          & d(dps)   , r(s1)   , r(deltau)    , r(deltav) , &
+                          & r(u1)    , r(v1)   , r(sig), &
+                          & gdp, &
+                          !output
+                          & r(umod)   , r(uuu)  , r(vvv)) 
+          if (assoc_dxx) then
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                       & rhosol        )
+          else
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot )
+          endif
+          
+          !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+          !          & r(cfurou) ,rouflo    ,.false.   ,r(guu)    ,r(gvu)    , &
+          !          & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
+          !          & r(z0urou) ,r(deltau) ,1         ,gdp       )
           call timer_stop(timer_trtrou, gdp)
        endif
        !
@@ -2840,10 +2920,39 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        call timer_start(timer_trtrou, gdp)
        if (lftrto .and. (nst + 1)==ittrtu) then
-          call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
-                    & r(cfvrou) ,rouflo    ,.false.   ,r(gvv)    ,r(guv)    , &
-                    & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
-                    & r(z0vrou) ,r(deltav) ,2         ,gdp       )
+          call compute_umod(nmmax , kmax , icx       , &
+                          & i(kcs)   , i(kfu)  , i(kfv)       , i(kcu)    , i(kcv), &
+                          & d(dps)   , r(s1)   , r(deltau)    , r(deltav) , &
+                          & r(u1)    , r(v1)   , r(sig), &
+                          & gdp, &
+                          !output
+                          & r(umod)   , r(uuu)  , r(vvv)) 
+          if (assoc_dxx) then
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                       & rhosol        )
+          else
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot )
+          endif
+          !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
+          !          & r(cfvrou) ,rouflo    ,.false.   ,r(gvv)    ,r(guv)    , &
+          !          & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
+          !          & r(z0vrou) ,r(deltav) ,2         ,gdp       )
           if (itcomi > 0) then
              !
              ! Write roughness data to Communication file.

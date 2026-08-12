@@ -284,7 +284,9 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: uorb
     integer(pntrsize), pointer :: ubot
     integer(pntrsize), pointer :: ubcom
+    integer(pntrsize), pointer :: umod
     integer(pntrsize), pointer :: usus
+    integer(pntrsize), pointer :: uuu
     integer(pntrsize), pointer :: uvdist
     integer(pntrsize), pointer :: uwtypu
     integer(pntrsize), pointer :: uwtypv
@@ -303,6 +305,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: volum1
     integer(pntrsize), pointer :: vortic
     integer(pntrsize), pointer :: vsus
+    integer(pntrsize), pointer :: vvv
     integer(pntrsize), pointer :: w1
     integer(pntrsize), pointer :: w10mag
     integer(pntrsize), pointer :: wenf
@@ -767,7 +770,9 @@ subroutine gtptrs(gdp)
     uorb       => gdp%gdr_i_ch%uorb
     ubot       => gdp%gdr_i_ch%ubot
     ubcom      => gdp%gdr_i_ch%ubcom
+    umod       => gdp%gdr_i_ch%umod
     usus       => gdp%gdr_i_ch%usus
+    uuu        => gdp%gdr_i_ch%uuu
     uvdist     => gdp%gdr_i_ch%uvdist
     uwtypu     => gdp%gdr_i_ch%uwtypu
     uwtypv     => gdp%gdr_i_ch%uwtypv
@@ -786,6 +791,7 @@ subroutine gtptrs(gdp)
     volum1     => gdp%gdr_i_ch%volum1
     vortic     => gdp%gdr_i_ch%vortic
     vsus       => gdp%gdr_i_ch%vsus
+    vvv        => gdp%gdr_i_ch%vvv
     w1         => gdp%gdr_i_ch%w1
     w10mag     => gdp%gdr_i_ch%w10mag
     wenf       => gdp%gdr_i_ch%wenf
@@ -1322,7 +1328,9 @@ subroutine gtptrs(gdp)
     uorb       = gtrpnt('uorb'  , gdp)
     ubot       = gtrpnt('ubot'  , gdp)
     ubcom      = gtrpnt('ubcom' , gdp)
-    usus       = gtrpnt('usus  ', gdp)
+    umod       = gtrpnt('umod'  , gdp)
+    usus       = gtrpnt('usus'  , gdp)
+    uuu        = gtrpnt('uuu'   , gdp)
     uvdist     = gtrpnt('uvdist', gdp)
     uwtypu     = gtrpnt('uwtypu', gdp)
     uwtypv     = gtrpnt('uwtypv', gdp)
@@ -1339,6 +1347,7 @@ subroutine gtptrs(gdp)
     volum1     = gtrpnt('volum1', gdp)
     vortic     = gtrpnt('vortic', gdp)
     vsus       = gtrpnt('vsus'  , gdp)
+    vvv        = gtrpnt('vvv'   , gdp)
     w1         = gtrpnt('w1'    , gdp)
     w10mag     = gtrpnt('w10mag', gdp)
     wenf       = gtrpnt('wenf'  , gdp)

@@ -48,6 +48,8 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
     !
     use globaldata
     !
+    use m_umod, only: find_cell_centre_index
+    !
     implicit none
     !
     type(globdat),target :: gdp
@@ -117,6 +119,9 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
     !
     do nm = 1, nmmax
        !
+       uu = 0.0_fp
+       vv = 0.0_fp
+       
        if (kfsed(nm) == 0) then
           uuu  (nm) = 0.0_fp
           vvv  (nm) = 0.0_fp
@@ -124,101 +129,8 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
           zumod(nm) = 0.0_fp
           cycle
        endif
-       !
-       nmd  = nm  - icx
-       numd = nmd + 1
-       ndmd = nmd - 1
-       num  = nm  + 1
-       ndm  = nm  - 1
-       nmu  = nm  + icx
-       ndmu = nmu - 1
-       !
-       uu = 0.0_fp
-       vv = 0.0_fp
-       h1 = s1(nm) + real(dps(nm),fp)
-       !
-       if (v2dwbl) then
-          fact   = max(kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm), 1)
-          deltas = (deltau(nm) + deltau(nmd) + deltav(nm) + deltav(ndm)) / fact
-          maxdepfrac = 0.5_fp
-       else
-          deltas = 0.05_fp
-          maxdepfrac = 0.05_fp
-       endif       
-       !
-       do k = kmax, 1, -1
-          cc  = (1.0 + sig(k))*h1
-          kmx = k
-          if (cc>=maxdepfrac*h1 .or. cc>=deltas) then
-             exit
-          endif         
-       enddo
-       !
-       ufac = 0.5_fp
-       vfac = 0.5_fp
-       if (abs(kcs(nm)) == 1) then
-          !
-          ! Internal point
-          ! Set velocity in U direction.
-          !
-          nm_u1 = nm
-          nm_u2 = nmd
-          !
-          ! Set velocity in V direction.
-          !
-          nm_v1 = nm
-          nm_v2 = ndm
-       elseif (abs(kcu(nm)) + abs(kcu(nmd)) == 1) then
-          !
-          ! Open boundary (kcs(nm)==2) in v-direction
-          !
-          ! Set velocity in U direction.
-          !
-          nm_u1 = nm
-          nm_u2 = nmd
-          ufac  = 1.0_fp
-          !
-          ! Set velocity in V direction.
-          !
-          if (abs(kcu(nm)) == 1) then
-             !
-             ! Open boundary at left-hand side
-             !
-             nm_v1 = nmu
-             nm_v2 = ndmu
-          else
-             !
-             ! Open boundary at right-hand side
-             !
-             nm_v1 = nmd
-             nm_v2 = ndmd
-          endif
-       else
-          !
-          ! Open boundary (kcs(nm)==2) in u-direction
-          !
-          ! Set velocity in U direction.
-          !
-          if (abs(kcv(nm)) == 1) then
-             !
-             ! Open boundary at lower side
-             !
-             nm_u1 = num
-             nm_u2 = numd
-          else
-             !
-             ! Open boundary at upper side
-             !
-             nm_u1 = ndm
-             nm_u2 = ndmd
-          endif
-          !
-          ! Set velocity in V direction.
-          !
-          nm_v1 = nm
-          nm_v2 = ndm
-          vfac  = 1.0_fp
-       endif
+       call find_cell_centre_index(gdp,nm,icx,s1,dps,kcs,kcu,kmax,kcv,kfu,kfv,deltau,deltav,sig,&
+                                & nm_u1,nm_u2,nm_v1,nm_v2,kmx,ufac,vfac)
        !
        uu = ufac * (  kfu(nm_u1)*u0eul(nm_u1, kmx)*hu(nm_u1) &
           &         + kfu(nm_u2)*u0eul(nm_u2, kmx)*hu(nm_u2)  )

@@ -124,6 +124,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     character(12)                    :: fildef   ! Default file name (usually = blank)
     character(6)                     :: keyw     ! Name of record to look for in the MD-file (usually KEYWRD or RECNAM)
     character(6)                     :: cval     ! String value
+    real(fp)     , dimension(2)      :: rval2    ! Help array (real) where the data, recently read from the MD-file, are stored temporarily
 !
 !! executable statements -------------------------------------------------------
 !

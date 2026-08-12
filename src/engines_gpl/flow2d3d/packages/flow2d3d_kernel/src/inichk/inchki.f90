@@ -44,6 +44,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     use precision
     use globaldata
     use dfparall
+    use m_trtrou, only: chktrt
+    use m_d3d_chktrt, only: d3d4_chktrt
     !
     implicit none
     !
@@ -121,6 +123,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer                , pointer :: lstsci
     integer                , pointer :: lsecfl
     integer                , pointer :: lsec
+    integer                , pointer :: lsedtot
     integer                , pointer :: ltur
     integer                , pointer :: kmxt
     integer                , pointer :: nlcest
@@ -147,6 +150,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     real(fp), dimension(:) , pointer :: wstcof
     integer                , pointer :: iro
     logical                , pointer :: wind
+    logical                , pointer :: spatial_bedform
     logical                , pointer :: salin
     logical                , pointer :: temp
     logical                , pointer :: wave
@@ -159,7 +163,15 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     logical                , pointer :: solrad_read
     logical                , pointer :: swrf_file
     character(256)         , pointer :: flbdfh
+    character(256)         , pointer :: flnmD50
+    character(256)         , pointer :: flnmD90
+    logical                , pointer :: lfbedfrmrou
     real(fp), dimension(:) , pointer :: duneheight
+    real(fp), dimension(:) , pointer :: bedformD50
+    real(fp), dimension(:) , pointer :: bedformD90
+    real(fp), dimension(:) , pointer :: rksr
+    real(fp), dimension(:) , pointer :: rksmr
+    real(fp), dimension(:) , pointer :: rksd
 !
 ! Global variables
 !
@@ -210,6 +222,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                             !!   M : Manning  Z : roughness par.
     character(36) :: tgfcmp !  Description and declaration in tricom.igs
     character(4)  :: rouflo !  Description and declaration in esm_alloc_char.f90
+    
 !
 ! Local variables
 !
@@ -238,6 +251,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     lstsci      => gdp%d%lstsci
     lsecfl      => gdp%d%lsecfl
     lsec        => gdp%d%lsec
+    lsedtot     => gdp%d%lsedtot
     ltur        => gdp%d%ltur
     kmxt        => gdp%d%kmxt
     nlcest      => gdp%d%nlcest
@@ -327,6 +341,16 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     fltd        => gdp%gdtmpfil%fltd
     flbdfh      => gdp%gdbedformpar%flbdfh
     duneheight  => gdp%gdbedformpar%duneheight
+    !flnmD50     => gdp%gdbedformpar%flnmD50
+    !flnmD90     => gdp%gdbedformpar%flnmD90
+    spatial_bedform     => gdp%gdbedformpar%spatial_bedform
+    bedformD50          => gdp%gdbedformpar%bedformD50
+    bedformD90          => gdp%gdbedformpar%bedformD90
+    rksr                => gdp%gdbedformpar%rksr
+    rksmr               => gdp%gdbedformpar%rksmr
+    rksd                => gdp%gdbedformpar%rksd
+
+    !lfbedfrmrou => gdp%gdbedformpar%lfbedfrmrou
     solrad_read => gdp%gdheat%solrad_read
     swrf_file   => gdp%gdheat%swrf_file
     !
@@ -440,8 +464,15 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     ! CHKTRT: checks Trachytopes if defined
     !
     if (lftrto) then
-       call chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
-                 & i(kcu)    ,i(kcv)    ,gdp)
+
+      call d3d4_chktrt(lundia    ,error     ,i(kcu)    ,i(kcv), gdp)
+      !call d3d4_chktrt(lundia    ,error     ,gdp%griddim   , & 
+      !           & gdp%gdtrachy  ,flnmD50   ,flnmD90   ,lfbedfrmrou, gdp%gdprocs%sedim, gdp%d%ddbound)
+
+       !call chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
+       !          & i(kcu)    ,i(kcv)    ,gdp)
+       
+        
     endif
     if (error) goto 9999
     !

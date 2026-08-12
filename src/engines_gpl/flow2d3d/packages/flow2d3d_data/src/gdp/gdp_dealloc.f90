@@ -45,6 +45,7 @@ subroutine gdp_dealloc(gdp)
     use globaldata
     use dfparall
     use dredge_data_module, only: clrdredge
+    use trachytopes_data_module, only: clrtrachy !it is actually exposed by `globaldata`, but it should not. 
     !
     implicit none
     !
@@ -215,7 +216,7 @@ subroutine gdp_dealloc(gdp)
     deallocate (gdp%gdstations, STAT = istat)
     deallocate (gdp%gdtfzeta  , STAT = istat)
     deallocate (gdp%gdtmpfil  , STAT = istat)
-    call clrtrachy(istat, gdp)
+    call clrtrachy(istat, gdp%gdtrachy)
     deallocate (gdp%gdtrachy, STAT = istat)
     deallocate (gdp%gdturcoe, STAT = istat)
     deallocate (gdp%gdusrpar, STAT = istat)

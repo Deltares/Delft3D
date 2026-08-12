@@ -269,7 +269,9 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: uorb
     integer(pntrsize) , pointer :: ubot
     integer(pntrsize) , pointer :: ubcom
+    integer(pntrsize) , pointer :: umod
     integer(pntrsize) , pointer :: usus
+    integer(pntrsize) , pointer :: uuu
     integer(pntrsize) , pointer :: uvdist
     integer(pntrsize) , pointer :: uwtypu
     integer(pntrsize) , pointer :: uwtypv
@@ -287,6 +289,7 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: volum1
     integer(pntrsize) , pointer :: vortic
     integer(pntrsize) , pointer :: vsus
+    integer(pntrsize) , pointer :: vvv
     integer(pntrsize) , pointer :: w1
     integer(pntrsize) , pointer :: w10mag
     integer(pntrsize) , pointer :: windcd
@@ -624,7 +627,9 @@ function getpointer(pntnam, gdp)
     uorb       => gdp%gdr_i_ch%uorb
     ubot       => gdp%gdr_i_ch%ubot
     ubcom      => gdp%gdr_i_ch%ubcom
+    umod       => gdp%gdr_i_ch%umod
     usus       => gdp%gdr_i_ch%usus
+    uuu        => gdp%gdr_i_ch%uuu
     uvdist     => gdp%gdr_i_ch%uvdist
     uwtypu     => gdp%gdr_i_ch%uwtypu
     uwtypv     => gdp%gdr_i_ch%uwtypv
@@ -642,6 +647,7 @@ function getpointer(pntnam, gdp)
     volum1     => gdp%gdr_i_ch%volum1
     vortic     => gdp%gdr_i_ch%vortic
     vsus       => gdp%gdr_i_ch%vsus
+    vvv        => gdp%gdr_i_ch%vvv
     w1         => gdp%gdr_i_ch%w1
     w10mag     => gdp%gdr_i_ch%w10mag
     windsu     => gdp%gdr_i_ch%windsu
@@ -1193,6 +1199,8 @@ function getpointer(pntnam, gdp)
        returnval = ubot
     case ('ubcom')
        returnval = ubcom
+    case ('umod')
+       returnval = umod
     case ('uvdist')
        returnval = uvdist
     case ('uwtypu')
@@ -1205,6 +1213,8 @@ function getpointer(pntnam, gdp)
        returnval = umnflc
     case ('usus')
        returnval = usus
+    case ('uuu')
+       returnval = uuu
     case ('v0')
        returnval = v0
     case ('v1')
@@ -1233,6 +1243,8 @@ function getpointer(pntnam, gdp)
        returnval = vortic
     case ('vsus')
        returnval = vsus
+    case ('vvv')
+       returnval = vvv
     case ('w1')
        returnval = w1
     case ('w10mag')

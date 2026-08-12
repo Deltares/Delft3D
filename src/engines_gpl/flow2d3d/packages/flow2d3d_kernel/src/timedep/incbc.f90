@@ -111,8 +111,8 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     real(fp)                           , pointer :: thetqt
     logical                            , pointer :: use_zavg_for_qtot
     logical                            , pointer :: pcorr
-    real(fp), dimension(:,:,:)         , pointer :: rttfu
-    real(fp), dimension(:,:,:)         , pointer :: rttfv
+    real(fp), dimension(:,:)           , pointer :: rttfu
+    real(fp), dimension(:,:)           , pointer :: rttfv
     logical                            , pointer :: relxqh
     type (handletype)                  , pointer :: fbcrfile
     type (fbcrbndtype)  , dimension(:) , pointer :: fcrbnd
@@ -222,6 +222,7 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     integer                             :: posrel         ! code denoting the position of the open boundary, related to the complete grid
     integer                             :: lb             ! lowerboundary of loopcounter
     integer                             :: ub             ! upperboundary of loopcounter
+    integer                             :: nm
     logical                             :: first          ! Flag = TRUE in case a time-dependent file is read for the 1-st time 
     logical                             :: error          ! errorstatus
     logical                             :: horiz          ! Flag=TRUE if open boundary lies parallel to x-/KSI-dir. 
@@ -300,8 +301,8 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     itlfsm                => gdp%gdinttim%itlfsm
     julday                => gdp%gdinttim%julday
     time_nodal_update_bnd => gdp%gdinttim%time_nodal_update_bnd
-    rttfu                 => gdp%gdtrachy%rttfu
-    rttfv                 => gdp%gdtrachy%rttfv
+    rttfu                 => gdp%gdtrachy%dir(1)%rttfu
+    rttfv                 => gdp%gdtrachy%dir(2)%rttfu
     fbcrfile              => gdp%gdflwpar%fbcrfile
     fcrbnd                => gdp%gdflwpar%fcrbnd
     fbccorrection         => gdp%gdflwpar%fbccorrection
@@ -497,6 +498,7 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
           !
           ttfhsum = 0.0
           kcsi  = kcs(npbi, mpbi)
+          call n_and_m_to_nm(npbt, mpbt, nm, gdp)
           if (nob(4,n) > 0) then
              udir  = .true.
              vdir  = .false.
@@ -515,11 +517,11 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                 k1st = kfumin(npbt, mpbt)
                 k2nd = kfumax(npbt, mpbt)
                 do k = k1st, k2nd
-                   ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*dzu1(npbt, mpbt, k)
+                   ttfhsum = ttfhsum + rttfu(nm, k)*dzu1(npbt, mpbt, k)
                 enddo
              else
                 do k = 1, kmax
-                   ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*thick(k)
+                   ttfhsum = ttfhsum + rttfu(nm, k)*thick(k)
                 enddo
                 ttfhsum = ttfhsum * dpvel
              endif
@@ -541,11 +543,11 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                 k1st = kfvmin(npbt, mpbt)
                 k2nd = kfvmax(npbt, mpbt)
                 do k = k1st, k2nd
-                   ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*dzv1(npbt, mpbt, k)
+                   ttfhsum = ttfhsum + rttfv(nm, k)*dzv1(npbt, mpbt, k)
                 enddo
              else
                 do k = 1, kmax
-                   ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*thick(k)
+                   ttfhsum = ttfhsum + rttfv(nm, k)*thick(k)
                 enddo
                 ttfhsum = ttfhsum * dpvel
              endif
