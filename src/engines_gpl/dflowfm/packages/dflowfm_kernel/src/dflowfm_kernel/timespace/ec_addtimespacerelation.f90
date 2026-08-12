@@ -867,6 +867,10 @@ contains
          ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
          ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
+      case ('airpressure', 'atmosphericpressure')
+         if (ec_filetype == provFile_spiderweb) then ! other filetypes are handled generically
+            sourceItemName = 'p_drop'
+         end if
       case ('stressxy')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_downward_eastward_stress')
@@ -1398,7 +1402,8 @@ contains
 
       if (.not. source_connection_created) then
          block
-            integer :: num_generic_source_items
+            integer :: num_generic_source_items, idIdx
+            integer, allocatable :: sourceItemIds(:)
 
             fileReaderPtr => ecFindFileReader(ecInstancePtr, fileReaderId)
             if (.not. associated(fileReaderPtr)) then
@@ -1420,8 +1425,21 @@ contains
                goto 1234
             end if
 
-            sourceItemId = fileReaderPtr%items(1)%ptr%id
-            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+            ! Use the first provider item to identify the logical source quantity,
+            ! then retain all matching items for nested source data.
+            sourceItemName = fileReaderPtr%items(1)%ptr%quantityPtr%name
+            sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
+            if (.not. allocated(sourceItemIds)) then
+               call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection found no matching source items for quantity '''//trim(target_name)//'''.')
+               goto 1234
+            end if
+
+            success = .true.
+            do idIdx = 1, size(sourceItemIds)
+               sourceItemId = sourceItemIds(idIdx)
+               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (.not. success) exit
+            end do
             if (success) then
                success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
             end if
