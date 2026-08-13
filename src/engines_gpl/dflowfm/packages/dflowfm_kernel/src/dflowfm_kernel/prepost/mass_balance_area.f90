@@ -47,36 +47,47 @@ contains
 
    !> Reads and initializes the user-specified mass balance areas
    subroutine read_and_initialize_mass_balance_area(mass_balance_area_file)
+      use properties, only: max_prop_length
+      use string_module, only: strsplit
       use tree_structures, only: tree_destroy
 
       ! Arguments
-      character(len=*), intent(in) :: mass_balance_area_file !< Name of the mass balance area file.
+      character(len=*), intent(in) :: mass_balance_area_file !< Mass balance area file input.
 
       ! Local variables
       type(tree_data), pointer :: mba_ptr !< Pointer to the mass balance area tree structure.
+      character(len=max_prop_length), dimension(:), allocatable :: mass_balance_area_files !< List of mass balance area files.
+      integer :: i !< Loop index for iterating over the mass balance area files.
 
       if (len_trim(mass_balance_area_file) == 0) then
 
          ! When no mass balance area file is specified, return without doing anything
          return
 
-      elseif (index(mass_balance_area_file, '.ini') > 0) then
+      else
+
+         call strsplit(mass_balance_area_file, 1, mass_balance_area_files, 1)
 
          call initialize_mass_balance_area_arrays()
 
-         call open_mass_balance_area_file(mass_balance_area_file, mba_ptr)
+         do i = 1, size(mass_balance_area_files)
+            if (index(mass_balance_area_files(i), '.ini') > 0) then
 
-         call read_mass_balance_area_file(mass_balance_area_file, mba_ptr)
+               call open_mass_balance_area_file(mass_balance_area_files(i), mba_ptr)
+               call read_mass_balance_area_file(mass_balance_area_files(i), mba_ptr)
+               call tree_destroy(mba_ptr)
 
-         call tree_destroy(mba_ptr)
+            else
+
+               write (msgbuf, '(A)') 'Error while reading mass balance area file '''//trim(mass_balance_area_files(i))//''': must be an .ini file.'
+               call err_flush()
+               return
+
+            end if
+         end do
 
          call finalize_mass_balance_area_arrays()
-
-      else
-
-         write (msgbuf, '(A)') 'Error while reading mass balance area file '''//trim(mass_balance_area_file)//''': must be an .ini file.'
-         call err_flush()
-
+         
       end if
 
    end subroutine read_and_initialize_mass_balance_area
