@@ -1290,7 +1290,8 @@ contains
                                           forcinglist, success1)
       success = success .and. check_input_result(success1, st_id, 'gateLowerEdgeLevel')
 
-      call prop_get(md_ptr, '', 'gateHeight', generalst%gatedoorheight, success1)
+      call get_value_or_addto_forcinglist(md_ptr, 'gateHeight', generalst%gatedoorheight, st_id, ST_GATE, &
+                                          forcinglist, success1)
       success = success .and. check_input_result(success1, st_id, 'gateHeight')
 
       generalst%gateOpeningWidth = 0.0_dp
@@ -1394,7 +1395,7 @@ contains
       generalst%crestlength = 0.0_dp
       call prop_get(md_ptr, '', 'crestLength', generalst%crestlength)
       generalst%gatedoorheight = 1.0e10_dp
-      call prop_get(md_ptr, '', 'gateHeight', generalst%gatedoorheight, success1)
+      call get_value_or_addto_forcinglist(md_ptr, 'gateHeight', generalst%gatedoorheight, st_id, ST_GENERAL_ST, forcinglist, success1)
       generalst%gateopeningwidth = 0.0_dp
       call get_value_or_addto_forcinglist(md_ptr, 'gateOpeningWidth', generalst%gateopeningwidth, st_id, ST_GENERAL_ST, forcinglist, success1)
 

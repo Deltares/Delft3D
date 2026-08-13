@@ -21,12 +21,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Configure
         id: configure
         run: |
-          set -eou pipefail
+          set -o errexit
+          set -o nounset
+          set -o pipefail
 
           # do not allow running this workflow on the default and release branches
           default_branch="${{ github.event.repository.default_branch }}"
@@ -61,10 +65,12 @@ jobs:
 
           echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
 
-      - name: Find PR for current branch
-        id: find-pr
+      - name: Find relevant branches
+        id: find-relevant-branches
         run: |
-          set -eou pipefail
+          set -o errexit
+          set -o nounset
+          set -o pipefail
 
           pr_list=$(
             curl \
@@ -77,29 +83,26 @@ jobs:
               "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/pulls?state=open&head=${{ env.OWNER}}:${{ env.BRANCH}}"
           )
 
-          pr_count=$(echo "${pr_list}" | jq 'length')
+          branches=$(
+            jq -c \
+              --arg branch "${{ env.BRANCH }}" \
+              '[ $branch ] + [ .[] | select(.draft == false) | "pull/\(.number)" ]' \
+              <<< "${pr_list}"
+          )
 
-          if [ "${pr_count}" -eq 0 ]; then
-            echo "No open pull request found for branch ${{ env.BRANCH }}."
-            exit 0
-          fi
+          pr_count=$(jq 'length - 1' <<< "${branches}")
 
-          if [ "${pr_count}" -gt 1 ]; then
-            echo "Multiple pull requests found for branch ${{ env.BRANCH }}. Cannot proceed further."
-            exit 1
-          fi
+          echo "Found ${pr_count} open non-draft PR(s)."
+          echo "Will consider the branches: $(jq -r 'join(", ")' <<< "${branches}")"
 
-          pr_number=$(echo "$pr_list" | jq -r '.[0].number')
-
-          echo "Found pull request #${pr_number}."
-          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "branches=${branches}" >> "${GITHUB_OUTPUT}"
 
       - name: Retrieve KSM credentials
         id: retrieve-ksm-credentials
         env:
           KSM_APP_CONFIG: ${{ secrets.KSM_APP_CONFIG }}
           KSM_RECORD_UID: ${{ secrets.KSM_RECORD_UID }}
-        uses: Keeper-Security/ksm-action@v1.1.0
+        uses: Keeper-Security/ksm-action@v1.3.0
         with:
           keeper-secret-config: ${{ env.KSM_APP_CONFIG }}
           secrets: |-
@@ -108,15 +111,22 @@ jobs:
       - name: Cancel TeamCity builds
         if: steps.retrieve-ksm-credentials.outcome == 'success'
         run: |
-          set -eou pipefail
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
           teamcity_base_url="https://dpcbuild.deltares.nl"
           teamcity_project_id="Delft3D"
-          branch="pull/${{ steps.find-pr.outputs.pr_number }}"
           commit_hash="${{ steps.configure.outputs.commit_hash }}"
 
-          ./ci/github/cancel_teamcity_builds.sh \
-            --teamcity-base-url "${teamcity_base_url}" \
-            --teamcity-token "${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
-            --teamcity-project-id "${teamcity_project_id}" \
-            --branch "${branch}" \
-            --commit-hash "${commit_hash}"
+          echo '${{ steps.find-relevant-branches.outputs.branches }}' |
+          jq -r '.[]' |
+          while read -r branch; do
+            echo "Processing ${branch}"
+            ./ci/github/cancel_teamcity_builds.sh \
+              --teamcity-base-url "${teamcity_base_url}" \
+              --teamcity-token "${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
+              --teamcity-project-id "${teamcity_project_id}" \
+              --branch "${branch}" \
+              --commit-hash "${commit_hash}"
+          done

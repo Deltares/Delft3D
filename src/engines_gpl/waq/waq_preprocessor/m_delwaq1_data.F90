@@ -44,7 +44,7 @@ module m_delwaq1_data
     implicit none
 
     integer, parameter :: NUM_FILES = 50              !< number of input / output files
-    integer, parameter :: NUM_INTEGRATION_OPTIONS = 200            !< number of integration options implemented
+    integer, parameter :: NUM_INTEGRATION_OPTIONS = 208            !< number of integration options implemented
 
     integer, parameter :: MAX_INT_SIZE = 2500000        !< default size integer work array
     integer, parameter :: MAX_REAL_SIZE = 10000000       !< default size real work array
@@ -183,6 +183,7 @@ module m_delwaq1_data
             220, 221, 222, 223, 224, 225, 226, 227, &
             230, 231, 232, 233, 234, 235, 236, 237, &
             240, 241, 242, 243, 244, 245, 246, 247, &
-            250, 251, 252, 253, 254, 255, 256, 255]
+            250, 251, 252, 253, 254, 255, 256, 257, &
+            260, 261, 262, 263, 264, 265, 266, 267]
 
 end module

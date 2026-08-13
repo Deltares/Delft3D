@@ -1,6 +1,8 @@
 """Tests for the array delimiter converter."""
+
 import pytest
 from deltares_fortran_styler.array_delimiter_converter import ArrayDelimiterConverter
+
 
 class TestArrayDelimiterConverter:
     """Test suite for ArrayDelimiterConverter."""
@@ -179,7 +181,7 @@ z = (/ 5, 6, 7 /)"""
         stats = converter.get_conversion_stats(text)
 
         # Assert
-        assert stats['array_constructors'] == 3
+        assert stats["array_constructors"] == 3
 
     def test_deeply_nested_parentheses(self, converter):
         """Test conversion with deeply nested function calls."""

@@ -54,11 +54,11 @@ contains
       use unstruc_files
       use m_flowgeom
       use m_flowtimes
-      use m_physcoef, only: rhomean, ag, vismol
+      use m_physcoef, only: rhomean, ag, vismol, dynroughveg
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, eps4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -456,12 +456,12 @@ contains
          end if
          if (jawave > NO_WAVES .and. jawave /= 4) then
             if (comparereal(gammax, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4 ! if they are exactly the same, rounding errors set index to false wrongly
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4 ! if they are exactly the same, rounding errors set index to false wrongly
             end if
          end if
          if (jawave == WAVE_SURFBEAT) then
             if (comparereal(gammaxxb, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4
             end if
          end if
       end if
@@ -471,12 +471,6 @@ contains
             deallocate (avalflux)
          end if
          call realloc(avalflux, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
-         !
-         ! Warn user if default wetslope is still 10.0 when using dune avalanching. Reset default to reasonable 1.0 in that case.
-         if (comparereal(stmpar%morpar%wetslope, 10.0_dp) == 0) then
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
-            stmpar%morpar%wetslope = 1.0e-1_dp
-         end if
          !
          ! Warn user if upperlimitssc is set icm with avalanching. This effectively removes sedimentation of the avalanching flux if set too strictly.
          if (comparereal(upperlimitssc, 1.0e6_dp) /= 0) then
@@ -548,6 +542,11 @@ contains
       case default
          ! if 0, do nothing.
       end select
+      !
+      if (dynroughveg > 0) then
+         if (allocated(cumes)) deallocate(cumes)
+         call realloc(cumes, lnx,stat=ierr,fill=0.0_dp, keepExisting=.false.)
+      end if
 
 1234  return
    end subroutine flow_sedmorinit

@@ -3,8 +3,8 @@ set(dependencies deltares_common
                  waq_hyd_data
                  io_netcdf_data
                  io_netcdf
-                 netcdff
-				 io_hyd)
+                 netCDF::netcdff
+                 io_hyd)
 
 create_test(
         tests_aggregate_waqgeom

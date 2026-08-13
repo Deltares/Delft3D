@@ -13,7 +13,8 @@ struct dimr_control_block
     dimr_control_block* subBlocks;
     int masterSubBlockId; // Identifying the unique subBlock of this controlBlock acting as the master
     int type;
-    dimr_unit unit; // pointer to the actual units (in case of no further subblocks)
+    int mpi_barrier_sleep; // Time to sleep in milliseconds while a component is updating
+    dimr_unit unit;        // pointer to the actual units (in case of no further subblocks)
     double tStart;
     double tStep;
     double tEnd;

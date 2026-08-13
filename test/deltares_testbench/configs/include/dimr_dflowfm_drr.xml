@@ -1,5 +1,5 @@
-    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-        <!--
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+  <!--
         <testCase name="e02_f152_c01_DHydamo-DVB-initialisation" ref="dimr_trunk">
             <path>e02_dflowfm/f152_1d2d_projectmodels_rhu/c01_DHydamo-DVB-initialisation</path>
             <checks>
@@ -22,7 +22,7 @@
             </checks>
         </testCase>
         -->
-        <!--
+  <!--
         <testCase name="e02_f152_c04_DHydamo-MGB-initialisation" ref="dimr_trunk">
             <path>e02_dflowfm/f152_1d2d_projectmodels_rhu/c04_DHydamo-MGB-initialisation</path>
             <checks>
@@ -45,86 +45,86 @@
             </checks>
         </testCase>
         -->
-        <testCase name="e112_f01_c01_laterals_BMI_coupling" ref="dimr_trunk">
-            <path version="2025-10-15T18:47:41.769000">e112_dflowfm-drr/f01_1d_rr/c01_laterals_BMI_coupling</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-                <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="water_balance_laterals_in" toleranceRelative="0.0000001" />
-                    </parameters>
-                </file>
-                <file name="rr/rrbalans.his" type="HIS">
-                    <parameters>
-                        <parameter name="Boundaries out" location="Total RR system" toleranceRelative="0.0000001" />
-                   </parameters>
-                </file> 
-            </checks>
-        </testCase>
-        <testCase name="e112_f01_c02_laterals_BMI_coupling_refdate" ref="dimr_trunk">
-            <path version="2025-10-15T18:47:45.145000">e112_dflowfm-drr/f01_1d_rr/c02_laterals_BMI_coupling_refdate</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-                <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="water_balance_laterals_in" toleranceRelative="0.0000001" />
-                    </parameters>
-                </file>
-                <file name="rr/rrbalans.his" type="HIS">
-                    <parameters>
-                        <parameter name="Boundaries out" location="Total RR system" toleranceRelative="0.0000001" />
-                   </parameters>
-                </file> 
-            </checks>
-        </testCase>
-        <testCase name="e112_f01_c04_multiple_catchments" ref="dimr_trunk">
-            <path version="2025-10-15T18:47:52.439000">e112_dflowfm-drr/f01_1d_rr/c04_multiple_catchments</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_model4/model4_his.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-                <file name="rr/rrbalans.his" type="HIS">
-                    <parameters>
-                        <parameter name="Boundaries out" location="Total RR system" toleranceAbsolute="0.0001" />
-                   </parameters>
-                </file> 
-            </checks>
-        </testCase>
-        <testCase name="e112_f01_c05_pipes_and_manholes" ref="dimr_trunk">
-            <path version="2025-10-27T14:23:34.740000">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_FM_model/FM_model_his.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-                <file name="fm/DFM_OUTPUT_FM_model/FM_model_map.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>				
-                <file name="rr/rrbalans.his" type="HIS">
-                    <parameters>
-                        <parameter name="RWF+DWF NWRW" location="Total RR system" toleranceAbsolute="0.0001" />
-                   </parameters>
-                </file>
-            </checks>
-        </testCase>
-        <!--
+  <testCase name="e112_f01_c01_laterals_BMI_coupling" ref="dimr_trunk">
+    <path version="DVC">e112_dflowfm-drr/f01_1d_rr/c01_laterals_BMI_coupling</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
+        <parameters>
+          <parameter name="water_balance_laterals_in" toleranceRelative="0.0000001"/>
+        </parameters>
+      </file>
+      <file name="rr/rrbalans.his" type="HIS">
+        <parameters>
+          <parameter name="Boundaries out" location="Total RR system" toleranceRelative="0.0000001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e112_f01_c02_laterals_BMI_coupling_refdate" ref="dimr_trunk">
+    <path version="DVC">e112_dflowfm-drr/f01_1d_rr/c02_laterals_BMI_coupling_refdate</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
+        <parameters>
+          <parameter name="water_balance_laterals_in" toleranceRelative="0.0000001"/>
+        </parameters>
+      </file>
+      <file name="rr/rrbalans.his" type="HIS">
+        <parameters>
+          <parameter name="Boundaries out" location="Total RR system" toleranceRelative="0.0000001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e112_f01_c04_multiple_catchments" ref="dimr_trunk">
+    <path version="DVC">e112_dflowfm-drr/f01_1d_rr/c04_multiple_catchments</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_model4/model4_his.nc" type="NETCDF">
+        <parameters>
+          <parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="rr/rrbalans.his" type="HIS">
+        <parameters>
+          <parameter name="Boundaries out" location="Total RR system" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e112_f01_c05_pipes_and_manholes" ref="dimr_trunk">
+    <path version="DVC">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_FM_model/FM_model_his.nc" type="NETCDF">
+        <parameters>
+          <parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_FM_model/FM_model_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh1d_q1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="rr/rrbalans.his" type="HIS">
+        <parameters>
+          <parameter name="RWF+DWF NWRW" location="Total RR system" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <!--
         <testCase name="e112_f01_c10_westamstel" ref="dimr_trunk">
             <path>e112_dflowfm-drr/f01_1d_rr/c10_westamstel</path>
             <checks>
@@ -141,29 +141,29 @@
             </checks>
         </testCase>
         -->
-        <testCase name="e112_f01_c11_waardenburg" ref="dimr_trunk">
-            <path version="2025-09-11T13:20:21.667000">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_flowfm/flowfm_his.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="pump_structure_head" toleranceAbsolute="0.0001" />
-                        <parameter name="weirgen_structure_head" toleranceAbsolute="0.0001" />
-                        <parameter name="orifice_head" toleranceAbsolute="0.0001" />
-                        <parameter name="cmpstru_head" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-                <file name="fm/DFM_OUTPUT_flowfm/flowfm_map.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>	
-                <file name="rr/rrbalans.his" type="HIS">
-                    <parameters>
-                        <parameter name="RWF+DWF NWRW" location="Total RR system" toleranceAbsolute="0.0001" />
-                   </parameters>
-                </file>
-            </checks>
-        </testCase>
-    </testCases>
+  <testCase name="e112_f01_c11_waardenburg" ref="dimr_trunk">
+    <path version="DVC">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_flowfm/flowfm_his.nc" type="NETCDF">
+        <parameters>
+          <parameter name="pump_structure_head" toleranceAbsolute="0.0001"/>
+          <parameter name="weirgen_structure_head" toleranceAbsolute="0.0001"/>
+          <parameter name="orifice_head" toleranceAbsolute="0.0001"/>
+          <parameter name="cmpstru_head" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_flowfm/flowfm_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh1d_q1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="rr/rrbalans.his" type="HIS">
+        <parameters>
+          <parameter name="RWF+DWF NWRW" location="Total RR system" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+</testCases>

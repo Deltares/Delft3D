@@ -50,7 +50,7 @@ contains
       use m_physcoef
       use m_turbulence
       use m_flow
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: default_fm_external_forcing_data, kbndz
       use m_flowparameters
       use m_flowgeom
       use m_modelbounds
@@ -72,6 +72,7 @@ contains
       use m_ec_interpolationsettings
       use unstruc_channel_flow
       use m_sobekdfm
+      use m_fm_icecover, only: default_fm_icecover
       use m_waves, only: default_waves
       use m_save_ugrid_state
       use m_xbeach_avgoutput, only: default_xbeach_avgoutput
@@ -87,6 +88,9 @@ contains
       use fm_deprecated_keywords, only: default_fm_deprecated_keywords
       use m_sediment, only: deallocgrains, default_sediment
       use m_flow_validatestate, only: default_flow_validatestate
+      use m_prefetch, only: cleanup_prefetch_arrays
+      use m_source_sink, only: source_sinks
+      use m_unstruc_netcdf_data, only: default_unstruc_netcdf_data
 
       implicit none
 
@@ -94,6 +98,7 @@ contains
       ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
       call default_fm_deprecated_keywords()
 
+      call default_unstruc_netcdf_data()
       call init_unstruc_netcdf()
 
       call default_caching()
@@ -143,6 +148,7 @@ contains
       call default_modelbounds()
 
       call default_fm_external_forcing_data()
+      call source_sinks%dealloc()
 
       call default_channel_flow()
 
@@ -155,6 +161,8 @@ contains
       call default_flowparameters()
 
       call default_flow()
+
+      call default_fm_icecover()
 
       call default_interpolationsettings()
 
@@ -181,6 +189,12 @@ contains
       call delCrossSections()
       call delThinDams()
       call delFixedWeirs()
+
+      if (allocated(kbndz)) then
+         deallocate(kbndz)
+      end if
+
+      call cleanup_prefetch_arrays()
 
    end subroutine resetFullFlowModel
 

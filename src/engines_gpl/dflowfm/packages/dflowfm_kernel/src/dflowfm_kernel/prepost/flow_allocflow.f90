@@ -44,7 +44,7 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, kmx, kbotc, kmxc, layertype, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, map_write_settings, mxlaydefs, kmx, kbotc, kmxc, layertype, &
                         LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
                         zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
@@ -58,13 +58,13 @@ contains
                         dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
-                        au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
-                        u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, &
+                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
-                        soiltempthick, jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
+                        soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density
+                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -90,11 +90,13 @@ contains
                         qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
+      use m_turbulence, only: potential_density, in_situ_density, difwws, difwws_total, vicwwu_total, vicwws_total, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
+      use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
+      use m_physcoef, only: dynroughveg, frcuni
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -128,7 +130,7 @@ contains
       call realloc(cfs, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('cfs(ndx)', ierr, ndx)
 
-      if (jamapFlowAnalysis > 0) then
+      if (map_write_settings%flow_analysis > 0) then
          call realloc(negativeDepths, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('negativeDepths(ndx)', ierr, ndx)
          call realloc(negativeDepths_cum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -196,7 +198,7 @@ contains
          numkmax = -numkmin
          do Lf = Lnx1D + 1, Lnx ! we only need netnode nrs in 2D, todo: trim to numkmin
             L = ln2lne(Lf)
-            if (kn(3, L) == 2) then
+            if (kn(3, L) == LINK_2D) then
                numkmin = min(numkmin, kn(1, L), kn(2, L))
                numkmax = max(numkmax, kn(1, L), kn(2, L))
             end if
@@ -445,6 +447,9 @@ contains
          end do
          ndkx = kk
 
+         ! Create mapping from 3D indices (ndkx) to 2D horizontal cells (ndx)
+         call map_ndkx_to_ndx()
+         
          LL = Lnx ! Stapelen vanaf grondlaag
          do L = 1, lnx
             n1 = ln(1, L)
@@ -876,10 +881,16 @@ contains
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
+         call realloc(vicwwu_total, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwwu_total(lnkx)', ierr, lnkx)
          call realloc(vicwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwws(ndkx)', ierr, ndkx)
+         call realloc(vicwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwws_total(ndkx)', ierr, ndkx)
          call realloc(difwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('difwws(ndkx)', ierr, ndkx)
+         call realloc(difwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('difwws_total(ndkx)', ierr, ndkx)
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
@@ -947,6 +958,8 @@ contains
       call aerr('au_nostrucs(lnkx)', ierr, lnkx)
       call realloc(viu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('viu(lnkx)', ierr, lnkx)
+      call realloc(vius, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+      call aerr('vius(ndkx)', ierr, ndkx)
       call realloc(vicLu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('vicLu(lnkx)', ierr, lnkx)
       call realloc(suu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -963,7 +976,7 @@ contains
          call aerr('frculin(lnx)', ierr, lnx)
       end if
 
-      if (network%loaded .or. stm_included) then
+      if (network%loaded .or. stm_included .or. any(kcu == LINK_1D2D_STREETINLET)) then
          call realloc(u_to_umain, lnkx, stat=ierr, fill=1.0_dp, keepexisting=.false.)
          call aerr('u_to_umain(lnkx)', ierr, lnkx)
          call realloc(q1_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -980,13 +993,19 @@ contains
          call aerr('cftrt(numl,3)', ierr, numl)
       end if
 
-      if (jamap_chezy_elements > 0) then
+      if (map_write_settings%chezy_elements > 0) then
          call realloc(czs, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czs(ndx)', ierr, ndx)
       end if
-      if (jamap_chezy_links > 0) then
+      if (map_write_settings%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
+      end if
+      if (dynroughveg > 0) then
+         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
+         call aerr('frcu0(lnx)', ierr, lnx)
+         call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
+         call aerr('dynveg(lnx)', ierr, lnx)
       end if
 
       if (jarhoxu > 0 .or. jased > 0) then
@@ -1036,7 +1055,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1044,7 +1063,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1069,18 +1088,18 @@ contains
             end if
          end if
 
-         if (jamapheatflux > 0 .or. jahisheatflux > 0) then
-            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
             end if
          end if
 
-         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! save cd coeff if heat modelling also involved
+         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! save cd coeff if heat modelling also involved
             call realloc(cdwcof, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('cdwcof(lnx)', ierr, lnx)
 
-            if (jamapheatflux > 0 .or. jahisheatflux > 0) then ! his or map output
+            if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then ! his or map output
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
                call realloc(Qsunmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1237,5 +1256,6 @@ contains
       end if
 
       call set_kbot_ktop(jazws0=1)
+      
    end subroutine flow_allocflow
 end module m_flow_allocflow

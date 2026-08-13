@@ -480,8 +480,8 @@ void XmlTree::ExpandEnvironmentVariables(int instance)
         orgstr = this->attribValues[iattrib];
         instr = orgstr;
         outstr = SubstEnvVar(instr) + '\0';
-        free(this->attribValues[iattrib]);
-        this->attribValues[iattrib] = (char*)calloc(outstr.length(), sizeof(char));
+        delete[] this->attribValues[iattrib];
+        this->attribValues[iattrib] = new char[outstr.length()];
         outstr.copy(this->attribValues[iattrib], outstr.length());
     }
     if (this->charData != NULL)
@@ -489,8 +489,8 @@ void XmlTree::ExpandEnvironmentVariables(int instance)
         orgstr = this->charData;
         instr = orgstr;
         outstr = SubstEnvVar(instr) + '\0';
-        free(this->charData);
-        this->charData = (char*)calloc(outstr.length(), sizeof(char));
+        delete[] this->charData;
+        this->charData = new char[outstr.length()];
         outstr.copy(this->charData, outstr.length());
     }
 

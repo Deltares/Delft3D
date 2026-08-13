@@ -42,7 +42,7 @@ module m_update_flowanalysis_parameters
 contains
 
    subroutine updateFlowAnalysisParameters()
-      use m_flow, only: jamapflowanalysis, negativedepths_cum, negativedepths, noiterations_cum, noiterations, limitingtimestepestimation_cum, limitingtimestepestimation, flowcourantnumber
+      use m_flow, only: map_write_settings, negativedepths_cum, negativedepths, noiterations_cum, noiterations, limitingtimestepestimation_cum, limitingtimestepestimation, flowcourantnumber
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
 
@@ -50,7 +50,7 @@ contains
 
       integer :: n
 
-      if (jamapFlowAnalysis == 0) then
+      if (map_write_settings%flow_analysis == 0) then
          return
       end if
 

@@ -122,6 +122,7 @@ contains
       integer :: istat
       real(kind=fp) :: dtmor 
       real(kind=fp) :: sbtot(ndx,stmpar%lsedtot)
+      real(fp), dimension(:), pointer :: dunelength_tmp
       !
    !! executable statements -------------------------------------------------------
       !
@@ -167,12 +168,21 @@ contains
          !In case of coarse-layer (HANNEKE) model, we do not want to update coarse layer fluxes.
          dtmor = 0 
          sbtot = 0.0_fp
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,bfmpar%dunelength, sbtot, dtmor, mtd%messages) /= 0) then
+         if (associated(bfmpar%dunelength)) then
+            dunelength_tmp => bfmpar%dunelength
+         else
+            allocate(dunelength_tmp(1:ndx))
+            dunelength_tmp = 1.0e10_fp
+         end if
+         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,dunelength_tmp, sbtot, dtmor, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
             return
          else
             call writemessages(mtd%messages, mdia)
+         end if
+         if (.not. associated(bfmpar%dunelength)) then
+            deallocate(dunelength_tmp)
          end if
          deallocate (dz_dummy, stat=istat)
       end if

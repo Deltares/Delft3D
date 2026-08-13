@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 module m_laterals
    use precision_basics, only: dp, comparereal
-   use m_flowparameters, only: eps10
+   use m_flowparameters, only: EPS10
    implicit none
    private
 
@@ -42,12 +42,6 @@ module m_laterals
    public reset_outgoing_lat_concentration
    public finish_outgoing_lat_concentration
    public distribute_lateral_discharge
-   !!
-   !! Laterals
-   !!
-   integer, parameter, public :: ILATTP_ALL = 0 !< Type code for laterals that apply to both 2D and 1D nodes.
-   integer, parameter, public :: ILATTP_1D = 1 !< Type code for laterals that only apply to 1D nodes.
-   integer, parameter, public :: ILATTP_2D = 2 !< Type code for laterals that only apply to 2D nodes.
 
    integer, target, public :: numlatsg !< [-] nr of lateral discharge providers  {"rank": 0}
    integer, public :: num_layers !< first dimension of qplat and qqlat array, 1 for 2D, kmx for 3D.

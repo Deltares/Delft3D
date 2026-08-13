@@ -1,3 +1,5 @@
+module m_d3d4_flocculate
+contains
 subroutine d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, r0, kfs, kfsmn0, kfsmx0, dts, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -138,3 +140,5 @@ subroutine d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, r0, kfs, kfs
    deallocate(cfloc, stat = istat)
    
 end subroutine d3d4_flocculate
+
+end module m_d3d4_flocculate

@@ -42,6 +42,18 @@ def test_doc_to_local_path(s3_path: str, expected: str) -> None:
             "references/win64/e01_d3dflow/f01_general/c02-fff",
             "data/cases/e01_d3dflow/f01_general/c02-fff/reference_win64",
         ),
+        (
+            "cases/e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints",
+            "data/cases/e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints/input",
+        ),
+        (
+            "cases/e02_dflowfm/f151_1d2d_acceptance_rural/c11_dar-es-salaam/dflowfm/testmodel",
+            "data/cases/e02_dflowfm/f151_1d2d_acceptance_rural/c11_dar-es-salaam/dflowfm/testmodel/input",
+        ),
+        (
+            "references/lnx64/e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints",
+            "data/cases/e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints/reference_lnx64",
+        ),
     ],
 )
 def test_case_and_ref_to_local_path(s3_path: str, expected: str) -> None:

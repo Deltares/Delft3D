@@ -5,7 +5,7 @@ This guide currently documents two sections:
 - \subpage Unstruc
 - \subpage BMI_Unstruc
 
-There exists a developer's guide which can be dound here: 
+There exists a developer's guide which can be dound here:
 <a href="https://content.oss.deltares.nl/delft3dfm2d3d/D-Flow_FM_Developers_Guide.pdf" target=""><b>Developer Guide</b></a>
 
 Below is an overview of the D-FlowFM Kernel.

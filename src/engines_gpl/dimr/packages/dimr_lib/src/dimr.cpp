@@ -24,19 +24,15 @@
 // Stichting Deltares. All rights reserved.
 //
 //------------------------------------------------------------------------------
-// $Id: dimr.cpp 962 2011-10-31 21:52:47Z elshoff $
-// $HeadURL: $
-//------------------------------------------------------------------------------
 //  dimr Main Program
-//
-//  Irv.Elshoff@Deltares.NL
-//  6 mar 13
 //------------------------------------------------------------------------------
 
 #define DIMR_LIB
 #include <string>
 #include <iostream>
 #include <set>
+#include <thread> // std::this_thread::sleep_for
+#include <chrono> // std::chrono::milliseconds
 
 #include "dimr.h"
 #include "dimr_lib_version.h"
@@ -65,6 +61,8 @@
 #include <stdio.h>
 #include <fstream>
 #include <iomanip>
+#include <cstring>
+#include <charconv>
 
 #if defined(WIN32)
     // #  include "getopt.h"
@@ -198,17 +196,18 @@ Dimr::~Dimr(void)
     delete log;
     delete[] mainArgs;
     // componentsList
-    delete[] componentsList.components;
+    free(componentsList.components);
     // couplersList
     for (int i = 0; i < couplersList.numCouplers; i++)
     {
-        delete[] couplersList.couplers[i].items;
+        free(couplersList.couplers[i].items);
+        free(couplersList.couplers[i].itemTypes);
         if (couplersList.couplers[i].logger != NULL)
         {
-            delete couplersList.couplers[i].logger;
+            free(couplersList.couplers[i].logger);
         }
     }
-    delete[] couplersList.couplers;
+    free(couplersList.couplers);
     // control
     if (control != NULL) deleteControlBlock(*(control));
     free(control);
@@ -226,7 +225,7 @@ void Dimr::deleteControlBlock(dimr_control_block cb)
             // Recursively delete all subBlocks
             deleteControlBlock(cb.subBlocks[i]);
         }
-        delete[] cb.subBlocks;
+        free(cb.subBlocks);
     }
 }
 
@@ -501,6 +500,9 @@ void Dimr::runParallelInit(dimr_control_block* cb)
                 if (cb->subBlocks[i].subBlocks[j].type == CT_START)
                 {
                     dimr_component* thisComponent = cb->subBlocks[i].subBlocks[j].unit.component;
+                    // Copy mpi_barrier_sleep from the component to the control block to avoid digging it up in the
+                    // update step
+                    cb->subBlocks[i].mpi_barrier_sleep = thisComponent->mpi_barrier_sleep;
 
                     // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for
                     // masterComponent above)
@@ -1008,10 +1010,10 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep)
         {
             // Sync all partitions to execute the same component
             // This ensures that all flow calculations are finished before a wave calculation is started
-            if (use_mpi)
-            {
-                int ierr = MPI_Barrier(MPI_COMM_WORLD);
-            }
+            // This barrier is at the start of the loop. That means the mpi_barrier_sleep of the previous component is
+            // used. The component->mpi_barrier_sleep is copied to cb->mpi_barrier_sleep after the component is
+            // executed.
+            barrier(MPI_COMM_WORLD, use_mpi, cb->mpi_barrier_sleep);
 
             if (i == cb->masterSubBlockId)
             {
@@ -1052,6 +1054,9 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep)
                 }
                 timerEnd(masterComponent->unit.component);
                 *currentTime = *currentTime + tStep;
+                // masterComponent has been executed. Copy its mpi_barrier_sleep to cb->mpi_barrier_sleep, to be used in
+                // the next barrier at the start of the loop
+                cb->mpi_barrier_sleep = masterComponent->unit.component->mpi_barrier_sleep;
             }
             else
             {
@@ -1276,6 +1281,16 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep)
                                 subblock_timearray[subblock_timeindex] - subblock_timearray[subblock_timeindex - 1];
                         }
                     }
+                    // This component has been executed. Copy its mpi_barrier_sleep to cb->mpi_barrier_sleep, to be
+                    // used in the next barrier at the start of the loop
+                    cb->mpi_barrier_sleep = cb->subBlocks[i].mpi_barrier_sleep;
+                }
+                else
+                {
+                    // Nothing done for this subBlock at this time
+                    // Set mpi_barrier_sleep to 0, to avoid unnecessary sleeping in the barrier at the start of the
+                    // loop
+                    cb->mpi_barrier_sleep = 0;
                 }
             }
         }
@@ -1383,7 +1398,11 @@ void Dimr::receive_ptr(const char* name, const char* sourceName, int compType, B
     char nameShape[100];
     strcpy(nameShape, name);
     strcat(nameShape, "_shape");
-    (dllSetVar)(nameShape, shape);
+    if (compType != COMP_TYPE_DSLE)
+    {
+        // Setting nameshape in DSLE registers it as a constituent, which we do not want.
+        (dllSetVar)(nameShape, shape);
+    }
     // Finally: call setvar(name, pointer)
     (dllSetVar)(name, (void*)sourceVarPtr);
 
@@ -1609,6 +1628,7 @@ void Dimr::scanConfigFile(void)
     control->numSubBlocks = 0;
     control->subBlocks = NULL;
     control->masterSubBlockId = -1;
+    control->mpi_barrier_sleep = 0;
     // First scan the global settings
     scanGlobalSettings(rootXml);
     // Then scan the config file for all components and couplers (= units)
@@ -1842,6 +1862,45 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     {
         newComp->inputFile = inputFileElement->charData;
     }
+
+    // Element mpi_barrier_sleep (optional)
+    XmlTree* mpiBarrierSleep = xmlComponent->Lookup("mpiBarrierSleep");
+    if (mpiBarrierSleep == NULL)
+    {
+        // Default values for mpiBarrierSleep:
+        // WAVE on Linux: 200 ms, to avoid excessive CPU load in the barrier when having to wait for this component
+        //                Any value between 10 and 500 ms seems to work properly
+        // Else: 0 ms
+        if (newComp->type == COMP_TYPE_WAVE)
+        {
+#ifdef _WIN32
+            newComp->mpi_barrier_sleep = 0;
+#else
+            newComp->mpi_barrier_sleep = 200;
+#endif
+        }
+        else
+        {
+            newComp->mpi_barrier_sleep = 0;
+        }
+    }
+    else
+    {
+        const char* s = mpiBarrierSleep->charData;
+        int value = 0;
+        auto res = std::from_chars(s, s + std::strlen(s), value);
+        if (res.ec == std::errc())
+        {
+            newComp->mpi_barrier_sleep = value;
+        }
+        else
+        {
+            throw Exception(Exception::ERR_INVALID_INPUT, "Invalid integer value for mpiBarrierSleep: \"%s\"", s);
+        }
+    }
+    log->Write(DEBUG, my_rank, "mpiBarrierSleep is set to %d for component %s.", newComp->mpi_barrier_sleep,
+               newComp->name);
+
     // Element workingDir
     XmlTree* workingDirElement = xmlComponent->Lookup("workingDir");
     if (workingDirElement == NULL)
@@ -2047,6 +2106,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     controlBlock->numSubBlocks = 0;
     controlBlock->subBlocks = NULL;
     controlBlock->masterSubBlockId = -1;
+    controlBlock->mpi_barrier_sleep = 0;
     for (int i = 0; i < controlBlockXml->children.size(); i++)
     {
         if (strcmp(controlBlockXml->children[i]->name, "parallel") == 0 ||
@@ -2433,6 +2493,36 @@ void Dimr::freeLibs(void)
                             componentsList.components[i].library, ierr);
         }
 #endif
+    }
+}
+
+//------------------------------------------------------------------------------
+void Dimr::barrier(const MPI_Comm comm, const bool use_mpi, const int mpi_barrier_sleep)
+{
+    if (!use_mpi)
+    {
+        return;
+    }
+    if (mpi_barrier_sleep == 0)
+    {
+        MPI_Barrier(comm);
+    }
+    else
+    {
+        MPI_Request req = MPI_REQUEST_NULL;
+        // Dont use default MPI_Barrier spinlock, instead allow other processes to use cpu by periodically
+        // polling for barrier completion
+        MPI_Ibarrier(comm, &req);
+        while (true)
+        {
+            int complete;
+            MPI_Test(&req, &complete, MPI_STATUS_IGNORE);
+            if (complete)
+            {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(mpi_barrier_sleep));
+        }
     }
 }
 

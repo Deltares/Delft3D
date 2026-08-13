@@ -21,17 +21,9 @@ set(oss_dependencies    deltares_common
                         waq_hyd_data
                         waq_utils_f)
 
-target_link_libraries(${executable_name} ${oss_dependencies})
-
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
-    # Set linker properties
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 

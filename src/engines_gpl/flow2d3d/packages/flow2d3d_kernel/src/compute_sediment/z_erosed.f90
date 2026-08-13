@@ -75,6 +75,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use dfparall
     use m_compdiam, only: compdiam
     use m_comphidexp, only: comphidexp
+    use m_compsandfrac, only: compsandfrac
     use m_getfixfac, only: getfixfac
     !
     implicit none
@@ -87,6 +88,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)                             , pointer :: ag
     real(fp)                             , pointer :: vicmol
     integer                              , pointer :: nmudfrac
+    real(fp)                             , pointer :: seddif_cal
+    real(fp)                             , pointer :: difparam
     real(fp)         , dimension(:)      , pointer :: rhosol
     real(fp)         , dimension(:)      , pointer :: cdryb
     real(fp)         , dimension(:,:,:)  , pointer :: logseddia
@@ -94,6 +97,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: sedd10
     real(fp)         , dimension(:)      , pointer :: sedd50
     real(fp)         , dimension(:)      , pointer :: sedd90
+    logical                              , pointer :: spatial_d50
     real(fp)         , dimension(:)      , pointer :: sedd50fld
     real(fp)         , dimension(:)      , pointer :: dstar
     real(fp)         , dimension(:)      , pointer :: taucr
@@ -406,6 +410,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !
     wave                => gdp%gdprocs%wave
     nmudfrac            => gdp%gdsedpar%nmudfrac
+    seddif_cal          => gdp%gdsedpar%seddif_cal
+    difparam            => gdp%gdsedpar%difparam
     rhosol              => gdp%gdsedpar%rhosol
     cdryb               => gdp%gdsedpar%cdryb
     logseddia           => gdp%gdsedpar%logseddia
@@ -413,6 +419,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     sedd10              => gdp%gdsedpar%sedd10
     sedd50              => gdp%gdsedpar%sedd50
     sedd90              => gdp%gdsedpar%sedd90
+    spatial_d50         => gdp%gdsedpar%spatial_d50
     sedd50fld           => gdp%gdsedpar%sedd50fld
     dstar               => gdp%gdsedpar%dstar
     taucr               => gdp%gdsedpar%taucr
@@ -694,7 +701,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                    & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                    & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                   & sedd50fld, dm        ,dg        ,dxx       ,dgsd      )
+                   & spatial_d50, sedd50fld, dm        ,dg        ,dxx       ,dgsd      )
        !
        ! determine hiding & exposure factors
        !
@@ -705,7 +712,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! compute sand fraction
        !
        call compsandfrac(frac, sedd50, nmmax, lsedtot, sedtyp, &
-                    & max_mud_sedtyp, sandfrac, sedd50fld, &
+                    & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                     & gdp%d%nmlb, gdp%d%nmub)
     endif
     !
@@ -1115,7 +1122,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! (Re)set of Prandtl-Schmidt number moved to TKECOF
           tsd  = -999.0_fp
           di50 = sedd50(l)
-          if (di50 < 0.0_fp) then
+          if (spatial_d50) then
              !
              ! Space varying sedd50 specified in array sedd50fld:
              ! Recalculate dstar, tetacr and taucr for each nm,l - point
@@ -1258,15 +1265,21 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                                &  rhosol(l)         ,caks_ss3d      ,ws(nm,kmxsed(nm,l),l)      , &
                                &  aks_ss3d          ,sourse(nm,l)   ,sour_im(nm,l)      , &
                                &  sinkse(nm,l) )
+                !
+                if (seddif_cal > 0.0_fp) then
+                   seddif(nm, :, l) = seddif_cal * seddif(nm, :, l)
+                end if
+                !
                 ! Impose relatively large vertical diffusion
                 ! coefficients for sediment in layer interfaces from
                 ! bottom of reference cell downwards, to ensure little
                 ! gradient in sed. conc. exists in this area.
-                !
-                difbot = 10.0_fp * ws(nm,kmxsed(nm,l)-1,l) * thick1
-                do k = kfsmin(nm)-1, kmxsed(nm,1)-1
-                   seddif(nm, k, l) = difbot
-                enddo
+                if (difparam > 0.0_fp) then
+                   difbot = difparam * ws(nm,kmxsed(nm,l)-1, l) * thick1
+                   do k = kfsmin(nm)-1, kmxsed(nm,1)-1
+                      seddif(nm, k, l) = difbot
+                   end do
+                end if
              endif ! suspfrac
           else
              !

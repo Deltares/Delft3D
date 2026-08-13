@@ -42,7 +42,7 @@ module m_resetflow
 
 contains
 
-   !> Resets the current flow- and time-state, but keeps al active parameter settings.
+ !> Resets the current flow- and time-state, but keeps all active parameter settings.
  !! To be called upon flow_modelinit().
  !! Upon program startup and loading of new model/MDU, call resetFullFlowModel() instead.
    subroutine resetFlow()
@@ -56,6 +56,7 @@ contains
       use m_flowgeom
       use m_modelbounds
       use m_flowtimes
+      use m_fm_icecover, only: reset_fm_icecover
       use waq
       use m_waves
       use m_hydrology_data
@@ -97,6 +98,8 @@ contains
       ! call reset_flowparameters()
 
       call reset_flow()
+
+      call reset_fm_icecover()
 
       call reset_waq()
 

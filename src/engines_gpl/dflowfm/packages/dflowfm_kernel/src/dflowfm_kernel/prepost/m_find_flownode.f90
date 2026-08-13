@@ -125,7 +125,7 @@ contains
 
       do i = 1, n
          if (node_nrs_nearest(i) == 0) then
-            write (msgbuf, '(a,i0,a,a,a)') 'Could not find flowcell for point #', i, ' (', trim(names(i)), '). Discarding.'
+            write (msgbuf, '(a,i0,a,a,a,f0.10,a,f0.10,a)') 'Could not find flowcell for point #', i, ' (', trim(names(i)), ') (', xx(i), ', ', yy(i), '). Discarding.'
             call msg_flush()
          end if
       end do

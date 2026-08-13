@@ -83,11 +83,6 @@
             if ( output_hyd%attributes(iseg2) .eq. iatr_miss ) then
                output_hyd%attributes(iseg2) = input_hyd%attributes(iseg1)
             else
-               if ( output_hyd%attributes(iseg2) .ne. input_hyd%attributes(iseg1) ) then
-                  call get_log_unit_number(lunrep)
-                  write(lunrep,1000) iseg1,input_hyd%attributes(iseg1),iseg2,output_hyd%attributes(iseg2)
-               endif
-
                ! merge
 
                ik1_o = mod(output_hyd%attributes(iseg2),10)
@@ -184,5 +179,4 @@
       enddo
 
       return
- 1000 format (' merging attribute of old segment ',I8,' (',I3,') into new segment ',I8,' (',I3,')')
       end

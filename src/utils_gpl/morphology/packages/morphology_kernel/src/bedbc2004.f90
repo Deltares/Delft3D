@@ -293,7 +293,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
           uon    = max(1.0e-5_fp , uon)
           uoff   = max(1.0e-5_fp , uoff)
           !
-          uwbih  = (0.5_fp*uon**3.0_fp + 0.5_fp*uoff**3.0_fp)**(1.0_fp/3.0_fp)   ! Representative peak orbital velocity 
+          uwbih  = (0.5_fp*uon**3.0_fp + 0.5_fp*uoff**3.0_fp)**(1.0_fp/3.0_fp)   ! Representative peak orbital velocity magnitude
 
        else if (wform==2) then
           ! Modification by Marcio Boechat Albernaz

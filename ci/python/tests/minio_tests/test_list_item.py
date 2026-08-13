@@ -47,7 +47,7 @@ class TestListItem:
         test_file = Path("foo/bar/baz.txt")
         test_ancestor = test_file.parent.parent
         contents = "Hello world!"
-        expected_etag = hashlib.md5(contents.encode()).hexdigest()
+        expected_etag = hashlib.md5(contents.encode(), usedforsecurity=False).hexdigest()
 
         fake_file = fs.create_file(test_file, contents=contents)
         fake_file.st_mtime = now.timestamp()

@@ -29,26 +29,27 @@
 
 module m_itdate
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
+
    private
 
-   character(len=8), public :: refdat
-   integer, public :: itdate !< should be user specified for (asc routines)
-   integer, public :: jul0, imonth0, iday0, iyear0
-   real(kind=dp), public :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+   public :: refdat, itdate, jul0, imonth0, iday0, iyear0, Tzone
+
+   character(len=8) :: refdat
+   integer :: itdate !< should be user specified for (asc routines)
+   integer :: jul0
+   integer :: imonth0
+   integer :: iday0
+   integer :: iyear0
+   real(kind=dp) :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+
 end module m_itdate
 
-! ==========================================================================
-
-!>
 module timespace_read
-!!--description-----------------------------------------------------------------
-!
-!!--pseudo code and references--------------------------------------------------
-!
-!!--declarations----------------------------------------------------------------
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    integer, parameter :: maxnamelen = 256
    real(kind=dp), parameter :: dmiss_default = -999.0_dp ! Default missing value in meteo arrays
@@ -62,10 +63,6 @@ module timespace_read
    real(kind=dp), private, parameter :: earthrad = 6378137.0_dp ! Mathworld, IUGG
 
 contains
-   !
-   !
-   ! ==========================================================================
-   !>
    !> Parses an UDUnit-conventions datetime unit string.
    !! TODO: replace this by calling C-API from UDUnits(-2).
    function parse_ud_timeunit(timeunitstr, iunit, iyear, imonth, iday, ihour, imin, isec) result(ierr)
@@ -180,7 +177,7 @@ contains
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
       character(len=*), intent(out) :: filename !< Name of data file for current quantity.
       character(len=*), intent(out) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
-      character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(out) :: operand !< Operand w.r.t. previous data
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
@@ -312,12 +309,16 @@ contains
       end if
 
       keywrd = 'OPERAND'
-      OPERAND = 'O' ! hk : default =O
+      operand = OPERAND_OVERRIDE
       call zoekja(minp, rec, keywrd, ja)
       if (ja == 1) then
-         l1 = index(rec, '=') + 1
-         call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
-         read (rec(l2:l2), '(a1)', err=990) operand
+         block
+            character(len=256) :: temp
+            l1 = index(rec, '=') + 1
+            call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
+            read (rec(l2:l2), '(a1)', err=990) temp
+            operand = convert_legacy_operand_string_to_integer(temp)
+         end block
       else
          return
       end if
@@ -597,7 +598,7 @@ contains
    !>
    subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
-      use m_flowparameters, only: jatidep, jaselfal, jamaptidep
+      use m_flowparameters, only: jatidep, jaselfal, map_write_settings
       use m_partitioninfo
       use m_flow
       use m_flowgeom
@@ -741,7 +742,7 @@ contains
                           (td2(m1, n2) + self(m1, n2)) * f12
 
 !        for output only
-            if (jamaptidep > 0 .and. Np > 1) then ! store SAL potential seperately
+            if (map_write_settings%tidep > 0 .and. Np > 1) then ! store SAL potential seperately
                tidep(2, n) = (self(m1, n1)) * f11 + &
                              (self(m2, n1)) * f21 + &
                              (self(m2, n2)) * f22 + &
@@ -2773,7 +2774,7 @@ module timespace
 
    use timespace_data
    use timespace_triangle
-   implicit none
+   implicit none(type, external)
 
 contains
    !
@@ -2929,7 +2930,7 @@ contains
       use m_reapol
       use m_filez, only: oldfil
       use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
-
+      use m_tpoly, only: inwhichpolygon
       implicit none
 
       !inputs
@@ -3111,6 +3112,7 @@ contains
       use m_delpol
       use m_reapol
       use m_filez, only: oldfil
+      use m_tpoly, only: inwhichpolygon
 
       implicit none
 
@@ -3145,6 +3147,8 @@ contains
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
       case (LOCTP_POLYGON_XY)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from input arrays
          call increasepol(numcoord, 0)
          xpl(1:numcoord) = xpin(1:numcoord)
@@ -3195,7 +3199,7 @@ contains
             end if
          end do
       end if
-      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+      if (loc_spec_type == LOCTP_POLYGON_FILE .or. loc_spec_type == LOCTP_POLYGON_XY) then
          call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
@@ -3206,37 +3210,31 @@ contains
    !> Combine a newly computed (external forcings-)value with an existing one, based on the operand type.
    subroutine operate(a, b, operand)
       use precision
-      implicit none
+
       real(kind=dp), intent(inout) :: a !< Current value, will be updated based on b and operand.
       real(kind=dp), intent(in) :: b !< New value, to be combined with existing value a.
-      character(len=1), intent(in) :: operand !< Operand type, valid values: 'O', 'A', '+', '*', 'X', 'N'.
+      integer, intent(in) :: operand !< Operand type
 
-      ! b = factor*b + offset ! todo doorplussen
-
-      if (operand == 'O' .or. operand == 'V') then ! Override, regardless of what was specified before
+      if (operand == OPERAND_OVERRIDE) then ! Override, regardless of what was specified before
          a = b
-      else if (operand == 'A') then ! Add, means: only if nothing was specified before
+      else if (operand == OPERAND_OVERRIDE_IF_MISSING) then ! Override, but only if nothing was specified before
          if (a == dmiss_default) then
             a = b
          end if
       else if (a /= dmiss_default) then ! algebra only if not missing
-         if (operand == '+') then
+         if (operand == OPERAND_ADD) then
             a = a + b
-         else if (operand == '*') then
+         else if (operand == OPERAND_MULTIPLY) then
             a = a * b
-         else if (operand == 'X') then
+         else if (operand == OPERAND_MAXIMUM) then
             a = max(a, b)
-         else if (operand == 'N') then
+         else if (operand == OPERAND_MINIMUM) then
             a = min(a, b)
          end if
       end if
    end subroutine operate
-   !
-   !
-   ! ==========================================================================
-   !>
-   function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
 
+   function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
       use kdtree2Factory
       use m_samples
       use m_netw
@@ -3263,14 +3261,13 @@ contains
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
       use m_filez, only: oldfil, doclose, newfil
 
-      implicit none
-
-      logical :: success
+      ! Arguments
 
       integer, intent(in) :: nx
+
       real(kind=dp), intent(in) :: xu(nx)
       real(kind=dp), intent(in) :: yu(nx)
-      real(kind=dp), intent(out) :: zu(nx)
+      real(kind=dp), intent(inout) :: zu(nx)
 
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
@@ -3281,37 +3278,38 @@ contains
       ! 7 : index triangulation
       ! 8 : smoothing
       ! 9 : internal diffusion
-      character(1), intent(in) :: operand ! override, add
-      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
-      integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
-      ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
-      integer, intent(in), optional :: kcc(nx)
+      integer, intent(in) :: operand
+      real(kind=dp), dimension(:), intent(in) :: transformcoef !< Transformation coefficients
+      integer, intent(in) :: iprimpos !< only needed for averaging, position of primitive variables in network
+                                      !! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
+      integer, dimension(nx), intent(in), optional :: kcc
+      logical :: success
 
-      real(kind=dp), allocatable :: zh(:)
+      ! Local variables
       integer :: ierr
       integer :: minp0, inside, k, jdla, mout
-      real(kind=dp), allocatable :: xx(:, :), yy(:, :)
-      integer, allocatable :: nnn(:)
-
-      real(kind=dp), allocatable :: xxx(:), yyy(:)
-      integer, allocatable :: LnnL(:), Lorg(:)
-
-      real(kind=dp) :: zz
-
       integer :: n6, L, Lk, n, n1, n2, i
       integer :: ierror, jakc
-      integer :: jakdtree = 1
-
-      real(kind=dp) :: rcel_store, percentileminmax_store
       integer :: iav_store, nummin_store
-
+      integer :: jakdtree
+      integer :: local_method
+      integer, dimension(:), allocatable :: nnn
+      integer, dimension(:), allocatable :: LnnL, Lorg
+      real(kind=dp) :: zz
+      real(kind=dp) :: rcel_store
+      real(kind=dp) :: percentileminmax_store
+      real(kind=dp), dimension(:), allocatable :: zh
+      real(kind=dp), dimension(:), allocatable :: xxx, yyy
+      real(kind=dp), dimension(:, :), allocatable :: xx, yy
       character(len=5) :: sd
-
       type(TerrorInfo) :: errorInfo
 
       success = .false.
       minp0 = 0
       jakc = 0
+      jakdtree = 1
+      local_method = method
+
       if (present(kcc)) then
          jakc = 1
       end if
@@ -3335,7 +3333,28 @@ contains
       !   ! return?
       !end if
 
-      if (method == 4) then ! polyfil
+      if (filetype == arcinfo) then
+
+         ! Remap method triangulation to bilinear for ArcInfo files.
+         if (local_method == METHOD_TRIANGULATION) then
+            local_method = METHOD_BILINEAR
+            msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for filetype ArcInfo. &
+                     Method has been set to bilinear interpolation instead.'
+            call warn_flush()
+         end if
+
+      else if (local_method == METHOD_BILINEAR) then
+
+         ! If method is bilinear, but filetype is not ArcInfo, raise error.
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for filetype ArcInfo.'
+         call err_flush()
+         return
+
+      end if
+
+      select case (local_method)
+
+      case (METHOD_CONSTANT)
 
          call savepol()
          call reapol(minp0, 0)
@@ -3355,39 +3374,54 @@ contains
          end do
          call restorepol()
 
-      else if (method == 5 .or. method == 6) then ! triangulation & averaging
+      case (METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR)
 
-         if (filetype == ncflow) then
+         select case (filetype)
+         
+         case (NCFLOW)
+
             call read_flowsamples_from_netcdf(filename, qid, ierr)
-         elseif (filetype == ncgrid) then
+
+         case (NCGRID)
+
             ! TODO: support reading initial fields from NetCDF too
             msgbuf = 'timespace::timespaceinitialfield: Error while reading '''//trim(qid)// &
                      ''' from file '''//trim(filename)//'''. File type not supported for initial fields.'
             call warn_flush()
             return
-         else if (filetype == arcinfo) then
+
+         case (ARCINFO)
+
             call read_samples_from_arcinfo(filename, 0, 0)
-         else if (filetype == geotiff) then
+
+         case (GEOTIFF)
+
             success = read_samples_from_geotiff(filename)
             if (.not. success) then
                return
             end if
-         else
+
+         case default
+
             call reasam(minp0, 0)
-         end if
 
-         if (method == 5) then
-            if (filetype == arcinfo) then
-               call bilinarc(xu, yu, zh, nx)
-            else
-               jdla = 1
-               call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, &
-                               NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef, kcc)
-            end if
+         end select         
 
-         else if (method == 6) then ! and this only applies to flow-link data
+         select case (local_method)
 
-!         store settings
+         case (METHOD_TRIANGULATION)
+
+            jdla = 1
+            call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
+               ZPL, transformcoef, kcc)
+
+         case (METHOD_BILINEAR)
+
+            call bilinarc(xu, yu, zh, nx)
+
+         case (METHOD_AVERAGING)
+
+            ! store settings
             iav_store = iav
             rcel_store = rcel
             percentileminmax_store = percentileminmax
@@ -3396,19 +3430,22 @@ contains
             if (transformcoef(4) /= DMISS) then
                iav = int(transformcoef(4))
             end if
+
             if (transformcoef(5) /= DMISS) then
                rcel = transformcoef(5)
             end if
+
             if (transformcoef(7) /= DMISS) then
                percentileminmax = transformcoef(7)
             end if
+
             if (transformcoef(8) /= DMISS) then
                nummin = int(transformcoef(8))
             end if
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
-               allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+               allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
                do L = 1, lnx
                   xx(1, L) = xzw(ln(1, L))
                   yy(1, L) = yzw(ln(1, L))
@@ -3420,6 +3457,7 @@ contains
                   xx(4, L) = xk(kn(2, Lk))
                   yy(4, L) = yk(kn(2, Lk))
                end do
+
                nnn = 4 ! array nnn
             else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
                n6 = maxval(netcell%n)
@@ -3427,18 +3465,18 @@ contains
                   n6 = n6 + 2 ! safety at poles
                end if
 
-               allocate (xx(n6, nx), yy(n6, nx), nnn(nx))
-
-               allocate (LnnL(n6), Lorg(n6))
+               allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
+               allocate(LnnL(n6), Lorg(n6))
 
                do n = 1, nx
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
-               deallocate (LnnL, Lorg)
-            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
 
+               deallocate(LnnL, Lorg)
+            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+               allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+
                do k = 1, numk
                   if (jakc == 1) then
                      if (kcc(k) /= 1) then
@@ -3446,44 +3484,47 @@ contains
                      end if
                   end if
 
-!                 get the cell list
+                  ! get the cell list
                   call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
+
                   do i = 1, nnn(k)
                      xx(i, k) = xxx(i)
                      yy(i, k) = yyy(i)
                   end do
                end do
 
-               deallocate (xxx, yyy)
+               deallocate(xxx, yyy)
             end if
 
             if (jakdtree == 1) then
-!              initialize kdtree
+               ! initialize kdtree
                call build_kdtree(treeglob, Ns, xs, ys, ierror, jsferic, dmiss)
                if (ierror /= 0) then
-!                 disable kdtree
+                  ! disable kdtree
                   call delete_kdtree2(treeglob)
                   jakdtree = 0
                end if
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
+                              dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
             deallocate (xx, yy, nnn)
 
             if (errorInfo%cntNoSamples > 0) then
                write (msgbuf, '(5a,i0,a)') 'For quantity ', trim(qid), ' in file ', trim(filename), ' no values found for ', errorInfo%cntNoSamples, ' cells/links.'
                call warn_flush()
             end if
+
             if (allocated(errorInfo%message)) then
                msgbuf = errorInfo%message
                call warn_flush()
             end if
+
             if (.not. errorInfo%success) then
                return
             end if
 
-!         restore settings
+            ! restore settings
             iav = iav_store
             rcel = rcel_store
             percentileminmax = percentileminmax_store
@@ -3493,7 +3534,7 @@ contains
                call delete_kdtree2(treeglob)
             end if
 
-         end if
+         end select
 
          do k = 1, nx
             if (zh(k) /= dmiss_default) then
@@ -3502,15 +3543,18 @@ contains
             end if
          end do
 
-!     SPvdP: sample set can be large, delete it and do not make a copy
+         ! sample set can be large, delete it and do not make a copy
          call delsam(-1)
          if (allocated(d)) then
-            deallocate (d)
+
+            deallocate(d)
             mca = 0
             nca = 0
+
          end if
 
-      end if
+      end select
+
       success = .true.
       call doclose(minp0)
 
@@ -3607,6 +3651,7 @@ contains
       use geometry_module, only: dbpinpol
       use m_reapol
       use m_filez, only: oldfil
+      use timespace_parameters, only: OPERAND_ADD
       implicit none
 
       logical :: success
@@ -3617,7 +3662,7 @@ contains
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      character(1), intent(in) :: operand ! file name for meteo data file
+      integer, intent(in) :: operand
       real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
 
@@ -3633,7 +3678,7 @@ contains
             call dbpinpol(xz(k), yz(k), inside, &
                           dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inside == 1) then
-               if (operand == '+' .and. zz(k) /= imiss) then
+               if (operand == OPERAND_ADD .and. zz(k) /= imiss) then
                   zz(k) = zz(k) + transformcoef(1)
                else
                   zz(k) = transformcoef(1)
@@ -3693,6 +3738,7 @@ module m_meteo
    integer, target :: item_stressxy_y !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
 
    integer, target :: item_frcu !< Unique Item id of the ext-file's 'frcu' quantity's component.
+   integer, target :: item_secchi_depth !< Unique Item id of the ext-file's 'secchidepth' quantity's component.
 
    integer, target :: item_apwxwy_p !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
@@ -3727,9 +3773,11 @@ module m_meteo
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
    integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
    integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity   
    integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
+   integer, target :: item_general_structure_gateHeight !< Unique Item id of the structure file's 'general structure gateHeight' quantity
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
    integer, target :: item_general_structure_gateOpeningWidth !< Unique Item id of the structure file's 'general structure gateOpeningWidth' quantity
    integer, target :: item_longculvert_valve_relative_opening !< Unique Item id of the structure file's 'longculvert valveRelativeOpening' quantity
@@ -3765,6 +3813,8 @@ module m_meteo
    integer, target :: item_cloudiness !< 'cloudiness' quantity
    integer, target :: item_solar_radiation !< 'solarradiation' quantity
    integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
+   integer, target :: item_sensible_heat_flux !< 'sensibleheatflux' quantity
+   integer, target :: item_latent_heat_flux !< 'latentheathflux' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -3821,7 +3871,7 @@ module m_meteo
          character(len=*), intent(in) :: filename !< File name of meteo data file.
          integer, intent(in) :: filetype !< FM's filetype enumeration.
          integer, intent(in) :: method !< FM's method enumeration.
-         character(len=1), intent(in) :: operand !< FM's operand enumeration.
+         integer, intent(in) :: operand !< FM's operand enumeration.
          real(hp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
          real(hp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
          real(hp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
@@ -3869,6 +3919,7 @@ contains
       item_stressxy_y = ec_undef_int
 
       item_frcu = ec_undef_int
+      item_secchi_depth = ec_undef_int
 
       item_apwxwy_p = ec_undef_int
       item_apwxwy_x = ec_undef_int
@@ -3903,9 +3954,11 @@ contains
       item_orifice_gateLowerEdgeLevel = ec_undef_int
       item_gate_crestLevel = ec_undef_int
       item_gate_gateLowerEdgeLevel = ec_undef_int
+      item_gate_gateHeight = ec_undef_int
       item_gate_gateOpeningWidth = ec_undef_int
       item_general_structure_crestLevel = ec_undef_int
       item_general_structure_gateLowerEdgeLevel = ec_undef_int
+      item_general_structure_gateHeight = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
       item_general_structure_gateOpeningWidth = ec_undef_int
       item_longculvert_valve_relative_opening = ec_undef_int
@@ -3932,6 +3985,8 @@ contains
       item_cloudiness = ec_undef_int
       item_solar_radiation = ec_undef_int
       item_long_wave_radiation = ec_undef_int
+      item_sensible_heat_flux = ec_undef_int
+      item_latent_heat_flux = ec_undef_int
       item_hac_humidity = ec_undef_int
       item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
@@ -4092,19 +4147,25 @@ contains
 
    !> Translate FM's meteo1 'operand' enum to EC's 'operand' enum.
    subroutine operand_fm_to_ec(operand, ec_operand)
-      character, intent(in) :: operand
+      use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_OVERRIDE_IF_MISSING, OPERAND_ADD, OPERAND_MULTIPLY, OPERAND_MINIMUM, OPERAND_MAXIMUM
+      integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
-      !
+      
       select case (operand)
-      case ('O')
-         ec_operand = operand_replace
-      case ('V')
-         ! Used to map to operand_replace_if_value in past but this has been removed
-         ec_operand = operand_replace
-      case ('+')
-         ec_operand = operand_add
+      case (OPERAND_OVERRIDE)
+         ec_operand = EC_OPERAND_REPLACE
+      case (OPERAND_OVERRIDE_IF_MISSING)
+         ec_operand = EC_OPERAND_REPLACE_IF_MISSING
+      case (OPERAND_ADD)
+         ec_operand = EC_OPERAND_ADD
+      case (OPERAND_MULTIPLY)
+         ec_operand = EC_OPERAND_MULTIPLY
+      case (OPERAND_MINIMUM)
+         ec_operand = EC_OPERAND_MINIMUM
+      case (OPERAND_MAXIMUM)
+         ec_operand = EC_OPERAND_MAXIMUM
       case default
-         ec_operand = operand_undefined
+         ec_operand = EC_OPERAND_UNDEFINED
       end select
    end subroutine operand_fm_to_ec
 
@@ -4219,6 +4280,9 @@ contains
       case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
+      case ('secchidepth')
+         itemPtr1 => item_secchi_depth
+         dataPtr1 => spatial_secchi_depth
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
          itemPtr1 => item_apwxwy_p
          dataPtr1 => air_pressure
@@ -4318,6 +4382,9 @@ contains
       case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateheight') ! flow1d gate
+         itemPtr1 => item_gate_gateHeight
+         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
@@ -4326,6 +4393,9 @@ contains
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('general_structure_gateheight') ! flow1d general structure
+         itemPtr1 => item_general_structure_gateHeight
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
@@ -4339,8 +4409,6 @@ contains
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreaklevelsandwidths')
-         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -4400,6 +4468,12 @@ contains
       case ('longwaveradiation')
          itemPtr1 => item_long_wave_radiation
          dataPtr1 => long_wave_radiation
+      case ('sensibleheatflux')
+         itemPtr1 => item_sensible_heat_flux
+         dataPtr1 => sensible_heat_flux
+      case ('latentheatflux')
+          itemPtr1 => item_latent_heat_flux
+         dataPtr1 => latent_heat_flux
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
@@ -4435,15 +4509,15 @@ contains
       case ('hrms', 'wavesignificantheight')
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
-         jamapwav_hwav = 1
+         map_write_settings%wav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
-         jamapwav_twav = 1
+         map_write_settings%wav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
-         jamapwav_phiwav = 1
+         map_write_settings%wav_phiwav = 1
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
@@ -4497,8 +4571,6 @@ contains
          isfun = find_name(sfunname, waqinput)
          itemPtr1 => item_waqsfun(isfun)
          dataPtr1 => sfuninp(isfun, :)
-      case ('initialtracer')
-         continue
       case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
@@ -4507,7 +4579,6 @@ contains
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
-         call mess(LEVEL_FATAL, 'm_meteo::fm_ext_force_name_to_ec_item: Unsupported quantity specified in ext-file (construct target field): '//qidname)
          success = .false.
       end select
    end function fm_ext_force_name_to_ec_item

@@ -27,26 +27,31 @@ If you are interested in using these products, and do not (yet) want to compile 
 - **Delft3D 4 Suite website:** https://www.deltares.nl/en/software-and-data/products/delft3d-4-suite
 - **Delft3D FM Suite:** https://www.deltares.nl/en/software-and-data/products/delft3d-flexible-mesh-suite
 
-and contact our **sales team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
+and contact our **sales services team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
 
-## Bug reports
+## Community support
 
-To limit the number of parallel communication channels and issue trackers, the issues tab has been removed on the Delft3D GitHub site.
-In case you encounter bugs, please report them to our **support team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
+Clients with Service Packages have access to the support team.
+For the wider open source community, we recommend the use of the [GitHub Discussions](https://github.com/Deltares/Delft3D/discussions) tab.
+Please post questions and suggestions there in the Q&A sections.
 
 ## Open Source Community
 
 We have community websites for [Delft3D 4](https://oss.deltares.nl/web/delft3d) and [Delft3D FM](https://oss.deltares.nl/web/delft3dfm).
 Source code repositories for the Delft3D [simulation engines](https://github.com/Deltares/Delft3D) (self-reference to this page unless you're looking at a forked version), the MATLAB-based postprocessing package [QUICKPLOT](https://github.com/Deltares/QUICKPLOT), the Python-based pre- and postprocessing packages [dfm_tools](https://github.com/Deltares/dfm_tools) and [hydrolib-core](https://github.com/Deltares/HYDROLIB-core), and our grid generation library [MeshKernel](https://github.com/Deltares/MeshKernel).
 
-A set of pre-compiled user interfaces (Windows only) is available for Delft3D 4 after registration on the Deltares software website.
-See [this page](https://download.deltares.nl/en/delft3d-4-gui-open-source) for details.
-A similar package for Delft3D FM is expected to be released in the coming months.
+### How to use the kernels?
 
-### Compilation and development
+All computational kernels can be run from the command line.
+This is what most people tend to use most of the time.
+However, a graphical user interface is very helpful for quickly setting up a model and to familiarize yourself with all the features of the modelling system.
+A set of pre-compiled user interfaces (Windows only) is available for both Delft3D 4 and Delft3D FM after registration on the Deltares software website.
+See [this page](doc/guis_for_open_source.md) for details on how to work with these user interfaces in combination with a self-compiled set of kernels.
+
+### How to compile, test and modify the kernels?
 For information on compiling, testing and development see the [development](doc/development.md) page.
 
-### Contributing
+### How to contribute code back to the main version?
 If you want to contribute improvements or new features to our codebase, please see the [contributing](doc/contributing.md) page for information about developer guidelines, code branches and our review process.
 
 ## License

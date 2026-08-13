@@ -147,8 +147,10 @@ class TestDimrAutomationContext:
             ),
             patch.multiple(
                 "ci_tools.dimrset_delivery.dimr_context",
-                input=Mock(side_effect=["jira_user", "tc_user", "ssh_user", "git_user"]),
-                getpass=Mock(side_effect=["jira_token", "tc_pass", "ssh_pass", "git_token"]),
+                # Jira now only prompts for PAT (getpass), no username input for Jira.
+                # Then username+password for the other three services.
+                input=Mock(side_effect=["tc_user", "ssh_user", "git_user"]),
+                getpass=Mock(side_effect=["jira_pat_token", "tc_pass", "ssh_pass", "git_token"]),
             ),
         ):
             teamcity_mock = Mock(spec=TeamCity)
@@ -205,6 +207,95 @@ class TestDimrAutomationContext:
             assert services.teamcity is not None
             assert services.ssh is not None
             assert services.git is not None
+
+    def test_init_with_jira_pat_only_no_prompt(self) -> None:
+        """Jira with PAT only (no username) does not trigger credential prompts."""
+        with (
+            patch.multiple(
+                "ci_tools.dimrset_delivery.services",
+                Jira=Mock(spec=Jira),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
+            ),
+            patch("ci_tools.dimrset_delivery.dimr_context.input") as mock_input,
+            patch("ci_tools.dimrset_delivery.dimr_context.getpass") as mock_getpass,
+        ):
+            # Simulate the arg values coming from TeamCity: username=None/empty, PAT present.
+            # (The helper uses "" for missing; real argparse path uses None - both should work.)
+            context = self._create_context(
+                build_id="12345",
+                dry_run=False,
+                jira_username="",  # or None in direct store construction
+                jira_password="the-real-jira-pat-from-dimrbakker_jira_pat",
+                teamcity_username="tc_user",
+                teamcity_password="tc_pass",
+                ssh_username="ssh_user",
+                ssh_password="ssh_pass",
+                git_username="git_user",
+                git_password="git_token",
+            )
+            services = Services(context)
+
+            assert context.build_id == "12345"
+            assert services.jira is not None
+            assert services.teamcity is not None
+            assert services.ssh is not None
+            assert services.git is not None
+
+            # No interactive prompts at all (PAT was supplied for the required Jira service).
+            mock_input.assert_not_called()
+            mock_getpass.assert_not_called()
+
+    def test_init_with_jira_pat_only_via_direct_store(self) -> None:
+        """Jira PAT with username=None does not prompt (matches argparse path)."""
+        store = ServiceAuthenticateStore()
+        store.add(
+            ServiceName.JIRA,
+            CredentialEntry(
+                required=True,
+                credential=Credentials(username=None, password="pat-from-tc-param"),
+            ),
+        )
+        store.add(
+            ServiceName.TEAMCITY,
+            CredentialEntry(
+                required=True,
+                credential=Credentials(username="tc", password="tc-pass"),
+            ),
+        )
+        store.add(
+            ServiceName.SSH,
+            CredentialEntry(
+                required=True,
+                credential=Credentials(username="ssh", password="ssh-pass"),
+            ),
+        )
+        store.add(
+            ServiceName.GIT,
+            CredentialEntry(
+                required=True,
+                credential=Credentials(username="git", password="git-pat"),
+            ),
+        )
+
+        with (
+            patch.multiple(
+                "ci_tools.dimrset_delivery.services",
+                Jira=Mock(spec=Jira),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
+            ),
+            patch("ci_tools.dimrset_delivery.dimr_context.input") as mock_input,
+            patch("ci_tools.dimrset_delivery.dimr_context.getpass") as mock_getpass,
+        ):
+            context = DimrAutomationContext(build_id="build-xyz", dry_run=True, credentials=store)
+            services = Services(context)
+
+            assert services.jira is not None
+            mock_input.assert_not_called()
+            mock_getpass.assert_not_called()
 
     def test_init_with_require_flags_disabled(self) -> None:
         """Test initialization with some services disabled."""

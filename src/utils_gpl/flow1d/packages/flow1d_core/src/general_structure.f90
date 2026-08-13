@@ -95,6 +95,7 @@ module m_general_structure
       real(kind=dp), pointer, dimension(:, :) :: fu => null() !< fu(1:3,L0) contains the partial computational value for fu (under/over/between gate, respectively)
       real(kind=dp), pointer, dimension(:, :) :: ru => null() !< ru(1:3,L0) contains the partial computational value for ru (under/over/between gate, respectively)
       real(kind=dp), pointer, dimension(:, :) :: au => null() !< au(1:3,L0) contains the partial computational value for au (under/over/between gate, respectively)
+      real(kind=dp), pointer, dimension(:) :: au_max => null() !< maximal flow area for each flow link, when discarding the gate obstructing the structure opening (length = numlinks)
       integer :: numlinks !< Nr of flow links that cross this generalstructure.
       logical :: velheight !< Flag indicates the use of the velocity height or not
       integer :: openingDirection !< possible values GEN_SYMMETRIC, GEN_FROMLEFT, GEN_FROMRIGHT
@@ -127,6 +128,7 @@ contains
    subroutine compute_general_structure(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, s1m1, s1m2, &
                                         qtotal, Cz, dxL, dt, SkipDimensionChecks)
       ! modules
+      use precision, only: compareReal
 
       ! Global variables
       type(t_GeneralStructure), pointer, intent(inout) :: genstr !< Derived type containing general structure information.
@@ -196,6 +198,7 @@ contains
       real(kind=dp), dimension(3) :: fu
       real(kind=dp), dimension(3) :: ru
       real(kind=dp), dimension(3) :: au
+      real(kind=dp) :: width_correction_factor
 
       !
       !
@@ -253,27 +256,36 @@ contains
          return
       end if
 
+      
       call flgtar(genstr, L0, maxWidth, bobstru, direction * flowDir, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd, cwf, cwd, mugf, lambda)
       !
       rhoast = rhoright / rholeft
       if (flowDir < 0.0_dp) rhoast = 1.0_dp / rhoast
       !
-
+      
       gatefraction = genstr%gateclosedfractiononlink(L0)
-
+      
       fu = genstr%fu(:, L0)
       ru = genstr%ru(:, L0)
       au = genstr%au(:, L0)
+
+      width_correction_factor = 1.0_dp
+      ! In case no flow is possible due to coefficients set to 0 or allowed flow direction, all flow areas may be 0. This is to avoid division by 0.
+      if (  (comparereal(genstr%au_max(l0), 0.0_dp) == 1 ) .and. &
+            (comparereal(sum(au), 0.0_dp) == 1 ) ) then  ! Only width flow areas /= 0
+         width_correction_factor = (sum(au)) / genstr%au_max(l0)
+      end if
       if (gatefraction > GATE_FRACTION_EPS) then
          ! calculate flow under gate
          dg = gle - zs
 
          u1L = ru(1) - fu(1) * dsL
-         qL = Au(1) * u1L
-
-         call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, au(1), qL, flowDir, &
-                     hu, hd, uu, zs, gatefraction * wstr, w2, wsd, zb2, ds1, ds2, dg, &
+         call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, au(1), flowDir, &
+                     hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg, &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(1, L0), velheight)
+         ! The flow area is now based ont the corrected structure width. Set au now to the correct value:
+         au(1) = au(1)*gatefraction
+         
          genstr%sOnCrest(L0) = ds + crest ! waterlevel on crest
 
          ! Flow limiter is only available for an orifice type structure. In this case only flow under the door
@@ -303,11 +315,12 @@ contains
          dg = huge(1.0_dp)
          zgate = gle + genstr%gatedoorheight
          u1L = ru(2) - fu(2) * dsL
-         qL = Au(2) * u1L
 
-         call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, au(2), qL, flowDir, &
-                     hu, hd, uu, zgate, gatefraction * wstr, w2, wsd, zb2, ds1, ds2, dg, &
+         call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, au(2), flowDir, &
+                     hu, hd, uu, zgate, wstr, w2, wsd, zb2, ds1, ds2, dg, &
                      rhoast, cgf, cgd, cwf, cwd, mugf, 0.0_dp, 0.0_dp, dx_struc, ds, genstr%state(2, L0), velheight)
+         ! The flow area is now based ont the corrected structure width. Set au now to the correct value:
+         au(2) = au(2)*gatefraction
       else
          fu(1) = 0.0_dp
          ru(1) = 0.0_dp
@@ -319,11 +332,12 @@ contains
          ! calculate flow asif no door is present
          dg = huge(1.0_dp)
          u1L = ru(3) - fu(3) * dsL
-         qL = Au(3) * u1L
-
-         call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, au(3), qL, flowDir, &
-                     hu, hd, uu, zs, (1.0_dp - gatefraction) * wstr, w2, wsd, zb2, ds1, ds2, dg, &
+         
+         call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, au(3), flowDir, &
+                     hu, hd, uu, zs, width_correction_factor * wstr, w2, wsd, zb2, ds1, ds2, dg, &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(3, L0), velheight)
+         ! The flow area is now based ont the corrected structure width. Set au now to the correct value:
+         au(3) = au(3)*(1_dp - gatefraction)/width_correction_factor
          genstr%sOnCrest(L0) = ds + crest ! waterlevel on crest
 
       else
@@ -342,6 +356,7 @@ contains
       genstr%fu(:, L0) = fu
       genstr%ru(:, L0) = ru
       genstr%au(:, L0) = au
+      genstr%au_max(L0) = wstr * (genstr%sOnCrest(L0)-zs)
       !TEMP = laatste statement
 
    end subroutine compute_general_structure
@@ -450,7 +465,7 @@ contains
    end subroutine flgtar
 
    !> FLow QH relation for General Structure
-   subroutine flqhgs(fuL, ruL, u1L, dxL, dt, structwidth, auL, qL, flowDir, &
+   subroutine flqhgs(fuL, ruL, u1L, dxL, dt, structwidth, auL, flowDir, &
                      hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, &
                      dg, rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, &
                      ds, state, velheight)
@@ -459,7 +474,6 @@ contains
       real(kind=dp), intent(inout) :: fuL !< fu component of momentum equation
       real(kind=dp), intent(inout) :: ruL !< Right hand side component of momentum equation
       real(kind=dp), intent(inout) :: u1L !< Flow velocity at current time step
-      real(kind=dp), intent(inout) :: qL !< Discharge through structure
       real(kind=dp), intent(in) :: dxL !< Length of flow link
       real(kind=dp), intent(in) :: dt !< Time step
       real(kind=dp), intent(out) :: structwidth !< Flow width
@@ -599,7 +613,7 @@ contains
 
       ! The flowe condition is known so calculate
       ! the linearization coefficients FU and RU
-      call flgsfuru(fuL, ruL, u1L, auL, qL, dxL, dt, structwidth, state, &
+      call flgsfuru(fuL, ruL, u1L, auL, dxL, dt, structwidth, state, &
                     flowDir, hu, hd, velhght, zs, ds, dg, dc, wstr, &
                     cwfa, cwd, mugfa, cgfa, cgda, dx_struc, lambda, Cz)
    end subroutine flqhgs
@@ -809,7 +823,7 @@ contains
    !! The linearization coefficients FU and RU are
    !! calculated for the general structure.
    !! The stage of the flow was already determined.
-   subroutine flgsfuru(fuL, ruL, u1L, auL, qL, dxL, dt, structwidth, state, &
+   subroutine flgsfuru(fuL, ruL, u1L, auL, dxL, dt, structwidth, state, &
                        flowDir, hu, hd, velhght, zs, ds, dg, dc, wstr, &
                        cwfa, cwd, mugfa, cgfa, cgda, dx_struc, lambda, Cz)
       ! Parameters
@@ -822,7 +836,6 @@ contains
       real(kind=dp), intent(out) :: fuL !< fu component of momentum equation
       real(kind=dp), intent(out) :: ruL !< Right hand side component of momentum equation
       real(kind=dp), intent(inout) :: u1L !< Flow velocity at current time step
-      real(kind=dp), intent(inout) :: qL !< Discharge through structure
       real(kind=dp), intent(inout) :: auL !< flow area
       real(kind=dp), intent(out) :: structwidth !< Flow width
       real(kind=dp), intent(in) :: dxL !< Length of flow link
@@ -862,7 +875,6 @@ contains
          fuL = 0.0_dp
          ruL = 0.0_dp
          u1L = 0.0_dp
-         qL = 0.0_dp
          auL = 0.0_dp
          return
       end if
@@ -910,9 +922,8 @@ contains
          su = hd
       end if
 
-      call furu_iter(fuL, ruL, su, sd, u1L, qL, auL, ustru, cu, rhsc, dxdt, dx_struc, hs1w, lambda, Cz)
+      call furu_iter(fuL, ruL, su, sd, u1L, auL, ustru, cu, rhsc, dxdt, dx_struc, hs1w, lambda, Cz)
 
-      qL = auL * u1L
    end subroutine flgsfuru
 
    !> DPSEQU (EQUal test with real(kind=dp) interval EPSilon)\n
@@ -936,7 +947,10 @@ contains
       if (associated(genstru%gateclosedfractiononlink)) deallocate (genstru%gateclosedfractiononlink)
       if (associated(genstru%fu)) deallocate (genstru%fu)
       if (associated(genstru%ru)) deallocate (genstru%ru)
-      if (associated(genstru%au)) deallocate (genstru%au)
+      if (associated(genstru%au)) then
+            deallocate (genstru%au)
+            deallocate (genstru%au_max)
+      end if
       if (associated(genstru%sOnCrest)) deallocate (genstru%sOnCrest)
       if (associated(genstru%state)) deallocate (genstru%state)
       deallocate (genstru)

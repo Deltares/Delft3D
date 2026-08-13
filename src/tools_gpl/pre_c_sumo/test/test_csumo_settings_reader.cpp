@@ -22,6 +22,34 @@ TEST(CSumoSettingsReaderTest, ParsesFileVersion)
     EXPECT_EQ(result->fileVersion(), "0.3");
 }
 
+TEST(CSumoSettingsReaderTest, ReturnsNF2FFFilePaths)
+{
+    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const std::filesystem::path expected_dir = "NF2FF";
+    const std::filesystem::path expected_filename = "NF2FF__preC-SUMO_SubMod001_10.000.xml";
+    const std::filesystem::path expected_filepath = expected_dir / expected_filename;
+    ASSERT_TRUE(result.has_value());
+    EXPECT_FALSE(result->diffusers().empty());
+    EXPECT_EQ(result->diffusers()[0].nf2ffFilepath(1, 600.0), expected_filepath);
+    EXPECT_FALSE(result->nf2ffFilepaths(600.0).empty());
+    EXPECT_EQ(result->nf2ffFilepaths(600.0).size(), 1);
+    EXPECT_EQ(result->nf2ffFilepaths(600.0)[0], expected_filepath);
+}
+
+TEST(CSumoSettingsReaderTest, ReturnsFF2NFFilePaths)
+{
+    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const std::filesystem::path expected_dir = "FF2NF";
+    const std::filesystem::path expected_filename = "FF2NF__preC-SUMO_SubMod001_10.000.xml";
+    const std::filesystem::path expected_filepath = expected_dir / expected_filename;
+    ASSERT_TRUE(result.has_value());
+    EXPECT_FALSE(result->diffusers().empty());
+    EXPECT_EQ(result->diffusers()[0].ff2nfFilepath(1, 600.0), expected_filepath);
+    EXPECT_FALSE(result->ff2nfFilepaths(600.0).empty());
+    EXPECT_EQ(result->ff2nfFilepaths(600.0).size(), 1);
+    EXPECT_EQ(result->ff2nfFilepaths(600.0)[0], expected_filepath);
+}
+
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidXml)
 {
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString("not valid xml at all <<<");
@@ -82,8 +110,8 @@ TEST(CSumoSettingsReaderTest, ParsesDiffuserPosition)
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& position = result->diffusers().front().position;
-    EXPECT_DOUBLE_EQ(position.x, 550.0);
-    EXPECT_DOUBLE_EQ(position.y, 350.0);
+    EXPECT_DOUBLE_EQ(position.x_coordinate, 550.0);
+    EXPECT_DOUBLE_EQ(position.y_coordinate, 350.0);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesAmbientPositions)
@@ -92,12 +120,12 @@ TEST(CSumoSettingsReaderTest, ParsesAmbientPositions)
     ASSERT_TRUE(result.has_value());
     const auto& ambient_positions = result->diffusers().front().ambient_positions;
     ASSERT_EQ(ambient_positions.size(), 3u);
-    EXPECT_DOUBLE_EQ(ambient_positions[0].x, 823.0);
-    EXPECT_DOUBLE_EQ(ambient_positions[0].y, 344.8);
-    EXPECT_DOUBLE_EQ(ambient_positions[1].x, 465.8);
-    EXPECT_DOUBLE_EQ(ambient_positions[1].y, 793.2);
-    EXPECT_DOUBLE_EQ(ambient_positions[2].x, 587.4);
-    EXPECT_DOUBLE_EQ(ambient_positions[2].y, 509.2);
+    EXPECT_DOUBLE_EQ(ambient_positions[0].x_coordinate, 823.0);
+    EXPECT_DOUBLE_EQ(ambient_positions[0].y_coordinate, 344.8);
+    EXPECT_DOUBLE_EQ(ambient_positions[1].x_coordinate, 465.8);
+    EXPECT_DOUBLE_EQ(ambient_positions[1].y_coordinate, 793.2);
+    EXPECT_DOUBLE_EQ(ambient_positions[2].x_coordinate, 587.4);
+    EXPECT_DOUBLE_EQ(ambient_positions[2].y_coordinate, 509.2);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesIntakePosition)
@@ -106,8 +134,8 @@ TEST(CSumoSettingsReaderTest, ParsesIntakePosition)
     ASSERT_TRUE(result.has_value());
     const auto& intake = result->diffusers().front().intake;
     ASSERT_TRUE(intake.has_value());
-    EXPECT_DOUBLE_EQ(intake->x, 567.0);
-    EXPECT_DOUBLE_EQ(intake->y, 350.0);
+    EXPECT_DOUBLE_EQ(intake->x_coordinate, 567.0);
+    EXPECT_DOUBLE_EQ(intake->y_coordinate, 350.0);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesDischarge)
@@ -403,5 +431,5 @@ TEST(CSumoSettingsReaderTest, ParsesMultipleDiffusers)
     ASSERT_EQ(result->diffusers().size(), 2u);
     EXPECT_EQ(result->diffusers()[0].id, "D1");
     EXPECT_EQ(result->diffusers()[1].id, "D2");
-    EXPECT_DOUBLE_EQ(result->diffusers()[1].position.x, 5.0);
+    EXPECT_DOUBLE_EQ(result->diffusers()[1].position.x_coordinate, 5.0);
 }

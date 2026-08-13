@@ -32,7 +32,7 @@ module m_process_calculation
    implicit none
 
    private
-   public :: calculate_processes
+   public :: calculate_processes, set_explicit_time_step_for_derivatives
 
 contains
 

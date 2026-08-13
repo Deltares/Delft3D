@@ -50,7 +50,8 @@ module m_dambreak_breach
              have_dambreaks_links, should_write_dambreaks, set_flow_areas_for_dambreaks, &
              indicate_links_that_contain_dambreaks, get_active_dambreak_index, &
              get_dambreak_names, retrieve_set_of_flowlinks_dambreak, &
-             update_counters_for_dambreaks, add_dambreak_signal
+             update_counters_for_dambreaks, add_dambreak_signal, &
+             remove_1d_links_from_dambreak_polygon_list
 
    interface
       module subroutine adjust_bobs_for_dambreaks()
@@ -147,6 +148,11 @@ module m_dambreak_breach
       pure module function get_dambreak_names() result(names)
          character(len=128), dimension(:), allocatable :: names !< the dambreak names
       end function get_dambreak_names
+
+      pure module subroutine remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
+         integer, intent(inout) :: numgen !< number of flow links in kegen
+         integer, dimension(:), intent(inout) :: kegen !< array with the link indices
+      end subroutine remove_1d_links_from_dambreak_polygon_list
 
    end interface
 

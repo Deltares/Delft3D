@@ -157,7 +157,7 @@ function wave_init(mode_in, mdw_file) result(retval)
    integer                                      :: i_swan       ! counter
    integer                                      :: it01flow     ! reference date obtained from FLOW
    integer                                      :: mtdim
-   real                                         :: tscaleflow   ! basic time unit == flow time step (s)
+   real(hp)                                     :: tscaleflow   ! basic time unit == flow time step (s)
    real(fp)       , dimension(:,:), allocatable :: x_fp         ! Copy of x-coordinate of grid in flexible precision, needed for external forcing module
    real(fp)       , dimension(:,:), allocatable :: y_fp         ! Copy of y-coordinate of grid in flexible precision, needed for external forcing module
    character(60) , dimension(:), allocatable    :: extforce_quantities
@@ -234,6 +234,7 @@ function wave_init(mode_in, mdw_file) result(retval)
       write(*,'(a)') '           Use Delft3D-WAVE-GUI version 4.90.00 or higher to create the mdw-file.'
       call wavestop(1, '*** ERROR: Reference date not set')
    endif
+   call register_boundary_spectrum_files(swan_run, wavedata%time%refdate)
    !
    ! Read wave grids and flow grids; make grid-maps
    !
@@ -462,7 +463,7 @@ function wave_master_step(stepsize) result(retval)
          if (swan_run%flowgridfile == ' ') then
             call settimtscale(wavedata%time, timtscale, swan_run%modsim, swan_run%nonstat_interval)
          else
-            call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,sp), swan_run%modsim, swan_run%nonstat_interval)
+            call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,hp), swan_run%modsim, swan_run%nonstat_interval)
          endif
          !
          ! Run n_swan nested SWAN runs
@@ -570,6 +571,7 @@ end function wave_main_finish
 function wave_master_finish() result(retval)
    use swan_input
    use wave_mpi
+
    implicit none
 !
 ! return value
@@ -591,6 +593,8 @@ function wave_master_finish() result(retval)
    do i_swan = 1, n_swan_grids
       call deallocmeteo(swan_grids(i_swan)%grid_name)
    enddo
+   !
+   call cleanup_boundary_spectrum_files()
    !
    call dealloc_swan(swan_run)
    write(*,'(a)') 'Delft3D-WAVE finished normally.'

@@ -39,7 +39,7 @@ module m_get_ustwav
 contains
    subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
       use precision, only: dp
-      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, eps10
+      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, EPS10
       use m_flowgeom, only: ln, csu, snu
       use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, alfdeltau, fwfac
       use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
@@ -158,7 +158,7 @@ contains
 
       end if
 
-      if (shs > eps10) then
+      if (shs > EPS10) then
          if (jauorb > 0) then
             fac = 1.0_dp
          else

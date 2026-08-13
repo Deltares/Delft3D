@@ -67,6 +67,7 @@ module m_1d_structures
    public get_gate_door_height_c_loc
    public get_width
    public get_gle
+   public get_gate_height
    public get_opening_height
    public get_valve_opening
    public get_culvert_state
@@ -660,6 +661,20 @@ end subroutine deallocstructure
          get_gle = huge(1d0)
       end select
    end function get_gle
+
+   function get_gate_height(struc) result(res)
+
+      type (t_structure), intent(inout) :: struc
+      double precision :: res
+      
+      select case(struc%type)
+      case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
+         res = struc%generalst%gateDoorHeight
+      case default
+         res = huge(1d0)
+      end select
+
+   end function get_gate_height
    
    double precision function get_opening_height(struc)
       
@@ -851,10 +866,11 @@ end subroutine deallocstructure
          allocate(struct%generalst%widthcenteronlink(numlinks), struct%generalst%gateclosedfractiononlink(numlinks), struct%generalst%sOnCrest(numlinks), struct%generalst%state(3,numlinks))
          struct%generalst%sOnCrest(1:numlinks) = 0d0
          struct%generalst%state = 0
-         allocate(struct%generalst%fu(3,numlinks), struct%generalst%ru(3,numlinks), struct%generalst%au(3,numlinks))
+         allocate(struct%generalst%fu(3,numlinks), struct%generalst%ru(3,numlinks), struct%generalst%au(3,numlinks),  struct%generalst%au_max(numlinks))
          struct%generalst%fu = 0d0
          struct%generalst%ru = 0d0
          struct%generalst%au = 0d0
+         struct%generalst%au_max = 0d0
          allocate(struct%generalst%gateclosedfractiononlink(numlinks))
          struct%generalst%gateclosedfractiononlink = 0d0
       case (ST_PUMP)

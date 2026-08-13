@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Deltares", email = "delft3d.support@deltares.nl" }
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]

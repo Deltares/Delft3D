@@ -190,6 +190,7 @@
       endif
 
       return
+
   970 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%num_cells:',hyd%num_cells
       call stop_with_error()

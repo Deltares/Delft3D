@@ -374,6 +374,7 @@ contains
       !     No spatial parameters for now, they should come from DFM
       num_spatial_parameters = 0
       call realloc(paname, num_spatial_parameters)
+      call reset_waq_segment_number_indices()
 
       !      Use functions to set 2D (or 0D variables) from DFM per column
       num_time_functions = 0
@@ -395,6 +396,117 @@ contains
       end if
    end subroutine fm_wq_processes_ini_sub
 
+   !> Finalizes all registered waqsegmentnumber inputs by translating their
+   !! global segment numbers to local WAQ segment indices and filling the
+   !! corresponding vertical painp entries for each D-Flow FM water column.
+   module subroutine finalize_waq_spatial_fields()
+      use m_fm_wq_processes, only: kbx, waq_segment_number_indices
+      use m_flow, only: kmx, kmxn
+      use m_flowgeom, only: Ndxi
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: Nglobal_s, iglobal_s, jampi
+      use processes_input, only: painp
+
+      integer :: waq_index_position
+      integer :: waq_input_index
+      integer :: horizontal_index
+      integer :: vertical_index
+      integer :: global_segment_2d
+      integer :: segment_layer
+      integer :: local_segment_2d
+      integer :: source_bottom_index
+      integer :: source_top_index
+      integer :: target_bottom_index
+      integer :: target_top_index
+      integer :: number_of_layers
+      real(dp) :: global_segment_number
+
+      if (.not. allocated(waq_segment_number_indices)) then
+         return
+      end if
+      if (.not. allocated(painp)) then
+         return
+      end if
+      if (size(waq_segment_number_indices) == 0 .or. size(painp, 1) == 0 .or. Ndxi <= 0) then
+         return
+      end if
+
+      do waq_index_position = 1, size(waq_segment_number_indices)
+         if (waq_segment_number_indices(waq_index_position) < 1 .or. waq_segment_number_indices(waq_index_position) > size(painp, 1)) then
+            cycle
+         end if
+
+         waq_input_index = waq_segment_number_indices(waq_index_position)
+         do horizontal_index = 1, Ndxi
+            global_segment_number = painp(waq_input_index, horizontal_index)
+            if (global_segment_number == dmiss) then
+               cycle
+            end if
+            if (jampi == 0) then
+               global_segment_2d = mod(int(global_segment_number) - 1, Ndxi) + 1
+               segment_layer = (int(global_segment_number) - 1) / Ndxi + 1
+            else if (Nglobal_s > 0) then
+               global_segment_2d = mod(int(global_segment_number) - 1, Nglobal_s) + 1
+               segment_layer = (int(global_segment_number) - 1) / Nglobal_s + 1
+            else
+               global_segment_2d = 0
+               segment_layer = 0
+            end if
+
+            local_segment_2d = global_to_local_segment(global_segment_2d)
+            if (local_segment_2d >= 1 .and. local_segment_2d <= Ndxi .and. segment_layer >= 1 .and. segment_layer <= max(1, kmx)) then
+               call getkbotktop(local_segment_2d, source_bottom_index, source_top_index)
+               number_of_layers = get_number_of_layers(horizontal_index)
+               painp(waq_input_index, horizontal_index) = max(source_bottom_index, source_bottom_index + number_of_layers - segment_layer) - kbx + 1
+            else
+               painp(waq_input_index, horizontal_index) = -999.0_dp
+            end if
+
+            call getkbotktop(horizontal_index, target_bottom_index, target_top_index)
+            number_of_layers = get_number_of_layers(horizontal_index)
+            do vertical_index = target_bottom_index, target_bottom_index + number_of_layers - 1
+               painp(waq_input_index, vertical_index) = painp(waq_input_index, horizontal_index)
+            end do
+         end do
+      end do
+
+   contains
+
+      !> Translates a global waqsegmentfunction index to a local segment index based on the iglobal_s mapping.
+      integer elemental function global_to_local_segment(global_segment_index)
+         integer, intent(in) :: global_segment_index !< The global segment index to be translated to a local segment index.
+
+         integer :: global_index
+
+         if (jampi == 0) then
+            global_to_local_segment = global_segment_index
+         else
+            global_to_local_segment = 0
+            if (allocated(iglobal_s)) then
+               do global_index = 1, size(iglobal_s)
+                  if (iglobal_s(global_index) == global_segment_index) then
+                     global_to_local_segment = global_index
+                     exit
+                  end if
+               end do
+            end if
+         end if
+      end function global_to_local_segment
+
+      !> Tiny helper function to avoid a 5-line if-statement. Returns kmxn if allocated, otherwise returns 1.
+      integer elemental function get_number_of_layers(horizontal_index)
+         integer, intent(in) :: horizontal_index !< The horizontal index for which to retrieve the number of layers.
+
+         if (allocated(kmxn)) then
+            get_number_of_layers = kmxn(horizontal_index)
+         else
+            get_number_of_layers = 1
+         end if
+      end function get_number_of_layers
+
+   end subroutine finalize_waq_spatial_fields
+
    module subroutine fm_wq_processes_ini_proc()
       use m_getkbotktopmax, only: getkbotktopmax
       use m_fm_wq_processes
@@ -404,6 +516,7 @@ contains
       use m_alloc
       use m_flow, only: kmx
       use m_flowgeom, only: Ndxi, ba
+      use m_sferic, only: jsferic
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, jawave, &
                                   jawaveSwartDelwaq
       use fm_external_forcings_data
@@ -442,6 +555,7 @@ contains
 
       integer(4), save :: ithndl = 0
 
+      character(len=20), parameter :: clatitude = 'latitude'
       character(len=20), parameter :: ctauflow = 'tauflow'
       character(len=20), parameter :: ctau = 'tau'
       character(len=20), parameter :: cvelocity = 'velocity'
@@ -491,6 +605,22 @@ contains
       isfsurf = num_spatial_time_fuctions
       call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='surf')
       call mess(LEVEL_INFO, '''horizontal surface'' connected as ''surf'' (by default)')
+
+      icon = index_in_array(clatitude, coname_sub)
+      if (icon > 0) then
+         if (jsferic == 0) then
+            call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because model is not spherical.')
+            isflatitude = 0
+         else
+            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
+            isflatitude = num_spatial_time_fuctions
+            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
+            call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
+         end if
+      else
+         call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because ''latitude'' is not in the sub-file.')
+         isflatitude = 0
+      end if
 
       icon = index_in_array(ctauflow, coname_sub)
       if (icon > 0) then
@@ -1384,7 +1514,7 @@ contains
       !  copy data from D-FlowFM to WAQ
       use m_getfetch, only: getfetch
       use m_getkbotktopmax
-      use m_flowgeom, only: Ndxi, ba
+      use m_flowgeom, only: Ndxi, ba, yz
       use m_flow, only: vol1, ucx, ucy
       use m_flowtimes, only: irefdate, tunit
       use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq
@@ -1403,7 +1533,7 @@ contains
 
       real(kind=dp) :: u10, dir, wdir, FetchL, FetchD
       integer :: isys, iconst, iwqbot
-      integer :: ipoisurf, ipoitau, ipoivel
+      integer :: ipoisurf, ipoilat, ipoitau, ipoivel
       integer :: ipoivol, ipoiconc, ipoisal, ipoitem
       integer :: ipoivwind, ipoiwinddir, ipoifetchl, ipoifetchd, ipoiradsurf, ipoirain, ipoivertdisper, ipoileng
       integer :: ipoiwaveheight, ipoiwavelength, ipoiwaveperiod
@@ -1444,13 +1574,25 @@ contains
          end do
       end if
 
-      ipoisurf = arrpoi(iisfun) + (isfsurf - 1) * num_cells
-      do kk = 1, Ndxi
-         call getkbotktopmax(kk, kb, kt, ktmax)
-         do k = kb, ktmax
-            process_space_real(ipoisurf + k - kbx) = ba(kk)
+      if (first) then
+         ipoisurf = arrpoi(iisfun) + (isfsurf - 1) * num_cells
+         do kk = 1, Ndxi
+            call getkbotktopmax(kk, kb, kt, ktmax)
+            do k = kb, ktmax
+               process_space_real(ipoisurf + k - kbx) = ba(kk)
+            end do
          end do
-      end do
+
+         if (isflatitude > 0) then
+            ipoilat = arrpoi(iisfun) + (isflatitude - 1) * num_cells
+            do kk = 1, Ndxi
+               call getkbotktopmax(kk, kb, kt, ktmax)
+               do k = kb, ktmax
+                  process_space_real(ipoilat + k - kbx) = yz(kk)
+               end do
+            end do
+         end if
+      end if
 
       ipoivol = arrpoi(iivol)
       do k = 0, ktx - kbx
@@ -1719,7 +1861,7 @@ contains
       use m_flowgeom, only: Ndxi, ba
       use m_flow, only: vol1
       use m_flowtimes
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_fm_wq_processes
       use m_transport, only: constituents
       use precision_basics, only: comparereal
@@ -1764,16 +1906,16 @@ contains
       ! Ouputs to waq outputs array (only when his or map outputs will be written within the next timestep,
       ! and during first timestep)
       copyoutput = .false.
-      if (comparereal(tim, tstart_user, eps10) == 0) then
+      if (comparereal(tim, tstart_user, EPS10) == 0) then
          copyoutput = .true.
       end if
       if (ti_his > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_his, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_his, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
       if (ti_map > 0 .or. ti_mpt(1) > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_map, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_map, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
@@ -1817,12 +1959,12 @@ contains
 
       ! Copy wqbot data (when his or map, but also when rst or mba outputs will be written within the next timestep, and during first timestep)
       if (ti_rst > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_rst, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_rst, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
       if (ti_mba > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_mba, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_mba, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
@@ -1857,6 +1999,7 @@ contains
       implicit none
 
       jawaqproc = 0
+      call reset_waq_segment_number_indices()
       md_subfile = ''
       md_ehofile = ''
       md_sttfile = ''

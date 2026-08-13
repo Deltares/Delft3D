@@ -40,7 +40,7 @@ contains
 
 !> Raise an error when provided value is not positive (also to avoid division by zero)
    subroutine check_positive_value(text, value)
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use messagehandling, only: LEVEL_ERROR, mess
       use precision, only: dp
 
@@ -49,7 +49,7 @@ contains
       character(*), intent(in) :: text !< E.g., keyword in the mdu-file
       real(kind=dp), intent(in) :: value !< Corresponding value
 
-      if (value < eps10) then
+      if (value < EPS10) then
          call mess(LEVEL_ERROR, trim(text), ' should be larger than 0.')
       end if
    end subroutine check_positive_value

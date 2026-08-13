@@ -96,7 +96,8 @@ contains
         !     EXTTOT  R     1             Total extinction (1/m)
         !     FAUT    R     NTYP          Fraction autolysis per species (-)
         !     FDET    R     NTYP          Fraction detritus per species (-)
-        !     FL(IFPROD)    NTYP_A        Primary production per type (g/m3/d)
+        !     FL(IFGPPR)    NTYP_A        Gross primary production per type (g/m3/d)
+        !     FL(IFRESP)    NTYP_A        Respiration per type (g/m3/d)
         !     FL(IFMORT)    NTYP_A        Mortality per type (g/m3/d)
         !     FL(IFAUTO)    4             Autolysis fluxes per nutrient (g/m3/d)
         !                                 (C, N, P, Si)
@@ -171,7 +172,7 @@ contains
         integer(kind = int_wp) :: ipo17, ipo18, ipo19
         integer(kind = int_wp) :: ino17, ino18, ino19
         integer(kind = int_wp) :: init, iflux, iseg, ialg, ioff, ip, igro
-        integer(kind = int_wp) :: ifauto, ifdetr, ifooxp, ifupta, ifprod, ifmort
+        integer(kind = int_wp) :: ifauto, ifdetr, ifooxp, ifupta, ifgppr, ifresp, ifmort
         integer(kind = int_wp) :: iswvtr
         integer(kind = int_wp) :: swbloomout
         integer(kind = int_wp) :: swclim
@@ -712,8 +713,9 @@ contains
                 IFDETR = IFLUX + 5
                 IFOOXP = IFLUX + 9
                 IFUPTA = IFLUX + 13
-                IFPROD = IFLUX + 23
-                IFMORT = IFLUX + 23 + NTYP_M
+                IFGPPR = IFLUX + 23
+                IFRESP = IFLUX + 23 + NTYP_M
+                IFMORT = IFLUX + 23 + NTYP_M * 2
 
                 !     Salinity dependend mortality
                 !     Adapt mortality rates
@@ -732,13 +734,13 @@ contains
 
                 CALL BLPRIM (BIOMAS, AMMONI, NITRAT, &
                         PHOSPH, SILICA, DETN, &
-                        DETP, CO2, &
-                        TIC, FL(IFMORT), &
+                        DETP, CO2, TIC, &
+                        ALGTYP(13, :), ALGTYP(14, :), FL(IFMORT), &
                         FL(IFDETR), BLSTEP, EXTTOT, &
                         EXTALG, TEMPER, RADIAT, &
                         DEPTHW, DAYLEN, ID, &
                         NSET, DEAT4, &
-                        TOTNUT, CHLORO, FL(IFPROD), &
+                        TOTNUT, CHLORO, FL(IFGPPR), FL(IFRESP), &
                         FL(IFUPTA), LIMFAC, NUPTAK, &
                         FRAMMO, FBOD5, RATGRO, &
                         RATMOR, ALGDM, ISEG, &

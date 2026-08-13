@@ -34,6 +34,10 @@ src/test/**/ftnunit.run
 src/test/**/ftnunit.html
 src/test/**/DFM_OUTPUT_*/**
 
+# ignore files generated when running examples
+examples/**/DFM_OUTPUT_*/**
+examples/**/*.dia
+
 # ignore files created by updating process definition files
 src/engines_gpl/waq/resources/process_lib/*.log
 src/engines_gpl/waq/resources/process_lib/*.asc
@@ -53,7 +57,16 @@ src/**/FortranCInterface.h
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
+/src/delft3d-apidoc
+/src/delwaq-apidoc
 
 # dvc: ignore data but allow .dvc files
 test/deltares_testbench/data/cases/*
 !test/deltares_testbench/data/cases/**/*.dvc
+
+# precice
+examples/dflowfm/**/precice_debug_output.txt
+examples/dflowfm/**/precice-run/**
+
+# conan
+conan/**/test_package/**

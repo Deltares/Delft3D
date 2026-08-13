@@ -361,9 +361,9 @@ contains
 
       implicit none
 
-      real(kind=dp), intent(in) :: xpoly(:) !< Polyline x-coordinates
-      real(kind=dp), intent(in) :: ypoly(:) !< Polyline y-coordinates
-      integer, allocatable, intent(out) :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
+      real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
+      real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
+      integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
 
       integer :: npoly, i

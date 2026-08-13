@@ -34,7 +34,7 @@ module m_s1ini
    use m_update_waq_sink_source_fluxes, only: update_waq_sink_source_fluxes
    use m_update_waq_lateral_fluxes, only: update_waq_lateral_fluxes
    use m_setgrwflowexpl, only: setgrwflowexpl
-   use m_setsorsin, only: setsorsin
+   use m_source_sink, only: setsorsin, source_sinks
 
    implicit none
 
@@ -71,7 +71,7 @@ contains
       ccr = 0.0_dp
       dd = 0.0_dp
 
-      if (jagrw > 0 .or. num_source_sink > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
+      if (jagrw > 0 .or. source_sinks%num_total > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
          jaqin = 1
       end if
 
@@ -214,6 +214,7 @@ contains
                   end if
 
                   isGhost = is_ghost_node(k)
+                  index_active_bottom_layer = max(1, kmx) - kmxn(k) + 1
                   do i_layer = 1, num_layers
                      if (qqlat(i_layer, k1) > 0) then
                         if (.not. isGhost) then ! Do not count ghosts in mass balances
@@ -229,11 +230,14 @@ contains
                      end if
                      qin(k) = qin(k) + qqlat(i_layer, k1)
                      if (kmx > 0) then
-                        index_active_bottom_layer = kmx - kmxn(k) + 1
-                        if (i_layer >= index_active_bottom_layer) then
-                           layer_index = kbot(k) + i_layer - index_active_bottom_layer
-                           qin(layer_index) = qin(layer_index) + qqlat(i_layer, k1)
+                        layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                        ! Redirect discharges to the nearest active layer
+                        if (layer_index < kbot(k)) then
+                           layer_index = kbot(k)
+                        else if (layer_index > ktop(k)) then
+                           layer_index = ktop(k)
                         end if
+                        qin(layer_index) = qin(layer_index) + qqlat(i_layer, k1)
                      end if
                   end do
                end do
@@ -265,12 +269,12 @@ contains
             call setgrwflowexpl() ! add grw-flow exchange to the qin array
          end if
 
-         if (num_source_sink > 0) then
+         if (source_sinks%num_total > 0) then
             call setsorsin() ! add sources and sinks
          end if
 
          if (wrwaqon) then ! Update waq output
-            if (num_source_sink > 0) then
+            if (source_sinks%num_total > 0) then
                call update_waq_sink_source_fluxes()
             end if
             if (numlatsg > 0) then

@@ -15,9 +15,10 @@ include_directories(${version_include_dir} ${rr_version_header_path})
 
 # Define library
 set(library_name rr_dll)
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${rr_version_header_path}")
 add_library(${library_name} SHARED  ${source_files}
-                                    ${rc_version_file} 
                                     ${fortran_version_file})
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
 set_source_files_properties(
                     src/OESOpenMI.F90
@@ -27,42 +28,33 @@ set_source_files_properties(
                    
 target_compile_definitions(${library_name} PRIVATE "X64")
 
-set(oss_dependencies_general control_lib
-                            delftio
-                            deltares_common
-                            deltares_common_c
-                            ec_module
-                            gridgeom
-                            io_netcdf
-                            flow1d_core
-                            kdtree2
-                            kdtree_wrapper
-                            rr_kernel_f
-                            rr_rtc_tools
-                            wl_openmi_support
-                            esmfsm)
-                             
-# Add dependencies
-if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general} netcdff)
+target_link_libraries(${library_name} PRIVATE
+                        control_lib
+                        delftio
+                        deltares_common
+                        deltares_common_c
+                        ec_module
+                        gridgeom
+                        io_netcdf
+                        flow1d_core
+                        kdtree2
+                        kdtree_wrapper
+                        rr_kernel_f
+                        rr_rtc_tools
+                        wl_openmi_support
+                        esmfsm
+                        netCDF::netcdff
+)
 
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-    )
+if (UNIX)
     add_definitions(-DHAVE_CONFIG_H)   
 endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(WIN32)
-
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/rr)
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )
+install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)

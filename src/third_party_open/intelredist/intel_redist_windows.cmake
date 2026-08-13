@@ -1,53 +1,6 @@
-# Set the directory of where the source code is located
-set(src_path src)
-
-if (intel_version LESS_EQUAL 23)
-    set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/redist/intel64)
-    string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install (DIRECTORY ${mkl_path}/ DESTINATION lib
-    FILES_MATCHING
-    PATTERN "mkl_core.*.dll"
-    PATTERN "mkl_def.*.dll"
-    PATTERN "mkl_avx*.dll"
-    PATTERN "mkl_intel_thread.*.dll"
-    PATTERN "mkl_sequential.*.dll"
-    PATTERN "1033" EXCLUDE
-    )
-
-    set (redist_path $ENV{ONEAPI_ROOT}/compiler/latest/windows/redist/intel64_win/compiler)
-    string(REPLACE "\\" "/" redist_path "${redist_path}")
-    install (DIRECTORY ${redist_path}/ DESTINATION lib
-    FILES_MATCHING
-    PATTERN "*.dll"
-    PATTERN "1033" EXCLUDE
-    )
-
-    # Intel MPI
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
-        set(mpi_path $ENV{I_MPI_ONEAPI_ROOT})
-        string(REPLACE "\\" "/" mpi_path "${mpi_path}")
-        install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION lib
-        FILES_MATCHING
-        PATTERN "*.dll"
-        PATTERN "debug" EXCLUDE
-        PATTERN "release" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
-        FILES_MATCHING
-        PATTERN "*.exe"
-        PATTERN "debug" EXCLUDE
-        PATTERN "release" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
-    endif()
-
-elseif (intel_version GREATER_EQUAL 24)
-    # Intel OneAPI folder structures and environment variables have changed with OneAPI 2024
-    set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
-    string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install (DIRECTORY ${mkl_path}/ DESTINATION lib
+set(mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
+string(REPLACE "\\" "/" mkl_path "${mkl_path}")
+install(DIRECTORY ${mkl_path}/ DESTINATION bin
     FILES_MATCHING
     PATTERN "mkl_core.*.dll"
     PATTERN "mkl_def.*.dll"
@@ -55,46 +8,91 @@ elseif (intel_version GREATER_EQUAL 24)
     PATTERN "mkl_intel_thread.*.dll"
     PATTERN "mkl_sequential.*.dll"
     PATTERN "intel64" EXCLUDE
-    )
+)
 
-    set (redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
-    string(REPLACE "\\" "/" redist_path "${redist_path}")
-    install(FILES
+set(redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
+string(REPLACE "\\" "/" redist_path "${redist_path}")
+install(FILES
     ${redist_path}/libifcoremd.dll
     ${redist_path}/libmmd.dll    
     ${redist_path}/svml_dispmd.dll
     ${redist_path}/libiomp5md.dll  
     ${redist_path}/libifportMD.dll 
-    DESTINATION lib)
+    DESTINATION bin
+)
     
-    #Debug runtime dlls
-    install(FILES
+#Debug runtime dlls
+install(FILES
     ${redist_path}/libifcoremdd.dll
     ${redist_path}/libmmdd.dll
     ${redist_path}/libiomp5md_db.dll
-    DESTINATION lib CONFIGURATIONS debug)
+    DESTINATION bin CONFIGURATIONS debug
+)
+
+if(NOT TARGET mkl_sequential)
+    add_library(mkl_sequential SHARED IMPORTED GLOBAL)
+
+    file(TO_CMAKE_PATH "$ENV{ONEAPI_ROOT}" oneapi_root_cmake)
+    file(GLOB mkl_sequential_dll
+        LIST_DIRECTORIES false
+        CONFIGURE_DEPENDS
+        "${mkl_path}/mkl_sequential.*.dll"
+    )
+
+    list(LENGTH mkl_sequential_dll mkl_sequential_dll_count)
+    if(NOT mkl_sequential_dll_count EQUAL 1)
+        message(FATAL_ERROR
+            "Expected exactly one mkl_sequential.*.dll in '${mkl_path}', "
+            "but found ${mkl_sequential_dll_count}."
+        )
+    endif()
+
+    set_target_properties(mkl_sequential PROPERTIES
+        IMPORTED_LOCATION "${mkl_sequential_dll}"
+        IMPORTED_IMPLIB "${oneapi_root_cmake}/mkl/latest/lib/mkl_sequential.lib"
+    )
+endif()
     
-    # Intel MPI
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
-        set(mpi_path $ENV{ONEAPI_ROOT}/mpi/latest)
-        string(REPLACE "\\" "/" mpi_path "${mpi_path}")
-        install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION lib
+# Intel MPI
+if("${OSS_MPI}" STREQUAL "IntelMPI")
+    set(mpi_path $ENV{ONEAPI_ROOT}/mpi/latest)
+    string(REPLACE "\\" "/" mpi_path "${mpi_path}")
+    install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
+    install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
         FILES_MATCHING
         PATTERN "*.dll"
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
         PATTERN "mpi" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
+        PATTERN "tune" EXCLUDE
+    )
+    install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
         FILES_MATCHING
         PATTERN "*.exe"
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
         PATTERN "mpi" EXCLUDE
-        PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
+        PATTERN "tune" EXCLUDE
+    )
+    install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/
+        DESTINATION bin
+        FILES_MATCHING PATTERN "*.dll" PATTERN "utils"
+        EXCLUDE
+    )
+
+    if(NOT TARGET impi)
+        add_library(impi SHARED IMPORTED GLOBAL)
+        set_target_properties(impi PROPERTIES
+            IMPORTED_LOCATION "${mpi_path}/bin/impi.dll"
+            IMPORTED_IMPLIB "${mpi_path}/lib/impi.lib"
+        )
     endif()
-else()
-    message(FATAL_ERROR "intel version ${intel_version} is not supported. \nCannot install intel redistributable libraries.")
+
+    if(NOT TARGET libfabric)
+        add_library(libfabric SHARED IMPORTED GLOBAL)
+        set_target_properties(libfabric PROPERTIES
+            IMPORTED_LOCATION "${mpi_path}/opt/mpi/libfabric/bin/libfabric.dll"
+            IMPORTED_IMPLIB "${mpi_path}/lib/libfabric.lib"
+        )
+    endif()
 endif()

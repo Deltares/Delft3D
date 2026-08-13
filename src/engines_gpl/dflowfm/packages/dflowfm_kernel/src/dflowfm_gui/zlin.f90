@@ -33,13 +33,13 @@
 module m_zlin
 
    use m_waveconst
+   use precision, only: dp
 
    implicit none
 
 contains
 
    real(kind=dp) function zlin(LL) ! get various values at flow links
-      use precision, only: dp
       use m_getltoplot
       use m_flow
       use m_flowgeom
@@ -169,7 +169,7 @@ contains
       else if (linval == 27) then
          if (jawind > 0) then
             zlin = wdsu_x(LL)
-            jamapwindstress = 1
+            map_write_settings%windstress = 1
          end if
       else if (linval == 28) then
          zlin = abs(cosphiu(LL))

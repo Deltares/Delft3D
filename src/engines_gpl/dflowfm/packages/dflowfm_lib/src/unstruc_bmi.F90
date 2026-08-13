@@ -976,6 +976,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
+      use m_source_sink, only: source_sinks
       use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
@@ -1051,7 +1052,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = num_source_sink
+         shape(1) = source_sinks%num_total
          shape(2) = 3
          return
       case ("observations")
@@ -2017,6 +2018,7 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
+      use m_source_sink, only: source_sink_all_discharges
       use m_dambreak_breach, only: get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
                                    get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
       use m_observations
@@ -2046,10 +2048,12 @@ contains
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
+      character(len=MAXSTRLEN) :: field_name_original !< special extra field name in original casing, as constituents are case-sensitive
       ! Store the name and convert var and field to lowercase to make them case-insensitive.
       var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
-      field_name = str_tolower(char_array_to_string(c_field_name))
+      field_name_original = char_array_to_string(c_field_name)
+      field_name = str_tolower(field_name_original)
 
       select case (var_name)
          ! PUMPS
@@ -2080,7 +2084,7 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("lat_contr_coeff")
@@ -2119,24 +2123,28 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("gateheight")
-            x = c_loc(generalstruc(item_index)%gatedoorheight)
+            if (is_in_network) then
+               x = get_gate_door_height_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 4 + 3))
+            end if
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+               x = c_loc(zcgen((item_index - 1) * 4 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+               x = c_loc(zcgen((item_index - 1) * 4 + 4))
             end if
             return
          case ("gateopeninghorizontaldirection")
@@ -2156,29 +2164,28 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("gateheight")
             if (is_in_network) then
                x = get_gate_door_height_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(generalstruc(item_index)%gatedoorheight)
+               x = c_loc(zcgen((item_index - 1) * 4 + 3))
             end if
-
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+               x = c_loc(zcgen((item_index - 1) * 4 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+               x = c_loc(zcgen((item_index - 1) * 4 + 4))
             end if
             return
          case ("gateopeninghorizontaldirection")
@@ -2348,14 +2355,14 @@ contains
          case default
             !       assume this is a tracer
             !       get constituent number for this tracer
-            iconst = find_name(const_names, field_name)
+            iconst = find_name(const_names, field_name_original)
 
             if (iconst == 0) then
                !          tracer not found
-               call mess(LEVEL_ERROR, 'get_compound_field: cannot find '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name))
+               call mess(LEVEL_ERROR, 'get_compound_field: cannot find '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name_original))
             else
                if (kmx > 1) then
-                  call mess(LEVEL_ERROR, 'get_compound_field: 3D not supported for '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name))
+                  call mess(LEVEL_ERROR, 'get_compound_field: 3D not supported for '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name_original))
                else
                   !             find tracer number
                   itrac = iconst - ITRA1 + 1
@@ -2392,7 +2399,7 @@ contains
          end select
          ! LATERAL DISCHARGES
       case ("laterals")
-         x = get_pointer_to_lateral_variable(item_name, field_name)
+         x = get_pointer_to_lateral_variable(item_name, field_name_original)
          ! GEOMETRY
       case ("geometry")
          select case (item_name)
@@ -2443,7 +2450,7 @@ contains
       use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
                             lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
-      use string_module, only: str_token
+      use string_module, only: str_token, str_tolower
 
       implicit none
       character(len=MAXSTRLEN), intent(in) :: item_name
@@ -2460,12 +2467,12 @@ contains
          return
       end if
 
-      select case (field_name)
+      select case (str_tolower(field_name))
       case ("water_discharge")
-         if (apply_transport(item_index) == 1 .or. kmx == 0) then
+         if (apply_transport(item_index) == 1) then
             c_lateral_pointer = c_loc(qplat(1:num_layers, item_index))
          else
-            c_lateral_pointer = c_loc(qplat(kmx, item_index))
+            c_lateral_pointer = c_loc(qplat(max(1, kmx), item_index))
          end if
          return
       case ("water_level")
@@ -2518,7 +2525,7 @@ contains
          constituent_index = ITEMP
       case default
          constituent_index = find_name(const_names, constituent_name)
-         if (iconst == 0) then
+         if (constituent_index == 0) then
             !        tracer not found
             c_lateral_pointer = c_null_ptr
             return
@@ -2555,6 +2562,7 @@ contains
       use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
+      use m_source_sink, only: source_sink_all_discharges
       use string_module, only: str_token
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
@@ -2626,7 +2634,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
             end if
             return
          case ("lat_contr_coeff")
@@ -2659,20 +2667,40 @@ contains
          end if
          select case (field_name)
          case ("sill_level", "CrestLevel")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
+            end if
             return
          case ("door_height", "GateHeight")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            generalstruc(item_index)%gatedoorheight = x_0d_double_ptr ! Not time-controlled, set directly in generalstruc.
+            if (is_in_network) then
+               fieldptr = get_gate_door_height_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 3) = x_0d_double_ptr
+            end if
             return
          case ("lower_edge_level", "GateLowerEdgeLevel")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 2) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
+            end if
             return
          case ("opening_width", "GateOpeningWidth")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 3) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 4) = x_0d_double_ptr
+            end if
             return
          case ("horizontal_opening_direction", "GateOpeningHorizontalDirection")
             ! TODO: RTC: AvD: set this once it's used
@@ -2694,7 +2722,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
             end if
             return
          case ("GateHeight", "gateHeight")
@@ -2703,9 +2731,8 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               generalstruc(item_index)%gatedoorheight = x_0d_double_ptr ! Not time-controlled, set directly in generalstruc.
+               zcgen((item_index - 1) * 4 + 3) = x_0d_double_ptr
             end if
-
             return
          case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
             if (is_in_network) then
@@ -2713,7 +2740,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 2) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
             end if
             return
          case ("GateOpeningWidth", "gateOpeningWidth")
@@ -2722,7 +2749,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 3) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 4) = x_0d_double_ptr
             end if
             return
          case ("GateOpeningHorizontalDirection", "gateOpeningHorizontalDirection")
@@ -2803,7 +2830,7 @@ contains
                constituent_index = ITEMP
             case default
                constituent_index = find_name(const_names, constituent_name)
-               if (iconst == 0) then
+               if (constituent_index == 0) then
                   !        tracer not found
                   return
                end if

@@ -16,6 +16,29 @@ from tools.minio_dvc_migration.dvc_utils import add_directory_to_dvc
 from tools.minio_dvc_migration.s3_url_info import S3UrlInfo, rewind_timestep_2_datetime
 
 
+def _check_s3_prefix(rewinder: Rewinder, bucket: str, path: str, timestamp=None) -> str:
+    """Check if objects exist at an S3 prefix. Returns 'found', 'missing', or 'error'."""
+    from s3_path_wrangler.paths import S3Path
+
+    if not path:
+        return "missing"
+    try:
+        prefix = S3Path.from_bucket(bucket) / path
+        first = next(iter(rewinder.list_objects(prefix, timestamp)), None)
+        return "found" if first is not None else "missing"
+    except Exception as e:
+        print(f" [ERROR checking {path}: {e}]", end="")
+        return "error"
+
+
+@dataclass(frozen=True)
+class DependencyKey:
+    """Identifies a unique dependency by its S3 path and version."""
+
+    s3_path: str
+    version: str
+
+
 @dataclass
 class TestCaseDataResult:
     """Result data for a test case validation."""
@@ -23,6 +46,13 @@ class TestCaseDataResult:
     case: str = ""
     reference: str = ""
     is_in_tc_csv: bool = False
+
+
+def rename_dependency_path_for_dvc(cases_path: str, version_suffix: str = "") -> str:
+    """Rename dependency folder to DVC convention by appending a version suffix if needed."""
+    parts = cases_path.strip("/").split("/")
+    parts[-1] += version_suffix
+    return "/".join(parts)
 
 
 @dataclass
@@ -38,6 +68,19 @@ class TestCaseData:
     version: str = ""
     case: S3UrlInfo = field(default_factory=S3UrlInfo)
     reference: S3UrlInfo = field(default_factory=S3UrlInfo)
+    dependency: S3UrlInfo = field(default_factory=S3UrlInfo)
+    dependency_version: str = ""
+    dependency_s3_path: str = ""
+
+    @property
+    def has_dependency(self) -> bool:
+        """Return True if this testcase has a dependency."""
+        return bool(self.dependency.path)
+
+    @property
+    def dependency_key(self) -> DependencyKey:
+        """Return a hashable key identifying this testcase's dependency."""
+        return DependencyKey(s3_path=self.dependency_s3_path, version=self.dependency_version)
 
     def download(self, rewinder: Rewinder) -> None:
         """Download case and reference data from S3 using the Rewinder.
@@ -59,6 +102,85 @@ class TestCaseData:
 
         print(f"Downloading reference from {self.reference.bucket}/{self.reference.path} to {reference_local_dir}")
         rewinder.download(self.reference.bucket, self.reference.path, reference_local_dir, rewind_timestamp)
+
+    def download_dependency(self, rewinder: Rewinder) -> None:
+        """Download dependency data from S3 using the Rewinder."""
+        if not self.has_dependency:
+            return
+        rewind_timestamp = None
+        if self.dependency_version and self.dependency_version != "NO VERSION":
+            rewind_timestamp = rewind_timestep_2_datetime(self.dependency_version)
+
+        local_dir = self.dependency.to_local()
+        print(f"Downloading dependency from {self.dependency.bucket}/{self.dependency_s3_path} to {local_dir}")
+        rewinder.download(self.dependency.bucket, self.dependency_s3_path, local_dir, rewind_timestamp)
+
+    def check_minio_presence(self, rewinder: Rewinder) -> dict[str, str]:
+        """Check if case and reference data exist on MinIO without downloading.
+
+        Returns
+        -------
+        dict[str, str]
+            A dict with keys 'case' and 'reference', each mapped to 'found', 'missing', or 'error'.
+        """
+        rewind_timestamp = None
+        if self.version and self.version != "NO VERSION":
+            rewind_timestamp = rewind_timestep_2_datetime(self.version)
+
+        return {
+            "case": _check_s3_prefix(rewinder, self.case.bucket, self.case.path, rewind_timestamp),
+            "reference": _check_s3_prefix(rewinder, self.reference.bucket, self.reference.path, rewind_timestamp),
+        }
+
+    def check_dependency_minio_presence(self, rewinder: Rewinder) -> str:
+        """Check if dependency data exists on MinIO without downloading.
+
+        Returns
+        -------
+        str
+            'found', 'missing', or 'error'.
+        """
+        if not self.has_dependency:
+            return "found"
+        rewind_timestamp = None
+        if self.dependency_version and self.dependency_version != "NO VERSION":
+            rewind_timestamp = rewind_timestep_2_datetime(self.dependency_version)
+
+        return _check_s3_prefix(rewinder, self.dependency.bucket, self.dependency_s3_path, rewind_timestamp)
+
+    def check_doc_folder_minio_presence(self, rewinder: Rewinder) -> str | None:
+        """Check if a doc folder exists on MinIO for cases matching eNN/fNN/cNN pattern.
+
+        Returns
+        -------
+        str | None
+            'found' or 'missing' if the case matches the doc pattern, None otherwise.
+        """
+        parts = self.case.path.strip("/").split("/")
+        # Expected: cases/eXXX/fXXX/cXXX
+        if len(parts) < 4 or parts[0].lower() != "cases":
+            return None
+        if not (
+            parts[1].lower().startswith("e") and parts[2].lower().startswith("f") and parts[3].lower().startswith("c")
+        ):
+            return None
+
+        doc_path = self.case.path.rstrip("/") + "/doc"
+        return _check_s3_prefix(rewinder, self.case.bucket, doc_path)
+
+    def add_dependency_to_dvc(self, repo: Repo) -> List[Path]:
+        """Add downloaded dependency data to DVC tracking."""
+        if not self.has_dependency:
+            return []
+        dvc_files: List[Path] = []
+        dep_path = self.dependency.to_local()
+        print(f"Adding dependency to DVC: {dep_path}")
+        result = add_directory_to_dvc(dep_path, repo)
+        if result:
+            dvc_files.extend(result)
+        else:
+            raise RuntimeError(f"Failed to add dependency to DVC: {dep_path}")
+        return dvc_files
 
     def add_to_dvc(self, repo: Repo) -> List[Path]:
         """Add downloaded case and reference data to DVC tracking."""
@@ -146,6 +268,19 @@ def extract_testcase_data(xml_file_path: Path, base_url: str, s3_bucket: str) ->
                                 f"for testcase {test_case_config.name}"
                             )
 
+                if test_case_config.dependency:
+                    dep = test_case_config.dependency
+                    dep_cases_path = dep.cases_path.strip()
+                    dvc_cases_path = rename_dependency_path_for_dvc(dep_cases_path)
+
+                    new_testcase_data.dependency = S3UrlInfo(
+                        hostname=base_url,
+                        bucket=s3_bucket,
+                        path=f"cases/{dvc_cases_path}",
+                    )
+                    new_testcase_data.dependency_s3_path = f"cases/{dep_cases_path}"
+                    new_testcase_data.dependency_version = dep.version or ""
+
                 testcase_data.append(new_testcase_data)
 
         except Exception as parse_error:
@@ -160,10 +295,25 @@ def extract_testcase_data(xml_file_path: Path, base_url: str, s3_bucket: str) ->
 
 def is_case_with_doc_folder(directory: Path) -> bool:
     """Return True if the given directory is a 'case' folder."""
-    glob_pattern = "data/cases/[eE]*/[fF]*/[cC]*/input"
+    parts = directory.parts
 
-    matches_pattern = directory.match(glob_pattern) or directory.match(f"**/{glob_pattern}")
-    if not matches_pattern:
+    # Must end with 'input' and contain at least: data/cases/eXX/fXX/cXX/input
+    if len(parts) < 6 or parts[-1] != "input":
+        return False
+
+    try:
+        data_idx = parts.index("data")
+    except ValueError:
+        return False
+
+    if data_idx + 4 >= len(parts) or parts[data_idx + 1] != "cases":
+        return False
+
+    e_part = parts[data_idx + 2]
+    f_part = parts[data_idx + 3]
+    c_part = parts[data_idx + 4]
+
+    if not (e_part.lower().startswith("e") and f_part.lower().startswith("f") and c_part.lower().startswith("c")):
         return False
 
     if not directory.exists() or not directory.is_dir():

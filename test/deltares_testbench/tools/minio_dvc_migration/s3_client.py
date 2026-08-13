@@ -2,6 +2,7 @@
 
 import configparser
 import os
+from dataclasses import dataclass
 from shutil import Error
 from typing import List
 
@@ -157,11 +158,11 @@ def get_s3_credentials() -> Credentials:
     """Get a configured MinIO handler and credentials from the home directory credential file."""
     config = {"profile": "default"}
 
-    access_key, secret_key = load_aws_credentials(config["profile"])
+    aws_credentials = load_aws_credentials(config["profile"])
 
     credentials = Credentials()
-    credentials.username = access_key
-    credentials.password = secret_key
+    credentials.username = aws_credentials.access_key
+    credentials.password = aws_credentials.secret_key
 
     return credentials
 
@@ -192,7 +193,15 @@ def setup_minio_client(base_url: str) -> Minio:
     return client
 
 
-def load_aws_credentials(profile_name: str = "default") -> tuple[str, str]:
+@dataclass(frozen=True)
+class AwsCredentials:
+    """AWS/MinIO access credentials."""
+
+    access_key: str
+    secret_key: str
+
+
+def load_aws_credentials(profile_name: str = "default") -> AwsCredentials:
     """Load AWS/Minio credentials from ~/.aws/credentials file in the home directory."""
     credentials_path = os.path.expanduser("~/.aws/credentials")
 
@@ -213,4 +222,4 @@ def load_aws_credentials(profile_name: str = "default") -> tuple[str, str]:
     if not access_key or not secret_key:
         raise ValueError(f"Missing credentials in profile '{profile_name}'")
 
-    return access_key, secret_key
+    return AwsCredentials(access_key=access_key, secret_key=secret_key)

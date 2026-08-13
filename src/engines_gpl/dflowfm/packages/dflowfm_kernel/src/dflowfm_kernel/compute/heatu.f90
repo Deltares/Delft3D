@@ -39,14 +39,16 @@ contains
    !> Update the heatfluxes
    subroutine heatu(time_in_hours)
       use precision, only: dp
-      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, jamapheatflux, jahisheatflux, &
-                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep
+      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, his_write_settings, map_write_settings, &
+                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep, &
+                        air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_flowgeom, only: ndxi, nd
       use m_sferic, only: anglon, anglat
-      use m_wind, only: heatsrc0
+      use m_wind, only: heatsrc0, sensible_heat_flux, latent_heat_flux
       use m_qsun_nominal, only: calculate_nominal_solar_radiation
       use m_get_kbot_ktop, only: getkbotktop
       use m_heatun, only: heatun
+      use m_atmospheric_stability, only: get_sensible_heat_flux, get_latent_heat_flux
 
       real(kind=dp), intent(in) :: time_in_hours !< Current model time in hours
 
@@ -55,7 +57,7 @@ contains
 
       heatsrc0(:) = 0.0_dp ! 2D or 3D heat source per cell, only set at timeuser (Km3/s)
 
-      if (jamapheatflux > 0 .or. jahisheatflux > 0) then
+      if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
          if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
             qtotmap(:) = 0.0_dp
          else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
@@ -70,6 +72,11 @@ contains
       end if
 
       nominal_solar_radiation = calculate_nominal_solar_radiation(anglon, anglat, time_in_hours) ! for models not in spherical coordinates do this just once
+      
+      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         call get_sensible_heat_flux(sensible_heat_flux)
+         call get_latent_heat_flux(latent_heat_flux)
+      end if
 
       !$OMP PARALLEL DO   &
       !$OMP PRIVATE(n,kb,kt)

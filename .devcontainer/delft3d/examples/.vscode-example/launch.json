@@ -11,15 +11,15 @@
       "name": "Debug e02_f002_c100_longculvert",
       "type": "cppdbg",
       "request": "launch",
-      "program": "/workspaces/delft3d/build_fm-suite_debug/install/bin/dimr",
+      "program": "${workspaceFolder}/build_fm-suite_debug/install/bin/dimr",
       "args": [
         "dimr.xml"
       ],
-      "cwd": "/workspaces/delft3d/test/deltares_testbench/data/cases/e02_f002_c100_longculvert",
+      "cwd": "${workspaceFolder}/test/deltares_testbench/data/cases/e02_f002_c100_longculvert",
       "environment": [
         {
-          "name": "LD_LIBRARY_PATH",
-          "value": "/workspaces/delft3d/build_fm-suite_debug/install/lib:${env:LD_LIBRARY_PATH}"
+          "name": "OMP_NUM_THREADS",
+          "value": "1"
         }
       ],
       "MIMode": "gdb",
@@ -34,8 +34,13 @@
           "description": "Disable target async",
           "text": "set target-async off",
           "ignoreFailures": true
+        },
+        {
+          "description": "Set language to Fortran",
+          "text": "set language fortran",
+          "ignoreFailures": false
         }
-      ],
+      ]
     },
     // The launch configuration that the CMake VSCode extension uses to run a test in the debugger.
     // This launch configuration is specific for debugging with the Intel OneAPI version of gdb.
@@ -59,8 +64,13 @@
           "description": "Disable target async",
           "text": "set target-async off",
           "ignoreFailures": true
+        },
+        {
+          "description": "Set language to Fortran",
+          "text": "set language fortran",
+          "ignoreFailures": false
         }
-      ],
+      ]
     }
   ]
 }

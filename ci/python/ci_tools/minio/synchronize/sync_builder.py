@@ -1,10 +1,11 @@
+import os
 from datetime import datetime, timezone
 from logging import Logger
 from pathlib import Path
 from typing import Iterable
 
 from minio import Minio
-from minio.credentials.providers import AWSConfigProvider
+from minio.credentials.providers import StaticProvider
 from s3_path_wrangler.paths import S3Path
 
 from ci_tools.minio import DEFAULT_MINIO_HOSTNAME, DEFAULT_MULTIPART_UPLOAD_PART_SIZE
@@ -194,9 +195,15 @@ class SyncBuilder:
         if self._minio_client is not None:
             return self._minio_client
 
+        access_key = os.environ.get("AWS_ACCESS_KEY_ID")
+        secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+        if not access_key or not secret_key:
+            raise ValueError("Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.")
+
         return Minio(
             endpoint=DEFAULT_MINIO_HOSTNAME,
-            credentials=AWSConfigProvider(),
+            credentials=StaticProvider(access_key, secret_key),
         )
 
     def _get_local_listing(self) -> Iterable[ListItem]:

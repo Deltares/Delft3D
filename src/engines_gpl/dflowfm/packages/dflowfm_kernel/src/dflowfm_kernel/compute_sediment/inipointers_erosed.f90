@@ -70,7 +70,8 @@ contains
                               sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, &
                               ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
-                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he
+                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, spatial_d50
+      use m_fm_erosed, only : difparam, seddif_cal
 
       if (.not. stm_included) then
          return
@@ -91,6 +92,7 @@ contains
       nmudfrac => stmpar%sedpar%nmudfrac
       max_mud_sedtyp => stmpar%sedpar%max_mud_sedtyp
       cmpupdfrac => stmpar%sedpar%cmpupdfrac
+      spatial_d50 => stmpar%sedpar%spatial_d50
       rhosol => stmpar%sedpar%rhosol
       cdryb => stmpar%sedpar%cdryb
       logseddia => stmpar%sedpar%logseddia
@@ -122,6 +124,8 @@ contains
       floclist => stmpar%sedpar%floclist
       tbreakup => stmpar%sedpar%tbreakup
       tfloc => stmpar%sedpar%tfloc
+      difparam => stmpar%sedpar%difparam
+      seddif_cal => stmpar%sedpar%seddif_cal
 
       ! morpar
       thresh => stmpar%morpar%thresh

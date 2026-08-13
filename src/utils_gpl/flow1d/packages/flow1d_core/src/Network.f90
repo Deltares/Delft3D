@@ -209,7 +209,6 @@ contains
       num_fatal_errors = 0
       
       call realloc(network%adm, linall_1d, linall_all, linall_1d + network%brs%Count)
-
       timerHandle = 0
       call timstrt('line administration', timerHandle)
       adm => network%adm
