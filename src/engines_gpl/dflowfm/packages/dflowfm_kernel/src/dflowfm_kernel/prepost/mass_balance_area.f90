@@ -52,7 +52,7 @@ contains
       use tree_structures, only: tree_destroy
 
       ! Arguments
-      character(len=*), intent(in) :: mass_balance_area_file !< Mass balance area file input.
+      character(len=*), intent(in) :: mass_balance_area_file !< Mass balance area file input; can be a list of filenames, space-separated.
 
       ! Local variables
       type(tree_data), pointer :: mba_ptr !< Pointer to the mass balance area tree structure.
