@@ -133,6 +133,7 @@ contains
       md_foufile = ' '
       md_hisfile = ' '
       md_mapfile = ' '
+      md_mbafile = ' '
       md_classmapfile = ' '
       md_comfile = ' '
       md_timingsfile = ' '
