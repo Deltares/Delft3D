@@ -185,9 +185,19 @@ namespace pre_c_sumo
             ConnectedSinkSources connected_sink_sources =
                 convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
 
-            participant.resetMesh(sources_sinks_mesh);
-            sources_sinks.setCoordinatesDimension(connected_sink_sources.get_number_of_entries());
-            participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
+            if (participant.isTimeWindowComplete())
+            {
+                participant.resetMesh(sources_sinks_mesh);
+                sources_sinks.setCoordinatesDimension(connected_sink_sources.get_number_of_entries());
+                participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
+                std::println("Reset Sources_Sinks. Mesh set to {} vertices.",
+                             connected_sink_sources.get_number_of_entries());
+            }
+            else
+            {
+                std::println("Skipped mesh reset. Want to write {} entries, mesh has {} vertices.",
+                             connected_sink_sources.get_number_of_entries(), sources_sinks.precice_ids.size());
+            }
 
             try
             {
