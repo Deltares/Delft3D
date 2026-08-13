@@ -447,14 +447,28 @@ contains
       if (.not. lfbedfrm) then
          write (mdia, '(a)') 'Bedform height predictor not active in present simulation.'
       end if
+      !
       if (.not. stm_included) then
          write (mdia, '(a)') 'Morphology module not active in present simulation.'
+      end if
+      !
+      if (.not. stm_included .or. (stm_included .and. seddia_from_bfm)) then
          txtput1 = 'Using characteristic sediment diameters'
          write (mdia, '(a,a)') txtput1, ':'
+
          txtput1 = '  D50 (m)'
-         write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD50
+         if (existD50) then
+            write (mdia, '(a,a,a)') txtput1, ': ', trim(flnmD50)
+         else
+            write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD50(1)
+         end if
+
          txtput1 = '  D90 (m)'
-         write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD90
+         if (existD90) then
+            write (mdia, '(a,a,a)') txtput1, ': ', trim(flnmD90)
+         else
+            write (mdia, '(a,a,e20.4)') txtput1, ':', bedformD90(1)
+         end if
       end if
       !
       if (.not. lfbedfrm) then
