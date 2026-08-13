@@ -59,5 +59,13 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return pre_c_sumo::run(csumoSettingsFileName, preciceConfigFileName);
+    try
+    {
+        return pre_c_sumo::run(csumoSettingsFileName, preciceConfigFileName);
+    }
+    catch (const std::runtime_error& e)
+    {
+        std::println(stderr, "Error: {}\n", e.what());
+        return EXIT_FAILURE;
+    }
 }
