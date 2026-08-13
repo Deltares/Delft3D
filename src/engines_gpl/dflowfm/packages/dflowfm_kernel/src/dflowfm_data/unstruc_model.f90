@@ -3752,7 +3752,7 @@ contains
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
       call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
-      call prop_set(prop_ptr, 'output', 'MbaFile', trim(md_mbafile), 'Mass balance area input file')
+      call prop_set(prop_ptr, 'output', 'MbaFile', trim(md_mbafile), 'Space-separated input mass balance area file(s) (*_mba.ini).')
       call prop_set(prop_ptr, 'output', 'MapOutputPolygonFile', trim(md_map_output_polyfile), 'Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)')
 
       ti_his_array(1) = ti_his
