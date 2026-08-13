@@ -849,18 +849,6 @@ contains
             ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
             fileReaderPtr%one_time_field = .true.
          end if
-      case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
-            'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
-         ! the name of the source item created by the file reader will be the same as the ext.force. var name
-         if (.not. present(varname)) then !> these variables will crash without a varname
-            write (msgbuf, '(3a)') 'm_meteo::ec_addtimespacerelation: ''dataVariableName'' is required for quantity ''', &
-               trim(target_name), ''' but was not provided. Add dataVariableName= to the [Parameter] block.'
-            call err_flush()
-            goto 1234
-         end if
-         ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
-         ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
-         sourceItemName = varname
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_arcinfo) then
             sourceItemName = 'wind_p'
@@ -1574,7 +1562,7 @@ contains
             ! with nesting there can be more than one source item now. But the first is always the main one
             ! The second is made for nesting to be able to interpolate z-values in time
             sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-            if (.not. allocated(sourceItemIds)) then
+            if (size(sourceItemIds) == 0) then
                goto 1234
             end if
 
