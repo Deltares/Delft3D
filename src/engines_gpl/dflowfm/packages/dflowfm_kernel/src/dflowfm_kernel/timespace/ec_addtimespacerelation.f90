@@ -867,6 +867,39 @@ contains
          ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
          ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
+      case ('wavedirection')
+         ! Direction interpolation is weighted by significant wave height and
+         ! therefore requires two matched source and target items.
+         if (ec_filetype /= provFile_netcdf) then
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity wavedirection.')
+            return
+         end if
+         sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_surface_wave_from_direction')
+         sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_surface_wave_significant_height')
+         if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int) then
+            call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: NetCDF source items for quantity '''//trim(target_name)//''' are incomplete.')
+            goto 1234
+         end if
+         success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+         if (success) then
+            success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
+         end if
+         if (success) then
+            success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr1)
+         end if
+         if (success) then
+            success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, targetItemPtr2)
+         end if
+         if (success) then
+            success = ecAddItemConnection(ecInstancePtr, targetItemPtr1, connectionId)
+         end if
+         if (success) then
+            success = ecAddItemConnection(ecInstancePtr, targetItemPtr2, connectionId)
+         end if
+         if (.not. success) then
+            goto 1234
+         end if
+         source_connection_created = .true.
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_spiderweb) then ! other filetypes are handled generically
             sourceItemName = 'p_drop'
@@ -1420,6 +1453,7 @@ contains
                call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection for quantity '''//trim(target_name)//''' has no target item.')
                goto 1234
             end if
+
             if (associated(targetItemPtr2) .or. associated(targetItemPtr3) .or. associated(targetItemPtr4)) then
                call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection supports one target item only; quantity '''//trim(target_name)//''' requires special handling.')
                goto 1234
