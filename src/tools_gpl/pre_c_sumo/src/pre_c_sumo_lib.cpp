@@ -148,8 +148,17 @@ namespace pre_c_sumo
         waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
         const std::vector<NF2FFReader> initial_nf2ff_readers =
             readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-        ConnectedSinkSources initial_connected_sink_sources =
-            convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+        ConnectedSinkSources initial_connected_sink_sources;
+        try
+        {
+            initial_connected_sink_sources =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+        }
+        catch (const std::exception& exception)
+        {
+            std::println(stderr, "Error: Unable to convert NF2FF data: {}", exception.what());
+            return -1;
+        }
 
         // Set sources_sinks mesh
         SourcesSinks sources_sinks;

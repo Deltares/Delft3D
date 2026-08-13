@@ -9608,4 +9608,111 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f044_c04_waveforcing_custom_vars" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f044_offline_waves/c04_waveforcing_custom_vars</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="output/Borkum_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_hwav" toleranceAbsolute="0.01"/>
+          <parameter name="mesh2d_uorb" toleranceAbsolute="0.01"/>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.01"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.01"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>          
+  <testCase name="e02_f006_c050_add_operand_ecConverterUniform" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c050_add_operand_ecConverterUniform</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/rainschematic_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
+          <parameter name="rain" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f006_c051_add_operand_ecConverterUnimagdir" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c051_add_operand_ecConverterUnimagdir</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/winduni_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f006_c052_add_operand_ecConverterPolytim" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c052_add_operand_ecConverterPolytim</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
+          <parameter name="x_velocity" toleranceAbsolute="0.0001"/>
+          <parameter name="y_velocity" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f006_c053_add_operand_ecConverterArcinfo" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c053_add_operand_ecConverterArcinfo</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f006_c054_add_operand_ecConverterFourier" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c054_add_operand_ecConverterFourier</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
+          <parameter name="x_velocity" toleranceAbsolute="0.0001"/>
+          <parameter name="y_velocity" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f006_c055_add_operand_ecConverterCurvi" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c055_add_operand_ecConverterCurvi</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f006_c057_add_operand_ecConverterNetcdf" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c057_add_operand_ecConverterNetcdf</path>
+    <maxRunTime>600.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
 </testCases>
