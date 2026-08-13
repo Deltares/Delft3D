@@ -29,7 +29,8 @@ contains
 
       genstr => structure%generalst
       do L0 = 1, structure%numlinks
-         Lf = structure%linknumbers(L0)
+         Lf = abs(struc
+         ture%linknumbers(L0))
          k1 = ln(1, Lf)
          k2 = ln(2, Lf) ! 1 -> 2 flow link direction
 
