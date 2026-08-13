@@ -526,4 +526,23 @@ namespace dflowfm_io::test
         EXPECT_EQ(visited.at("keyc"), 3);
     }
 
+
+    // -------------------------------------------------------------------------
+    // Sanity checks
+    // -------------------------------------------------------------------------
+
+    TEST(MduDataTest, CreatedFromSchemaDefaults_ContainsAllNonObsoleteProperties)
+    {
+        MduData data = MakeMduData(MDU_SCHEMA.CreateDefaultValues());
+
+        for (const auto& sectionSchema : MDU_SCHEMA.Sections())
+            if (sectionSchema.status.type != StatusType::Obsolete)
+                for (const auto& propertySchema : sectionSchema.properties)
+                    if (!MDU_SCHEMA.IsObsolete(propertySchema, propertySchema.default_value))
+                    {
+                        const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                        EXPECT_TRUE(data.hasValue(key)) << "Missing key: " << key;
+                    }
+    }
+
 } // namespace dflowfm_io::test
