@@ -5532,6 +5532,12 @@
                     }
                 },
                 {
+                    "key": "mbaFile",
+                    "default_value": "",
+                    "value_type": "path",
+                    "description": "Space-separated input mass balance area file(s) (*_mba.ini)."
+                },
+                {
                     "key": "mbaInterval",
                     "default_value": 0.0,
                     "value_type": "float",

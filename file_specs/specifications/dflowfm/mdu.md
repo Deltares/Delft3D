@@ -781,6 +781,7 @@ This section contains the settings for various output files.
 | `waqHorAggr` 🔬 | DELWAQ output horizontal aggregation file (\*.dwq). | `<empty>` |  |  |  |
 | `writeDetailedTimers` 🔬 | Write detailed timers output file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `metadataFile` 🔬 | Metadata NetCDF file with user-defined global dataset attributes (\*_meta.nc). | `<empty>` |  |  |  |
+| `mbaFile` | Space-separated input mass balance area file(s) (\*_mba.ini). | `<empty>` |  |  |  |
 | `mbaInterval` 🔬 | Mass balance area output interval. | `0.0` |  | [s] |  |
 | `wrirst_bnd` 🔬 | Write water level. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `generateUuid` 🔬 | Generate UUID as unique dataset identifier and include in output NetCDF files. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
