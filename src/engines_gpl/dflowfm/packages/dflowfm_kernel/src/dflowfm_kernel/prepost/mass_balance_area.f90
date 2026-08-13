@@ -278,6 +278,7 @@ contains
       do k = 1, nselected
          node = selected_nodes(k)
 
+         ! Note: this will overwrite any previous mass balance area that this node was part of: last one wins.
          mbadef(node) = imba
          call getkbotktop(node, kb, kt)
          mbadef(kb:kb + kmxn(node) - 1) = imba
