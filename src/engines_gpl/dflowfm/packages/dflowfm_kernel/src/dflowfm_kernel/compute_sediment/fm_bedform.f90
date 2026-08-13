@@ -965,7 +965,7 @@ contains
          ! Van Rijn 1984 roughness predictor
          !
          do nm = 1, ndx
-            if (stm_included) then
+            if (stm_included .and. (.not. seddia_from_bfm)) then
                if (associated(sedtra%dxx)) then
                   d90l = dxx(nm, i90)
                end if
@@ -991,7 +991,7 @@ contains
          ! Power relation on basis of dune height for roughness.
          !
          do nm = 1, ndx
-            if (stm_included) then
+            if (stm_included .and. (.not. seddia_from_bfm)) then
                if (associated(sedtra%dxx)) then
                   d90l = dxx(nm, i90)
                end if
