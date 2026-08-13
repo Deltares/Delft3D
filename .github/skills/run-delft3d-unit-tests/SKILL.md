@@ -33,3 +33,8 @@ ctest --test-dir <build-directory> [--build-config <build-type>] [--tests-regex 
 
 The `--build-config` is only required on Windows, because the Visual Studio solution files are build-type
 agnostic.
+
+## Finding unit test source code.
+
+Use the `find-unit-test-source` skill to map a failing test name to its source file(s) instead
+of grepping the whole repository.

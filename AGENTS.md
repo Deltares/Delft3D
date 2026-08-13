@@ -8,12 +8,6 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
 - TestBench: `/test/deltares_testbench` (Python)
 - TeamCity CI configuration and tools: `/ci` (Python, Dockerfile, TeamCity Kotlin DSL)
 
-## Build and test
-
-- Building and installing dependencies: Use the `build-delft3d` skill.
-- Run unit tests: Use the `run-delft3d-unit-test` skill.
-- Run the TestBench (integration tests): Use the `run-testbench` skill.
-
 ## Toolchain
 
 - Build system: CMake 4
