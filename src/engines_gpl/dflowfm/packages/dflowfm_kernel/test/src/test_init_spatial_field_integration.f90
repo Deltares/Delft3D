@@ -74,6 +74,72 @@ contains
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
 
+   subroutine setup_minimal_grid_with_points(npoints)
+      integer, intent(in) :: npoints
+
+      ndx = npoints
+      ndxi = npoints
+      if (allocated(xz)) deallocate (xz)
+      if (allocated(yz)) deallocate (yz)
+      if (allocated(kcs)) deallocate (kcs)
+      allocate (xz(npoints), yz(npoints), kcs(npoints))
+      xz = 0.0_dp
+      yz = 0.0_dp
+      kcs = 1
+   end subroutine setup_minimal_grid_with_points
+
+   subroutine create_scalar_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, ssrd_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_scalar_netcdf
+
+   subroutine create_windxy_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, u10_varid, v10_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'u10', NF90_DOUBLE, [time_dimid], u10_varid))
+      call check_netcdf(nf90_put_att(ncid, u10_varid, 'standard_name', 'eastward_wind'))
+      call check_netcdf(nf90_put_att(ncid, u10_varid, 'units', 'm s-1'))
+      call check_netcdf(nf90_def_var(ncid, 'v10', NF90_DOUBLE, [time_dimid], v10_varid))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, 'standard_name', 'northward_wind'))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, 'units', 'm s-1'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, u10_varid, [2.0_dp, 6.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, v10_varid, [-4.0_dp, 2.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_windxy_netcdf
+
+   subroutine check_netcdf(status)
+      use netcdf, only: NF90_NOERR, nf90_strerror
+
+      integer, intent(in) :: status
+
+      if (status /= NF90_NOERR) error stop nf90_strerror(status)
+   end subroutine check_netcdf
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_polygon_preserves_uncovered_values, test_polygon_preserves_uncovered_values,
    subroutine test_polygon_preserves_uncovered_values() bind(C)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
@@ -691,6 +757,147 @@ contains
       if (allocated(qext)) deallocate (qext)
       call teardown_minimal_grid()
    end subroutine test_qext_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_solarradiation_coordinate_free_netcdf_broadcast, test_solarradiation_coordinate_free_netcdf_broadcast,
+   subroutine test_solarradiation_coordinate_free_netcdf_broadcast() bind(C)
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_solar_radiation
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_solarradiation_uniform.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_solarradiation_uniform.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_scalar_netcdf(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+
+      call setup_minimal_grid_with_points(2)
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'coordinate-free NetCDF initialization should succeed')
+      call f90_expect_true(item_solar_radiation > 0, 'solar radiation target item should be registered')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'coordinate-free NetCDF update at t=0 should succeed')
+      call f90_expect_near(solar_radiation(1), 100.0_dp, 1.0e-6_dp, 'first target should receive t=0 value')
+      call f90_expect_near(solar_radiation(2), 100.0_dp, 1.0e-6_dp, 'second target should receive t=0 value')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'coordinate-free NetCDF update at t=50 should succeed')
+      call f90_expect_near(solar_radiation(1), 200.0_dp, 1.0e-6_dp, 'first target should receive interpolated value')
+      call f90_expect_near(solar_radiation(2), 200.0_dp, 1.0e-6_dp, 'second target should receive interpolated value')
+
+      solar_radiation_available = .false.
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      call teardown_minimal_grid()
+   end subroutine test_solarradiation_coordinate_free_netcdf_broadcast
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_coordinate_free_netcdf_override_and_multiply, test_windxy_coordinate_free_netcdf_override_and_multiply,
+   subroutine test_windxy_coordinate_free_netcdf_override_and_multiply() bind(C)
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_windxy_x
+      use m_sferic, only: jsferic
+      use m_wind, only: jawind, wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
+      character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_windxy_netcdf(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = windxy', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+      call create_file(FACTOR_EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = windxy', &
+                       '    forcingFileType = datavalue', &
+                       '    dataValue       = 0.5', &
+                       '    operand         = multiply'])
+
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call setup_minimal_grid_with_points(2)
+      lnx = 2
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx))
+      xu = [0.0_dp, 10.0_dp]
+      yu = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'coordinate-free NetCDF windxy initialization should succeed')
+
+      call parse_spatial_block(FACTOR_EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, FACTOR_EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'windxy dataValue multiply initialization should succeed')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'windxy update at t=0 should succeed')
+      call f90_expect_near(wx(1), 1.0_dp, 1.0e-6_dp, 'first x target should be overridden and multiplied at t=0')
+      call f90_expect_near(wx(2), 1.0_dp, 1.0e-6_dp, 'second x target should be overridden and multiplied at t=0')
+      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should be overridden and multiplied at t=0')
+      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should be overridden and multiplied at t=0')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'windxy update at t=50 should succeed')
+      call f90_expect_near(wx(1), 2.0_dp, 1.0e-6_dp, 'first x target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wx(2), 2.0_dp, 1.0e-6_dp, 'second x target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wy(1), -0.5_dp, 1.0e-6_dp, 'first y target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wy(2), -0.5_dp, 1.0e-6_dp, 'second y target should be interpolated and multiplied at t=50')
+
+      jawind = 0
+      lnx = 0
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call teardown_minimal_grid()
+   end subroutine test_windxy_coordinate_free_netcdf_override_and_multiply
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,

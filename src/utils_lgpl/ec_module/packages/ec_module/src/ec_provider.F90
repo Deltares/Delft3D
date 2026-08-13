@@ -2744,6 +2744,7 @@ contains
       character(len=:), allocatable :: nameVar ! variable name in error message
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
       integer :: nrow, ncol, nlay
+      logical :: coordinate_free_scalar
       !
       success = .false.
       itemPtr => null()
@@ -2755,6 +2756,7 @@ contains
       name = ''
       ndims = 0
       rotate_pole = .false.
+      coordinate_free_scalar = .false.
 
       ! =============================================================================
       ! Find the Quantity corresponding to quantityName. (configurable in the future)
@@ -2952,7 +2954,11 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         if (fgd_id < 0 .or. sgd_id < 0) then
+         coordinate_free_scalar = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid .and. &
+                                   fgd_id < 0 .and. sgd_id < 0)
+         if (coordinate_free_scalar) then
+            grid_type = elmSetType_scalar
+         else if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
@@ -2968,7 +2974,11 @@ contains
          ! Create the ElementSet for this quantity
          ! =========================================
          elementSetId = ecInstanceCreateElementSet(instancePtr)
-         if (grid_type == ec_undef_int) then
+         if (coordinate_free_scalar) then
+            if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_scalar)) then
+               return
+            end if
+         else if (grid_type == ec_undef_int) then
             dummy = ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, 0)
          else
             if (allocated(fgd_data)) deallocate (fgd_data)

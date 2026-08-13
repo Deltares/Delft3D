@@ -768,6 +768,50 @@ contains
             return
          end if
       else
+         if (item%elementSetPtr%nCoordinates == 0) then
+            ! Coordinate-free NetCDF variables contain one value per time step.
+            if (.not. allocated(fieldPtr%arr1d)) then
+               allocate (fieldPtr%arr1d(1), stat=istat)
+               if (istat /= 0) then
+                  call set_ec_message("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
+                  return
+               end if
+               fieldPtr%arr1d = ec_undef_hp
+               fieldPtr%arr1dPtr => fieldPtr%arr1d
+            end if
+
+            valid_field = .false.
+            do while (.not. valid_field)
+               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, fieldPtr%arr1dPtr, start=[timesndx], count=[1])
+               if (ierror /= NF90_NOERR) then
+                  call set_ec_message("NetCDF:'"//trim(nf90_strerror(ierror))//"' in "//trim(fileReaderPtr%filename)//".")
+                  return
+               end if
+
+               valid_field = (fieldPtr%arr1dPtr(1) /= dmiss_nc)
+               if (.not. valid_field .and. has_time .and. timesndx < fileReaderPtr%tframe%nr_timesteps) then
+                  timesndx = timesndx + 1
+               else
+                  valid_field = .true.
+               end if
+            end do
+
+            if (has_time) then
+               fieldPtr%timesteps = ecSupportTimeIndexToMJD(fileReaderPtr%tframe, timesndx)
+               fieldPtr%timesndx = timesndx
+            end if
+
+            ! Apply the scale factor and offset before returning from the scalar path.
+            if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
+               if (fieldPtr%arr1dPtr(1) /= item%quantityPtr%fillvalue) then
+                  fieldPtr%arr1dPtr(1) = fieldPtr%arr1dPtr(1) * item%quantityPtr%factor + item%quantityPtr%offset
+               end if
+            end if
+
+            success = .true.
+            return
+         end if
+
          col0 = fieldPtr%bbox(1)
          row0 = fieldPtr%bbox(2)
          col1 = fieldPtr%bbox(3)
