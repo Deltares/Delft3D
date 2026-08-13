@@ -827,7 +827,7 @@ contains
          else if (ec_filetype == provFile_curvi) then
             sourceItemName = 'curvi_source_item_1'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for special quantity rainfall.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity rainfall.')
             return
          end if
          if (.not. (ecQuantitySet(ecInstancePtr, quantityId, timeint=timeint_rainfall))) then
@@ -844,7 +844,7 @@ contains
          else if (ec_filetype == provFile_curvi) then
             sourceItemName = 'curvi_source_item_1'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for special quantity rainfall_rate.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity rainfall_rate.')
             return
          end if
       case ('hrms', 'tp', 'tps', 'rtp', 'dir', 'fx', 'fy', 'wsbu', 'wsbv', 'mx', 'my', 'dissurf', 'diswcap', 'ubot')

@@ -21,19 +21,19 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: BC_FILENAME = "test_rain.bc"
    character(len=*), parameter :: BASE_DIR = "."
    integer, parameter :: NUM_SCALAR_METEO_CASES = 15
-   character(len=32), parameter :: SCALAR_METEO_QUANTITIES(NUM_SCALAR_METEO_CASES) = [character(len=32) :: &
+   character(len=32), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_QUANTITIES = [character(len=32) :: &
       'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
       'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
       'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
-   character(len=48), parameter :: SCALAR_METEO_VARIABLES(NUM_SCALAR_METEO_CASES) = [character(len=48) :: &
+   character(len=48), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VARIABLES = [character(len=48) :: &
       'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
       'sshf', 'tauu', 'tauv', 'u10', 'v10']
-   character(len=64), parameter :: SCALAR_METEO_STANDARD_NAMES(NUM_SCALAR_METEO_CASES) = [character(len=64) :: &
+   character(len=64), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_STANDARD_NAMES = [character(len=64) :: &
       'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
       'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
       'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
       'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
-   real(dp), parameter :: SCALAR_METEO_VALUES(NUM_SCALAR_METEO_CASES) = [ &
+   real(dp), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VALUES = [ &
       1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
       50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
 
@@ -83,8 +83,8 @@ contains
       use timespace_parameters, only: INSIDE_POLYGON, OPERAND_OVERRIDE
 
       character(len=*), parameter :: POL_FILE = "test_partial_polygon.pol"
-      real(dp) :: transformcoef(NTRANSFORMCOEF)
-      real(dp) :: x(2), y(2), values(2)
+      real(dp), dimension(NTRANSFORMCOEF) :: transformcoef
+      real(dp), dimension(2) :: x, y, values
       logical :: success
       integer :: ierr
 
@@ -349,7 +349,7 @@ contains
       use fm_external_forcings_data, only: NTRANSFORMCOEF
 
       type(t_averaging_input) :: avg
-      real(dp) :: tc(NTRANSFORMCOEF)
+      real(dp), dimension(NTRANSFORMCOEF) :: tc
 
       avg%averaging_type = 4 ! e.g. nearestNb
       avg%rel_size = 2.5_dp
@@ -1224,7 +1224,8 @@ contains
       use timespace_parameters, only: OPERAND_OVERRIDE
       use unstruc_inifields, only: apply_waqbot_target_layer
 
-      real(dp) :: input_2d(1), output_3d(9)
+      real(dp), dimension(1) :: input_2d
+      real(dp), dimension(9) :: output_3d
       logical :: success
 
       kmx = 8
@@ -1551,154 +1552,6 @@ contains
    end subroutine test_field1d_global_value_applied_to_frictioncoefficient
    !$f90tw)
 
-   !!$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_timedep_uses_item_frcu, test_frictioncoefficient_timedep_uses_item_frcu,
-   !!> Regression test for the ec_addtimespacerelation bug where targetItemPtr1 was
-   !!! unconditionally overridden by tgt_item1 even when fm_ext_force_name_to_ec_item
-   !!! had already wired item_frcu. The symptom was: frcu never updated during the run
-   !!! because the EC connection pointed at a disconnected scratch item.
-   !!!
-   !!! Proof: after init_spatial_fields, calling ec_gettimespacevalue_by_itemID with
-   !!! item_frcu (the registered hardcoded item) must update frcu. If the bug were
-   !!! still present, item_frcu would have no connection and the call would silently
-   !!! leave frcu unchanged.
-   !subroutine test_frictioncoefficient_timedep_uses_item_frcu() bind(C)
-   !   use m_meteo,      only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_frcu, initialize_ec_module
-   !   use m_flow,       only: frcu
-   !   use m_flowgeom,   only: lnx, xu, yu
-   !   use m_flowtimes,  only: irefdate, tzone, tunit, tstart_user
-   !   use m_alloc,      only: realloc
-   !   use m_polygon,    only: m_polygon_destructor
-   !   use netcdf
-   !
-   !   type(tree_data), pointer :: bnd_ptr, block_ptr
-   !   logical :: success
-   !   real(dp) :: value_at_t0, value_at_t50
-   !   integer :: ierr
-   !   character(len=*), parameter :: NC_FILE  = "test_frcu_tv.nc"
-   !   character(len=*), parameter :: EXT_FILE = "test_frcu_tv.ext"
-   !
-   !   ! ARRANGE: create a minimal 2-timestep NetCDF with friction_coefficient at one grid point.
-   !   call create_friction_netcdf(NC_FILE, &
-   !                               times   = [0.0_dp, 100.0_dp], &
-   !                               values  = [0.02_dp, 0.04_dp], &
-   !                               x_coord = 0.0_dp, &
-   !                               y_coord = 0.0_dp)
-   !
-   !   call create_file(EXT_FILE, [ &
-   !                    "[Parameter]", &
-   !                    "    quantity        = frictioncoefficient", &
-   !                    "    forcingFile     = "//NC_FILE, &
-   !                    "    forcingFileType = netcdf"])
-   !
-   !   call setup_minimal_grid()
-   !   lnx = 1
-   !   if (allocated(xu)) deallocate(xu)
-   !   if (allocated(yu)) deallocate(yu)
-   !   allocate(xu(lnx), yu(lnx))
-   !   xu = [0.0_dp]
-   !   yu = [0.0_dp]
-   !   call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
-   !
-   !   irefdate    = 20000101
-   !   tzone       = 0.0_dp
-   !   tstart_user = 0.0_dp
-   !   threshold_abort = LEVEL_FATAL
-   !   call initialize_ec_module()
-   !   ierr = m_polygon_destructor()
-   !
-   !   ! ACT
-   !   call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
-   !   success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Parameter')
-   !   call tree_destroy(bnd_ptr)
-   !
-   !   call f90_assert_true(success, "init_spatial_fields should succeed for netcdf frictioncoefficient")
-   !
-   !   ! KEY ASSERTION: item_frcu must be a valid registered item. If targetItemPtr1 had
-   !   ! been overridden by the bug, fm_ext_force_name_to_ec_item would have set item_frcu
-   !   ! but then it would have been replaced by a disconnected scratch item.
-   !   call f90_assert_true(item_frcu > 0, "item_frcu must be registered (> 0)")
-   !
-   !   ! Verify the EC relation is live by querying item_frcu at two timesteps.
-   !   success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_frcu, &
-   !                                            irefdate, tzone, tunit, 0.0_dp, target_array = frcu)
-   !   call f90_assert_true(success, "ec_gettimespacevalue_by_itemID must succeed at t=0")
-   !   value_at_t0 = frcu(1)
-   !
-   !   success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_frcu, &
-   !                                            irefdate, tzone, tunit, 50.0_dp, target_array = frcu)
-   !   call f90_assert_true(success, "ec_gettimespacevalue_by_itemID must succeed at t=50")
-   !   value_at_t50 = frcu(1)
-   !
-   !   call f90_expect_near(value_at_t0,  0.02_dp, 1.0e-6_dp, "frcu at t=0 should be 0.02")
-   !   call f90_expect_near(value_at_t50, 0.03_dp, 1.0e-6_dp, "frcu at t=50 should be 0.03 (linearly interpolated)")
-   !   ! Crucially, the two values must differ: if item_frcu had no connection (bug) both
-   !   ! would remain at the initial fill value 0.0.
-   !   call f90_expect_true(abs(value_at_t50 - value_at_t0) > 1.0e-6_dp, &
-   !                        "frcu must change over time, proving item_frcu is live")
-   !
-   !   ! CLEANUP
-   !   lnx = 0
-   !   if (allocated(xu))   deallocate(xu)
-   !   if (allocated(yu))   deallocate(yu)
-   !   if (allocated(frcu)) deallocate(frcu)
-   !   call teardown_minimal_grid()
-   !end subroutine test_frictioncoefficient_timedep_uses_item_frcu
-   !!$f90tw)
-   !
-   !!> Creates a minimal CF-compliant NetCDF file with a single spatial point and
-   !!! a `friction_coefficient` variable varying over time.
-   !subroutine create_friction_netcdf(filename, times, values, x_coord, y_coord)
-   !   use netcdf
-   !   character(len=*), intent(in) :: filename
-   !   real(dp),         intent(in) :: times(:)    !< seconds since 2000-01-01
-   !   real(dp),         intent(in) :: values(:)   !< friction_coefficient values
-   !   real(dp),         intent(in) :: x_coord, y_coord
-   !
-   !   integer :: ncid, time_dimid, x_dimid, y_dimid
-   !   integer :: time_varid, x_varid, y_varid, frcu_varid
-   !   integer :: n
-   !
-   !   n = size(times)
-   !   call check_nc(nf90_create(filename, NF90_CLOBBER, ncid))
-   !
-   !   ! Dimensions
-   !   call check_nc(nf90_def_dim(ncid, 'time', NF90_UNLIMITED, time_dimid))
-   !   call check_nc(nf90_def_dim(ncid, 'y',    1,              y_dimid))
-   !   call check_nc(nf90_def_dim(ncid, 'x',    1,              x_dimid))
-   !
-   !   ! time variable
-   !   call check_nc(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-   !   call check_nc(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-   !   call check_nc(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-   !
-   !   ! x / y coordinate variables
-   !   call check_nc(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
-   !   call check_nc(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
-   !   call check_nc(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
-   !   call check_nc(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
-   !
-   !   ! friction_coefficient data variable (time, y, x)
-   !   call check_nc(nf90_def_var(ncid, 'friction_coefficient', NF90_DOUBLE, &
-   !                              [x_dimid, y_dimid, time_dimid], frcu_varid))
-   !   call check_nc(nf90_put_att(ncid, frcu_varid, 'standard_name', 'friction_coefficient'))
-   !   call check_nc(nf90_put_att(ncid, frcu_varid, 'coordinates',   'x y'))
-   !
-   !   call check_nc(nf90_enddef(ncid))
-   !
-   !   ! Write data
-   !   call check_nc(nf90_put_var(ncid, time_varid, times))
-   !   call check_nc(nf90_put_var(ncid, x_varid,    [x_coord]))
-   !   call check_nc(nf90_put_var(ncid, y_varid,    [y_coord]))
-   !   call check_nc(nf90_put_var(ncid, frcu_varid, reshape(values, [1, 1, n])))
-   !
-   !   call check_nc(nf90_close(ncid))
-   !end subroutine create_friction_netcdf
-   !
-   !subroutine check_nc(ierr)
-   !   use netcdf
-   !   integer, intent(in) :: ierr
-   !   if (ierr /= NF90_NOERR) error stop nf90_strerror(ierr)
-   !end subroutine check_nc
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_bcascii_matrix, test_scalar_meteo_bcascii_matrix,
    subroutine test_scalar_meteo_bcascii_matrix() bind(C)
@@ -1744,7 +1597,7 @@ contains
       real(dp), intent(in) :: expected_value
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
-      real(dp), pointer :: target_data(:)
+      real(dp), dimension(:), pointer :: target_data
       integer :: item_id
       logical :: success
 
@@ -1794,7 +1647,7 @@ contains
 
       character(len=*), intent(in) :: quantity
       integer, intent(out) :: item_id
-      real(dp), pointer, intent(out) :: target_data(:)
+      real(dp), dimension(:), pointer, intent(out) :: target_data
 
       item_id = -999
       target_data => null()
@@ -1874,9 +1727,10 @@ contains
 
       character(len=*), intent(in) :: filename
       integer :: ncid, time_dimid, x_dimid, y_dimid, time_varid, x_varid, y_varid
-      integer :: variable_ids(NUM_SCALAR_METEO_CASES)
+      integer, dimension(NUM_SCALAR_METEO_CASES) :: variable_ids
       integer :: i, ierr
-      real(dp) :: times(2), x_coord(2), y_coord(2), values(2, 2, 2)
+      real(dp), dimension(2) :: times, x_coord, y_coord
+      real(dp), dimension(2, 2, 2) :: values
 
       call check_scalar_meteo_netcdf(nf90_create(filename, NF90_CLOBBER, ncid), 'create NetCDF file')
       call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid), 'define time dimension')
