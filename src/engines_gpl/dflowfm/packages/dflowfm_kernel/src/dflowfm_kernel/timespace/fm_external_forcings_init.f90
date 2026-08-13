@@ -214,7 +214,7 @@ contains
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-               write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(file_names(i_ext)), ''': [', trim(group_name), ']. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_names(i_ext), ''': [', group_name, ']. Ignoring this block.'
                call warn_flush()
             end select
          end do
@@ -978,6 +978,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
+      use precision_basics, only: comparereal
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -1013,7 +1014,9 @@ contains
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-      if (.not. res) return
+      if (.not. res) then
+         return
+      end if
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -1134,10 +1137,13 @@ contains
                else if (target_location_type == UNC_LOC_S3D) then
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
+
+            if (res .and. associated(target_data) .and. ec_item /= ec_undef_int) then
+               call register_time_dependent_spatial_field_item(ec_item)
+            end if
          end if
 
          !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
@@ -1163,6 +1169,23 @@ contains
       end associate
 
    end function init_spatial_fields
+
+   subroutine register_time_dependent_spatial_field_item(ec_item)
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: ec_item
+      integer :: num_items
+
+      if (allocated(time_dependent_spatial_field_items)) then
+         num_items = size(time_dependent_spatial_field_items)
+         call realloc(time_dependent_spatial_field_items, num_items + 1, keepExisting=.true.)
+      else
+         num_items = 0
+         allocate (time_dependent_spatial_field_items(1))
+      end if
+
+      time_dependent_spatial_field_items(num_items + 1) = ec_item
+   end subroutine register_time_dependent_spatial_field_item
 
    !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
    function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
@@ -1525,7 +1548,7 @@ contains
       ! Create the actual source/sink based on the parsed data
       call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
@@ -1633,6 +1656,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
+      character(len=:), allocatable :: id !< Bubblescreen id
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
@@ -1678,7 +1702,7 @@ contains
             if (is_successful) then
                if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
                   if (any(polygon_z_coordinates /= dmiss)) then
-                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(bubblescreen%id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
                         'use zLevel to specify Bubblescreen location.'
                      call warn_flush()
                   end if

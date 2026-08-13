@@ -42,12 +42,14 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
+         public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new, &
+            update_time_dependent_spatial_fields, reset_time_dependent_spatial_field_items
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
    character(len=max_registered_item_id), allocatable :: registered_items(:)
    integer :: num_registered_items = 0
+   integer, allocatable :: time_dependent_spatial_field_items(:)
 
    interface
       module subroutine set_external_forcings_boundaries(time, iresult)
@@ -62,6 +64,13 @@ module fm_external_forcings
          logical, intent(in) :: initialization !< initialization phase
          integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
       end subroutine set_external_forcings
+   end interface
+
+   interface
+      module function update_time_dependent_spatial_fields(time_in_seconds) result(success)
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+         logical :: success !< .true. when all registered spatial fields were updated successfully.
+      end function update_time_dependent_spatial_fields
    end interface
 
    interface
@@ -1610,9 +1619,17 @@ contains
 
    end subroutine register_quantity_pli_combination
 
+   subroutine reset_time_dependent_spatial_field_items()
+      if (allocated(time_dependent_spatial_field_items)) then
+         deallocate (time_dependent_spatial_field_items)
+      end if
+   end subroutine reset_time_dependent_spatial_field_items
+
    subroutine init_registered_items()
       implicit none
       num_registered_items = 0
+
+      call reset_time_dependent_spatial_field_items()
 
       max_ext_bnd_items = 64 ! Default start size.
       if (allocated(registered_items)) then

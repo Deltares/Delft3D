@@ -34,7 +34,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, &
                       air_density, ja_computed_airdensity, item_atmosphericpressure, item_air_temperature, air_temperature, &
                       item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, temperature_model, &
-                      TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
+                      TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
                       item_lateraldischarge, npumpswithlevels, item_discharge_salinity_temperature_sorsin, &
@@ -95,7 +95,6 @@ contains
       use m_structures, only: jaoldstr
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
-      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
       use m_heatu, only: heatu
       use m_flow_trachyupdate, only: flow_trachyupdate
       use m_flow_trachy_needs_update, only: flow_trachy_needs_update
@@ -103,7 +102,7 @@ contains
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
-      use m_meteo, only: item_bubblescreen_discharge, item_secchi_depth
+      use m_meteo, only: item_bubblescreen_discharge
       use m_missing, only: dmiss
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
@@ -139,6 +138,8 @@ contains
             air_pressure(:) = BACKGROUND_AIR_PRESSURE
          end if
       end if
+
+      success = success .and. update_time_dependent_spatial_fields(time_in_seconds)
 
       call retrieve_icecover(time_in_seconds)
 
@@ -181,14 +182,6 @@ contains
       ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
       if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call update_temperature_forcings(time_in_seconds)
-      end if
-
-      if (ja_friction_coefficient_time_dependent > 0) then
-         call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
-      end if
-
-      if (secchi_depth_is_time_varying) then
-         call get_timespace_value_by_item_and_array(item_secchi_depth, spatial_secchi_depth, time_in_seconds)
       end if
 
       call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
@@ -330,6 +323,21 @@ contains
       iresult = DFM_NOERR
 
    end subroutine set_external_forcings
+
+   module function update_time_dependent_spatial_fields(time_in_seconds) result(success)
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+
+      integer :: i
+      logical success
+
+      success = .true.
+      if (allocated(time_dependent_spatial_field_items)) then
+         do i = 1, size(time_dependent_spatial_field_items)
+            success = success .and. ec_gettimespacevalue(ecInstancePtr, time_dependent_spatial_field_items(i), &
+                                                         irefdate, tzone, tunit, time_in_seconds)
+         end do
+      end if
+   end function update_time_dependent_spatial_fields
 
    !> initialize salinity and temperature with nudge variables
    subroutine initialize_salinity_and_temperature_with_nudge_variables()
