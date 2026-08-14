@@ -57,12 +57,13 @@ contains
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
 
-   subroutine create_friction_netcdf(file_name)
+   subroutine create_scalar_spatial_netcdf(file_name, variable_name, standard_name, units, values)
       use netcdf
 
-      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: file_name, variable_name, standard_name, units
+      real(dp), intent(in) :: values(2)
       integer :: ncid, time_dimid, x_dimid, y_dimid
-      integer :: time_varid, x_varid, y_varid, friction_varid
+      integer :: time_varid, x_varid, y_varid, scalar_varid
 
       call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
       call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
@@ -75,19 +76,19 @@ contains
       call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
       call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
       call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
-      call check_netcdf(nf90_def_var(ncid, 'friction_coefficient', NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], friction_varid))
-      call check_netcdf(nf90_put_att(ncid, friction_varid, 'standard_name', 'friction_coefficient'))
-      call check_netcdf(nf90_put_att(ncid, friction_varid, 'units', '1'))
-      call check_netcdf(nf90_put_att(ncid, friction_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_def_var(ncid, trim(variable_name), NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], scalar_varid))
+      call check_netcdf(nf90_put_att(ncid, scalar_varid, 'standard_name', trim(standard_name)))
+      call check_netcdf(nf90_put_att(ncid, scalar_varid, 'units', trim(units)))
+      call check_netcdf(nf90_put_att(ncid, scalar_varid, 'coordinates', 'x y'))
       call check_netcdf(nf90_enddef(ncid))
       call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
       call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
       call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, friction_varid, reshape([ &
-         0.02_dp, 0.02_dp, 0.02_dp, 0.02_dp, &
-         0.04_dp, 0.04_dp, 0.04_dp, 0.04_dp], [2, 2, 2])))
+      call check_netcdf(nf90_put_var(ncid, scalar_varid, reshape([ &
+         values(1), values(1), values(1), values(1), &
+         values(2), values(2), values(2), values(2)], [2, 2, 2])))
       call check_netcdf(nf90_close(ncid))
-   end subroutine create_friction_netcdf
+   end subroutine create_scalar_spatial_netcdf
 
    subroutine check_netcdf(status)
       use netcdf, only: NF90_NOERR, nf90_strerror
@@ -668,7 +669,7 @@ contains
       character(len=*), parameter :: FRICTION_EXT = 'test_frcu_generic.ext'
       integer :: ierr
 
-      call create_friction_netcdf(FRICTION_NC)
+      call create_scalar_spatial_netcdf(FRICTION_NC, 'friction_coefficient', 'friction_coefficient', '1', [0.02_dp, 0.04_dp])
       call create_file(FRICTION_EXT, [ &
                        '[Parameter]', &
                        '    quantity        = frictioncoefficient', &
