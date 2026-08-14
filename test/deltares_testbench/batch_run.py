@@ -124,7 +124,7 @@ def execute_command_template(cmd: str, params: Params):
         test_name=params.test_name,
         test_config=params.test_config,
         test_path=params.test_path,
-        mdu=mdu_file,
+        mdu=params.mdu if params.mdu else "",
     )
     print(f"Command: {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -218,7 +218,10 @@ if __name__ == "__main__":
                 input_path = params.test_path / "input"
                 mdu_files = list(input_path.rglob("*.mdu"))
                 if not mdu_files:
-                    print(f"Warning: No MDU files found in {input_path} for test case {params.test_name}.")
+                    print(
+                        f"Warning: No MDU files found in {input_path} for test case {params.test_name}. Executing command without MDU file."
+                    )
+                    execute_command_template(cmd, params)
                     continue
                 else:
                     print(f"Found MDU files in {input_path}: {[str(mdu) for mdu in mdu_files]}")
