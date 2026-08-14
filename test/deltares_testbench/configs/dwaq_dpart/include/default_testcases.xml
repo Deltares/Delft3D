@@ -1,6 +1,3 @@
-<!--
-    default testCases
--->
     <defaultTestCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="dwaq_default">
             <programs>

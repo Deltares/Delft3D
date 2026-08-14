@@ -1,5 +1,6 @@
 module test_init_spatial_fields_integration
    use assertions_gtest
+   use iso_c_utils, only: cstr
    use fm_external_forcings, only: init_spatial_fields
    use m_meteo, only: initialize_ec_module, jarain
    use m_wind, only: rain
@@ -55,6 +56,244 @@ contains
       call prop_file('ini', file_name, bnd_ptr, istat)
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_polygon_preserves_uncovered_values, test_polygon_preserves_uncovered_values,
+   subroutine test_polygon_preserves_uncovered_values() bind(C)
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use fm_location_types, only: UNC_LOC_S
+      use m_polygon, only: m_polygon_destructor
+      use timespace, only: timespaceinitialfield
+      use timespace_parameters, only: INSIDE_POLYGON, OPERAND_OVERRIDE
+
+      character(len=*), parameter :: POL_FILE = "test_partial_polygon.pol"
+      real(dp) :: transformcoef(NTRANSFORMCOEF)
+      real(dp) :: x(2), y(2), values(2)
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "enclosing_first_point", &
+                       "5  2", &
+                       "-1.0  -1.0", &
+                       " 1.0  -1.0", &
+                       " 1.0   1.0", &
+                       "-1.0   1.0", &
+                       "-1.0  -1.0"])
+      x = [0.0_dp, 2.0_dp]
+      y = [0.0_dp, 2.0_dp]
+      values = [7.0_dp, 7.0_dp]
+      transformcoef = -999.0_dp
+      transformcoef(1) = 4.0_dp
+      ierr = m_polygon_destructor()
+
+      success = timespaceinitialfield(x, y, values, size(values), POL_FILE, INSIDE_POLYGON, 4, &
+                                      OPERAND_OVERRIDE, transformcoef, UNC_LOC_S)
+
+      call f90_expect_true(success, "polygon initialization should succeed")
+      call f90_expect_eq(values(1), 4.0_dp, "the enclosed point should receive the polygon value")
+      call f90_expect_eq(values(2), 7.0_dp, "an uncovered point should retain its existing value")
+      ierr = m_polygon_destructor()
+   end subroutine test_polygon_preserves_uncovered_values
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_preserves_uncovered_values, test_waqparameter_polygon_preserves_uncovered_values,
+   subroutine test_waqparameter_polygon_preserves_uncovered_values() bind(C)
+      use m_flow, only: kmx, ndkx
+      use m_polygon, only: m_polygon_destructor
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      character(len=*), parameter :: POL_FILE = "test_nonoverlapping_waq_parameter.pol"
+      character(len=*), parameter :: EXT_FILE = "test_nonoverlapping_waq_parameter.ext"
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "polygon_away_from_grid", &
+                       "5  2", &
+                       "9.0   9.0", &
+                       "11.0  9.0", &
+                       "11.0 11.0", &
+                       "9.0  11.0", &
+                       "9.0   9.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqparameterSOD", &
+                       "    forcingFile         = "//POL_FILE, &
+                       "    forcingFileType     = Polygon", &
+                       "    interpolationMethod = constant", &
+                       "    operand              = override", &
+                       "    value                = 4.0"])
+
+      call setup_minimal_grid()
+      kmx = 0
+      ndkx = ndx
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call register_waq_target('waqparameterSOD')
+      painp(1, 1) = 2.5_dp
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 2.5_dp, &
+                         "an uncovered WAQ parameter cell should retain its existing value")
+
+      num_spatial_parameters = 0
+      kmx = 0
+      ndkx = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqparameter_polygon_preserves_uncovered_values
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_populates_3d_layers, test_waqparameter_polygon_populates_3d_layers,
+   subroutine test_waqparameter_polygon_populates_3d_layers() bind(C)
+      use m_flow, only: kmx, ndkx, kbot, ktop, kmxn, zws
+      use m_polygon, only: m_polygon_destructor
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      character(len=*), parameter :: POL_FILE = "test_3d_waq_parameter.pol"
+      character(len=*), parameter :: EXT_FILE = "test_3d_waq_parameter.ext"
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "polygon_around_grid", &
+                       "5  2", &
+                       "-1.0  -1.0", &
+                       " 1.0  -1.0", &
+                       " 1.0   1.0", &
+                       "-1.0   1.0", &
+                       "-1.0  -1.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqparameterSOD", &
+                       "    forcingFile         = "//POL_FILE, &
+                       "    forcingFileType     = Polygon", &
+                       "    interpolationMethod = constant", &
+                       "    operand              = override", &
+                       "    value                = 4.0"])
+
+      call setup_minimal_grid()
+      kmx = 2
+      ndkx = 3
+      call realloc(kbot, ndx, fill=2, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=2, keepExisting=.false.)
+      call realloc(kmxn, ndx, fill=2, keepExisting=.false.)
+      call realloc(zws, ndkx, fill=0.0_dp, keepExisting=.false.)
+      zws = [-2.0_dp, -1.0_dp, 0.0_dp]
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call register_waq_target('waqparameterSOD')
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 4.0_dp, "the 2D representative should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, "the bottom layer should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, &
+                "the inactive layer above the water surface should receive the polygon value")
+
+      num_spatial_parameters = 0
+      kmx = 0
+      ndkx = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+      if (allocated(zws)) deallocate (zws)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqparameter_polygon_populates_3d_layers
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqsegmentnumber_finalization, test_waqsegmentnumber_finalization,
+   !> Verifies that encoded serial WAQ segment numbers are converted to the local
+   !! process-space layer index and copied over each target water column.
+   subroutine test_waqsegmentnumber_finalization() bind(C)
+      use m_fm_wq_processes, only: kbx, reset_waq_segment_number_indices
+      use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
+      use m_flow, only: kbot, ktop, kmx, kmxn, ndkx
+      use m_flowgeom, only: ndxi
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      logical :: segment_number_registered
+
+      ndxi = 2
+      kmx = 3
+      ndkx = 7
+      kbx = 3
+      jampi = 0
+      call realloc(kbot, ndxi, keepExisting=.false.)
+      call realloc(ktop, ndxi, keepExisting=.false.)
+      call realloc(kmxn, ndxi, keepExisting=.false.)
+      kbot = [3, 6]
+      ktop = [5, 7]
+      kmxn = [3, 2]
+
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call reset_waq_segment_number_indices()
+      call register_waq_target('waqsegmentnumberSegment')
+      segment_number_registered = allocated(painp) .and. size(painp, 1) == 1
+      call f90_expect_true(segment_number_registered, 'WAQ segment-number target should be registered')
+
+      ! Global segment 5 is column 1, layer 3; global segment 4 is column 2, layer 2.
+      painp(1, :) = [5.0_dp, 4.0_dp, 5.0_dp, 5.0_dp, 5.0_dp, 4.0_dp, 4.0_dp]
+      call finalize_waq_spatial_fields()
+
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 1.0_dp, 'column 1 representative should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 1.0_dp, 'column 1 bottom layer should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 5), kind=dp), 1.0_dp, 'column 1 top layer should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, 'column 2 representative should map to process segment 4')
+      call f90_expect_eq(real(painp(1, 6), kind=dp), 4.0_dp, 'column 2 bottom layer should map to process segment 4')
+      call f90_expect_eq(real(painp(1, 7), kind=dp), 4.0_dp, 'column 2 top layer should map to process segment 4')
+
+      ! Layer 4 is outside the configured maximum of three layers.
+      painp(1, 1) = 7.0_dp
+      painp(1, 3:5) = 7.0_dp
+      call finalize_waq_spatial_fields()
+      call f90_expect_eq(real(painp(1, 1), kind=dp), -999.0_dp, 'an invalid encoded layer should be marked invalid')
+      call f90_expect_eq(real(painp(1, 3), kind=dp), -999.0_dp, 'an invalid encoded layer should fill the complete column')
+
+      num_spatial_parameters = 0
+      ndxi = 0
+      ndkx = 0
+      kmx = 0
+      kbx = 0
+      jampi = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+      call reset_waq_segment_number_indices()
+   end subroutine test_waqsegmentnumber_finalization
+   !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
    !> When no averaging keywords are present, read_averaging_input must return
@@ -374,6 +613,129 @@ contains
       if (allocated(qext)) deallocate (qext)
       call teardown_minimal_grid()
    end subroutine test_qext_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,
+   !> Verifies that a time-varying WAQ function uses a one-element global target,
+   !! matching the dummy target used by the old external-forcings initialization.
+   subroutine test_waqfunction_uses_global_ec_target() bind(C)
+      use m_flowtimes, only: irefdate, refdate_mjd, tzone, tunit, tstart_user
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_waqfun
+      use processes_input, only: funinp, funame, num_time_functions
+      use time_module, only: ymd2modified_jul
+      use unstruc_inifields, only: register_waq_target
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: WAQ_TIM = "test_waqfunction.tim"
+      character(len=*), parameter :: WAQ_EXT = "test_waqfunction.ext"
+
+      call create_file(WAQ_TIM, [ &
+                       "0.0    10.0", &
+                       "100.0  20.0"])
+      call create_file(WAQ_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqfunctionTest", &
+                       "    forcingFile         = "//WAQ_TIM, &
+                       "    forcingFileType     = uniform", &
+                       "    interpolationMethod = linearSpaceTime", &
+                       "    operand              = override"])
+
+      irefdate = 20000101
+      success = ymd2modified_jul(irefdate, refdate_mjd)
+      call f90_assert_true(success, "the test reference date should convert to MJD")
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      num_time_functions = 0
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      allocate (funame(0))
+      call register_waq_target('waqfunctionTest')
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(WAQ_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, WAQ_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_assert_true(success, "init_spatial_fields should succeed for a WAQ function")
+      call f90_assert_true(allocated(item_waqfun), "item_waqfun should be allocated")
+      call f90_assert_true(item_waqfun(1) > 0, "the WAQ function EC item should be registered")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_assert_true(success, "the WAQ function should update at t=0")
+      call f90_expect_near(funinp(1, 1), 10.0_dp, 1.0e-6_dp, &
+                           "the WAQ function value at t=0 should be 10")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
+                                               irefdate, tzone, tunit, 3000.0_dp)
+      call f90_assert_true(success, "the WAQ function should update at t=3000 seconds")
+      call f90_expect_near(funinp(1, 1), 15.0_dp, 1.0e-6_dp, &
+                           "the WAQ function value at 50 minutes should be linearly interpolated")
+
+      num_time_functions = 0
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(item_waqfun)) deallocate (item_waqfun)
+      call teardown_minimal_grid()
+   end subroutine test_waqfunction_uses_global_ec_target
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_register_waq_targets, test_register_waq_targets,
+   !> Verifies that the new external-forcings pre-scan registers every WAQ input
+   !! type handled by the legacy pre-scan before dependent arrays are sized.
+   subroutine test_register_waq_targets() bind(C)
+      use m_flow, only: ndkx
+      use processes_input, only: painp, paname, num_spatial_parameters, &
+                                 funinp, funame, num_time_functions, &
+                                 sfuninp, sfunname, num_spatial_time_fuctions
+      use unstruc_inifields, only: register_waq_target
+
+      ndkx = 2
+      num_spatial_parameters = 0
+      num_time_functions = 0
+      num_spatial_time_fuctions = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(sfunname)) deallocate (sfunname)
+      if (associated(sfuninp)) deallocate (sfuninp)
+      allocate (paname(0))
+      allocate (funame(0))
+      allocate (sfunname(0))
+
+      call register_waq_target('waqparameterParameter')
+      call register_waq_target('waqsegmentnumberSegment')
+      call register_waq_target('waqfunctionFunction')
+      call register_waq_target('waqsegmentfunctionSegmentFunction')
+
+      call f90_expect_eq(num_spatial_parameters, 2, "two WAQ spatial parameters should be registered")
+      call f90_assert_streq(cstr(paname(1)), cstr("Parameter"), cstr("the WAQ parameter suffix should be retained"))
+      call f90_assert_streq(cstr(paname(2)), cstr("Segment"), cstr("the WAQ segment-number suffix should be retained"))
+      call f90_expect_eq(size(painp, 2), ndkx, "spatial parameter storage should cover all WAQ segments")
+      call f90_expect_eq(num_time_functions, 1, "one WAQ function should be registered")
+      call f90_assert_streq(cstr(funame(1)), cstr("Function"), cstr("the WAQ function suffix should be retained"))
+      call f90_expect_eq(size(funinp, 2), 1, "WAQ function storage should contain one global value")
+      call f90_expect_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")
+      call f90_assert_streq(cstr(sfunname(1)), cstr("SegmentFunction"), cstr("the WAQ segment function suffix should be retained"))
+      call f90_assert_true(associated(sfuninp), "WAQ segment function target storage should be allocated")
+      call f90_expect_eq(size(sfuninp, 1), 1, "target storage should contain one segment function")
+      call f90_expect_eq(size(sfuninp, 2), ndkx, "target storage should cover all WAQ segments")
+
+      num_spatial_parameters = 0
+      num_time_functions = 0
+      num_spatial_time_fuctions = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(sfunname)) deallocate (sfunname)
+      if (associated(sfuninp)) deallocate (sfuninp)
+      ndkx = 0
+   end subroutine test_register_waq_targets
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterlevel_static_field_populated_at_init, test_initialwaterlevel_static_field_populated_at_init,
@@ -776,6 +1138,115 @@ contains
       if (allocated(iadv)) deallocate (iadv)
       call teardown_minimal_grid()
    end subroutine test_advectiontype_integer_field_populated
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqbot_vertical_layer_selection, test_waqbot_vertical_layer_selection,
+   subroutine test_waqbot_vertical_layer_selection() bind(C)
+      use m_flow, only: kmx, kbot, ktop, kmxn
+      use timespace_parameters, only: OPERAND_OVERRIDE
+      use unstruc_inifields, only: apply_waqbot_target_layer
+
+      real(dp) :: input_2d(1), output_3d(9)
+      logical :: success
+
+      kmx = 8
+      call realloc(kbot, 1, fill=2, keepExisting=.false.)
+      call realloc(ktop, 1, fill=7, keepExisting=.false.)
+      call realloc(kmxn, 1, fill=8, keepExisting=.false.)
+      input_2d = 1.0_dp
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, 'bottom', 'initialwaqbottestbot', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "targetLayer should be accepted")
+      call f90_expect_eq(output_3d(2), 1.0_dp, "targetLayer should select the active bottom layer")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "targetLayer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "layer 4 should be accepted")
+      call f90_expect_eq(output_3d(5), 1.0_dp, "layer 4 should be counted from the deepest model plane")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "a fixed layer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "layer 8 should be accepted")
+      call f90_expect_eq(output_3d(9), 1.0_dp, "an inactive maximum layer should be initialized for restart")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "a maximum fixed layer should update one layer")
+
+      kmx = 0
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+   end subroutine test_waqbot_vertical_layer_selection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqmassbalancearea_polygon_populated, test_waqmassbalancearea_polygon_populated,
+   !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
+   !! named mass-balance area and assigns its integer ID to enclosed cells.
+   subroutine test_waqmassbalancearea_polygon_populated() bind(C)
+      use m_flow, only: ndkx
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
+      use m_mass_balance_areas, only: mbadef, mbaname, nomba
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: POL_FILE = "test_mba.pol"
+      character(len=*), parameter :: EXT_FILE = "test_mba.ext"
+
+      call create_file(POL_FILE, [ &
+                       "enclosing_polygon", &
+                       "5  2", &
+                       "-2.0  -2.0", &
+                       " 2.0  -2.0", &
+                       " 2.0   2.0", &
+                       "-2.0   2.0", &
+                       "-2.0  -2.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity        = waqmassbalanceareaSouthWest", &
+                       "    forcingFile     = "//POL_FILE, &
+                       "    forcingFileType = Polygon", &
+                       "    value           = 1"])
+
+      call setup_minimal_grid()
+      ndxi = ndx
+      ndkx = ndx
+      ndx2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ti_mba = 60.0_dp
+      threshold_abort = LEVEL_FATAL
+      nomba = 0
+      if (allocated(mbaname)) deallocate (mbaname)
+      if (allocated(mbadef)) deallocate (mbadef)
+      allocate (mbaname(0))
+      allocate (mbadef(ndkx), source=-999)
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "waqmassbalancearea polygon initialization should succeed")
+      call f90_expect_eq(nomba, 1, "one mass-balance area should be registered")
+      call f90_assert_streq(cstr(mbaname(1)), cstr("SouthWest"), cstr("the mass-balance area suffix should be retained"))
+      call f90_expect_eq(mbadef(1), 1, "the enclosed cell should belong to the registered area")
+
+      ti_mba = 0.0_dp
+      nomba = 0
+      ndxi = 0
+      ndkx = 0
+      ndx2D = 0
+      if (allocated(mbaname)) deallocate (mbaname)
+      if (allocated(mbadef)) deallocate (mbadef)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqmassbalancearea_polygon_populated
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialsalinity_3d_field_populated, test_initialsalinity_3d_field_populated,
