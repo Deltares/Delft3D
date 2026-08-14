@@ -30,7 +30,7 @@
 module m_vertical_forester_filter_dflowfm ! _dflowfm suffix added to avoid name clash with WAQ module
    use precision, only: dp
    use m_flow, only: ndkx
-   use m_transportdata, only: constituents, numconst, const_names, itemp, ioxy
+   use m_transportdata, only: constituents, numconst, const_names, isalt, itemp, ioxy
 
    implicit none(type, external)
 
@@ -79,7 +79,44 @@ contains
                cycle
             end if
 
-            call apply_vertical_forester_filter_per_column_and_constituent(i_constituent, vol1(i_bottom_layer:), number_of_layers, kmxn(i_flowcell), i_bottom_layer, max_iterations_vertical_forester)
+            if (i_constituent == isalt) then
+
+               call apply_vertical_forester_filter_per_column_and_constituent( &
+                  i_constituent, &
+                  vol1(i_bottom_layer:i_bottom_layer+number_of_layers-1), &
+                  number_of_layers, &
+                  kmxn(i_flowcell), &
+                  i_bottom_layer, &
+                  max_iterations_vertical_forester, &
+                  1 & ! Assume a positive gradient slope for salinity (low concentration at the top of the column, high concentration at the bottom)
+               )
+
+            else if (i_constituent == itemp) then
+
+               call apply_vertical_forester_filter_per_column_and_constituent( &
+                  i_constituent, &
+                  vol1(i_bottom_layer:i_bottom_layer+number_of_layers-1), &
+                  number_of_layers, &
+                  kmxn(i_flowcell), &
+                  i_bottom_layer, &
+                  max_iterations_vertical_forester, &
+                  -1 & ! Assume a negative gradient slope for temperature (high temperature at the top of the column, low temperature at the bottom)
+               )
+
+            else
+
+               call apply_vertical_forester_filter_per_column_and_constituent( &
+                  i_constituent, &
+                  vol1(i_bottom_layer:i_bottom_layer+number_of_layers-1), &
+                  number_of_layers, &
+                  kmxn(i_flowcell), &
+                  i_bottom_layer, &
+                  max_iterations_vertical_forester, &
+                  1 & ! Assume a positive gradient slope for other constituents (low concentration at the top of the column, high concentration at the bottom)
+               )
+
+            end if
+
          end do
       end do
 
@@ -91,7 +128,7 @@ contains
    end subroutine apply_vertical_forester_filter_to_all_constituents
 
    !> Applies the Forester vertical filter to a single constituent in a vertical column of flow cells
-   subroutine apply_vertical_forester_filter_per_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations)
+   subroutine apply_vertical_forester_filter_per_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations, gradient_slope)
       use m_flow, only: EPS6, EPS10
 
       ! Parameters
@@ -101,6 +138,7 @@ contains
       integer, intent(in) :: number_of_active_layers !< Maximum number of active layers in the model
       integer, intent(in) :: i_bottom_layer !< Index of the bottom layer in the constituents array
       integer, intent(in) :: max_iterations !< Maximum number of iterations for Forester filter
+      integer, intent(in) :: gradient_slope !< Sign of the gradient slope for the Forester filter (1 for positive slope - low concentration in top of column, high concentration at bottom, -1 for negative slope)
 
       ! Local variables
       real(kind=dp), dimension(number_of_layers) :: updated_constituent !< Array to hold the updated constituent values during filtering
@@ -123,7 +161,7 @@ contains
          ! Loop over layers in the vertical column and apply the Forester filter based on the difference between adjacent layers
          do k = 1, number_of_layers - 1
             difference = previous_constituent(k + 1) - previous_constituent(k)
-            if (difference > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
+            if (difference * gradient_slope > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
                if (cell_volume(k) > EPS10 .and. cell_volume(k + 1) > EPS10) then
                   filtered_this_iteration = .true.
                   difference = difference / 6.0_dp * (cell_volume(k + 1) + cell_volume(k))
