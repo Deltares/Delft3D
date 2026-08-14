@@ -214,7 +214,7 @@ contains
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_names(i_ext), ''': [', group_name, ']. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(file_names(i_ext)), ''': [', trim(group_name), ']. Ignoring this block.'
                call warn_flush()
             end select
          end do
@@ -1136,7 +1136,8 @@ contains
                else if (target_location_type == UNC_LOC_S3D) then
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
 
@@ -1545,7 +1546,7 @@ contains
       ! Create the actual source/sink based on the parsed data
       call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
@@ -1653,7 +1654,6 @@ contains
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
-      character(len=:), allocatable :: id !< Bubblescreen id
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
@@ -1699,7 +1699,7 @@ contains
             if (is_successful) then
                if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
                   if (any(polygon_z_coordinates /= dmiss)) then
-                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(bubblescreen%id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
                         'use zLevel to specify Bubblescreen location.'
                      call warn_flush()
                   end if

@@ -57,64 +57,6 @@ contains
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
 
-   subroutine setup_minimal_grid_with_points(npoints)
-      integer, intent(in) :: npoints
-
-      ndx = npoints
-      ndxi = npoints
-      if (allocated(xz)) deallocate (xz)
-      if (allocated(yz)) deallocate (yz)
-      if (allocated(kcs)) deallocate (kcs)
-      allocate (xz(npoints), yz(npoints), kcs(npoints))
-      xz = 0.0_dp
-      yz = 0.0_dp
-      kcs = 1
-   end subroutine setup_minimal_grid_with_points
-
-   subroutine create_scalar_netcdf(file_name)
-      use netcdf
-
-      character(len=*), intent(in) :: file_name
-      integer :: ncid, time_dimid, time_varid, ssrd_varid
-
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
-      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
-      call check_netcdf(nf90_enddef(ncid))
-      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
-      call check_netcdf(nf90_close(ncid))
-   end subroutine create_scalar_netcdf
-
-   subroutine create_windxy_netcdf(file_name)
-      use netcdf
-
-      character(len=*), intent(in) :: file_name
-      integer :: ncid, time_dimid, time_varid, u10_varid, v10_varid
-
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
-      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      call check_netcdf(nf90_def_var(ncid, 'u10', NF90_DOUBLE, [time_dimid], u10_varid))
-      call check_netcdf(nf90_put_att(ncid, u10_varid, 'standard_name', 'eastward_wind'))
-      call check_netcdf(nf90_put_att(ncid, u10_varid, 'units', 'm s-1'))
-      call check_netcdf(nf90_def_var(ncid, 'v10', NF90_DOUBLE, [time_dimid], v10_varid))
-      call check_netcdf(nf90_put_att(ncid, v10_varid, 'standard_name', 'northward_wind'))
-      call check_netcdf(nf90_put_att(ncid, v10_varid, 'units', 'm s-1'))
-      call check_netcdf(nf90_enddef(ncid))
-      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, u10_varid, [2.0_dp, 6.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, v10_varid, [-4.0_dp, 2.0_dp]))
-      call check_netcdf(nf90_close(ncid))
-   end subroutine create_windxy_netcdf
-
    subroutine create_friction_netcdf(file_name)
       use netcdf
 
