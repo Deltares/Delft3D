@@ -1,14 +1,13 @@
 module test_init_spatial_fields_integration
    use assertions_gtest
    use iso_c_utils, only: cstr
-   use fm_external_forcings, only: init_spatial_fields
+   use fm_external_forcings, only: init_spatial_fields, update_time_dependent_spatial_fields, reset_time_dependent_spatial_field_items
    use m_meteo, only: initialize_ec_module, jarain
    use m_wind, only: rain
    use m_cell_geometry, only: xz, yz, ndx
    use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
    use precision_basics, only: dp
-   use fm_external_forcings, only: update_time_dependent_spatial_fields, reset_time_dependent_spatial_field_items
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL
    use tree_data_types, only: tree_data
@@ -592,7 +591,7 @@ contains
    !! init_qext_forcings/timespaceinitialfield call.
    subroutine test_qext_static_field_populated_at_init() bind(C)
       use m_wind, only: qext, jaQext
-      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -645,13 +644,9 @@ contains
    subroutine test_qext_bcascii_registers_ec_connection() bind(C)
       use m_wind, only: qext, jaQext
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID
-      use m_ec_typedefs, only: tEcItemPtr
 
-      type(tEcItemPtr), dimension(:), pointer :: ecItemsPtr => null()
-      integer :: ec_item
       type(tree_data), pointer :: bnd_ptr, block_ptr
-      logical :: success
+      logical :: success, update_success
       real(dp) :: value_at_t0, value_at_t50
       character(len=*), parameter :: QEXT_BC = "test_qext_tv.bc"
       character(len=*), parameter :: QEXT_EXT = "test_qext_tv.ext"
@@ -684,6 +679,7 @@ contains
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
+      call reset_time_dependent_spatial_field_items()
       call initialize_ec_module()
 
       ! ACT
@@ -695,14 +691,12 @@ contains
       call f90_expect_true(success, "init_spatial_fields should succeed for qext bcascii block")
       call f90_assert_true(allocated(qext), "qext should be allocated")
 
-      ! Get the qext EC item ID directly from the instance after init
-      ec_item = ecInstancePtr%ecItemsPtr(ecInstancePtr%nItems)%ptr%id
-      ! ASSERT: values update correctly over time (proves EC relation is live, not one-shot)
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, &
-                                               irefdate, tzone, tunit, 0.0_dp)
+      ! ASSERT: the generic registered-item updater reaches qext over time.
+      update_success = update_time_dependent_spatial_fields(0.0_dp)
+      call f90_expect_true(update_success, "registered qext spatial field should update at t=0")
       value_at_t0 = qext(1)
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, &
-                                               irefdate, tzone, tunit, 50.0_dp)
+      update_success = update_time_dependent_spatial_fields(50.0_dp)
+      call f90_expect_true(update_success, "registered qext spatial field should update at t=50")
       value_at_t50 = qext(1)
 
       call f90_expect_near(value_at_t0, 1.0_dp, 1.0e-6_dp, "qext at t=0 should be 1.0")
