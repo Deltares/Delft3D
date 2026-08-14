@@ -8,6 +8,7 @@ module test_init_spatial_fields_integration
    use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
    use precision_basics, only: dp
+   use fm_external_forcings, only: update_time_dependent_spatial_fields, reset_time_dependent_spatial_field_items
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL
    use tree_data_types, only: tree_data
@@ -114,6 +115,38 @@ contains
       call check_netcdf(nf90_put_var(ncid, v10_varid, [-4.0_dp, 2.0_dp]))
       call check_netcdf(nf90_close(ncid))
    end subroutine create_windxy_netcdf
+
+   subroutine create_friction_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, x_dimid, y_dimid
+      integer :: time_varid, x_varid, y_varid, friction_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
+      call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'friction_coefficient', NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], friction_varid))
+      call check_netcdf(nf90_put_att(ncid, friction_varid, 'standard_name', 'friction_coefficient'))
+      call check_netcdf(nf90_put_att(ncid, friction_varid, 'units', '1'))
+      call check_netcdf(nf90_put_att(ncid, friction_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, friction_varid, reshape([ &
+         0.02_dp, 0.02_dp, 0.02_dp, 0.02_dp, &
+         0.04_dp, 0.04_dp, 0.04_dp, 0.04_dp], [2, 2, 2])))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_friction_netcdf
 
    subroutine check_netcdf(status)
       use netcdf, only: NF90_NOERR, nf90_strerror
@@ -679,6 +712,71 @@ contains
       if (allocated(qext)) deallocate (qext)
       call teardown_minimal_grid()
    end subroutine test_qext_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_uses_generic_registered_update, test_frictioncoefficient_uses_generic_registered_update,
+   !> Verifies that a mapped frictioncoefficient target is updated through the
+   !! generic spatial-field item list after initialization.
+   subroutine test_frictioncoefficient_uses_generic_registered_update() bind(C)
+      use m_flow, only: frcu
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flowtimes, only: irefdate, tzone
+      use m_meteo, only: item_frcu, initialize_ec_module
+      use m_alloc, only: realloc
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success, update_success
+      real(dp) :: value_at_t0, value_at_t50
+      character(len=*), parameter :: FRICTION_NC = 'test_frcu_generic.nc'
+      character(len=*), parameter :: FRICTION_EXT = 'test_frcu_generic.ext'
+      integer :: ierr
+
+      call create_friction_netcdf(FRICTION_NC)
+      call create_file(FRICTION_EXT, [ &
+                       '[Parameter]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    forcingFile     = '//FRICTION_NC, &
+                       '    forcingFileType = netcdf'])
+
+      call setup_minimal_grid()
+      lnx = 1
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx))
+      xu = [0.0_dp]
+      yu = [0.0_dp]
+      call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call reset_time_dependent_spatial_field_items()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(FRICTION_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, FRICTION_EXT, 'Parameter')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'frictioncoefficient NetCDF initialization should succeed')
+      call f90_expect_true(item_frcu > 0, 'frictioncoefficient should have a canonical EC target item')
+
+      update_success = update_time_dependent_spatial_fields(0.0_dp)
+      call f90_expect_true(update_success, 'registered frictioncoefficient should update at t=0')
+      value_at_t0 = frcu(1)
+      update_success = update_time_dependent_spatial_fields(50.0_dp)
+      call f90_expect_true(update_success, 'registered frictioncoefficient should update at t=50')
+      value_at_t50 = frcu(1)
+
+      call f90_expect_near(value_at_t0, 0.02_dp, 1.0e-6_dp, 'frcu at t=0 should be 0.02')
+      call f90_expect_near(value_at_t50, 0.03_dp, 1.0e-6_dp, 'frcu at t=50 should be 0.03')
+
+      lnx = 0
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
+      call teardown_minimal_grid()
+   end subroutine test_frictioncoefficient_uses_generic_registered_update
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,

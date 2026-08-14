@@ -1619,6 +1619,10 @@ contains
          end if
       end if
 
+      if (present(tgt_item1) .and. associated(targetItemPtr1)) then
+         tgt_item1 = targetItemPtr1 ! so the call site knows which ec item was created.
+      end if
+
       ec_addtimespacerelation = .true.
       return
 

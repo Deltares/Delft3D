@@ -974,7 +974,6 @@ contains
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
       use processes_input, only: painp
-      use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
@@ -1150,8 +1149,6 @@ contains
          !  TODO: remove them by handling time-dependence generically.
          if (.not. is_static_field) then
             select case (str_tolower(quantity))
-            case ('frictioncoefficient')
-               ja_friction_coefficient_time_dependent = 1
             case ('secchidepth')
                secchi_depth_is_time_varying = .true.
             end select
