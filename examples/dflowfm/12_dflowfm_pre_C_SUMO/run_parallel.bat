@@ -39,7 +39,9 @@ if %usePreCICE% EQU 1 (
     if %startFM% EQU 1 (
         cd fm
         set PATH=..\%bindir%
-        call ..\%bindir%\dflowfm-cli.exe --partition:ndomains=%NPROC%:icgsolver=6 FlowFM.mdu
+        rem call ..\%bindir%\dflowfm-cli.exe --partition:ndomains=%NPROC%:icgsolver=6 FlowFM.mdu
+        rem call ..\%bindir%\dflowfm-cli.exe --partition:icgsolver=6 FlowFM.mdu linux_partition.pol
+        call ..\%bindir%\dflowfm-cli.exe --partition:icgsolver=6 FlowFM.mdu windows_partition.pol
         call ..\%bindir%\mpiexec -n %NPROC% ..\%bindir%\dflowfm-cli.exe FlowFM.mdu --precice
         cd ..
     ) else (
