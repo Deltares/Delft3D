@@ -1,0 +1,9 @@
+% This file will be copied into the "results\case" folders by script run_nf2ff_matrix_wrapper.bat
+
+openfile 'dimr\DFM_OUTPUT_FlowFM\FlowFM_map.nc'
+selectfield 'Water level - mesh2d_nFaces: mean'
+quickview
+openfile 'precice\DFM_OUTPUT_FlowFM\FlowFM_map.nc'
+quickview
+diff_files 'dimr\DFM_OUTPUT_FlowFM\FlowFM_map.nc' 'precice\DFM_OUTPUT_FlowFM\FlowFM_map.nc' '[(dimr\) - (precice\)]\DFM_OUTPUT_FlowFM\FlowFM_map.nc' 'index'
+quickview

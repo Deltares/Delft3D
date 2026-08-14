@@ -402,13 +402,12 @@ contains
             dataPtr4 => tgt_data4
          end if
       end if
-      
+
       ! When a multuni item is provided from the call site, we assume that those
       ! multuni1..4 item(s) are the ones to be used. Any targetItemPtr1..4 just set
       ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
       ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
       ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
-
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
@@ -850,18 +849,6 @@ contains
             ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
             fileReaderPtr%one_time_field = .true.
          end if
-      case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
-            'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
-         ! the name of the source item created by the file reader will be the same as the ext.force. var name
-         if (.not. present(varname)) then !> these variables will crash without a varname
-            write (msgbuf, '(3a)') 'm_meteo::ec_addtimespacerelation: ''dataVariableName'' is required for quantity ''', &
-               trim(target_name), ''' but was not provided. Add dataVariableName= to the [Parameter] block.'
-            call err_flush()
-            goto 1234
-         end if
-         ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
-         ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
-         sourceItemName = varname
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_arcinfo) then
             sourceItemName = 'wind_p'
@@ -1474,11 +1461,14 @@ contains
             success = ecAddItemConnection(ecInstancePtr, item_nudge_salinity, connectionId)
          end if
       case ('waqfunction')
-         if (.not. checkFileType(ec_filetype, provFile_uniform, target_name)) then
+         if (ec_filetype == provFile_uniform) then
+            sourceItemName = 'uniform_item'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = name
+            call str_upper(sourceItemName)
+         else
             return
          end if
-         ! the file reader will have created an item called 'polytim_item'
-         sourceItemName = 'uniform_item'
       case ('waqsegmentfunction')
          ! the name of the source item depends on the file reader
          if (ec_filetype == provFile_netcdf) then
@@ -1572,7 +1562,7 @@ contains
             ! with nesting there can be more than one source item now. But the first is always the main one
             ! The second is made for nesting to be able to interpolate z-values in time
             sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-            if (.not. allocated(sourceItemIds)) then
+            if (size(sourceItemIds) == 0) then
                goto 1234
             end if
 
