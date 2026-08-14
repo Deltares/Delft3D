@@ -3753,7 +3753,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, ibedlevtyp, map_write_settings
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data, hminlw_xb => hminlw
       use m_transportdata
@@ -6605,7 +6605,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, jacali
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data
       use m_transportdata
