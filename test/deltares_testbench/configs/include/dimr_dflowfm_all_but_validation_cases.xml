@@ -2092,6 +2092,24 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f006_c080_data_value_multiplier" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c080_data_value_multiplier</path>
+    <checks>
+      <file name="output/model_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="output/model_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_Qsun" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f006_c110_dcsm5_periodic_forcing" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c110_dcsm5_periodic_forcing</path>
     <maxRunTime>15000.0000000</maxRunTime>
