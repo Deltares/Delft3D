@@ -776,7 +776,10 @@ contains
          end if
       end if
 
-      allocate (KCK(NUMK))
+      call realloc(KCK, NUMK, keepExisting=.false., fill=0)
+      call realloc(KC2, NUMK, keepExisting=.false., fill=0)
+      call realloc(KN_NEW, [3, NUML], keepExisting=.false., fill=0)
+
       if (need_to_allocate_kc) then
          allocate (kc(numk))
          kc = 0
@@ -785,8 +788,6 @@ contains
          KCK(1:NUMK) = KC(1:NUMK) ! STORE ORG KC
          kc = 0
       end if
-
-      allocate (kn_new(3, NUML)); kn_new = 0 ! RESERVE KN
 
       jathindams = 0
       lc = 0
@@ -842,7 +843,6 @@ contains
       NUML1D = num_1d_links + num_1d2d_links
       NUML = NUML1D + num_2d_links
 
-      allocate (KC2(NUMK))
       KK = 0
       do K = 1, NUMK ! NODES AANSCHUIVEN
          if (KC(K) /= 0) then
