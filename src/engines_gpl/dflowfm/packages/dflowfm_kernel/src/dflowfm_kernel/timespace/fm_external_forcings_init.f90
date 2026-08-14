@@ -862,10 +862,11 @@ contains
 !> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
    function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+                                filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_ec_parameters, only: ec_undef_int
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_alloc, only: reallocP
 
@@ -874,11 +875,16 @@ contains
       integer, intent(in) :: mask(:), kx, filetype, method, oper
       integer, intent(inout) :: ec_item
       real(dp), pointer, intent(out) :: target_data(:)
+      logical, intent(in) :: is_static_field
       logical :: res
 
       integer, pointer :: pkbot(:), pktop(:)
 
-      call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      if (is_static_field) then
+         call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      else
+         target_data => null()
+      end if
       call setzcs()
       pkbot => kbot
       pktop => ktop
@@ -886,8 +892,12 @@ contains
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
-      res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                     tunit, tstart_user, target_data)
+      if (is_static_field) then
+         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                tunit, tstart_user, target_data)
+      else
+         ec_item = ec_undef_int
+      end if
    end function read_3d_sigma_field
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
@@ -1105,7 +1115,7 @@ contains
                   else if (associated(target_data_integer)) then
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
                   else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
@@ -1134,7 +1144,7 @@ contains
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else if (target_location_type == UNC_LOC_S3D) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, tgt_item1=ec_item, tgt_data1=target_data)
