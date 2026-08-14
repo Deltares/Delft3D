@@ -206,6 +206,7 @@ contains
                cycle
             end if
          end if
+         
          if (associated(chapter%child_nodes)) then
             num_nodes = size(chapter%child_nodes)
          else
