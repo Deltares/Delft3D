@@ -86,7 +86,7 @@ contains
 
         ! message to monitor or report file
         call get_log_unit_number(file_unit)
-        if (file_unit > 0) then
+        if (file_unit /= 0) then
             write (file_unit, *) ' '
             write (file_unit, *) ' coefficient value out of range'
             write (file_unit, *) ' coefficient name:', name

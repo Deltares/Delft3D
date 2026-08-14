@@ -1,0 +1,29 @@
+outppr,outpit,outpnm,outpdo,outpsx
+"EMEP_Nit  ","EF_DDp    ",   1,"x",1
+"EMEP_Nit  ","EF_WDp    ",   2,"x",1
+"EMEP_Nit  ","NDepTot   ",   3,"x",1
+"Soil_Pho  ","QTopSoil  ",   1,"x",1
+"Soil_Pho  ","FracPass  ",   2,"x",1
+"Soil_Nit  ","QTopSoil  ",   1,"x",1
+"InitSoi   ","QSoiTot   ",   1,"x",1
+"SetFate   ","DecPav    ",   1,"x",1
+"SetFate   ","DecUnp    ",   2,"x",1
+"SetFate   ","DecSoi    ",   3,"x",1
+"SetFate   ","KdUnpa    ",   4,"x",1
+"SetFate   ","KdSoi     ",   5,"x",1
+"SetSoiKd  ","KdSoi     ",   1," ",1
+"EM_GSS    ","Emis_Sfw  ",   1,"x",1
+"EM_GSS    ","RO2ComSew ",   2,"x",1
+"EM_GSS    ","WW2ComSew ",   3,"x",1
+"EM_GSS    ","ConcROp   ",   4,"x",1
+"EM_GSS    ","ConcROu   ",   5,"x",1
+"EM_GSS    ","ConcWW    ",   6,"x",1
+"EM_GSS    ","ConcDR    ",   7,"x",1
+"TempDifInf","Cloud     ",   1,"x",1
+"TempDifInf","TempWrk1  ",   2,"x",1
+"TempDifInf","TempWrk2  ",   3,"x",1
+"WFLOW_Hydr","Velocity  ",   1,"x",1
+"WFLOW_Hydr","Depth     ",   2,"x",1
+"WFLOW_Hydr","TotalDepth",   3,"x",1
+"WFLOW_Hydr","Tau       ",   4,"x",1
+"SedimLink ","TotErod   ",   1,"x",1

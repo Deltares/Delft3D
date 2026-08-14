@@ -202,8 +202,8 @@ module ProcesSet
         integer :: nsfrac          ! number of substances with fractions
         character(len = 20), pointer :: name(:)         ! base name substance fractions
         integer, pointer :: nfrac(:)        ! number of fractions
-        integer, pointer :: linked(:)       ! linked with fraction if .ne. 0
-        integer, pointer :: linklist(:, :)   ! linked with fraction if .ne. 0
+        integer, pointer :: linked(:)       ! linked with fraction if /= 0
+        integer, pointer :: linklist(:, :)   ! linked with fraction if /= 0
     end type sfracsprop
 
     type old_item

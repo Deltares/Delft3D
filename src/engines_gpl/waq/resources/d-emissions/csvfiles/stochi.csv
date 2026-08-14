@@ -1,0 +1,182 @@
+stocfl,stocsu,stocsc
+"dInitSoi  ","Soi       ",   1.00000
+"dInitSoiP ","SoilPass  ",   1.00000
+"dRelAtmDww","Dww       ",   1.00000
+"dRelAtmSew","Sew       ",   1.00000
+"dRelAtmPav","Pav       ",   1.00000
+"dRelAtmUnp","Unp       ",   1.00000
+"dRelAtmStw","Stw       ",   1.00000
+"dRelAtmSfw","Sfw       ",   1.00000
+"dRelAtmSoi","Soi       ",   1.00000
+"dRelA01Dww","Dww       ",   1.00000
+"dRelA01Sew","Sew       ",   1.00000
+"dRelA01Pav","Pav       ",   1.00000
+"dRelA01Unp","Unp       ",   1.00000
+"dRelA01Stw","Stw       ",   1.00000
+"dRelA01Sfw","Sfw       ",   1.00000
+"dRelA01Soi","Soi       ",   1.00000
+"dRelB01Dww","Dww       ",   1.00000
+"dRelB01Sew","Sew       ",   1.00000
+"dRelB01Pav","Pav       ",   1.00000
+"dRelB01Unp","Unp       ",   1.00000
+"dRelB01Stw","Stw       ",   1.00000
+"dRelB01Sfw","Sfw       ",   1.00000
+"dRelB01Soi","Soi       ",   1.00000
+"dRelB02Dww","Dww       ",   1.00000
+"dRelB02Sew","Sew       ",   1.00000
+"dRelB02Pav","Pav       ",   1.00000
+"dRelB02Unp","Unp       ",   1.00000
+"dRelB02Stw","Stw       ",   1.00000
+"dRelB02Sfw","Sfw       ",   1.00000
+"dRelB02Soi","Soi       ",   1.00000
+"dRelB03Dww","Dww       ",   1.00000
+"dRelB03Sew","Sew       ",   1.00000
+"dRelB03Pav","Pav       ",   1.00000
+"dRelB03Unp","Unp       ",   1.00000
+"dRelB03Stw","Stw       ",   1.00000
+"dRelB03Sfw","Sfw       ",   1.00000
+"dRelB03Soi","Soi       ",   1.00000
+"dRelB04Dww","Dww       ",   1.00000
+"dRelB04Sew","Sew       ",   1.00000
+"dRelB04Pav","Pav       ",   1.00000
+"dRelB04Unp","Unp       ",   1.00000
+"dRelB04Stw","Stw       ",   1.00000
+"dRelB04Sfw","Sfw       ",   1.00000
+"dRelB04Soi","Soi       ",   1.00000
+"dRelB05Dww","Dww       ",   1.00000
+"dRelB05Sew","Sew       ",   1.00000
+"dRelB05Pav","Pav       ",   1.00000
+"dRelB05Unp","Unp       ",   1.00000
+"dRelB05Stw","Stw       ",   1.00000
+"dRelB05Sfw","Sfw       ",   1.00000
+"dRelB05Soi","Soi       ",   1.00000
+"dRelB06Dww","Dww       ",   1.00000
+"dRelB06Sew","Sew       ",   1.00000
+"dRelB06Pav","Pav       ",   1.00000
+"dRelB06Unp","Unp       ",   1.00000
+"dRelB06Stw","Stw       ",   1.00000
+"dRelB06Sfw","Sfw       ",   1.00000
+"dRelB06Soi","Soi       ",   1.00000
+"dRelB07Dww","Dww       ",   1.00000
+"dRelB07Sew","Sew       ",   1.00000
+"dRelB07Pav","Pav       ",   1.00000
+"dRelB07Unp","Unp       ",   1.00000
+"dRelB07Stw","Stw       ",   1.00000
+"dRelB07Sfw","Sfw       ",   1.00000
+"dRelB07Soi","Soi       ",   1.00000
+"dRelB08Dww","Dww       ",   1.00000
+"dRelB08Sew","Sew       ",   1.00000
+"dRelB08Pav","Pav       ",   1.00000
+"dRelB08Unp","Unp       ",   1.00000
+"dRelB08Stw","Stw       ",   1.00000
+"dRelB08Sfw","Sfw       ",   1.00000
+"dRelB08Soi","Soi       ",   1.00000
+"dRelB09Dww","Dww       ",   1.00000
+"dRelB09Sew","Sew       ",   1.00000
+"dRelB09Pav","Pav       ",   1.00000
+"dRelB09Unp","Unp       ",   1.00000
+"dRelB09Stw","Stw       ",   1.00000
+"dRelB09Sfw","Sfw       ",   1.00000
+"dRelB09Soi","Soi       ",   1.00000
+"dRelB10Dww","Dww       ",   1.00000
+"dRelB10Sew","Sew       ",   1.00000
+"dRelB10Pav","Pav       ",   1.00000
+"dRelB10Unp","Unp       ",   1.00000
+"dRelB10Stw","Stw       ",   1.00000
+"dRelB10Sfw","Sfw       ",   1.00000
+"dRelB10Soi","Soi       ",   1.00000
+"dRelB11Dww","Dww       ",   1.00000
+"dRelB11Sew","Sew       ",   1.00000
+"dRelB11Pav","Pav       ",   1.00000
+"dRelB11Unp","Unp       ",   1.00000
+"dRelB11Stw","Stw       ",   1.00000
+"dRelB11Sfw","Sfw       ",   1.00000
+"dRelB11Soi","Soi       ",   1.00000
+"dRelB12Dww","Dww       ",   1.00000
+"dRelB12Sew","Sew       ",   1.00000
+"dRelB12Pav","Pav       ",   1.00000
+"dRelB12Unp","Unp       ",   1.00000
+"dRelB12Stw","Stw       ",   1.00000
+"dRelB12Sfw","Sfw       ",   1.00000
+"dRelB12Soi","Soi       ",   1.00000
+"dpav2sew  ","Pav       ",  -1.00000
+"dpav2sew  ","Sew       ",   1.00000
+"dpav2stw  ","Pav       ",  -1.00000
+"dpav2stw  ","Stw       ",   1.00000
+"dpav2sfw  ","Pav       ",  -1.00000
+"dpav2sfw  ","Sfw       ",   1.00000
+"dpav2soi  ","Pav       ",  -1.00000
+"dpav2soi  ","Soi       ",   1.00000
+"dpav2dec  ","Pav       ",  -1.00000
+"dunp2sfwer","Unp       ",  -1.00000
+"dunp2sfwer","Sfw       ",   1.00000
+"dunp2sfwro","Unp       ",  -1.00000
+"dunp2sfwro","Sfw       ",   1.00000
+"dunp2soiin","Unp       ",  -1.00000
+"dunp2soiin","Soi       ",   1.00000
+"dunp2soibu","Unp       ",  -1.00000
+"dunp2soibu","Soi       ",   1.00000
+"dunp2dec  ","Unp       ",  -1.00000
+"dsew2sfwl ","Sew       ",  -1.00000
+"dsew2sfwl ","Sfw       ",   1.00000
+"dsew2rem  ","Sew       ",  -1.00000
+"dsew2sfwe ","Sew       ",  -1.00000
+"dsew2sfwe ","Sfw       ",   1.00000
+"dsew2soi  ","Sew       ",  -1.00000
+"dsew2soi  ","Soi       ",   1.00000
+"dsew2sfwu ","Sew       ",  -1.00000
+"dsew2sfwu ","Sfw       ",   1.00000
+"dstw2rem  ","Stw       ",  -1.00000
+"dstw2sfw  ","Stw       ",  -1.00000
+"dstw2sfw  ","Sfw       ",   1.00000
+"dstw2soi  ","Stw       ",  -1.00000
+"dstw2soi  ","Soi       ",   1.00000
+"dsoi2sfwex","Soi       ",  -1.00000
+"dsoi2sfwex","Sfw       ",   1.00000
+"dsop2sfwex","SoilPass  ",  -1.00000
+"dsop2sfwex","Sfw       ",   1.00000
+"dsoi2rem  ","Soi       ",  -1.00000
+"dsoi2sfwer","Soi       ",  -1.00000
+"dsoi2sfwer","Sfw       ",   1.00000
+"dsop2sfwer","SoilPass  ",  -1.00000
+"dsop2sfwer","Sfw       ",   1.00000
+"dsoi2sop  ","Soi       ",  -1.00000
+"dsoi2sop  ","SoilPass  ",   1.00000
+"dsfw2exp  ","Sfw       ",  -1.00000
+"dtransfw  ","Sfw       ",   1.00000
+"dtransoi  ","Soi       ",   1.00000
+"dtransop  ","SoilPass  ",   1.00000
+"ddww2sew  ","Dww       ",  -1.00000
+"ddww2sew  ","Sew       ",   1.00000
+"ddww2sfw  ","Dww       ",  -1.00000
+"ddww2sfw  ","Sfw       ",   1.00000
+"ddww2soi  ","Dww       ",  -1.00000
+"ddww2soi  ","Soi       ",   1.00000
+"dDifTemp  ","NatTemp   ",   1.00000
+"dErSus1   ","IM1       ",   1.00000
+"dErSus2   ","IM2       ",   1.00000
+"dErSus3   ","IM3       ",   1.00000
+"dErSus4   ","IM4       ",   1.00000
+"dErSus5   ","IM5       ",   1.00000
+"dErSus6   ","IM6       ",   1.00000
+"dEBODu    ","CBODu     ",   1.00000
+"dENH4     ","NH4       ",   1.00000
+"dENO3     ","NO3       ",   1.00000
+"dEPON1    ","PON1      ",   1.00000
+"dEPON2    ","PON2      ",   1.00000
+"dEDON     ","DON       ",   1.00000
+"dEPO4     ","PO4       ",   1.00000
+"dEAAP     ","AAP       ",   1.00000
+"dEPOP1    ","POP1      ",   1.00000
+"dEPOP2    ","POP2      ",   1.00000
+"dEDOP     ","DOP       ",   1.00000
+"dEIM1     ","IM1       ",   1.00000
+"dEIM2     ","IM2       ",   1.00000
+"dEIM3     ","IM3       ",   1.00000
+"dEEColi   ","EColi     ",   1.00000
+"dEFColi   ","FColi     ",   1.00000
+"dETColi   ","TColi     ",   1.00000
+"dEcTR1    ","cTR1      ",   1.00000
+"dEdTR1    ","dTR1      ",   1.00000
+"dEcTR2    ","cTR2      ",   1.00000
+"dEdTR2    ","dTR2      ",   1.00000

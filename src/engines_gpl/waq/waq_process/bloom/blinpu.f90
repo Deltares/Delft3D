@@ -205,7 +205,7 @@ contains
             nunuco = nunuco + 1
         endif
         cstra(nunuco + 1) = 'KMIN    '
-        cstra(nunuco + 2) = 'KMAX    '
+        cstra(nunuco + 2) = 'num_layers_grid    '
         if (nunuco>nunucom) then
             write(outdbg, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
             write(*, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'

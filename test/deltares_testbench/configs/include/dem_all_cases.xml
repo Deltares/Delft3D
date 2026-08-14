@@ -1,0 +1,45 @@
+<testCases>
+    <testCase name="e03_f19_c01_combined_run_EM_WQ" ref="dem_default">
+        <path version="2024-05-31T09:00:00">e03_waq/f19_d_emissions/c01_combined_run_EM_WQ</path>
+        <maxRunTime>3000.0</maxRunTime>
+        <programs>
+            <program ref="dimr">
+                <arguments>
+                    <argument>-m</argument>
+                    <argument>dimr_config_EM.xml</argument>
+                </arguments>
+            </program>
+            <program ref="dimr">
+                <arguments>
+                    <argument>-m</argument>
+                    <argument>dimr_config_WQ.xml</argument>
+                </arguments>
+            </program>
+        </programs>
+        <checks>
+            <file name="EMtemplate_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh2d_2d_Dww" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_Sew" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_Pav" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_Unp" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_Stw" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_Sfw" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_Soi" toleranceAbsolute="3.0e-00"/>
+                    <parameter name="mesh2d_2d_SoilPass" toleranceAbsolute="3.0e-00"/>
+                </parameters>
+            </file>
+<!-- Switched of for now because of NaNs in the reference data
+            <file name="EMtemplate-bal.prn" type="NUMBERTEXT" toleranceAbsolute="1.0e-00">
+            </file>
+-->
+            <file name="WQtemplate_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh2d_2d_NO3" toleranceAbsolute="1.0e-00"/>
+                </parameters>
+            </file>
+            <file name="WQtemplate-bal.prn" type="NUMBERTEXT" toleranceAbsolute="1.0e-00">
+            </file>
+        </checks>
+    </testCase>
+</testCases>
