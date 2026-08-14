@@ -496,7 +496,7 @@
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c096_trachytopes_Vastila26</path>
     <maxRunTime>15000.0000000</maxRunTime>
     <checks>
-      <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
+      <file name="output/Case3.6_Low_hv_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/>
           <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/>
