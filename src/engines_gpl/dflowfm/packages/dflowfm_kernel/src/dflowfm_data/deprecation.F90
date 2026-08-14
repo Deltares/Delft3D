@@ -157,6 +157,7 @@ contains
    !! Throw an error for obsolete keywords, and otherwise print a warning.
    subroutine check_file_tree_for_deprecated_keywords(tree, keyword_set, status, prefix, excluded_chapters)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use properties, only: prop_get
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_get_name, tree_get_data_string
       use unstruc_messages, only: threshold_abort
@@ -179,6 +180,7 @@ contains
       character(len=30) :: node_name !< name of the keyword
       character(len=30) :: chapter_name !< name of the chapter
       character(len=100) :: node_string !< string containing the keyword value
+      character(len=100) :: block_quantity !< quantity identifying the current block
       integer :: temp_threshold !< backup variable for default abort threshold level (temporarily overruled)
       logical :: success !< flag indicating successful completion of a call
       integer :: num_obsolete !< count the number of obsolete (removed) keywords
@@ -209,6 +211,8 @@ contains
          else
             num_nodes = 0
          end if
+         block_quantity = ''
+         call prop_get(chapter, '', 'quantity', block_quantity, success)
          do node_index = 1, num_nodes
             node => chapter%child_nodes(node_index)%node_ptr
             call tree_get_data_string(node, node_string, success)
@@ -218,17 +222,17 @@ contains
                   if (node%node_visit < 1) then
                      if (is_obsolete(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_obsolete = num_obsolete + 1
-                        call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is obsolete.')
+                        call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is obsolete in block quantity '''//trim(block_quantity)//'''.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      else if (needs_usage_warning(trim(chapter_name), trim(node_name))) then
                         ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
-                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//'='//trim(node_string)//' was in file, but not used. Check possible typo.')
+                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//'='//trim(node_string)//' in block quantity '''//trim(block_quantity)//''' was in file, but not used. Check possible typo.')
                      end if
                   else
                      ! keyword is known and used (node_visit >= 1)
                      if (is_deprecated(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_deprecated = num_deprecated + 1
-                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is deprecated and may be removed in a future release.')
+                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is deprecated in block quantity '''//trim(block_quantity)//''' and may be removed in a future release.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      end if
                   end if
