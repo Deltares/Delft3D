@@ -1,3 +1,10 @@
+!> @brief Head routine for writing SWAN nesting boundary information
+!>
+!> @details Wrapper subroutine that calls write_bnd to write SWAN nesting boundary
+!>          coordinates and write_swan_grid to output the grid definition.
+!>
+!> @param[in] inest SWAN nested grid number
+!> @param[in] sg    Actual SWAN grid structure containing coordinates and mask data
 subroutine write_bnd_loc (inest,sg)
 !
 ! Head routine for calling write_bnd
@@ -13,6 +20,20 @@ implicit none
 end subroutine write_bnd_loc
 
 
+!> @brief Write SWAN nesting boundary coordinates to file
+!>
+!> @details This subroutine writes SWAN nesting boundary information to a file for nested
+!>          grids (inest > 1). It validates the active grid topology, traces the boundary
+!>          of the active region, and writes offset coordinates to prevent SWAN from
+!>          interpreting corner points as belonging to multiple nesting segments.
+!>
+!> @param[in] xc     X-coordinates of grid points (mc x nc)
+!> @param[in] yc     Y-coordinates of grid points (mc x nc)
+!> @param[in] kcs    Cell status mask array (mc x nc)
+!> @param[in] xymiss Missing value indicator for coordinates
+!> @param[in] mc     Number of grid points in m-direction
+!> @param[in] nc     Number of grid points in n-direction
+!> @param[in] inest  SWAN nested grid number
 subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc        , &
                 & inest      )
 !----- GPL ---------------------------------------------------------------------
@@ -44,9 +65,50 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
 !  
 !  
 !!--description-----------------------------------------------------------------
-! NONE
+!
+! This subroutine writes SWAN nesting boundary information to a file for nested
+! grids (inest > 1). It performs the following operations:
+!
+! 1. Validates the active grid topology to ensure it meets SWAN requirements:
+!    - Checks for presence of active points
+!    - Verifies active regions are not disconnected
+!    - Ensures no unsupported one-cell-wide topologies exist
+!
+! 2. Traces the boundary of the active grid region by:
+!    - Finding a suitable starting point on the grid boundary
+!    - Following the outline of active cells in a counter-clockwise direction
+!    - Building an ordered list of boundary grid points
+!
+! 3. Writes boundary coordinates to file SWANIN_NGRIDXXX where XXX is the nest
+!    number. Each boundary point is written with a small offset applied along
+!    the incoming edge direction to prevent SWAN from interpreting corner points
+!    as belonging to multiple nesting segments when BOUN NEST is CLOSED.
+!
+! The routine handles various edge cases including grids with inactive outer
+! rings, missing coordinate values, and complex boundary geometries.
+!
 !!--pseudo code and references--------------------------------------------------
-! NONE
+!
+! - IF nested grid (inest > 1):
+!   - CALL validate_active_topology to check grid validity
+!   - IF topology invalid THEN
+!     - CALL wavestop with appropriate error message
+!     - RETURN
+!   - ENDIF
+!   - Allocate boundary point arrays
+!   - CALL trace_active_boundary to extract ordered boundary points
+!   - IF insufficient boundary points THEN
+!     - CALL wavestop
+!   - ENDIF
+!   - Open output file SWANIN_NGRIDXXX
+!   - FOR each boundary point:
+!     - CALL write_bnd_point with current, previous, and next point data
+!       to write coordinates with appropriate offset
+!   - ENDFOR
+!   - Close output file
+!   - Deallocate boundary point arrays
+! - ENDIF
+!
 !!--declarations----------------------------------------------------------------
     use precision_basics
     !
@@ -70,8 +132,8 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
     integer           :: num_boundary_points
     integer           :: previous_point
     integer           :: topology_status
-    integer, allocatable :: boundary_m(:)
-    integer, allocatable :: boundary_n(:)
+    integer, dimension(:), allocatable :: boundary_m
+    integer, dimension(:), allocatable :: boundary_n
     character(37)     :: fname
     integer, parameter :: TOPOLOGY_VALID = 0
     integer, parameter :: TOPOLOGY_NO_ACTIVE_POINTS = 1
@@ -132,6 +194,16 @@ subroutine write_bnd(xc        ,yc        ,kcs       ,xymiss    ,mc        ,nc  
        deallocate(boundary_m, boundary_n)
     endif
 contains
+    !> @brief Check if a grid point has valid boundary coordinates
+    !>
+    !> @details Validates that a point has a positive mask value and coordinates
+    !>          that are not equal to the missing value indicator.
+    !>
+    !> @param[in] x       X-coordinate to validate
+    !> @param[in] y       Y-coordinate to validate
+    !> @param[in] mask    Cell status mask value
+    !> @param[in] missing Missing value indicator
+    !> @return .true. if point has valid coordinates, .false. otherwise
     logical function valid_bnd_point(x, y, mask, missing)
         real(kind=hp), intent(in) :: x
         real(kind=hp), intent(in) :: y
@@ -146,6 +218,14 @@ contains
                                 abs(y - missing) < TOL)
     end function valid_bnd_point
 
+    !> @brief Check if a grid point is active
+    !>
+    !> @details Determines if a grid point at indices (m,n) is within grid bounds
+    !>          and has valid boundary coordinates.
+    !>
+    !> @param[in] m M-index of grid point
+    !> @param[in] n N-index of grid point
+    !> @return .true. if point is active and valid, .false. otherwise
     logical function active_grid_point(m, n)
         integer, intent(in) :: m
         integer, intent(in) :: n
@@ -157,6 +237,16 @@ contains
         active_grid_point = valid_bnd_point(xc(m,n), yc(m,n), kcs(m,n), xymiss)
     end function active_grid_point
 
+    !> @brief Check if a point satisfies SWAN boundary topology requirements
+    !>
+    !> @details Validates that an active grid point has sufficient active neighbours
+    !>          to form a valid SWAN boundary. Rejects isolated points, straight-through
+    !>          corridors, and points with missing diagonal neighbours when required.
+    !>          This prevents one-cell-wide topologies that SWAN cannot handle.
+    !>
+    !> @param[in] m M-index of grid point
+    !> @param[in] n N-index of grid point
+    !> @return .true. if point satisfies SWAN boundary requirements, .false. otherwise
     logical function swan_valid_boundary_point(m, n)
         integer, intent(in) :: m
         integer, intent(in) :: n
@@ -234,9 +324,22 @@ contains
         swan_valid_boundary_point = .true.
     end function swan_valid_boundary_point
 
+    !> @brief Validate the topology of active grid points
+    !>
+    !> @details Performs comprehensive validation of the active grid region topology:
+    !>          - Verifies all active points satisfy SWAN boundary requirements
+    !>          - Checks that active points form a single connected region
+    !>          - Ensures no isolated or disconnected active regions exist
+    !>          Uses breadth-first search to determine connectivity.
+    !>
+    !> @param[out] status Topology validation status code:
+    !>                    TOPOLOGY_VALID (0) - Valid topology
+    !>                    TOPOLOGY_NO_ACTIVE_POINTS (1) - No active points found
+    !>                    TOPOLOGY_DISCONNECTED_REGIONS (2) - Multiple disconnected regions
+    !>                    TOPOLOGY_UNSUPPORTED_ONE_CELL (3) - One-cell-wide topology
     subroutine validate_active_topology(status)
         integer, intent(out) :: status
-        integer :: component_count
+        integer :: region_count
         integer :: current_m
         integer :: current_n
         integer :: head
@@ -248,11 +351,11 @@ contains
         integer :: topology_direction
         logical :: neighbour_is_valid(ORIENTATION_RIGHT:ORIENTATION_DOWN)
         logical, allocatable :: visited(:,:)
-        integer, allocatable :: queue_m(:)
-        integer, allocatable :: queue_n(:)
+        integer, dimension(:), allocatable :: queue_m
+        integer, dimension(:), allocatable :: queue_n
 
         status = TOPOLOGY_VALID
-        component_count = 0
+        region_count = 0
         allocate(visited(mc,nc), queue_m(mc*nc), queue_n(mc*nc))
         visited = .false.
 
@@ -285,8 +388,8 @@ contains
                 if (.not. active_grid_point(m, n) .or. visited(m,n)) then
                     cycle
                 end if
-                component_count = component_count + 1
-                if (component_count > 1) then
+                region_count = region_count + 1
+                if (region_count > 1) then
                     status = TOPOLOGY_DISCONNECTED_REGIONS
                     deallocate(visited, queue_m, queue_n)
                     return
@@ -319,12 +422,24 @@ contains
             enddo
         enddo
 
-        if (component_count == 0) then
+        if (region_count == 0) then
             status = TOPOLOGY_NO_ACTIVE_POINTS
         end if
         deallocate(visited, queue_m, queue_n)
     end subroutine validate_active_topology
 
+    !> @brief Find a suitable starting point for boundary tracing
+    !>
+    !> @details Searches for an active grid point to begin boundary tracing.
+    !>          Prioritizes points on the outer grid edges in the following order:
+    !>          bottom edge, right edge, top edge, left edge. If no edge points
+    !>          are active, searches for an interior point with an inactive left
+    !>          neighbour to support grids with entirely inactive outer rings.
+    !>
+    !> @param[out] mstart    M-index of starting point
+    !> @param[out] nstart    N-index of starting point
+    !> @param[out] direction Initial tracing direction (ORIENTATION_*)
+    !> @param[out] found     .true. if starting point found, .false. otherwise
     subroutine find_boundary_start(mstart, nstart, direction, found)
         integer, intent(out) :: mstart
         integer, intent(out) :: nstart
@@ -383,6 +498,16 @@ contains
         found = .false.
     end subroutine find_boundary_start
 
+    !> @brief Calculate neighbouring point indices in a given direction
+    !>
+    !> @details Computes the grid indices of the neighbouring point in the specified
+    !>          direction (RIGHT, UP, LEFT, or DOWN) from the current point.
+    !>
+    !> @param[in]  m         M-index of current point
+    !> @param[in]  n         N-index of current point
+    !> @param[in]  direction Direction to neighbour (ORIENTATION_RIGHT/UP/LEFT/DOWN)
+    !> @param[out] mnext     M-index of neighbouring point
+    !> @param[out] nnext     N-index of neighbouring point
     subroutine neighbouring_point(m, n, direction, mnext, nnext)
         integer, intent(in) :: m
         integer, intent(in) :: n
@@ -404,9 +529,20 @@ contains
         end select
     end subroutine neighbouring_point
 
+    !> @brief Trace the outline of the active grid region
+    !>
+    !> @details Follows the boundary of active cells in a counter-clockwise direction,
+    !>          building an ordered list of boundary grid points. Uses a wall-following
+    !>          algorithm that turns left when possible, continuing straight or turning
+    !>          right as needed. Tracks visited points to detect closure and prevent
+    !>          infinite loops.
+    !>
+    !> @param[out] boundary_m M-indices of boundary points
+    !> @param[out] boundary_n N-indices of boundary points
+    !> @param[out] num_points Number of boundary points traced (0 if failed)
     subroutine trace_active_boundary(boundary_m, boundary_n, num_points)
-        integer, intent(out) :: boundary_m(:)
-        integer, intent(out) :: boundary_n(:)
+        integer, dimension(:), intent(out) :: boundary_m
+        integer, dimension(:), intent(out) :: boundary_n
         integer, intent(out) :: num_points
         integer :: current_m
         integer :: current_n
@@ -480,6 +616,22 @@ contains
         deallocate(visited)
     end subroutine trace_active_boundary
 
+    !> @brief Write a single boundary point with offset to output file
+    !>
+    !> @details Writes boundary point coordinates with a small offset applied along
+    !>          the incoming edge direction. This prevents SWAN from interpreting corner
+    !>          points as belonging to multiple nesting segments when BOUN NEST is CLOSED.
+    !>          If the previous point is invalid, uses the next point to compute offset.
+    !>
+    !> @param[in] x             X-coordinate of current point
+    !> @param[in] y             Y-coordinate of current point
+    !> @param[in] mask          Cell status mask of current point
+    !> @param[in] xprevious     X-coordinate of previous point
+    !> @param[in] yprevious     Y-coordinate of previous point
+    !> @param[in] previous_mask Cell status mask of previous point
+    !> @param[in] xnext         X-coordinate of next point
+    !> @param[in] ynext         Y-coordinate of next point
+    !> @param[in] next_mask     Cell status mask of next point
     subroutine write_bnd_point(x, y, mask, xprevious, yprevious, previous_mask, &
                                xnext, ynext, next_mask)
         real(kind=hp), intent(in) :: x
