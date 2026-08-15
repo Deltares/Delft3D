@@ -30,7 +30,7 @@
 !
 !
 
-module m_mass_balance_areas
+module m_mass_balance_area_data
    use precision, only: dp
    integer, parameter :: NAMMBALEN = 128 !< maximum length of mass balance area names
 
@@ -177,4 +177,4 @@ module m_mass_balance_areas
    type(bal_group_type), target :: water_flow !< water balance
    type(bal_group_type), dimension(:), allocatable, target :: const_flux !< constituent balances
 
-end module m_mass_balance_areas
+end module m_mass_balance_area_data

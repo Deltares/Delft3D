@@ -1184,17 +1184,18 @@ contains
    !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
    !! named mass-balance area and assigns its integer ID to enclosed cells.
    subroutine test_waqmassbalancearea_polygon_populated() bind(C)
-      use m_flow, only: ndkx
+      use m_flow, only: ndkx, kmxn
       use m_flowgeom, only: ndx2D, ndxi
       use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
-      use m_mass_balance_areas, only: mbadef, mbaname, nomba
+      use m_mass_balance_area, only: read_and_initialize_mass_balance_area
+      use m_mass_balance_area_data, only: mbadef, mbaname, nomba
+      use m_partitioninfo, only: jampi
       use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: md_mbafile
 
-      type(tree_data), pointer :: bnd_ptr, block_ptr
-      logical :: success
       integer :: ierr
       character(len=*), parameter :: POL_FILE = "test_mba.pol"
-      character(len=*), parameter :: EXT_FILE = "test_mba.ext"
+      character(len=*), parameter :: MBA_FILE = "test_mba.ini"
 
       call create_file(POL_FILE, [ &
                        "enclosing_polygon", &
@@ -1204,17 +1205,23 @@ contains
                        " 2.0   2.0", &
                        "-2.0   2.0", &
                        "-2.0  -2.0"])
-      call create_file(EXT_FILE, [ &
-                       "[Spatial]", &
-                       "    quantity        = waqmassbalanceareaSouthWest", &
-                       "    forcingFile     = "//POL_FILE, &
-                       "    forcingFileType = Polygon", &
-                       "    value           = 1"])
+      call create_file(MBA_FILE, [ &
+                       "[General]", &
+                       "fileVersion = 1.00", &
+                       "fileType    = massBalanceAreas", &
+                       "", &
+                       "[MassBalanceArea]", &
+                       "name         = test_mba", &
+                       "locationFile = "//POL_FILE])
 
       call setup_minimal_grid()
+      jampi = 0
+      md_mbafile = MBA_FILE
       ndxi = ndx
       ndkx = ndx
       ndx2D = 0
+      allocate (kmxn(1))
+      kmxn = 1
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
@@ -1228,13 +1235,10 @@ contains
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
-      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
-      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
-      call tree_destroy(bnd_ptr)
+      call read_and_initialize_mass_balance_area(MBA_FILE)
 
-      call f90_expect_true(success, "waqmassbalancearea polygon initialization should succeed")
       call f90_expect_eq(nomba, 1, "one mass-balance area should be registered")
-      call f90_assert_streq(cstr(mbaname(1)), cstr("SouthWest"), cstr("the mass-balance area suffix should be retained"))
+      call f90_assert_streq(cstr(mbaname(1)), cstr("test_mba"), cstr("the mass-balance area suffix should be retained"))
       call f90_expect_eq(mbadef(1), 1, "the enclosed cell should belong to the registered area")
 
       ti_mba = 0.0_dp
@@ -1242,6 +1246,7 @@ contains
       ndxi = 0
       ndkx = 0
       ndx2D = 0
+      deallocate (kmxn)
       if (allocated(mbaname)) deallocate (mbaname)
       if (allocated(mbadef)) deallocate (mbadef)
       ierr = m_polygon_destructor()
