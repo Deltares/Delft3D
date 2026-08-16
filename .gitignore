@@ -62,6 +62,7 @@ unit-test-report-windows.xml
 
 # dvc: ignore data but allow .dvc files
 test/deltares_testbench/data/cases/*
+!test/deltares_testbench/data/cases/.ignore
 !test/deltares_testbench/data/cases/**/*.dvc
 
 # precice
