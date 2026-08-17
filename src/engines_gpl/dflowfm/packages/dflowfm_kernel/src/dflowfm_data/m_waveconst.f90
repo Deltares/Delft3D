@@ -64,7 +64,8 @@ contains
 
    !> Derive the required offline wave input quantities from active processes.
    pure integer function get_offline_wave_input_requirements(waveforcing, wave_forces, stokes_drift, wave_streaming, &
-                                                              wave_boundary_layer, bottom_shear, flow_without_waves) result(requirements)
+                                                              wave_boundary_layer, bottom_shear, flow_without_waves, &
+                                                              wave_breaker_turbulence) result(requirements)
       integer, intent(in) :: waveforcing
       integer, intent(in) :: wave_forces
       integer, intent(in) :: stokes_drift
@@ -72,14 +73,23 @@ contains
       integer, intent(in) :: wave_boundary_layer
       logical, intent(in) :: bottom_shear
       logical, intent(in) :: flow_without_waves
+      integer, intent(in) :: wave_breaker_turbulence
 
       logical :: wave_kinematics_required
+      logical :: breaker_turbulence_required
 
       requirements = 0
+      breaker_turbulence_required = wave_breaker_turbulence > WAVE_BREAKER_TURB_OFF
+
+      if (breaker_turbulence_required) then
+         requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+         requirements = ior(requirements, WAVE_INPUT_DISSIPATION_SURFACE)
+         requirements = ior(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+      end if
 
       if (flow_without_waves) then
          ! D-WAQ needs wave height and period to derive orbital velocity, but
-         ! the direction is not used when wave effects are disabled in FLOW.
+         ! the direction is not needed for this path.
          requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
          requirements = ior(requirements, WAVE_INPUT_PERIOD)
          return
@@ -99,7 +109,6 @@ contains
       if (wave_forces > WAVE_FORCES_OFF) then
          select case (waveforcing)
          case (WAVEFORCING_RADIATION_STRESS)
-            requirements = ior(requirements, WAVE_INPUT_PERIOD)
             requirements = ior(requirements, WAVE_INPUT_FORCE_X)
             requirements = ior(requirements, WAVE_INPUT_FORCE_Y)
          case (WAVEFORCING_DISSIPATION_TOTAL)

@@ -43,9 +43,12 @@ contains
    !> subroutine to compute wave forces
    subroutine setwavfu()
       use precision, only: dp
-      use m_flowparameters, only: jawaveforces, wave_forces_off, jawave, wave_swan_online, wave_nc_offline, wave_surfbeat, epshu
+      use m_flowparameters, only: jawaveforces, wave_forces_off, jawave, wave_swan_online, wave_nc_offline, wave_surfbeat, &
+                      epshu, waveforcing
       use m_flowgeom, only: lnx, lnx1d, ln, acl, csu, snu
-      use m_waves, only: m_waves_hminlw => hminlw, gammax, facmax, sxwav, sywav, sbxwav, sbywav, twav, hwav
+      use m_waves, only: m_waves_hminlw => hminlw, gammax, facmax, sxwav, sywav, sbxwav, sbywav, twav, hwav, &
+                offline_wave_input_requirements
+      use m_waveconst, only: wave_input_is_required, WAVE_INPUT_PERIOD, WAVEFORCING_RADIATION_STRESS
       use m_xbeach_data, only: xb_hminlw => hminlw, gammaxxb
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
@@ -58,6 +61,7 @@ contains
       real(kind=dp) :: wavfu_loc, wavfbu_loc, twavL, hwavL
       real(kind=dp) :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag, wavfang, wavfbang
       real(kind=dp) :: fmax, ac1, ac2, hminlwi, rhoL, hminlw, gammaloc
+      logical :: limit_wave_forces
 
       integer :: k1, k2
 
@@ -81,6 +85,8 @@ contains
       end if
 
       facmax = 0.25_dp * sag * rhomean * gammaloc**2
+      limit_wave_forces = jawave /= WAVE_NC_OFFLINE .or. waveforcing /= WAVEFORCING_RADIATION_STRESS .or. &
+                 wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
 
       wavfu = 0.0_dp
       wavfv = 0.0_dp
@@ -103,9 +109,7 @@ contains
                wavfby = ac1 * sbywav(k1) + ac2 * sbywav(k2)
 
                twavL = ac1 * twav(k1) + ac2 * twav(k2)
-
-               ! limit forces
-               fmax = facmax * hu(L)**1.5 / max(0.1_dp, twavL)
+               fmax = get_maximum_wave_force(hu(L), twavL)
 
                ! projection in face-normal direction
                wavfu_loc = wavfx * csu(L) + wavfy * snu(L)
@@ -147,8 +151,8 @@ contains
             !
             hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01_dp)
             twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)
-            fmax = facmax * hu(LL)**1.5 / twavL
             rhoL = rhomean
+            fmax = get_maximum_wave_force(hu(LL), twavL)
             !
             ! Surface force, assign to top layer
             !
@@ -201,6 +205,20 @@ contains
       end if
 1234  continue
       return
+
+   contains
+
+      real(kind=dp) function get_maximum_wave_force(depth, period) result(maximum_force)
+         real(kind=dp), intent(in) :: depth
+         real(kind=dp), intent(in) :: period
+
+         if (limit_wave_forces) then
+            maximum_force = facmax * depth**1.5_dp / max(0.1_dp, period)
+         else
+            maximum_force = huge(1.0_dp)
+         end if
+      end function get_maximum_wave_force
+
    end subroutine setwavfu
 
 end module m_setwavfu

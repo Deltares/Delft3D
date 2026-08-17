@@ -1606,10 +1606,6 @@ contains
       if (kmx <= 1) then
          jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! turn off 3D-only setting
       end if
-      if (jawave == WAVE_NC_OFFLINE .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-         call mess(LEVEL_ERROR, 'Wavemodelnr = 7 does not support 3Dwavebreakerturbulence. Set 3Dwavebreakerturbulence = 0.')
-         istat = DFM_WRONGINPUT
-      end if
       call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -1628,7 +1624,7 @@ contains
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+         ! Keep breaker turbulence user-controlled; its dissipation path is independent.
          modind = 0
       end if
 
@@ -1636,7 +1632,7 @@ contains
          offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
                                                                                 jawavestreaming, jawavedelta, &
                                                                                 modind > 0 .and. ftauw > 0.0_dp, &
-                                                                                flow_without_waves)
+                                                                                flow_without_waves, jawavebreakerturbulence)
       else
          offline_wave_input_requirements = 0
       end if

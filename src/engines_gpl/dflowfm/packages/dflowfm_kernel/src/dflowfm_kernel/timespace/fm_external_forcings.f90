@@ -42,7 +42,8 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
+      public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
+         allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -1899,6 +1900,17 @@ contains
 
    end function flow_initexternalforcings
 
+!> Promote supplied optional inputs that activate additional offline wave behavior.
+   subroutine finalize_offline_wave_input_requirements()
+      use m_flowparameters, only: jawave, waveforcing
+      use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
+
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_RADIATION_STRESS .and. &
+          wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_PERIOD)) then
+         offline_wave_input_requirements = ior(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
+      end if
+   end subroutine finalize_offline_wave_input_requirements
+
 !> Validate all external-forcing providers required by the active offline wave configuration.
    subroutine validate_offline_wave_input_providers(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
@@ -2768,6 +2780,7 @@ contains
       end if
 
       call finalize_1dfield_global_values()
+      call finalize_offline_wave_input_requirements()
       call validate_offline_wave_input_providers(ierr)
 
       ! Cleanup:

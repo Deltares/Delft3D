@@ -49,7 +49,7 @@ contains
       use precision, only: dp
       use ieee_arithmetic, only: ieee_is_nan
       use m_waves, only: hwav, gammax, uorb, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, &
-                         distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni, offline_wave_input_requirements
+                distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni, offline_wave_input_requirements
       use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flow_without_waves, epshu, ag, hs, waveforcing, jawaveforces
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
@@ -213,6 +213,13 @@ contains
             mywav = 0.0_dp
             sbxwav = 0.0_dp
             sbywav = 0.0_dp
+
+            if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)) then
+               hwav = min(hwavcom / sqrt2_hp, gammax * hs)
+               where (ieee_is_nan(hwavcom) .or. hs <= epshu)
+                  hwav = 0.0_dp
+               end where
+            end if
 
             if (wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)) then
                call transform_wave_period_hp(twavcom, ndx, 1, JONSWAPgamma0, twav, ierror)

@@ -374,10 +374,10 @@ contains
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
                                                           NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
-                                                          .false., .false.)
+                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
 
-      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
-                           "radiation-stress force limiting requires waveperiod")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                   "direct radiation-stress forcing does not require wave period")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_X), &
                            "radiation-stress forcing requires xwaveforce")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_Y), &
@@ -397,7 +397,7 @@ contains
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
                                                           STOKES_DRIFT_DEPTHUNIFORM, WAVE_STREAMING_OFF, &
-                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false.)
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
                            "Stokes drift requires wave height")
@@ -416,7 +416,7 @@ contains
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
                                                           NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
-                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true.)
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
                            "FlowWithoutWaves requires wave height for D-WAQ orbital velocity")
@@ -427,6 +427,42 @@ contains
    end subroutine test_offline_wave_requirements_flow_without_waves
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_breaker_turbulence, test_offline_wave_requirements_breaker_turbulence,
+   subroutine test_offline_wave_requirements_breaker_turbulence() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_ON)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "breaker turbulence requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                           "breaker turbulence requires surface-breaking dissipation")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                           "breaker turbulence requires white-capping dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "breaker turbulence alone does not require wave direction")
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_ON)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "FlowWithoutWaves still requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                           "FlowWithoutWaves still requires wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                           "FlowWithoutWaves with breaker turbulence requires surface-breaking dissipation")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                           "FlowWithoutWaves with breaker turbulence requires white-capping dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "FlowWithoutWaves with breaker turbulence does not require wave direction")
+   end subroutine test_offline_wave_requirements_breaker_turbulence
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_disabled_forces, test_offline_wave_requirements_disabled_forces,
    subroutine test_offline_wave_requirements_disabled_forces() bind(C)
       use m_waveconst
@@ -435,7 +471,7 @@ contains
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_TOTAL, WAVE_FORCES_OFF, &
                                                           NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
-                                                          .false., .false.)
+                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_eq(requirements, 0, "no active wave consumer should require no offline wave input")
    end subroutine test_offline_wave_requirements_disabled_forces
@@ -449,7 +485,7 @@ contains
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_3D, WAVE_FORCES_ON, &
                                                           NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
-                                                          .false., .false.)
+                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), "3D dissipation requires wave height")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), "3D dissipation requires wave period")
