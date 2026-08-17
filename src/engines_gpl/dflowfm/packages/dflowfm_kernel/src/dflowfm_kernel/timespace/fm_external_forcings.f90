@@ -1900,7 +1900,7 @@ contains
 
    end function flow_initexternalforcings
 
-!> Promote supplied optional inputs that activate additional offline wave behavior.
+   !> If period is optional and present, set the requirement for period to be true so that the ec-module will update it.
    subroutine finalize_offline_wave_input_requirements()
       use m_flowparameters, only: jawave, waveforcing
       use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers

@@ -1593,7 +1593,7 @@ contains
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! default switch off, but switchable see below
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
       end if
 
       call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
@@ -1624,7 +1624,6 @@ contains
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         ! Keep breaker turbulence user-controlled; its dissipation path is independent.
          modind = 0
       end if
 
