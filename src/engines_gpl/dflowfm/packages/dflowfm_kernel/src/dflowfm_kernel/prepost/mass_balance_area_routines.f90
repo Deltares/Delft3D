@@ -76,7 +76,7 @@ contains
    subroutine mba_init()
 
       use m_alloc
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_transport, only: numconst, const_names, ised1, isedn
       use m_partitioninfo
@@ -414,7 +414,7 @@ contains
    end subroutine get_mbainputname
 
    subroutine mba_update(time)
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_partitioninfo
       use m_flowparameters, only: jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
@@ -556,7 +556,7 @@ contains
    end subroutine mba_datestr
 
    subroutine mba_final(time)
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_partitioninfo
       use m_flowparameters, only: jambawritetxt, jambawritenetcdf
@@ -734,7 +734,7 @@ contains
    subroutine comp_horflowmba()
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use timers
 
       integer :: LL, L, Lb, Lt, k1, k2, i, n
@@ -784,7 +784,7 @@ contains
    subroutine comp_horfluxmba()
       use m_flow, only: Lbot, Ltop
       use m_flowtimes, only: dts
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use timers
       use m_transport, only: numconst, fluxhor
       use m_fm_erosed, only: morfac
@@ -839,7 +839,7 @@ contains
 
    subroutine comp_bedload_fluxmba()
       use m_flowtimes, only: dts
-      use m_mass_balance_areas, only: nombaln, mbalnlist, mbalnfromto, mbasedflux
+      use m_mass_balance_area_data, only: nombaln, mbalnlist, mbalnfromto, mbasedflux
       use m_fm_erosed, only: lsedtot, e_sbn, morfac
       use m_flowgeom, only: wu_mor
 
@@ -993,7 +993,7 @@ contains
    end subroutine mba_write_bal_header
 
    subroutine mba_prepare_names()
-      use m_mass_balance_areas, only: nomba, nombs
+      use m_mass_balance_area_data, only: nomba, nombs
 
       integer :: imba !< mass balance area number
       integer :: imbs !< mass balance substance number
@@ -1016,7 +1016,7 @@ contains
    end subroutine mba_prepare_names
 
    subroutine allocate_name_arrays()
-      use m_mass_balance_areas, only: nomba, nombs, water_flow, const_flux
+      use m_mass_balance_area_data, only: nomba, nombs, water_flow, const_flux
 
       integer :: imba !< mass balance area number
       integer :: imbs !< mass balance substance number
@@ -1040,7 +1040,7 @@ contains
    end subroutine allocate_name_arrays
 
    subroutine allocate_all_value_arrays()
-      use m_mass_balance_areas, only: nomba, nombs, water_flow, const_flux
+      use m_mass_balance_area_data, only: nomba, nombs, water_flow, const_flux
 
       integer :: imbs !< mass balance substance number
 
@@ -1051,7 +1051,7 @@ contains
    end subroutine allocate_all_value_arrays
 
    subroutine allocate_value_arrays(bal_group, nomba)
-      use m_mass_balance_areas, only: bal_group_type
+      use m_mass_balance_area_data, only: bal_group_type
       use m_alloc
 
       type(bal_group_type), intent(inout) :: bal_group !< derived type containing the balances for one quantity
@@ -1073,7 +1073,7 @@ contains
    end subroutine allocate_value_arrays
 
    subroutine add_name(balance, group, name)
-      use m_mass_balance_areas, only: balance_type
+      use m_mass_balance_area_data, only: balance_type
       use m_alloc
 
       type(balance_type), intent(inout) :: balance !< derived type containing the flux groups, names and values
@@ -1126,7 +1126,7 @@ contains
    end subroutine add_values
 
    subroutine add_value_change(bal_values, ii, val_beg, val_end)
-      use m_mass_balance_areas, only: DIR_FROM, DIR_TO
+      use m_mass_balance_area_data, only: DIR_FROM, DIR_TO
 
       real(kind=dp), dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
       integer, intent(inout) :: ii !< last written index into bal_values
@@ -1144,7 +1144,7 @@ contains
    !> convert an integer into a string
    function get_units(imbs, unit_type) result(string)
       use m_transportdata, only: numconst, isalt, itemp
-      use m_mass_balance_areas, only: imbs2sed
+      use m_mass_balance_area_data, only: imbs2sed
 
       integer, intent(in) :: imbs !< mass balance substance number
       integer, intent(in) :: unit_type !< MASS_UNIT or CONC_UNIT
@@ -1178,7 +1178,7 @@ contains
    end function get_units
 
    subroutine mba_prepare_values(overall_balance)
-      use m_mass_balance_areas, only: nomba, nombs
+      use m_mass_balance_area_data, only: nomba, nombs
 
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
@@ -1201,7 +1201,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
 
       integer, intent(in) :: imba !< index mass balance area
 
@@ -1279,7 +1279,7 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
 
       integer, intent(in) :: imba !< index mass balance area
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -1362,7 +1362,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
 
       integer :: jmba !< index of other mass balance area or open boundary
       integer :: isrc !< index of source/sink
@@ -1417,7 +1417,7 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
 
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
@@ -1492,7 +1492,7 @@ contains
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
       use m_transport, only: numconst, itemp
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_erosed, only: lsed, iflufflyr
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, fluxname
       use m_fm_wq_processes, only: imbs2sys
@@ -1644,7 +1644,7 @@ contains
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
       use m_transport, only: numconst, itemp
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
       use m_fm_wq_processes, only: flxdmp, flxdmptot, imbs2sys
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1818,7 +1818,7 @@ contains
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
       use m_transport, only: numconst, itemp
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_erosed, only: lsed, iflufflyr
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, fluxname
       use m_fm_wq_processes, only: imbs2sys
@@ -1935,7 +1935,7 @@ contains
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, &
                                   jambalumpsrc, jambalumpproc
       use m_transport, only: numconst, itemp
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
       use m_fm_wq_processes, only: flxdmp, flxdmptot, imbs2sys
       use m_fm_erosed, only: lsed, iflufflyr
@@ -2092,7 +2092,7 @@ contains
       use unstruc_netcdf, only: unc_create, unc_close
       use unstruc_files, only: defaultFilename
       use m_flowtimes, only: Tudunitstr
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use netcdf, only: nf90_char, nf90_double, nf90_unlimited, nf90_def_dim, nf90_def_var, nf90_put_att, nf90_put_var, nf90_enddef
       use m_fm_erosed, only: lsed, iflufflyr
       use m_transport, only: numconst
@@ -2298,7 +2298,7 @@ contains
 
    !> write the names of one balance to the netCDF file
    function mba_write_netcdf_flux_names(ncid_bal_file, ncid_balance, balance) result(ierr)
-      use m_mass_balance_areas, only: balance_type, NAMMBALEN
+      use m_mass_balance_area_data, only: balance_type, NAMMBALEN
       use netcdf, only: nf90_put_var
 
       integer, intent(in) :: ncid_bal_file !< id of the netCDF balances file
@@ -2319,7 +2319,7 @@ contains
 
    subroutine mba_write_netcdf_step()
       use m_flowtimes, only: time1
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use netcdf, only: nf90_write, nf90_put_var, nf90_strerror
       use unstruc_netcdf, only: unc_open, unc_close
       use m_fm_erosed, only: lsed, iflufflyr
@@ -2409,7 +2409,7 @@ contains
    end subroutine mba_write_netcdf_step
 
    subroutine mba_write_netcdf_final()
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use unstruc_netcdf, only: unc_close
 
       ! close file
@@ -2417,7 +2417,7 @@ contains
    end subroutine mba_write_netcdf_final
 
    subroutine mba_write_bal_time_step(lunbal, timestart, timeend, datestart, dateend, overall_balance)
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes, ifluxdummy => iflux
       use m_transport, only: numconst
       use m_step_to_screen, only: seconds_to_dhms
@@ -2677,7 +2677,7 @@ contains
    end subroutine mba_write_bal_time_step
 
    subroutine mba_write_csv_time_step(luncsvm, luncsvmb, datestart, dateend)
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes, ifluxdummy => iflux
 
       integer :: luncsvm ! logical unit mass
