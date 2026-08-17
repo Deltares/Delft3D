@@ -569,3 +569,59 @@ TEST(CsumoPreciceCouplingStepsTest, SourceWeightSumBelowOneProducesLowerDischarg
     EXPECT_NEAR(total_equals_one, 10.0, 1e-12);
     EXPECT_LT(total_below_one, total_equals_one);
 }
+
+TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
+{
+    // Create NF2FF XML with decreasing entrainment factors
+    constexpr std::string_view nf2ff_xml = R"(<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+    <fileVersion>0.3</fileVersion>
+    <discharge>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+    </discharge>
+    <NFResult>
+        <sinks>
+            1010.0 300.0 5.0 5.0 5.0 0.0
+            1000.0 350.0 5.0 2.5 5.0 0.0
+            990.0 400.0 5.0 1.0 5.0 0.0
+        </sinks>
+        <sources>
+            1000.0 300.0 5.0 1.0 5.0 15.0
+        </sources>
+    </NFResult>
+</NF2FF>)";
+
+    const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
+    ASSERT_TRUE(settings.has_value());
+
+    auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
+    ASSERT_TRUE(reader.has_value());
+
+    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    nf2ff_readers.emplace_back(std::move(*reader));
+
+    // Verify that the entrainment values are indeed decreasing
+    ASSERT_GT(nf2ff_readers[0].sinks()[0].entrainment, nf2ff_readers[0].sinks()[1].entrainment);
+
+    // Verify that the error message contains the sink index and the negative delta_s value
+    try
+    {
+        pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+        FAIL() << "Expected std::runtime_error to be thrown";
+    }
+    catch (const std::runtime_error& e)
+    {
+        const std::string error_message = e.what();
+        // Verify that the error message contains "Negative entrainment factor"
+        EXPECT_PRED2(test_utilities::contains, error_message, "Negative entrainment factor");
+        // Verify that the error message contains the sink index (should be 1, since delta from sink 0 to 1)
+        EXPECT_PRED2(test_utilities::contains, error_message, "1");
+        // Verify that the error message contains the negative delta_s value
+        EXPECT_PRED2(test_utilities::contains, error_message, "-");
+    }
+
+    // Verify that the exception is thrown
+    EXPECT_THROW(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers), std::runtime_error);
+}

@@ -260,6 +260,11 @@ namespace pre_c_sumo
             for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
             {
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
+                if (delta_s < 0.0)
+                {
+                    throw std::runtime_error("Negative entrainment factor for sink " + std::to_string(sink_index) +
+                                             ": " + std::to_string(delta_s));
+                }
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
