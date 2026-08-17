@@ -139,15 +139,3 @@ class TestCase:
             # add runner sequence number and runner configuration to local storage
             self.__programs.append((program_config.sequence, program_copy))
 
-    # retrieve runtime or none from _tb3_char.run file
-    # input: path to _tb3_char.run file
-    # output: actual runtime value (float)
-    def __findCharacteristicsRunTime__(self, filename):
-        with open(filename) as f:
-            retval = None
-            for line in f:
-                if "Runtime:" in line:
-                    _, value = line.split(":")
-                    retval = float(value)
-                    break
-            return retval
