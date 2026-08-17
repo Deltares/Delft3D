@@ -138,4 +138,3 @@ class TestCase:
 
             # add runner sequence number and runner configuration to local storage
             self.__programs.append((program_config.sequence, program_copy))
-
