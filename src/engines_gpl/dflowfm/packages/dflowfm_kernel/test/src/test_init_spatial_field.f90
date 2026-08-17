@@ -20,6 +20,8 @@ contains
    subroutine make_test_input( &
          input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
          operand_string, data_value, is_extrapolation_allowed)
+      use m_missing, only: dmiss
+
       type(t_spatial_field_input), intent(out) :: input
       character(len=*), intent(in), optional :: quantity
       character(len=*), intent(in), optional :: forcing_file
@@ -55,6 +57,7 @@ contains
          input%operand_string = operand_string
       end if
 
+      input%data_value = dmiss
       if (present(data_value)) then
          input%data_value = data_value
       end if

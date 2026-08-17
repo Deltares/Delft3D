@@ -33,6 +33,7 @@ module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
    use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   use m_missing, only: dmiss
    
    implicit none(type, external)
 
@@ -65,7 +66,7 @@ module m_spatial_field
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
-      real(dp) :: data_value = 0.0_dp !< Time and space independent value, used for multiplying quantities with a constant factor.
+      real(dp) :: data_value !< Time and space independent value, used for multiplying quantities with a constant factor.
       real(dp) :: max_search_radius = -1.0_dp !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
       logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
@@ -80,10 +81,12 @@ contains
    function read_spatial_field_block(block_ptr) result(res)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use m_missing, only: dmiss
 
       integer :: extrapolation_method_legacy
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_spatial_field_input) :: res
+      logical :: success
       extrapolation_method_legacy = 0
 
       call prop_get(block_ptr, '', 'quantity', res%quantity)
@@ -97,7 +100,10 @@ contains
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ', res%operand_string)
       call prop_get(block_ptr, '', 'locationType', res%location_type)
-      call prop_get(block_ptr, '', 'dataValue', res%data_value)
+      call prop_get(block_ptr, '', 'dataValue', res%data_value, success=success)
+      if (.not. success) then
+         res%data_value = dmiss
+      end if
       call read_averaging_input(block_ptr, res%averaging_input)
 
       !Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
@@ -195,6 +201,7 @@ contains
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
       use m_meteo, only: quantity_name_config_file_to_internal_name
       use precision_basics, only: comparereal
+      use m_missing, only: dmiss
 
       ! Arguments
       type(t_spatial_field_input), intent(inout) :: input
@@ -220,7 +227,7 @@ contains
          return
       end if
 
-      if (comparereal(input%data_value, 0.0_dp) /= 0) then
+      if (comparereal(input%data_value, dmiss) /= 0) then
          input%forcing_file_type = "datavalue"
          input%filetype = DATAVALUE
       else
