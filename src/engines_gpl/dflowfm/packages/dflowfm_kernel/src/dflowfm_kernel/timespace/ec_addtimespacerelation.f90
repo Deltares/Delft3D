@@ -1389,7 +1389,7 @@ contains
             ! with nesting there can be more than one source item now. But the first is always the main one
             ! The second is made for nesting to be able to interpolate z-values in time
             sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-            if (.not. allocated(sourceItemIds)) then
+            if (size(sourceItemIds) == 0) then
                call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: No source item '''//trim(sourceItemName)//''' found for quantity '''//trim(target_name)//'''.')
                goto 1234
             else
@@ -1451,7 +1451,7 @@ contains
             ! then retain all matching items for nested source data.
             sourceItemName = fileReaderPtr%items(1)%ptr%quantityPtr%name
             sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-            if (.not. allocated(sourceItemIds)) then
+            if (size(sourceItemIds) == 0) then
                call mess(LEVEL_ERROR, 'm_meteo::ec_addtimespacerelation: Generic source connection found no matching source items for quantity '''//trim(target_name)//'''.')
                goto 1234
             end if
