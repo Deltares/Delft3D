@@ -171,8 +171,6 @@ contains
          file_type = BCASCII
       case ('curvigrid')
          file_type = CURVI
-      case ('datavalue')
-         file_type = DATAVALUE
       case ('geotiff')
          file_type = GEOTIFF
       case ('netcdf')

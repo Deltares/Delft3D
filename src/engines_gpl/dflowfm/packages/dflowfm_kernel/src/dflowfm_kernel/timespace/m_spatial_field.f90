@@ -194,6 +194,7 @@ contains
       use unstruc_files, only: resolvePath
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
       use m_meteo, only: quantity_name_config_file_to_internal_name
+      use precision_basics, only: comparereal
 
       ! Arguments
       type(t_spatial_field_input), intent(inout) :: input
@@ -213,34 +214,38 @@ contains
       trimmed_group_name = trim(group_name)
 
       input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
-
       if (len_trim(input%quantity) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
 
-      if (len_trim(input%forcing_file_type) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' is missing.'
-         call err_flush()
-         return
-      end if
+      if (comparereal(input%data_value, 0.0_dp) /= 0) then
+         input%forcing_file_type = "datavalue"
+         input%filetype = DATAVALUE
+      else
+         ! ForcingFileType is required only if `dataValue` is not present.
+         ! Do all ForcingFile related validation and option setting in this branch.
+         if (len_trim(input%forcing_file_type) == 0) then
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' is missing.'
+            call err_flush()
+            return
+         end if
 
-      input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
-      if (input%filetype == FILE_TYPE_UNKNOWN) then
-         write (msgbuf, '(7a)') 'Field ''forcingFile'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
-            trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' has unknown value.'
-         call err_flush()
-         return
-      end if
+         input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+         if (input%filetype == FILE_TYPE_UNKNOWN) then
+            write (msgbuf, '(7a)') 'Field ''forcingFile'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
+               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' has unknown value.'
+            call err_flush()
+            return
+         end if
 
-      if (input%filetype /= DATAVALUE) then
          if (len_trim(input%forcing_file) == 0) then
             write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
             call err_flush()
             return
          end if
-
+   
          if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
             write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
                ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
@@ -248,7 +253,7 @@ contains
             call err_flush()
             return
          end if
-
+   
          call resolvePath(input%forcing_file, base_dir)
       end if
 

@@ -165,7 +165,7 @@ contains
       type(t_spatial_field_input) :: input
       logical :: success
 
-      call make_test_input(input, data_value=0.875_dp, forcing_file_type="dataValue", forcing_file="")
+      call make_test_input(input, data_value=0.875_dp, forcing_file_type="", forcing_file="")
 
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
 

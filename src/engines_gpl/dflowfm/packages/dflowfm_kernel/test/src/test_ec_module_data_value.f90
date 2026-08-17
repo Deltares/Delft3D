@@ -98,6 +98,7 @@ contains
       call f90_expect_near(wy(1), -1.0_dp, 1.0e-6_dp, cstr("windxy_y@50")) ! -1.0 is halfway between -4.0 and 2.0
 
       ok = ec_gettimespacevalue(ecInstancePtr, item_windxy_x, IREFDATE, tzone, tunit, 50.0_dp)
+
       call f90_expect_near(wx(1), WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_x@50"))
       call f90_expect_near(wy(1), -WINDSPEEDFACTOR, 1.0e-6_dp, cstr("windxy_y@50"))
 

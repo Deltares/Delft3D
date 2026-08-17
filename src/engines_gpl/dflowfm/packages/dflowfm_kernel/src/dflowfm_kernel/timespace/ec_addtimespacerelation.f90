@@ -80,7 +80,7 @@ contains
       logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name within filename
-      real(hp), optional, intent(in) :: data_value !< Data value used for multiplying quantities with a constant factor.
+      real(hp), optional, intent(in) :: data_value !< Scalar constant data value used instead of filename/forcingfile.
       character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
       real(kind=dp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
       real(kind=dp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -256,13 +256,7 @@ contains
                   if (present(dtnodal)) then
                      success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
-                     if (present(data_value)) then
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, data_value=data_value)
-                     else if (present(varname2)) then
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
-                     else
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
-                     end if
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, data_value=data_value, varname=varname, varname2=varname2)
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
