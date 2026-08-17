@@ -1136,12 +1136,9 @@ contains
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else if (target_location_type == UNC_LOC_S3D) then
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
-               else if (comparereal(input%data_value, 0.0_dp) /= 0) then
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if

@@ -49,9 +49,11 @@ module m_ec_provider
    use m_ec_message
    use m_ec_parameters
    use precision
+   use precision_basics, only: comparereal
    use string_module
    use netcdf
    use multi_file_io
+   use m_missing, only: dmiss
 
    implicit none
 
@@ -270,13 +272,18 @@ contains
       real(dp), optional, intent(in) :: dtnodal !< Nodal factors update interval
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name 2 within filename
-      real(dp), optional, intent(in) :: data_value !< Data value file reader
+      real(dp), optional, intent(in) :: data_value !< Constant data value (still creates a tEcFileReader, but without underlying data file)
       !
       type(tEcFileReader), pointer :: fileReaderPtr !< FileReader corresponding to fileReaderId
       character(len=:), allocatable :: l_quantityName !< local string with quantityName
+      real(dp) :: data_value_ !< Holds `data_value` if present, otherwise the default `dmiss`
       !
       success = .false.
       fileReaderPtr => null()
+      data_value_ = dmiss
+      if (present(data_value)) then
+         data_value_ = data_value
+      end if
       !
       if (len_trim(fileName) > maxFileNameLen) then
          call set_ec_message("ERROR: ec_provider::ecProviderInitializeFileReader: The filename string is too long.")
@@ -324,9 +331,9 @@ contains
          else if (present(quantityName) .and. present(varname)) then
             l_quantityName = trim(quantityName)
             if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, varname)) return
-         else if (present(quantityName) .and. present(data_value)) then
+         else if (present(quantityName) .and. comparereal(data_value_, dmiss) /= 0) then
             l_quantityName = trim(quantityName)
-            if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, data_value=data_value)) return
+            if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, data_value=data_value_)) return
          else if (present(quantityName)) then
             l_quantityName = trim(quantityName)
             if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName)) return
