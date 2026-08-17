@@ -79,43 +79,13 @@ contains
                cycle
             end if
 
-            if (i_constituent == isalt) then
-
-               call apply_vertical_forester_filter_per_column_and_constituent( &
-                  i_constituent, &
-                  vol1(i_bottom_layer:i_bottom_layer+number_of_layers-1), &
-                  number_of_layers, &
-                  kmxn(i_flowcell), &
-                  i_bottom_layer, &
-                  max_iterations_vertical_forester, &
-                  1 & ! Assume a positive gradient slope for salinity (low concentration at the top of the column, high concentration at the bottom)
-               )
-
-            else if (i_constituent == itemp) then
-
-               call apply_vertical_forester_filter_per_column_and_constituent( &
-                  i_constituent, &
-                  vol1(i_bottom_layer:i_bottom_layer+number_of_layers-1), &
-                  number_of_layers, &
-                  kmxn(i_flowcell), &
-                  i_bottom_layer, &
-                  max_iterations_vertical_forester, &
-                  -1 & ! Assume a negative gradient slope for temperature (high temperature at the top of the column, low temperature at the bottom)
-               )
-
-            else
-
-               call apply_vertical_forester_filter_per_column_and_constituent( &
-                  i_constituent, &
-                  vol1(i_bottom_layer:i_bottom_layer+number_of_layers-1), &
-                  number_of_layers, &
-                  kmxn(i_flowcell), &
-                  i_bottom_layer, &
-                  max_iterations_vertical_forester, &
-                  1 & ! Assume a positive gradient slope for other constituents (low concentration at the top of the column, high concentration at the bottom)
-               )
-
-            end if
+            call apply_vertical_forester_filter_per_column_and_constituent( &
+               i_constituent, &
+               number_of_layers, &
+               kmxn(i_flowcell), &
+               i_bottom_layer, &
+               max_iterations_vertical_forester &
+            )
 
          end do
       end do
@@ -128,19 +98,19 @@ contains
    end subroutine apply_vertical_forester_filter_to_all_constituents
 
    !> Applies the Forester vertical filter to a single constituent in a vertical column of flow cells
-   subroutine apply_vertical_forester_filter_per_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations, gradient_slope)
-      use m_flow, only: EPS6, EPS10
+   subroutine apply_vertical_forester_filter_per_column_and_constituent(i_constituent, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations)
+      use m_flow, only: EPS6, EPS10, drhodz, vol1
 
       ! Parameters
       integer, intent(in) :: i_constituent !< Index of the constituent to apply the Forester filter to
-      real(kind=dp), intent(in) :: cell_volume(number_of_active_layers) !< Volume of the flow cells
       integer, intent(in) :: number_of_layers !< Number of layers in the vertical column
       integer, intent(in) :: number_of_active_layers !< Maximum number of active layers in the model
       integer, intent(in) :: i_bottom_layer !< Index of the bottom layer in the constituents array
       integer, intent(in) :: max_iterations !< Maximum number of iterations for Forester filter
-      integer, intent(in) :: gradient_slope !< Sign of the gradient slope for the Forester filter (1 for positive slope - low concentration in top of column, high concentration at bottom, -1 for negative slope)
 
       ! Local variables
+      real(kind=dp) :: column_cell_volume(number_of_active_layers) !< Volume of the flow cells in the column
+      real(kind=dp) :: column_drhodz(number_of_active_layers) !< dhro/dz of the flow cells in the column
       real(kind=dp), dimension(number_of_layers) :: updated_constituent !< Array to hold the updated constituent values during filtering
       real(kind=dp), dimension(number_of_layers) :: previous_constituent !< Array to hold the constituent values from the previous iteration for comparison
       real(kind=dp) :: difference !< Difference in constituent values between adjacent layers
@@ -150,6 +120,8 @@ contains
 
       ! Copy constituent values for the vertical column to a local array
       updated_constituent(1:number_of_layers) = constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1)
+      column_cell_volume = vol1(i_bottom_layer:i_bottom_layer+number_of_active_layers-1)
+      column_drhodz = drhodz(i_bottom_layer:i_bottom_layer+number_of_active_layers-1)
 
       ! Iteratively apply the Forester filter until no more filtering is needed or the maximum number of iterations is reached
       do m = 1, max_iterations
@@ -161,12 +133,12 @@ contains
          ! Loop over layers in the vertical column and apply the Forester filter based on the difference between adjacent layers
          do k = 1, number_of_layers - 1
             difference = previous_constituent(k + 1) - previous_constituent(k)
-            if (difference * gradient_slope > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
-               if (cell_volume(k) > EPS10 .and. cell_volume(k + 1) > EPS10) then
+            if (column_drhodz(k) > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
+               if (column_cell_volume(k) > EPS10 .and. column_cell_volume(k + 1) > EPS10) then
                   filtered_this_iteration = .true.
-                  difference = difference / 6.0_dp * (cell_volume(k + 1) + cell_volume(k))
-                  updated_constituent(k) = updated_constituent(k) + difference / cell_volume(k)
-                  updated_constituent(k + 1) = updated_constituent(k + 1) - difference / cell_volume(k + 1)
+                  difference = difference / 6.0_dp * (column_cell_volume(k + 1) + column_cell_volume(k))
+                  updated_constituent(k) = updated_constituent(k) + difference / column_cell_volume(k)
+                  updated_constituent(k + 1) = updated_constituent(k + 1) - difference / column_cell_volume(k + 1)
                else
                   difference = 0.0_dp
                end if
