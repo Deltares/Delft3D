@@ -1,6 +1,11 @@
 outs:
+<<<<<<< Updated upstream
 - md5: f29f436a3f00f45150e5da24e15812bf.dir
   size: 276599
+=======
+- md5: a6a788ad1ee0ab732def7d5e950ecbcd.dir
+  size: 277608
+>>>>>>> Stashed changes
   nfiles: 11
   hash: md5
   path: input
