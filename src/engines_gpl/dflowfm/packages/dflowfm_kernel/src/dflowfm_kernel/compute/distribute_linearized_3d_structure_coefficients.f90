@@ -26,11 +26,13 @@ contains
       real(kind=dp) :: hhi(3), zti(3), zbi(3)
       real(kind=dp) :: wstr, gatefraction
       real(kind=dp) :: au1, au2, au3
+      
+      hhi = 0.0_dp
+      zti = 0.0_dp
 
       genstr => structure%generalst
       do L0 = 1, structure%numlinks
-         Lf = abs(struc
-         ture%linknumbers(L0))
+         Lf = abs(structure%linknumbers(L0))
          k1 = ln(1, Lf)
          k2 = ln(2, Lf) ! 1 -> 2 flow link direction
 
