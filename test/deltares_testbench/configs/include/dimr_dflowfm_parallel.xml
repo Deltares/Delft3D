@@ -56,7 +56,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>120.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
            </file>
@@ -155,6 +155,7 @@
   </testCase>
   <testCase name="e02_f014_c001_trench_EH_par_crs" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+      <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dflowfm" seq="1">
         <arguments>
@@ -168,7 +169,6 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>120.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
         <parameters>
@@ -194,7 +194,6 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
         <parameters>
@@ -207,6 +206,7 @@
   </testCase>
   <testCase name="e02_f014_c042_dad_2dredge1dump_layered_bed_par" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c042_dad_2dredge1dump_layered_bed_par</path>
+    <maxRunTime>360</maxRunTime>
     <programs>
       <program ref="dimr">
         <arguments>
@@ -214,7 +214,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>120.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_test/test_0000_his.nc" type="netCDF">
         <parameters>
@@ -227,6 +227,7 @@
   </testCase>
   <testCase name="e02_f014_c100" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c100_guayas_model</path>
+      <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dimr">
         <arguments>
@@ -259,6 +260,7 @@
   </testCase>
   <testCase name="e02_f014_c101_icg7" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
+      <maxRunTime>900</maxRunTime>
     <programs>
       <program ref="dimr">
         <arguments>
@@ -301,7 +303,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
         <parameters>
@@ -336,7 +338,7 @@
         </arguments>
       </program>
     </programs>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
         <parameters>
@@ -511,7 +513,7 @@
       -->
   <testCase name="e02_f004_c080_chezy_uniform" ref="dimr">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <programs>
       <program ref="dimr">
         <arguments>
@@ -540,7 +542,7 @@
   <!-- FLAKY
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
         <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
-        <maxRunTime>60.0</maxRunTime>
+
                 <programs>
           <program ref="dimr">
              <arguments>

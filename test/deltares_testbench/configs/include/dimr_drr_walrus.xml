@@ -61,7 +61,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -155,7 +155,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -177,7 +177,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -199,7 +199,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -221,7 +221,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -251,7 +251,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -279,7 +279,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -307,7 +307,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -335,7 +335,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -365,7 +365,7 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!-- ======================================================================== -->
@@ -397,12 +397,12 @@
                 </file>
 		-->
     </checks>
-    <maxRunTime>120.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108_f03_c13_WalrusSurfaceWaterRsvFull" ref="drr_windowsref">
     <path version="DVC">e108_drr/f03_walrus/c13_WalrusSurfaceWaterRsvFull</path>
-    <maxRunTime>60.0</maxRunTime>
+
     <checks>
       <file name="rr/rrrunoff.nc" type="netcdf">
         <parameters>
