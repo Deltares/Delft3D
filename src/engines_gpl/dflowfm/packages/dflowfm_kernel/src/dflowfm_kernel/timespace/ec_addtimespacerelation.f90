@@ -133,6 +133,7 @@ contains
       character(len=NAMTRACLEN) :: trname, sfname, qidname
       character(len=NAMLEN) :: constituent_name
       character(len=20) :: waqinput
+      character(len=:), allocatable :: selector
       integer, external :: findname
       type(tEcMask) :: srcmask
 
@@ -694,7 +695,14 @@ contains
       sourceItemId_4 = 0
       source_connection_created = .false.
 
-      select case (str_tolower(trim(target_name)))
+      selector = str_tolower(trim(target_name))
+      if (ec_filetype == provFile_datavalue .and. .not. associated(targetItemPtr2)) then
+         ! Skip special handling in case a `data_value` is applied to a scalar target.
+         ! Clobber the `selector` to force the `select case` below to branch into the `default` case.
+         selector = ''
+      end if
+
+      select case (selector)
       case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             ! the file reader will have created an item called 'uniform_item'
