@@ -11840,6 +11840,7 @@ contains
 
       integer :: jmax, ndx1d, nCrs
       real(kind=dp), dimension(:, :), allocatable :: work1d_z, work1d_n
+      logical :: is_full_restart
 
       ierr = DFM_GENERICERROR
 
@@ -11887,9 +11888,29 @@ contains
          um%jamergedmap = 1
       end if
 
+      is_full_restart = .false.
+      if (jampi == 1 .and. um%jamergedmap == 0) then
+         ierr = nf90_inq_dimid(imapfile, 'nFlowElem', id_tmp)
+         if (ierr == nf90_noerr) then
+            ierr = nf90_inquire_dimension(imapfile, id_tmp, len=ndxi_read)
+         end if
+         if (ierr == nf90_noerr) then
+            ierr = nf90_inq_dimid(imapfile, 'nFlowLink', id_tmp)
+         end if
+         if (ierr == nf90_noerr) then
+            ierr = nf90_inquire_dimension(imapfile, id_tmp, len=lnx_read)
+         end if
+         if (ierr == nf90_noerr .and. (ndxi_read > ndxi .or. lnx_read > lnx)) then
+            um%jamergedmap = 1
+            um%jamergedmap_same = 0
+            is_full_restart = .true.
+         end if
+         ierr = nf90_noerr
+      end if
+
       if (jampi == 1) then
          ierr = nf90_get_att(imapfile, nf90_global, 'NumPartitionsInFile', numpart)
-         if (ierr /= nf90_noerr .and. um%jamergedmap == 1) then
+         if (ierr /= nf90_noerr .and. um%jamergedmap == 1 .and. .not. is_full_restart) then
             call mess(LEVEL_ERROR, 'The merged restart file is not correct.')
             call readyy('Reading map data', -1.0_dp)
             go to 999
@@ -11954,6 +11975,7 @@ contains
             end if
          else ! No merged-map file: no problem, we'll assume that each rank got its own unique restart file, &
             ! so just read data from start.
+            ierr = nf90_noerr
             kstart = 1
             lstart = 1
             kstart_bnd = 1
@@ -11983,10 +12005,10 @@ contains
       call realloc(um%ibnd_merge, 1, keepExisting=.false., fill=-999)
 
       jamergedmap_same_bu = um%jamergedmap_same
-      success = unc_read_merged_map(um, imapfile, filename, ierr)
+      success = unc_read_merged_map(um, imapfile, filename, ierr, is_full_restart)
       if (jamergedmap_same_bu /= um%jamergedmap_same) then
          ! number of partitions is the same, but the partition itself differs
-         success = unc_read_merged_map(um, imapfile, filename, ierr)
+         success = unc_read_merged_map(um, imapfile, filename, ierr, is_full_restart)
       end if
       if (.not. success) then
          goto 999
@@ -13113,7 +13135,7 @@ contains
    end subroutine unc_read_map_or_rst
 
 !> helper routine for unc_read_map_or_rst
-   function unc_read_merged_map(um, imapfile, filename, ierr) result(success)
+   function unc_read_merged_map(um, imapfile, filename, ierr, is_full_restart) result(success)
       use m_alloc, only: realloc
       use m_samples, only: Ns
       use dfm_error, only: DFM_GENERICERROR
@@ -13128,6 +13150,7 @@ contains
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(in) :: imapfile
       integer, intent(inout) :: ierr
+      logical, intent(in) :: is_full_restart
       type(t_unc_merged), intent(inout) :: um !< struct holding all data for ugrid merged map/rst files
       logical :: success !< function result
 
@@ -13400,7 +13423,8 @@ contains
 
             if (ndxbnd_own > 0 .and. jaoldrstfile == 0) then
                ! For parallel run, 'ibnd_own' and 'ndxbnd_own' has been determined in function 'flow_initexternalforcings'
-               call find_flownodesorlinks_merge(ndxbnd_merge, xbnd_read, ybnd_read, ndx - ndxi, ndxbnd_own, ibnd_own, um%ibnd_merge, 2, 1)
+               call find_flownodesorlinks_merge(ndxbnd_merge, xbnd_read, ybnd_read, ndx - ndxi, ndxbnd_own, ibnd_own, um%ibnd_merge, 2, 1, &
+                                                 allow_boundary_remap=is_full_restart)
             end if
             ! read coordinates of flow links center
             ierr = nf90_inq_dimid(imapfile, 'nFlowLink', id_flowlinkdim)
@@ -15314,16 +15338,17 @@ contains
       nerr_ = 0
    end subroutine readcells
 
-   subroutine find_flownodesorlinks_merge(n, x, y, n_loc, n_own, iloc_own, iloc_merge, janode, jaerror2sam, inode_merge2loc)
+   subroutine find_flownodesorlinks_merge(n, x, y, n_loc, n_own, iloc_own, iloc_merge, janode, jaerror2sam, inode_merge2loc, allow_boundary_remap)
       use precision, only: dp
       use kdtree2Factory
       use m_flowgeom
       use network_data
       use m_missing, only: dmiss
-      use m_sferic, only: jsferic
+      use m_sferic, only: jsferic, jasfer3d
       use m_samples
       use m_alloc
       use m_wall_clock_time
+      use geometry_module, only: dlinedis
 
       implicit none
       type(kdtree_instance) :: treeinst
@@ -15336,9 +15361,13 @@ contains
       integer, dimension(n_loc), intent(inout) :: iloc_merge !< mapping to the index in the merged map file
       integer, dimension(n), optional, intent(inout) :: inode_merge2loc !< mapping from the index in the merged map file
       integer, intent(in) :: jaerror2sam !< add unfound nodes to samples (1) or not (0)
+      logical, intent(in), optional :: allow_boundary_remap !< allow nearest-point matching for displaced full-restart boundary points
       integer :: ierror = 1
       integer :: k, nn, i, jj, kk, jamerge2own
+      integer :: boundary_flow_link, boundary_net_link, boundary_node_1, boundary_node_2, boundary_match, boundary_ja
+      logical :: allow_boundary_remap_
       real(kind=dp) :: R2search = 1.0e-8_dp !< Search radius
+      real(kind=dp) :: boundary_distance, boundary_distance_min, boundary_projection_x, boundary_projection_y
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
@@ -15348,6 +15377,10 @@ contains
          jamerge2own = 1
       else
          jamerge2own = 0
+      end if
+      allow_boundary_remap_ = .false.
+      if (present(allow_boundary_remap)) then
+         allow_boundary_remap_ = allow_boundary_remap
       end if
 
       allocate (x_tmp(n_loc))
@@ -15375,6 +15408,30 @@ contains
       do k = 1, n_own
          !  fill query vector
          kk = iloc_own(k)
+
+         if (allow_boundary_remap_ .and. janode == 2) then
+            ! A sequential restart stores physical boundary points, while a partition
+            ! can move their ghost coordinates. Match by the boundary edge instead.
+            boundary_flow_link = lnxi + kk
+            boundary_net_link = abs(ln2lne(boundary_flow_link))
+            boundary_node_1 = kn(1, boundary_net_link)
+            boundary_node_2 = kn(2, boundary_net_link)
+            boundary_match = 0
+            boundary_distance_min = huge(1.0_dp)
+            do i = 1, n
+               call dlinedis(x(i), y(i), xk(boundary_node_1), yk(boundary_node_1), xk(boundary_node_2), yk(boundary_node_2), &
+                             boundary_ja, boundary_distance, boundary_projection_x, boundary_projection_y, jsferic, jasfer3D, dmiss)
+               if (boundary_distance < boundary_distance_min) then
+                  boundary_distance_min = boundary_distance
+                  boundary_match = i
+               end if
+            end do
+            if (boundary_match > 0) then
+               iloc_merge(k) = boundary_match
+            end if
+            cycle
+         end if
+
          call make_queryvector_kdtree(treeinst, x_tmp(kk), y_tmp(kk), jsferic)
          !  count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
