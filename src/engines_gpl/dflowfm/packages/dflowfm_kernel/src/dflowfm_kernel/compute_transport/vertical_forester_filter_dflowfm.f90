@@ -42,7 +42,7 @@ contains
 
    !> Applies the Forester vertical filter to all constituents in the model
    subroutine apply_vertical_forester_filter_to_all_constituents()
-      use m_flow, only: kbot, ktop, max_iterations_vertical_forester, vol1, kmxn
+      use m_flow, only: kbot, ktop, max_iterations_vertical_forester, kmxn
       use m_flowgeom, only: ndxi
       use m_physcoef, only: use_salinity_freezing_point
       use string_module, only: str_tolower
