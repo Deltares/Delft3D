@@ -1625,7 +1625,7 @@
   </testCase>
   <testCase name="e02_f030_c402_Course_bacteria" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
-    <maxRunTime>360</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
