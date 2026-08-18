@@ -45,4 +45,4 @@ docker run --rm \
 find "$CURRENT_OUTPUT_ARCHIVE_DIR" -iname '*.zip' -print0 |
     xargs -0 -I'{}' -P8 bash -c 'unzip_current_output "{}"'
 
-rm -rf "$CURRENT_OUTPUT_ARCHIVE_DIR"
+#rm -rf "$CURRENT_OUTPUT_ARCHIVE_DIR"
