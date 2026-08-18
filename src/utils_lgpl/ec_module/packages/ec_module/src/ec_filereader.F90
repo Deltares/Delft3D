@@ -461,6 +461,7 @@ module m_ec_filereader
          end if
 
          if (nItems == 0) then
+            allocate(itemIds(0))
             call set_ec_message("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
          end if
       end function ecFileReaderFindItems

@@ -49,7 +49,6 @@ module unstruc_inifields
    public :: init1dField, spaceInit1dField, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
-             resolve_mass_balance_area_target, finish_mass_balance_area_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
              register_waq_target
 
@@ -822,89 +821,6 @@ contains
          success = .false.
       end select
    end function resolve_integer_target
-
-   !> Resolve a named mass-balance area and allocate a work array to hold the result of the polygon mask.
-   function resolve_mass_balance_area_target(qid, target_location_type, target_array) result(success)
-      use fm_external_forcings_utils, only: split_qid
-      use fm_location_types, only: UNC_LOC_S
-      use m_alloc, only: realloc, reallocP
-      use m_find_name, only: find_name
-      use m_flowgeom, only: ndx
-      use m_mass_balance_areas, only: mbaname, nomba
-      use m_missing, only: dmiss
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: qid !< quantity id to resolve.
-      integer, intent(out) :: target_location_type !< output target location type, always UNC_LOC_S for mass-balance areas.
-      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< output target array, to be allocated if target is mass-balance area.
-      logical :: success
-
-      character(len=256) :: qid_base, qid_specific
-      integer :: area_index
-
-      target_array => null()
-      target_location_type = 0
-      success = .false.
-
-      call split_qid(qid, qid_base, qid_specific)
-      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') then
-         return
-      end if
-
-      if (.not. allocated(mbaname)) allocate (mbaname(0))
-      area_index = find_name(mbaname, qid_specific)
-      if (area_index == 0) then
-         nomba = nomba + 1
-         call realloc(mbaname, nomba, keepExisting=.true., fill=qid_specific)
-      end if
-
-      target_location_type = UNC_LOC_S
-      call reallocP(target_array, ndx, fill=dmiss, keepExisting=.false.)
-      success = .true.
-   end function resolve_mass_balance_area_target
-
-   !> Convert a mass-balance area's temporary coverage field to integer area IDs.
-   function finish_mass_balance_area_target(qid, qid_base, qid_specific, target_array) result(success)
-      use m_find_name, only: find_name
-      use m_flowgeom, only: ndxi
-      use m_flowtimes, only: ti_mba
-      use m_get_kbot_ktop, only: getkbotktop
-      use m_mass_balance_areas, only: mbadef, mbaname
-      use m_missing, only: dmiss
-      use messageHandling, only: err_flush, msgbuf
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: qid !< full quantity id, e.g. 'waqmassbalanceareaarea1'.
-      character(len=*), intent(in) :: qid_base !< base quantity id, e.g. 'massbalancearea' or 'waqmassbalancearea'.
-      character(len=*), intent(in) :: qid_specific !< specific quantity id, e.g. 'area1'.
-      real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< input/output target array, to be converted to integer area IDs and then nullified.
-      logical :: success
-
-      integer :: area_index
-      integer :: kk, kb, kt
-
-      success = .false.
-      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') return
-
-      if (ti_mba <= 0.0_dp) then
-         write (msgbuf, '(a)') 'Quantity '''//qid//''' requires MbaInterval to be specified in the MDU file.'
-         call err_flush()
-         success = .false.
-      else
-         area_index = find_name(mbaname, qid_specific)
-         do kk = 1, ndxi
-            if (target_array(kk) /= dmiss) then
-               call getkbotktop(kk, kb, kt)
-               mbadef(kk) = area_index
-               mbadef(kb:kt) = area_index
-            end if
-         end do
-         success = .true.
-      end if
-
-      deallocate (target_array)
-      nullify (target_array)
-   end function finish_mass_balance_area_target
 
 !> Resolve the target array and location type for quantities that need to be stored in a 3D array.
 !! Returns .true. if the quantity was recognized and target_array is associated.
