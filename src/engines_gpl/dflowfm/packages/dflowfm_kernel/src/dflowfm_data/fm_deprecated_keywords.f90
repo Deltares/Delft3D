@@ -2,7 +2,7 @@
 module fm_deprecated_keywords
    use m_deprecation
 
-   implicit none
+   implicit none(type, external)
 
    type(deprecated_keyword_set), target :: deprecated_mdu_keywords, deprecated_ext_keywords
 
