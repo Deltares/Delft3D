@@ -5,7 +5,7 @@
 				Basic Windows configuration file: tb3_cfg_win64_hp.xml
 				From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
 				From hp to parallel: Use mpi as shell (in related program)
-									 Overrule maxruntime when needed
+									 
 									 Only cases that run in parallel mode
 				-->
   <config>
@@ -211,8 +211,6 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
-      <!-- seconds -->
       <programs>
         <program ref="FLOW2D3D"/>
       </programs>
@@ -224,8 +222,6 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
-      <!-- seconds -->
       <programs>
         <program ref="FLOW2D3D_FLOW2D3D"/>
       </programs>
@@ -237,7 +233,6 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
       <programs>
         <program ref="FLOW2D3D_RTC"/>
       </programs>
@@ -249,8 +244,6 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
-      <!-- seconds -->
       <programs>
         <program ref="FLOW2D3D_WAVE"/>
       </programs>

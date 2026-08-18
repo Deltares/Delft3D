@@ -126,8 +126,8 @@
       <location ref="dsctestbench-references" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
-      <!-- seconds -->
+      
+
     </testCase>
     <testCase name="dwaq_default">
       <location ref="dsctestbench-cases" type="input">
@@ -137,8 +137,8 @@
       <location ref="dsctestbench-references" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
-      <!-- seconds -->
+      
+
     </testCase>
   </defaultTestCases>
   <!--
