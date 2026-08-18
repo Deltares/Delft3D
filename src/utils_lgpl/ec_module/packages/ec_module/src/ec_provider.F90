@@ -127,22 +127,6 @@ contains
       success = .true.
    end function ecProviderCreateInitializeBCFileReader
 
-   !> Create and Initialize BC instance from a file unit, yielding a file reader with items, returning the fileReaderID
-   ! function ecUnitProviderCreateInitializeBCFileReader(instancePtr, forcingfileUnit, location, quantity, k_refdat, k_tzone, k_tsunit, fileReaderId, funtype) result(success)
-   !    use m_ec_support
-
-   !    logical :: success
-   !    type(tEcInstance), pointer :: instancePtr !< intent(in)
-   !    integer, intent(in) :: forcingfileUnit
-   !    character(len=*), intent(in) :: location
-   !    character(len=*), intent(in) :: quantity
-   !    real(dp), intent(in) :: k_refdat !< kernel ref date
-   !    real(dp), intent(in) :: k_tzone !< kernel time zone
-   !    integer, intent(in) :: k_tsunit !< kernel timestep unit (1=sec, 2=min, 3=hour)
-   !    integer, intent(out) :: fileReaderId !< unique fileReader id
-   !    character(len=*), optional, intent(in) :: funtype !< matching function in the BC-block header
-   ! end function ecUnitProviderCreateInitializeBCFileReader
-
    ! =======================================================================
 
    !> Initialize a new BCBlock item, which in turn constructs and initializes a filereader
@@ -1000,9 +984,10 @@ contains
    ! =======================================================================
 
    !> Create a source Item holding a single time- and space-independent constant.
-   !! Used for the 'dataValue' forcingFileType, where a Spatial ext-block specifies
-   !! a scalar 'dataValue' that is combined with a target quantity. The value is stored in both
-   !! sourceT0 and sourceT1 fields so that time interpolation always yields it.
+   !! Used for the 'dataValue' forcingFileType, where no data file is given, but instead  
+   !! a scalar 'dataValue'. It can typically (but not per se) be combined on top of another  
+   !! provider+connection, using an operand. The value is stored in both sourceT0 and  
+   !! sourceT1 fields so that time interpolation always yields it
    function ecProviderCreateDataValueItems(instancePtr, fileReaderPtr, quantityName, data_value) result(success)
       use m_ec_message
       implicit none
@@ -1046,6 +1031,7 @@ contains
       if (.not. ecItemSetRole(instancePtr, itemId, itemType_source)) then
          return
       end if
+      ! Note: even though dataValue has no underlying data file, we still have a tEcFileReader acting as provider.
       if (.not. ecItemSetType(instancePtr, itemId, accessType_fileReader)) then
          return
       end if

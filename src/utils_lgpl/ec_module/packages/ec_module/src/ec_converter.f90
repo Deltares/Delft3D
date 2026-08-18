@@ -4229,12 +4229,7 @@ contains
    end subroutine ConvertToSparseIndices
 
    !> Converter for the 'datavalue' provider.
-   !! The source item holds a single, time- and space-independent scalar value.
-   !! This converter broadcasts that scalar to every element of every target item,
-   !! applying the configured operand (typically multiply) and honouring the
-   !! optional target mask. It handles the common case where the target has
-   !! multiple components (e.g. windx + windy for the 'windxy' quantity), which
-   !! ecConverterUniform does not support for a scalar source.
+   !! Apply the operand with the time-and-space independent value operand to all target items.
    function ecConverterDataValue(connection, timesteps) result(success)
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< target time (kernel timesteps since reference date)
@@ -4243,6 +4238,7 @@ contains
       real(dp) :: data_value !< the scalar source value
       integer :: i, j
       integer :: jmin, jmax
+      integer, allocatable :: idx(:) !< indices of the target points to update
       type(tEcField), pointer :: targetField
       integer, dimension(:), pointer :: targetMask
       logical :: status
@@ -4263,19 +4259,23 @@ contains
             jmax = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
          end if
 
-         call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
-         if (.not. status) then
-            return
+         if (associated(targetMask)) then
+            ! Gather masked in indices in `idx` array.
+            idx = pack([(j, j = jmin, jmax)], targetMask(jmin:jmax) /= 0)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), status)
+            if (.not. status) then
+               return
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), data_value)
+         else
+            ! Directly use `jmin:jmax` slice of `arr1dPtr`.
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
+            if (.not. status) then
+               return
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), data_value)
          end if
 
-         do j = jmin, jmax
-            if (associated(targetMask)) then
-               if (targetMask(j) == 0) then
-                  cycle
-               end if
-            end if
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), data_value)
-         end do
          targetField%timesteps = timesteps
       end do
       success = .true.
