@@ -189,10 +189,10 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        if (iporos>0 .and. moroutput%poros) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'EPSPOR', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Porosity coefficient', acl='z')
        endif
-       if (moroutput%td) then
+       if (moroutput%td .and. associated(td)) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TD', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Time of last load increment', unit='minutes', acl='z')
        endif
-       if (moroutput%preload) then
+       if (moroutput%preload .and. associated(preload)) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'PRELOAD', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Largest load on layer', unit='kg/m2', acl='z')
        endif
        if (crslyr) then
@@ -393,7 +393,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        !
        ! element 'TD'
        !
-       if (moroutput%td) then
+       if (moroutput%td .and. associated(td)) then
           allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, nlyr) )
           rbuff3(:, :, :) = -999.0_fp
           do k = 1, nlyr
@@ -413,7 +413,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        !
        ! element 'PRELOAD'
        !
-       if (moroutput%preload) then
+       if (moroutput%preload .and. associated(preload)) then
           allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, nlyr) )
           rbuff3(:, :, :) = -999.0_fp
           do k = 1, nlyr
