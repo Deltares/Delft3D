@@ -25,7 +25,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f022_c106_flow_wave_morpho_straightcoast" ref="dflowfm_default">
+  <testCase name="e02_f022_c106_flow_wave_morpho_straightcoast" ref="platform_specific">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
     <maxRunTime>500.0</maxRunTime>
     <checks>
