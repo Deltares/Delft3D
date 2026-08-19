@@ -157,7 +157,9 @@ function detect_proj_string(crs) result(ierr)
    do i=1,natts
       if (strcmpi(crs%attset(i)%attname, 'proj4_params') .and. crs%attset(i)%len > 0) then
          crs%proj_string = char_array_to_string_by_len(crs%attset(i)%strvalue, crs%attset(i)%len)
-         found = .true.
+         ! Some netCDF library versions misreport the length of a zero-length attribute,
+         ! yielding a proj_string starting with a NUL byte: treat that as not found.
+         found = iachar(crs%proj_string(1:1)) /= 0
       end if
    end do
 

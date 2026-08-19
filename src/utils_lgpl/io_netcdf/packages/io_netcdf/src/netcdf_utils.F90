@@ -699,8 +699,11 @@ function ncu_get_var_attset(ncid, varid, attset) result(ierr)
          tmpstr = ''
          ierr = ncu_get_att(ncid, varid, attname, tmpstr)
 
-         allocate(attset(i)%strvalue(attlen))
-         nlen = min(len(tmpstr), attlen)
+         ! Some netCDF library versions misreport attlen for zero-length CHAR attributes,
+         ! so trust the actually-read string length instead of the inquired attlen.
+         nlen = len(tmpstr)
+         attlen = nlen
+         allocate(attset(i)%strvalue(nlen))
          do j=1,nlen
             attset(i)%strvalue(j) = tmpstr(j:j)
          end do
