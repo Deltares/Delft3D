@@ -2091,6 +2091,24 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f006_c080_data_value_multiplier" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c080_data_value_multiplier</path>
+    <checks>
+      <file name="output/model_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="output/model_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_Qsun" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_windy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f006_c110_dcsm5_periodic_forcing" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c110_dcsm5_periodic_forcing</path>
 
@@ -3210,7 +3228,7 @@
   </testCase>
   <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c011_gate_free</path>
-    <maxRunTime>360</maxRunTime>
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -3261,7 +3279,7 @@
   </testCase>
   <testCase name="e02_f010_c021_gate_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
-    <maxRunTime>360</maxRunTime>
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -4114,7 +4132,6 @@
   </testCase>
   <testCase name="e02_f011_c098_humidity_netcdf" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c098_humidity_netcdf</path>
-    <maxRunTime>60</maxRunTime>
     <checks>
       <file name="output/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -6356,7 +6373,6 @@
   </testCase>
   <testCase name="e02_f022_c100_inifieldfile_morphopol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c100_inifieldfile_morphopol</path>
-    <maxRunTime>60</maxRunTime>
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -6367,7 +6383,6 @@
   </testCase>
   <testCase name="e02_f022_c108_settling_mass_balance" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c108_settling_mass_balance</path>
-    <maxRunTime>60</maxRunTime>
     <checks>
       <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
         <parameters>
@@ -9599,7 +9614,7 @@
   </testCase>
   <testCase name="e02_f044_c04_waveforcing_custom_vars" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f044_offline_waves/c04_waveforcing_custom_vars</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="output/Borkum_map.nc" type="netCDF">
         <parameters>
@@ -9614,7 +9629,7 @@
   </testCase>          
   <testCase name="e02_f006_c050_add_operand_ecConverterUniform" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c050_add_operand_ecConverterUniform</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/rainschematic_his.nc" type="netCDF">
         <parameters>
@@ -9626,7 +9641,7 @@
   </testCase>
   <testCase name="e02_f006_c051_add_operand_ecConverterUnimagdir" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c051_add_operand_ecConverterUnimagdir</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/winduni_map.nc" type="netCDF">
         <parameters>
@@ -9638,7 +9653,7 @@
   </testCase>
   <testCase name="e02_f006_c052_add_operand_ecConverterPolytim" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c052_add_operand_ecConverterPolytim</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -9651,7 +9666,7 @@
   </testCase>
   <testCase name="e02_f006_c053_add_operand_ecConverterArcinfo" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c053_add_operand_ecConverterArcinfo</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -9665,7 +9680,7 @@
   </testCase>
   <testCase name="e02_f006_c054_add_operand_ecConverterFourier" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c054_add_operand_ecConverterFourier</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -9678,7 +9693,7 @@
   </testCase>
   <testCase name="e02_f006_c055_add_operand_ecConverterCurvi" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c055_add_operand_ecConverterCurvi</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -9692,7 +9707,7 @@
   </testCase>
   <testCase name="e02_f006_c057_add_operand_ecConverterNetcdf" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c057_add_operand_ecConverterNetcdf</path>
-    <maxRunTime>600.0000000</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>

@@ -1096,6 +1096,8 @@ contains
          success = ecConverterQhtable(connection)
       case (convType_samples)
          success = ecConverterSamples(connection, timesteps%mjd())
+      case (convType_datavalue)
+         success = ecConverterDataValue(connection, timesteps%mjd())
       case default
          call set_ec_message("ERROR: ec_converter::ecConverterPerformConversions: Unknown Converter type requested.")
       end select
@@ -4225,6 +4227,59 @@ contains
       return
 
    end subroutine ConvertToSparseIndices
+
+   !> Converter for the 'datavalue' provider.
+   !! Apply the operand with the time-and-space independent value operand to all target items.
+   function ecConverterDataValue(connection, timesteps) result(success)
+      type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
+      real(dp), intent(in) :: timesteps !< target time (kernel timesteps since reference date)
+      logical :: success !< function status
+
+      real(dp) :: data_value !< the scalar source value
+      integer :: i, j
+      integer :: jmin, jmax
+      integer, allocatable :: idx(:) !< indices of the target points to update
+      type(tEcField), pointer :: targetField
+      integer, dimension(:), pointer :: targetMask
+      logical :: status
+   
+      success = .false.
+      targetField => null()
+      targetMask => null()
+
+      data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
+      do i = 1, connection%nTargetItems
+         targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+         targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
+         if (connection%converterPtr%targetIndex /= ec_undef_int) then
+            jmin = connection%converterPtr%targetIndex
+            jmax = connection%converterPtr%targetIndex
+         else
+            jmin = 1
+            jmax = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
+         end if
+
+         if (associated(targetMask)) then
+            ! Gather masked in indices in `idx` array.
+            idx = pack([(j, j = jmin, jmax)], targetMask(jmin:jmax) /= 0)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), status)
+            if (.not. status) then
+               return
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), data_value)
+         else
+            ! Directly use `jmin:jmax` slice of `arr1dPtr`.
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
+            if (.not. status) then
+               return
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), data_value)
+         end if
+
+         targetField%timesteps = timesteps
+      end do
+      success = .true.
+   end function ecConverterDataValue
 
    !> Applies the specified operand to the given target value with the provided value.
    elemental subroutine apply_operand(operand, target_value, provided_value)

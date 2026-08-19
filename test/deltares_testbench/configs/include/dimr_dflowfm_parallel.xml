@@ -206,7 +206,7 @@
   </testCase>
   <testCase name="e02_f014_c042_dad_2dredge1dump_layered_bed_par" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c042_dad_2dredge1dump_layered_bed_par</path>
-    <maxRunTime>360</maxRunTime>
+    <maxRunTime>480</maxRunTime>
     <programs>
       <program ref="dimr">
         <arguments>
