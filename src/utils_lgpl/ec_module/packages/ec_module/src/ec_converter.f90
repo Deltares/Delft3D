@@ -381,7 +381,7 @@ contains
          success = .true.
          return
       end if
-
+      ! Nothing to be done for scalar source data.
       if (sourceElementSet%ofType == elmSetType_scalar) then
          success = .true.
          return
@@ -3146,6 +3146,7 @@ contains
       waveheightT1 => null()
       has_wave_direction = .false.
 
+      ! fully scalar sources are handled separately, as they require no spatial interpolation and are universal.
       all_scalar_sources = .false.
       if (connection%nSourceItems > 0) then
          all_scalar_sources = .true.
@@ -3171,8 +3172,13 @@ contains
             sourceValueT0 = sourceT0Field%arr1dPtr(1)
             sourceValueT1 = sourceT1Field%arr1dPtr(1)
 
-            ! Match the existing uniform-converter treatment of a missing value
-            ! at only one of the two time levels.
+            if (sourceValueT0 == sourceMissing .and. sourceValueT1 == sourceMissing) then
+               call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: at least one valid time entry required for scalar quantity '" &
+                                   //trim(sourceItem%quantityPtr%name)//"'.")
+               return
+            end if
+
+            ! Use the available time level when only one is missing.
             if (sourceValueT0 == sourceMissing .and. sourceValueT1 /= sourceMissing) then
                sourceValueT0 = sourceValueT1
             end if
@@ -3183,20 +3189,19 @@ contains
             t0 = sourceT0Field%timesteps
             t1 = sourceT1Field%timesteps
             if (.not. sourceItem%quantityPtr%constant .and. t0 <= t1) then
-               call time_weight_factors(a0, a1, timesteps, t0, t1, extrapolated, &
-                                        timeint=sourceItem%quantityPtr%timeint)
+               call time_weight_factors(a0, a1, timesteps, t0, t1, extrapolated, timeint=sourceItem%quantityPtr%timeint)
                sourceValueT0 = sourceValueT0 * (a0 + a1) + (sourceValueT1 - sourceValueT0) * a1
             end if
 
             if (connection%nSourceItems == 1) then
                do j = 1, connection%nTargetItems
-                  success = ecConverterApplyScalarToTarget(connection, j, timesteps, sourceValueT0)
+                  success = ecConverterApplyScalarToTargetItem(connection, j, timesteps, sourceValueT0)
                   if (.not. success) then
                      return
                   end if
                end do
             else
-               success = ecConverterApplyScalarToTarget(connection, i, timesteps, sourceValueT0)
+               success = ecConverterApplyScalarToTargetItem(connection, i, timesteps, sourceValueT0)
                if (.not. success) then
                   return
                end if
@@ -4296,7 +4301,7 @@ contains
    end subroutine ConvertToSparseIndices
 
    !> Apply a scalar value to every active coordinate of one target item.
-   function ecConverterApplyScalarToTarget(connection, target_item_index, timesteps, scalar_value) result(success)
+   function ecConverterApplyScalarToTargetItem(connection, target_item_index, timesteps, scalar_value) result(success)
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       integer, intent(in) :: target_item_index !< target item to update
       real(dp), intent(in) :: timesteps !< target time (kernel timesteps since reference date)
@@ -4310,13 +4315,13 @@ contains
       integer :: n_coordinates
       type(tEcField), pointer :: targetField
       integer, dimension(:), pointer :: targetMask
-   
+
       success = .false.
       targetField => null()
       targetMask => null()
 
       if (target_item_index < 1 .or. target_item_index > connection%nTargetItems) then
-         call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTarget: Target item index out of range.")
+         call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target item index out of range.")
          return
       end if
 
@@ -4329,7 +4334,7 @@ contains
       else
          n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
          if (n_coordinates <= 0 .or. modulo(size(targetField%arr1dPtr), n_coordinates) /= 0) then
-            call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTarget: Target Field size is inconsistent with its coordinates.")
+            call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
             return
          end if
          first_coordinate = 1
@@ -4354,26 +4359,58 @@ contains
       end do
       targetField%timesteps = timesteps
       success = .true.
-   end function ecConverterApplyScalarToTarget
+   end function ecConverterApplyScalarToTargetItem
 
    !> Converter for the 'datavalue' provider.
-   !! The source item holds a single, time- and space-independent scalar value.
-   !! This converter broadcasts that scalar to every element of every target item,
-   !! applying the configured operand through the shared scalar broadcast path.
+   !! Apply the operand with the time-and-space independent value operand to all target items.
+   !! Might be merged with ecConverterApplyScalarToTargetItem in the future.
    function ecConverterDataValue(connection, timesteps) result(success)
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< target time (kernel timesteps since reference date)
       logical :: success !< function status
 
       real(dp) :: data_value !< the scalar source value
-      integer :: target_item_index
+      integer :: i, j
+      integer :: jmin, jmax
+      integer, allocatable :: idx(:) !< indices of the target points to update
+      type(tEcField), pointer :: targetField
+      integer, dimension(:), pointer :: targetMask
+      logical :: status
+
+      success = .false.
+      targetField => null()
+      targetMask => null()
 
       data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
-      do target_item_index = 1, connection%nTargetItems
-         success = ecConverterApplyScalarToTarget(connection, target_item_index, timesteps, data_value)
-         if (.not. success) then
-            return
+      do i = 1, connection%nTargetItems
+         targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+         targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
+         if (connection%converterPtr%targetIndex /= ec_undef_int) then
+            jmin = connection%converterPtr%targetIndex
+            jmax = connection%converterPtr%targetIndex
+         else
+            jmin = 1
+            jmax = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
          end if
+
+         if (associated(targetMask)) then
+            ! Gather masked in indices in `idx` array.
+            idx = pack([(j, j = jmin, jmax)], targetMask(jmin:jmax) /= 0)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), status)
+            if (.not. status) then
+               return
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), data_value)
+         else
+            ! Directly use `jmin:jmax` slice of `arr1dPtr`.
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
+            if (.not. status) then
+               return
+            end if
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), data_value)
+         end if
+
+         targetField%timesteps = timesteps
       end do
       success = .true.
    end function ecConverterDataValue
