@@ -335,7 +335,6 @@
   </testCase>
   <testCase name="e01_f01_c44_parallel_bed_slope" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f01_general/c44_parallel_bed_slope</path>
-    <maxRunTime>60</maxRunTime>
     <checks>
       <file name="trim-run01.dat" type="NEFIS">
         <parameters name="map-sed-series">
