@@ -476,7 +476,7 @@ contains
          deprecated_ext_keywords, &
          istat, &
          prefix='While reading '''//trim(filename)//'''', &
-         print_context_keywords=['quantity', 'datafile'] &
+         print_context_keywords=['quantity', 'dataFile'] &
       )
       ! No errors
       write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, &

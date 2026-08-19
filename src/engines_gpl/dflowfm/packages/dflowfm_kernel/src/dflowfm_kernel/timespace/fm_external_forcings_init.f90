@@ -226,7 +226,7 @@ contains
             deprecated_ext_keywords, &
             istat, &
             prefix='While reading '''//trim(file_names(i_ext))//'''', &
-            print_context_keywords=['quantity', 'datafile'] &
+            print_context_keywords=['quantity', 'dataFile'] &
          )
 
          if (allocated(itpenzr)) then

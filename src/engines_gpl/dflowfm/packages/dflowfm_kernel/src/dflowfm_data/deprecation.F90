@@ -175,6 +175,7 @@ contains
       ! Local variables
       type(tree_data), pointer :: chapter !< tree data pointer for chapter level
       type(tree_data), pointer :: node !< tree data pointer for keyword level
+      integer :: i_key !< index of the keyword in the print_context_keywords array
       integer :: node_index !< index of the keyword being processed
       integer :: num_nodes !< number of keywords in the chapter
       integer :: chapter_index !< index of the chapter being processed
@@ -184,6 +185,8 @@ contains
       character(len=100) :: node_string !< string containing the keyword value
       character(len=100) :: quantity !< quantity of block
       character(len=100) :: datafile !< datafile of block
+      character(len=100) :: context_value !< value of the current context keyword
+      character(len=:), allocatable :: context_info !< string with additional context information for the current keyword
       character(len=:), allocatable :: message !< message string for the current keyword
       integer :: temp_threshold !< backup variable for default abort threshold level (temporarily overruled)
       logical :: success !< flag indicating successful completion of a call
@@ -221,12 +224,15 @@ contains
          end if
 
          if (present(print_context_keywords)) then
-            if (any('quantity' == print_context_keywords)) then
-               call prop_get(chapter, '', 'quantity', quantity, success)
-            end if
-            if (any('datafile' == print_context_keywords)) then
-               call prop_get(chapter, '', 'datafile', datafile, success)
-            end if
+            context_info = ''
+            do i_key = 1, size(print_context_keywords)
+               if (len_trim(print_context_keywords(i_key)) > 0) then
+                  call prop_get(chapter, '', trim(print_context_keywords(i_key)), context_value, success)
+                  if (success) then
+                     context_info = context_info // trim(print_context_keywords(i_key)) // ' = ' // trim(context_value) // ', '
+                  end if
+               end if
+            end do
          end if
 
          do node_index = 1, num_nodes
@@ -234,46 +240,22 @@ contains
             call tree_get_data_string(node, node_string, success)
             if (success) then
                node_name = tree_get_name(node)
-               message = prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)
                if (size(node%node_data) > 0) then
                   if (node%node_visit < 1) then
                      if (is_obsolete(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_obsolete = num_obsolete + 1
-                        message = message//' is obsolete'
-                        if (len_trim(quantity) > 0) then
-                           message = message//' for quantity '''//trim(quantity)//''''
-                        end if
-                        if (len_trim(datafile) > 0) then
-                           message = message//' in datafile '''//trim(datafile)//''''
-                        end if
-                        message = message//'.'
-                        call mess(LEVEL_ERROR, message)
+
+                        call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' '//trim(context_info)//' is obsolete and cannot be used anymore. Check possible typo.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      else if (needs_usage_warning(trim(chapter_name), trim(node_name))) then
                         ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
-                        message = message//'='//trim(node_string)
-                        if (len_trim(quantity) > 0) then
-                           message = message//' for quantity '''//trim(quantity)//''''
-                        end if
-                        if (len_trim(datafile) > 0) then
-                           message = message//' in datafile '''//trim(datafile)//''''
-                        end if
-                        message = message//' was in file, but not used. Check possible typo.'
-                        call mess(LEVEL_WARN, message)
+                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' '//trim(context_info)//' is unknown or not used by the program. Check possible typo.')
                      end if
                   else
                      ! keyword is known and used (node_visit >= 1)
                      if (is_deprecated(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_deprecated = num_deprecated + 1
-                        message = message//'is deprecated'
-                        if (len_trim(quantity) > 0) then
-                           message = message//' for quantity '''//trim(quantity)//''''
-                        end if
-                        if (len_trim(datafile) > 0) then
-                           message = message//' in datafile '''//trim(datafile)//''''
-                        end if
-                        message = message//' and may be removed in a future release.'
-                        call mess(LEVEL_WARN, message)
+                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' '//trim(context_info)//' is deprecated and may be removed in a future release.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      end if
                   end if
