@@ -221,7 +221,13 @@ contains
 
          threshold_abort = initial_threshold_abort
 
-         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''', filetype='extforce')
+         call check_file_tree_for_deprecated_keywords( &
+            bnd_ptr, &
+            deprecated_ext_keywords, &
+            istat, &
+            prefix='While reading '''//trim(file_names(i_ext))//'''', &
+            print_context_keywords=['quantity', 'datafile'] &
+         )
 
          if (allocated(itpenzr)) then
             deallocate (itpenzr)

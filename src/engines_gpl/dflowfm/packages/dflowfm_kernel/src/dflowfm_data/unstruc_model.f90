@@ -2458,7 +2458,13 @@ contains
 
       if (jagui == 0) then
          ! If obsolete entries are used in the mdu-file, return with that error code.
-         call check_file_tree_for_deprecated_keywords(md_ptr, deprecated_mdu_keywords, ierror, prefix='While reading '''//trim(filename)//'''', excluded_chapters=['model'], filetype='mdu')
+         call check_file_tree_for_deprecated_keywords( &
+            md_ptr, &
+            deprecated_mdu_keywords, &
+            ierror, &
+            prefix='While reading '''//trim(filename)//'''', &
+            excluded_chapters=['model'] &
+         )
          if (ierror /= DFM_NOERR) then
             istat = ierror
          end if

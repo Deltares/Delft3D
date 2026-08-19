@@ -155,14 +155,14 @@ contains
 
    !> Check a file tree for all keywords that were not used, deprecated or obsolete.
    !! Throw an error for obsolete keywords, and otherwise print a warning.
-   subroutine check_file_tree_for_deprecated_keywords(tree, keyword_set, status, prefix, excluded_chapters, filetype)
+   subroutine check_file_tree_for_deprecated_keywords(tree, keyword_set, status, prefix, excluded_chapters, print_context_keywords)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use properties, only: prop_get
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_get_name, tree_get_data_string
       use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARN, mess, msgbuf
-      use string_module, only: strcmpi, str_tolower
+      use string_module, only: strcmpi
 
       ! Arguments
       type(tree_data), pointer, intent(in) :: tree !< tree of content of the input file to check for deprecated keywords
@@ -170,7 +170,7 @@ contains
       integer, intent(out) :: status !< Result status (DFM_NOERR if no invalid (obsolete) entries were present)
       character(len=*), intent(in) :: prefix !< Message string prefix
       character(len=*), dimension(:), optional, intent(in) :: excluded_chapters !< Tree chapters to exclude when checking for deprecated or unused keywords
-      character(len=*), intent(in) :: filetype !< filetype information for the check, one of: mdu, inifield, extforce
+      character(len=*), dimension(:), optional, intent(in) :: print_context_keywords !< Keywords for which to print additional context information
 
       ! Local variables
       type(tree_data), pointer :: chapter !< tree data pointer for chapter level
@@ -182,7 +182,8 @@ contains
       character(len=30) :: node_name !< name of the keyword
       character(len=30) :: chapter_name !< name of the chapter
       character(len=100) :: node_string !< string containing the keyword value
-      character(len=100) :: quantity !< quantity identifying the current block
+      character(len=100) :: quantity !< quantity of block
+      character(len=100) :: datafile !< datafile of block
       character(len=:), allocatable :: message !< message string for the current keyword
       integer :: temp_threshold !< backup variable for default abort threshold level (temporarily overruled)
       logical :: success !< flag indicating successful completion of a call
@@ -198,6 +199,7 @@ contains
       num_obsolete = 0
       num_deprecated = 0
       quantity = ''
+      datafile = ''
 
       temp_threshold = threshold_abort
       threshold_abort = LEVEL_FATAL
@@ -218,8 +220,13 @@ contains
             num_nodes = 0
          end if
 
-         if (any(str_tolower(filetype) == ['inifield', 'extforce'])) then
-            call prop_get(chapter, '', 'quantity', quantity, success)
+         if (present(print_context_keywords)) then
+            if (any('quantity' == print_context_keywords)) then
+               call prop_get(chapter, '', 'quantity', quantity, success)
+            end if
+            if (any('datafile' == print_context_keywords)) then
+               call prop_get(chapter, '', 'datafile', datafile, success)
+            end if
          end if
 
          do node_index = 1, num_nodes
@@ -232,31 +239,40 @@ contains
                   if (node%node_visit < 1) then
                      if (is_obsolete(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_obsolete = num_obsolete + 1
-                        if (any(str_tolower(filetype) == ['inifield', 'extforce']) .and. len_trim(quantity) > 0) then
-                           message = message//' is obsolete for quantity '''//trim(quantity)//'''.'
-                        else
-                           message = message//' is obsolete.'
+                        message = message//' is obsolete'
+                        if (len_trim(quantity) > 0) then
+                           message = message//' for quantity '''//trim(quantity)//''''
                         end if
+                        if (len_trim(datafile) > 0) then
+                           message = message//' in datafile '''//trim(datafile)//''''
+                        end if
+                        message = message//'.'
                         call mess(LEVEL_ERROR, message)
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      else if (needs_usage_warning(trim(chapter_name), trim(node_name))) then
                         ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
-                        if (any(str_tolower(filetype) == ['inifield', 'extforce']) .and. len_trim(quantity) > 0) then
-                           message = message//'='//trim(node_string)//' for quantity '''//trim(quantity)//''' was in file, but not used. Check possible typo.'
-                        else
-                           message = message//'='//trim(node_string)//' was in file, but not used. Check possible typo.'
+                        message = message//'='//trim(node_string)
+                        if (len_trim(quantity) > 0) then
+                           message = message//' for quantity '''//trim(quantity)//''''
                         end if
+                        if (len_trim(datafile) > 0) then
+                           message = message//' in datafile '''//trim(datafile)//''''
+                        end if
+                        message = message//' was in file, but not used. Check possible typo.'
                         call mess(LEVEL_WARN, message)
                      end if
                   else
                      ! keyword is known and used (node_visit >= 1)
                      if (is_deprecated(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_deprecated = num_deprecated + 1
-                        if (any(str_tolower(filetype) == ['inifield', 'extforce']) .and. len_trim(quantity) > 0) then
-                           message = message//' is deprecated for quantity '''//trim(quantity)//''' and may be removed in a future release.'
-                        else
-                           message = message//' is deprecated and may be removed in a future release.'
+                        message = message//'is deprecated'
+                        if (len_trim(quantity) > 0) then
+                           message = message//' for quantity '''//trim(quantity)//''''
                         end if
+                        if (len_trim(datafile) > 0) then
+                           message = message//' in datafile '''//trim(datafile)//''''
+                        end if
+                        message = message//' and may be removed in a future release.'
                         call mess(LEVEL_WARN, message)
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      end if

@@ -471,9 +471,13 @@ contains
          goto 888
       end if
 
-      call check_file_tree_for_deprecated_keywords(field_ptr, deprecated_ext_keywords, istat, &
-                                                   prefix='While reading '''//trim(filename)//'''', &
-                                                   filetype='inifield')
+      call check_file_tree_for_deprecated_keywords( &
+         field_ptr, &
+         deprecated_ext_keywords, &
+         istat, &
+         prefix='While reading '''//trim(filename)//'''', &
+         print_context_keywords=['quantity', 'datafile'] &
+      )
       ! No errors
       write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, &
          ' [Branch] blocks have been read and handled.'
