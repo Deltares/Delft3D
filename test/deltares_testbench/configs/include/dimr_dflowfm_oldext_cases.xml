@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e02_f002_c100_oldext_longculvert" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f002_1D2D/c100_oldext_longculvert</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
         <parameters>
@@ -23,7 +23,7 @@
   </testCase>
   <testCase name="e02_f002_c101_oldext_longculvert_timeseries_valve" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f002_1D2D/c101_oldext_longculvert_timeseries_valve</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
         <parameters>
@@ -45,7 +45,7 @@
   </testCase>
   <testCase name="e02_f002_c103_oldext_3D_channel" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f002_1D2D/c103_oldext_3D_channel</path>
-    <maxRunTime>120.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -60,7 +60,7 @@
   </testCase>
   <testCase name="e02_f003_c041_oldext_thacker1d_squares" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f003_advection/c041_oldext_thacker1d_squares</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/planar1dsq_his.nc" type="netCDF">
         <parameters>
@@ -79,7 +79,7 @@
   </testCase>
   <testCase name="e02_f003_c042_oldext_thacker1d_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f003_advection/c042_oldext_thacker1d_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/planar1dtr_his.nc" type="netCDF">
         <parameters>
@@ -98,7 +98,7 @@
   </testCase>
   <testCase name="e02_f003_c044_oldext_thacker2d_squares" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f003_advection/c044_oldext_thacker2d_squares</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
         <parameters>
@@ -110,7 +110,7 @@
   </testCase>
   <testCase name="e02_f003_c045_oldext_thacker2d_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f003_advection/c045_oldext_thacker2d_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/radial2d_map.nc" type="netCDF">
         <parameters>
@@ -122,7 +122,7 @@
   </testCase>
   <testCase name="e02_f004_c011_oldext_manning" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c011_oldext_manning</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -134,7 +134,7 @@
   </testCase>
   <testCase name="e02_f004_c012_oldext_whitecolebrook" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c012_oldext_whitecolebrook</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -146,7 +146,7 @@
   </testCase>
   <testCase name="e02_f004_c013_oldext_whitecolebrook_waqua" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c013_oldext_whitecolebrook_waqua</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -158,7 +158,7 @@
   </testCase>
   <testCase name="e02_f004_c080_oldext_chezy_uniform" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c080_oldext_chezy_uniform</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -179,7 +179,7 @@
   </testCase>
   <testCase name="e02_f004_c081_oldext_chezy_uniform_trachytopes" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c081_oldext_chezy_uniform_trachytopes</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -198,7 +198,7 @@
   </testCase>
   <testCase name="e02_f004_c083_oldext_trachytopes_spatially_varying_25" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c083_oldext_trachytopes_spatially_varying_25</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -217,7 +217,7 @@
   </testCase>
   <testCase name="e02_f004_c084_oldext_trachytopes_spatially_varying_50" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c084_oldext_trachytopes_spatially_varying_50</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -236,7 +236,7 @@
   </testCase>
   <testCase name="e02_f004_c085_oldext_manning_trachytopes" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c085_oldext_manning_trachytopes</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -255,7 +255,7 @@
   </testCase>
   <testCase name="e02_f004_c086_oldext_whitecolebrook_trachytopes" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c086_oldext_whitecolebrook_trachytopes</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -274,7 +274,7 @@
   </testCase>
   <testCase name="e02_f004_c087_oldext_whitecolebrook_trachytopes_waqua" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c087_oldext_whitecolebrook_trachytopes_waqua</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -293,7 +293,7 @@
   </testCase>
   <testCase name="e02_f004_c088_oldext_whitecolebrook_trachytopes_waqua_conv0" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c088_oldext_whitecolebrook_trachytopes_waqua_conv0</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -312,7 +312,7 @@
   </testCase>
   <testCase name="e02_f004_c089_oldext_trachytopes_spatially_varying_50" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c089_oldext_trachytopes_spatially_varying_50</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -333,7 +333,7 @@
   </testCase>
   <testCase name="e02_f004_c090_oldext_trachytopes_spatially_varying_50_momsol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c090_oldext_trachytopes_spatially_varying_50_momsol</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -352,7 +352,7 @@
   </testCase>
   <testCase name="e02_f004_c091_oldext_chezy_trachytopes_discharge_dependent" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c091_oldext_chezy_trachytopes_discharge_dependent</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -373,7 +373,7 @@
   </testCase>
   <testCase name="e02_f004_c092_oldext_chezy_trachytopes_waterlevel_dependent" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c092_oldext_chezy_trachytopes_waterlevel_dependent</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -392,7 +392,7 @@
   </testCase>
   <testCase name="e02_f004_c093_oldext_chezy_trachytopes_ebb_flood_dependent" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c093_oldext_chezy_trachytopes_ebb_flood_dependent</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
         <parameters>
@@ -411,7 +411,7 @@
   </testCase>
   <testCase name="e02_f004_c095_oldext_chezy_trachytopes_waterlevel_dependent_dt" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c095_oldext_chezy_trachytopes_waterlevel_dependent_dt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
         <parameters>
@@ -424,7 +424,7 @@
   </testCase>
   <testCase name="e02_f005_c010_oldext_waterlevel_tim_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c010_oldext_waterlevel_tim_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -437,7 +437,7 @@
   </testCase>
   <testCase name="e02_f005_c012_oldext_waterlevel_tim_mismatchstart" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c012_oldext_waterlevel_tim_mismatchstart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -450,7 +450,7 @@
   </testCase>
   <testCase name="e02_f005_c013_oldext_waterlevel_tim_mismatchend" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c013_oldext_waterlevel_tim_mismatchend</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -463,7 +463,7 @@
   </testCase>
   <testCase name="e02_f005_c014_oldext_waterlevel_cmp_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c014_oldext_waterlevel_cmp_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -476,7 +476,7 @@
   </testCase>
   <testCase name="e02_f005_c021_oldext_astronomic_cmp_mismatchstart" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c021_oldext_astronomic_cmp_mismatchstart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
         <parameters>
@@ -489,7 +489,7 @@
   </testCase>
   <testCase name="e02_f005_c030_oldext_discharge_tim_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c030_oldext_discharge_tim_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -501,7 +501,7 @@
   </testCase>
   <testCase name="e02_f005_c031_oldext_discharge_tim_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c031_oldext_discharge_tim_varying</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -513,7 +513,7 @@
   </testCase>
   <testCase name="e02_f005_c032_oldext_discharge_tim_mismatchstart" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c032_oldext_discharge_tim_mismatchstart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -525,7 +525,7 @@
   </testCase>
   <testCase name="e02_f005_c033_oldext_discharge_tim_mismatchend" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c033_oldext_discharge_tim_mismatchend</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -537,7 +537,7 @@
   </testCase>
   <testCase name="e02_f005_c034_oldext_discharge_cmp_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c034_oldext_discharge_cmp_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -549,7 +549,7 @@
   </testCase>
   <testCase name="e02_f005_c035_oldext_discharge_cmp_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c035_oldext_discharge_cmp_varying</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -561,7 +561,7 @@
   </testCase>
   <testCase name="e02_f005_c040_oldext_velocity_tim_bnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c040_oldext_velocity_tim_bnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -580,7 +580,7 @@
   </testCase>
   <testCase name="e02_f005_c041_oldext_velocity_tim_normal" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c041_oldext_velocity_tim_normal</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -599,7 +599,7 @@
   </testCase>
   <testCase name="e02_f005_c042_oldext_velocity_tim_tangential" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c042_oldext_velocity_tim_tangential</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tang_map.nc" type="netCDF">
         <parameters>
@@ -611,7 +611,7 @@
   </testCase>
   <testCase name="e02_f005_c043_oldext_velocity_cmp_bnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c043_oldext_velocity_cmp_bnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -630,7 +630,7 @@
   </testCase>
   <testCase name="e02_f005_c044_oldext_velocity_cmp_normal" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c044_oldext_velocity_cmp_normal</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -649,7 +649,7 @@
   </testCase>
   <testCase name="e02_f005_c045_oldext_velocity_cmp_tangential" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c045_oldext_velocity_cmp_tangential</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tang_map.nc" type="netCDF">
         <parameters>
@@ -661,7 +661,7 @@
   </testCase>
   <testCase name="e02_f005_c050_oldext_neumann_tim_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c050_oldext_neumann_tim_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -673,7 +673,7 @@
   </testCase>
   <testCase name="e02_f005_c051_oldext_neumann_tim_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c051_oldext_neumann_tim_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
         <parameters>
@@ -685,7 +685,7 @@
   </testCase>
   <testCase name="e02_f005_c060_oldext_riemann_tim_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c060_oldext_riemann_tim_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -704,7 +704,7 @@
   </testCase>
   <testCase name="e02_f005_c061_oldext_riemann_tim_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c061_oldext_riemann_tim_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
         <parameters>
@@ -723,7 +723,7 @@
   </testCase>
   <testCase name="e02_f005_c062_oldext_riemann_cmp_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c062_oldext_riemann_cmp_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -742,7 +742,7 @@
   </testCase>
   <testCase name="e02_f005_c063_oldext_riemann_cmp_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c063_oldext_riemann_cmp_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
         <parameters>
@@ -761,7 +761,7 @@
   </testCase>
   <testCase name="e02_f005_c064_oldext_riemann_bc_tim_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c064_oldext_riemann_bc_tim_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -780,7 +780,7 @@
   </testCase>
   <testCase name="e02_f005_c065_oldext_riemann_bc_tim_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c065_oldext_riemann_bc_tim_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
         <parameters>
@@ -799,7 +799,7 @@
   </testCase>
   <testCase name="e02_f005_c066_oldext_riemann_bc_cmp_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c066_oldext_riemann_bc_cmp_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -818,7 +818,7 @@
   </testCase>
   <testCase name="e02_f005_c067_oldext_riemann_bc_cmp_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c067_oldext_riemann_bc_cmp_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/riemann2d_his.nc" type="netCDF">
         <parameters>
@@ -837,7 +837,7 @@
   </testCase>
   <testCase name="e02_f005_c070_oldext_outflow_tim_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c070_oldext_outflow_tim_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -849,7 +849,7 @@
   </testCase>
   <testCase name="e02_f005_c071_oldext_outflow_tim_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c071_oldext_outflow_tim_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
         <parameters>
@@ -861,7 +861,7 @@
   </testCase>
   <testCase name="e02_f005_c072_oldext_outflow_cmp_1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c072_oldext_outflow_cmp_1d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -873,7 +873,7 @@
   </testCase>
   <testCase name="e02_f005_c073_oldext_outflow_cmp_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c073_oldext_outflow_cmp_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
         <parameters>
@@ -885,7 +885,7 @@
   </testCase>
   <testCase name="e02_f005_c081_oldext_qhbnd_refined" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c081_oldext_qhbnd_refined</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -904,7 +904,7 @@
   </testCase>
   <testCase name="e02_f005_c082_oldext_qhbnd_refined_twice" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c082_oldext_qhbnd_refined_twice</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -923,7 +923,7 @@
   </testCase>
   <testCase name="e02_f005_c083_oldext_qhbnd_doubleboundary" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c083_oldext_qhbnd_doubleboundary</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
         <parameters>
@@ -942,7 +942,7 @@
   </testCase>
   <testCase name="e02_f005_c091_oldext_salinity_tim_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c091_oldext_salinity_tim_varying</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -956,7 +956,7 @@
   </testCase>
   <testCase name="e02_f005_c092_oldext_salinity_cmp_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c092_oldext_salinity_cmp_varying</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -970,7 +970,7 @@
   </testCase>
   <testCase name="e02_f005_c100_oldext_tracer_tim_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c100_oldext_tracer_tim_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -989,7 +989,7 @@
   </testCase>
   <testCase name="e02_f005_c101_oldext_tracer_tim_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c101_oldext_tracer_tim_varying</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -1008,7 +1008,7 @@
   </testCase>
   <testCase name="e02_f005_c102_oldext_tracer_cmp_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c102_oldext_tracer_cmp_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -1027,7 +1027,7 @@
   </testCase>
   <testCase name="e02_f005_c103_oldext_tracer_cmp_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c103_oldext_tracer_cmp_varying</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
         <parameters>
@@ -1046,7 +1046,7 @@
   </testCase>
   <testCase name="e02_f005_c120_oldext_coastal_riemann_cmp_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c120_oldext_coastal_riemann_cmp_2d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>
@@ -1058,7 +1058,7 @@
   </testCase>
   <testCase name="e02_f006_c021_oldext_basinnofriction_squaresfine" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c021_oldext_basinnofriction_squaresfine</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
         <parameters>
@@ -1077,7 +1077,7 @@
   </testCase>
   <testCase name="e02_f006_c022_oldext_basinnofriction_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c022_oldext_basinnofriction_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/basintriangles_his.nc" type="netCDF">
         <parameters>
@@ -1096,7 +1096,7 @@
   </testCase>
   <testCase name="e02_f006_c024_oldext_basinwithfriction_squaresfine" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c024_oldext_basinwithfriction_squaresfine</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
         <parameters>
@@ -1115,7 +1115,7 @@
   </testCase>
   <testCase name="e02_f006_c025_oldext_basinwithfriction_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c025_oldext_basinwithfriction_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/basintriangles_his.nc" type="netCDF">
         <parameters>
@@ -1134,7 +1134,7 @@
   </testCase>
   <testCase name="e02_f006_c031_oldext_flatbed_quadrilateral_fine" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c031_oldext_flatbed_quadrilateral_fine</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/flatbed_quadrilateral_his.nc" type="netCDF">
         <parameters>
@@ -1153,7 +1153,7 @@
   </testCase>
   <testCase name="e02_f006_c032_oldext_flatbed_quadrilateral_finest" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c032_oldext_flatbed_quadrilateral_finest</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/flatbed_quadrilateral_his.nc" type="netCDF">
         <parameters>
@@ -1172,7 +1172,7 @@
   </testCase>
   <testCase name="e02_f006_c033_oldext_flatbed_triangular" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c033_oldext_flatbed_triangular</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/flatbed_triangular_his.nc" type="netCDF">
         <parameters>
@@ -1191,7 +1191,7 @@
   </testCase>
   <testCase name="e02_f006_c034_oldext_linearbed_quadrilateral" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c034_oldext_linearbed_quadrilateral</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/linearbed_quadrilateral_his.nc" type="netCDF">
         <parameters>
@@ -1210,7 +1210,7 @@
   </testCase>
   <testCase name="e02_f006_c035_oldext_linearbed_quadrilateral_piecewiselinear" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c035_oldext_linearbed_quadrilateral_piecewiselinear</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/linearbed_quadrilateral_his.nc" type="netCDF">
         <parameters>
@@ -1229,7 +1229,7 @@
   </testCase>
   <testCase name="e02_f006_c036_oldext_cosine_squares" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c036_oldext_cosine_squares</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/cosine_squares_his.nc" type="netCDF">
         <parameters>
@@ -1248,7 +1248,7 @@
   </testCase>
   <testCase name="e02_f006_c037_oldext_cosine_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c037_oldext_cosine_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/cosine_triangles_his.nc" type="netCDF">
         <parameters>
@@ -1267,7 +1267,7 @@
   </testCase>
   <testCase name="e02_f006_c040_oldext_riemannbndshift_linear" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c040_oldext_riemannbndshift_linear</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/linearbed_quadrilateral_his.nc" type="netCDF">
         <parameters>
@@ -1286,7 +1286,7 @@
   </testCase>
   <testCase name="e02_f006_c041_oldext_riemannbndshift_piecewiselinear" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c041_oldext_riemannbndshift_piecewiselinear</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/linearbed_quadrilateral_his.nc" type="netCDF">
         <parameters>
@@ -1305,7 +1305,7 @@
   </testCase>
   <testCase name="e02_f006_c042_oldext_riemannbndshift_cosine" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c042_oldext_riemannbndshift_cosine</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/cosine_squares_his.nc" type="netCDF">
         <parameters>
@@ -1324,7 +1324,7 @@
   </testCase>
   <testCase name="e02_f008_c010_oldext_ws_bedlevel_asdefault" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c010_oldext_ws_bedlevel_asdefault</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_map.nc" type="netCDF">
         <parameters>
@@ -1336,7 +1336,7 @@
   </testCase>
   <testCase name="e02_f008_c011_oldext_ws_bedlevel_asdelft3d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c011_oldext_ws_bedlevel_asdelft3d</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_map.nc" type="netCDF">
         <parameters>
@@ -1348,7 +1348,7 @@
   </testCase>
   <testCase name="e02_f008_c012_oldext_ws_bedlevel_dpsoptmean" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c012_oldext_ws_bedlevel_dpsoptmean</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_map.nc" type="netCDF">
         <parameters>
@@ -1360,7 +1360,7 @@
   </testCase>
   <testCase name="e02_f008_c013_oldext_ws_bedlevel_minabovemeanbelow" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c013_oldext_ws_bedlevel_minabovemeanbelow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_map.nc" type="netCDF">
         <parameters>
@@ -1372,7 +1372,7 @@
   </testCase>
   <testCase name="e02_f008_c020_oldext_conveym1_bedlevtyp1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c020_oldext_conveym1_bedlevtyp1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1384,7 +1384,7 @@
   </testCase>
   <testCase name="e02_f008_c021_oldext_conveym1_bedlevtyp2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c021_oldext_conveym1_bedlevtyp2</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1396,7 +1396,7 @@
   </testCase>
   <testCase name="e02_f008_c022_oldext_conveym1_bedlevtyp3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c022_oldext_conveym1_bedlevtyp3</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1408,7 +1408,7 @@
   </testCase>
   <testCase name="e02_f008_c023_oldext_conveym1_bedlevtyp4" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c023_oldext_conveym1_bedlevtyp4</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1420,7 +1420,7 @@
   </testCase>
   <testCase name="e02_f008_c024_oldext_conveym1_bedlevtyp5" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c024_oldext_conveym1_bedlevtyp5</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1432,7 +1432,7 @@
   </testCase>
   <testCase name="e02_f008_c025_oldext_conveym1_bedlevtyp6" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c025_oldext_conveym1_bedlevtyp6</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1444,7 +1444,7 @@
   </testCase>
   <testCase name="e02_f008_c026_oldext_conveyp3_bedlevtyp3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c026_oldext_conveyp3_bedlevtyp3</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1456,7 +1456,7 @@
   </testCase>
   <testCase name="e02_f008_c027_oldext_conveyp3_bedlevtyp4" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c027_oldext_conveyp3_bedlevtyp4</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1468,7 +1468,7 @@
   </testCase>
   <testCase name="e02_f008_c028_oldext_conveyp3_bedlevtyp5" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c028_oldext_conveyp3_bedlevtyp5</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -1480,7 +1480,7 @@
   </testCase>
   <testCase name="e02_f009_c011_oldext_beyer004_supergrid_refinedlocally" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c011_oldext_beyer004_supergrid_refinedlocally</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004d_his.nc" type="netCDF">
         <parameters>
@@ -1493,7 +1493,7 @@
   </testCase>
   <testCase name="e02_f009_c012_oldext_beyer004_supergrid_refinedglobally" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c012_oldext_beyer004_supergrid_refinedglobally</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004e_his.nc" type="netCDF">
         <parameters>
@@ -1506,7 +1506,7 @@
   </testCase>
   <testCase name="e02_f009_c013_oldext_beyer004_scheme6_standard" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c013_oldext_beyer004_scheme6_standard</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
         <parameters>
@@ -1519,7 +1519,7 @@
   </testCase>
   <testCase name="e02_f009_c014_oldext_beyer004_scheme6_refinedglobally" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c014_oldext_beyer004_scheme6_refinedglobally</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004g_his.nc" type="netCDF">
         <parameters>
@@ -1532,7 +1532,7 @@
   </testCase>
   <testCase name="e02_f009_c015_oldext_beyer004_villemonte_standard" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c015_oldext_beyer004_villemonte_standard</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
         <parameters>
@@ -1551,7 +1551,7 @@
   </testCase>
   <testCase name="e02_f009_c017_oldext_beyer004_villemonte_standard_rst" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c017_oldext_beyer004_villemonte_standard_rst</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
         <parameters>
@@ -1570,7 +1570,7 @@
   </testCase>
   <testCase name="e02_f009_c021_oldext_beyer004_contr09" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c021_oldext_beyer004_contr09</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004_contr_09_his.nc" type="netCDF">
         <parameters>
@@ -1583,7 +1583,7 @@
   </testCase>
   <testCase name="e02_f009_c022_oldext_beyer004_contr11" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c022_oldext_beyer004_contr11</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004_contr_11_his.nc" type="netCDF">
         <parameters>
@@ -1596,7 +1596,7 @@
   </testCase>
   <testCase name="e02_f009_c023_oldext_beyer007_contr10" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c023_oldext_beyer007_contr10</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_007_his.nc" type="netCDF">
         <parameters>
@@ -1609,7 +1609,7 @@
   </testCase>
   <testCase name="e02_f009_c031_oldext_zandloper10m" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c031_oldext_zandloper10m</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_his.nc" type="netCDF">
         <parameters>
@@ -1628,7 +1628,7 @@
   </testCase>
   <testCase name="e02_f009_c032_oldext_zandloper10m_inflowcut" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c032_oldext_zandloper10m_inflowcut</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_cut_inflowcut_his.nc" type="netCDF">
         <parameters>
@@ -1647,7 +1647,7 @@
   </testCase>
   <testCase name="e02_f009_c033_oldext_zandloper10m_gridvar" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c033_oldext_zandloper10m_gridvar</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/10mag_cut_his.nc" type="netCDF">
         <parameters>
@@ -1666,7 +1666,7 @@
   </testCase>
   <testCase name="e02_f009_c034_oldext_zandloper10m_supergrid" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c034_oldext_zandloper10m_supergrid</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_supergrid_his.nc" type="netCDF">
         <parameters>
@@ -1685,7 +1685,7 @@
   </testCase>
   <testCase name="e02_f009_c035_oldext_zandloper10m_channelaspect" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c035_oldext_zandloper10m_channelaspect</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_aspect_his.nc" type="netCDF">
         <parameters>
@@ -1704,7 +1704,7 @@
   </testCase>
   <testCase name="e02_f009_c036_oldext_zandloper10m_channelaspect_perpsupergrid" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c036_oldext_zandloper10m_channelaspect_perpsupergrid</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_aspect_perp_supergrid_his.nc" type="netCDF">
         <parameters>
@@ -1723,7 +1723,7 @@
   </testCase>
   <testCase name="e02_f009_c037_oldext_zandloper10m_channelaspect_perp" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c037_oldext_zandloper10m_channelaspect_perp</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_aspect_perp_his.nc" type="netCDF">
         <parameters>
@@ -1742,7 +1742,7 @@
   </testCase>
   <testCase name="e02_f009_c041_oldext_beyer044_adapted" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c041_oldext_beyer044_adapted</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_044_ags_his.nc" type="netCDF">
         <parameters>
@@ -1761,7 +1761,7 @@
   </testCase>
   <testCase name="e02_f009_c050_oldext_zandloper30m_villemonte" ref="platform_specific">
     <path version="DVC">e02_dflowfm/f009_weirs/c050_oldext_zandloper30m_villemonte</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_his.nc" type="netCDF">
         <parameters>
@@ -1780,7 +1780,7 @@
   </testCase>
   <testCase name="e02_f009_c051_oldext_zandloper10m_villemonte" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c051_oldext_zandloper10m_villemonte</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_map.nc" type="netCDF">
         <parameters>
@@ -1792,7 +1792,7 @@
   </testCase>
   <testCase name="e02_f009_c052_oldext_zandloper10m_inflowcut_villemonte" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c052_oldext_zandloper10m_inflowcut_villemonte</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_cut_inflowcut_his.nc" type="netCDF">
         <parameters>
@@ -1811,7 +1811,7 @@
   </testCase>
   <testCase name="e02_f009_c053_oldext_zandloper10m_gridvar_villemonte" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c053_oldext_zandloper10m_gridvar_villemonte</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/10mag_cut_his.nc" type="netCDF">
         </file>
@@ -1825,7 +1825,7 @@
   </testCase>
   <testCase name="e02_f009_c055_oldext_zandloper10m_channelaspect_villemonte" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c055_oldext_zandloper10m_channelaspect_villemonte</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_aspect_his.nc" type="netCDF">
         <parameters>
@@ -1844,7 +1844,7 @@
   </testCase>
   <testCase name="e02_f009_c057_oldext_zandloper10m_channelaspect_perp_villemonte" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c057_oldext_zandloper10m_channelaspect_perp_villemonte</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_aspect_perp_his.nc" type="netCDF">
         <parameters>
@@ -1863,7 +1863,7 @@
   </testCase>
   <testCase name="e02_f009_c058_oldext_zandloper10m_inflowcut_villemonte_generate_cache" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c058_oldext_zandloper10m_inflowcut_villemonte_generate_cache</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_cut_inflowcut_his.nc" type="netCDF">
         <parameters>
@@ -1882,7 +1882,7 @@
   </testCase>
   <testCase name="e02_f009_c059_oldext_zandloper10m_inflowcut_villemonte_use_cache" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c059_oldext_zandloper10m_inflowcut_villemonte_use_cache</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/zandloper_cut_inflowcut_his.nc" type="netCDF">
         <parameters>
@@ -1901,7 +1901,7 @@
   </testCase>
   <testCase name="e02_f009_c070_oldext_beyer004_contr10_tabellenboek" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c070_oldext_beyer004_contr10_tabellenboek</path>
-    <maxRunTime>30.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004_tbboek_his.nc" type="netCDF">
         <parameters>
@@ -1920,7 +1920,7 @@
   </testCase>
   <testCase name="e02_f010_c011_oldext_gate_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c011_oldext_gate_free</path>
-    <maxRunTime>200.0</maxRunTime>
+      <maxRunTime>450</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -1933,7 +1933,6 @@
   </testCase>
   <testCase name="e02_f010_c012_oldext_sill_sub" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c012_oldext_sill_sub</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
         <parameters>
@@ -1946,7 +1945,6 @@
   </testCase>
   <testCase name="e02_f010_c013_oldext_sill_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c013_oldext_sill_free</path>
-    <maxRunTime>40.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirfree_his.nc" type="netCDF">
         <parameters>
@@ -1959,7 +1957,7 @@
   </testCase>
   <testCase name="e02_f010_c015_oldext_gategen_weirgen" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c015_oldext_gategen_weirgen</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -1972,7 +1970,6 @@
   </testCase>
   <testCase name="e02_f010_c017_oldext_gate_sub_nohis" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c017_oldext_gate_sub_nohis</path>
-    <maxRunTime>25.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
         <parameters>
@@ -1985,7 +1982,7 @@
   </testCase>
   <testCase name="e02_f010_c018_oldext_gategen_weirgen_nohis" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c018_oldext_gategen_weirgen_nohis</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -1998,7 +1995,6 @@
   </testCase>
   <testCase name="e02_f010_c020_oldext_gate_sub_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c020_oldext_gate_sub_ini_newkeywords</path>
-    <maxRunTime>25.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatesub_his.nc" type="netCDF">
         <parameters>
@@ -2011,7 +2007,7 @@
   </testCase>
   <testCase name="e02_f010_c021_oldext_gate_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c021_oldext_gate_free_ini_newkeywords</path>
-    <maxRunTime>200.0</maxRunTime>
+      <maxRunTime>450</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -2024,7 +2020,6 @@
   </testCase>
   <testCase name="e02_f010_c022_oldext_sill_sub_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c022_oldext_sill_sub_ini_newkeywords</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">
         <parameters>
@@ -2037,7 +2032,6 @@
   </testCase>
   <testCase name="e02_f010_c023_oldext_sill_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c023_oldext_sill_free_ini_newkeywords</path>
-    <maxRunTime>40.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/weirfree_his.nc" type="netCDF">
         <parameters>
@@ -2050,7 +2044,7 @@
   </testCase>
   <testCase name="e02_f011_c015_oldext_sobey_uniform_squares" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c015_oldext_sobey_uniform_squares</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/sobey_his.nc" type="netCDF">
         <parameters>
@@ -2063,7 +2057,7 @@
   </testCase>
   <testCase name="e02_f011_c016_oldext_sobey_uniform_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c016_oldext_sobey_uniform_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/sobey_his.nc" type="netCDF">
         <parameters>
@@ -2076,7 +2070,7 @@
   </testCase>
   <testCase name="e02_f011_c020_oldext_spiderweb_schematic_var01" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c020_oldext_spiderweb_schematic_var01</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2095,7 +2089,7 @@
   </testCase>
   <testCase name="e02_f011_c021_oldext_spiderweb_schematic_var02" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c021_oldext_spiderweb_schematic_var02</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2114,7 +2108,7 @@
   </testCase>
   <testCase name="e02_f011_c022_oldext_spiderweb_schematic_var03" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c022_oldext_spiderweb_schematic_var03</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2133,7 +2127,7 @@
   </testCase>
   <testCase name="e02_f011_c023_oldext_spiderweb_schematic_var04" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c023_oldext_spiderweb_schematic_var04</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2152,7 +2146,7 @@
   </testCase>
   <testCase name="e02_f011_c024_oldext_spiderweb_schematic_north" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c024_oldext_spiderweb_schematic_north</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2171,7 +2165,7 @@
   </testCase>
   <testCase name="e02_f011_c025_oldext_spiderweb_schematic_south" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c025_oldext_spiderweb_schematic_south</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2190,7 +2184,7 @@
   </testCase>
   <testCase name="e02_f011_c029_oldext_spiderweb_schematic_duo" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c029_oldext_spiderweb_schematic_duo</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_map.nc" type="netCDF">
         <parameters>
@@ -2203,7 +2197,7 @@
   </testCase>
   <testCase name="e02_f011_c030_oldext_comp_uniform_standard" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c030_oldext_comp_uniform_standard</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2215,7 +2209,7 @@
   </testCase>
   <testCase name="e02_f011_c031_oldext_comp_uniform_standard_time" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c031_oldext_comp_uniform_standard_time</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2227,7 +2221,7 @@
   </testCase>
   <testCase name="e02_f011_c032_oldext_comp_uniform_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c032_oldext_comp_uniform_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2239,7 +2233,7 @@
   </testCase>
   <testCase name="e02_f011_c033_oldext_comp_uniform_double" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c033_oldext_comp_uniform_double</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2251,7 +2245,7 @@
   </testCase>
   <testCase name="e02_f011_c034_oldext_comp_unimagdir_standard" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c034_oldext_comp_unimagdir_standard</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2263,7 +2257,7 @@
   </testCase>
   <testCase name="e02_f011_c035_oldext_comp_unimagdir_standard_time" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c035_oldext_comp_unimagdir_standard_time</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2275,7 +2269,7 @@
   </testCase>
   <testCase name="e02_f011_c036_oldext_comp_unimagdir_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c036_oldext_comp_unimagdir_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2287,7 +2281,7 @@
   </testCase>
   <testCase name="e02_f011_c037_oldext_comp_unimagdir_standard_left" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c037_oldext_comp_unimagdir_standard_left</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2299,7 +2293,7 @@
   </testCase>
   <testCase name="e02_f011_c038_oldext_comp_unimagdir_standard_right" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c038_oldext_comp_unimagdir_standard_right</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2311,7 +2305,7 @@
   </testCase>
   <testCase name="e02_f011_c039_oldext_comp_unimagdir_spherical" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c039_oldext_comp_unimagdir_spherical</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/spwsimple_his.nc" type="netCDF">
         <parameters>
@@ -2330,7 +2324,7 @@
   </testCase>
   <testCase name="e02_f011_c040_oldext_equi_standard" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c040_oldext_equi_standard</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2342,7 +2336,7 @@
   </testCase>
   <testCase name="e02_f011_c041_oldext_equi_standard_time" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c041_oldext_equi_standard_time</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2354,7 +2348,7 @@
   </testCase>
   <testCase name="e02_f011_c042_oldext_equi_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c042_oldext_equi_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2366,7 +2360,7 @@
   </testCase>
   <testCase name="e02_f011_c043_oldext_equi_standard_pressure" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c043_oldext_equi_standard_pressure</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2378,7 +2372,7 @@
   </testCase>
   <testCase name="e02_f011_c050_oldext_curvi_standard" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c050_oldext_curvi_standard</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2390,7 +2384,7 @@
   </testCase>
   <testCase name="e02_f011_c051_oldext_curvi_standard_time" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c051_oldext_curvi_standard_time</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2402,7 +2396,7 @@
   </testCase>
   <testCase name="e02_f011_c052_oldext_curvi_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c052_oldext_curvi_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2414,7 +2408,7 @@
   </testCase>
   <testCase name="e02_f011_c053_oldext_curvi_standard_pressure" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c053_oldext_curvi_standard_pressure</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2426,7 +2420,7 @@
   </testCase>
   <testCase name="e02_f011_c057_oldext_curvi_netcdf_spw" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c057_oldext_curvi_netcdf_spw</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2438,7 +2432,7 @@
   </testCase>
   <testCase name="e02_f011_c058_oldext_curvi_netcdf4" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c058_oldext_curvi_netcdf4</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2451,7 +2445,7 @@
   </testCase>
   <testCase name="e02_f011_c059_oldext_curvi_spacevar_charnock" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c059_oldext_curvi_spacevar_charnock</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2463,7 +2457,7 @@
   </testCase>
   <testCase name="e02_f011_c060_oldext_trivial_pp" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c060_oldext_trivial_pp</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2475,7 +2469,7 @@
   </testCase>
   <testCase name="e02_f011_c061_oldext_trivial_mp" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c061_oldext_trivial_mp</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2487,7 +2481,7 @@
   </testCase>
   <testCase name="e02_f011_c062_oldext_trivial_mm" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c062_oldext_trivial_mm</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2499,7 +2493,7 @@
   </testCase>
   <testCase name="e02_f011_c063_oldext_trivial_pm" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c063_oldext_trivial_pm</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2511,7 +2505,7 @@
   </testCase>
   <testCase name="e02_f011_c070_oldext_read_equi_llcorner" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c070_oldext_read_equi_llcorner</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2523,7 +2517,7 @@
   </testCase>
   <testCase name="e02_f011_c071_oldext_read_equi_llcenter" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c071_oldext_read_equi_llcenter</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2535,7 +2529,7 @@
   </testCase>
   <testCase name="e02_f011_c072_oldext_read_curvi_ll_gridrow" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c072_oldext_read_curvi_ll_gridrow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2547,7 +2541,7 @@
   </testCase>
   <testCase name="e02_f011_c073_oldext_read_curvi_ll_gridcolumn" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c073_oldext_read_curvi_ll_gridcolumn</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2559,7 +2553,7 @@
   </testCase>
   <testCase name="e02_f011_c074_oldext_read_curvi_ul_gridrow" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c074_oldext_read_curvi_ul_gridrow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2571,7 +2565,7 @@
   </testCase>
   <testCase name="e02_f011_c075_oldext_read_curvi_ul_gridcolumn" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c075_oldext_read_curvi_ul_gridcolumn</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2583,7 +2577,7 @@
   </testCase>
   <testCase name="e02_f011_c076_oldext_read_curvi_lr_gridrow" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c076_oldext_read_curvi_lr_gridrow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2595,7 +2589,7 @@
   </testCase>
   <testCase name="e02_f011_c077_oldext_read_curvi_lr_gridcolumn" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c077_oldext_read_curvi_lr_gridcolumn</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2607,7 +2601,7 @@
   </testCase>
   <testCase name="e02_f011_c078_oldext_read_curvi_ur_gridrow" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c078_oldext_read_curvi_ur_gridrow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2619,7 +2613,7 @@
   </testCase>
   <testCase name="e02_f011_c079_oldext_read_curvi_ur_gridcolumn" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c079_oldext_read_curvi_ur_gridcolumn</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2631,7 +2625,7 @@
   </testCase>
   <testCase name="e02_f011_c080_oldext_combi_uniform_equi" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c080_oldext_combi_uniform_equi</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2643,7 +2637,7 @@
   </testCase>
   <testCase name="e02_f011_c091_oldext_stress_given" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f011_wind/c091_oldext_stress_given</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
         <parameters>
@@ -2656,7 +2650,7 @@
   </testCase>
   <testCase name="e02_f012_c020_oldext_hisseriesonevalue" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c020_oldext_hisseriesonevalue</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
         <parameters>
@@ -2669,7 +2663,7 @@
   </testCase>
   <testCase name="e02_f012_c021_oldext_hisseriestwovalues" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c021_oldext_hisseriestwovalues</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
         <parameters>
@@ -2682,7 +2676,7 @@
   </testCase>
   <testCase name="e02_f012_c022_oldext_hisseriesthreevalues" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c022_oldext_hisseriesthreevalues</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
         <parameters>
@@ -2695,7 +2689,7 @@
   </testCase>
   <testCase name="e02_f012_c023_oldext_mapseriesonevalue" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c023_oldext_mapseriesonevalue</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -2707,7 +2701,7 @@
   </testCase>
   <testCase name="e02_f012_c024_oldext_mapseriestwovalues" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c024_oldext_mapseriestwovalues</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -2719,7 +2713,7 @@
   </testCase>
   <testCase name="e02_f012_c025_oldext_mapseriesthreevalues" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c025_oldext_mapseriesthreevalues</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -2731,7 +2725,7 @@
   </testCase>
   <testCase name="e02_f012_c027_oldext_rstseriestwovalues" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c027_oldext_rstseriestwovalues</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_20010505_000200_rst.nc" type="netCDF">
         <parameters>
@@ -2743,7 +2737,7 @@
   </testCase>
   <testCase name="e02_f012_c028_oldext_rstseriesthreevalues" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c028_oldext_rstseriesthreevalues</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_20010505_000140_rst.nc" type="netCDF">
         <parameters>
@@ -2755,7 +2749,7 @@
   </testCase>
   <testCase name="e02_f012_c029_oldext_mptseries" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c029_oldext_mptseries</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -2767,7 +2761,7 @@
   </testCase>
   <testCase name="e02_f012_c030_oldext_alloutdtmaxsmall" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c030_oldext_alloutdtmaxsmall</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
         <parameters>
@@ -2786,7 +2780,7 @@
   </testCase>
   <testCase name="e02_f012_c031_oldext_alloutdtmaxlarge" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c031_oldext_alloutdtmaxlarge</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
         <parameters>
@@ -2805,7 +2799,7 @@
   </testCase>
   <testCase name="e02_f012_c070_oldext_movingstation" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c070_oldext_movingstation</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/movingstation_his.nc" type="netCDF">
         <parameters>
@@ -2818,7 +2812,7 @@
   </testCase>
   <testCase name="e02_f012_c090_oldext_minmaxavg" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c090_oldext_minmaxavg</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
         <parameters>
@@ -2833,7 +2827,7 @@
   </testCase>
   <testCase name="e02_f012_c091_oldext_fourier_analysis" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c091_oldext_fourier_analysis</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
         <parameters>
@@ -2848,7 +2842,7 @@
   </testCase>
   <testCase name="e02_f012_c092_oldext_class_map_wl" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c092_oldext_class_map_wl</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_clm.nc" type="netCDF">
         <parameters>
@@ -2859,7 +2853,7 @@
   </testCase>
   <testCase name="e02_f012_c093_oldext_class_map_waterdepth" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c093_oldext_class_map_waterdepth</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_clm.nc" type="netCDF">
         <parameters>
@@ -2870,7 +2864,7 @@
   </testCase>
   <testCase name="e02_f012_c094_oldext_class_map_both" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c094_oldext_class_map_both</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_clm.nc" type="netCDF">
         <parameters>
@@ -2882,7 +2876,7 @@
   </testCase>
   <testCase name="e02_f012_c097_oldext_running_mean" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c097_oldext_running_mean</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
         <parameters>
@@ -2896,7 +2890,6 @@
   </testCase>
   <testCase name="e02_f012_c098_oldext_fou_q1_sul" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c098_oldext_fou_q1_sul</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/tt3_fou.nc" type="netCDF">
         <parameters>
@@ -2907,7 +2900,6 @@
   </testCase>
   <testCase name="e02_f012_c101_oldext_fourier_analysis_compdt" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c101_oldext_fourier_analysis_compdt</path>
-    <maxRunTime>10.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
         <parameters>
@@ -2921,7 +2913,7 @@
   </testCase>
   <testCase name="e02_f012_c103_oldext_ws_3d_fourier" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c103_oldext_ws_3d_fourier</path>
-    <maxRunTime>10.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst_fou.nc" type="netCDF">
         <parameters>
@@ -2935,7 +2927,7 @@
   </testCase>
   <testCase name="e02_f012_c104_oldext_wind_fourier" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c104_oldext_wind_fourier</path>
-    <maxRunTime>10.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/windcase_fou.nc" type="netCDF">
         <parameters>
@@ -2948,7 +2940,7 @@
   </testCase>
   <testCase name="e02_f012_c110_oldext_numerics_warnings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c110_oldext_numerics_warnings</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
         <parameters>
@@ -2960,7 +2952,7 @@
   </testCase>
   <testCase name="e02_f012_c111_oldext_restart_sferic" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c111_oldext_restart_sferic</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/cca_map.nc" type="netCDF">
         <parameters>
@@ -2979,7 +2971,7 @@
   </testCase>
   <testCase name="e02_f012_c200_oldext_transport_fluxes" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f012_inout/c200_oldext_transport_fluxes</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -2990,7 +2982,7 @@
   </testCase>
   <testCase name="e02_f013_c011_oldext_frisianinlet_schematized_multifile" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f013_waves/c011_oldext_frisianinlet_schematized_multifile</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/f34_his.nc" type="netCDF">
         <parameters>
@@ -3009,7 +3001,7 @@
   </testCase>
   <testCase name="e02_f015_c010_oldext_iniwatlev_xyz_netbnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c010_oldext_iniwatlev_xyz_netbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/iniwaterlevel_map.nc" type="netCDF">
         <parameters>
@@ -3021,7 +3013,7 @@
   </testCase>
   <testCase name="e02_f015_c011_oldext_iniwatlev_xyz_inside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c011_oldext_iniwatlev_xyz_inside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/iniwaterlevel_map.nc" type="netCDF">
         <parameters>
@@ -3033,7 +3025,7 @@
   </testCase>
   <testCase name="e02_f015_c012_oldext_iniwatlev_xyz_outside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c012_oldext_iniwatlev_xyz_outside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/iniwaterlevel_map.nc" type="netCDF">
         <parameters>
@@ -3045,7 +3037,7 @@
   </testCase>
   <testCase name="e02_f015_c013_oldext_iniwatlev_xyz_random" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c013_oldext_iniwatlev_xyz_random</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/iniwaterlevel_map.nc" type="netCDF">
         <parameters>
@@ -3057,7 +3049,7 @@
   </testCase>
   <testCase name="e02_f015_c014_oldext_iniwatlev_pol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c014_oldext_iniwatlev_pol</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/iniwaterlevel_map.nc" type="netCDF">
         <parameters>
@@ -3069,7 +3061,7 @@
   </testCase>
   <testCase name="e02_f015_c019_oldext_iniwatlev_rst" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c019_oldext_iniwatlev_rst</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
         <parameters>
@@ -3081,7 +3073,7 @@
   </testCase>
   <testCase name="e02_f015_c020_oldext_inisal_xyz_netbnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c020_oldext_inisal_xyz_netbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/inisalinity_map.nc" type="netCDF">
         <parameters>
@@ -3093,7 +3085,7 @@
   </testCase>
   <testCase name="e02_f015_c021_oldext_inisal_xyz_inside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c021_oldext_inisal_xyz_inside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/inisalinity_map.nc" type="netCDF">
         <parameters>
@@ -3105,7 +3097,7 @@
   </testCase>
   <testCase name="e02_f015_c022_oldext_inisal_xyz_outside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c022_oldext_inisal_xyz_outside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/inisalinity_map.nc" type="netCDF">
         <parameters>
@@ -3117,7 +3109,7 @@
   </testCase>
   <testCase name="e02_f015_c023_oldext_inisal_xyz_random" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c023_oldext_inisal_xyz_random</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/inisalinity_map.nc" type="netCDF">
         <parameters>
@@ -3129,7 +3121,7 @@
   </testCase>
   <testCase name="e02_f015_c024_oldext_inisal_pol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c024_oldext_inisal_pol</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/inisalinity_map.nc" type="netCDF">
         <parameters>
@@ -3141,7 +3133,7 @@
   </testCase>
   <testCase name="e02_f015_c030_oldext_bedlev_xyz_netbnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c030_oldext_bedlev_xyz_netbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
         <parameters>
@@ -3153,7 +3145,7 @@
   </testCase>
   <testCase name="e02_f015_c031_oldext_bedlev_xyz_inside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c031_oldext_bedlev_xyz_inside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
         <parameters>
@@ -3165,7 +3157,7 @@
   </testCase>
   <testCase name="e02_f015_c032_oldext_bedlev_xyz_outside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c032_oldext_bedlev_xyz_outside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
         <parameters>
@@ -3177,7 +3169,7 @@
   </testCase>
   <testCase name="e02_f015_c033_oldext_bedlev_xyz_random" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c033_oldext_bedlev_xyz_random</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
         <parameters>
@@ -3189,7 +3181,7 @@
   </testCase>
   <testCase name="e02_f015_c034_oldext_bedlev_pol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c034_oldext_bedlev_pol</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
         <parameters>
@@ -3201,7 +3193,7 @@
   </testCase>
   <testCase name="e02_f015_c040_oldext_friccoef_xyz_netbnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c040_oldext_friccoef_xyz_netbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/friccoeff_map.nc" type="netCDF">
         <parameters>
@@ -3213,7 +3205,7 @@
   </testCase>
   <testCase name="e02_f015_c041_oldext_friccoef_xyz_inside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c041_oldext_friccoef_xyz_inside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/friccoeff_map.nc" type="netCDF">
         <parameters>
@@ -3225,7 +3217,7 @@
   </testCase>
   <testCase name="e02_f015_c042_oldext_friccoef_xyz_outside" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c042_oldext_friccoef_xyz_outside</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/friccoeff_map.nc" type="netCDF">
         <parameters>
@@ -3237,7 +3229,7 @@
   </testCase>
   <testCase name="e02_f015_c043_oldext_friccoef_xyz_random" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c043_oldext_friccoef_xyz_random</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/friccoeff_map.nc" type="netCDF">
         <parameters>
@@ -3249,7 +3241,7 @@
   </testCase>
   <testCase name="e02_f015_c044_oldext_friccoef_pol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f015_spatial_interpolation/c044_oldext_friccoef_pol</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/friccoeff_map.nc" type="netCDF">
         <parameters>
@@ -3261,7 +3253,7 @@
   </testCase>
   <testCase name="e02_f016_c012_oldext_schematic_xyz_multifile" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f016_drypoints/c012_oldext_schematic_xyz_multifile</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/drypoints_his.nc" type="netCDF">
         <parameters>
@@ -3274,7 +3266,6 @@
   </testCase>
   <testCase name="e02_f017_c010_oldext_sourcesink_2D" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f017_sources_sinks/c010_oldext_sourcesink_2D</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/sourcesink_2D_his.nc" type="netCDF">
         <parameters>
@@ -3293,7 +3284,7 @@
   </testCase>
   <testCase name="e02_f019_c080_oldext_1Dchannel_explicit_horizontal_dispersion" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f019_transport/c080_oldext_1Dchannel_explicit_horizontal_dispersion</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_0_map.nc" type="netCDF">
         <parameters>
@@ -3314,7 +3305,7 @@
   </testCase>
   <testCase name="e02_f019_c083_oldext_NewWaterway_explicit_horizontal_dispersion" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f019_transport/c083_oldext_NewWaterway_explicit_horizontal_dispersion</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst0_map.nc" type="netCDF">
         <parameters>
@@ -3335,7 +3326,7 @@
   </testCase>
   <testCase name="e02_f019_c084_oldext_NewWaterway_explicit_horizontal_dispersion_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f019_transport/c084_oldext_NewWaterway_explicit_horizontal_dispersion_2</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst1_map.nc" type="netCDF">
         <parameters>
@@ -3356,7 +3347,7 @@
   </testCase>
   <testCase name="e02_f019_c085_oldext_NewWaterway_implicit_horizontal_dispersion" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f019_transport/c085_oldext_NewWaterway_implicit_horizontal_dispersion</path>
-    <maxRunTime>300.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst3_map.nc" type="netCDF">
         <parameters>
@@ -3377,7 +3368,7 @@
   </testCase>
   <testCase name="e02_f006_c063_oldext_rain" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c063_oldext_rain</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/rainschematic_his.nc" type="netCDF">
         <parameters>
@@ -3388,7 +3379,7 @@
   </testCase>
   <testCase name="e02_f006_c065_oldext_rain_netcdf_radar" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c065_oldext_rain_netcdf_radar</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/simplerain_his.nc" type="netCDF">
         <parameters>
@@ -3399,7 +3390,7 @@
   </testCase>
   <testCase name="e02_f006_c070_oldext_atmosphericpressure" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c070_oldext_Atmosphericpressure</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/patm_map.nc" type="netCDF">
         <parameters>
@@ -3412,7 +3403,7 @@
   </testCase>
   <testCase name="e02_f006_c202_oldext_3d_layers_percentage" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c202_oldext_3d_layers_percentage</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/sp_map.nc" type="netCDF">
         <parameters>
@@ -3424,7 +3415,7 @@
   </testCase>
   <testCase name="e02_f006_c203_oldext_3d_layers_fraction" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c203_oldext_3d_layers_fraction</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/sp_map.nc" type="netCDF">
         <parameters>
@@ -3436,7 +3427,7 @@
   </testCase>
   <testCase name="e02_f022_c01_oldext_trench_VanRijn1993" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c01_oldext_trench_VanRijn1993</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -3458,7 +3449,7 @@
   </testCase>
   <testCase name="e02_f022_c02_oldext_trench_EH" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c02_oldext_trench_EH</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/t01_his.nc" type="netCDF">
         <parameters>
@@ -3480,7 +3471,7 @@
   </testCase>
   <testCase name="e02_f022_c03_oldext_fractions" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c03_oldext_fractions</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -3504,7 +3495,7 @@
   </testCase>
   <testCase name="e02_f022_c06_oldext_spatiald50" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c06_oldext_spatiald50</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_his.nc" type="netCDF">
         <parameters>
@@ -3526,7 +3517,7 @@
   </testCase>
   <testCase name="e02_f022_c07_oldext_sedimentavailability" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c07_oldext_sedimentavailability</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_his.nc" type="netCDF">
         <parameters>
@@ -3548,7 +3539,7 @@
   </testCase>
   <testCase name="e02_f022_c08_oldext_moroutput_NETCDF" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c08_oldext_moroutput_NETCDF</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_his.nc" type="netCDF">
         <parameters>
@@ -3570,7 +3561,7 @@
   </testCase>
   <testCase name="e02_f022_c09_oldext_moroutput_UGRID" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c09_oldext_moroutput_UGRID</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_his.nc" type="netCDF">
         <parameters>
@@ -3592,7 +3583,7 @@
   </testCase>
   <testCase name="e02_f022_c10_oldext_fixed_layer" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c10_oldext_fixed_layer</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/t1_his.nc" type="netCDF">
         <parameters>
@@ -3612,7 +3603,7 @@
   </testCase>
   <testCase name="e02_f022_c12_oldext_trench_VanRijn1993_sandbnd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c12_oldext_trench_VanRijn1993_sandbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -3632,7 +3623,7 @@
   </testCase>
   <testCase name="e02_f022_c13_oldext_bedload_bcm_depth_function_of_time" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c13_oldext_bedload_bcm_depth_function_of_time</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_map.nc" type="netCDF">
         <parameters>
@@ -3646,7 +3637,7 @@
   </testCase>
   <testCase name="e02_f022_c14_oldext_morphology_with_weir" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c14_oldext_morphology_with_weir</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004_map.nc" type="netCDF">
         <parameters>
@@ -3660,7 +3651,7 @@
   </testCase>
   <testCase name="e02_f022_c15_oldext_morphology_with_weir_no_bedupd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c15_oldext_morphology_with_weir_no_bedupd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004_map.nc" type="netCDF">
         <parameters>
@@ -3673,7 +3664,7 @@
   </testCase>
   <testCase name="e02_f022_c16_oldext_morphology_off_beyer004_contr10_bedlevtype1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c16_oldext_morphology_off_beyer004_contr10_bedlevtype1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/beyer_004_map.nc" type="netCDF">
         <parameters>
@@ -3687,7 +3678,7 @@
   </testCase>
   <testCase name="e02_f022_c17_oldext_bedslope_effect_slope022" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c17_oldext_bedslope_effect_slope022</path>
-    <maxRunTime>30.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_map.nc" type="netCDF">
         <parameters>
@@ -3701,7 +3692,7 @@
   </testCase>
   <testCase name="e02_f022_c18_oldext_bedslope_effect_slope044" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c18_oldext_bedslope_effect_slope044</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_map.nc" type="netCDF">
         <parameters>
@@ -3715,7 +3706,7 @@
   </testCase>
   <testCase name="e02_f022_c19_oldext_bedslope_effect_slope-044_invDir" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c19_oldext_bedslope_effect_slope-044_invDir</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_map.nc" type="netCDF">
         <parameters>
@@ -3729,7 +3720,7 @@
   </testCase>
   <testCase name="e02_f022_c20_oldext_bedslope_effect_slope044_AShld0425" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c20_oldext_bedslope_effect_slope044_AShld0425</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_map.nc" type="netCDF">
         <parameters>
@@ -3743,7 +3734,7 @@
   </testCase>
   <testCase name="e02_f022_c21_oldext_boundary_condition_icond2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c21_oldext_boundary_condition_icond2</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3763,7 +3754,7 @@
   </testCase>
   <testCase name="e02_f022_c22_oldext_boundary_condition_icond2_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c22_oldext_boundary_condition_icond2_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3783,7 +3774,7 @@
   </testCase>
   <testCase name="e02_f022_c23_oldext_boundary_condition_icond3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c23_oldext_boundary_condition_icond3</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3803,7 +3794,7 @@
   </testCase>
   <testCase name="e02_f022_c24_oldext_boundary_condition_icond3_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c24_oldext_boundary_condition_icond3_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3823,7 +3814,7 @@
   </testCase>
   <testCase name="e02_f022_c25_oldext_boundary_condition_icond4" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c25_oldext_boundary_condition_icond4</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3843,7 +3834,7 @@
   </testCase>
   <testCase name="e02_f022_c26_oldext_boundary_condition_icond4_graded" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c26_oldext_boundary_condition_icond4_graded</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3863,7 +3854,7 @@
   </testCase>
   <testCase name="e02_f022_c27_oldext_boundary_condition_icond4_none" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c27_oldext_boundary_condition_icond4_none</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3883,7 +3874,7 @@
   </testCase>
   <testCase name="e02_f022_c28_oldext_boundary_condition_icond2_graded" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c28_oldext_boundary_condition_icond2_graded</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3903,7 +3894,7 @@
   </testCase>
   <testCase name="e02_f022_c29_oldext_curvebend_spiral" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c29_oldext_curvebend_spiral</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
         <parameters>
@@ -3916,7 +3907,7 @@
   </testCase>
   <testCase name="e02_f022_c30_oldext_curvebend_spiral_mor" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c30_oldext_curvebend_spiral_mor</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
         <parameters>
@@ -3931,7 +3922,7 @@
   </testCase>
   <testCase name="e02_f022_c31_oldext_curvebend_spiral_mor_Bedup" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c31_oldext_curvebend_spiral_mor_Bedup</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
         <parameters>
@@ -3944,7 +3935,7 @@
   </testCase>
   <testCase name="e02_f022_c33_oldext_graded_sediment_ConcBc" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c33_oldext_graded_sediment_ConcBc</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_map.nc" type="netCDF">
         <parameters>
@@ -3959,7 +3950,7 @@
   </testCase>
   <testCase name="e02_f022_c34_oldext_erosilt" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c34_oldext_erosilt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_map.nc" type="netCDF">
         <parameters>
@@ -3975,7 +3966,7 @@
   </testCase>
   <testCase name="e02_f022_c47_oldext_mor_restart" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c47_oldext_mor_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_map.nc" type="netCDF">
         <parameters>
@@ -3991,7 +3982,7 @@
   </testCase>
   <testCase name="e02_f022_c48_oldext_trench_EH_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c48_oldext_trench_EH_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/t02Unstr_his.nc" type="netCDF">
         <parameters>
@@ -4014,7 +4005,7 @@
   </testCase>
   <testCase name="e02_f022_c49_oldext_spatiald50_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c49_oldext_spatiald50_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_his.nc" type="netCDF">
         <parameters>
@@ -4036,7 +4027,7 @@
   </testCase>
   <testCase name="e02_f022_c53_oldext_curvebend_spiral_mor_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c53_oldext_curvebend_spiral_mor_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/c30smallbendUnstr_map.nc" type="netCDF">
         <parameters>
@@ -4051,7 +4042,7 @@
   </testCase>
   <testCase name="e02_f022_c54_oldext_curvebend_spiral_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c54_oldext_curvebend_spiral_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/smallbend_unstr_map.nc" type="netCDF">
         <parameters>
@@ -4064,7 +4055,7 @@
   </testCase>
   <testCase name="e02_f022_c55_oldext_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c55_oldext_curvebend_spiral_mor_Bedup_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/c31smallbendUnstr_map.nc" type="netCDF">
         <parameters>
@@ -4077,7 +4068,7 @@
   </testCase>
   <testCase name="e02_f022_c56_oldext_weir" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c56_oldext_morphology_with_weir_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/C1415mgrid-sc5w1_map.nc" type="netCDF">
         <parameters>
@@ -4093,7 +4084,7 @@
   </testCase>
   <testCase name="e02_f022_c57_oldext_weir_no_bedupd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c57_oldext_morphology_with_weir_no_bedupd_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/C1415mgrid-sc5w1_map.nc" type="netCDF">
         <parameters>
@@ -4105,7 +4096,7 @@
   </testCase>
   <testCase name="e02_f022_c58_oldext_curvebend_spiral_deep" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c58_oldext_curvebend_spiral_deep</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
         <parameters>
@@ -4118,7 +4109,7 @@
   </testCase>
   <testCase name="e02_f022_c61_oldext_curvebend_spiral_dhl" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c61_oldext_curvebend_spiral_dhl</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/T2_04_map.nc" type="netCDF">
         <parameters>
@@ -4133,7 +4124,7 @@
   </testCase>
   <testCase name="e02_f022_c63_oldext_curvebend_spiral_dhl_no_bed_upd" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c63_oldext_curvebend_spiral_dhl_no_bed_upd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/T2_04_map.nc" type="netCDF">
         <parameters>
@@ -4147,7 +4138,7 @@
   </testCase>
   <testCase name="e02_f022_c64_oldext_curvebend_spiral_dhl_no_bed_upd_inclined" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c64_oldext_curvebend_spiral_dhl_no_bed_upd_inclined</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/T2_04_map.nc" type="netCDF">
         <parameters>
@@ -4161,7 +4152,7 @@
   </testCase>
   <testCase name="e02_f022_c65_oldext_erosilt_unstruc" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c65_oldext_erosilt_unstruc</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_map.nc" type="netCDF">
         <parameters>
@@ -4177,7 +4168,7 @@
   </testCase>
   <testCase name="e02_f022_c66_oldext_graded_sed_inflow" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c66_oldext_graded_sediment_ConcBc_new_SedInflow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_map.nc" type="netCDF">
         <parameters>
@@ -4192,7 +4183,7 @@
   </testCase>
   <testCase name="e02_f022_c70_oldext_boundary_condition_icond0" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c70_oldext_boundary_condition_icond0</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4212,7 +4203,7 @@
   </testCase>
   <testCase name="e02_f022_c71_oldext_boundary_condition_icond1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c71_oldext_boundary_condition_icond1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4232,7 +4223,7 @@
   </testCase>
   <testCase name="e02_f022_c72_oldext_boundary_condition_icond4_graded_linear" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c72_oldext_boundary_condition_icond4_graded_linear</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4252,7 +4243,7 @@
   </testCase>
   <testCase name="e02_f022_c73_oldext_boundary_condition_icond6" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c73_oldext_boundary_condition_icond6</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4272,7 +4263,7 @@
   </testCase>
   <testCase name="e02_f022_c74_oldext_boundary_condition_icond7" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c74_oldext_boundary_condition_icond7</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4292,7 +4283,6 @@
   </testCase>
   <testCase name="e02_f022_c75_oldext_inicomp" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c75_oldext_boundary_condition_icond4_graded_linear_inicomp</path>
-    <maxRunTime>10.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4312,7 +4302,7 @@
   </testCase>
   <testCase name="e02_f022_c93_oldext_fractions_cmpupd_only_fraction1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c93_oldext_fractions_cmpupd_only_fraction1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -4336,7 +4326,7 @@
   </testCase>
   <testCase name="e02_f022_c94_oldext_fractions_cmpupd_only_fraction2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c94_oldext_fractions_cmpupd_only_fraction2</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -4360,7 +4350,6 @@
   </testCase>
   <testCase name="e02_f022_c95_oldext_extrapolate_bedlevel" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c95_oldext_extrapolate_bedlevel</path>
-    <maxRunTime>60.0000000</maxRunTime>
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -4372,7 +4361,7 @@
   </testCase>
   <testCase name="e02_f022_c97_oldext_trench_VR93_SedTransStt" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c97_oldext_trench_VR93_SedTransStt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_his.nc" type="netCDF">
         <parameters>
@@ -4394,7 +4383,7 @@
   </testCase>
   <testCase name="e02_f022_c98_oldext_graded_sediment_ConcBc_restart" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c98_oldext_graded_sediment_ConcBc_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/da3_20050127_120000_rst.nc" type="netCDF">
         <parameters>
@@ -4484,7 +4473,7 @@
   </testCase>
   <testCase name="e02_f022_c100_oldext_inifieldfile_morphopol" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c100_oldext_inifieldfile_morphopol</path>
-    <maxRunTime>60.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -4495,7 +4484,7 @@
   </testCase>
   <testCase name="e02_f022_c300_oldext_sedimentmodelnr1_1PK" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c300_oldext_sedimentmodelnr1_1PK</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>
@@ -4510,7 +4499,7 @@
   </testCase>
   <testCase name="e02_f022_c301_oldext_sedimentmodelnr2_1VR" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c301_oldext_sedimentmodelnr2_1VR</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>
@@ -4525,7 +4514,6 @@
   </testCase>
   <testCase name="e02_f022_c302_oldext_sedimentmodelnr2_3VR" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c302_oldext_sedimentmodelnr2_3VR</path>
-    <maxRunTime>20.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>
@@ -4542,7 +4530,7 @@
   </testCase>
   <testCase name="e02_f022_c303_oldext_sedimentmodelnr2_1PK_2VR" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c303_oldext_sedimentmodelnr2_1PK_2VR</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>
@@ -4559,7 +4547,7 @@
   </testCase>
   <testCase name="e02_f022_c304_oldext_sedimentmodelnr3_1EH" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c304_oldext_sedimentmodelnr3_1EH</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/test_map.nc" type="netCDF">
         <parameters>
@@ -4574,7 +4562,7 @@
   </testCase>
   <testCase name="e02_f023_c35_oldext_dad_inside_dumping" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c35_oldext_dad_inside_dumping</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_c35/c35_map.nc" type="netCDF">
         <parameters>
@@ -4587,7 +4575,7 @@
   </testCase>
   <testCase name="e02_f023_c36_oldext_dad_outside_dumping" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c36_oldext_dad_outside_dumping</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_c36/c36_map.nc" type="netCDF">
         <parameters>
@@ -4600,7 +4588,7 @@
   </testCase>
   <testCase name="e02_f023_c37_oldext_dad_2dredge1dump" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c37_oldext_dad_2dredge1dump</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_c37/c37_map.nc" type="netCDF">
         <parameters>
@@ -4613,7 +4601,7 @@
   </testCase>
   <testCase name="e02_f023_c38_oldext_dad_dumpisdredge" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c38_oldext_dad_dumpisdredge</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_c38/c38_map.nc" type="netCDF">
         <parameters>
@@ -4626,7 +4614,7 @@
   </testCase>
   <testCase name="e02_f023_c39_oldext_dad_sandmining" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c39_oldext_dad_sandmining</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_da3/da3_map.nc" type="netCDF">
         <parameters>
@@ -4639,7 +4627,7 @@
   </testCase>
   <testCase name="e02_f023_c40_oldext_dad_inside_dumping_layered_bed" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c40_oldext_dad_inside_dumping_layered_bed</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_test/test_map.nc" type="netCDF">
         <parameters>
@@ -4652,7 +4640,7 @@
   </testCase>
   <testCase name="e02_f023_c41_oldext_dad_outside_dumping_layered_bed" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c41_oldext_dad_outside_dumping_layered_bed</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_test/test_map.nc" type="netCDF">
         <parameters>
@@ -4665,7 +4653,7 @@
   </testCase>
   <testCase name="e02_f023_c42_oldext_dad_2dredge1dump_layered_bed" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c42_oldext_dad_2dredge1dump_layered_bed</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_test/test_map.nc" type="netCDF">
         <parameters>
@@ -4678,7 +4666,7 @@
   </testCase>
   <testCase name="e02_f023_c43_oldext_daddumpisdredge_layered_bed" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c43_oldext_daddumpisdredge_layered_bed</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_test/test_map.nc" type="netCDF">
         <parameters>
@@ -4691,7 +4679,7 @@
   </testCase>
   <testCase name="e02_f023_c44_oldext_dad_sandmining_layered_bed" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c44_oldext_dad_sandmining_layered_bed</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_da3/da3_map.nc" type="netCDF">
         <parameters>
@@ -4704,7 +4692,7 @@
   </testCase>
   <testCase name="e02_f023_c45_oldext_dad_inside_dumping_triangles" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c45_oldext_dad_inside_dumping_triangles</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/c45_map.nc" type="netCDF">
         <parameters>
@@ -4720,7 +4708,7 @@
   </testCase>
   <testCase name="e02_f023_c46_oldext_dad_Sediment_nourishment" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f023_dredge-dump/c46_oldext_dad_Sediment_nourishment</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/c46_map.nc" type="netCDF">
         <parameters>
@@ -4733,7 +4721,7 @@
   </testCase>
   <testCase name="e02_f032_c11_oldext_erosilt_manning_dyer_nflocsizes_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f032_flocculation/c11_oldext_erosilt_manning_dyer_nflocsizes_1</path>
-    <maxRunTime>15000.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_his.nc" type="netCDF">
         <parameters>
@@ -4752,7 +4740,7 @@
   </testCase>
   <testCase name="e02_f032_c12_oldext_erosilt_manning_dyer_nflocsizes_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f032_flocculation/c12_oldext_erosilt_manning_dyer_nflocsizes_2</path>
-    <maxRunTime>15000.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_his.nc" type="netCDF">
         <parameters>
@@ -4771,7 +4759,7 @@
   </testCase>
   <testCase name="e02_f032_c21_oldext_erosilt_chassagne_safar_nflocsizes_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f032_flocculation/c21_oldext_erosilt_chassagne_safar_nflocsizes_1</path>
-    <maxRunTime>15000.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_his.nc" type="netCDF">
         <parameters>
@@ -4790,7 +4778,7 @@
   </testCase>
   <testCase name="e02_f032_c22_oldext_erosilt_chassagne_safar_nflocsizes_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f032_flocculation/c22_oldext_erosilt_chassagne_safar_nflocsizes_2</path>
-    <maxRunTime>15000.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/tst_his.nc" type="netCDF">
         <parameters>
@@ -4809,7 +4797,7 @@
   </testCase>
   <testCase name="e02_f040_c01_oldext_uniform_ibed_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c01_oldext_uniform_ibed_1</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4821,7 +4809,7 @@
   </testCase>
   <testCase name="e02_f040_c02_oldext_uniform_ibed_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c02_oldext_uniform_ibed_2</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4833,7 +4821,7 @@
   </testCase>
   <testCase name="e02_f040_c03_oldext_uniform_ibed_3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c03_oldext_uniform_ibed_3</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4845,7 +4833,7 @@
   </testCase>
   <testCase name="e02_f040_c04_oldext_uniform_ibed_6" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c04_oldext_uniform_ibed_6</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4857,7 +4845,7 @@
   </testCase>
   <testCase name="e02_f040_c05_oldext_curvi_ibed_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c05_oldext_curvi_ibed_1</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/dflowfmoutput/upl_map.nc" type="netCDF">
         <parameters>
@@ -4869,7 +4857,7 @@
   </testCase>
   <testCase name="e02_f040_c06_oldext_curvi_ibed_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c06_oldext_curvi_ibed_2</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/dflowfmoutput/upl_map.nc" type="netCDF">
         <parameters>
@@ -4881,7 +4869,7 @@
   </testCase>
   <testCase name="e02_f040_c07_oldext_curvi_ibed_3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c07_oldext_curvi_ibed_3</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/dflowfmoutput/upl_map.nc" type="netCDF">
         <parameters>
@@ -4893,7 +4881,7 @@
   </testCase>
   <testCase name="e02_f040_c08_oldext_curvi_ibed_6" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c08_oldext_curvi_ibed_6</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/dflowfmoutput/upl_map.nc" type="netCDF">
         <parameters>
@@ -4905,7 +4893,7 @@
   </testCase>
   <testCase name="e02_f040_c09_oldext_arc_ibed_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c09_oldext_arc_ibed_1</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4917,7 +4905,7 @@
   </testCase>
   <testCase name="e02_f040_c10_oldext_arc_ibed_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c10_oldext_arc_ibed_2</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4929,7 +4917,7 @@
   </testCase>
   <testCase name="e02_f040_c11_oldext_arc_ibed_3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c11_oldext_arc_ibed_3</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4941,7 +4929,7 @@
   </testCase>
   <testCase name="e02_f040_c12_oldext_arc_ibed_6" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c12_oldext_arc_ibed_6</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4953,7 +4941,7 @@
   </testCase>
   <testCase name="e02_f040_c13_oldext_SubsUplUpdateS1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c13_oldext_SubsUplUpdateS1</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4965,7 +4953,7 @@
   </testCase>
   <testCase name="e02_f040_c14_oldext_wetdry" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c14_oldext_wetdry</path>
-    <maxRunTime>7.5000000</maxRunTime>
+
     <checks>
       <file name="dflowfm/DFM_OUTPUT_upl/upl_map.nc" type="netCDF">
         <parameters>
@@ -4977,7 +4965,7 @@
   </testCase>
   <testCase name="e02_f092_c10_oldext_exer_13_r01_vlissingen_course_model" ref="dflowfm_config">
     <path version="DVC">e02_dflowfm/f092_tutorial_course_models/c10_oldext_exer_13_r01_vlissingen_course_model</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/r01_map.nc" type="netCDF">
         <parameters>
@@ -4989,7 +4977,7 @@
   </testCase>
   <testCase name="e02_f092_c11_oldext_exer_13_r02_vlissingen_course_model" ref="dflowfm_config">
     <path version="DVC">e02_dflowfm/f092_tutorial_course_models/c11_oldext_exer_13_r02_vlissingen_course_model</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/r02_map.nc" type="netCDF">
         <parameters>
@@ -5001,7 +4989,7 @@
   </testCase>
   <testCase name="e02_f422_c01_oldext_trench_VanRijn1993" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c01_oldext_trench_VanRijn1993</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -5027,7 +5015,7 @@
   </testCase>
   <testCase name="e02_f422_c02_oldext_trench_EH" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c02_oldext_trench_EH</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t01_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -5053,7 +5041,7 @@
   </testCase>
   <testCase name="e02_f422_c03_oldext_fractions" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c03_oldext_fractions</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -5079,7 +5067,8 @@
   </testCase>
   <testCase name="e02_f422_c05_oldext_migratinghump" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c05_oldext_migratinghump</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
+      <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/hump_19920831_114000_rst.nc" type="netCDF">
         <parameters>
@@ -5105,7 +5094,7 @@
   </testCase>
   <testCase name="e02_f422_c06_oldext_spatiald50" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c06_oldext_spatiald50</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3_20050127_002000_rst.nc" type="netCDF">
         <parameters>
@@ -5131,7 +5120,7 @@
   </testCase>
   <testCase name="e02_f422_c07_oldext_sedimentavailability" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c07_oldext_sedimentavailability</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3_20050127_002000_rst.nc" type="netCDF">
         <parameters>
@@ -5157,7 +5146,7 @@
   </testCase>
   <testCase name="e02_f422_c08_oldext_moroutput_NETCDF" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c08_oldext_moroutput_NETCDF</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3_20050127_002000_rst.nc" type="netCDF">
         <parameters>
@@ -5183,7 +5172,7 @@
   </testCase>
   <testCase name="e02_f422_c09_oldext_moroutput_UGRID" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c09_oldext_moroutput_UGRID</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3_20050127_002000_rst.nc" type="netCDF">
         <parameters>
@@ -5209,7 +5198,7 @@
   </testCase>
   <testCase name="e02_f422_c10_oldext_fixed_layer" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c10_oldext_fixed_layer</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t1_20071119_001400_rst.nc" type="netCDF">
         <parameters>
@@ -5235,7 +5224,7 @@
   </testCase>
   <testCase name="e02_f422_c11_oldext_bedload_tracerbnd" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c11_oldext_bedload_tracerbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/straight_channel_2_20140101_000010_rst.nc" type="netCDF">
         <parameters>
@@ -5261,7 +5250,7 @@
   </testCase>
   <testCase name="e02_f422_c12_oldext_trench_VanRijn1993_sandbnd" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c12_oldext_trench_VanRijn1993_sandbnd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -5287,7 +5276,7 @@
   </testCase>
   <testCase name="e02_f422_c13_oldext_bedload_bcm_depth_function_of_time" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c13_oldext_bedload_bcm_depth_function_of_time</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_000500_rst.nc" type="netCDF">
         <parameters>
@@ -5313,7 +5302,7 @@
   </testCase>
   <testCase name="e02_f422_c14_oldext_morphology_with_weir" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c14_oldext_morphology_with_weir</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/beyer_004_19900101_000320_rst.nc" type="netCDF">
         <parameters>
@@ -5339,7 +5328,7 @@
   </testCase>
   <testCase name="e02_f422_c15_oldext_morphology_with_weir_no_bedupd" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c15_oldext_morphology_with_weir_no_bedupd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/beyer_004_19900101_000320_rst.nc" type="netCDF">
         <parameters>
@@ -5365,7 +5354,7 @@
   </testCase>
   <testCase name="e02_f422_c16_oldext_morphology_off_beyer004_contr10_bedlevtype1" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c16_oldext_morphology_off_beyer004_contr10_bedlevtype1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/beyer_004_19900101_000320_rst.nc" type="netCDF">
         <parameters>
@@ -5389,7 +5378,7 @@
   </testCase>
   <testCase name="e02_f422_c17_oldext_bedslope_effect_slope022" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c17_oldext_bedslope_effect_slope022</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20010101_000400_rst.nc" type="netCDF">
         <parameters>
@@ -5415,7 +5404,7 @@
   </testCase>
   <testCase name="e02_f422_c18_oldext_bedslope_effect_slope044" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c18_oldext_bedslope_effect_slope044</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20010101_000400_rst.nc" type="netCDF">
         <parameters>
@@ -5441,7 +5430,7 @@
   </testCase>
   <testCase name="e02_f422_c19_oldext_bedslope_effect_slope-044_invDir" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c19_oldext_bedslope_effect_slope-044_invDir</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20010101_000400_rst.nc" type="netCDF">
         <parameters>
@@ -5467,7 +5456,7 @@
   </testCase>
   <testCase name="e02_f422_c20_oldext_bedslope_effect_slope044_AShld0425" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c20_oldext_bedslope_effect_slope044_AShld0425</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20010101_000400_rst.nc" type="netCDF">
         <parameters>
@@ -5493,7 +5482,7 @@
   </testCase>
   <testCase name="e02_f422_c21_oldext_boundary_condition_icond2" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c21_oldext_boundary_condition_icond2</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5519,7 +5508,7 @@
   </testCase>
   <testCase name="e02_f422_c22_oldext_boundary_condition_icond2_constant" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c22_oldext_boundary_condition_icond2_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5545,7 +5534,7 @@
   </testCase>
   <testCase name="e02_f422_c23_oldext_boundary_condition_icond3" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c23_oldext_boundary_condition_icond3</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5571,7 +5560,7 @@
   </testCase>
   <testCase name="e02_f422_c24_oldext_boundary_condition_icond3_constant" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c24_oldext_boundary_condition_icond3_constant</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5597,7 +5586,7 @@
   </testCase>
   <testCase name="e02_f422_c25_oldext_boundary_condition_icond4" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c25_oldext_boundary_condition_icond4</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5623,7 +5612,7 @@
   </testCase>
   <testCase name="e02_f422_c26_oldext_boundary_condition_icond4_graded" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c26_oldext_boundary_condition_icond4_graded</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5649,7 +5638,7 @@
   </testCase>
   <testCase name="e02_f422_c27_oldext_boundary_condition_icond4_none" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c27_oldext_boundary_condition_icond4_none</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5675,7 +5664,7 @@
   </testCase>
   <testCase name="e02_f422_c28_oldext_boundary_condition_icond2_graded" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c28_oldext_boundary_condition_icond2_graded</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5701,7 +5690,7 @@
   </testCase>
   <testCase name="e02_f422_c29_oldext_curvebend_spiral" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c29_oldext_curvebend_spiral</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/smallbend_20010101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5725,7 +5714,7 @@
   </testCase>
   <testCase name="e02_f422_c30_oldext_curvebend_spiral_mor" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c30_oldext_curvebend_spiral_mor</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/smallbend_20010101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5751,7 +5740,7 @@
   </testCase>
   <testCase name="e02_f422_c31_oldext_curvebend_spiral_mor_Bedup" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c31_oldext_curvebend_spiral_mor_Bedup</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/smallbend_20010101_014000_rst.nc" type="netCDF">
         <parameters>
@@ -5777,7 +5766,7 @@
   </testCase>
   <testCase name="e02_f422_c32_oldext_graded_sediment_EqBc" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c32_oldext_graded_sediment_EqBc</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/GrdSed_20110916_120000_rst.nc" type="netCDF">
         <parameters>
@@ -5803,7 +5792,7 @@
   </testCase>
   <testCase name="e02_f422_c33_oldext_graded_sediment_ConcBc" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c33_oldext_graded_sediment_ConcBc</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3_20050127_120000_rst.nc" type="netCDF">
         <parameters>
@@ -5829,7 +5818,7 @@
   </testCase>
   <testCase name="e02_f422_c34_oldext_erosilt" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c34_oldext_erosilt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/tst_20140819_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5855,7 +5844,7 @@
   </testCase>
   <testCase name="e02_f422_c47_oldext_mor_restart" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c47_oldext_mor_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/beyer_004sc3rst1_19900102_010000_rst.nc" type="netCDF">
         <parameters>
@@ -5881,7 +5870,7 @@
   </testCase>
   <testCase name="e02_f422_c48_oldext_trench_EH_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c48_oldext_trench_EH_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t02Unstr_20160803_001000_rst.nc" type="netCDF">
         <parameters>
@@ -5907,7 +5896,7 @@
   </testCase>
   <testCase name="e02_f422_c49_oldext_spatiald50_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c49_oldext_spatiald50_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3Unstr_20050127_002000_rst.nc" type="netCDF">
         <parameters>
@@ -5933,7 +5922,7 @@
   </testCase>
   <testCase name="e02_f422_c50_oldext_fixed_layer_Unstr" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c50_oldext_fixed_layer_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t1-unstr_20071119_001400_rst.nc" type="netCDF">
         <parameters>
@@ -5959,7 +5948,7 @@
   </testCase>
   <testCase name="e02_f422_c51_oldext_bedslope_effect_slope022_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c51_oldext_bedslope_effect_slope022_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_unstr_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -5985,7 +5974,7 @@
   </testCase>
   <testCase name="e02_f422_c52_oldext_bedslope_effect_slope-044_invDir_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c52_oldext_bedslope_effect_slope-044_invDir_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_unstr_20010101_000400_rst.nc" type="netCDF">
         <parameters>
@@ -6011,7 +6000,7 @@
   </testCase>
   <testCase name="e02_f422_c53_oldext_curvebend_spiral_mor_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c53_oldext_curvebend_spiral_mor_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/c30smallbendUnstr_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -6037,7 +6026,7 @@
   </testCase>
   <testCase name="e02_f422_c54_oldext_curvebend_spiral_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c54_oldext_curvebend_spiral_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/smallbend_unstr_20010101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6061,7 +6050,7 @@
   </testCase>
   <testCase name="e02_f422_c55_oldext_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c55_oldext_curvebend_spiral_mor_Bedup_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/c31smallbendUnstr_20010101_014000_rst.nc" type="netCDF">
         <parameters>
@@ -6087,7 +6076,7 @@
   </testCase>
   <testCase name="e02_f422_c56_oldext_morphology_with_weir_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c56_oldext_morphology_with_weir_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/C1415mgrid-sc5w1_19900101_000320_rst.nc" type="netCDF">
         <parameters>
@@ -6113,7 +6102,7 @@
   </testCase>
   <testCase name="e02_f422_c57_oldext_morphology_with_weir_no_bedupd_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c57_oldext_morphology_with_weir_no_bedupd_Unstr</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/C1415mgrid-sc5w1_19900101_000320_rst.nc" type="netCDF">
         <parameters>
@@ -6139,7 +6128,7 @@
   </testCase>
   <testCase name="e02_f422_c58_oldext_curvebend_spiral_deep" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c58_oldext_curvebend_spiral_deep</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/smallbend_20010101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6163,7 +6152,7 @@
   </testCase>
   <testCase name="e02_f422_c59_oldext_dredge_with_dunes" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c59_oldext_dredge_with_dunes</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t13_20060511_100000_rst.nc" type="netCDF">
         <parameters>
@@ -6189,7 +6178,7 @@
   </testCase>
   <testCase name="e02_f422_c60_oldext_thindams" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c60_oldext_thindams</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/dams_sed_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -6215,7 +6204,7 @@
   </testCase>
   <testCase name="e02_f422_c61_oldext_curvebend_spiral_dhl" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c61_oldext_curvebend_spiral_dhl</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/T2_04_20170103_010000_rst.nc" type="netCDF">
         <parameters>
@@ -6241,7 +6230,7 @@
   </testCase>
   <testCase name="e02_f422_c62_oldext_dredge_with_dunes_spatially_varying_input" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c62_oldext_dredge_with_dunes_spatially_varying_input</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t13_20060511_100000_rst.nc" type="netCDF">
         <parameters>
@@ -6267,7 +6256,7 @@
   </testCase>
   <testCase name="e02_f422_c63_oldext_curvebend_spiral_dhl_no_bed_upd" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c63_oldext_curvebend_spiral_dhl_no_bed_upd</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/T2_04_20170103_010000_rst.nc" type="netCDF">
         <parameters>
@@ -6293,7 +6282,7 @@
   </testCase>
   <testCase name="e02_f422_c64_oldext_curvebend_spiral_dhl_no_bed_upd_inclined" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c64_oldext_curvebend_spiral_dhl_no_bed_upd_inclined</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/T2_04_20170103_010000_rst.nc" type="netCDF">
         <parameters>
@@ -6319,7 +6308,7 @@
   </testCase>
   <testCase name="e02_f422_c65_oldext_erosilt_unstruc" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c65_oldext_erosilt_unstruc</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/tst-Unstr_net_20140819_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6345,7 +6334,7 @@
   </testCase>
   <testCase name="e02_f422_c66_oldext_graded_sediment_ConcBc_new_SedInflow" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c66_oldext_graded_sediment_ConcBc_new_SedInflow</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/da3_20050127_040000_rst.nc" type="netCDF">
         <parameters>
@@ -6371,7 +6360,7 @@
   </testCase>
   <testCase name="e02_f422_c67_oldext_erosilt_sand_mud" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c67_oldext_erosilt_sand_mud</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/tst_20140819_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6397,7 +6386,7 @@
   </testCase>
   <testCase name="e02_f422_c70_oldext_boundary_condition_icond0" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c70_oldext_boundary_condition_icond0</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6423,7 +6412,7 @@
   </testCase>
   <testCase name="e02_f422_c71_oldext_boundary_condition_icond1" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c71_oldext_boundary_condition_icond1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6449,7 +6438,7 @@
   </testCase>
   <testCase name="e02_f422_c72_oldext_boundary_condition_icond4_graded_linear" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c72_oldext_boundary_condition_icond4_graded_linear</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6475,7 +6464,7 @@
   </testCase>
   <testCase name="e02_f422_c73_oldext_boundary_condition_icond6" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c73_oldext_boundary_condition_icond6</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6501,7 +6490,7 @@
   </testCase>
   <testCase name="e02_f422_c74_oldext_boundary_condition_icond7" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c74_oldext_boundary_condition_icond7</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6527,7 +6516,7 @@
   </testCase>
   <testCase name="e02_f422_c75_oldext_boundary_condition_icond4_graded_linear_inicomp" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c75_oldext_boundary_condition_icond4_graded_linear_inicomp</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_000100_rst.nc" type="netCDF">
         <parameters>
@@ -6553,7 +6542,7 @@
   </testCase>
   <testCase name="e02_f422_c76_oldext_wrihis_sediment" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c76_oldext_wrihis_sediment</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6579,7 +6568,7 @@
   </testCase>
   <testCase name="e02_f422_c78_oldext_spatially_varying_tce" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c78_oldext_spatially_varying_tce</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/tst_20140819_001000_rst.nc" type="netCDF">
         <parameters>
@@ -6605,7 +6594,7 @@
   </testCase>
   <testCase name="e02_f422_c79_oldext_trench_EH_dll_transport_formula" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c79_oldext_trench_EH_dll_transport_formula</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t01_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6631,7 +6620,7 @@
   </testCase>
   <testCase name="e02_f422_c80_oldext_morupdfalse_cmpupdtrue" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c80_oldext_morupdfalse_cmpupdtrue</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6657,7 +6646,7 @@
   </testCase>
   <testCase name="e02_f422_c81_oldext_morupdtrue_cmpupdfalse" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c81_oldext_morupdtrue_cmpupdfalse</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6683,7 +6672,7 @@
   </testCase>
   <testCase name="e02_f422_c82_oldext_morupdtrue_cmpupdtrue" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c82_oldext_morupdtrue_cmpupdtrue</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6709,7 +6698,7 @@
   </testCase>
   <testCase name="e02_f422_c83_oldext_BedCmpStt_smaller_than_Morstt" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c83_oldext_BedCmpStt_smaller_than_Morstt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6735,7 +6724,7 @@
   </testCase>
   <testCase name="e02_f422_c84_oldext_bed_composition_hisfile" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c84_oldext_bed_composition_hisfile</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6761,7 +6750,7 @@
   </testCase>
   <testCase name="e02_f422_c85_oldext_morphopol" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c85_oldext_morphopol</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6787,7 +6776,7 @@
   </testCase>
   <testCase name="e02_f422_c87_oldext_restart_graded_inicomp" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c87_oldext_restart_graded_inicomp</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_000100_rst.nc" type="netCDF">
         <parameters>
@@ -6813,7 +6802,7 @@
   </testCase>
   <testCase name="e02_f422_c88_oldext_from_restart_graded_inicomp" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c88_oldext_from_restart_graded_inicomp</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001010_rst.nc" type="netCDF">
         <parameters>
@@ -6839,7 +6828,7 @@
   </testCase>
   <testCase name="e02_f422_c91_oldext_trench_GF" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c91_oldext_trench_GF</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t01_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6865,7 +6854,7 @@
   </testCase>
   <testCase name="e02_f422_c92_oldext_trench_GF_with_suspension" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c92_oldext_trench_GF_with_suspension</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/t01_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6891,7 +6880,7 @@
   </testCase>
   <testCase name="e02_f422_c93_oldext_fractions_cmpupd_only_fraction1" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c93_oldext_fractions_cmpupd_only_fraction1</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6917,7 +6906,7 @@
   </testCase>
   <testCase name="e02_f422_c94_oldext_fractions_cmpupd_only_fraction2" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c94_oldext_fractions_cmpupd_only_fraction2</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6943,7 +6932,7 @@
   </testCase>
   <testCase name="e02_f422_c95_oldext_extrapolate_bedlevel" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c95_oldext_extrapolate_bedlevel</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/r_20000101_040000_rst.nc" type="netCDF">
         <parameters>
@@ -6969,7 +6958,7 @@
   </testCase>
   <testCase name="e02_f422_c97_oldext_trench_VR93_SedTransStt" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c97_oldext_trench_VR93_SedTransStt</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
         <parameters>
@@ -6995,7 +6984,7 @@
   </testCase>
   <testCase name="e02_f044_c01_oldext_waveforcing_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f044_offline_waves/c01_oldext_waveforcing_1</path>
-    <maxRunTime>600.0000000</maxRunTime>
+
     <checks>
       <file name="output/Borkum_map.nc" type="netCDF">
         <parameters>
@@ -7010,7 +6999,7 @@
   </testCase>
   <testCase name="e02_f044_c02_oldext_waveforcing_2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f044_offline_waves/c02_oldext_waveforcing_2</path>
-    <maxRunTime>600.0000000</maxRunTime>
+
     <checks>
       <file name="output/Borkum_map.nc" type="netCDF">
         <parameters>
@@ -7025,7 +7014,7 @@
   </testCase>
   <testCase name="e02_f044_c03_oldext_waveforcing_3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f044_offline_waves/c03_oldext_waveforcing_3</path>
-    <maxRunTime>600.0000000</maxRunTime>
+
     <checks>
       <file name="output/Borkum_map.nc" type="netCDF">
         <parameters>

@@ -65,7 +65,7 @@ module unstruc_netcdf
    use m_unc_put_var_map
    use m_unc_put_var_map_generated
 
-   implicit none(type,external)
+   implicit none(type, external)
 
    private :: nerr_, err_firsttime_, err_firstline_, &
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
@@ -3704,6 +3704,7 @@ contains
 !! unc_write_map_filepointer directly instead!
    subroutine unc_write_map(filename, iconventions)
       use m_flowparameters, only: map_write_settings
+      use m_unstruc_netcdf_data, only: flowgeom_map
       implicit none
 
       character(len=*), intent(in) :: filename
@@ -3717,6 +3718,15 @@ contains
          iconv = UNC_CONV_CFOLD
       else
          iconv = iconventions
+      end if
+
+      if (iconv == UNC_CONV_UGRID) then
+         if (.not. associated(flowgeom_map)) then
+            return
+         end if
+         if (flowgeom_map%ndx_out <= 0) then
+            return
+         end if
       end if
 
       ierr = unc_create(filename, 0, mapids%ncid)
@@ -3753,7 +3763,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, ibedlevtyp, map_write_settings
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data, hminlw_xb => hminlw
       use m_transportdata
@@ -6635,7 +6645,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, jacali
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data
       use m_transportdata
@@ -11297,7 +11307,7 @@ contains
          ! No UGRID, but just try to use the 'old' format now.
          call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       end if
-      
+
       if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
          ierr = detect_proj_string(crs)
          if (ierr /= dfm_noerr) then
@@ -11310,7 +11320,7 @@ contains
          end if
       end if
    end subroutine unc_read_net
-      
+
    subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
       use network_data
