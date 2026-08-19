@@ -25,12 +25,16 @@ contains
       integer :: L0, iup, LL, kk, k1, k2
       real(kind=dp) :: hhi(3), zti(3), zbi(3)
       real(kind=dp) :: wstr, gatefraction
-      real(kind=dp) :: au1, au2, au3
+      real(kind=dp) :: au1, au2, au3, autot
       
       hhi = 0.0_dp
       zti = 0.0_dp
 
       genstr => structure%generalst
+      zbi(1) = genstr%zs_actual
+      zbi(2) = genstr%gateLowerEdgeLevel_actual + genstr%gatedoorheight
+      zbi(3) = zbi(1)
+
       do L0 = 1, structure%numlinks
          Lf = abs(structure%linknumbers(L0))
          k1 = ln(1, Lf)
@@ -89,13 +93,16 @@ contains
                au3 = genstr%au(3, L0) * (ff3(3, LL - Lb + 1) - ff3(3, LL - Lb))
                au(LL) = au1 + au2 + au3
                if (au(LL) > 0) then
-                  fu(LL) = (genstr%fu(1, L0) * au1 + genstr%fu(2, L0) * au2 + genstr%fu(3, L0) * au3) / au(LL)
-                  ru(LL) = (genstr%ru(1, L0) * au1 + genstr%ru(2, L0) * au2 + genstr%ru(3, L0) * au3) / au(LL)
+                  !fu(LL) = (genstr%fu(1, L0) * au1 + genstr%fu(2, L0) * au2 + genstr%fu(3, L0) * au3) / au(LL)
+                  !ru(LL) = (genstr%ru(1, L0) * au1 + genstr%ru(2, L0) * au2 + genstr%ru(3, L0) * au3) / au(LL)
+                  fu(ll) = fu(Lf)
+                  ru(LL) = ru(Lf)
                else
                   fu(LL) = 0.0_dp
                   ru(LL) = 0.0_dp
                end if
             end do
+            autot = sum(au(Lb:Lt))
          end if
       end do
    end subroutine distribute_linearized_3d_structure_coefficients
