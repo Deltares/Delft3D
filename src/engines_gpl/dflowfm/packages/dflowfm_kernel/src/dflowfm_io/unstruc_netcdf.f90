@@ -65,7 +65,7 @@ module unstruc_netcdf
    use m_unc_put_var_map
    use m_unc_put_var_map_generated
 
-   implicit none(type,external)
+   implicit none(type, external)
 
    private :: nerr_, err_firsttime_, err_firstline_, &
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
@@ -3704,6 +3704,7 @@ contains
 !! unc_write_map_filepointer directly instead!
    subroutine unc_write_map(filename, iconventions)
       use m_flowparameters, only: map_write_settings
+      use m_unstruc_netcdf_data, only: flowgeom_map
       implicit none
 
       character(len=*), intent(in) :: filename
@@ -3717,6 +3718,15 @@ contains
          iconv = UNC_CONV_CFOLD
       else
          iconv = iconventions
+      end if
+
+      if (iconv == UNC_CONV_UGRID) then
+         if (.not. associated(flowgeom_map)) then
+            return
+         end if
+         if (flowgeom_map%ndx_out <= 0) then
+            return
+         end if
       end if
 
       ierr = unc_create(filename, 0, mapids%ncid)
@@ -4353,7 +4363,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
-               
+
                if (secchi_depth_is_time_varying) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, nc_precision, UNC_LOC_S, 'Secc', 'secchi_depth_of_sea_water', 'Secchi depth', 'm', jabndnd=jabndnd_)
                end if
@@ -11267,7 +11277,7 @@ contains
          ! No UGRID, but just try to use the 'old' format now.
          call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       end if
-      
+
       if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
          ierr = detect_proj_string(crs)
          if (ierr /= dfm_noerr) then
@@ -11280,7 +11290,7 @@ contains
          end if
       end if
    end subroutine unc_read_net
-      
+
    subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
       use network_data
@@ -11310,10 +11320,10 @@ contains
 
       integer :: L
       real(kind=dp) :: zk_fillvalue
-      
+
       nerr_ = 0
       allocate (character(len=0) :: coordsyscheck)
-      
+
       ierr = unc_open(filename, nf90_nowrite, inetfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
       if (nerr_ > 0) then

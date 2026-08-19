@@ -36,7 +36,7 @@ contains
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                                    xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                                   dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                   dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                    tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                    tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                                    multuni1, multuni2, multuni3, multuni4)
@@ -80,6 +80,7 @@ contains
       logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name within filename
+      real(hp), optional, intent(in) :: data_value !< Scalar constant data value used instead of filename/forcingfile.
       character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
       real(kind=dp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
       real(kind=dp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -132,6 +133,7 @@ contains
       character(len=NAMTRACLEN) :: trname, sfname, qidname
       character(len=NAMLEN) :: constituent_name
       character(len=20) :: waqinput
+      character(len=:), allocatable :: selector
       integer, external :: findname
       type(tEcMask) :: srcmask
 
@@ -256,11 +258,7 @@ contains
                   if (present(dtnodal)) then
                      success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
-                     if (present(varname2)) then
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
-                     else
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
-                     end if
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, data_value=data_value, varname=varname, varname2=varname2)
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
@@ -697,7 +695,14 @@ contains
       sourceItemId_4 = 0
       source_connection_created = .false.
 
-      select case (str_tolower(trim(target_name)))
+      selector = str_tolower(trim(target_name))
+      if (ec_filetype == provFile_datavalue .and. .not. associated(targetItemPtr2)) then
+         ! Skip special handling in case a `data_value` is applied to a scalar target.
+         ! Clobber the `selector` to force the `select case` below to branch into the `default` case.
+         selector = ''
+      end if
+
+      select case (selector)
       case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             ! the file reader will have created an item called 'uniform_item'
@@ -954,6 +959,12 @@ contains
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'windspeed')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'winddirection')
             success = (sourceItemId /= ec_undef_int .and. sourceItemId_2 /= ec_undef_int)
+            if (.not. success) then
+               goto 1234
+            end if
+         else if (ec_filetype == provFile_datavalue) then
+            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'windxy')
+            success = (sourceItemId /= ec_undef_int)
             if (.not. success) then
                goto 1234
             end if

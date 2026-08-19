@@ -978,6 +978,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
+      use precision_basics, only: comparereal
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -1013,7 +1014,9 @@ contains
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-      if (.not. res) return
+      if (.not. res) then
+         return
+      end if
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -1132,7 +1135,7 @@ contains
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if

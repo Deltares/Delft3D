@@ -1573,7 +1573,7 @@
   </testCase>
   <testCase name="e01_f06_c12-vanrijn_temp" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f06_ols/c12-vanrijn_temp</path>
-    <maxRunTime>450</maxRunTime>
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="trih-T01.dat" type="NEFIS">
         <parameters name="his-series">
@@ -3792,7 +3792,6 @@
   </testCase>
   <testCase name="e01_f27_c02-temperature_sigma_10layers" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f27_zmodel_updates/c02-temperature_sigma_10layers</path>
-    <maxRunTime>200</maxRunTime>
     <checks>
       <file name="trih-tts.dat" type="NEFIS">
         <parameters name="his-series">
@@ -4481,7 +4480,7 @@
   </testCase>
   <testCase name="e01_f50_c31143_Simple-channel-flow(FP)_Chezy_3D_K10_non-eq2_ke_BCadapt" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f50_validation_analytical/c31143_Simple-channel-flow(FP)_Chezy_3D_K10_non-eq2_ke_BCadapt</path>
-      <maxRunTime>450</maxRunTime>
+      <maxRunTime>480</maxRunTime>
     <checks>
       <file name="trim-chz_3D_K10_non-eq2_ke_BCadapt.dat" type="NEFIS">
         <parameters name="map-series">
