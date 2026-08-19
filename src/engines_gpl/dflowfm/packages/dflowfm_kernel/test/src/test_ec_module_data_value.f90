@@ -106,6 +106,48 @@ contains
    !$f90tw )
 
    !$f90tw TESTCODE(TEST, test_ec_module_data_value,
+   !$f90tw test_data_value__multiply_ignores_undefined_masked_target, test_data_value__multiply_ignores_undefined_masked_target,
+   subroutine test_data_value__multiply_ignores_undefined_masked_target() bind(C)
+      use m_ec_parameters, only: ec_undef_hp
+      use m_flowtimes, only: tunit, tzone
+      use m_meteo, only: ecInstancePtr, ec_addtimespacerelation, ec_gettimespacevalue, initialize_ec_module, item_windx
+      use m_sferic, only: jsferic
+      use m_wind, only: wx
+      use timespace_data, only: JUSTUPDATE
+      use timespace_parameters, only: DATAVALUE, OPERAND_MULTIPLY
+      use timespace_read, only: MAXNAMELEN
+
+      integer, parameter :: IREFDATE = 20000101
+      real(dp), parameter :: FACTOR = 0.5_dp
+      character(len=MAXNAMELEN) :: quantity_name
+      real(dp) :: x(2), y(2)
+      integer :: mask(2)
+      logical :: success
+
+      allocate (wx(2))
+      wx = [100.0_dp, ec_undef_hp]
+      x = 0.0_dp
+      y = 0.0_dp
+      mask = [1, 0]
+      tzone = 0.0_dp
+      jsferic = 0
+      call initialize_ec_module()
+
+      quantity_name = 'windx'
+      success = ec_addtimespacerelation(quantity_name, x, y, mask, 1, '', &
+                                        DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=FACTOR)
+      call f90_expect_true(success, cstr('ec_addtimespacerelation failed for masked dataValue'))
+
+      success = ec_gettimespacevalue(ecInstancePtr, item_windx, IREFDATE, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, cstr('multiply should ignore undefined masked targets'))
+      call f90_expect_near(wx(1), 50.0_dp, 1.0e-6_dp, cstr('active target should be multiplied'))
+      call f90_expect_eq(wx(2), ec_undef_hp, cstr('inactive target should remain undefined'))
+
+      deallocate (wx)
+   end subroutine test_data_value__multiply_ignores_undefined_masked_target
+   !$f90tw )
+
+   !$f90tw TESTCODE(TEST, test_ec_module_data_value,
    !$f90tw test_data_value__windxy, test_data_value__windxy,
    subroutine test_data_value__windxy() bind(C)
       use m_sferic, only: jsferic

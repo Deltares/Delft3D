@@ -4346,16 +4346,16 @@ contains
          end if
 
          do j = jmin, jmax
+            if (associated(targetMask)) then
+               if (targetMask(j) == 0) then
+                  cycle
+               end if
+            end if
             from = (j - 1) * block_size + 1
             thru = j * block_size
             call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), status)
             if (.not. status) then
                return
-            end if
-            if (associated(targetMask)) then
-               if (targetMask(j) == 0) then
-                  cycle
-               end if
             end if
             call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), scalar_value)
          end do
