@@ -3781,6 +3781,8 @@ module m_meteo
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
    integer, target :: item_general_structure_gateOpeningWidth !< Unique Item id of the structure file's 'general structure gateOpeningWidth' quantity
    integer, target :: item_longculvert_valve_relative_opening !< Unique Item id of the structure file's 'longculvert valveRelativeOpening' quantity
+   integer, target :: item_dambreak_crestlevel !< Unique Item id of the structure file's 'dambreak crestLevel' quantity
+   integer, target :: item_dambreak_breachwidth !< Unique Item id of the structure file's 'dambreak breachWidth' quantity
 
    integer, target :: item_frcutim !< Unique Item id of the friction file's 'friction_coefficient_*' quantity
    integer, target :: item_valve1D !< Unique Item id of the ext-file's 'valve1D' quantxy' quantity
@@ -3962,6 +3964,8 @@ contains
       item_general_structure_gateHeight = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
       item_general_structure_gateOpeningWidth = ec_undef_int
+      item_dambreak_crestLevel = ec_undef_int
+      item_dambreak_breachwidth = ec_undef_int
       item_longculvert_valve_relative_opening = ec_undef_int
       item_frcutim = ec_undef_int
       item_valve1D = ec_undef_int
@@ -4405,6 +4409,12 @@ contains
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateopeningwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_gateOpeningWidth
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('dambreak_crestlevel') ! flow1d dambreak
+         itemPtr1 => item_dambreak_crestlevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('dambreak_breachwidth') ! flow1d dambreak
+         itemPtr1 => item_dambreak_breachwidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
