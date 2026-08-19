@@ -118,7 +118,7 @@ contains
       integer :: i
       integer :: i_const
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
-         real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
+      real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
 
       call timstrt('External forcings', handle_ext)
 
