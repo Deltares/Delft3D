@@ -2744,7 +2744,7 @@ contains
       character(len=:), allocatable :: nameVar ! variable name in error message
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
       integer :: nrow, ncol, nlay
-      logical :: coordinate_free_scalar
+      logical :: is_scalar_source
       !
       success = .false.
       itemPtr => null()
@@ -2756,7 +2756,7 @@ contains
       name = ''
       ndims = 0
       rotate_pole = .false.
-      coordinate_free_scalar = .false.
+      is_scalar_source = .false.
 
       ! =============================================================================
       ! Find the Quantity corresponding to quantityName. (configurable in the future)
@@ -2954,9 +2954,9 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         coordinate_free_scalar = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid .and. &
-                                   fgd_id < 0 .and. sgd_id < 0)
-         if (coordinate_free_scalar) then
+         is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid .and. &
+                             fgd_id < 0 .and. sgd_id < 0)
+         if (is_scalar_source) then
             grid_type = elmSetType_scalar
          else if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
@@ -2974,7 +2974,7 @@ contains
          ! Create the ElementSet for this quantity
          ! =========================================
          elementSetId = ecInstanceCreateElementSet(instancePtr)
-         if (coordinate_free_scalar) then
+         if (is_scalar_source) then
             if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_scalar)) then
                return
             end if
