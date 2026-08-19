@@ -55,7 +55,7 @@ contains
       use m_ship
       use m_transport, only: constituents, itemp
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_partitioninfo
       use m_wind, only: jaqin, jaqext, qext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, air_temperature, qextreal
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
