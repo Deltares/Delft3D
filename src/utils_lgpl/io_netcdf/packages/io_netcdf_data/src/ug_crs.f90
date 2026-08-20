@@ -35,7 +35,7 @@ module m_ug_crs
       character(len=64)               :: varname = ' '              !< Name of the netCDF variable containing this CRS
       character(len=64)               :: name = ' '                 !< Name of the coordinate reference system, like "Amersfoort / RD New"
       character(len=64)               :: grid_mapping_name = ' '    !< Name of the grid mapping
-      integer                         :: epsg_code                  !< EPSG code (more info: http://spatialreference.org/)
+      integer                         :: epsg_code = 0              !< EPSG code (more info: http://spatialreference.org/)
       character(len=1024)             :: proj_string = ' '          !< PROJ-string (more info: http://proj4.org)
       character(len=1024)             :: wkt = ' '                  !< Well Known Text
       type(ug_nc_attribute), allocatable :: attset(:)                  !< General set with all/any attributes about this CRS.
