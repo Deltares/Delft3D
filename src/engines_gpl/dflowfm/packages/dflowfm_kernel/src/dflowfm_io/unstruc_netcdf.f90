@@ -11830,6 +11830,7 @@ contains
       integer :: numpart, lmerge = 0, lugrid = 0
       integer :: kstart, lstart, kstart_bnd
       integer :: jamergedmap_same_bu
+      integer :: full_restart_detected(1)
       integer :: tmp_loc
       integer :: numl1d
       logical :: is_wq_bot_3d
@@ -11890,6 +11891,7 @@ contains
 
       is_full_restart = .false.
       if (jampi == 1 .and. um%jamergedmap == 0) then
+         full_restart_detected = 0
          ierr = nf90_inq_dimid(imapfile, 'nFlowElem', id_tmp)
          if (ierr == nf90_noerr) then
             ierr = nf90_inquire_dimension(imapfile, id_tmp, len=ndxi_read)
@@ -11901,6 +11903,10 @@ contains
             ierr = nf90_inquire_dimension(imapfile, id_tmp, len=lnx_read)
          end if
          if (ierr == nf90_noerr .and. (ndxi_read > ndxi .or. lnx_read > lnx)) then
+            full_restart_detected = 1
+         end if
+         call reduce_int_max(1, full_restart_detected)
+         if (full_restart_detected(1) == 1) then
             um%jamergedmap = 1
             um%jamergedmap_same = 0
             is_full_restart = .true.
@@ -15362,8 +15368,9 @@ contains
       integer, dimension(n), optional, intent(inout) :: inode_merge2loc !< mapping from the index in the merged map file
       integer, intent(in) :: jaerror2sam !< add unfound nodes to samples (1) or not (0)
       logical, intent(in), optional :: allow_boundary_remap !< allow nearest-point matching for displaced full-restart boundary points
+      integer, parameter :: max_boundary_candidates = 16
       integer :: ierror = 1
-      integer :: k, nn, i, jj, kk, jamerge2own
+      integer :: k, nn, i, jj, kk, jamerge2own, boundary_candidate_count
       integer :: boundary_flow_link, boundary_net_link, boundary_node_1, boundary_node_2, boundary_match, boundary_ja
       logical :: allow_boundary_remap_
       real(kind=dp) :: R2search = 1.0e-8_dp !< Search radius
@@ -15411,19 +15418,25 @@ contains
 
          if (allow_boundary_remap_ .and. janode == 2) then
             ! A sequential restart stores physical boundary points, while a partition
-            ! can move their ghost coordinates. Match by the boundary edge instead.
+            ! can move their ghost coordinates. Search near the physical boundary link,
+            ! then select the candidate nearest to its edge.
             boundary_flow_link = lnxi + kk
             boundary_net_link = abs(ln2lne(boundary_flow_link))
             boundary_node_1 = kn(1, boundary_net_link)
             boundary_node_2 = kn(2, boundary_net_link)
             boundary_match = 0
             boundary_distance_min = huge(1.0_dp)
-            do i = 1, n
-               call dlinedis(x(i), y(i), xk(boundary_node_1), yk(boundary_node_1), xk(boundary_node_2), yk(boundary_node_2), &
+            boundary_candidate_count = min(n, max_boundary_candidates)
+            call make_queryvector_kdtree(treeinst, xu(boundary_flow_link), yu(boundary_flow_link), jsferic)
+            call realloc_results_kdtree(treeinst, boundary_candidate_count)
+            call kdtree2_n_nearest(treeinst%tree, treeinst%qv, boundary_candidate_count, treeinst%results)
+            do i = 1, boundary_candidate_count
+               jj = treeinst%results(i)%idx
+               call dlinedis(x(jj), y(jj), xk(boundary_node_1), yk(boundary_node_1), xk(boundary_node_2), yk(boundary_node_2), &
                              boundary_ja, boundary_distance, boundary_projection_x, boundary_projection_y, jsferic, jasfer3D, dmiss)
                if (boundary_distance < boundary_distance_min) then
                   boundary_distance_min = boundary_distance
-                  boundary_match = i
+                  boundary_match = jj
                end if
             end do
             if (boundary_match > 0) then
