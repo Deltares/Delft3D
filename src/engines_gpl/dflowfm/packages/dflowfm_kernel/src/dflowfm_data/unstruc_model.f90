@@ -773,10 +773,6 @@ contains
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
       call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
 
-      if (Dztop > 0.0_dp) then ! hk claims back original functionality
-         iStrchType = -1
-      end if
-
       call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [geometry] block
       call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
 
