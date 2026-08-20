@@ -1475,15 +1475,6 @@ void Dimr::getAddress(const char* name, int compType, BMI_GETVAR dllGetVar, doub
         }
         log->Write(ALL, my_rank, "Dimr::getAddress -- calling");
         (dllGetVar)(name, (void**)(sourceVarPtr));
-        if (*sourceVarPtr == NULL)
-        {
-            throw Exception(
-                Exception::ERR_INVALID_INPUT,
-                "ABORT: Dimr::getAddress: get_var returned no address for \"%s\". The callback exists, but the "
-                "variable is not exposed by the component or the coupling item is incorrectly declared as "
-                "type=\"pointer\".",
-                name);
-        }
     }
     else
     {
