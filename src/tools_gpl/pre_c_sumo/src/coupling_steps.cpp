@@ -12,6 +12,8 @@
 #include <limits>
 #include <numbers> // for std::numbers::pi
 #include <cmath>   // for atan2,sin,cos
+#include <string>
+#include <fstream>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -130,6 +132,20 @@ namespace pre_c_sumo
         }
     }
 
+    bool is_complete_nf2ff_file(std::filesystem::path filename)
+    {
+        std::ifstream file(filename);
+        std::string str;
+        while (std::getline(file, str))
+        {
+            if (str.contains("</NF2FF>"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
     {
         for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
@@ -137,7 +153,7 @@ namespace pre_c_sumo
             std::println("Waiting for NF2FF file: {}", file.string());
             // Wait for the NF2FF file to be available
             // TODO: Might be necessary to check whether writing the file is finished too
-            while (!std::filesystem::exists(file))
+            while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file))
             {
                 // Throttle CPU load.
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
