@@ -163,7 +163,7 @@ function(F90TWTEST NAME)
         )
         
     endif()
-    gtest_discover_tests(${NAME} WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
+    gtest_discover_tests(${NAME} WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}> DISCOVERY_TIMEOUT 30)
 endfunction()
 
 # resolve the preprocessor to be used. it is assumed that on unix-based systems
