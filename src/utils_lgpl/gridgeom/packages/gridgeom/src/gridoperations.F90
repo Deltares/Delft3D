@@ -1,7 +1,7 @@
 !LC TO DO: PASS CALL-BACK  FUNCTION FOR INTERACTER MESSAGES
 module gridoperations
 
-   use MessageHandling, only: msgbox, mess, LEVEL_ERROR, LEVEL_WARN
+   use MessageHandling, only: msgbox, mess, LEVEL_ERROR, LEVEL_WARN, LEVEL_FATAL, LEVEL_INFO
    use m_ug_meshgeom
    implicit none
 
@@ -73,6 +73,34 @@ module gridoperations
 
 contains
 
+   !> Aborts with a fatal message when an ALLOCATE failed.
+   !! Without this the caller silently continues and writes into unallocated arrays,
+   !! which turns a diagnosable out-of-memory into an access violation.
+   subroutine abort_on_alloc_error(name, ierr, isize)
+      character(len=*), intent(in) :: name !< Description of the allocated array(s).
+      integer, intent(in) :: ierr !< STAT value returned by the ALLOCATE statement.
+      integer, intent(in) :: isize !< Requested number of elements.
+
+      character(len=256) :: message
+
+      if (ierr == 0) return
+
+      write (message, '(a,a,a,i0,a,i0,a)') 'Allocation of ', trim(name), ' failed (stat = ', ierr, &
+         ', requested size = ', isize, ').'
+      call mess(LEVEL_FATAL, trim(message))
+   end subroutine abort_on_alloc_error
+
+   !> Writes a network-administration diagnostic line and flushes it immediately.
+   !! UNST-10262: without the flush the last lines are lost when a rank crashes.
+   subroutine netw_diag(message)
+      use iso_fortran_env, only: output_unit
+
+      character(len=*), intent(in) :: message !< Diagnostic message.
+
+      call mess(LEVEL_INFO, 'netwdiag: '//trim(message))
+      flush (output_unit)
+   end subroutine netw_diag
+
    !> Initializes the gridoperations module.
    !! Only initializes debug timers for now.
    subroutine init_gridoperations()
@@ -112,11 +140,25 @@ contains
       use network_data
       implicit none
       integer :: k, KX, LS, LS0, LX, NODSIZ, IERR
+      character(len=256) :: message
 
       !IF ( NUMK0.EQ.0 ) RETURN
       if (.not. allocated(xk0) .or. .not. allocated(kn0) .or. .not. allocated(nod0)) return
 
       KX = size(XK0) ! restore everything present (in case numk/numk0 has not yet been increased)
+
+      if (.not. allocated(xk) .or. .not. allocated(nod) .or. .not. allocated(lc)) then
+         call mess(LEVEL_FATAL, 'restore: net node/link arrays are not allocated while a backup exists.')
+      end if
+
+      write (message, '(a,i0,a,i0,a,i0,a,i0)') 'restore: KX = ', KX, ', size(xk) = ', size(XK), &
+         ', size(nmk) = ', size(NMK), ', size(nod) = ', size(NOD)
+      call netw_diag(message)
+
+      if (KX > size(XK) .or. KX > size(NMK) .or. KX > size(KC) .or. KX > size(NOD)) then
+         write (message, '(a,i0,a,i0)') 'restore: backup size ', KX, ' exceeds current net node array size ', size(XK)
+         call mess(LEVEL_FATAL, trim(message))
+      end if
 
       XK(1:KX) = XK0(1:KX)
       YK(1:KX) = YK0(1:KX)
@@ -126,6 +168,11 @@ contains
       KC(1:KX) = KC0(1:KX)
 
       LX = size(LC0) ! restore everything present (in case numl/numl0 has not yet been increased)
+
+      if (LX > size(LC) .or. LX > size(KN, 2)) then
+         write (message, '(a,i0,a,i0)') 'restore: backup size ', LX, ' exceeds current net link array size ', size(LC)
+         call mess(LEVEL_FATAL, trim(message))
+      end if
 
       KN(:, 1:LX) = KN0(:, 1:LX)
       LC(1:LX) = LC0(1:LX)
@@ -173,10 +220,25 @@ contains
       implicit none
       integer :: ierr
       integer :: k, KX, LS, LS0, LX
+      character(len=256) :: message
 
       if (.not. allocated(xk) .or. .not. allocated(kn) .or. .not. allocated(nod)) return
 
       KX = KMAX ! backup everything present (in case numk has not yet been increased) ! KX = NUMK
+
+      write (message, '(a,i0,a,i0,a,i0,a,i0,a,i0)') 'savenet: KMAX = ', KMAX, ', LMAX = ', LMAX, &
+         ', size(xk) = ', size(XK), ', size(nod) = ', size(NOD), ', size(lc) = ', size(LC)
+      call netw_diag(message)
+
+      if (KX > size(XK) .or. KX > size(NMK) .or. KX > size(KC) .or. KX > size(NOD)) then
+         write (message, '(a,i0,a,i0)') 'savenet: KMAX ', KX, ' exceeds net node array size ', size(XK)
+         call mess(LEVEL_FATAL, trim(message))
+      end if
+      if (LMAX > size(LC) .or. LMAX > size(KN, 2)) then
+         write (message, '(a,i0,a,i0)') 'savenet: LMAX ', LMAX, ' exceeds net link array size ', size(LC)
+         call mess(LEVEL_FATAL, trim(message))
+      end if
+
       if (allocated(nod0)) then
          do K = 1, size(NOD0)
             if (allocated(nod0(k)%lin)) deallocate (NOD0(K)%LIN)
@@ -184,17 +246,19 @@ contains
          deallocate (NOD0)
       end if
       allocate (NOD0(KX), stat=ierr)
-      !CALL AERR('NOD0(KX)', IERR, KX)
+      call abort_on_alloc_error('NOD0(KX)', IERR, KX)
 
       if (allocated(xk0)) deallocate (xk0, yk0, zk0)
       allocate (XK0(KX), YK0(KX), ZK0(KX), STAT=IERR)
-      !call aerr('XK0(KX), YK0(KX), ZK0(KX)', IERR, 3*kx)
+      call abort_on_alloc_error('XK0(KX), YK0(KX), ZK0(KX)', IERR, 3 * KX)
 
       if (allocated(KC0)) deallocate (KC0)
       allocate (KC0(KX), STAT=IERR)
+      call abort_on_alloc_error('KC0(KX)', IERR, KX)
 
       if (allocated(nmk0)) deallocate (NMK0)
       allocate (NMK0(KX), STAT=IERR)
+      call abort_on_alloc_error('NMK0(KX)', IERR, KX)
 
       XK0(1:KX) = XK(1:kx)
       YK0(1:KX) = YK(1:kx)
@@ -205,6 +269,7 @@ contains
       if (allocated(LC0)) deallocate (KN0, LC0)
       LX = LMAX ! backup everything present (in case numl has not yet been increased) ! LX = NUML
       allocate (KN0(3, LX), LC0(LX), STAT=IERR)
+      call abort_on_alloc_error('KN0(3,LX), LC0(LX)', IERR, 4 * LX)
 
       KN0(:, 1:LX) = KN(:, 1:LX)
       LC0(1:LX) = LC(1:LX)
@@ -254,6 +319,8 @@ contains
       integer :: k
       integer :: knxx
       logical :: also_dxe_
+      integer :: nxk, nnod, nnmk0
+      character(len=256) :: message
 
       if (present(also_dxe)) then
          also_dxe_ = also_dxe
@@ -268,6 +335,14 @@ contains
 
       if (K0 < KMAX .and. L0 < LMAX) return
 
+      nxk = -1
+      if (allocated(xk)) nxk = size(xk)
+      nnod = -1
+      if (allocated(nod)) nnod = size(nod)
+      write (message, '(a,i0,a,i0,a,i0,a,i0,a,i0,a,i0,a,i0)') 'increasenetw enter: K0 = ', K0, ', L0 = ', L0, &
+         ', KMAX = ', KMAX, ', LMAX = ', LMAX, ', numk = ', NUMK, ', size(xk) = ', nxk, ', size(nod) = ', nnod
+      call netw_diag(message)
+
       call SAVENET()
 
       if (KMAX <= K0) then
@@ -280,8 +355,16 @@ contains
          end if
          allocate (NOD(KMAX), STAT=IERR)
          call AERR('NOD(KMAX)', IERR, KMAX)
+         call abort_on_alloc_error('NOD(KMAX)', IERR, KMAX)
          allocate (XK(KMAX), YK(KMAX), ZK(KMAX), KC(KMAX), NMK(KMAX), RNOD(KMAX), STAT=IERR)
          call AERR('XK (KMAX), YK (KMAX), ZK (KMAX), KC (KMAX), NMK (KMAX), RNOD(KMAX)', IERR, 7 * KMAX)
+         call abort_on_alloc_error('XK/YK/ZK/KC/NMK/RNOD(KMAX)', IERR, 7 * KMAX)
+
+         nnmk0 = -1
+         if (allocated(nmk0)) nnmk0 = size(nmk0)
+         write (message, '(a,i0,a,i0,a,i0)') 'increasenetw: node arrays sized ', KMAX, ', KNX = ', KNX, &
+            ', size(nmk0) = ', nnmk0
+         call netw_diag(message)
 
          do K = 1, KMAX
             if ((allocated(NMK0)) .and. (K <= size(NMK0))) then
@@ -290,6 +373,10 @@ contains
                KNXX = KNX
             end if
             allocate (NOD(K)%LIN(KNXX), STAT=IERR); 
+            if (IERR /= 0) then
+               write (message, '(a,i0,a,i0)') 'NOD(K)%LIN(KNXX) at K = ', K, ' with KNXX = ', KNXX
+               call abort_on_alloc_error(trim(message), IERR, KNXX)
+            end if
             NOD(K)%LIN = 0
          end do
 
@@ -301,17 +388,25 @@ contains
          if (size(LC) > 0 .and. allocated(kn)) then
             deallocate (KN, LC, RLIN)
          end if
-         allocate (KN(3, LMAX), LC(LMAX), STAT=IERR); KN = 0; LC = 0 ! TODO: AvD: catch memory error
+         allocate (KN(3, LMAX), LC(LMAX), STAT=IERR); KN = 0; LC = 0
+         call abort_on_alloc_error('KN(3,LMAX), LC(LMAX)', IERR, 4 * LMAX)
          allocate (RLIN(LMAX), STAT=IERR)
+         call abort_on_alloc_error('RLIN(LMAX)', IERR, LMAX)
+
+         write (message, '(a,i0)') 'increasenetw: link arrays sized ', LMAX
+         call netw_diag(message)
 
          if (also_dxe_) then
             if (allocated(dxe)) deallocate (dxe)
-            allocate (dxe(LMAX))
+            allocate (dxe(LMAX), STAT=IERR)
+            call abort_on_alloc_error('dxe(LMAX)', IERR, LMAX)
             dxe = dmiss
          end if
       end if
 
       call RESTORE()
+
+      call netw_diag('increasenetw exit')
 
    end subroutine INCREASENETW
 

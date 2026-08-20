@@ -11265,9 +11265,14 @@ contains
       integer, intent(out) :: numl_read !< Number of new netlinks read from file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
+      integer :: natts
+      character(len=512) :: message
+
       call readyy('Reading net data', 0.0_dp)
 
       call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
+
+      call net_diag('unc_read_net enter, file '''//trim(filename)//'''')
 
       !
       ! Try and read as new UGRID NetCDF format
@@ -11275,11 +11280,21 @@ contains
       call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       if (ierr /= dfm_noerr) then
          ! No UGRID, but just try to use the 'old' format now.
+         call net_diag('unc_read_net falling back to old-format reader')
          call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       end if
 
+      natts = -1
+      if (allocated(crs%attset)) natts = size(crs%attset)
+      write (message, '(a,i0,a,i0,a,i0,a,a)') 'unc_read_net after read: ierr = ', ierr, &
+         ', size(crs%attset) = ', natts, ', crs%epsg_code = ', crs%epsg_code, &
+         ', crs%varname = ', trim(crs%varname)
+      call net_diag(message)
+
       if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
+         call net_diag('calling detect_proj_string')
          ierr = detect_proj_string(crs)
+         call net_diag('detect_proj_string returned, proj_string = '''//trim(crs%proj_string)//'''')
          if (ierr /= dfm_noerr) then
             ierr = dfm_noerr
             call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
@@ -11289,7 +11304,21 @@ contains
             end if
          end if
       end if
+
+      call net_diag('unc_read_net exit')
    end subroutine unc_read_net
+
+   !> Writes a net-reading diagnostic line and flushes it immediately.
+   !! UNST-10262: without the flush the last lines are lost when a rank crashes.
+   subroutine net_diag(message)
+      use messagehandling, only: LEVEL_INFO
+      use iso_fortran_env, only: output_unit
+
+      character(len=*), intent(in) :: message !< Diagnostic message.
+
+      call mess(LEVEL_INFO, 'netwdiag: '//trim(message))
+      flush (output_unit)
+   end subroutine net_diag
 
    subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
@@ -11364,10 +11393,15 @@ contains
             !endif
          end if
          ierr = ncu_get_var_attset(inetfile, id_crsvar, crs%attset)
+         call net_diag('unc_read_net_old: read crs variable '''//trim(crs%varname)//'''')
+      else
+         call net_diag('unc_read_net_old: no coordinate system variable in net file, crs%attset stays unallocated')
       end if
 
 ! Prepare net vars for new data and fill with values from file
+      call net_diag('unc_read_net_old: calling increasenetw')
       call increasenetw(numk_keep + numk_read, numl_keep + numl_read)
+      call net_diag('unc_read_net_old: increasenetw done')
       call readyy('Reading net data', 0.1_dp)
 
       ierr = nf90_inq_varid(inetfile, 'NetNode_x', id_netnodex)
