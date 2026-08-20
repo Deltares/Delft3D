@@ -1963,14 +1963,12 @@ contains
       use dfm_error, only: DFM_NOERR
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
-      use m_mass_balance_areas, only: mbaname
       use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
-      use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
       use dfm_error, only: dfm_extforcerror, dfm_wronginput, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
@@ -2001,9 +1999,6 @@ contains
       end if
       if (.not. allocated(wqbotnames)) then
          allocate (wqbotnames(0))
-      end if
-      if (.not. allocated(mbaname)) then
-         allocate (mbaname(0))
       end if
 
       ! (re-)initialize flags/counters
@@ -2664,10 +2659,6 @@ contains
       call setzminmax()
       call setsigmabnds() ! our side of preparation for 3D ec module
 
-      ! initialise mass balance areas - always allocate these arrays
-      call realloc(mbadef, Ndkx, keepExisting=.false., fill=-999)
-      call realloc(mbadefdomain, Ndkx, keepExisting=.false., fill=-999)
-
       if (kmx > 0) then
          if (jastructurelayersactive > 0) then
             if (allocated(ff3)) then
@@ -2745,14 +2736,12 @@ contains
    subroutine finalize()
       use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
-      use m_flowtimes, only: ti_mba
       use m_storage, only: t_storage, get_surface
       use m_structures, only: network
       use m_meteo
       use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
       use m_transport, only: numconst_mdu, numconst
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
-      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum, set_japartqbnd
+      use m_partitioninfo, only: jampi, idomain, my_rank, set_japartqbnd
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
@@ -2767,8 +2756,7 @@ contains
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
-      integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
-      integer :: imba, needextramba, needextrambar
+      integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
@@ -3152,53 +3140,6 @@ contains
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)
-
-      !  Check if there are any cells left that are not part of a mass balance area, and if we need an extra area.
-      if (ti_mba > 0) then
-         needextramba = 0
-         do kk = 1, Ndxi
-            if (mbadef(kk) == -999) then
-               needextramba = 1
-               exit
-            end if
-         end do
-
-         if (jampi == 1) then
-            ! check this among all domains (it could be that there are no remaing cels in this domain, while there are in other domains).
-            call reduce_int_sum(needextramba, needextrambar)
-            needextramba = needextrambar
-         end if
-
-         if (needextramba /= 0) then
-            ! add the extra 'Unnamed' mass balance area, and assing the unassigned cells to this area.
-            nomba = nomba + 1
-            call realloc(mbaname, nomba, keepExisting=.true., fill="Unnamed")
-            imba = nomba
-            do kk = 1, Ndxi
-               if (mbadef(kk) == -999) then
-                  mbadef(kk) = imba
-                  call getkbotktop(kk, kb, kt)
-                  do k = kb, kb + kmxn(kk) - 1
-                     mbadef(k) = imba
-                  end do
-               end if
-            end do
-         end if
-
-         do kk = 1, Ndxi
-            if (jampi == 1) then
-               ! do not include ghost cells
-               if (idomain(kk) /= my_rank) then
-                  cycle
-               end if
-            end if
-            mbadefdomain(kk) = mbadef(kk)
-            call getkbotktop(kk, kb, kt)
-            do k = kb, kb + kmxn(kk) - 1
-               mbadefdomain(k) = mbadef(k)
-            end do
-         end do
-      end if
 
       ! Copy NUMCONST to NUMCONST_MDU, before the user (optionally) adds tracers interactively
       NUMCONST_MDU = NUMCONST

@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_waves, only: dsurf, dwcap, twav, rlabda, hwav
       use m_sferic, only: pi
-      use m_waveconst, only: wave_swan_online, wave_nc_offline, wave_surfbeat, wave_fetch_hurdle, wave_fetch_young, wave_uniform
+      use m_waveconst, only: wave_swan_online, wave_surfbeat, wave_fetch_hurdle, wave_fetch_young, wave_uniform, WAVE_NC_OFFLINE
       use m_xbeach_data, only: DR, D, roller
       use m_flowparameters, only: jawave
       use m_flow, only: s1, epshu

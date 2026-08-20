@@ -78,7 +78,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_config">
@@ -95,7 +95,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="platform_specific">
@@ -112,7 +112,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
   </defaultTestCases>

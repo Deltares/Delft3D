@@ -25,6 +25,7 @@ f90twtest(${test_target}
         src/test_sources_sinks.f90
         src/test_timespace_parameters.f90
         src/test_ec_module_block.f90
+        src/test_ec_module_data_value.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
         src/test_mdu_file_read_write.f90
@@ -46,6 +47,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sources_sinks.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_timespace_parameters.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_block.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_data_value.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_inifields.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_model.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mdu_file_read_write.f90

@@ -3862,7 +3862,7 @@ module m_meteo
    interface
       module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                                       xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                                      dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                      dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                       tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                                       multuni1, multuni2, multuni3, multuni4)
@@ -3888,6 +3888,7 @@ module m_meteo
          logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
          character(len=*), optional, intent(in) :: varname !< variable name within filename
          character(len=*), optional, intent(in) :: varname2 !< variable name within filename
+         real(hp), optional, intent(in) :: data_value !< Data value used for multiplying quantities with a constant factor.
          character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
          real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
          real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -4084,6 +4085,8 @@ contains
          ec_filetype = provFile_bc
       case (NODE_ID) ! 20
          ec_filetype = provFile_bc
+      case (DATAVALUE) ! 21
+         ec_filetype = provFile_datavalue
       case (FOURIER) ! 101
          ec_filetype = provFile_fourier
       case default
