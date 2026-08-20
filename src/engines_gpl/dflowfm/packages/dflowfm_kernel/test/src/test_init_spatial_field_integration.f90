@@ -108,6 +108,33 @@ contains
       call check_netcdf(nf90_close(ncid))
    end subroutine create_scalar_netcdf
 
+   subroutine create_netcdf_timeseries_with_coordinates(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, x_varid, y_varid, ssrd_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [time_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [time_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, x_varid, [1.0_dp, 2.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, y_varid, [3.0_dp, 4.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_netcdf_timeseries_with_coordinates
+
    subroutine create_windxy_netcdf(file_name)
       use netcdf
 
@@ -813,6 +840,47 @@ contains
       if (allocated(solar_radiation)) deallocate (solar_radiation)
       call teardown_minimal_grid()
    end subroutine test_solarradiation_scalar_netcdf_broadcast
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_located_timeseries_netcdf_is_not_scalar, test_located_timeseries_netcdf_is_not_scalar,
+   subroutine test_located_timeseries_netcdf_is_not_scalar() bind(C)
+      use m_meteo, only: initialize_ec_module
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_located_timeseries.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_located_timeseries.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_netcdf_timeseries_with_coordinates(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+
+      call setup_minimal_grid()
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'time-only data with horizontal coordinates should not be treated as scalar')
+
+      solar_radiation_available = .false.
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      call teardown_minimal_grid()
+   end subroutine test_located_timeseries_netcdf_is_not_scalar
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_scalar_netcdf_override_and_multiply, test_windxy_scalar_netcdf_override_and_multiply,
