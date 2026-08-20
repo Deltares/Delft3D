@@ -165,8 +165,8 @@ contains
       use string_module, only: strcmpi
 
       ! Arguments
-      type(tree_data), pointer, intent(in) :: tree !< tree of content of the input file to check for deprecated keywords
-      type(deprecated_keyword_set), intent(in) :: keyword_set !< keyword set that corresponds to the file type of the tree that is being checked
+      type(tree_data), pointer, intent(in) :: tree !< Tree of content of the input file to check for deprecated keywords
+      type(deprecated_keyword_set), intent(in) :: keyword_set !< Keyword set that corresponds to the file type of the tree that is being checked
       integer, intent(out) :: status !< Result status (DFM_NOERR if no invalid (obsolete) entries were present)
       character(len=*), intent(in) :: prefix !< Message string prefix
       character(len=*), dimension(:), optional, intent(in) :: excluded_chapters !< Tree chapters to exclude when checking for deprecated or unused keywords
@@ -239,7 +239,6 @@ contains
                   if (node%node_visit < 1) then
                      if (is_obsolete(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_obsolete = num_obsolete + 1
-
                         call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' '//trim(context_info)//' is obsolete and cannot be used anymore. Check possible typo.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      else if (needs_usage_warning(trim(chapter_name), trim(node_name))) then
