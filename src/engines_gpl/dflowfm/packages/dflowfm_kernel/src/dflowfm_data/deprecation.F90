@@ -183,11 +183,8 @@ contains
       character(len=30) :: node_name !< name of the keyword
       character(len=30) :: chapter_name !< name of the chapter
       character(len=100) :: node_string !< string containing the keyword value
-      character(len=100) :: quantity !< quantity of block
-      character(len=100) :: datafile !< datafile of block
       character(len=100) :: context_value !< value of the current context keyword
       character(len=:), allocatable :: context_info !< string with additional context information for the current keyword
-      character(len=:), allocatable :: message !< message string for the current keyword
       integer :: temp_threshold !< backup variable for default abort threshold level (temporarily overruled)
       logical :: success !< flag indicating successful completion of a call
       integer :: num_obsolete !< count the number of obsolete (removed) keywords
@@ -201,8 +198,6 @@ contains
       ! Initialization
       num_obsolete = 0
       num_deprecated = 0
-      quantity = ''
-      datafile = ''
 
       temp_threshold = threshold_abort
       threshold_abort = LEVEL_FATAL
