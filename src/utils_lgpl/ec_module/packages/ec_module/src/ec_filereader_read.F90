@@ -781,21 +781,11 @@ contains
                fieldPtr%arr1dPtr => fieldPtr%arr1d
             end if
 
-            valid_field = .false.
-            do while (.not. valid_field)
-               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, fieldPtr%arr1dPtr, start=[timesndx], count=[1])
-               if (ierror /= NF90_NOERR) then
-                  call set_ec_message("NetCDF:'"//trim(nf90_strerror(ierror))//"' in "//trim(fileReaderPtr%filename)//".")
-                  return
-               end if
-
-               valid_field = (fieldPtr%arr1dPtr(1) /= dmiss_nc)
-               if (.not. valid_field .and. timesndx < fileReaderPtr%tframe%nr_timesteps) then
-                  timesndx = timesndx + 1
-               else
-                  valid_field = .true.
-               end if
-            end do
+            ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, fieldPtr%arr1dPtr, start=[timesndx], count=[1])
+            if (ierror /= NF90_NOERR) then
+               call set_ec_message("NetCDF:'"//trim(nf90_strerror(ierror))//"' in "//trim(fileReaderPtr%filename)//".")
+               return
+            end if
 
             fieldPtr%timesteps = ecSupportTimeIndexToMJD(fileReaderPtr%tframe, timesndx)
             fieldPtr%timesndx = timesndx

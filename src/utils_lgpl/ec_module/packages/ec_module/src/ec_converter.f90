@@ -4327,19 +4327,23 @@ contains
 
       targetField => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
       targetMask => connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%mask
+      n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
+      if (n_coordinates <= 0 .or. modulo(size(targetField%arr1dPtr), n_coordinates) /= 0) then
+         call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
+         return
+      end if
+      values_per_coordinate = size(targetField%arr1dPtr) / n_coordinates
+
       if (connection%converterPtr%targetIndex /= ec_undef_int) then
-         first_coordinate = connection%converterPtr%targetIndex
-         last_coordinate = connection%converterPtr%targetIndex
-         values_per_coordinate = 1
-      else
-         n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
-         if (n_coordinates <= 0 .or. modulo(size(targetField%arr1dPtr), n_coordinates) /= 0) then
-            call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
+         if (connection%converterPtr%targetIndex < 1 .or. connection%converterPtr%targetIndex > n_coordinates) then
+            call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target coordinate index out of range.")
             return
          end if
+         first_coordinate = connection%converterPtr%targetIndex
+         last_coordinate = connection%converterPtr%targetIndex
+      else
          first_coordinate = 1
          last_coordinate = n_coordinates
-         values_per_coordinate = size(targetField%arr1dPtr) / n_coordinates
       end if
 
       do coordinate_index = first_coordinate, last_coordinate

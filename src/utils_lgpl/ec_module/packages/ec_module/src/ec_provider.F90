@@ -2954,8 +2954,7 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid .and. &
-                             fgd_id < 0 .and. sgd_id < 0)
+         is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid)
          if (is_scalar_source) then
             grid_type = elmSetType_scalar
          else if (fgd_id < 0 .or. sgd_id < 0) then
