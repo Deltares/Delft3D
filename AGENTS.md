@@ -8,6 +8,12 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
 - TestBench: `/test/deltares_testbench` (Python)
 - TeamCity CI configuration and tools: `/ci` (Python, Dockerfile, TeamCity Kotlin DSL)
 
+## Documentation
+
+- [DflowFM User Manual (PDF)](https://content.oss.deltares.nl/dhydro/D-Flow_FM_User_Manual.pdf)
+- [DflowFM Technical Reference Manual (PDF)](https://content.oss.deltares.nl/dhydro/D-Flow_FM_Technical_Reference_Manual.pdf)
+
+
 ## Toolchain
 
 - Build system: CMake 4
@@ -29,6 +35,7 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
   - NetCDF: `ncdump`, `nccopy`, `ncgen`
   - XML: `xmllint`, `xmlstarlet`
   - JSON: `jq`
+  - PDF: `markitdown` (only with the 'pdf' optional dependency)
 - Python: `uv` with Python 3.12 installed
 - CI: `teamcity` (TeamCity CLI tool)
 - Debugger: `gdb-oneapi` (GDB like interface, but used for `ifx` compiled Fortran binaries)

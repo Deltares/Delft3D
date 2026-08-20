@@ -54,6 +54,7 @@ RUN <<"EOF"
 export UV_PYTHON_DOWNLOADS=never
 uv tool install fortls
 uv tool install fprettify
+uv tool install 'markitdown[pdf]'
 EOF
 
 # Install `teamcity` command line tool.
