@@ -186,10 +186,12 @@ class VerschillentoolOutput:
         statistics_sheet = workbook["Statistics"]
         maxima_sheet = workbook["Maxima"]
 
-        stats_dict = {
-            str(name_cell.value).split(maxsplit=1)[0]: float(value_cell.value)
-            for name_cell, value_cell in averages_sheet["A2:B7"]
-        }
+        stats_dict = {}
+        for row in averages_sheet.iter_rows(min_row=2, max_col=2, values_only=True):
+            name, value = row
+            if name is None or value is None:
+                continue
+            stats_dict[str(name).split(maxsplit=1)[0]] = float(value)
 
         first_col = maxima_sheet.min_column - 1
         last_col = maxima_sheet.max_column - 2
