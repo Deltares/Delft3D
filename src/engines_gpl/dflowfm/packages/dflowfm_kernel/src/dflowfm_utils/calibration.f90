@@ -485,7 +485,7 @@ contains
    end subroutine read_cldfile
 
    subroutine read_cllfile(md_cllfile, clddata, phase)
-      use precision, only: dp
+      use precision, only: dp, comparereal
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: intmiss
       use m_scannr, only: scannr
@@ -702,7 +702,7 @@ contains
             clddata%rttar(icll) = rfield(5)
             clddata%linar(icll) = mcurec
             clddata%sumar(L) = clddata%sumar(L) + clddata%rttar(icll)
-            if (clddata%sumar(L) > 1.0_dp) then
+            if (comparereal(clddata%sumar(L), 1.0_dp) == 1) then
                ! check that sum of areas per link <= 1
                errmsg = 'Areal sum larger than 1 in file: '//trim(filnam)
                errmsg = trim(errmsg)//'. See line numbers: '
