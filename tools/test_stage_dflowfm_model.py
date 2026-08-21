@@ -6,6 +6,27 @@ from stage_dflowfm_model import ModelCollector, copy_file, file_inventory, stage
 
 
 class ModelCollectorTest(unittest.TestCase):
+    def test_collects_file_valued_structure_parameter(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            mdu = root / "model.mdu"
+            structures = root / "structures.ini"
+            timeseries = root / "gate.tim"
+            mdu.write_text("StructureFile = structures.ini\n", encoding="utf-8")
+            structures.write_text(
+                "[structure]\n"
+                "CrestLevel = -5.85\n"
+                "GateLowerEdgeLevel = gate.tim\n",
+                encoding="utf-8",
+            )
+            timeseries.write_text("0 0\n", encoding="utf-8")
+
+            collector = ModelCollector(mdu)
+            files = collector.collect()
+
+            self.assertEqual({mdu.resolve(), structures.resolve(), timeseries.resolve()}, files)
+            self.assertFalse(collector.missing)
+
     def test_rerun_skips_matching_file_and_repairs_wrong_size(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

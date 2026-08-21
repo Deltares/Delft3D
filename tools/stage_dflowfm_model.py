@@ -36,6 +36,24 @@ TEXT_FORMATS = {
 }
 OUTPUT_KEYS = {"hisfile", "mapfile"}
 SHAPEFILE_SIDECARS = {".cpg", ".dbf", ".prj", ".qpj", ".shx"}
+REFERENCE_SUFFIXES = TEXT_FORMATS | {
+    ".asc",
+    ".bmp",
+    ".csv",
+    ".dat",
+    ".dep",
+    ".grd",
+    ".nc",
+    ".pol",
+    ".pli",
+    ".pliz",
+    ".shp",
+    ".tek",
+    ".tim",
+    ".xy",
+    ".xyn",
+    ".xyz",
+}
 COPY_BUFFER_SIZE = 8 * 1024 * 1024
 
 
@@ -104,7 +122,10 @@ class ModelCollector:
     def _references_in(self, path: Path) -> Iterable[Path]:
         for key, value in self._assignments(path):
             normalized_key = key.replace(" ", "").lower()
-            if normalized_key in OUTPUT_KEYS or not REFERENCE_KEY.search(normalized_key):
+            if normalized_key in OUTPUT_KEYS or not (
+                REFERENCE_KEY.search(normalized_key)
+                or self._value_has_reference_suffix(value)
+            ):
                 continue
             for token in self._split_reference_value(value, path):
                 resolved = self._resolve(token, path)
@@ -172,6 +193,17 @@ class ModelCollector:
     def _looks_like_path(value: str) -> bool:
         value = value.rstrip(".,;")
         return bool(Path(value).suffix) or "/" in value or "\\" in value
+
+    @staticmethod
+    def _value_has_reference_suffix(value: str) -> bool:
+        try:
+            parts = shlex.split(value.strip(), posix=False)
+        except ValueError:
+            parts = [value]
+        return any(
+            Path(part.strip('"\'')).suffix.lower() in REFERENCE_SUFFIXES
+            for part in parts
+        )
 
     @staticmethod
     def _assignments(path: Path) -> Iterable[tuple[str, str]]:
