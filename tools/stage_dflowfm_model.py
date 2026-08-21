@@ -431,20 +431,53 @@ def stage_model(
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Recursively collect and copy files referenced by a D-Flow FM MDU."
+        description=(
+            "Recursively collect and copy files referenced by a D-Flow FM MDU "
+            "while preserving their directory structure."
+        ),
+        epilog=(
+            "examples:\n"
+            "  Preview files, sizes, and unresolved references:\n"
+            "    stage_dflowfm_model.py model.mdu D:\\models\\case --dry-run\n\n"
+            "  Copy or resume a previously interrupted staging run:\n"
+            "    stage_dflowfm_model.py model.mdu D:\\models\\case\n\n"
+            "  Omit meteo inputs intentionally (references remain in copied inputs):\n"
+            "    stage_dflowfm_model.py model.mdu D:\\models\\case "
+            "--exclude \"*/meteo/*\" --allow-missing\n\n"
+            "  Refresh every destination file regardless of size:\n"
+            "    stage_dflowfm_model.py model.mdu D:\\models\\case --overwrite"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("mdu", type=Path, help="Path to the source .mdu file")
-    parser.add_argument("destination", type=Path, help="Empty/local staging directory")
+    parser.add_argument("mdu", type=Path, help="Source D-Flow FM .mdu file")
+    parser.add_argument(
+        "destination",
+        type=Path,
+        help=(
+            "Local staging root; existing same-sized files are skipped, and a "
+            "stage_manifest.json is written here"
+        ),
+    )
     parser.add_argument(
         "--source-root",
         type=Path,
-        help="Root to preserve below destination (default: common referenced-file ancestor)",
+        help=(
+            "Source directory whose relative layout is reproduced below destination "
+            "(default: common ancestor of all discovered files)"
+        ),
     )
-    parser.add_argument("--dry-run", action="store_true", help="Scan without copying files")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Scan only; print a largest-first file inventory and planned skips without "
+            "copying or writing a manifest"
+        ),
+    )
     parser.add_argument(
         "--no-progress",
         action="store_true",
-        help="Disable the byte progress bar while copying",
+        help="Disable live scan, sizing, and copy progress output",
     )
     parser.add_argument(
         "--overwrite",
@@ -457,14 +490,18 @@ def parse_arguments() -> argparse.Namespace:
         default=[],
         metavar="GLOB",
         help=(
-            "Exclude references whose normalized full path matches GLOB; "
-            "repeat for multiple patterns (for example: */meteo/ECMWF_2013-2017/*)"
+            "Do not copy references whose case-insensitive normalized full path matches "
+            "GLOB; repeat for multiple patterns. Copied input files retain excluded "
+            "references and may need local editing (example: */meteo/ECMWF_2013-2017/*)"
         ),
     )
     parser.add_argument(
         "--allow-missing",
         action="store_true",
-        help="Return success even when path-like references cannot be resolved",
+        help=(
+            "Exit successfully after reporting unresolved path-like references; without "
+            "this option the exit status is 2"
+        ),
     )
     return parser.parse_args()
 
