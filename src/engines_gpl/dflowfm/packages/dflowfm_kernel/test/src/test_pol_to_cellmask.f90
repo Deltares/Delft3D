@@ -449,25 +449,32 @@ contains
    subroutine test_indexed_polygon_matches_full_scan() bind(C)
       use m_missing, only: jins
 
-      integer, parameter :: polygon_points = 513
+      integer, parameter :: large_polygon_points = 513
+      integer, parameter :: polygon_points = large_polygon_points + 6
       integer, parameter :: grid_size = 41
       integer, parameter :: query_points = grid_size * grid_size + 8
       real(kind=dp), parameter :: pi = acos(-1.0_dp)
 
       integer :: column, original_jins, point, row
-      integer :: actual_mask, expected_mask
+      integer :: actual_mask, expected_mask, polygons_containing_point
+      logical :: inside_large_polygon, inside_small_polygon
       real(kind=dp) :: angle
       real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
       real(kind=dp) :: x_query(query_points), y_query(query_points)
 
-      do point = 1, polygon_points - 1
-         angle = 2.0_dp * pi * real(point - 1, dp) / real(polygon_points - 1, dp)
+      do point = 1, large_polygon_points - 1
+         angle = 2.0_dp * pi * real(point - 1, dp) / real(large_polygon_points - 1, dp)
          x_poly(point) = cos(angle)
          y_poly(point) = sin(angle)
       end do
-      x_poly(polygon_points) = x_poly(1)
-      y_poly(polygon_points) = y_poly(1)
+      x_poly(large_polygon_points) = x_poly(1)
+      y_poly(large_polygon_points) = y_poly(1)
       z_poly = 1.0_dp
+      x_poly(large_polygon_points + 1) = dmiss
+      y_poly(large_polygon_points + 1) = dmiss
+      z_poly(large_polygon_points + 1) = dmiss
+      x_poly(large_polygon_points + 2:polygon_points) = [0.2_dp, 0.4_dp, 0.4_dp, 0.2_dp, 0.2_dp]
+      y_poly(large_polygon_points + 2:polygon_points) = [0.2_dp, 0.2_dp, 0.4_dp, 0.4_dp, 0.2_dp]
 
       point = 0
       do row = 1, grid_size
@@ -485,9 +492,14 @@ contains
 
       original_jins = jins
       jins = 1
-      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, query_points, x_query, y_query)
+      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, enable_binning=.true.)
       do point = 1, query_points
-         expected_mask = merge(1, 0, pinpok_raycast(x_query(point), y_query(point), x_poly, y_poly, polygon_points))
+         inside_large_polygon = pinpok_raycast(x_query(point), y_query(point), x_poly, y_poly, large_polygon_points)
+         inside_small_polygon = pinpok_raycast(x_query(point), y_query(point), &
+                                               x_poly(large_polygon_points + 2:polygon_points), &
+                                               y_poly(large_polygon_points + 2:polygon_points), 5)
+         polygons_containing_point = merge(1, 0, inside_large_polygon) + merge(1, 0, inside_small_polygon)
+         expected_mask = modulo(polygons_containing_point, 2)
          actual_mask = cellmask_from_polygon_set(x_query(point), y_query(point))
          call f90_expect_eq(actual_mask, expected_mask, "Indexed and full polygon scans should agree")
       end do
