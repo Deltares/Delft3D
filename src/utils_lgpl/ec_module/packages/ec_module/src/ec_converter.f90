@@ -4334,29 +4334,32 @@ contains
       integer, dimension(:), intent(in), optional :: target_mask !< optional mask selecting target values to check
 
       integer :: i
-
-      istat = .false.
-
-      if (any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
-         if (present(target_mask)) then
-            do i = 1, size(target_values)
-               if (target_mask(i) == 0) then
-                  cycle
-               end if
-               if (target_values(i) == ec_undef_hp) then
-                  call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
-                  return
-               end if
-            end do
-         else
-            if (any(target_values == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
-               return
-            end if
-         end if
-      end if
+      logical :: has_undefined_value
 
       istat = .true.
+      if (.not. any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
+         return
+      end if
+
+      has_undefined_value = .false.
+      if (present(target_mask)) then
+         do i = 1, size(target_values)
+            if (target_mask(i) == 0) then
+               cycle
+            end if
+            if (target_values(i) == ec_undef_hp) then
+               has_undefined_value = .true.
+               exit
+            end if
+         end do
+      else
+         has_undefined_value = any(target_values == ec_undef_hp)
+      end if
+
+      if (has_undefined_value) then
+         call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
+         istat = .false.
+      end if
 
    end subroutine check_undefined_values_for_operand
 
