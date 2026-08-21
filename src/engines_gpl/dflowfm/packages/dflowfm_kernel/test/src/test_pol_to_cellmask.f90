@@ -509,6 +509,56 @@ contains
    end subroutine test_indexed_polygon_matches_full_scan
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_binned_polygon_edge_cases, test_binned_polygon_edge_cases,
+   subroutine test_binned_polygon_edge_cases() bind(C)
+      use m_missing, only: jins
+
+      integer, parameter :: polygon_segments = 6
+      integer, parameter :: points_per_segment = 48
+      integer, parameter :: polygon_points = polygon_segments * points_per_segment + 1
+      integer, parameter :: query_points = 14
+
+      integer :: actual_mask, original_jins, point, segment, step
+      real(kind=dp) :: fraction
+      real(kind=dp) :: vertex_x(polygon_segments + 1), vertex_y(polygon_segments + 1)
+      real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
+      real(kind=dp) :: x_query(query_points), y_query(query_points)
+
+      ! Dense L-shape: the internal horizontal edge at y=1 lies exactly on a latitude-bin boundary.
+      vertex_x = [-1.0_dp, 1.0_dp, 1.0_dp, 0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp]
+      vertex_y = [0.0_dp, 0.0_dp, 1.0_dp, 1.0_dp, 2.0_dp, 2.0_dp, 0.0_dp]
+      do segment = 1, polygon_segments
+         do step = 0, points_per_segment - 1
+            point = (segment - 1) * points_per_segment + step + 1
+            fraction = real(step, dp) / real(points_per_segment, dp)
+            x_poly(point) = vertex_x(segment) + fraction * (vertex_x(segment + 1) - vertex_x(segment))
+            y_poly(point) = vertex_y(segment) + fraction * (vertex_y(segment + 1) - vertex_y(segment))
+         end do
+      end do
+      x_poly(polygon_points) = x_poly(1)
+      y_poly(polygon_points) = y_poly(1)
+      z_poly = 1.0_dp
+
+      x_query = [0.5_dp, -0.5_dp, 0.5_dp, 0.5_dp, 0.5_dp, 0.0_dp, 0.0_dp, 0.0_dp, &
+                 0.0_dp, nearest(0.0_dp, -1.0_dp), nearest(0.0_dp, 1.0_dp), -0.5_dp, 0.0_dp, 2.0_dp]
+      y_query = [0.5_dp, 1.5_dp, 1.5_dp, 1.0_dp, nearest(1.0_dp, -1.0_dp), 1.0_dp, &
+                 nearest(1.0_dp, -1.0_dp), nearest(1.0_dp, 1.0_dp), 1.5_dp, 1.5_dp, 1.5_dp, 2.0_dp, 0.0_dp, 1.0_dp]
+
+      original_jins = jins
+      jins = 1
+      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, enable_binning=.true.)
+      do point = 1, query_points
+         actual_mask = cellmask_from_polygon_set(x_query(point), y_query(point))
+         call f90_expect_eq(actual_mask, merge(1, 0, pinpok_raycast(x_query(point), y_query(point), &
+                                                                   x_poly, y_poly, polygon_points)), &
+                            "Binned and full polygon scans should agree at edges and bin boundaries")
+      end do
+      call cellmask_from_polygon_set_cleanup()
+      jins = original_jins
+
+   end subroutine test_binned_polygon_edge_cases
+   !$f90tw)
+
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_basic_functionality, test_incells_basic_functionality,
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells

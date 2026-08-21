@@ -264,13 +264,19 @@ contains
       logical :: is_inside !< Result
 
       integer :: i_bin, i_start, i_end, n_points
+      logical :: use_binned_edges
 
       ! Get bounds for this polygon from module arrays
       i_start = i_poly_start(i_poly)
       i_end = i_poly_end(i_poly)
       n_points = i_end - i_start + 1
 
+      use_binned_edges = .false.
       if (allocated(edge_indices)) then
+         use_binned_edges = i_poly_num_bins(i_poly) > 1
+      end if
+
+      if (use_binned_edges) then
          i_bin = get_edge_bin(y, y_poly_min(i_poly), y_poly_bin_scale(i_poly), i_poly_num_bins(i_poly))
          i_bin = i_poly_bin_start(i_poly) + i_bin - 1
          is_inside = pinpok_raycast(x, y, xpl_cache(i_start:i_end), ypl_cache(i_start:i_end), n_points, &
@@ -287,41 +293,39 @@ contains
    !! The index stores those candidate edges per latitude bin. It changes only which edges reach the
    !! existing ray-casting calculation; it does not approximate or simplify polygon geometry.
    subroutine init_binned_polygon_edges()
-      integer :: bins, i_poly, num_edges, total_bins, total_edges
+      integer :: bins, binned_edges, i_poly, num_edges, total_bins
       integer(kind=int64) :: memberships, total_memberships
 
-      total_edges = 0
-      do i_poly = 1, polygons
-         total_edges = total_edges + i_poly_end(i_poly) - i_poly_start(i_poly) + 1
-      end do
-      if (total_edges < min_edges_for_binning) then
-         return
-      end if
-
       allocate (i_poly_bin_start(polygons), i_poly_num_bins(polygons), y_poly_bin_scale(polygons))
+      binned_edges = 0
       total_bins = 0
       total_memberships = 0_int64
 
       do i_poly = 1, polygons
          num_edges = i_poly_end(i_poly) - i_poly_start(i_poly) + 1
-         if (y_poly_max(i_poly) > y_poly_min(i_poly)) then
+         if (num_edges >= min_edges_for_binning .and. y_poly_max(i_poly) > y_poly_min(i_poly)) then
             bins = min(max_edge_bins, max(1, num_edges / 4))
             y_poly_bin_scale(i_poly) = real(bins, dp) / (y_poly_max(i_poly) - y_poly_min(i_poly))
+            binned_edges = binned_edges + num_edges
          else
             bins = 1
             y_poly_bin_scale(i_poly) = 0.0_dp
          end if
          i_poly_num_bins(i_poly) = bins
+         if (bins == 1) then
+            cycle
+         end if
          total_bins = total_bins + bins
 
          memberships = count_edge_memberships(i_poly, bins)
          total_memberships = total_memberships + memberships
-         ! Reject before allocation if edges span too many bins across the polygon set.
-         if (total_memberships > max_memberships_per_edge * int(total_edges, int64)) then
-            deallocate (i_poly_bin_start, i_poly_num_bins, y_poly_bin_scale)
-            return
-         end if
       end do
+
+      ! Keep the direct scan if no individual polygon benefits, or if long edges make the index too large.
+      if (total_bins == 0 .or. total_memberships > max_memberships_per_edge * int(binned_edges, int64)) then
+         deallocate (i_poly_bin_start, i_poly_num_bins, y_poly_bin_scale)
+         return
+      end if
 
       call build_binned_edge_index(total_bins, total_memberships)
 
@@ -342,6 +346,9 @@ contains
       next_edge_entry = 1
       do i_poly = 1, polygons
          bins = i_poly_num_bins(i_poly)
+         if (bins == 1) then
+            cycle
+         end if
          call count_edges_per_bin(i_poly, bins, bin_edge_counts)
          i_poly_bin_start(i_poly) = next_bin
          do i_bin = 1, bins
@@ -356,6 +363,9 @@ contains
       ! in exactly the same order as the full scan, preserving floating-point and boundary behavior.
       do i_poly = 1, polygons
          bins = i_poly_num_bins(i_poly)
+         if (bins == 1) then
+            cycle
+         end if
          do i_bin = 1, bins
             bin_write_positions(i_bin) = edge_bin_offsets(i_poly_bin_start(i_poly) + i_bin - 1)
          end do
@@ -413,16 +423,22 @@ contains
       integer, intent(out) :: bin_first, bin_last !< First and last intersected bins.
 
       integer :: current_point, previous_point
+      real(kind=dp) :: lower_tolerance, lower_y, upper_tolerance, upper_y
 
       current_point = i_poly_start(i_poly) + edge - 1
       previous_point = current_point - 1
       if (edge == 1) then
          previous_point = i_poly_end(i_poly)
       end if
-      bin_first = get_edge_bin(min(ypl_cache(previous_point), ypl_cache(current_point)), y_poly_min(i_poly), &
-                               y_poly_bin_scale(i_poly), bins)
-      bin_last = get_edge_bin(max(ypl_cache(previous_point), ypl_cache(current_point)), y_poly_min(i_poly), &
-                              y_poly_bin_scale(i_poly), bins)
+      lower_y = min(ypl_cache(previous_point), ypl_cache(current_point))
+      upper_y = max(ypl_cache(previous_point), ypl_cache(current_point))
+
+      ! pinpok_raycast treats y-coordinates within 2 epsilon as equal. Use a larger halo so an edge
+      ! remains a candidate when a near-equal query falls in the neighboring bin.
+      lower_tolerance = 4.0_dp * epsilon(lower_y) * max(abs(lower_y), 1.0_dp)
+      upper_tolerance = 4.0_dp * epsilon(upper_y) * max(abs(upper_y), 1.0_dp)
+      bin_first = get_edge_bin(lower_y - lower_tolerance, y_poly_min(i_poly), y_poly_bin_scale(i_poly), bins)
+      bin_last = get_edge_bin(upper_y + upper_tolerance, y_poly_min(i_poly), y_poly_bin_scale(i_poly), bins)
    end subroutine edge_bin_range
 
    !> Map a y-coordinate to a clamped one-based latitude bin.
