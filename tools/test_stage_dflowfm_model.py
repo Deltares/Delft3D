@@ -6,6 +6,53 @@ from stage_dflowfm_model import ModelCollector, copy_file, file_inventory, stage
 
 
 class ModelCollectorTest(unittest.TestCase):
+    def test_rerun_skips_matching_file_and_repairs_wrong_size(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "source"
+            destination = root / "local"
+            source.mkdir()
+            destination.mkdir()
+            mdu = source / "model.mdu"
+            data = source / "data.nc"
+            mdu.write_text("NetFile = data.nc\n", encoding="utf-8")
+            data.write_bytes(b"correct data")
+            (destination / "model.mdu").write_text(
+                "NetFile = data.nc\n", encoding="utf-8"
+            )
+            (destination / "data.nc").write_bytes(b"bad")
+            mdu_timestamp = (destination / "model.mdu").stat().st_mtime_ns
+
+            collector, _ = stage_model(mdu, destination)
+
+            self.assertEqual(mdu_timestamp, (destination / "model.mdu").stat().st_mtime_ns)
+            self.assertEqual(b"correct data", (destination / "data.nc").read_bytes())
+            self.assertEqual(1, collector.copied_files)
+            self.assertEqual(len(b"correct data"), collector.copied_bytes)
+            self.assertEqual(1, collector.skipped_files)
+
+    def test_collects_space_separated_relative_file_list(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            run = root / "run"
+            geometry = root / "geometry"
+            run.mkdir()
+            geometry.mkdir()
+            mdu = run / "model.mdu"
+            mdu.write_text(
+                "ThinDamFile = ../geometry/first.pli ../geometry/second.pli "
+                "../geometry/third.pli\n",
+                encoding="utf-8",
+            )
+            for name in ("first.pli", "second.pli", "third.pli"):
+                (geometry / name).write_text(name, encoding="utf-8")
+
+            collector = ModelCollector(mdu)
+            files = collector.collect()
+
+            self.assertEqual(4, len(files))
+            self.assertFalse(collector.missing)
+
     def test_scan_callback_visits_every_collected_file(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

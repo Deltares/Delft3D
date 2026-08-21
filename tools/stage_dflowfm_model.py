@@ -71,6 +71,9 @@ class ModelCollector:
         self.paths_relative_to_parent = self._read_parent_relative_setting()
         self.files: set[Path] = set()
         self.file_sizes: dict[Path, int] = {}
+        self.copied_files = 0
+        self.copied_bytes = 0
+        self.skipped_files = 0
         self.missing: set[MissingReference] = set()
         self.excluded: set[ExcludedReference] = set()
 
@@ -149,13 +152,21 @@ class ModelCollector:
         if not value:
             return []
 
-        if self._expand(self._resolve(value, referrer)):
-            return [value]
-
         try:
-            return [part.strip('"\'') for part in shlex.split(value, posix=False)]
+            parts = [part.strip('"\'') for part in shlex.split(value, posix=False)]
         except ValueError:
             return [value]
+
+        if len(parts) > 1:
+            all_have_directories = all("/" in part or "\\" in part for part in parts)
+            all_exist = all(
+                self._expand(self._resolve(part, referrer)) for part in parts
+            )
+            if all_have_directories or all_exist:
+                return parts
+        if self._expand(self._resolve(value, referrer)):
+            return [value]
+        return parts
 
     @staticmethod
     def _looks_like_path(value: str) -> bool:
@@ -276,6 +287,12 @@ class CopyProgress:
         self.file_number = 0
         self.current_file = ""
 
+    def skip_file(self, path: Path, byte_count: int) -> None:
+        self.file_number += 1
+        self.current_file = f"{path.name} (exists)"
+        self.copied_bytes += byte_count
+        self._render()
+
     def start_file(self, path: Path) -> None:
         self.file_number += 1
         self.current_file = path.name
@@ -324,6 +341,7 @@ def stage_model(
     dry_run: bool = False,
     exclude_patterns: Iterable[str] = (),
     show_progress: bool = False,
+    overwrite: bool = False,
 ) -> tuple[ModelCollector, Path]:
     scan_progress = ScanProgress(show_progress)
     collector = ModelCollector(mdu, exclude_patterns, scan_progress.update)
@@ -348,24 +366,43 @@ def stage_model(
     copies: list[dict[str, str]] = []
     total_bytes = sum(collector.file_sizes.values())
     progress = CopyProgress(total_bytes, len(files), show_progress and not dry_run)
+    copied_files = 0
+    skipped_files = 0
     for source in sorted(files):
         try:
             relative = source.relative_to(source_root)
         except ValueError as error:
             raise ValueError(f"Referenced file is outside --source-root: {source}") from error
         target = destination / relative
-        copies.append({"source": str(source), "target": str(target)})
+        source_size = collector.file_sizes[source]
+        target_matches = (
+            not overwrite and target.is_file() and target.stat().st_size == source_size
+        )
+        status = "skipped" if target_matches else "copy"
+        copies.append({"source": str(source), "target": str(target), "status": status})
+        if target_matches:
+            skipped_files += 1
+        else:
+            copied_files += 1
+            collector.copied_bytes += source_size
         if not dry_run:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            progress.start_file(source)
-            copy_file(source, target, progress.advance)
+            if target_matches:
+                progress.skip_file(source, source_size)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                progress.start_file(source)
+                copy_file(source, target, progress.advance)
     progress.finish()
+    collector.copied_files = copied_files
+    collector.skipped_files = skipped_files
 
     manifest = {
         "mdu": str(collector.mdu),
         "source_root": str(source_root),
         "destination": str(destination),
         "paths_relative_to_parent": collector.paths_relative_to_parent,
+        "copied_files": copied_files,
+        "skipped_files": skipped_files,
         "files": copies,
         "missing_references": [
             {"referrer": str(item.referrer), "key": item.key, "value": item.value}
@@ -410,6 +447,11 @@ def parse_arguments() -> argparse.Namespace:
         help="Disable the byte progress bar while copying",
     )
     parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Copy all files even when a same-sized destination file already exists",
+    )
+    parser.add_argument(
         "--exclude",
         action="append",
         default=[],
@@ -437,14 +479,21 @@ def main() -> int:
             arguments.dry_run,
             arguments.exclude,
             not arguments.no_progress,
+            arguments.overwrite,
         )
     except (OSError, RuntimeError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
 
     total_bytes = sum(collector.file_sizes.values())
-    action = "Would copy" if arguments.dry_run else "Copied"
-    print(f"{action} {len(collector.files)} files ({total_bytes / 1024**3:.2f} GiB)")
+    action = "Would transfer" if arguments.dry_run else "Transferred"
+    print(
+        f"{action} {collector.copied_files} of {len(collector.files)} files "
+        f"({format_size(collector.copied_bytes)})"
+    )
+    if collector.skipped_files:
+        verb = "Would skip" if arguments.dry_run else "Skipped"
+        print(f"{verb} {collector.skipped_files} existing same-sized files")
     print(f"Source root: {source_root}")
     print(f"Staged MDU: {arguments.destination.resolve() / collector.mdu.relative_to(source_root)}")
     if arguments.dry_run:
