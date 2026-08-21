@@ -445,6 +445,58 @@ contains
    end subroutine test_pinpok_raycast_complex
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_indexed_polygon_matches_full_scan, test_indexed_polygon_matches_full_scan,
+   subroutine test_indexed_polygon_matches_full_scan() bind(C)
+      use m_missing, only: jins
+
+      integer, parameter :: polygon_points = 513
+      integer, parameter :: grid_size = 41
+      integer, parameter :: query_points = grid_size * grid_size + 8
+      real(kind=dp), parameter :: pi = acos(-1.0_dp)
+
+      integer :: column, original_jins, point, row
+      integer :: actual_mask, expected_mask
+      real(kind=dp) :: angle
+      real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
+      real(kind=dp) :: x_query(query_points), y_query(query_points)
+
+      do point = 1, polygon_points - 1
+         angle = 2.0_dp * pi * real(point - 1, dp) / real(polygon_points - 1, dp)
+         x_poly(point) = cos(angle)
+         y_poly(point) = sin(angle)
+      end do
+      x_poly(polygon_points) = x_poly(1)
+      y_poly(polygon_points) = y_poly(1)
+      z_poly = 1.0_dp
+
+      point = 0
+      do row = 1, grid_size
+         do column = 1, grid_size
+            point = point + 1
+            x_query(point) = -1.2_dp + 2.4_dp * real(column - 1, dp) / real(grid_size - 1, dp)
+            y_query(point) = -1.2_dp + 2.4_dp * real(row - 1, dp) / real(grid_size - 1, dp)
+         end do
+      end do
+      do column = 1, 8
+         point = point + 1
+         x_query(point) = x_poly(1 + (column - 1) * 64)
+         y_query(point) = y_poly(1 + (column - 1) * 64)
+      end do
+
+      original_jins = jins
+      jins = 1
+      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, query_points, x_query, y_query)
+      do point = 1, query_points
+         expected_mask = merge(1, 0, pinpok_raycast(x_query(point), y_query(point), x_poly, y_poly, polygon_points))
+         actual_mask = cellmask_from_polygon_set(x_query(point), y_query(point))
+         call f90_expect_eq(actual_mask, expected_mask, "Indexed and full polygon scans should agree")
+      end do
+      call cellmask_from_polygon_set_cleanup()
+      jins = original_jins
+
+   end subroutine test_indexed_polygon_matches_full_scan
+   !$f90tw)
+
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_basic_functionality, test_incells_basic_functionality,
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells

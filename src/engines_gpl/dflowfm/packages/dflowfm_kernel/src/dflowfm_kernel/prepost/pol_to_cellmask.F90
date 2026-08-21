@@ -58,7 +58,7 @@ contains
 
       call realloc(mask, num_netcells, keepexisting=.false., fill=0)
 
-      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
+      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, num_netcells, x_points, y_points)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
