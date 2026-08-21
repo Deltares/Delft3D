@@ -50,7 +50,7 @@ module m_cellmask_from_polygon_set
    real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates, (dim = polygons)
    real(kind=dp), allocatable :: polygon_type(:) !< Polygon type, positive or dmiss = drypoint , negative = enclosure (dim = polygons)
    integer, allocatable :: i_poly_start(:), i_poly_end(:) !< Polygon start and end indices in coordinate arrays (dim = polygons)
-   logical, allocatable :: edge_index_enabled(:) !< Whether each polygon uses the binned edge index.
+   logical, allocatable :: polygon_uses_binned_edges(:) !< Whether each polygon uses the binned edge index.
    integer, allocatable :: i_poly_bin_start(:), i_poly_num_bins(:) !< Start and number of bins for each polygon.
    integer, allocatable :: edge_bin_offsets(:), edge_indices(:) !< CSR offsets and ordered local edge indices.
    real(kind=dp), allocatable :: y_poly_bin_scale(:) !< Scale from polygon y-coordinate to bin index.
@@ -136,7 +136,7 @@ contains
       call realloc(polygon_type, polygons, keepExisting=.true.)
 
       if (present(num_query_points) .and. present(x_query) .and. present(y_query)) then
-         call init_polygon_edge_index(num_query_points, x_query, y_query)
+         call init_binned_polygon_edges(num_query_points, x_query, y_query)
       end if
 
       ! check if there are any enclosure polygons
@@ -236,8 +236,8 @@ contains
       if (allocated(i_poly_end)) then
          deallocate (i_poly_end)
       end if
-      if (allocated(edge_index_enabled)) then
-         deallocate (edge_index_enabled)
+      if (allocated(polygon_uses_binned_edges)) then
+         deallocate (polygon_uses_binned_edges)
       end if
       if (allocated(i_poly_bin_start)) then
          deallocate (i_poly_bin_start)
@@ -270,20 +270,21 @@ contains
       logical :: is_inside !< Result
 
       integer :: i_bin, i_start, i_end, n_points
-      logical :: use_edge_index
+      logical :: use_binned_edges
 
       ! Get bounds for this polygon from module arrays
       i_start = i_poly_start(i_poly)
       i_end = i_poly_end(i_poly)
       n_points = i_end - i_start + 1
 
-      use_edge_index = .false.
-      if (allocated(edge_index_enabled)) then
-         use_edge_index = edge_index_enabled(i_poly)
+      use_binned_edges = .false.
+      if (allocated(polygon_uses_binned_edges)) then
+         use_binned_edges = polygon_uses_binned_edges(i_poly)
       end if
 
-      if (use_edge_index) then
-         i_bin = i_poly_bin_start(i_poly) + get_edge_bin(y, y_poly_min(i_poly), y_poly_bin_scale(i_poly), i_poly_num_bins(i_poly)) - 1
+      if (use_binned_edges) then
+         i_bin = get_edge_bin(y, y_poly_min(i_poly), y_poly_bin_scale(i_poly), i_poly_num_bins(i_poly))
+         i_bin = i_poly_bin_start(i_poly) + i_bin - 1
          is_inside = pinpok_raycast(x, y, xpl_cache(i_start:i_end), ypl_cache(i_start:i_end), n_points, &
                                    edge_indices(edge_bin_offsets(i_bin):edge_bin_offsets(i_bin + 1) - 1))
       else
@@ -292,19 +293,20 @@ contains
 
    end function pinpok_elemental
 
-   !> Build latitude-bin edge indices only where the observed query distribution predicts a worthwhile reduction.
-   subroutine init_polygon_edge_index(num_query_points, x_query, y_query)
+   !> Select polygons that benefit from latitude bins and build their shared edge index.
+   !!
+   !! A horizontal ray can intersect only edges whose vertical extent contains the query y-coordinate.
+   !! The index stores those candidate edges per latitude bin. It changes only which edges reach the
+   !! existing ray-casting calculation; it does not approximate or simplify polygon geometry.
+   subroutine init_binned_polygon_edges(num_query_points, x_query, y_query)
       integer, intent(in) :: num_query_points !< Number of points that will be classified.
       real(kind=dp), intent(in) :: x_query(:), y_query(:) !< Points that will be classified.
 
-      integer :: bin_edge_counts(max_edge_bins), bin_query_counts(max_edge_bins), bin_write_positions(max_edge_bins)
-      integer :: bins, edge, edge_end, edge_start, i_bin, i_poly, point
-      integer :: total_bins, write_position
+      integer :: bins, i_poly, num_edges, total_bins
       integer(kind=int64) :: memberships, total_memberships
-      real(kind=dp) :: candidate_work, direct_work, indexed_work
 
-      allocate (edge_index_enabled(polygons), i_poly_bin_start(polygons), i_poly_num_bins(polygons), y_poly_bin_scale(polygons))
-      edge_index_enabled = .false.
+      allocate (polygon_uses_binned_edges(polygons), i_poly_bin_start(polygons), i_poly_num_bins(polygons), y_poly_bin_scale(polygons))
+      polygon_uses_binned_edges = .false.
       i_poly_bin_start = 0
       i_poly_num_bins = 0
       y_poly_bin_scale = 0.0_dp
@@ -313,74 +315,108 @@ contains
       total_memberships = 0_int64
 
       do i_poly = 1, polygons
-         edge_start = i_poly_start(i_poly)
-         edge_end = i_poly_end(i_poly)
-         edge = edge_end - edge_start + 1
-         if (edge < min_edges_for_index .or. y_poly_max(i_poly) <= y_poly_min(i_poly)) then
+         num_edges = i_poly_end(i_poly) - i_poly_start(i_poly) + 1
+         if (num_edges < min_edges_for_index .or. y_poly_max(i_poly) <= y_poly_min(i_poly)) then
             cycle
          end if
 
-         bins = min(max_edge_bins, max(16, edge / 4))
-         y_poly_bin_scale(i_poly) = real(bins, dp) / (y_poly_max(i_poly) - y_poly_min(i_poly))
-
-         memberships = count_edge_memberships(i_poly, bins)
-         if (memberships > max_memberships_per_edge * int(edge, int64)) then
+         bins = min(max_edge_bins, max(16, num_edges / 4))
+         if (.not. polygon_binning_is_worthwhile(i_poly, bins, num_query_points, x_query, y_query, memberships)) then
             cycle
          end if
 
-         call count_edges_per_bin(i_poly, bins, bin_edge_counts)
-         bin_query_counts(1:bins) = 0
-         do point = 1, min(num_query_points, size(x_query), size(y_query))
-            if (x_query(point) < x_poly_min(i_poly) .or. x_query(point) > x_poly_max(i_poly) .or. &
-                y_query(point) < y_poly_min(i_poly) .or. y_query(point) > y_poly_max(i_poly)) then
-               cycle
-            end if
-            i_bin = get_edge_bin(y_query(point), y_poly_min(i_poly), y_poly_bin_scale(i_poly), bins)
-            bin_query_counts(i_bin) = bin_query_counts(i_bin) + 1
-         end do
-
-         direct_work = real(sum(bin_query_counts(1:bins)), dp) * real(edge, dp)
-         candidate_work = 0.0_dp
-         do i_bin = 1, bins
-            candidate_work = candidate_work + real(bin_query_counts(i_bin), dp) * real(bin_edge_counts(i_bin), dp)
-         end do
-         indexed_work = real(edge + sum(bin_query_counts(1:bins)), dp) + 2.0_dp * real(memberships, dp) + candidate_work
-
-         if (direct_work < min_predicted_speedup * indexed_work) then
-            cycle
-         end if
-
-         edge_index_enabled(i_poly) = .true.
+         polygon_uses_binned_edges(i_poly) = .true.
          i_poly_num_bins(i_poly) = bins
          total_bins = total_bins + bins
          total_memberships = total_memberships + memberships
       end do
 
       if (total_bins == 0) then
-         deallocate (edge_index_enabled, i_poly_bin_start, i_poly_num_bins, y_poly_bin_scale)
+         deallocate (polygon_uses_binned_edges, i_poly_bin_start, i_poly_num_bins, y_poly_bin_scale)
          return
       end if
 
+      call build_binned_edge_index(total_bins, total_memberships)
+
+   end subroutine init_binned_polygon_edges
+
+   !> Decide whether indexing one polygon will repay its construction cost for the supplied queries.
+   function polygon_binning_is_worthwhile(i_poly, bins, num_query_points, x_query, y_query, memberships) result(is_worthwhile)
+      integer, intent(in) :: i_poly, bins, num_query_points !< Polygon, proposed bin count and number of queries.
+      real(kind=dp), intent(in) :: x_query(:), y_query(:) !< Points that will be classified.
+      integer(kind=int64), intent(out) :: memberships !< Number of edge entries needed by the proposed index.
+      logical :: is_worthwhile
+
+      integer :: bin_edge_counts(max_edge_bins), bin_query_counts(max_edge_bins)
+      integer :: i_bin, num_edges, num_relevant_queries, point
+      real(kind=dp) :: candidate_work, direct_work, indexed_work
+
+      is_worthwhile = .false.
+      num_edges = i_poly_end(i_poly) - i_poly_start(i_poly) + 1
+      y_poly_bin_scale(i_poly) = real(bins, dp) / (y_poly_max(i_poly) - y_poly_min(i_poly))
+
+      ! Long, near-vertical edges can occur in many bins. Reject such an index before allocating it.
+      memberships = count_edge_memberships(i_poly, bins)
+      if (memberships > max_memberships_per_edge * int(num_edges, int64)) then
+         return
+      end if
+
+      call count_edges_per_bin(i_poly, bins, bin_edge_counts)
+      bin_query_counts(1:bins) = 0
+      do point = 1, min(num_query_points, size(x_query), size(y_query))
+         if (x_query(point) < x_poly_min(i_poly) .or. x_query(point) > x_poly_max(i_poly) .or. &
+             y_query(point) < y_poly_min(i_poly) .or. y_query(point) > y_poly_max(i_poly)) then
+            cycle
+         end if
+         i_bin = get_edge_bin(y_query(point), y_poly_min(i_poly), y_poly_bin_scale(i_poly), bins)
+         bin_query_counts(i_bin) = bin_query_counts(i_bin) + 1
+      end do
+
+      num_relevant_queries = sum(bin_query_counts(1:bins))
+      direct_work = real(num_relevant_queries, dp) * real(num_edges, dp)
+      candidate_work = 0.0_dp
+      do i_bin = 1, bins
+         candidate_work = candidate_work + real(bin_query_counts(i_bin), dp) * real(bin_edge_counts(i_bin), dp)
+      end do
+
+      ! Indexed work includes assessment, two membership passes, query lookup and the remaining ray-cast edges.
+      indexed_work = real(num_edges + num_relevant_queries, dp) + 2.0_dp * real(memberships, dp) + candidate_work
+      is_worthwhile = direct_work >= min_predicted_speedup * indexed_work
+
+   end function polygon_binning_is_worthwhile
+
+   !> Allocate and populate the shared compressed-row storage for all selected polygons.
+   subroutine build_binned_edge_index(total_bins, total_memberships)
+      integer, intent(in) :: total_bins !< Total number of bins over selected polygons.
+      integer(kind=int64), intent(in) :: total_memberships !< Total edge entries over selected polygons.
+
+      integer :: bin_edge_counts(max_edge_bins), bin_write_positions(max_edge_bins)
+      integer :: bin_first, bin_last, bins, edge, i_bin, i_poly, num_edges
+      integer :: next_bin, next_edge_entry
+
+      ! edge_bin_offsets/edge_indices use compressed-row storage: each bin owns one contiguous slice.
       allocate (edge_bin_offsets(total_bins + 1), edge_indices(int(total_memberships)))
-      i_bin = 1
-      write_position = 1
+      next_bin = 1
+      next_edge_entry = 1
       do i_poly = 1, polygons
-         if (.not. edge_index_enabled(i_poly)) then
+         if (.not. polygon_uses_binned_edges(i_poly)) then
             cycle
          end if
          bins = i_poly_num_bins(i_poly)
          call count_edges_per_bin(i_poly, bins, bin_edge_counts)
-         i_poly_bin_start(i_poly) = i_bin
-         do edge = 1, bins
-            edge_bin_offsets(i_bin) = write_position
-            write_position = write_position + bin_edge_counts(edge)
-            i_bin = i_bin + 1
+         i_poly_bin_start(i_poly) = next_bin
+         do i_bin = 1, bins
+            edge_bin_offsets(next_bin) = next_edge_entry
+            next_edge_entry = next_edge_entry + bin_edge_counts(i_bin)
+            next_bin = next_bin + 1
          end do
       end do
-      edge_bin_offsets(total_bins + 1) = write_position
+      edge_bin_offsets(total_bins + 1) = next_edge_entry
 
+      ! Insert local edge numbers in polygon order. The indexed ray cast therefore sums crossings
+      ! in exactly the same order as the full scan, preserving floating-point and boundary behavior.
       do i_poly = 1, polygons
-         if (.not. edge_index_enabled(i_poly)) then
+         if (.not. polygon_uses_binned_edges(i_poly)) then
             cycle
          end if
          bins = i_poly_num_bins(i_poly)
@@ -388,18 +424,17 @@ contains
             bin_write_positions(i_bin) = edge_bin_offsets(i_poly_bin_start(i_poly) + i_bin - 1)
          end do
 
-         edge_start = i_poly_start(i_poly)
-         edge_end = i_poly_end(i_poly)
-         do edge = 1, edge_end - edge_start + 1
-            call edge_bin_range(i_poly, edge, bins, bin_edge_counts(1), bin_edge_counts(2))
-            do i_bin = bin_edge_counts(1), bin_edge_counts(2)
+         num_edges = i_poly_end(i_poly) - i_poly_start(i_poly) + 1
+         do edge = 1, num_edges
+            call edge_bin_range(i_poly, edge, bins, bin_first, bin_last)
+            do i_bin = bin_first, bin_last
                edge_indices(bin_write_positions(i_bin)) = edge
                bin_write_positions(i_bin) = bin_write_positions(i_bin) + 1
             end do
          end do
       end do
 
-   end subroutine init_polygon_edge_index
+   end subroutine build_binned_edge_index
 
    !> Count the storage needed by a polygon edge index without allocating or iterating over memberships.
    function count_edge_memberships(i_poly, bins) result(memberships)
@@ -437,6 +472,9 @@ contains
    end subroutine count_edges_per_bin
 
    !> Get the inclusive bin range intersected by an edge.
+   !! Both edge endpoints and queries use get_edge_bin, so equal y-coordinates always map to the same
+   !! bin. Filling every bin from the lower endpoint through the upper endpoint preserves all edges
+   !! that the full ray cast could inspect at a query's y-coordinate.
    pure subroutine edge_bin_range(i_poly, edge, bins, bin_first, bin_last)
       integer, intent(in) :: i_poly, edge, bins !< Polygon index, local edge index and number of bins.
       integer, intent(out) :: bin_first, bin_last !< First and last intersected bins.
