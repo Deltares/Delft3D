@@ -31,8 +31,8 @@ module m_ug_nc_attribute
 
 !> Container for information for a NetCDF attribute. Used inside t_crs.
    type ug_nc_attribute
-      character(len=64)             :: attname     !< Name of the attribute.
-      integer                       :: xtype       !< Type: one of NF90_CHAR, NF90_INT, NF90_FLOAT, NF90_DOUBLE, NF90_BYTE, NF90_SHORT.
+      character(len=64)             :: attname = ' ' !< Name of the attribute.
+      integer                       :: xtype = 0   !< Type: one of NF90_CHAR, NF90_INT, NF90_FLOAT, NF90_DOUBLE, NF90_BYTE, NF90_SHORT.
       integer                       :: len = 1     !< Length of the attribute value (string length/array length)
       character(len=1), allocatable :: strvalue(:) !< Contains value if xtype==NF90_CHAR.
       double precision, allocatable :: dblvalue(:) !< Contains value if xtype==NF90_DOUBLE.

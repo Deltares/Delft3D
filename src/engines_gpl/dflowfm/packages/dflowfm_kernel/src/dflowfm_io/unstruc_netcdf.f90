@@ -11294,7 +11294,9 @@ contains
       if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
          call net_diag('calling detect_proj_string')
          ierr = detect_proj_string(crs)
-         call net_diag('detect_proj_string returned, proj_string = '''//trim(crs%proj_string)//'''')
+         write (message, '(a,i0)') 'detect_proj_string returned, ierr = ', ierr
+         call net_diag(message)
+         call net_diag('proj_string = '''//trim(crs%proj_string)//'''')
          if (ierr /= dfm_noerr) then
             ierr = dfm_noerr
             call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')

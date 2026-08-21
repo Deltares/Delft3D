@@ -143,13 +143,15 @@ end function is_grid_mapping
 !! Stored in the crs%proj_string attribute, for repeated use later.
 function detect_proj_string(crs) result(ierr)
    use string_module, only: strcmpi, char_array_to_string_by_len
+   use iso_fortran_env, only: output_unit
    implicit none
 
    type(t_crs),         intent(inout) :: crs         !< The coordinate reference system container.
    integer                            :: ierr        !< Result status (IONC_NOERR==NF90_NOERR) if successful.
 
-   integer :: i, natts
+   integer :: i, natts, nchar
    logical :: found
+   character(len=512) :: diag
 
    ierr = 0 ! TODO: AvD
    found = .false.
@@ -159,20 +161,43 @@ function detect_proj_string(crs) result(ierr)
    else
       natts = 0
    end if
+
+   write (diag, '(a,i0)') 'netwdiag: detect_proj_string enter, natts = ', natts
+   call mess(LEVEL_INFO, trim(diag))
+   flush (output_unit)
+
    do i=1,natts
+      nchar = -1
+      if (allocated(crs%attset(i)%strvalue)) nchar = size(crs%attset(i)%strvalue)
+      write (diag, '(a,i0,a,i0,a,i0,a,a)') 'netwdiag: detect_proj_string att ', i, &
+         ': len = ', crs%attset(i)%len, ', size(strvalue) = ', nchar, &
+         ', name = ', trim(crs%attset(i)%attname)
+      call mess(LEVEL_INFO, trim(diag))
+      flush (output_unit)
+
       if (strcmpi(crs%attset(i)%attname, 'proj4_params') .and. crs%attset(i)%len > 0 &
           .and. allocated(crs%attset(i)%strvalue)) then
+         call mess(LEVEL_INFO, 'netwdiag: detect_proj_string converting proj4_params')
+         flush (output_unit)
          crs%proj_string = char_array_to_string_by_len(crs%attset(i)%strvalue, &
                                                        min(crs%attset(i)%len, size(crs%attset(i)%strvalue)))
          ! Some netCDF library versions misreport the length of a zero-length attribute,
          ! yielding a proj_string starting with a NUL byte: treat that as not found.
          found = iachar(crs%proj_string(1:1)) /= 0
+         call mess(LEVEL_INFO, 'netwdiag: detect_proj_string converted proj4_params')
+         flush (output_unit)
       end if
    end do
 
    if (.not. found) then
+      write (diag, '(a,i0)') 'netwdiag: detect_proj_string falling back to epsg ', crs%epsg_code
+      call mess(LEVEL_INFO, trim(diag))
+      flush (output_unit)
       ierr = get_proj_string_from_epsg(crs%epsg_code, crs%proj_string)
    end if
+
+   call mess(LEVEL_INFO, 'netwdiag: detect_proj_string exit')
+   flush (output_unit)
 end function detect_proj_string
 
 
@@ -187,6 +212,8 @@ function get_proj_string_from_epsg(epsg, proj_string) result(ierr)
    integer                            :: ierr        !< Result status (IONC_NOERR==NF90_NOERR) if successful.
 
    ierr = 0 ! TODO: AvD
+
+   proj_string = ' '
 
    select case(epsg)
    case (4326)
