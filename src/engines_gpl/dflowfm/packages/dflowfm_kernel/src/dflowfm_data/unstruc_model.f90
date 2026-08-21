@@ -773,16 +773,16 @@ contains
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
       call prop_get(md_ptr, 'geometry', 'StretchType', stretch_type)
       
-      if (layertype /= LAYTP_Z) then
-         if (stretch_type == STRETCH_UNDEFINED .or. stretch_type == STRETCH_UNI_OVER_EXP) then
-            stretch_type = STRETCH_UNIFORM
-         end if
-      else
+      if (layertype == LAYTP_Z) then
          if (stretch_type == STRETCH_UNDEFINED) then
             stretch_type = STRETCH_UNI_OVER_EXP
          elseif (dztop > 0.0_dp .and. stretch_type /= STRETCH_UNI_OVER_EXP) then
             call mess(LEVEL_WARN, 'The stretchType is reset to -1 because a strictly positive dzTop is specified.')
             stretch_type = STRETCH_UNI_OVER_EXP
+         end if
+      else
+         if (stretch_type == STRETCH_UNDEFINED .or. stretch_type == STRETCH_UNI_OVER_EXP) then
+            stretch_type = STRETCH_UNIFORM
          end if
       end if
 
