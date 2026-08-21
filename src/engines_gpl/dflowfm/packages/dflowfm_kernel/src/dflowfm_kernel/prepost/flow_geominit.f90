@@ -67,6 +67,18 @@ module m_flow_geominit
 
 contains
 
+   !> Writes a geometry-initialisation diagnostic line and flushes it immediately.
+   !! UNST-10262: without the flush the last lines are lost when a rank crashes.
+   subroutine geom_diag(message)
+      use MessageHandling, only: mess, LEVEL_INFO
+      use iso_fortran_env, only: output_unit
+
+      character(len=*), intent(in) :: message !< Diagnostic message.
+
+      call mess(LEVEL_INFO, 'netwdiag: flow_geominit '//trim(message))
+      flush (output_unit)
+   end subroutine geom_diag
+
    subroutine flow_geominit(iphase) ! initialise flow geometry
       use m_fixedweirs_on_flowgeom, only: fixedweirs_on_flowgeom
       use precision, only: dp
@@ -226,6 +238,8 @@ contains
 
       call timstrt('Findcells/preparecells', handle_extra(46)) ! findcells/preparecells
 
+      call geom_diag('before preparecells/findcells')
+
 !see if subomain numbers should be read from file
       jaidomain = 0
       jaiglobal_s = 0
@@ -252,6 +266,8 @@ contains
       end if
       call timstop(handle_extra(46)) ! findcells/preparecells
 
+      call geom_diag('after preparecells/findcells')
+
       if (jaidomain == 1 .and. .not. allocated(idomain)) then
          call mess(LEVEL_ERROR, 'Domain numbers could not be read. Either the PartitionFile is missing in the MDU file, or the network file misses domain numbers, in subdomain number', my_rank)
       end if
@@ -273,8 +289,12 @@ contains
       !end if
       call delete_dry_points_and_areas(update_blcell=.false.)
 
+      call geom_diag('after delete_dry_points_and_areas')
+
 ! also disabled isolated cells due to cutcells and store masks
       call cutcell_list(6, 1)
+
+      call geom_diag('after cutcell_list')
 
       if (strip_mesh > 0) then
          if (numl1d > 0) then
@@ -291,10 +311,14 @@ contains
 
       call thindams_on_netgeom() ! Convert thin dam-type cross sections to real thin dams in network kn.
 
+      call geom_diag('after thindams_on_netgeom')
+
       ! AvD: NOTE: We could also place this cosphiunetcheck *after* the nsmalllink
       !  check (see some blocks below). But then again based on flow links. Such
       !  that too small flow link lengths do *not* lead to large cosphiunet values. (TODO?)
       call cosphiunetcheck(1) ! Check for bad orthogonality on netlinks
+
+      call geom_diag('after cosphiunetcheck')
       if (nlinkbadortho > 0) then
          call checknetwork() ! If badortho, check entire network for net link crossings.
          lnx = 0
@@ -322,6 +346,8 @@ contains
          call renumberFlowNodes()
          call timstop(handle_extra(47)) ! renumberFlowNodes
       end if
+
+      call geom_diag('after renumberFlowNodes')
 
       do n = 1, nump
          do m = 1, netcell(n)%n
@@ -774,6 +800,8 @@ contains
 ! sort flowlinks
       call sort_flowlinks_ccw()
 
+      call geom_diag('after sort_flowlinks_ccw')
+
 ! start of second phase
 9002  continue
 
@@ -883,6 +911,7 @@ contains
 
       ! end of first phase
       if (iphase == 1) then
+         call geom_diag('end of first phase')
          return
       end if
 
