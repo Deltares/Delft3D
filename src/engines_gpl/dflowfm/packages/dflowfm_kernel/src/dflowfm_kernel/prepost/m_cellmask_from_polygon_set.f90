@@ -56,7 +56,6 @@ module m_cellmask_from_polygon_set
    logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
    logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
 
-   integer, parameter :: min_edges_for_binning = 256 !< Small polygon sets are cheaper to scan directly.
    integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon.
    integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges.
 
@@ -264,19 +263,13 @@ contains
       logical :: is_inside !< Result
 
       integer :: i_bin, i_start, i_end, n_points
-      logical :: use_binned_edges
 
       ! Get bounds for this polygon from module arrays
       i_start = i_poly_start(i_poly)
       i_end = i_poly_end(i_poly)
       n_points = i_end - i_start + 1
 
-      use_binned_edges = .false.
       if (allocated(edge_indices)) then
-         use_binned_edges = i_poly_num_bins(i_poly) > 1
-      end if
-
-      if (use_binned_edges) then
          i_bin = get_edge_bin(y, y_poly_min(i_poly), y_poly_bin_scale(i_poly), i_poly_num_bins(i_poly))
          i_bin = i_poly_bin_start(i_poly) + i_bin - 1
          is_inside = pinpok_raycast(x, y, xpl_cache(i_start:i_end), ypl_cache(i_start:i_end), n_points, &
@@ -287,42 +280,39 @@ contains
 
    end function pinpok_elemental
 
-   !> Build a latitude-binned edge index if it benefits the complete polygon set.
+   !> Build a latitude-binned edge index for the complete polygon set.
    !!
    !! A horizontal ray can intersect only edges whose vertical extent contains the query y-coordinate.
    !! The index stores those candidate edges per latitude bin. It changes only which edges reach the
    !! existing ray-casting calculation; it does not approximate or simplify polygon geometry.
    subroutine init_binned_polygon_edges()
-      integer :: bins, binned_edges, i_poly, num_edges, total_bins
+      integer :: bins, i_poly, num_edges, total_bins, total_edges
       integer(kind=int64) :: memberships, total_memberships
 
       allocate (i_poly_bin_start(polygons), i_poly_num_bins(polygons), y_poly_bin_scale(polygons))
-      binned_edges = 0
+      total_edges = 0
       total_bins = 0
       total_memberships = 0_int64
 
       do i_poly = 1, polygons
          num_edges = i_poly_end(i_poly) - i_poly_start(i_poly) + 1
-         if (num_edges >= min_edges_for_binning .and. y_poly_max(i_poly) > y_poly_min(i_poly)) then
+         if (y_poly_max(i_poly) > y_poly_min(i_poly)) then
             bins = min(max_edge_bins, max(1, num_edges / 4))
             y_poly_bin_scale(i_poly) = real(bins, dp) / (y_poly_max(i_poly) - y_poly_min(i_poly))
-            binned_edges = binned_edges + num_edges
          else
             bins = 1
             y_poly_bin_scale(i_poly) = 0.0_dp
          end if
          i_poly_num_bins(i_poly) = bins
-         if (bins == 1) then
-            cycle
-         end if
+         total_edges = total_edges + num_edges
          total_bins = total_bins + bins
 
          memberships = count_edge_memberships(i_poly, bins)
          total_memberships = total_memberships + memberships
       end do
 
-      ! Keep the direct scan if no individual polygon benefits, or if long edges make the index too large.
-      if (total_bins == 0 .or. total_memberships > max_memberships_per_edge * int(binned_edges, int64)) then
+      ! Keep the direct scan if long edges make the index too large.
+      if (total_memberships > max_memberships_per_edge * int(total_edges, int64)) then
          deallocate (i_poly_bin_start, i_poly_num_bins, y_poly_bin_scale)
          return
       end if
@@ -346,9 +336,6 @@ contains
       next_edge_entry = 1
       do i_poly = 1, polygons
          bins = i_poly_num_bins(i_poly)
-         if (bins == 1) then
-            cycle
-         end if
          call count_edges_per_bin(i_poly, bins, bin_edge_counts)
          i_poly_bin_start(i_poly) = next_bin
          do i_bin = 1, bins
@@ -363,9 +350,6 @@ contains
       ! in exactly the same order as the full scan, preserving floating-point and boundary behavior.
       do i_poly = 1, polygons
          bins = i_poly_num_bins(i_poly)
-         if (bins == 1) then
-            cycle
-         end if
          do i_bin = 1, bins
             bin_write_positions(i_bin) = edge_bin_offsets(i_poly_bin_start(i_poly) + i_bin - 1)
          end do

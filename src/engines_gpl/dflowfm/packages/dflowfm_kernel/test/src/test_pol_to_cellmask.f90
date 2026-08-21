@@ -86,7 +86,7 @@ contains
       zpl(15) = dmiss
 
       ! Initialize polygon data structures
-      cellmask =  pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+      cellmask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw, enable_binning=.false.) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
 
       ! Check results:
       ! Cell at (5,5) - inside enclosure, outside dry point -> mask=0
@@ -235,7 +235,7 @@ contains
       zpl(13) = dmiss
 
       ! Initialize polygon data structures
-      cellmask =  pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+      cellmask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw, enable_binning=.false.) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
 
       ! Check results (odd-even rule):
       ! Cell at (5,5) - inside 1 polygon (outer) -> mask=1
