@@ -139,7 +139,7 @@ contains
    subroutine RESTORE()
       use network_data
       implicit none
-      integer :: k, KX, LS, LS0, LX, NODSIZ, IERR
+      integer :: k, KX, LS, LS0, LX, NODSIZ, IERR, LXE
       character(len=256) :: message
 
       !IF ( NUMK0.EQ.0 ) RETURN
@@ -178,8 +178,14 @@ contains
       LC(1:LX) = LC0(1:LX)
 
       ! Only restore optional dxe when it is there already
-      if (allocated(dxe)) then
-         dxe(1:LX) = dxe0(1:LX)
+      ! dxe is only resized by INCREASENETW when also_dxe is set, so it can lag behind LMAX.
+      if (allocated(dxe) .and. allocated(dxe0)) then
+         LXE = min(LX, size(dxe), size(dxe0))
+         if (LXE < LX) then
+            write (message, '(a,i0,a,i0)') 'restore: dxe backup clipped from ', LX, ' to ', LXE
+            call netw_diag(message)
+         end if
+         dxe(1:LXE) = dxe0(1:LXE)
       end if
 
       NODSIZ = size(NOD)
@@ -217,9 +223,10 @@ contains
 
    subroutine SAVENET()
       use network_data
+      use m_missing, only: dmiss
       implicit none
       integer :: ierr
-      integer :: k, KX, LS, LS0, LX
+      integer :: k, KX, LS, LS0, LX, LXE
       character(len=256) :: message
 
       if (.not. allocated(xk) .or. .not. allocated(kn) .or. .not. allocated(nod)) return
@@ -278,7 +285,10 @@ contains
       if (allocated(dxe)) then
          if (allocated(dxe0)) deallocate (dxe0)
          allocate (dxe0(LX), STAT=IERR)
-         dxe0(1:LX) = dxe(1:LX)
+         call abort_on_alloc_error('dxe0(LX)', IERR, LX)
+         LXE = min(LX, size(dxe))
+         dxe0 = dmiss
+         dxe0(1:LXE) = dxe(1:LXE)
       end if
 
       do K = 1, KX
@@ -319,7 +329,7 @@ contains
       integer :: k
       integer :: knxx
       logical :: also_dxe_
-      integer :: nxk, nnod, nnmk0
+      integer :: nxk, nnod, nnmk0, nlc
       character(len=256) :: message
 
       if (present(also_dxe)) then
@@ -380,13 +390,25 @@ contains
             NOD(K)%LIN = 0
          end do
 
+         call netw_diag('increasenetw: nod%lin loop done')
+
          NMK = 0; KC = 1; XK = XYMIS; YK = XYMIS; ZK = dmiss
+
+         call netw_diag('increasenetw: node arrays filled')
       end if
 
       if (LMAX <= L0) then
          LMAX = L0 + 3 * 100000
-         if (size(LC) > 0 .and. allocated(kn)) then
-            deallocate (KN, LC, RLIN)
+         nlc = -1
+         if (allocated(LC)) nlc = size(LC)
+         write (message, '(a,i0,a,i0,a,l1,a,l1)') 'increasenetw: growing links to ', LMAX, &
+            ', size(lc) = ', nlc, ', allocated(kn) = ', allocated(kn), ', allocated(rlin) = ', allocated(rlin)
+         call netw_diag(message)
+
+         if (allocated(LC)) then
+            if (size(LC) > 0 .and. allocated(kn) .and. allocated(rlin)) then
+               deallocate (KN, LC, RLIN)
+            end if
          end if
          allocate (KN(3, LMAX), LC(LMAX), STAT=IERR); KN = 0; LC = 0
          call abort_on_alloc_error('KN(3,LMAX), LC(LMAX)', IERR, 4 * LMAX)
