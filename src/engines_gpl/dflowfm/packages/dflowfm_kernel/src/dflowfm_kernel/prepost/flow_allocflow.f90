@@ -45,9 +45,9 @@ contains
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, map_write_settings, mxlaydefs, kmx, kbotc, kmxc, layertype, &
-                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
+                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, stretch_type, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
-                        zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
+                        zslay, dzslay, STRETCH_USER, laycof, STRETCH_EXPONENT, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
                         sqi, dvyc, uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, &
                         ucy_mor, uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, &
                         volonground, qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, &
@@ -59,7 +59,7 @@ contains
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
-                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
+                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
@@ -237,7 +237,7 @@ contains
 
          if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_DENS_SIGMA) then ! pure and density controlled sigma-layers
             mxlaydefs = 1
-            laytyp(1) = 1
+            laytyp(1) = LAYTP_SIGMA
             laymx(1) = kmx
             if (layertype == LAYTP_DENS_SIGMA) then
                call realloc(sdkx, ndx, stat=ierr, keepexisting=.false.)
@@ -247,7 +247,7 @@ contains
             end if
          else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
-            laytyp(1) = 2
+            laytyp(1) = LAYTP_Z
 
             if (zlaybot == dmiss) then
                zmn = bl(1)
@@ -262,13 +262,7 @@ contains
                call reduce_double_min(zmn)
             end if
 
-            if (iStrchType >= 0) then
-               if (zlaytop == dmiss) then
-                  zmx = sini
-               else
-                  zmx = zlaytop
-               end if
-            else
+            if (stretch_type == STRETCH_UNI_OVER_EXP) then
                if (Floorlevtoplay == dmiss) then
                   zmx = sini
                else
@@ -277,6 +271,12 @@ contains
                   else
                      zmx = Floorlevtoplay + dztop
                   end if
+               end if
+            else
+               if (zlaytop == dmiss) then
+                  zmx = sini
+               else
+                  zmx = zlaytop
                end if
             end if
 
@@ -322,7 +322,7 @@ contains
          call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, keepexisting=.false.)
          call realloc(dzslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, fill=0.0_dp, keepexisting=.false.)
 
-         if (iStrchType == STRCH_USER) then
+         if (stretch_type == STRETCH_USER) then
             do j = 1, mxlaydefs
                mx = laymx(j)
                do k = 1, mx
@@ -330,7 +330,7 @@ contains
                end do
             end do
 
-         elseif (iStrchType == STRCH_EXPONENT) then
+         elseif (stretch_type == STRETCH_EXPONENT) then
             gfi = 1.0_dp / laycof(2)
             gf = laycof(3)
             do j = 1, mxlaydefs
@@ -359,45 +359,50 @@ contains
                   end do
                end if
             end do
-         else
+         else ! default: fill as uniform layers
             do j = 1, mxlaydefs
                mx = laymx(j)
-               do k = 1, mx
-                  dzslay(k, j) = 1.0_dp / mx
-               end do
+               dzslay(1:mx, j) = 1.0_dp / mx
             end do
          end if
 
          do j = 1, mxlaydefs
             mx = laymx(j)
-            if (laytyp(j) == 1) then
+            if (laytyp(j) == LAYTP_SIGMA) then
 
+               ! Fill layers based on dzslay computed above
                zslay(0, j) = 0.0_dp
                do k = 1, mx
                   zslay(k, j) = zslay(k - 1, j) + dzslay(k, j)
                end do
 
-            else if (laytyp(j) == 2) then
+            else if (laytyp(j) == LAYTP_Z) then
 
                call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, keepexisting=.false.) ! nr of layer distributions
 
-               if (iStrchType >= 0) then
-                  zslay(0, j) = zmn
-                  do k = 1, mx
-                     zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
-                  end do
-               else
+               if (stretch_type == STRETCH_UNI_OVER_EXP) then
                   zslay(0, j) = zmn
                   zslay(mx, j) = zmx
+                  
+                  ! Fill top uniform layers, thickness equal to dzm
                   do k = mx - 1, mx - kuni, -1
                      zslay(k, j) = zslay(k + 1, j) - dzm
                   end do
 
+                  ! Fill bottom layers with exponential growth factor
                   dzb = dzm
                   do k = mx - kuni - 1, 1, -1
                      dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
+                  
+               else
+                  ! Fill layers based on dzslay computed above, scaled to the actual depth range
+                  zslay(0, j) = zmn
+                  do k = 1, mx
+                     zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
+                  end do
+                  
                end if
             end if
          end do
@@ -410,10 +415,10 @@ contains
 
             Ldn = laydefnr(n)
             if (Ldn >= 1) then
-               if (laytyp(Ldn) == 1) then
+               if (laytyp(Ldn) == LAYTP_SIGMA) then
                   mx = laymx(Ldn)
                   kmxn(n) = mx
-               else if (laytyp(Ldn) == 2) then
+               else if (laytyp(Ldn) == LAYTP_Z) then
                   call getzlayerindices(n, nlayb, nrlay)
                   kmxn(n) = nrlay
                end if
@@ -505,8 +510,7 @@ contains
                Lt2 = laytyp(laydefnr(n2))
             end if
 
-            if (Lt1 == 2 .and. Lt2 == 2) then
-
+            if (Lt1 == LAYTP_Z .and. Lt2 == LAYTP_Z) then
                call getzlayerindices(n1, nlayb1, nrlay1) ! connection to be made at bedcell of highest adjacent cell
                call getzlayerindices(n2, nlayb2, nrlay2)
                kb1 = max(0, nlayb2 - nlayb1)
