@@ -74,6 +74,101 @@ contains
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
 
+   subroutine setup_minimal_grid_with_points(npoints)
+      integer, intent(in) :: npoints
+
+      ndx = npoints
+      ndxi = npoints
+      if (allocated(xz)) deallocate (xz)
+      if (allocated(yz)) deallocate (yz)
+      if (allocated(kcs)) deallocate (kcs)
+      allocate (xz(npoints), yz(npoints), kcs(npoints))
+      xz = 0.0_dp
+      yz = 0.0_dp
+      kcs = 1
+   end subroutine setup_minimal_grid_with_points
+
+   subroutine create_scalar_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, ssrd_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_scalar_netcdf
+
+   subroutine create_netcdf_timeseries_with_coordinates(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, x_varid, y_varid, ssrd_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [time_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [time_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, x_varid, [1.0_dp, 2.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, y_varid, [3.0_dp, 4.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_netcdf_timeseries_with_coordinates
+
+   subroutine create_windxy_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, u10_varid, v10_varid
+      real(dp), parameter :: FILL_VALUE = -999.0_dp
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 3, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'u10', NF90_DOUBLE, [time_dimid], u10_varid))
+      call check_netcdf(nf90_put_att(ncid, u10_varid, 'standard_name', 'eastward_wind'))
+      call check_netcdf(nf90_put_att(ncid, u10_varid, 'units', 'm s-1'))
+      call check_netcdf(nf90_def_var(ncid, 'v10', NF90_DOUBLE, [time_dimid], v10_varid))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, 'standard_name', 'northward_wind'))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, 'units', 'm s-1'))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, '_FillValue', FILL_VALUE))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp, 200.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, u10_varid, [2.0_dp, 6.0_dp, 10.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, v10_varid, [-4.0_dp, FILL_VALUE, 4.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_windxy_netcdf
+
+   subroutine check_netcdf(status)
+      use netcdf, only: NF90_NOERR, nf90_strerror
+
+      integer, intent(in) :: status
+
+      if (status /= NF90_NOERR) error stop nf90_strerror(status)
+   end subroutine check_netcdf
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_polygon_preserves_uncovered_values, test_polygon_preserves_uncovered_values,
    subroutine test_polygon_preserves_uncovered_values() bind(C)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
@@ -691,6 +786,251 @@ contains
       if (allocated(qext)) deallocate (qext)
       call teardown_minimal_grid()
    end subroutine test_qext_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_solarradiation_scalar_netcdf_broadcast, test_solarradiation_scalar_netcdf_broadcast,
+   subroutine test_solarradiation_scalar_netcdf_broadcast() bind(C)
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_solar_radiation
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_solarradiation_uniform.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_solarradiation_uniform.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_scalar_netcdf(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+
+      call setup_minimal_grid_with_points(2)
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'scalar NetCDF initialization should succeed')
+      call f90_expect_true(item_solar_radiation > 0, 'solar radiation target item should be registered')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'scalar NetCDF update at t=0 should succeed')
+      call f90_expect_near(solar_radiation(1), 100.0_dp, 1.0e-6_dp, 'first target should receive t=0 value')
+      call f90_expect_near(solar_radiation(2), 100.0_dp, 1.0e-6_dp, 'second target should receive t=0 value')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'scalar NetCDF update at t=50 should succeed')
+      call f90_expect_near(solar_radiation(1), 200.0_dp, 1.0e-6_dp, 'first target should receive interpolated value')
+      call f90_expect_near(solar_radiation(2), 200.0_dp, 1.0e-6_dp, 'second target should receive interpolated value')
+
+      solar_radiation_available = .false.
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      call teardown_minimal_grid()
+   end subroutine test_solarradiation_scalar_netcdf_broadcast
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_located_timeseries_netcdf_is_not_scalar, test_located_timeseries_netcdf_is_not_scalar,
+   subroutine test_located_timeseries_netcdf_is_not_scalar() bind(C)
+      use m_meteo, only: initialize_ec_module
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_located_timeseries.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_located_timeseries.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_netcdf_timeseries_with_coordinates(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+
+      call setup_minimal_grid()
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'time-only data with horizontal coordinates should not be treated as scalar')
+
+      solar_radiation_available = .false.
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      call teardown_minimal_grid()
+   end subroutine test_located_timeseries_netcdf_is_not_scalar
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_scalar_netcdf_override_and_multiply, test_windxy_scalar_netcdf_override_and_multiply,
+   subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_windxy_x
+      use m_sferic, only: jsferic
+      use m_wind, only: jawind, wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
+      character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_windxy_netcdf(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = windxy', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+      call create_file(FACTOR_EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = windxy', &
+                       '    forcingFileType = datavalue', &
+                       '    dataValue       = 0.5', &
+                       '    operand         = multiply'])
+
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call setup_minimal_grid_with_points(2)
+      lnx = 2
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx))
+      xu = [0.0_dp, 10.0_dp]
+      yu = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'scalar NetCDF windxy initialization should succeed')
+
+      call parse_spatial_block(FACTOR_EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, FACTOR_EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'windxy dataValue multiply initialization should succeed')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'windxy update at t=0 should succeed')
+      call f90_expect_near(wx(1), 1.0_dp, 1.0e-6_dp, 'first x target should be overridden and multiplied at t=0')
+      call f90_expect_near(wx(2), 1.0_dp, 1.0e-6_dp, 'second x target should be overridden and multiplied at t=0')
+      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should be overridden and multiplied at t=0')
+      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should be overridden and multiplied at t=0')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'windxy update at t=50 should succeed')
+      call f90_expect_near(wx(1), 2.0_dp, 1.0e-6_dp, 'first x target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wx(2), 2.0_dp, 1.0e-6_dp, 'second x target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should use the available time level at t=50')
+      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should use the available time level at t=50')
+
+      jawind = 0
+      lnx = 0
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call teardown_minimal_grid()
+   end subroutine test_windxy_scalar_netcdf_override_and_multiply
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_netcdf_target_index_updates_complete_coordinate, test_scalar_netcdf_target_index_updates_complete_coordinate,
+   subroutine test_scalar_netcdf_target_index_updates_complete_coordinate() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_parameters, only: convType_netcdf, EC_OPERAND_REPLACE, elmSetType_cartesian, elmSetType_scalar, &
+                                 interpolate_spacetimeSaveWeightFactors
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem, tEcItemPtr, tEcQuantity
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcField), target :: source_t0, source_t1, target_field
+      type(tEcQuantity), target :: source_quantity
+      type(tEcElementSet), target :: source_element_set, target_element_set
+      type(c_time) :: conversion_time
+      real(dp), target :: source_value_t0(1), source_value_t1(1), target_values(6)
+      logical :: success
+
+      source_value_t0 = 4.0_dp
+      source_value_t1 = 4.0_dp
+      target_values = 9.0_dp
+
+      source_t0%arr1dPtr => source_value_t0
+      source_t0%timesteps = 0.0_dp
+      source_t1%arr1dPtr => source_value_t1
+      source_t1%timesteps = 100.0_dp
+      target_field%arr1dPtr => target_values
+
+      source_element_set%ofType = elmSetType_scalar
+      source_element_set%nCoordinates = 0
+      target_element_set%ofType = elmSetType_cartesian
+      target_element_set%nCoordinates = 2
+
+      source_item%sourceT0FieldPtr => source_t0
+      source_item%sourceT1FieldPtr => source_t1
+      source_item%quantityPtr => source_quantity
+      source_item%elementSetPtr => source_element_set
+      target_item%targetFieldPtr => target_field
+      target_item%elementSetPtr => target_element_set
+
+      converter%ofType = convType_netcdf
+      converter%operandType = EC_OPERAND_REPLACE
+      converter%interpolationType = interpolate_spacetimeSaveWeightFactors
+      converter%targetIndex = 2
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+
+      call conversion_time%set(50.0_dp)
+      success = ecConverterPerformConversions(connection, conversion_time)
+
+      call f90_expect_true(success, 'indexed scalar conversion should succeed')
+      call f90_expect_true(all(target_values(1:3) == 9.0_dp), 'the unselected coordinate should remain unchanged')
+      call f90_expect_true(all(target_values(4:6) == 4.0_dp), 'all values of the selected coordinate should be replaced')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
+   end subroutine test_scalar_netcdf_target_index_updates_complete_coordinate
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,
@@ -1580,7 +1920,7 @@ contains
       character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo_netcdf.ext'
       integer :: i
 
-      call create_scalar_meteo_netcdf(NC_FILE)
+      call create_meteo_netcdf(NC_FILE, scalar_source=.true.)
       do i = 1, NUM_SCALAR_METEO_CASES
          call reset_scalar_meteo_state()
          call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), NC_FILE, 'netcdf', EXT_FILE, SCALAR_METEO_VALUES(i))
@@ -1588,6 +1928,21 @@ contains
 
       call cleanup_scalar_meteo_state()
    end subroutine test_scalar_meteo_netcdf_matrix
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_gridded_meteo_netcdf_matrix, test_gridded_meteo_netcdf_matrix,
+   subroutine test_gridded_meteo_netcdf_matrix() bind(C)
+      character(len=*), parameter :: NC_FILE = 'test_gridded_meteo.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_gridded_meteo.ext'
+      integer :: i
+
+      call create_meteo_netcdf(NC_FILE, scalar_source=.false.)
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call reset_scalar_meteo_state()
+         call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), NC_FILE, 'netcdf', EXT_FILE, SCALAR_METEO_VALUES(i))
+      end do
+      call cleanup_scalar_meteo_state()
+   end subroutine test_gridded_meteo_netcdf_matrix
    !$f90tw)
 
    subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
@@ -1727,63 +2082,81 @@ contains
                        '    100  '//trim(value1)])
    end subroutine create_scalar_meteo_bc
 
-   subroutine create_scalar_meteo_netcdf(filename)
+   subroutine create_meteo_netcdf(filename, scalar_source)
       use netcdf
 
       character(len=*), intent(in) :: filename
+      logical, intent(in) :: scalar_source
       integer :: ncid, time_dimid, x_dimid, y_dimid, time_varid, x_varid, y_varid
       integer, dimension(NUM_SCALAR_METEO_CASES) :: variable_ids
       integer :: i, ierr
       real(dp), dimension(2) :: times, x_coord, y_coord
       real(dp), dimension(2, 2, 2) :: values
 
-      call check_scalar_meteo_netcdf(nf90_create(filename, NF90_CLOBBER, ncid), 'create NetCDF file')
-      call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid), 'define time dimension')
-      call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid), 'define x dimension')
-      call check_scalar_meteo_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid), 'define y dimension')
+      x_dimid = -1
+      y_dimid = -1
+      x_varid = -1
+      y_varid = -1
 
-      call check_scalar_meteo_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid), 'define time')
-      call check_scalar_meteo_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'), 'set time standard name')
-      call check_scalar_meteo_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'), 'set time units')
-      call check_scalar_meteo_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid), 'define x')
-      call check_scalar_meteo_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'), 'set x standard name')
-      call check_scalar_meteo_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid), 'define y')
-      call check_scalar_meteo_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'), 'set y standard name')
+      call check_meteo_netcdf(nf90_create(filename, NF90_CLOBBER, ncid), 'create NetCDF file')
+      call check_meteo_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid), 'define time dimension')
+      call check_meteo_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid), 'define x dimension')
+      call check_meteo_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid), 'define y dimension')
+
+      call check_meteo_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid), 'define time')
+      call check_meteo_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'), 'set time standard name')
+      call check_meteo_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'), 'set time units')
+      call check_meteo_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid), 'define x')
+      call check_meteo_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'), 'set x standard name')
+      call check_meteo_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid), 'define y')
+      call check_meteo_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'), 'set y standard name')
 
       do i = 1, NUM_SCALAR_METEO_CASES
-         call check_scalar_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
-                                                      [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
-                                        'define '//trim(SCALAR_METEO_VARIABLES(i)))
-         call check_scalar_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'standard_name', trim(SCALAR_METEO_STANDARD_NAMES(i))), &
+         if (scalar_source) then
+            call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
+                                                         [time_dimid], variable_ids(i)), &
+                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+         else
+            call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
+                                                         [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
+                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+         end if
+         call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'standard_name', trim(SCALAR_METEO_STANDARD_NAMES(i))), &
                                         'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
-         call check_scalar_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'coordinates', 'x y'), &
-                                        'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
+         if (.not. scalar_source) then
+            call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'coordinates', 'x y'), &
+                                           'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
+         end if
       end do
 
-      call check_scalar_meteo_netcdf(nf90_enddef(ncid), 'finish NetCDF definition')
+      call check_meteo_netcdf(nf90_enddef(ncid), 'finish NetCDF definition')
       times = [0.0_dp, 100.0_dp]
       x_coord = [-1.0_dp, 1.0_dp]
       y_coord = [-1.0_dp, 1.0_dp]
-      call check_scalar_meteo_netcdf(nf90_put_var(ncid, time_varid, times), 'write time')
-      call check_scalar_meteo_netcdf(nf90_put_var(ncid, x_varid, x_coord), 'write x')
-      call check_scalar_meteo_netcdf(nf90_put_var(ncid, y_varid, y_coord), 'write y')
+      call check_meteo_netcdf(nf90_put_var(ncid, time_varid, times), 'write time')
+      call check_meteo_netcdf(nf90_put_var(ncid, x_varid, x_coord), 'write x')
+      call check_meteo_netcdf(nf90_put_var(ncid, y_varid, y_coord), 'write y')
       do i = 1, NUM_SCALAR_METEO_CASES
-         values(:, :, 1) = SCALAR_METEO_VALUES(i)
-         values(:, :, 2) = SCALAR_METEO_VALUES(i) + 2.0_dp
-         ierr = nf90_put_var(ncid, variable_ids(i), values)
-         call check_scalar_meteo_netcdf(ierr, 'write '//trim(SCALAR_METEO_VARIABLES(i)))
+         if (scalar_source) then
+            ierr = nf90_put_var(ncid, variable_ids(i), [SCALAR_METEO_VALUES(i), SCALAR_METEO_VALUES(i) + 2.0_dp])
+         else
+            values(:, :, 1) = SCALAR_METEO_VALUES(i)
+            values(:, :, 2) = SCALAR_METEO_VALUES(i) + 2.0_dp
+            ierr = nf90_put_var(ncid, variable_ids(i), values)
+         end if
+         call check_meteo_netcdf(ierr, 'write '//trim(SCALAR_METEO_VARIABLES(i)))
       end do
-      call check_scalar_meteo_netcdf(nf90_close(ncid), 'close NetCDF file')
-   end subroutine create_scalar_meteo_netcdf
+      call check_meteo_netcdf(nf90_close(ncid), 'close NetCDF file')
+   end subroutine create_meteo_netcdf
 
-   subroutine check_scalar_meteo_netcdf(ierr, operation)
+   subroutine check_meteo_netcdf(ierr, operation)
       use netcdf, only: nf90_noerr
 
       integer, intent(in) :: ierr
       character(len=*), intent(in) :: operation
 
       call f90_expect_eq(ierr, nf90_noerr, operation)
-   end subroutine check_scalar_meteo_netcdf
+   end subroutine check_meteo_netcdf
 
    subroutine reset_scalar_meteo_state()
       use m_flow, only: wdsu, wdsu_x, wdsu_y
