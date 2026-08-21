@@ -522,7 +522,7 @@ contains
       use m_fm_icecover, only: fm_ice_read
       use m_f1dimp, only: f1dimppar
       use m_sediment
-      use m_waves, only: hwavuni, twavuni, phiwavuni
+      use m_waves, only: hwavuni, twavuni, phiwavuni, ftauw, fwfac, fbreak, offline_wave_input_requirements
       use m_sedtrails_data, only: sedtrails_analysis
       use m_gui
       use m_output_config, only: scan_input_tree
@@ -1607,7 +1607,7 @@ contains
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! default switch off, but switchable see below
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
       end if
 
       call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
@@ -1617,6 +1617,9 @@ contains
       end if
 
       call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      if (kmx <= 1) then
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! turn off 3D-only setting
+      end if
       call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -1636,8 +1639,16 @@ contains
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
          modind = 0
+      end if
+
+      if (jawave == WAVE_NC_OFFLINE) then
+         offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
+                                                                                jawavestreaming, jawavedelta, &
+                                                                                modind > 0 .and. ftauw > 0.0_dp, &
+                                                                                flow_without_waves, jawavebreakerturbulence)
+      else
+         offline_wave_input_requirements = 0
       end if
 
       call prop_get(md_ptr, 'grw', 'groundwater', jagrw)
@@ -3600,10 +3611,10 @@ contains
          !
          call prop_set(prop_ptr, 'waves', 'jaHisSigWav', his_write_settings%sigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
          call prop_set(prop_ptr, 'waves', 'jaMapSigWav', map_write_settings%sigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
-         
+
          call prop_set(prop_ptr, 'waves', 'jaUOrbFromSwan', jauorbfromswan, '1: use orbital velocities from com file; 0=internal uorb calculation. Default=0.')
          call prop_set(prop_ptr, 'waves', 'uOrbFac', jauorb, 'Orbital velocities: 0=D3D style; 1=Guza style')
-         
+
          call prop_set(prop_ptr, 'waves', 'rouWav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
          call prop_set(prop_ptr, 'waves', 'gammax', gammax, 'Maximum wave height/water depth ratio')
          call prop_set(prop_ptr, 'waves', 'fwFac', fwfac, 'factor for adjusting wave boundary layer streaming, default 1.0.')
@@ -3611,7 +3622,7 @@ contains
          call prop_set(prop_ptr, 'waves', 'fBreak', fbreak, 'factor for adjusting wave breaking contribution to tke.')
          call prop_set(prop_ptr, 'waves', 'fForc', fforc, 'factor for adjusting wave forces in momentum equation.')
          call prop_set(prop_ptr, 'waves', 'streamLyrFac', strlyrfac, 'factor for adjusting streaming layer thickness in momentum equation.')
-         
+
          call prop_set(prop_ptr, 'waves', 'hMinLw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
          if (writeall .or. hwavuni /= 0.0_dp) then
             call prop_set(prop_ptr, 'waves', 'hWavUni', hwavuni, 'root mean square wave height (m)')
@@ -3631,7 +3642,7 @@ contains
             call prop_set(prop_ptr, 'waves', '3dWaveBoundaryLayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
          end if
          if (jawave == WAVE_NC_OFFLINE) then
-            call prop_set(prop_ptr, 'waves', 'waveForcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
+            call prop_set(prop_ptr, 'waves', 'waveForcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 0: none, 1: based on radiation stress gradients, 2: based on total dissipation, 3: based on dissipation at free surface and water column')
          end if
 
       end if
