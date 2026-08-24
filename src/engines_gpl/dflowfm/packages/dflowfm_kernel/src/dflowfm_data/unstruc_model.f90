@@ -480,7 +480,8 @@ contains
       !                         javakeps,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
       !                         Tsigma, jarhoxu,                                                      &
-      !                         stretch_type, STRCH_UNIFORM, STRETCH_USER, STRETCH_EXPONENT, laycof
+      !                         stretch_type, STRETCH_UNDEFINED, STRETCH_UNIFORM, STRETCH_USER, &
+      !                         STRETCH_EXPONENT, STRETCH_UNI_OVER_EXP, laycof
 
       use m_globalparameters, only: sl
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2

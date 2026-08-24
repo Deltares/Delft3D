@@ -319,7 +319,7 @@ contains
             mx = max(mx, laymx(k))
          end do
 
-         call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, keepexisting=.false.)
+         call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, fill=dmiss, keepexisting=.false.)
          call realloc(dzslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, fill=0.0_dp, keepexisting=.false.)
 
          if (stretch_type == STRETCH_USER) then
@@ -377,8 +377,6 @@ contains
                end do
 
             else if (laytyp(j) == LAYTP_Z) then
-
-               call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, keepexisting=.false.) ! nr of layer distributions
 
                if (stretch_type == STRETCH_UNI_OVER_EXP) then
                   zslay(0, j) = zmn
