@@ -500,12 +500,13 @@ contains
 
 !> Fast replacement for INCELLS using cached net-cell geometry.
    elemental function netcell_set_find_netcell(this, x, y) result(k)
+   use geometry_module, only: pinpok_raycast
 
       class(t_netcell_set), intent(in) :: this
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
-      integer :: i_poly
+   integer :: first_point, i_poly, last_point, num_points
       logical :: is_inside
 
       k = 0
@@ -521,7 +522,11 @@ contains
             end if
 
             ! Detailed point-in-polygon check
-            is_inside = this%polygons%polygon_contains_point(x, y, i_poly)
+            first_point = geometry%polygon_start(i_poly)
+            last_point = geometry%polygon_end(i_poly)
+            num_points = last_point - first_point + 1
+            ! explicit inlined call + first point + offset passing of an explicitly sized array to help compiler.
+            is_inside = pinpok_raycast(x, y, geometry%x(first_point), geometry%y(first_point), num_points)
 
             if (is_inside) then
                ! cell index equals polygon index
