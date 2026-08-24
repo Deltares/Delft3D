@@ -1,12 +1,9 @@
 /logs/**
+/failed/**
 /data/**
 !/data/**/
 !/data/**/*.dvc
-# Shared overview tables for e03_waq functionality doc (not under DVC)
-!/data/cases/e03_waq/f01_general/cases_substances.tex
-!/data/cases/e03_waq/f01_general/cases_processes.tex
-!/data/cases/e03_waq/f01_general/substances_cases.tex
-!/data/cases/e03_waq/f01_general/processes_cases.tex
+!/data/cases/.ignore
 
 # python virtual environment and caches
 .venv

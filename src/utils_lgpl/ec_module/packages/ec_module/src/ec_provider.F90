@@ -49,9 +49,11 @@ module m_ec_provider
    use m_ec_message
    use m_ec_parameters
    use precision
+   use precision_basics, only: comparereal
    use string_module
    use netcdf
    use multi_file_io
+   use m_missing, only: dmiss
 
    implicit none
 
@@ -240,7 +242,7 @@ contains
 
    !> Initialize a new FileReader, by constructing the complete tree of source Items.
       !! On the opposite end of the EC-module is a kernel, which constructs the complete tree of target Items.
-   recursive function ecProviderInitializeFileReader(instancePtr, fileReaderId, fileType, fileName, refdat, tzone, tsunit, quantityName, forcingFile, dtnodal, varname, varname2) result(success)
+   recursive function ecProviderInitializeFileReader(instancePtr, fileReaderId, fileType, fileName, refdat, tzone, tsunit, quantityName, forcingFile, dtnodal, varname, varname2, data_value) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: fileReaderId !< unique FileReader id
@@ -254,12 +256,18 @@ contains
       real(dp), optional, intent(in) :: dtnodal !< Nodal factors update interval
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name 2 within filename
+      real(dp), optional, intent(in) :: data_value !< Constant data value (still creates a tEcFileReader, but without underlying data file)
       !
       type(tEcFileReader), pointer :: fileReaderPtr !< FileReader corresponding to fileReaderId
       character(len=:), allocatable :: l_quantityName !< local string with quantityName
+      real(dp) :: data_value_ !< Holds `data_value` if present, otherwise the default `dmiss`
       !
       success = .false.
       fileReaderPtr => null()
+      data_value_ = dmiss
+      if (present(data_value)) then
+         data_value_ = data_value
+      end if
       !
       if (len_trim(fileName) > maxFileNameLen) then
          call set_ec_message("ERROR: ec_provider::ecProviderInitializeFileReader: The filename string is too long.")
@@ -272,7 +280,11 @@ contains
          fileReaderPtr%fileName = fileName
          fileReaderPtr%fileHandle = ec_undef_int ! The filereader itself has now an invalid filehandle
 
-         if (.not. ecSupportOpenExistingFile(fileReaderPtr%fileHandle, fileReaderPtr%fileName)) return
+         if (fileType /= provFile_datavalue) then
+            if (.not. ecSupportOpenExistingFile(fileReaderPtr%fileHandle, fileReaderPtr%fileName)) then
+               return
+            end if
+         end if
          select case (fileReaderPtr%ofType) ! Inventory of the opened netcdf-file
          case (provFile_netcdf)
             if (.not. ecProviderNetcdfReadvars(fileReaderPtr)) then
@@ -303,6 +315,9 @@ contains
          else if (present(quantityName) .and. present(varname)) then
             l_quantityName = trim(quantityName)
             if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, varname)) return
+         else if (present(quantityName) .and. comparereal(data_value_, dmiss) /= 0) then
+            l_quantityName = trim(quantityName)
+            if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName, data_value=data_value_)) return
          else if (present(quantityName)) then
             l_quantityName = trim(quantityName)
             if (.not. ecProviderCreateItems(instancePtr, fileReaderPtr, forcingFile, l_quantityName)) return
@@ -319,7 +334,7 @@ contains
    ! =======================================================================
 
    !> Create source Items and their contained types, based on file type and file header.
-   function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2) result(success)
+   function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2, data_value) result(success)
       use string_module, only: str_tolower
 
       logical :: success !< function status
@@ -330,6 +345,7 @@ contains
       character(len=*), intent(in), optional :: bctfilename !< file name of bct-file with data
       character(len=*), intent(in), optional :: varname !< variable name within filename
       character(len=*), intent(in), optional :: varname2 !< variable name 2 within filename
+      real(dp), intent(in), optional :: data_value !< data_value (not file based).
       !
       success = .false.
       select case (fileReaderPtr%ofType)
@@ -418,6 +434,16 @@ contains
          end if
       case (provFile_t3D)
          success = ecProviderCreatet3DItems(instancePtr, fileReaderPtr)
+      case (provFile_datavalue)
+         if (.not. present(quantityname)) then
+            call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: datavalue type requires a quantity name.")
+            return
+         end if
+         if (.not. present(data_value)) then
+            call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: datavalue type requires a data_value.")
+            return
+         end if
+         success = ecProviderCreateDataValueItems(instancePtr, fileReaderPtr, quantityname, data_value)
       case default
          call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unknown file type.")
       end select
@@ -954,6 +980,87 @@ contains
       item%quantityPtr%vectorMax = n_quantities
       success = .true.
    end function ecProviderCreateUniformItems
+
+   ! =======================================================================
+
+   !> Create a source Item holding a single time- and space-independent constant.
+   !! Used for the 'dataValue' forcingFileType, where no data file is given, but instead  
+   !! a scalar 'dataValue'. It can typically (but not per se) be combined on top of another  
+   !! provider+connection, using an operand. The value is stored in both sourceT0 and  
+   !! sourceT1 fields so that time interpolation always yields it
+   function ecProviderCreateDataValueItems(instancePtr, fileReaderPtr, quantityName, data_value) result(success)
+      use m_ec_message
+      implicit none
+      logical :: success
+      type(tEcInstance), pointer, intent(in) :: instancePtr !< The EC module instance pointer.
+      type(tEcFileReader), pointer, intent(inout) :: fileReaderPtr !< FileReader pointer to add DataValue items into.
+      character(len=*), intent(in) :: quantityName !< Name of the quantity to be combined at the target side.
+      real(dp), intent(in) :: data_value !< The constant value.
+
+      integer :: quantityId
+      integer :: elementSetId
+      integer :: field0Id
+      integer :: field1Id
+      integer :: itemId
+      type(tEcItem), pointer :: item
+
+      success = .false.
+      item => null()
+
+      quantityId = ecInstanceCreateQuantity(instancePtr)
+      if (.not. ecQuantitySet(instancePtr, quantityId, name=quantityName, factor=data_value)) then
+         return
+      end if
+
+      elementSetId = ecInstanceCreateElementSet(instancePtr)
+      if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_scalar)) then
+         return
+      end if
+
+      field0Id = ecInstanceCreateField(instancePtr)
+      if (.not. ecFieldCreate1dArray(instancePtr, field0Id, 1)) then
+         return
+      end if
+
+      field1Id = ecInstanceCreateField(instancePtr)
+      if (.not. ecFieldCreate1dArray(instancePtr, field1Id, 1)) then
+         return
+      end if
+
+      itemId = ecInstanceCreateItem(instancePtr)
+      if (.not. ecItemSetRole(instancePtr, itemId, itemType_source)) then
+         return
+      end if
+      ! Note: even though dataValue has no underlying data file, we still have a tEcFileReader acting as provider.
+      if (.not. ecItemSetType(instancePtr, itemId, accessType_fileReader)) then
+         return
+      end if
+      if (.not. ecItemSetQuantity(instancePtr, itemId, quantityId)) then
+         return
+      end if
+      if (.not. ecItemSetElementSet(instancePtr, itemId, elementSetId)) then
+         return
+      end if
+      if (.not. ecItemSetSourceT0Field(instancePtr, itemId, field0Id)) then
+         return
+      end if
+      if (.not. ecItemSetSourceT1Field(instancePtr, itemId, field1Id)) then
+         return
+      end if
+      
+      item => ecSupportFindItem(instancePtr, itemId)
+      ! Store the constant value in both time slots so the temporal interpolator returns `data_value` for any t.
+      item%sourceT0FieldPtr%arr1dPtr(1) = data_value
+      item%sourceT0FieldPtr%timesteps = 0.0_dp
+      item%sourceT1FieldPtr%arr1dPtr(1) = data_value
+      item%sourceT1FieldPtr%timesteps = huge(0.0_dp)
+      item%quantityPtr%vectorMax = 1
+
+      if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, item%id)) then
+         return
+      end if
+      success = .true.
+   end function ecProviderCreateDataValueItems
 
    ! =======================================================================
 
@@ -2637,6 +2744,8 @@ contains
       character(len=:), allocatable :: nameVar ! variable name in error message
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
       integer :: nrow, ncol, nlay
+      logical :: is_scalar_source
+      logical :: has_horizontal_coordinates
       !
       success = .false.
       itemPtr => null()
@@ -2648,6 +2757,8 @@ contains
       name = ''
       ndims = 0
       rotate_pole = .false.
+      is_scalar_source = .false.
+      has_horizontal_coordinates = .false.
 
       ! =============================================================================
       ! Find the Quantity corresponding to quantityName. (configurable in the future)
@@ -2715,7 +2826,7 @@ contains
       end if
 
       do i = 1, expectedLength
-         call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames)
+         call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames, ignore_case=.true.)
          if (idvar <= 0 .and. allocated(ncstdnames_fallback)) then
             call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames_fallback, ncvarnames)
          end if
@@ -2812,6 +2923,7 @@ contains
          ! If we failed to read all coordinate variable id's from the dimension variable id's,
          ! inspect the coordinate attribute string
          ! The contents of the coordinate string OVERRULE the id's of coordinate variables (i.e. fgd_id, sgd_id, tgd_id set above)
+         has_horizontal_coordinates = .false.
          coord_name = ''
          ierror = nf90_get_att(fileReaderPtr%fileHandle, idvar, "coordinates", coord_name) ! get coordinates attribute
          if (len_trim(coord_name) > 0) then
@@ -2827,17 +2939,21 @@ contains
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
                            fgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_y_coordinate')) then
                            sgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                      end if
                      if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'longitude')) then
                            fgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'latitude')) then
                            sgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                      end if
                   end if
@@ -2845,7 +2961,16 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         if (fgd_id < 0 .or. sgd_id < 0) then
+         is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid)
+         if (is_scalar_source .and. has_horizontal_coordinates) then
+            call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+                              //"' declares horizontal coordinates but has only a time dimension. " &
+                              //"data with coordinates must include a station or grid dimension.")
+            return
+         end if
+         if (is_scalar_source) then
+            grid_type = elmSetType_scalar
+         else if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
@@ -2861,7 +2986,11 @@ contains
          ! Create the ElementSet for this quantity
          ! =========================================
          elementSetId = ecInstanceCreateElementSet(instancePtr)
-         if (grid_type == ec_undef_int) then
+         if (is_scalar_source) then
+            if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_scalar)) then
+               return
+            end if
+         else if (grid_type == ec_undef_int) then
             dummy = ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, 0)
          else
             if (allocated(fgd_data)) deallocate (fgd_data)
@@ -3448,6 +3577,10 @@ contains
          else
             success = .true.
          end if
+      case (provFile_datavalue)
+         ! Time independent: a single scalar value provided directly (no file, no time axis).
+         ! The ec timeframe params were already defaulted to the kernel's timeframe params (above).
+         success = .true.
       case default
          call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unknown file type.")
       end select
