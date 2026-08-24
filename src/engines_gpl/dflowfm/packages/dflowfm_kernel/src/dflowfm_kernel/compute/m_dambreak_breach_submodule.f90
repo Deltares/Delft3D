@@ -346,7 +346,7 @@ contains
 
       logical :: success !< success flag
 
-      if (dambreak%ec_item /= ec_undef_int) then
+      if (dambreak%ec_item_legacy /= ec_undef_int) then
          ! Legacy .tim file with 3 columns: time, crest level, width
          if (time > dambreak%t0) then
             !Time in the tim file is relative to start time t0
@@ -365,7 +365,7 @@ contains
       else
          ! Standard .bc file with separate data for crest level and width, already read in update_network_data().
          ! NOTE: the %..._ini fields contain the actual data at the *current* time.
-         associate dambreak_sts =>network%sts%struct(dambreak%index_structure)%dambreak
+         associate (dambreak_sts => network%sts%struct(dambreak%index_structure)%dambreak)
             dambreak%crest_level = dambreak_sts%crest_level_ini
             dambreak%width = dambreak_sts%breach_width_ini
          end associate
