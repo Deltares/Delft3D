@@ -87,7 +87,7 @@ module m_cellmask_from_polygon_set
 
    interface t_polygon_set
       module procedure construct_polygon_set
-      module procedure construct_netcell_polygon_cache
+      module procedure construct_netcell_polygon_set
    end interface t_polygon_set
 
    integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon.
@@ -452,7 +452,7 @@ contains
    end function binned_edge_index_get_bin
 
    !> Construct a polygon cache containing all net-cell geometries.
-   function construct_netcell_polygon_cache() result(cache)
+   function construct_netcell_polygon_set() result(cache)
       use network_data
       use m_alloc
 
@@ -492,7 +492,7 @@ contains
 
       cache = t_polygon_set(xpl_init, ypl_init, zpl_init, enable_binning=.false.)
 
-   end function construct_netcell_polygon_cache
+   end function construct_netcell_polygon_set
 
 !> Fast replacement for INCELLS using cached net-cell geometry.
    elemental function polygon_set_find_netcell(this, x, y) result(k)
