@@ -199,7 +199,7 @@ contains
       umag_max_err = 0.0_dp ! max. velocity: off
       ssc_max_err = 0.0_dp
       s01maxavg_min_err = 0.0_dp !< min. avg. water level change: off
-      dtavg_min_err = 0.0_dp !< smallest allowed timestep, otherwise break: off
+      dtavg_min_err = 0.001_dp !< smallest allowed timestep, otherwise break: off
       s1_max_warn = 0.0_dp
       u1abs_max_warn = 0.0_dp
       umag_max_warn = 0.0_dp
