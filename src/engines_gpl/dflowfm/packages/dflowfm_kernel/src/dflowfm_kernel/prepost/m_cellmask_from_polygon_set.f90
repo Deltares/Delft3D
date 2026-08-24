@@ -36,7 +36,7 @@ module m_cellmask_from_polygon_set
 
    private
 
-   public :: t_polygon_set
+   public :: t_netcell_set, t_polygon_set
 
    !> Coordinates and per-polygon metadata shared by masking and net-cell lookup.
    type, private :: t_polygon_geometry
@@ -80,15 +80,25 @@ module m_cellmask_from_polygon_set
       type(t_binned_edge_index) :: edge_index
    contains
       procedure :: is_masked => polygon_set_is_masked
-      procedure :: polygon_contains_point => polygon_set_polygon_contains_point
-      procedure :: find_netcell => polygon_set_find_netcell
-      procedure :: find_cells_crossed_by_polyline => polygon_set_find_cells_crossed_by_polyline
+      procedure, private :: polygon_contains_point => polygon_set_polygon_contains_point
    end type t_polygon_set
 
    interface t_polygon_set
       module procedure construct_polygon_set
-      module procedure construct_netcell_polygon_set
    end interface t_polygon_set
+
+   !> Net-cell polygons and operations that rely on polygon indices matching net-cell indices.
+   type :: t_netcell_set
+      private
+      type(t_polygon_set) :: polygons
+   contains
+      procedure :: find_netcell => netcell_set_find_netcell
+      procedure :: find_cells_crossed_by_polyline => netcell_set_find_cells_crossed_by_polyline
+   end type t_netcell_set
+
+   interface t_netcell_set
+      module procedure construct_netcell_set
+   end interface t_netcell_set
 
    integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon.
    integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges.
@@ -280,7 +290,6 @@ contains
    end function polygon_set_polygon_contains_point
 
    !> Build a latitude-binned edge index for the complete polygon set.
-
    !! A horizontal ray can intersect only edges whose vertical extent contains the query y-coordinate.
    !! The index stores those candidate edges per latitude bin. It changes only which edges reach the
    !! existing ray-casting calculation; it does not approximate or simplify polygon geometry.
@@ -447,11 +456,11 @@ contains
    end function binned_edge_index_get_bin
 
    !> Construct a polygon cache containing all net-cell geometries.
-   function construct_netcell_polygon_set() result(cache)
+   function construct_netcell_set() result(netcells)
       use network_data
       use m_alloc
 
-      type(t_polygon_set) :: cache
+      type(t_netcell_set) :: netcells
       integer :: k, n, k1, total_points, ipoint
       real(kind=dp), allocatable, dimension(:) :: xpl_init, ypl_init, zpl_init
 
@@ -485,14 +494,14 @@ contains
          zpl_init(ipoint) = dmiss
       end do
 
-      cache = t_polygon_set(xpl_init, ypl_init, zpl_init, enable_binning=.false.)
+      netcells%polygons = t_polygon_set(xpl_init, ypl_init, zpl_init, enable_binning=.false.)
 
-   end function construct_netcell_polygon_set
+   end function construct_netcell_set
 
 !> Fast replacement for INCELLS using cached net-cell geometry.
-   elemental function polygon_set_find_netcell(this, x, y) result(k)
+   elemental function netcell_set_find_netcell(this, x, y) result(k)
 
-      class(t_polygon_set), intent(in) :: this
+      class(t_netcell_set), intent(in) :: this
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
@@ -501,7 +510,7 @@ contains
 
       k = 0
 
-      associate (geometry => this%geometry)
+      associate (geometry => this%polygons%geometry)
          ! Loop over all netcell polygons with fast bounding box checks
          do i_poly = 1, geometry%polygon_count
 
@@ -512,7 +521,7 @@ contains
             end if
 
             ! Detailed point-in-polygon check
-            is_inside = this%polygon_contains_point(x, y, i_poly)
+            is_inside = this%polygons%polygon_contains_point(x, y, i_poly)
 
             if (is_inside) then
                ! cell index equals polygon index
@@ -522,17 +531,17 @@ contains
          end do
       end associate
 
-   end function polygon_set_find_netcell
+   end function netcell_set_find_netcell
 
 !> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
-   subroutine polygon_set_find_cells_crossed_by_polyline(this, xpoly, ypoly, crossed_cells, error)
+   subroutine netcell_set_find_cells_crossed_by_polyline(this, xpoly, ypoly, crossed_cells, error)
       use m_alloc, only: realloc
       use network_data, only: nump
       use m_missing, only: dmiss
 
       implicit none
 
-      class(t_polygon_set), intent(in) :: this
+      class(t_netcell_set), intent(in) :: this
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
       integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
@@ -553,7 +562,7 @@ contains
 
       ! Process each segment and put the result in cellmask
       do i = 1, npoly - 1
-         call find_cells_for_segment(this, xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
+         call find_cells_for_segment(this%polygons, xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
       end do
 
       crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
@@ -564,7 +573,7 @@ contains
          end if
       end if
 
-   end subroutine polygon_set_find_cells_crossed_by_polyline
+   end subroutine netcell_set_find_cells_crossed_by_polyline
 
 !> Find all cells that a segment crosses and mark them in cellmask
    subroutine find_cells_for_segment(cache, xa, ya, xb, yb, cellmask)

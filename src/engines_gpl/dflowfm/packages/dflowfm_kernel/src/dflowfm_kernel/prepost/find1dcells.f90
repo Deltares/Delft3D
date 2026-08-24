@@ -50,7 +50,7 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-      use m_cellmask_from_polygon_set, only: t_polygon_set
+      use m_cellmask_from_polygon_set, only: t_netcell_set
 
       implicit none
 
@@ -60,12 +60,12 @@ contains
       logical :: Lisnew
       integer :: ierror
       integer :: nump1d
-      type(t_polygon_set) :: polygon_cache
+      type(t_netcell_set) :: polygon_cache
 
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
-      polygon_cache = t_polygon_set()
+      polygon_cache = t_netcell_set()
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D

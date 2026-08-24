@@ -39,11 +39,11 @@ contains
 
       use network_data, only: cellmask, nump1d2d
       use m_samples, only: ns, xs, ys
-      use m_cellmask_from_polygon_set, only: t_polygon_set
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use m_alloc, only: realloc
 
       integer :: i, k
-      type(t_polygon_set) :: polygon_cache
+      type(t_netcell_set) :: polygon_cache
 
       ! Allocate and initialize cellmask
       call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
@@ -55,7 +55,7 @@ contains
 
       ! Initialize the spatial index for all netcells
       ! This builds bounding boxes and polygon data structures for fast point-in-polygon tests
-      polygon_cache = t_polygon_set()
+      polygon_cache = t_netcell_set()
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       ! Loop over samples (much fewer than cells)

@@ -488,15 +488,15 @@ contains
    !! TODO, optionally: lump sources/sinks in the same cell
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
-      use m_cellmask_from_polygon_set, only: t_polygon_set
+      use m_cellmask_from_polygon_set, only: t_netcell_set
 
       class(precice_adapter_t), intent(inout) :: self
       integer :: i
       integer :: sink_cell
       integer :: source_cell
-      type(t_polygon_set) :: polygon_cache
+      type(t_netcell_set) :: polygon_cache
 
-      polygon_cache = t_polygon_set()
+      polygon_cache = t_netcell_set()
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       

@@ -48,7 +48,7 @@ contains
    !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_fm_administration, test_adapter_add_to_fm_administration,
    subroutine test_adapter_add_to_fm_administration() bind(C)
       use m_flow_geominit, only: flow_geominit
-      use m_cellmask_from_polygon_set, only: t_polygon_set
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use precice_adapter
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_alloc, only: realloc
@@ -56,7 +56,7 @@ contains
 
       type(t_grid_helper) :: grid_helper
       type(precice_adapter_t) :: adapter
-      type(t_polygon_set) :: polygon_cache
+      type(t_netcell_set) :: polygon_cache
       integer :: expected_sink_cell
       integer :: expected_source_cell
 
@@ -71,7 +71,7 @@ contains
          )
       call flow_geominit(0)
 
-      polygon_cache = t_polygon_set()
+      polygon_cache = t_netcell_set()
       expected_sink_cell = polygon_cache%find_netcell(5.0_dp, 5.0_dp)
       expected_source_cell = polygon_cache%find_netcell(15.0_dp, 7.0_dp)
 

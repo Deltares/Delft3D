@@ -2752,7 +2752,7 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
-      use m_cellmask_from_polygon_set, only: t_polygon_set
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
@@ -2760,7 +2760,7 @@ contains
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
-      type(t_polygon_set) :: polygon_cache
+      type(t_netcell_set) :: polygon_cache
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -3125,7 +3125,7 @@ contains
                end if
             end do
          end if
-         polygon_cache = t_polygon_set()
+         polygon_cache = t_netcell_set()
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
