@@ -1601,7 +1601,7 @@ contains
       use string_module, only: strcmpi, str_tolower
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: t_polygon_set_cache
+      use m_cellmask_from_polygon_set, only: t_polygon_set
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
@@ -1634,7 +1634,7 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
 
@@ -1643,7 +1643,7 @@ contains
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
       do i = 1, num_items_in_file

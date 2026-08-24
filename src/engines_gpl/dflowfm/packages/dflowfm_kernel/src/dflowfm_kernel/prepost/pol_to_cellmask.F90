@@ -30,7 +30,7 @@
 !> Wrapper around cellmask_from_polygon_set that uses OpenMP to parallelize the loop over all points if not in MPI mode
 module m_pol_to_cellmask
    use precision, only: dp
-   use m_cellmask_from_polygon_set, only: t_polygon_set_cache
+   use m_cellmask_from_polygon_set, only: t_polygon_set
 
    implicit none
 
@@ -52,7 +52,7 @@ contains
       integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
 
       integer :: k
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       if (polygon_points == 0) then
          return
@@ -60,7 +60,7 @@ contains
 
       call realloc(mask, num_netcells, keepexisting=.false., fill=0)
 
-      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning)
+      polygon_cache = t_polygon_set(x_poly, y_poly, z_poly, enable_binning)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)

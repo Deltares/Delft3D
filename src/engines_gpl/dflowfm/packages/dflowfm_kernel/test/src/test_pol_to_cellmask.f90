@@ -3,7 +3,7 @@ module test_pol_to_cellmask
    use precision, only: dp
    use m_missing, only: dmiss
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl, nump1d2d
-   use m_cellmask_from_polygon_set, only: t_polygon_set_cache
+   use m_cellmask_from_polygon_set, only: t_polygon_set
    use geometry_module, only: pinpok_legacy, pinpok_raycast
    use m_pol_to_cellmask, only: pol_to_cellmask, cell_mask_from_polygon_file
 
@@ -467,7 +467,7 @@ contains
       real(kind=dp) :: angle
       real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
       real(kind=dp) :: x_query(query_points), y_query(query_points)
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       do point = 1, large_polygon_points - 1
          angle = 2.0_dp * pi * real(point - 1, dp) / real(large_polygon_points - 1, dp)
@@ -499,7 +499,7 @@ contains
 
       original_jins = jins
       jins = 1
-      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning=.true.)
+      polygon_cache = t_polygon_set(x_poly, y_poly, z_poly, enable_binning=.true.)
       do point = 1, query_points
          inside_large_polygon = pinpok_raycast(x_query(point), y_query(point), x_poly, y_poly, large_polygon_points)
          inside_small_polygon = pinpok_raycast(x_query(point), y_query(point), &
@@ -529,7 +529,7 @@ contains
       real(kind=dp) :: vertex_x(polygon_segments + 1), vertex_y(polygon_segments + 1)
       real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
       real(kind=dp) :: x_query(query_points), y_query(query_points)
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       ! Dense L-shape: the internal horizontal edge at y=1 lies exactly on a latitude-bin boundary.
       vertex_x = [-1.0_dp, 1.0_dp, 1.0_dp, 0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp]
@@ -553,7 +553,7 @@ contains
 
       original_jins = jins
       jins = 1
-      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning=.true.)
+      polygon_cache = t_polygon_set(x_poly, y_poly, z_poly, enable_binning=.true.)
       do point = 1, query_points
          actual_mask = polygon_cache%point_mask(x_query(point), y_query(point))
          call f90_expect_eq(actual_mask, merge(1, 0, pinpok_raycast(x_query(point), y_query(point), &
@@ -574,7 +574,7 @@ contains
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -583,7 +583,7 @@ contains
       call setup_simple_netcells()
 
       ! Initialize cache for new implementation
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       ! Test 1: Point clearly inside first cell (0,0 to 10,10)
       xa = 5.0_dp
@@ -637,7 +637,7 @@ contains
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -645,7 +645,7 @@ contains
       nump = 3
       call setup_complex_netcells()
 
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       ! Test 1: Inside triangle (cell 1)
       xa = 5.0_dp
@@ -689,7 +689,7 @@ contains
 
       integer :: kin_old, kin_new, i, mismatches
       real(kind=dp) :: xa, ya
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -697,7 +697,7 @@ contains
       nump = 100
       call setup_grid_netcells(10, 10, 10.0_dp)
 
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       mismatches = 0
 
@@ -730,7 +730,7 @@ contains
 
       integer :: kin1, kin2, kin_old
       real(kind=dp) :: xa, ya
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -743,7 +743,7 @@ contains
       ya = 5.0_dp
 
       ! Initialize cache and query
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
       kin1 = polygon_cache%find_netcell(xa, ya)
 
       ! Query again (should use cached data)
@@ -756,7 +756,7 @@ contains
       call f90_expect_eq(kin1, kin_old, "Cached result should match old implementation")
 
       ! Cleanup and re-initialize
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       ! Query after re-initialization
       kin2 = polygon_cache%find_netcell(xa, ya)
@@ -776,14 +776,14 @@ contains
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
       ! Test 1: Empty grid (nump = 0)
       nump = 0
       call setup_empty_netcells()
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       xa = 5.0_dp
       ya = 5.0_dp
@@ -797,7 +797,7 @@ contains
       ! Test 2: Single cell
       nump = 1
       call setup_single_netcell()
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       xa = 5.0_dp
       ya = 5.0_dp
@@ -816,7 +816,7 @@ contains
       ! Test 3: Very large coordinates
       nump = 1
       call setup_single_netcell()
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       xa = 1.0e6_dp
       ya = 1.0e6_dp
@@ -982,7 +982,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1007,7 +1007,7 @@ contains
       ypoly(2) = 27.0_dp
 
       ! Initialize cache
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       ! Call the function
       call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
@@ -1051,7 +1051,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1075,7 +1075,7 @@ contains
       ypoly(3) = 0.0_dp
 
       ! Initialize cache
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
 
       ! Call the function
       call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
@@ -1113,7 +1113,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
-      type(t_polygon_set_cache) :: polygon_cache
+      type(t_polygon_set) :: polygon_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1135,7 +1135,7 @@ contains
       ypoly(2) = 6.0_dp
 
       ! Initialize cache
-      polygon_cache = t_polygon_set_cache()
+      polygon_cache = t_polygon_set()
       ! Call the function
       call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
