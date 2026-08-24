@@ -7,7 +7,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from ci_tools.verschilanalyse.util.slurm_log_data import LogComparison, SlurmLogData, Status
 from ci_tools.verschilanalyse.util.verschilanalyse_comparison import VerschilanalyseComparison
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, Tolerances, Variable, VerschillentoolOutput
+from ci_tools.verschilanalyse.util.verschillentool import OutputType, Tolerances, Variable, VerschillentoolOutput2D, VerschillentoolOutput3D
 
 
 class ExcelExporter:
@@ -40,7 +40,7 @@ class ExcelExporter:
     }
 
     @classmethod
-    def _append_row(cls, sheet: Worksheet, model_name: str, stats: VerschillentoolOutput, ndigits: int = 4) -> None:
+    def _append_row(cls, sheet: Worksheet, model_name: str, stats: VerschillentoolOutput2D | VerschillentoolOutput3D, ndigits: int = 4) -> None:
         sheet.append(
             [
                 model_name,
@@ -53,7 +53,15 @@ class ExcelExporter:
                 round(stats.flow_velocity.avg_bias, ndigits=ndigits),
                 round(stats.flow_velocity.avg_rms, ndigits=ndigits),
                 round(stats.flow_velocity.max, ndigits=ndigits),
-            ]
+                round(stats.salinity.avg_max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.salinity.avg_bias, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.salinity.avg_rms, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.salinity.max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.temperature.avg_max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.temperature.avg_bias, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.temperature.avg_rms, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                round(stats.temperature.max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+                ]
         )
 
         row = sheet[sheet.max_row]
@@ -153,7 +161,7 @@ class ExcelExporter:
         cls,
         sheet: Worksheet,
         output_type: OutputType,
-        model_stats: dict[str, VerschillentoolOutput],
+        model_stats: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D   ],
         ndigits: int = 4,
     ) -> None:
         if output_type == OutputType.HIS:
@@ -172,6 +180,14 @@ class ExcelExporter:
             f"Bias flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
             f"RMSE flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
             f"Maximum flow velocity over all {unit} ({Variable.FLOW_VELOCITY.unit})",
+            f"Maximum salinity averaged over {unit} ({Variable.SALINITY.unit})",
+            f"Bias salinity averaged over {unit} ({Variable.SALINITY.unit})",
+            f"RMSE salinity averaged over {unit} ({Variable.SALINITY.unit})",
+            f"Maximum salinity over all {unit} ({Variable.SALINITY.unit})",
+            f"Maximum temperature averaged over {unit} ({Variable.TEMPERATURE.unit})",
+            f"Bias temperature averaged over {unit} ({Variable.TEMPERATURE.unit})",
+            f"RMSE temperature averaged over {unit} ({Variable.TEMPERATURE.unit})",
+            f"Maximum temperature over all {unit} ({Variable.TEMPERATURE.unit})",
         ]
 
         count_header = cls.VERSCHILLENTOOL_COUNT_HEADERS[output_type]
