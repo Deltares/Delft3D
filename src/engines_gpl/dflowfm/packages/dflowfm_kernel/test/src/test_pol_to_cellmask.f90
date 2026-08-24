@@ -507,7 +507,7 @@ contains
                                                y_poly(large_polygon_points + 2:polygon_points), 5)
          polygons_containing_point = merge(1, 0, inside_large_polygon) + merge(1, 0, inside_small_polygon)
          expected_mask = modulo(polygons_containing_point, 2)
-         actual_mask = polygon_cache%is_masked(x_query(point), y_query(point))
+         actual_mask = merge(1, 0, polygon_cache%is_masked(x_query(point), y_query(point)))
          call f90_expect_eq(actual_mask, expected_mask, "Indexed and full polygon scans should agree")
       end do
       jins = original_jins
@@ -555,7 +555,7 @@ contains
       jins = 1
       polygon_cache = t_polygon_set(x_poly, y_poly, z_poly, enable_binning=.true.)
       do point = 1, query_points
-         actual_mask = polygon_cache%is_masked(x_query(point), y_query(point))
+         actual_mask = merge(1, 0, polygon_cache%is_masked(x_query(point), y_query(point)))
          call f90_expect_eq(actual_mask, merge(1, 0, pinpok_raycast(x_query(point), y_query(point), &
                                                                    x_poly, y_poly, polygon_points)), &
                             "Binned and full polygon scans should agree at edges and bin boundaries")

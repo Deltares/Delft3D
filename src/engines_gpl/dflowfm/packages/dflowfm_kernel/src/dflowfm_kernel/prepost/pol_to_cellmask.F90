@@ -65,7 +65,7 @@ contains
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do k = 1, num_netcells
-         mask(k) = polygon_cache%is_masked(x_points(k), y_points(k))
+         mask(k) = merge(1, 0, polygon_cache%is_masked(x_points(k), y_points(k)))
       end do
       !$OMP END PARALLEL DO
 

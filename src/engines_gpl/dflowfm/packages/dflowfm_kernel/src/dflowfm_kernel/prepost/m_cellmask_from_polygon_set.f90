@@ -205,15 +205,14 @@ contains
    end function construct_polygon_geometry
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
-   elemental function polygon_set_is_masked(this, x, y) result(mask)
+   elemental function polygon_set_is_masked(this, x, y) result(is_masked)
       class(t_polygon_set), intent(in) :: this
-      integer :: mask
       real(kind=dp), intent(in) :: x, y !< Point coordinates
+      logical :: is_masked !< Whether the point should be masked.
 
       integer :: count_drypoint, i_poly
       logical :: found_inside_enclosure, is_inside
 
-      mask = 0
       associate (geometry => this%geometry)
          count_drypoint = 0
          found_inside_enclosure = .false.
@@ -240,19 +239,15 @@ contains
 
          ! Apply odd-even rule only if counting was needed
          if (jins == 1) then
-            if (mod(count_drypoint, 2) == 1) then
-               mask = 1
-            end if
+            is_masked = mod(count_drypoint, 2) == 1
          else
-            if (mod(count_drypoint, 2) == 0) then
-               mask = 1
-            end if
+            is_masked = mod(count_drypoint, 2) == 0
          end if
 
          ! if an enclosure is present, the point must lie is_inside at least one
          ! NOTE: this means we do not handle nested enclosure polygons.
          if (geometry%enclosures_present .and. .not. found_inside_enclosure) then
-            mask = 1
+            is_masked = .true.
          end if
       end associate
 
