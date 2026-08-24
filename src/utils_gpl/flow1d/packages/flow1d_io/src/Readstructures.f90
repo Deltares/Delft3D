@@ -923,14 +923,13 @@ contains
          call get_value_or_addto_forcinglist(md_ptr, 'breachWidth', dambr%breach_width_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess2)
          
          ! NOTE: only when we declare dambreakLevelsAndWidth obsolete, fully enable the required checks below (i.e., remove if):
-         ! If either of crestLevel and breachWidth is present, assume new input and validate as usual.
+         ! If *either* of crestLevel and breachWidth is present, assume new input and validate as usual, don't fall back to legacy.
          if (localsuccess .or. localsuccess2) then
             success = success .and. check_input_result(localsuccess, st_id, 'crestLevel')
             success = success .and. check_input_result(localsuccess2, st_id, 'breachWidth')
-         end if
 
-         if (localsuccess .and. localsuccess2) then
-            timeseries_self_contained = .true.
+            ! Only if *both* were read successfully, we can declare the timeseries self-contained.
+            timeseries_self_contained = localsuccess .and. localsuccess2
          else
             ! Fallback only when neither crestLevel nor breachWidth was given: read legacy DambreakLevelsAndWidths filename.
             ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
