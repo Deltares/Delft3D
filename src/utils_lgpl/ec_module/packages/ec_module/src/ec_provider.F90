@@ -2744,6 +2744,8 @@ contains
       character(len=:), allocatable :: nameVar ! variable name in error message
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
       integer :: nrow, ncol, nlay
+      logical :: is_scalar_source
+      logical :: has_horizontal_coordinates
       !
       success = .false.
       itemPtr => null()
@@ -2755,6 +2757,8 @@ contains
       name = ''
       ndims = 0
       rotate_pole = .false.
+      is_scalar_source = .false.
+      has_horizontal_coordinates = .false.
 
       ! =============================================================================
       ! Find the Quantity corresponding to quantityName. (configurable in the future)
@@ -2919,6 +2923,7 @@ contains
          ! If we failed to read all coordinate variable id's from the dimension variable id's,
          ! inspect the coordinate attribute string
          ! The contents of the coordinate string OVERRULE the id's of coordinate variables (i.e. fgd_id, sgd_id, tgd_id set above)
+         has_horizontal_coordinates = .false.
          coord_name = ''
          ierror = nf90_get_att(fileReaderPtr%fileHandle, idvar, "coordinates", coord_name) ! get coordinates attribute
          if (len_trim(coord_name) > 0) then
@@ -2934,17 +2939,21 @@ contains
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
                            fgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_y_coordinate')) then
                            sgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                      end if
                      if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'longitude')) then
                            fgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'latitude')) then
                            sgd_id = varid
+                           has_horizontal_coordinates = .true.
                         end if
                      end if
                   end if
@@ -2952,7 +2961,16 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         if (fgd_id < 0 .or. sgd_id < 0) then
+         is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid)
+         if (is_scalar_source .and. has_horizontal_coordinates) then
+            call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+                              //"' declares horizontal coordinates but has only a time dimension. " &
+                              //"data with coordinates must include a station or grid dimension.")
+            return
+         end if
+         if (is_scalar_source) then
+            grid_type = elmSetType_scalar
+         else if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
@@ -2968,7 +2986,11 @@ contains
          ! Create the ElementSet for this quantity
          ! =========================================
          elementSetId = ecInstanceCreateElementSet(instancePtr)
-         if (grid_type == ec_undef_int) then
+         if (is_scalar_source) then
+            if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_scalar)) then
+               return
+            end if
+         else if (grid_type == ec_undef_int) then
             dummy = ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, 0)
          else
             if (allocated(fgd_data)) deallocate (fgd_data)
