@@ -538,6 +538,7 @@ contains
       real(kind=dp) :: x
       real(kind=dp) :: y
       real(kind=dp) :: dist
+      real(kind=dp) :: tolerance
 
       istat = 0
       lundia = mdia
@@ -702,7 +703,8 @@ contains
             clddata%rttar(icll) = rfield(5)
             clddata%linar(icll) = mcurec
             clddata%sumar(L) = clddata%sumar(L) + clddata%rttar(icll)
-            if (comparereal(clddata%sumar(L), 1.0_dp) == 1) then
+            tolerance = 2.0_dp * real(icll, kind=dp) * epsilon(1.0_dp)
+            if (comparereal(clddata%sumar(L), 1.0_dp, eps=tolerance) == 1) then
                ! check that sum of areas per link <= 1
                errmsg = 'Areal sum larger than 1 in file: '//trim(filnam)
                errmsg = trim(errmsg)//'. See line numbers: '
