@@ -3708,6 +3708,9 @@ module m_meteo
    use m_flow
    use m_transportdata, only: numconst, const_names, ISALT
    use m_waves
+   use m_waveconst, only: WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                          WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                          WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
    use m_ship
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
@@ -3781,6 +3784,8 @@ module m_meteo
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
    integer, target :: item_general_structure_gateOpeningWidth !< Unique Item id of the structure file's 'general structure gateOpeningWidth' quantity
    integer, target :: item_longculvert_valve_relative_opening !< Unique Item id of the structure file's 'longculvert valveRelativeOpening' quantity
+   integer, target :: item_dambreak_crestlevel !< Unique Item id of the structure file's 'dambreak crestLevel' quantity
+   integer, target :: item_dambreak_breachwidth !< Unique Item id of the structure file's 'dambreak breachWidth' quantity
 
    integer, target :: item_frcutim !< Unique Item id of the friction file's 'friction_coefficient_*' quantity
    integer, target :: item_valve1D !< Unique Item id of the ext-file's 'valve1D' quantxy' quantity
@@ -3859,7 +3864,7 @@ module m_meteo
    interface
       module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                                       xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                                      dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                      dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                       tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                                       multuni1, multuni2, multuni3, multuni4)
@@ -3885,6 +3890,7 @@ module m_meteo
          logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
          character(len=*), optional, intent(in) :: varname !< variable name within filename
          character(len=*), optional, intent(in) :: varname2 !< variable name within filename
+         real(hp), optional, intent(in) :: data_value !< Data value used for multiplying quantities with a constant factor.
          character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
          real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
          real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -3961,6 +3967,8 @@ contains
       item_general_structure_gateHeight = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
       item_general_structure_gateOpeningWidth = ec_undef_int
+      item_dambreak_crestLevel = ec_undef_int
+      item_dambreak_breachwidth = ec_undef_int
       item_longculvert_valve_relative_opening = ec_undef_int
       item_frcutim = ec_undef_int
       item_valve1D = ec_undef_int
@@ -4081,6 +4089,8 @@ contains
          ec_filetype = provFile_bc
       case (NODE_ID) ! 20
          ec_filetype = provFile_bc
+      case (DATAVALUE) ! 21
+         ec_filetype = provFile_datavalue
       case (FOURIER) ! 101
          ec_filetype = provFile_fourier
       case default
@@ -4361,63 +4371,59 @@ contains
          !dataPtr1      => qpump
 
          ! Hydraulic structure parameters from flow1d: need explicit items here:
+         ! Note: all flow1d-based structures don't need a dataPtr here,
+         ! EC-results will be stored in their own derived type member fields.
       case ('pump_capacity') ! flow1d pump
          itemPtr1 => item_pump_capacity
          dataPtr1 => qpump ! TODO: UNST-2724: needs more thinking, see issue comments.
       case ('culvert_valveopeningheight') ! flow1d culvert
          itemPtr1 => item_culvert_valveOpeningHeight
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('weir_crestlevel') ! flow1d weir
          itemPtr1 => item_weir_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('orifice_crestlevel') ! flow1d orifice
          itemPtr1 => item_orifice_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('orifice_gateloweredgelevel') ! flow1d orifice
          itemPtr1 => item_orifice_gateLowerEdgeLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_crestlevel') ! flow1d gate
          itemPtr1 => item_gate_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateheight') ! flow1d gate
          itemPtr1 => item_gate_gateHeight
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestlevel') ! flow1d general structure
          itemPtr1 => item_general_structure_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateheight') ! flow1d general structure
          itemPtr1 => item_general_structure_gateHeight
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateopeningwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_gateOpeningWidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('dambreak_crestlevel') ! flow1d dambreak
+         itemPtr1 => item_dambreak_crestlevel
+      case ('dambreak_breachwidth') ! flow1d dambreak
+         itemPtr1 => item_dambreak_breachwidth
       case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
+
+      ! Legacy FM-structures, deprecated as of 2027.01 release.
       case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('lateral_discharge')
-         itemPtr1 => item_lateraldischarge
-         !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
       case ('gateloweredgelevel')
          itemPtr1 => item_gateloweredgelevel
          dataPtr1 => zgate
       case ('generalstructure')
          itemPtr1 => item_generalstructure
          dataPtr1 => zcgen
+
+      case ('lateral_discharge')
+         itemPtr1 => item_lateraldischarge
+         !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
       case ('humidity_airtemperature_cloudiness')
          itemPtr1 => item_hac_humidity
          dataPtr1 => relative_humidity
@@ -4510,23 +4516,28 @@ contains
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
          map_write_settings%wav_hwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_SIGNIFICANT_HEIGHT)
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
          map_write_settings%wav_twav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_PERIOD)
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
          map_write_settings%wav_phiwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_DIRECTION)
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_X)
       case ('fy', 'ywaveforce')
          itemPtr1 => item_fy
          dataPtr1 => sywav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_Y)
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
@@ -4542,12 +4553,15 @@ contains
       case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_SURFACE)
       case ('diswcap', 'whitecappingdissipation')
          itemPtr1 => item_diswcap
          dataPtr1 => dwcap
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
       case ('totalwaveenergydissipation')
          itemPtr1 => item_distot
          dataPtr1 => distot
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_TOTAL)
       case ('ubot')
          itemPtr1 => item_ubot
          dataPtr1 => uorbwav
