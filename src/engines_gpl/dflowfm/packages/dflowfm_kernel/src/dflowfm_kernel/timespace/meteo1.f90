@@ -3147,6 +3147,8 @@ contains
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
       case (LOCTP_POLYGON_XY)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from input arrays
          call increasepol(numcoord, 0)
          xpl(1:numcoord) = xpin(1:numcoord)
@@ -3197,7 +3199,7 @@ contains
             end if
          end do
       end if
-      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+      if (loc_spec_type == LOCTP_POLYGON_FILE .or. loc_spec_type == LOCTP_POLYGON_XY) then
          call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
@@ -3260,13 +3262,22 @@ contains
       use m_filez, only: oldfil, doclose, newfil
 
       ! Arguments
-      real(kind=dp), dimension(nx), intent(in) :: xu
-      real(kind=dp), dimension(nx), intent(in) :: yu
-      real(kind=dp), dimension(nx), intent(out) :: zu
+
       integer, intent(in) :: nx
-      character(*), intent(in) :: filename !< file name for meteo data file
-      integer, intent(in) :: filetype !< spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method !< time/space interpolation method
+
+      real(kind=dp), intent(in) :: xu(nx)
+      real(kind=dp), intent(in) :: yu(nx)
+      real(kind=dp), intent(inout) :: zu(nx)
+
+      character(*), intent(in) :: filename ! file name for meteo data file
+      integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
+      integer, intent(in) :: method ! time/space interpolation method
+      ! 4 : inside polygon
+      ! 5 : triangulation
+      ! 6 : averaging
+      ! 7 : index triangulation
+      ! 8 : smoothing
+      ! 9 : internal diffusion
       integer, intent(in) :: operand
       real(kind=dp), dimension(:), intent(in) :: transformcoef !< Transformation coefficients
       integer, intent(in) :: iprimpos !< only needed for averaging, position of primitive variables in network
@@ -3697,6 +3708,9 @@ module m_meteo
    use m_flow
    use m_transportdata, only: numconst, const_names, ISALT
    use m_waves
+   use m_waveconst, only: WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                          WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                          WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
    use m_ship
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
@@ -3848,7 +3862,7 @@ module m_meteo
    interface
       module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                                       xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                                      dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                      dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                       tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                                       multuni1, multuni2, multuni3, multuni4)
@@ -3874,6 +3888,7 @@ module m_meteo
          logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
          character(len=*), optional, intent(in) :: varname !< variable name within filename
          character(len=*), optional, intent(in) :: varname2 !< variable name within filename
+         real(hp), optional, intent(in) :: data_value !< Data value used for multiplying quantities with a constant factor.
          character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
          real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
          real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -4070,6 +4085,8 @@ contains
          ec_filetype = provFile_bc
       case (NODE_ID) ! 20
          ec_filetype = provFile_bc
+      case (DATAVALUE) ! 21
+         ec_filetype = provFile_datavalue
       case (FOURIER) ! 101
          ec_filetype = provFile_fourier
       case default
@@ -4499,23 +4516,28 @@ contains
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
          map_write_settings%wav_hwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_SIGNIFICANT_HEIGHT)
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
          map_write_settings%wav_twav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_PERIOD)
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
          map_write_settings%wav_phiwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_DIRECTION)
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_X)
       case ('fy', 'ywaveforce')
          itemPtr1 => item_fy
          dataPtr1 => sywav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_Y)
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
@@ -4531,12 +4553,15 @@ contains
       case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_SURFACE)
       case ('diswcap', 'whitecappingdissipation')
          itemPtr1 => item_diswcap
          dataPtr1 => dwcap
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
       case ('totalwaveenergydissipation')
          itemPtr1 => item_distot
          dataPtr1 => distot
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_TOTAL)
       case ('ubot')
          itemPtr1 => item_ubot
          dataPtr1 => uorbwav

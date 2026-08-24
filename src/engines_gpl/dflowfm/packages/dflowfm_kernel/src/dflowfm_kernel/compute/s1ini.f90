@@ -55,7 +55,7 @@ contains
       use m_ship
       use m_transport, only: constituents, itemp
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_partitioninfo
       use m_wind, only: jaqin, jaqext, qext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, air_temperature, qextreal
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
@@ -214,6 +214,7 @@ contains
                   end if
 
                   isGhost = is_ghost_node(k)
+                  index_active_bottom_layer = max(1, kmx) - kmxn(k) + 1
                   do i_layer = 1, num_layers
                      if (qqlat(i_layer, k1) > 0) then
                         if (.not. isGhost) then ! Do not count ghosts in mass balances
@@ -229,11 +230,14 @@ contains
                      end if
                      qin(k) = qin(k) + qqlat(i_layer, k1)
                      if (kmx > 0) then
-                        index_active_bottom_layer = kmx - kmxn(k) + 1
-                        if (i_layer >= index_active_bottom_layer) then
-                           layer_index = kbot(k) + i_layer - index_active_bottom_layer
-                           qin(layer_index) = qin(layer_index) + qqlat(i_layer, k1)
+                        layer_index = kbot(k) + i_layer - index_active_bottom_layer
+                        ! Redirect discharges to the nearest active layer
+                        if (layer_index < kbot(k)) then
+                           layer_index = kbot(k)
+                        else if (layer_index > ktop(k)) then
+                           layer_index = ktop(k)
                         end if
+                        qin(layer_index) = qin(layer_index) + qqlat(i_layer, k1)
                      end if
                   end do
                end do

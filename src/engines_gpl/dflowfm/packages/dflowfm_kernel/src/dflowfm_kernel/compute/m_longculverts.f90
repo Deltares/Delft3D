@@ -63,7 +63,7 @@ module m_longculverts
    interface realloc
       module procedure reallocLongCulverts
    end interface
-
+   
 contains
 
    !> Sets ALL (scalar) variables in this module to their default values.
@@ -415,6 +415,11 @@ contains
                longculvertindex = longculvertindex + 1
                if (longculvertindex == i) then
                   ncoords = size(longculverts(i)%xcoords)
+                  if (ncoords == 0) then
+                     write (msgbuf, '(A,I0)') 'Error: No coordinates found for structure #', j
+                     call err_flush()
+                     exit
+                  end if
                   call tree_remove_child_by_name(current, 'xCoordinates', ierror)
                   if (ierror /= 0) then
                      write (msgbuf, '(A,I0)') 'Error Removing xCoordinates from structure #', j
@@ -427,6 +432,8 @@ contains
                   end if
                   call prop_set(current, '', 'xCoordinates', xcoords(coordindex:coordindex + ncoords - 1), '')
                   call prop_set(current, '', 'yCoordinates', ycoords(coordindex:coordindex + ncoords - 1), '')
+                  longculverts(i)%xcoords = xcoords(coordindex:coordindex + ncoords - 1)
+                  longculverts(i)%ycoords = ycoords(coordindex:coordindex + ncoords - 1)
                   coordindex = coordindex + ncoords + 1
                   exit
                end if
@@ -779,6 +786,13 @@ contains
          end do
       end if
 
+      ! The cache and partition paths can retain flow links while changing their
+      ! local orientation. Therefore this mapping must also be refreshed when
+      ! skiplinks is true.
+      do ilongc = 1, nlongculverts
+         call set_longculvert_flow_direction(ilongc)
+      end do
+
       if (newculverts) then
          do ilongc = 1, nlongculverts
             do i = 2, longculverts(ilongc)%numlinks - 1
@@ -849,6 +863,51 @@ contains
 
    end subroutine longculvertsToProfs
 
+   !> Reconstruct the flow link orientation based on input polyline
+   subroutine set_longculvert_flow_direction(ilongc)
+      use network_data, only: kn, xk, yk
+      use precision_basics, only: equal
+
+      integer, intent(in) :: ilongc
+      integer :: L_net, netnode_1, netnode_2
+      logical :: netnode_1_is_LC_node_2, netnode_2_is_LC_node_2
+
+      if (longculverts(ilongc)%numlinks <= 0) then
+         return
+      end if
+      if (.not. allocated(longculverts(ilongc)%flowlinks) .or. .not. allocated(longculverts(ilongc)%netlinks) .or. &
+          .not. allocated(longculverts(ilongc)%xcoords) .or. .not. allocated(longculverts(ilongc)%ycoords)) then
+         return
+      end if
+      if (size(longculverts(ilongc)%flowlinks) < 1 .or. size(longculverts(ilongc)%netlinks) < 1 .or. &
+          size(longculverts(ilongc)%xcoords) < 2 .or. size(longculverts(ilongc)%ycoords) < 2) then
+         return
+      end if
+
+      L_net = longculverts(ilongc)%netlinks(1)
+      if (L_net <= 0 .or. L_net > size(kn, dim=2)) then
+         return
+      end if
+
+      netnode_1 = kn(1, L_net)
+      netnode_2 = kn(2, L_net)
+      if (netnode_1 <= 0 .or. netnode_2 <= 0) then
+         return
+      end if
+
+      netnode_1_is_LC_node_2 = equal(xk(netnode_1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_1), longculverts(ilongc)%ycoords(2))
+      netnode_2_is_LC_node_2 = equal(xk(netnode_2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_2), longculverts(ilongc)%ycoords(2))
+
+      if (netnode_1_is_LC_node_2 .and. .not. netnode_2_is_LC_node_2) then
+         longculverts(ilongc)%orientation = -1
+      else if (.not. netnode_1_is_LC_node_2 .and. netnode_2_is_LC_node_2) then
+         longculverts(ilongc)%orientation = 1
+      else ! neither or both match, which is an error
+         call mess(LEVEL_ERROR, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
+                   ' to either endpoint of its first flow link;')
+      end if
+   end subroutine set_longculvert_flow_direction
+
    !> Fill frcu and icrctyp for the corresponding flow link numbers of the long culverts
    subroutine setFrictionForLongculverts()
       use m_flow
@@ -885,8 +944,11 @@ contains
          if (longculverts(i)%numlinks > 0) then
             L = abs(longculverts(i)%flowlinks(1))
             if (L > 0) then
+               longculverts(i)%valve_relative_opening = min(longculverts(i)%valve_relative_opening, 1.0_dp)
+               longculverts(i)%valve_relative_opening = max(longculverts(i)%valve_relative_opening, 0.0_dp)
                au(L) = longculverts(i)%valve_relative_opening * au(L)
                call getflowdir(L, L_dir)
+               L_dir = longculverts(i)%orientation * L_dir
                allowed_flowdir = longculverts(i)%allowed_flowdir
                if (allowed_flowdir == FLOWDIR_NONE &
                    .or. L_dir < 0 .and. allowed_flowdir == FLOWDIR_POSITIVE &
@@ -1376,18 +1438,21 @@ contains
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
       use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
+      use m_1d_structures, only: FLOWDIR_POSITIVE
 
       implicit none
 
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net
+      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net, direction_target
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
 
       longculvert%flowlinks = 0
+      longculvert%orientation = 1
+      direction_target = 0
       jafounds = 0 ! Found the starting node or not
       jafounde = 0 ! Found the ending node or not
       is = 1 ! the starting node of the polyline
@@ -1405,7 +1470,7 @@ contains
          return
       end if
       !Find the last 1D node of the branch
-      if (branch_idx > 0 .and. network%BRS%size >= i) then
+      if (branch_idx > 0 .and. network%BRS%size >= branch_idx) then
          inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
          inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
       else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
@@ -1433,6 +1498,7 @@ contains
                linkabs = abs(nd(nodenum)%ln(i))
                if (kcu(abs(linkabs)) == 5) then
                   longculvert%flownode_up = ln(1, linkabs) + ln(2, linkabs) - nodenum
+                  direction_target = longculvert%flownode_up
                   ! For the later search
                   jafounds = 1
                end if
@@ -1444,6 +1510,7 @@ contains
                call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
                if (ierror == 0 .and. jnode(1) > 0) then
                   nodenum = jnode(1) ! For the later search
+                  direction_target = nodenum
                   is = j ! this will be the starting node of the long culvert in current domain
                   jafounds = 1
                   exit
@@ -1477,7 +1544,7 @@ contains
 
       if (jafounds == 1 .and. jafounde == 1) then
          if (contact_idx > 0) then
-            longculvert%flowlinks(1) = contactnetlinks(contact_idx)
+            longculvert%flowlinks(1) = lne2ln(contactnetlinks(contact_idx))
          else
             do i = 1, nd(nodenum)%lnx
                linknum = nd(nodenum)%ln(i)
@@ -1507,6 +1574,15 @@ contains
                   end do
                end if
             end do
+         end if
+      end if
+
+      ! Positive long-culvert flow follows the input polyline. The first flow
+      ! link has positive direction from ln(1, :) to ln(2, :).
+      if (longculvert%flowlinks(1) /= 0) then
+         linkabs = abs(longculvert%flowlinks(1))
+         if (direction_target == ln(1, linkabs)) then
+            longculvert%orientation = -1
          end if
       end if
    end subroutine
