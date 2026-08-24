@@ -3,7 +3,7 @@ module test_pol_to_cellmask
    use precision, only: dp
    use m_missing, only: dmiss
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl, nump1d2d
-   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
+   use m_cellmask_from_polygon_set, only: t_polygon_set_cache
    use geometry_module, only: pinpok_legacy, pinpok_raycast
    use m_pol_to_cellmask, only: pol_to_cellmask, cell_mask_from_polygon_file
 
@@ -467,6 +467,7 @@ contains
       real(kind=dp) :: angle
       real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
       real(kind=dp) :: x_query(query_points), y_query(query_points)
+      type(t_polygon_set_cache) :: polygon_cache
 
       do point = 1, large_polygon_points - 1
          angle = 2.0_dp * pi * real(point - 1, dp) / real(large_polygon_points - 1, dp)
@@ -498,7 +499,7 @@ contains
 
       original_jins = jins
       jins = 1
-      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, enable_binning=.true.)
+      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning=.true.)
       do point = 1, query_points
          inside_large_polygon = pinpok_raycast(x_query(point), y_query(point), x_poly, y_poly, large_polygon_points)
          inside_small_polygon = pinpok_raycast(x_query(point), y_query(point), &
@@ -506,10 +507,9 @@ contains
                                                y_poly(large_polygon_points + 2:polygon_points), 5)
          polygons_containing_point = merge(1, 0, inside_large_polygon) + merge(1, 0, inside_small_polygon)
          expected_mask = modulo(polygons_containing_point, 2)
-         actual_mask = cellmask_from_polygon_set(x_query(point), y_query(point))
+         actual_mask = polygon_cache%point_mask(x_query(point), y_query(point))
          call f90_expect_eq(actual_mask, expected_mask, "Indexed and full polygon scans should agree")
       end do
-      call cellmask_from_polygon_set_cleanup()
       jins = original_jins
 
    end subroutine test_indexed_polygon_matches_full_scan
@@ -529,6 +529,7 @@ contains
       real(kind=dp) :: vertex_x(polygon_segments + 1), vertex_y(polygon_segments + 1)
       real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
       real(kind=dp) :: x_query(query_points), y_query(query_points)
+      type(t_polygon_set_cache) :: polygon_cache
 
       ! Dense L-shape: the internal horizontal edge at y=1 lies exactly on a latitude-bin boundary.
       vertex_x = [-1.0_dp, 1.0_dp, 1.0_dp, 0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp]
@@ -552,14 +553,13 @@ contains
 
       original_jins = jins
       jins = 1
-      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, enable_binning=.true.)
+      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning=.true.)
       do point = 1, query_points
-         actual_mask = cellmask_from_polygon_set(x_query(point), y_query(point))
+         actual_mask = polygon_cache%point_mask(x_query(point), y_query(point))
          call f90_expect_eq(actual_mask, merge(1, 0, pinpok_raycast(x_query(point), y_query(point), &
                                                                    x_poly, y_poly, polygon_points)), &
                             "Binned and full polygon scans should agree at edges and bin boundaries")
       end do
-      call cellmask_from_polygon_set_cleanup()
       jins = original_jins
 
    end subroutine test_binned_polygon_edge_cases
@@ -569,12 +569,12 @@ contains
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump, xk, yk
       use m_alloc, only: realloc
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -583,13 +583,13 @@ contains
       call setup_simple_netcells()
 
       ! Initialize cache for new implementation
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       ! Test 1: Point clearly inside first cell (0,0 to 10,10)
       xa = 5.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside first cell")
       call f90_expect_eq(kin_new, 1, "Should be in cell 1")
 
@@ -597,7 +597,7 @@ contains
       xa = 15.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside second cell")
       call f90_expect_eq(kin_new, 2, "Should be in cell 2")
 
@@ -605,7 +605,7 @@ contains
       xa = 25.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point outside all cells")
       call f90_expect_eq(kin_new, 0, "Should be in no cell")
 
@@ -613,18 +613,17 @@ contains
       xa = 10.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point on cell boundary")
 
       ! Test 5: Point on cell corner
       xa = 0.0_dp
       ya = 0.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point on cell corner")
 
       ! Cleanup
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_basic_functionality
@@ -634,11 +633,11 @@ contains
    subroutine test_incells_complex_geometry() bind(C)
       ! Test incells with more complex netcell geometries (triangles, pentagons, hexagons)
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump, xk, yk
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -646,38 +645,37 @@ contains
       nump = 3
       call setup_complex_netcells()
 
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       ! Test 1: Inside triangle (cell 1)
       xa = 5.0_dp
       ya = 3.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside triangle")
 
       ! Test 2: Inside pentagon (cell 2)
       xa = 15.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside pentagon")
 
       ! Test 3: Inside hexagon (cell 3)
       xa = 25.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside hexagon")
 
       ! Test 4: On edge of complex polygon
       xa = 10.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point on complex polygon edge")
 
       ! Cleanup
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_complex_geometry
@@ -687,11 +685,11 @@ contains
    subroutine test_incells_large_grid() bind(C)
       ! Test incells with a larger grid (performance sanity check)
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump
 
       integer :: kin_old, kin_new, i, mismatches
       real(kind=dp) :: xa, ya
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -699,7 +697,7 @@ contains
       nump = 100
       call setup_grid_netcells(10, 10, 10.0_dp)
 
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       mismatches = 0
 
@@ -709,7 +707,7 @@ contains
          ya = 25.0_dp
 
          call incells(xa, ya, kin_old)
-         kin_new = point_find_netcell(xa, ya)
+         kin_new = polygon_cache%find_netcell(xa, ya)
 
          if (kin_old /= kin_new) then
             mismatches = mismatches + 1
@@ -719,7 +717,6 @@ contains
       call f90_expect_eq(mismatches, 0, "No mismatches in large grid test")
 
       ! Cleanup
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_large_grid
@@ -729,11 +726,11 @@ contains
    subroutine test_incells_cache_consistency() bind(C)
       ! Test that cache initialization produces consistent results
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: nump
 
       integer :: kin1, kin2, kin_old
       real(kind=dp) :: xa, ya
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -746,11 +743,11 @@ contains
       ya = 5.0_dp
 
       ! Initialize cache and query
-      call init_cell_geom_as_polylines()
-      kin1 = point_find_netcell(xa, ya)
+      polygon_cache = t_polygon_set_cache()
+      kin1 = polygon_cache%find_netcell(xa, ya)
 
       ! Query again (should use cached data)
-      kin2 = point_find_netcell(xa, ya)
+      kin2 = polygon_cache%find_netcell(xa, ya)
 
       call f90_expect_eq(kin1, kin2, "Cached queries should match")
 
@@ -759,15 +756,13 @@ contains
       call f90_expect_eq(kin1, kin_old, "Cached result should match old implementation")
 
       ! Cleanup and re-initialize
-      call cleanup_cell_geom_polylines()
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       ! Query after re-initialization
-      kin2 = point_find_netcell(xa, ya)
+      kin2 = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin1, kin2, "Re-initialized cache should give same result")
 
       ! Cleanup
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_cache_consistency
@@ -777,62 +772,59 @@ contains
    subroutine test_incells_edge_cases() bind(C)
       ! Test edge cases: empty grid, single cell, point at infinity
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 !> in case previous tests set npl
 
       ! Test 1: Empty grid (nump = 0)
       nump = 0
       call setup_empty_netcells()
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       xa = 5.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Empty grid")
       call f90_expect_eq(kin_new, 0, "Should return 0 for empty grid")
 
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
       ! Test 2: Single cell
       nump = 1
       call setup_single_netcell()
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       xa = 5.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Single cell - inside")
 
       xa = 15.0_dp
       ya = 15.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Single cell - outside")
 
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
       ! Test 3: Very large coordinates
       nump = 1
       call setup_single_netcell()
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       xa = 1.0e6_dp
       ya = 1.0e6_dp
       call incells(xa, ya, kin_old)
-      kin_new = point_find_netcell(xa, ya)
+      kin_new = polygon_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Very large coordinates")
       call f90_expect_eq(kin_new, 0, "Should be outside")
 
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_edge_cases
@@ -982,7 +974,6 @@ contains
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_simple, test_find_cells_crossed_by_polyline_simple,
    subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
       use network_data, only: nump
       use m_alloc, only: realloc
 
@@ -991,6 +982,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1015,10 +1007,10 @@ contains
       ypoly(2) = 27.0_dp
 
       ! Initialize cache
-      call init_cell_geom_as_polylines()      
+      polygon_cache = t_polygon_set_cache()
 
       ! Call the function
-      call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
@@ -1043,7 +1035,6 @@ contains
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_simple
@@ -1052,7 +1043,6 @@ contains
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_cases, test_find_cells_crossed_by_polyline_edge_cases,
    subroutine test_find_cells_crossed_by_polyline_edge_cases() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
       use network_data, only: nump
       use m_alloc, only: realloc
 
@@ -1061,6 +1051,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1084,10 +1075,10 @@ contains
       ypoly(3) = 0.0_dp
 
       ! Initialize cache
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       ! Call the function
-      call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
@@ -1106,7 +1097,6 @@ contains
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_edge_cases
@@ -1115,7 +1105,6 @@ contains
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_case2, test_find_cells_crossed_by_polyline_edge_case2,
    subroutine test_find_cells_crossed_by_polyline_edge_case2() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
       use network_data, only: nump
       use m_alloc, only: realloc
 
@@ -1124,6 +1113,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
+      type(t_polygon_set_cache) :: polygon_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1145,9 +1135,9 @@ contains
       ypoly(2) = 6.0_dp
 
       ! Initialize cache
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
       ! Call the function
-      call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
@@ -1158,7 +1148,6 @@ contains
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_edge_case2

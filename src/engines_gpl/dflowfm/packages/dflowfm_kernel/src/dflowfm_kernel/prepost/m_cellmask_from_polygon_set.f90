@@ -36,9 +36,7 @@ module m_cellmask_from_polygon_set
 
    private
 
-   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
-   public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
-   public :: find_cells_crossed_by_polyline
+   public :: t_polygon_set_cache
 
    !> Coordinates and per-polygon metadata shared by masking and net-cell lookup.
    type, private :: t_polygon_geometry
@@ -76,16 +74,21 @@ module m_cellmask_from_polygon_set
    end interface t_binned_edge_index
 
    !> Complete cached polygon set, including optional acceleration data and lifecycle state.
-   type, private :: t_polygon_set_cache
+   type :: t_polygon_set_cache
+      private
       type(t_polygon_geometry) :: geometry
       type(t_binned_edge_index) :: edge_index
+   contains
+      procedure :: point_mask => polygon_set_cache_point_mask
+      procedure :: polygon_contains_point => polygon_set_cache_polygon_contains_point
+      procedure :: find_netcell => polygon_set_cache_find_netcell
+      procedure :: find_cells_crossed_by_polyline => polygon_set_cache_find_cells_crossed_by_polyline
    end type t_polygon_set_cache
 
    interface t_polygon_set_cache
       module procedure construct_polygon_set_cache
+      module procedure construct_netcell_polygon_cache
    end interface t_polygon_set_cache
-
-   type(t_polygon_set_cache), allocatable :: polygon_cache
 
    integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon.
    integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges.
@@ -114,16 +117,6 @@ contains
       is_inside = pinpok_raycast(x, y, geometry%x(first_point:last_point), geometry%y(first_point:last_point), num_points, &
                                  this%edge_indices(candidate_first:candidate_last))
    end function binned_edge_index_point_is_inside
-
-   !> Populate the module-level polygon cache and optional acceleration data.
-   subroutine cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, enable_binning)
-      integer, intent(in) :: polygon_points !< Number of polygon points.
-      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinates.
-      logical, intent(in) :: enable_binning !< Whether to build a latitude-binned edge index.
-
-      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning)
-
-   end subroutine cellmask_from_polygon_set_init
 
    !> Construct a consistent polygon cache from packed coordinates separated by missing values.
    function construct_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning) result(cache)
@@ -209,7 +202,8 @@ contains
    end function construct_polygon_geometry
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
-   elemental function cellmask_from_polygon_set(x, y) result(mask)
+   elemental function polygon_set_cache_point_mask(this, x, y) result(mask)
+      class(t_polygon_set_cache), intent(in) :: this
       integer :: mask
       real(kind=dp), intent(in) :: x, y !< Point coordinates
 
@@ -217,11 +211,7 @@ contains
       logical :: found_inside_enclosure, is_inside
 
       mask = 0
-      if (.not. allocated(polygon_cache)) then
-         return
-      end if
-
-      associate (geometry => polygon_cache%geometry)
+      associate (geometry => this%geometry)
          count_drypoint = 0
          found_inside_enclosure = .false.
 
@@ -234,7 +224,7 @@ contains
             end if
 
             ! Point-in-polygon test
-            is_inside = pinpok_elemental(x, y, i_poly)
+            is_inside = this%polygon_contains_point(x, y, i_poly)
 
             if (is_inside) then
                if (geometry%is_enclosure(i_poly)) then
@@ -263,21 +253,13 @@ contains
          end if
       end associate
 
-   end function cellmask_from_polygon_set
-
-   !> Clean up module-level cellmask polygon data structures.
-   subroutine cellmask_from_polygon_set_cleanup()
-
-      if (allocated(polygon_cache)) then
-         deallocate (polygon_cache)
-      end if
-
-   end subroutine cellmask_from_polygon_set_cleanup
+   end function polygon_set_cache_point_mask
 
    !> Test whether a point lies inside one cached polygon.
-   elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
+   elemental function polygon_set_cache_polygon_contains_point(this, x, y, i_poly) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
+      class(t_polygon_set_cache), intent(in) :: this
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       integer, intent(in) :: i_poly !< Polygon index
       logical :: is_inside !< Result
@@ -285,19 +267,19 @@ contains
       integer :: i_start, i_end, n_points
 
       ! Get bounds for this polygon from module arrays
-      associate (geometry => polygon_cache%geometry)
+      associate (geometry => this%geometry)
          i_start = geometry%polygon_start(i_poly)
          i_end = geometry%polygon_end(i_poly)
          n_points = i_end - i_start + 1
 
-         if (allocated(polygon_cache%edge_index%edge_indices)) then
-            is_inside = polygon_cache%edge_index%point_is_inside(x, y, i_poly, geometry)
+         if (allocated(this%edge_index%edge_indices)) then
+            is_inside = this%edge_index%point_is_inside(x, y, i_poly, geometry)
          else
             is_inside = pinpok_raycast(x, y, geometry%x(i_start:i_end), geometry%y(i_start:i_end), n_points)
          end if
       end associate
 
-   end function pinpok_elemental
+   end function polygon_set_cache_polygon_contains_point
 
    !> Build a latitude-binned edge index for the complete polygon set.
    !!
@@ -466,11 +448,12 @@ contains
       i_bin = max(1, min(bins, i_bin))
    end function binned_edge_index_get_bin
 
-   !> Initialize xpl, ypl, zpl arrays with all netcell geometries (called once)
-   subroutine init_cell_geom_as_polylines()
+   !> Construct a polygon cache containing all net-cell geometries.
+   function construct_netcell_polygon_cache() result(cache)
       use network_data
       use m_alloc
 
+      type(t_polygon_set_cache) :: cache
       integer :: k, n, k1, total_points, ipoint
       real(kind=dp), allocatable, dimension(:) :: xpl_init, ypl_init, zpl_init
 
@@ -504,20 +487,14 @@ contains
          zpl_init(ipoint) = dmiss
       end do
 
-      ! initialize the cellmask module with these polygons
-      ! this builds bounding boxes and polygon indices
-      call cellmask_from_polygon_set_init(ipoint, xpl_init, ypl_init, zpl_init, enable_binning=.false.)
+      cache = t_polygon_set_cache(xpl_init, ypl_init, zpl_init, enable_binning=.false.)
 
-   end subroutine init_cell_geom_as_polylines
+   end function construct_netcell_polygon_cache
 
-   !> call general polygon cleanup and restore previous polygon data
-   subroutine cleanup_cell_geom_polylines()
-      call cellmask_from_polygon_set_cleanup()
-   end subroutine cleanup_cell_geom_polylines
+!> Fast replacement for INCELLS using cached net-cell geometry.
+   elemental function polygon_set_cache_find_netcell(this, x, y) result(k)
 
-!> Fast replacement for INCELLS using cached geometry in global polygon arrays
-   elemental function point_find_netcell(x, y) result(k)
-
+      class(t_polygon_set_cache), intent(in) :: this
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
@@ -526,7 +503,7 @@ contains
 
       k = 0
 
-      associate (geometry => polygon_cache%geometry)
+      associate (geometry => this%geometry)
          ! Loop over all netcell polygons with fast bounding box checks
          do i_poly = 1, geometry%polygon_count
 
@@ -537,7 +514,7 @@ contains
             end if
 
             ! Detailed point-in-polygon check
-            is_inside = pinpok_elemental(x, y, i_poly)
+            is_inside = this%polygon_contains_point(x, y, i_poly)
 
             if (is_inside) then
                ! cell index equals polygon index
@@ -547,16 +524,17 @@ contains
          end do
       end associate
 
-   end function point_find_netcell
+   end function polygon_set_cache_find_netcell
 
 !> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
-   subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+   subroutine polygon_set_cache_find_cells_crossed_by_polyline(this, xpoly, ypoly, crossed_cells, error)
       use m_alloc, only: realloc
       use network_data, only: nump
       use m_missing, only: dmiss
 
       implicit none
 
+      class(t_polygon_set_cache), intent(in) :: this
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
       integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
@@ -577,24 +555,25 @@ contains
 
       ! Process each segment and put the result in cellmask
       do i = 1, npoly - 1
-         call find_cells_for_segment(xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
+         call find_cells_for_segment(this, xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
       end do
 
       crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
       if (size(crossed_cells) == 0) then !> check whether the whole polyline lies in a single cell if no boundaries were crossed
-         i = point_find_netcell(xpoly(1), ypoly(1))
+         i = this%find_netcell(xpoly(1), ypoly(1))
          if (i > 0) then
             crossed_cells = [i]
          end if
       end if
 
-   end subroutine find_cells_crossed_by_polyline
+   end subroutine polygon_set_cache_find_cells_crossed_by_polyline
 
 !> Find all cells that a segment crosses and mark them in cellmask
-   subroutine find_cells_for_segment(xa, ya, xb, yb, cellmask)
+   subroutine find_cells_for_segment(cache, xa, ya, xb, yb, cellmask)
 
       implicit none
 
+      class(t_polygon_set_cache), intent(in) :: cache
       real(kind=dp), intent(in) :: xa, ya, xb, yb !< Segment endpoints
       integer, intent(inout) :: cellmask(:) !< Cell mask array: 1=crossed, 0=not crossed
 
@@ -609,7 +588,7 @@ contains
       seg_ymin = min(ya, yb)
       seg_ymax = max(ya, yb)
 
-      associate (geometry => polygon_cache%geometry)
+      associate (geometry => cache%geometry)
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(i_start, i_end, n_points, i, i_point, ip1, intersects)
          do i_poly = 1, geometry%polygon_count
             ! Skip if already marked

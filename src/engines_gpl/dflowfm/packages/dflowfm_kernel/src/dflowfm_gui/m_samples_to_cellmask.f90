@@ -39,10 +39,11 @@ contains
 
       use network_data, only: cellmask, nump1d2d
       use m_samples, only: ns, xs, ys
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_polygon_set_cache
       use m_alloc, only: realloc
 
       integer :: i, k
+      type(t_polygon_set_cache) :: polygon_cache
 
       ! Allocate and initialize cellmask
       call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
@@ -54,21 +55,18 @@ contains
 
       ! Initialize the spatial index for all netcells
       ! This builds bounding boxes and polygon data structures for fast point-in-polygon tests
-      call init_cell_geom_as_polylines()
+      polygon_cache = t_polygon_set_cache()
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       ! Loop over samples (much fewer than cells)
       !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(k)
       do i = 1, ns
-         k = point_find_netcell(xs(i), ys(i))
+         k = polygon_cache%find_netcell(xs(i), ys(i))
          if (k > 0) then
             cellmask(k) = 1 ! Safe without ATOMIC - all threads write same value
          end if
       end do
       !$OMP END PARALLEL DO
-
-      ! Cleanup spatial index
-      call cleanup_cell_geom_polylines()
 
       return
    end subroutine samples_to_cellmask
