@@ -79,7 +79,7 @@ module m_cellmask_from_polygon_set
       type(t_polygon_geometry) :: geometry
       type(t_binned_edge_index) :: edge_index
    contains
-      procedure :: point_mask => polygon_set_point_mask
+      procedure :: is_masked => polygon_set_is_masked
       procedure :: polygon_contains_point => polygon_set_polygon_contains_point
       procedure :: find_netcell => polygon_set_find_netcell
       procedure :: find_cells_crossed_by_polyline => polygon_set_find_cells_crossed_by_polyline
@@ -205,7 +205,7 @@ contains
    end function construct_polygon_geometry
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
-   elemental function polygon_set_point_mask(this, x, y) result(mask)
+   elemental function polygon_set_is_masked(this, x, y) result(mask)
       class(t_polygon_set), intent(in) :: this
       integer :: mask
       real(kind=dp), intent(in) :: x, y !< Point coordinates
@@ -256,7 +256,7 @@ contains
          end if
       end associate
 
-   end function polygon_set_point_mask
+   end function polygon_set_is_masked
 
    !> Test whether a point lies inside one cached polygon.
    elemental function polygon_set_polygon_contains_point(this, x, y, i_poly) result(is_inside)
