@@ -2,6 +2,10 @@
 enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
+# Adds bounds/pointer/stack checking to the optimized configurations, for diagnosing
+# memory errors that only reproduce in CI. Costs runtime, so it is off by default.
+option(ENABLE_RUNTIME_CHECKS "Enable Fortran runtime checks in optimized builds" OFF)
+
 if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     # Disable diagnostic indicating that ifort is deprecated (10448)
@@ -49,7 +53,13 @@ if (WIN32)
 
     # Set debug flags:
     string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
-    string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${debug_information_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${debug_information_flag} ${traceback_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_RELEASE " ${traceback_flag}")
+
+    if(ENABLE_RUNTIME_CHECKS)
+        string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${check_bounds_flag} ${check_pointers_flag} ${check_stack_flag}")
+        string(APPEND CMAKE_Fortran_FLAGS_RELEASE " ${debug_information_flag} ${check_bounds_flag} ${check_pointers_flag} ${check_stack_flag}")
+    endif()
 
     # To prevent Visual Studio compilation failures when trying to write the manifest file
     # to a blocked .exe
@@ -109,6 +119,13 @@ if (UNIX)
 
     # Set debug flags:
     string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${traceback_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_RELEASE " ${traceback_flag}")
+
+    if(ENABLE_RUNTIME_CHECKS)
+        string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${check_bounds_flag} ${check_pointers_flag} ${check_stack_flag}")
+        string(APPEND CMAKE_Fortran_FLAGS_RELEASE " -g ${check_bounds_flag} ${check_pointers_flag} ${check_stack_flag}")
+    endif()
 endif(UNIX)
 
 set(qauto_threaded_flags "SHELL:${automatic_local_variable_storage_flag}" "SHELL:${generate_reentrancy_threaded_flag}")
