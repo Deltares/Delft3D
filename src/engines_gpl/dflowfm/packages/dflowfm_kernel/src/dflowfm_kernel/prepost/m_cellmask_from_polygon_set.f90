@@ -50,6 +50,10 @@ module m_cellmask_from_polygon_set
       logical :: enclosures_present = .false.
    end type t_polygon_geometry
 
+   interface t_polygon_geometry
+      module procedure construct_polygon_geometry
+   end interface t_polygon_geometry
+
    !> Latitude-binned lookup table containing ordered candidate polygon edges for ray casting.
    type, private :: t_binned_edge_index
       private
@@ -59,42 +63,34 @@ module m_cellmask_from_polygon_set
       integer, allocatable :: edge_indices(:) !< Ordered local edge indices for all bins.
       real(kind=dp), allocatable :: polygon_bin_scale(:) !< Scale from polygon y-coordinate to local bin.
    contains
-      procedure :: initialize => binned_edge_index_initialize
-      procedure :: clear => binned_edge_index_clear
       procedure :: point_is_inside => binned_edge_index_point_is_inside
-      procedure, private :: build => binned_edge_index_build
+      procedure, private :: populate_bin_storage => binned_edge_index_populate_bin_storage
       procedure, private :: count_edge_memberships => binned_edge_index_count_edge_memberships
       procedure, private :: count_edges_per_bin => binned_edge_index_count_edges_per_bin
       procedure, private :: edge_bin_range => binned_edge_index_edge_bin_range
       procedure, nopass, private :: get_bin => binned_edge_index_get_bin
    end type t_binned_edge_index
 
+   interface t_binned_edge_index
+      module procedure construct_binned_edge_index
+   end interface t_binned_edge_index
+
    !> Complete cached polygon set, including optional acceleration data and lifecycle state.
    type, private :: t_polygon_set_cache
       type(t_polygon_geometry) :: geometry
       type(t_binned_edge_index) :: edge_index
-      logical :: initialized = .false.
-   contains
-      procedure :: clear => polygon_set_cache_clear
    end type t_polygon_set_cache
 
-   type(t_polygon_set_cache) :: polygon_cache
+   interface t_polygon_set_cache
+      module procedure construct_polygon_set_cache
+   end interface t_polygon_set_cache
+
+   type(t_polygon_set_cache), allocatable :: polygon_cache
 
    integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon.
    integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges.
 
 contains
-
-   !> Release all storage owned by a binned edge index.
-   subroutine binned_edge_index_clear(this)
-      class(t_binned_edge_index), intent(inout) :: this
-
-      if (allocated(this%polygon_bin_start)) deallocate (this%polygon_bin_start)
-      if (allocated(this%polygon_num_bins)) deallocate (this%polygon_num_bins)
-      if (allocated(this%bin_offsets)) deallocate (this%bin_offsets)
-      if (allocated(this%edge_indices)) deallocate (this%edge_indices)
-      if (allocated(this%polygon_bin_scale)) deallocate (this%polygon_bin_scale)
-   end subroutine binned_edge_index_clear
 
    !> Classify a point using only the ordered polygon edges in its latitude bin.
    pure function binned_edge_index_point_is_inside(this, x, y, i_poly, geometry) result(is_inside)
@@ -121,84 +117,96 @@ contains
 
    !> Populate the module-level polygon cache and optional acceleration data.
    subroutine cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly, enable_binning)
+      integer, intent(in) :: polygon_points !< Number of polygon points.
+      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinates.
+      logical, intent(in) :: enable_binning !< Whether to build a latitude-binned edge index.
+
+      polygon_cache = t_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning)
+
+   end subroutine cellmask_from_polygon_set_init
+
+   !> Construct a consistent polygon cache from packed coordinates separated by missing values.
+   function construct_polygon_set_cache(x_poly, y_poly, z_poly, enable_binning) result(cache)
+      real(kind=dp), intent(in) :: x_poly(:), y_poly(:), z_poly(:) !< Packed polygon coordinate arrays.
+      logical, intent(in) :: enable_binning !< Whether to build a latitude-binned edge index for large polygon sets.
+      type(t_polygon_set_cache) :: cache
+
+      cache%geometry = t_polygon_geometry(x_poly, y_poly, z_poly)
+      if (enable_binning .and. cache%geometry%polygon_count > 0) then
+         cache%edge_index = t_binned_edge_index(cache%geometry)
+      end if
+
+   end function construct_polygon_set_cache
+
+   !> Construct polygon geometry and metadata from packed coordinates separated by missing values.
+   function construct_polygon_geometry(x_poly, y_poly, z_poly) result(geometry)
       use m_alloc
       use geometry_module, only: get_startend
 
-      integer, intent(in) :: polygon_points !< Number of polygon points
-      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
-      logical, intent(in) :: enable_binning !< Whether to build a latitude-binned edge index for large polygon sets.
+      real(kind=dp), intent(in) :: x_poly(:), y_poly(:), z_poly(:) !< Packed polygon coordinate arrays.
+      type(t_polygon_geometry) :: geometry
 
-      integer :: i_point, i_start, i_end, i_poly
+      integer :: i_point, i_start, i_end, i_poly, polygon_points
 
-      call polygon_cache%clear()
-      associate (geometry => polygon_cache%geometry)
+      polygon_points = size(x_poly)
+      call realloc(geometry%x, polygon_points, keepExisting=.false.)
+      call realloc(geometry%y, polygon_points, keepExisting=.false.)
+      geometry%x = x_poly
+      geometry%y = y_poly
 
-         call realloc(geometry%x, polygon_points, keepExisting=.false.)
-         call realloc(geometry%y, polygon_points, keepExisting=.false.)
-         geometry%x = x_poly
-         geometry%y = y_poly
+      if (polygon_points == 0) then
+         return
+      end if
 
-         if (polygon_points == 0) then
-            polygon_cache%initialized = .true.
-            return
+      !> allocate maximum size arrays
+      call realloc(geometry%x_min, polygon_points, keepExisting=.false.)
+      call realloc(geometry%x_max, polygon_points, keepExisting=.false.)
+      call realloc(geometry%y_min, polygon_points, keepExisting=.false.)
+      call realloc(geometry%y_max, polygon_points, keepExisting=.false.)
+      call realloc(geometry%polygon_start, polygon_points, keepExisting=.false.)
+      call realloc(geometry%polygon_end, polygon_points, keepExisting=.false.)
+      call realloc(geometry%is_enclosure, polygon_points, keepExisting=.false.)
+
+      i_point = 1
+      i_poly = 0
+
+      do while (i_point < polygon_points)
+         i_poly = i_poly + 1
+
+         !> obtain start and end indices of polygon with generic subarray extraction routine, then correct them
+         call get_startend(polygon_points - i_point + 1, x_poly(i_point:polygon_points), y_poly(i_point:polygon_points), i_start, i_end, dmiss)
+         i_start = i_start + i_point - 1
+         i_end = i_end + i_point - 1
+
+         if (i_start >= i_end .or. i_end > polygon_points) then
+            exit
          end if
 
-         !> allocate maximum size arrays
-         call realloc(geometry%x_min, polygon_points, keepExisting=.false.)
-         call realloc(geometry%x_max, polygon_points, keepExisting=.false.)
-         call realloc(geometry%y_min, polygon_points, keepExisting=.false.)
-         call realloc(geometry%y_max, polygon_points, keepExisting=.false.)
-         call realloc(geometry%polygon_start, polygon_points, keepExisting=.false.)
-         call realloc(geometry%polygon_end, polygon_points, keepExisting=.false.)
-         call realloc(geometry%is_enclosure, polygon_points, keepExisting=.false.)
+         geometry%x_min(i_poly) = minval(x_poly(i_start:i_end))
+         geometry%x_max(i_poly) = maxval(x_poly(i_start:i_end))
+         geometry%y_min(i_poly) = minval(y_poly(i_start:i_end))
+         geometry%y_max(i_poly) = maxval(y_poly(i_start:i_end))
 
-         i_point = 1
-         i_poly = 0
+         geometry%polygon_start(i_poly) = i_start
+         geometry%polygon_end(i_poly) = i_end
+         geometry%is_enclosure(i_poly) = z_poly(i_start) /= dmiss .and. z_poly(i_start) <= 0.0_dp
 
-         do while (i_point < polygon_points)
-            i_poly = i_poly + 1
+         i_point = i_end + 2
+      end do
 
-            !> obtain start and end indices of polygon with generic subarray extraction routine, then correct them
-            call get_startend(polygon_points - i_point + 1, x_poly(i_point:polygon_points), y_poly(i_point:polygon_points), i_start, i_end, dmiss)
-            i_start = i_start + i_point - 1
-            i_end = i_end + i_point - 1
+      geometry%polygon_count = i_poly
 
-            if (i_start >= i_end .or. i_end > polygon_points) then
-               exit
-            end if
+      !> resize arrays to actual number of polygons
+      call realloc(geometry%x_min, geometry%polygon_count, keepExisting=.true.)
+      call realloc(geometry%x_max, geometry%polygon_count, keepExisting=.true.)
+      call realloc(geometry%y_min, geometry%polygon_count, keepExisting=.true.)
+      call realloc(geometry%y_max, geometry%polygon_count, keepExisting=.true.)
+      call realloc(geometry%polygon_start, geometry%polygon_count, keepExisting=.true.)
+      call realloc(geometry%polygon_end, geometry%polygon_count, keepExisting=.true.)
+      call realloc(geometry%is_enclosure, geometry%polygon_count, keepExisting=.true.)
+      geometry%enclosures_present = any(geometry%is_enclosure)
 
-            geometry%x_min(i_poly) = minval(x_poly(i_start:i_end))
-            geometry%x_max(i_poly) = maxval(x_poly(i_start:i_end))
-            geometry%y_min(i_poly) = minval(y_poly(i_start:i_end))
-            geometry%y_max(i_poly) = maxval(y_poly(i_start:i_end))
-
-            geometry%polygon_start(i_poly) = i_start
-            geometry%polygon_end(i_poly) = i_end
-            geometry%is_enclosure(i_poly) = z_poly(i_start) /= dmiss .and. z_poly(i_start) <= 0.0_dp
-
-            i_point = i_end + 2
-         end do
-
-         geometry%polygon_count = i_poly
-
-         !> resize arrays to actual number of polygons
-         call realloc(geometry%x_min, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%x_max, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%y_min, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%y_max, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%polygon_start, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%polygon_end, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%is_enclosure, geometry%polygon_count, keepExisting=.true.)
-
-         if (enable_binning) then
-            call polygon_cache%edge_index%initialize(geometry)
-         end if
-
-         geometry%enclosures_present = any(geometry%is_enclosure)
-         polygon_cache%initialized = .true.
-      end associate
-
-   end subroutine cellmask_from_polygon_set_init
+   end function construct_polygon_geometry
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
    elemental function cellmask_from_polygon_set(x, y) result(mask)
@@ -209,11 +217,11 @@ contains
       logical :: found_inside_enclosure, is_inside
 
       mask = 0
-      associate (geometry => polygon_cache%geometry)
-         if (.not. polygon_cache%initialized) then
-            return
-         end if
+      if (.not. allocated(polygon_cache)) then
+         return
+      end if
 
+      associate (geometry => polygon_cache%geometry)
          count_drypoint = 0
          found_inside_enclosure = .false.
 
@@ -260,31 +268,11 @@ contains
    !> Clean up module-level cellmask polygon data structures.
    subroutine cellmask_from_polygon_set_cleanup()
 
-      call polygon_cache%clear()
+      if (allocated(polygon_cache)) then
+         deallocate (polygon_cache)
+      end if
+
    end subroutine cellmask_from_polygon_set_cleanup
-
-   !> Release all coordinates, metadata and acceleration data owned by a polygon cache.
-   subroutine polygon_set_cache_clear(this)
-      class(t_polygon_set_cache), intent(inout) :: this
-
-      associate (geometry => this%geometry)
-         if (allocated(geometry%x)) deallocate (geometry%x)
-         if (allocated(geometry%y)) deallocate (geometry%y)
-         if (allocated(geometry%x_min)) deallocate (geometry%x_min)
-         if (allocated(geometry%x_max)) deallocate (geometry%x_max)
-         if (allocated(geometry%y_min)) deallocate (geometry%y_min)
-         if (allocated(geometry%y_max)) deallocate (geometry%y_max)
-         if (allocated(geometry%is_enclosure)) deallocate (geometry%is_enclosure)
-         if (allocated(geometry%polygon_start)) deallocate (geometry%polygon_start)
-         if (allocated(geometry%polygon_end)) deallocate (geometry%polygon_end)
-         call this%edge_index%clear()
-
-         geometry%polygon_count = 0
-         geometry%enclosures_present = .false.
-         this%initialized = .false.
-      end associate
-
-   end subroutine polygon_set_cache_clear
 
    !> Test whether a point lies inside one cached polygon.
    elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
@@ -316,16 +304,15 @@ contains
    !! A horizontal ray can intersect only edges whose vertical extent contains the query y-coordinate.
    !! The index stores those candidate edges per latitude bin. It changes only which edges reach the
    !! existing ray-casting calculation; it does not approximate or simplify polygon geometry.
-   subroutine binned_edge_index_initialize(this, geometry)
-      class(t_binned_edge_index), intent(inout) :: this
+   function construct_binned_edge_index(geometry) result(index)
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry to index.
+      type(t_binned_edge_index) :: index
 
       integer :: bins, i_poly, num_edges, total_bins, total_edges
       integer(kind=int64) :: memberships, total_memberships
 
-      call this%clear()
-      allocate (this%polygon_bin_start(geometry%polygon_count), this%polygon_num_bins(geometry%polygon_count), &
-                this%polygon_bin_scale(geometry%polygon_count))
+      allocate (index%polygon_bin_start(geometry%polygon_count), index%polygon_num_bins(geometry%polygon_count), &
+                index%polygon_bin_scale(geometry%polygon_count))
       total_edges = 0
       total_bins = 0
       total_memberships = 0_int64
@@ -334,31 +321,31 @@ contains
          num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
          if (geometry%y_max(i_poly) > geometry%y_min(i_poly)) then
             bins = min(max_edge_bins, max(1, num_edges / 4))
-            this%polygon_bin_scale(i_poly) = real(bins, dp) / (geometry%y_max(i_poly) - geometry%y_min(i_poly))
+            index%polygon_bin_scale(i_poly) = real(bins, dp) / (geometry%y_max(i_poly) - geometry%y_min(i_poly))
          else
             bins = 1
-            this%polygon_bin_scale(i_poly) = 0.0_dp
+            index%polygon_bin_scale(i_poly) = 0.0_dp
          end if
-         this%polygon_num_bins(i_poly) = bins
+         index%polygon_num_bins(i_poly) = bins
          total_edges = total_edges + num_edges
          total_bins = total_bins + bins
 
-         memberships = this%count_edge_memberships(geometry, i_poly, bins)
+         memberships = index%count_edge_memberships(geometry, i_poly, bins)
          total_memberships = total_memberships + memberships
       end do
 
       ! Keep the direct scan if long edges make the index too large.
       if (total_memberships > max_memberships_per_edge * int(total_edges, int64)) then
-         call this%clear()
+         deallocate (index%polygon_bin_start, index%polygon_num_bins, index%polygon_bin_scale)
          return
       end if
 
-      call this%build(geometry, total_bins, total_memberships)
+      call index%populate_bin_storage(geometry, total_bins, total_memberships)
 
-   end subroutine binned_edge_index_initialize
+   end function construct_binned_edge_index
 
    !> Allocate and populate the shared compressed-row storage for the complete polygon set.
-   subroutine binned_edge_index_build(this, geometry, total_bins, total_memberships)
+   subroutine binned_edge_index_populate_bin_storage(this, geometry, total_bins, total_memberships)
       class(t_binned_edge_index), intent(inout) :: this
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: total_bins !< Total number of bins in the polygon set.
@@ -403,7 +390,7 @@ contains
          end do
       end do
 
-   end subroutine binned_edge_index_build
+   end subroutine binned_edge_index_populate_bin_storage
 
    !> Count memberships in O(edges), without visiting every bin that an edge spans.
    function binned_edge_index_count_edge_memberships(this, geometry, i_poly, bins) result(memberships)
@@ -486,10 +473,6 @@ contains
 
       integer :: k, n, k1, total_points, ipoint
       real(kind=dp), allocatable, dimension(:) :: xpl_init, ypl_init, zpl_init
-
-      if (polygon_cache%initialized) then
-         call cleanup_cell_geom_polylines()
-      end if
 
       ! calculate total points needed: sum(netcell(k)%n + 1) for all cells
       ! +1 for dmiss separator after each polygon
