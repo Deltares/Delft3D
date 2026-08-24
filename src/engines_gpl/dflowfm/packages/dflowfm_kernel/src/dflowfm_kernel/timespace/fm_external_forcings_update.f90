@@ -50,6 +50,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateHeight, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
+                      item_dambreak_crestlevel, item_dambreak_breachwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
                       AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
    use m_source_sink, only: source_sinks, source_sink_all_discharges
@@ -903,6 +904,20 @@ contains
          call get_timespace_value_by_item(item_general_structure_gateHeight, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_crestWidth, time_in_seconds)
          call get_timespace_value_by_item(item_general_structure_gateOpeningWidth, time_in_seconds)
+      end if
+
+      if (network%sts%numDambreaks > 0) then
+         success_previous = success
+         call get_timespace_value_by_item(item_dambreak_crestlevel, time_in_seconds)
+         call get_timespace_value_by_item(item_dambreak_breachwidth, time_in_seconds)
+         ! NOTE: we intentionally ignore failures from the calls above because:
+         ! - a typical failure can come from the EC module when the dam is not yet breached:
+         !   "Requested time precedes current forcing EC-timelevel" (i.e. no breach width has been defined yet)
+         ! - When the dam is not yet breached, it will keep its initial width of 0, so it is safe to ignore this error
+         ! - since all dambreaks are together under a single multiple_uni item, each with possibly different breach times,
+         !   it is not possible to only call get_timespace_value_by_item for the breached dams, so we have to call it
+         !   for all of them and ignore the error for the unbreached ones.
+         success = success_previous
       end if
 
    end subroutine update_network_data
