@@ -4368,69 +4368,59 @@ contains
          !dataPtr1      => qpump
 
          ! Hydraulic structure parameters from flow1d: need explicit items here:
+         ! Note: all flow1d-based structures don't need a dataPtr here,
+         ! EC-results will be stored in their own derived type member fields.
       case ('pump_capacity') ! flow1d pump
          itemPtr1 => item_pump_capacity
          dataPtr1 => qpump ! TODO: UNST-2724: needs more thinking, see issue comments.
       case ('culvert_valveopeningheight') ! flow1d culvert
          itemPtr1 => item_culvert_valveOpeningHeight
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('weir_crestlevel') ! flow1d weir
          itemPtr1 => item_weir_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('orifice_crestlevel') ! flow1d orifice
          itemPtr1 => item_orifice_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('orifice_gateloweredgelevel') ! flow1d orifice
          itemPtr1 => item_orifice_gateLowerEdgeLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_crestlevel') ! flow1d gate
          itemPtr1 => item_gate_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateheight') ! flow1d gate
          itemPtr1 => item_gate_gateHeight
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestlevel') ! flow1d general structure
          itemPtr1 => item_general_structure_crestLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateheight') ! flow1d general structure
          itemPtr1 => item_general_structure_gateHeight
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateopeningwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_gateOpeningWidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('dambreak_crestlevel') ! flow1d dambreak
          itemPtr1 => item_dambreak_crestlevel
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('dambreak_breachwidth') ! flow1d dambreak
          itemPtr1 => item_dambreak_breachwidth
-         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
+
+      ! Legacy FM-structures, deprecated as of 2027.01 release.
       case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('lateral_discharge')
-         itemPtr1 => item_lateraldischarge
-         !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
       case ('gateloweredgelevel')
          itemPtr1 => item_gateloweredgelevel
          dataPtr1 => zgate
       case ('generalstructure')
          itemPtr1 => item_generalstructure
          dataPtr1 => zcgen
+
+      case ('lateral_discharge')
+         itemPtr1 => item_lateraldischarge
+         !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
       case ('humidity_airtemperature_cloudiness')
          itemPtr1 => item_hac_humidity
          dataPtr1 => relative_humidity

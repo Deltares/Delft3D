@@ -942,16 +942,17 @@ contains
       end if
 
       if (network%sts%numDambreaks > 0) then
+         success_previous = success
          call get_timespace_value_by_item(item_dambreak_crestlevel, time_in_seconds)
          call get_timespace_value_by_item(item_dambreak_breachwidth, time_in_seconds)
-         ! NOTE: we intentionally overrule any failure here because:
-         ! - the typical failure will come from the fact the EC-module will emit an error when the dam is not yet breached
-         !   "requested time preceeds current EC time" (i.e. no breach width has been defined yet)
-         ! - When the dam is not yet breached, it will keeps its initial width of 0, so it is safe to ignore this error
-         ! - since all dambreak are together under a single multiple_uni item, each with possibly different breach times,
-         !   it is not possible to only call get_time_space_value_by_item for the breached dams, so we have to call it
+         ! NOTE: we intentionally ignore failures from the calls above because:
+         ! - a typical failure can come from the EC module when the dam is not yet breached:
+         !   "Requested time precedes current forcing EC-timelevel" (i.e. no breach width has been defined yet)
+         ! - When the dam is not yet breached, it will keep its initial width of 0, so it is safe to ignore this error
+         ! - since all dambreaks are together under a single multiple_uni item, each with possibly different breach times,
+         !   it is not possible to only call get_timespace_value_by_item for the breached dams, so we have to call it
          !   for all of them and ignore the error for the unbreached ones.
-         success = .true.
+         success = success_previous
       end if
 
    end subroutine update_network_data

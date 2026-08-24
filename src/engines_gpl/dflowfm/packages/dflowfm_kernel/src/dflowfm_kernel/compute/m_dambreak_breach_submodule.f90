@@ -350,7 +350,7 @@ contains
          ! Legacy .tim file with 3 columns: time, crest level, width
          if (time > dambreak%t0) then
             !Time in the tim file is relative to start time t0
-            success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreak%ec_item, irefdate, tzone, tunit, &
+            success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreak%ec_item_legacy, irefdate, tzone, tunit, &
                                                      time - dambreak%t0, dambreak%crest_level_and_width)
             if (success) then
                dambreak%crest_level = dambreak%crest_level_and_width(1)
@@ -365,8 +365,10 @@ contains
       else
          ! Standard .bc file with separate data for crest level and width, already read in update_network_data().
          ! NOTE: the %..._ini fields contain the actual data at the *current* time.
-         dambreak%crest_level = network%sts%struct(dambreak%index_structure)%dambreak%crest_level_ini
-         dambreak%width = network%sts%struct(dambreak%index_structure)%dambreak%breach_width_ini
+         associate dambreak_sts =>network%sts%struct(dambreak%index_structure)%dambreak
+            dambreak%crest_level = dambreak_sts%crest_level_ini
+            dambreak%width = dambreak_sts%breach_width_ini
+         end associate
       end if
 
       dambreak%breach_width_derivative = (dambreak%width - dambreak%breach_width) / time_step
@@ -1203,7 +1205,7 @@ contains
 
       if (index(trim(filename)//'|', '.tim|') > 0) then
          success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, filename, UNIFORM, &
-                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item)
+                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item_legacy)
          if (.not. success) then
             write (msgbuf, '(5a)') 'Cannot process a tim file for "', QID, '" for the dambreak "', trim(dambreak%name), '".'
             call err_flush()
