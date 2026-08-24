@@ -2760,7 +2760,7 @@ contains
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -3125,11 +3125,11 @@ contains
                end if
             end do
          end if
-         polygon_cache = t_netcell_set()
+         netcell_cache = t_netcell_set()
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
-               ja = polygon_cache%find_netcell(Xz(n), Yz(n))
+               ja = netcell_cache%find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if

@@ -574,7 +574,7 @@ contains
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -583,13 +583,13 @@ contains
       call setup_simple_netcells()
 
       ! Initialize cache for new implementation
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       ! Test 1: Point clearly inside first cell (0,0 to 10,10)
       xa = 5.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside first cell")
       call f90_expect_eq(kin_new, 1, "Should be in cell 1")
 
@@ -597,7 +597,7 @@ contains
       xa = 15.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside second cell")
       call f90_expect_eq(kin_new, 2, "Should be in cell 2")
 
@@ -605,7 +605,7 @@ contains
       xa = 25.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point outside all cells")
       call f90_expect_eq(kin_new, 0, "Should be in no cell")
 
@@ -613,14 +613,14 @@ contains
       xa = 10.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point on cell boundary")
 
       ! Test 5: Point on cell corner
       xa = 0.0_dp
       ya = 0.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point on cell corner")
 
       ! Cleanup
@@ -637,7 +637,7 @@ contains
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -645,34 +645,34 @@ contains
       nump = 3
       call setup_complex_netcells()
 
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       ! Test 1: Inside triangle (cell 1)
       xa = 5.0_dp
       ya = 3.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside triangle")
 
       ! Test 2: Inside pentagon (cell 2)
       xa = 15.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside pentagon")
 
       ! Test 3: Inside hexagon (cell 3)
       xa = 25.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point inside hexagon")
 
       ! Test 4: On edge of complex polygon
       xa = 10.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Point on complex polygon edge")
 
       ! Cleanup
@@ -689,7 +689,7 @@ contains
 
       integer :: kin_old, kin_new, i, mismatches
       real(kind=dp) :: xa, ya
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -697,7 +697,7 @@ contains
       nump = 100
       call setup_grid_netcells(10, 10, 10.0_dp)
 
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       mismatches = 0
 
@@ -707,7 +707,7 @@ contains
          ya = 25.0_dp
 
          call incells(xa, ya, kin_old)
-         kin_new = polygon_cache%find_netcell(xa, ya)
+         kin_new = netcell_cache%find_netcell(xa, ya)
 
          if (kin_old /= kin_new) then
             mismatches = mismatches + 1
@@ -730,7 +730,7 @@ contains
 
       integer :: kin1, kin2, kin_old
       real(kind=dp) :: xa, ya
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 !> in case previous tests set npl
 
@@ -743,11 +743,11 @@ contains
       ya = 5.0_dp
 
       ! Initialize cache and query
-      polygon_cache = t_netcell_set()
-      kin1 = polygon_cache%find_netcell(xa, ya)
+      netcell_cache = t_netcell_set()
+      kin1 = netcell_cache%find_netcell(xa, ya)
 
       ! Query again (should use cached data)
-      kin2 = polygon_cache%find_netcell(xa, ya)
+      kin2 = netcell_cache%find_netcell(xa, ya)
 
       call f90_expect_eq(kin1, kin2, "Cached queries should match")
 
@@ -756,10 +756,10 @@ contains
       call f90_expect_eq(kin1, kin_old, "Cached result should match old implementation")
 
       ! Cleanup and re-initialize
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       ! Query after re-initialization
-      kin2 = polygon_cache%find_netcell(xa, ya)
+      kin2 = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin1, kin2, "Re-initialized cache should give same result")
 
       ! Cleanup
@@ -776,19 +776,19 @@ contains
 
       integer :: kin_old, kin_new
       real(kind=dp) :: xa, ya
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 !> in case previous tests set npl
 
       ! Test 1: Empty grid (nump = 0)
       nump = 0
       call setup_empty_netcells()
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       xa = 5.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Empty grid")
       call f90_expect_eq(kin_new, 0, "Should return 0 for empty grid")
 
@@ -797,18 +797,18 @@ contains
       ! Test 2: Single cell
       nump = 1
       call setup_single_netcell()
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       xa = 5.0_dp
       ya = 5.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Single cell - inside")
 
       xa = 15.0_dp
       ya = 15.0_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Single cell - outside")
 
       call cleanup_netcells()
@@ -816,12 +816,12 @@ contains
       ! Test 3: Very large coordinates
       nump = 1
       call setup_single_netcell()
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       xa = 1.0e6_dp
       ya = 1.0e6_dp
       call incells(xa, ya, kin_old)
-      kin_new = polygon_cache%find_netcell(xa, ya)
+      kin_new = netcell_cache%find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Very large coordinates")
       call f90_expect_eq(kin_new, 0, "Should be outside")
 
@@ -982,7 +982,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1007,10 +1007,10 @@ contains
       ypoly(2) = 27.0_dp
 
       ! Initialize cache
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       ! Call the function
-      call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      call netcell_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
@@ -1051,7 +1051,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1075,10 +1075,10 @@ contains
       ypoly(3) = 0.0_dp
 
       ! Initialize cache
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       ! Call the function
-      call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      call netcell_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
@@ -1113,7 +1113,7 @@ contains
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       npl = 0 ! Reset from previous tests
 
@@ -1135,9 +1135,9 @@ contains
       ypoly(2) = 6.0_dp
 
       ! Initialize cache
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
       ! Call the function
-      call polygon_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      call netcell_cache%find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")

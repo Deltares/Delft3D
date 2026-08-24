@@ -56,7 +56,7 @@ contains
 
       type(t_grid_helper) :: grid_helper
       type(precice_adapter_t) :: adapter
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
       integer :: expected_sink_cell
       integer :: expected_source_cell
 
@@ -71,9 +71,9 @@ contains
          )
       call flow_geominit(0)
 
-      polygon_cache = t_netcell_set()
-      expected_sink_cell = polygon_cache%find_netcell(5.0_dp, 5.0_dp)
-      expected_source_cell = polygon_cache%find_netcell(15.0_dp, 7.0_dp)
+      netcell_cache = t_netcell_set()
+      expected_sink_cell = netcell_cache%find_netcell(5.0_dp, 5.0_dp)
+      expected_source_cell = netcell_cache%find_netcell(15.0_dp, 7.0_dp)
 
       ! Setup adapter
       call precice_adapter_allocate_read_arrays(adapter, 1)

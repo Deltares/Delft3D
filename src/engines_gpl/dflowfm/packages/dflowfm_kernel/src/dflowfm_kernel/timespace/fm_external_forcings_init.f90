@@ -1634,7 +1634,7 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
 
@@ -1643,7 +1643,7 @@ contains
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1681,7 +1681,7 @@ contains
                   end if
                end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
-               call polygon_cache%find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, &
+               call netcell_cache%find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, &
                                                                  bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells

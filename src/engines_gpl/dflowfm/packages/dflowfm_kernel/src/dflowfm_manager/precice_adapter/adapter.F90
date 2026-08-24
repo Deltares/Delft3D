@@ -494,15 +494,15 @@ contains
       integer :: i
       integer :: sink_cell
       integer :: source_cell
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       
       do i = 1, self%mesh_sources_sinks_size
-         sink_cell = polygon_cache%find_netcell(self%sinks_x(i), self%sinks_y(i))
-         source_cell = polygon_cache%find_netcell(self%sources_x(i), self%sources_y(i))
+         sink_cell = netcell_cache%find_netcell(self%sinks_x(i), self%sinks_y(i))
+         source_cell = netcell_cache%find_netcell(self%sources_x(i), self%sources_y(i))
          ! sink_cell=0 and source_cell=0: 
          !    Both source and sink location are outside this domain
          !    Still this source_sink needs to be added to avoid hampering the MPI communication in D-Flow FM (see subroutine reduce_srsn)

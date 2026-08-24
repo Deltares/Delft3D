@@ -43,7 +43,7 @@ contains
       use m_alloc, only: realloc
 
       integer :: i, k
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       ! Allocate and initialize cellmask
       call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
@@ -55,13 +55,13 @@ contains
 
       ! Initialize the spatial index for all netcells
       ! This builds bounding boxes and polygon data structures for fast point-in-polygon tests
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       ! Loop over samples (much fewer than cells)
       !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(k)
       do i = 1, ns
-         k = polygon_cache%find_netcell(xs(i), ys(i))
+         k = netcell_cache%find_netcell(xs(i), ys(i))
          if (k > 0) then
             cellmask(k) = 1 ! Safe without ATOMIC - all threads write same value
          end if

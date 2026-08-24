@@ -60,18 +60,18 @@ contains
       logical :: Lisnew
       integer :: ierror
       integer :: nump1d
-      type(t_netcell_set) :: polygon_cache
+      type(t_netcell_set) :: netcell_cache
 
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
-      polygon_cache = t_netcell_set()
+      netcell_cache = t_netcell_set()
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D
          if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
-            left_2D_cells(L) = polygon_cache%find_netcell(Xk(KN(1, L)), Yk(KN(1, L)))
-            right_2D_cells(L) = polygon_cache%find_netcell(Xk(KN(2, L)), Yk(KN(2, L)))
+            left_2D_cells(L) = netcell_cache%find_netcell(Xk(KN(1, L)), Yk(KN(1, L)))
+            right_2D_cells(L) = netcell_cache%find_netcell(Xk(KN(2, L)), Yk(KN(2, L)))
          end if
       end do
       !$OMP END PARALLEL DO
