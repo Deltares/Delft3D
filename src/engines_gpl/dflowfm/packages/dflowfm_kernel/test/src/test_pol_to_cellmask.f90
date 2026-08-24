@@ -101,6 +101,12 @@ contains
       ! Cell at (25,25) - inside enclosure, outside dry point -> mask=0
       call f90_expect_eq(cellmask(13), 0, "Cell (25,25) should not be masked")
 
+      ! Legacy polygon files also use z=0 for outside/enclosure polygons.
+      zpl(1:5) = 0.0_dp
+      cellmask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw, enable_binning=.false.)
+      call f90_expect_eq(cellmask(1), 0, "Cell inside z=0 enclosure should not be masked")
+      call f90_expect_eq(cellmask(4), 1, "Cell outside z=0 enclosure should be masked")
+
       ! Cleanup
       deallocate (xzw, yzw, xpl, ypl, zpl, cellmask)
 

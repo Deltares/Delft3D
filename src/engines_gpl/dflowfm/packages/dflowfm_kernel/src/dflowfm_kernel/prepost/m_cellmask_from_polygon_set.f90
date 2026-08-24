@@ -42,9 +42,9 @@ module m_cellmask_from_polygon_set
 
    !> Coordinates and per-polygon metadata shared by masking and net-cell lookup.
    type, private :: t_polygon_geometry
-      real(kind=dp), allocatable :: x(:), y(:), z(:)
+      real(kind=dp), allocatable :: x(:), y(:)
       real(kind=dp), allocatable :: x_min(:), y_min(:), x_max(:), y_max(:)
-      real(kind=dp), allocatable :: polygon_type(:)
+      logical, allocatable :: is_enclosure(:)
       integer, allocatable :: polygon_start(:), polygon_end(:)
       integer :: polygon_count = 0
       logical :: enclosures_present = .false.
@@ -135,10 +135,8 @@ contains
 
          call realloc(geometry%x, polygon_points, keepExisting=.false.)
          call realloc(geometry%y, polygon_points, keepExisting=.false.)
-         call realloc(geometry%z, polygon_points, keepExisting=.false.)
          geometry%x = x_poly
          geometry%y = y_poly
-         geometry%z = z_poly
 
          if (polygon_points == 0) then
             polygon_cache%initialized = .true.
@@ -152,7 +150,7 @@ contains
          call realloc(geometry%y_max, polygon_points, keepExisting=.false.)
          call realloc(geometry%polygon_start, polygon_points, keepExisting=.false.)
          call realloc(geometry%polygon_end, polygon_points, keepExisting=.false.)
-         call realloc(geometry%polygon_type, polygon_points, keepExisting=.false.)
+         call realloc(geometry%is_enclosure, polygon_points, keepExisting=.false.)
 
          i_point = 1
          i_poly = 0
@@ -176,7 +174,7 @@ contains
 
             geometry%polygon_start(i_poly) = i_start
             geometry%polygon_end(i_poly) = i_end
-            geometry%polygon_type(i_poly) = z_poly(i_start)
+            geometry%is_enclosure(i_poly) = z_poly(i_start) /= dmiss .and. z_poly(i_start) <= 0.0_dp
 
             i_point = i_end + 2
          end do
@@ -190,19 +188,13 @@ contains
          call realloc(geometry%y_max, geometry%polygon_count, keepExisting=.true.)
          call realloc(geometry%polygon_start, geometry%polygon_count, keepExisting=.true.)
          call realloc(geometry%polygon_end, geometry%polygon_count, keepExisting=.true.)
-         call realloc(geometry%polygon_type, geometry%polygon_count, keepExisting=.true.)
+         call realloc(geometry%is_enclosure, geometry%polygon_count, keepExisting=.true.)
 
          if (enable_binning) then
             call polygon_cache%edge_index%initialize(geometry)
          end if
 
-         ! check if there are any enclosure polygons
-         do i_poly = 1, geometry%polygon_count
-            if (geometry%polygon_type(i_poly) < 0.0_dp .and. geometry%polygon_type(i_poly) /= dmiss) then
-               geometry%enclosures_present = .true.
-               exit
-            end if
-         end do
+         geometry%enclosures_present = any(geometry%is_enclosure)
          polygon_cache%initialized = .true.
       end associate
 
@@ -215,7 +207,6 @@ contains
 
       integer :: count_drypoint, i_poly
       logical :: found_inside_enclosure, is_inside
-      real(kind=dp) :: z_poly_val
 
       mask = 0
       associate (geometry => polygon_cache%geometry)
@@ -228,8 +219,6 @@ contains
 
          ! Single loop over all polygons
          do i_poly = 1, geometry%polygon_count
-            z_poly_val = geometry%polygon_type(i_poly)
-
             ! Bounding box check
             if (x < geometry%x_min(i_poly) .or. x > geometry%x_max(i_poly) .or. &
                 y < geometry%y_min(i_poly) .or. y > geometry%y_max(i_poly)) then
@@ -239,13 +228,12 @@ contains
             ! Point-in-polygon test
             is_inside = pinpok_elemental(x, y, i_poly)
 
-            if (z_poly_val == dmiss .or. z_poly_val > 0.0_dp) then
-               ! Dry point polygon
-               if (is_inside) then
+            if (is_inside) then
+               if (geometry%is_enclosure(i_poly)) then
+                  found_inside_enclosure = .true.
+               else
                   count_drypoint = count_drypoint + 1
                end if
-            else if (z_poly_val < 0.0_dp .and. is_inside) then
-               found_inside_enclosure = .true.
             end if
          end do
 
@@ -282,12 +270,11 @@ contains
       associate (geometry => this%geometry)
          if (allocated(geometry%x)) deallocate (geometry%x)
          if (allocated(geometry%y)) deallocate (geometry%y)
-         if (allocated(geometry%z)) deallocate (geometry%z)
          if (allocated(geometry%x_min)) deallocate (geometry%x_min)
          if (allocated(geometry%x_max)) deallocate (geometry%x_max)
          if (allocated(geometry%y_min)) deallocate (geometry%y_min)
          if (allocated(geometry%y_max)) deallocate (geometry%y_max)
-         if (allocated(geometry%polygon_type)) deallocate (geometry%polygon_type)
+         if (allocated(geometry%is_enclosure)) deallocate (geometry%is_enclosure)
          if (allocated(geometry%polygon_start)) deallocate (geometry%polygon_start)
          if (allocated(geometry%polygon_end)) deallocate (geometry%polygon_end)
          call this%edge_index%clear()
