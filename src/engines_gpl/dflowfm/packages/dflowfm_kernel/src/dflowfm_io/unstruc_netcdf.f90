@@ -65,7 +65,7 @@ module unstruc_netcdf
    use m_unc_put_var_map
    use m_unc_put_var_map_generated
 
-   implicit none(type,external)
+   implicit none(type, external)
 
    private :: nerr_, err_firsttime_, err_firstline_, &
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
@@ -1456,7 +1456,7 @@ contains
          id_weirdte, &
          id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
          id_culvert_openh, id_longculvert_valveopen, &
-         id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
+         id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
          id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
          id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
          id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
@@ -2436,6 +2436,10 @@ contains
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'long_name', 'Crest width of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_crestw, 'units', 'm')
 
+            ierr = nf90_def_var(irstfile, 'general_structure_gate_height', nf90_double, [id_genstrudim, id_timedim], id_genstru_gateh)
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'long_name', 'Gate height of general structure')
+            ierr = nf90_put_att(irstfile, id_genstru_gateh, 'units', 'm')
+
             ierr = nf90_def_var(irstfile, 'general_structure_gate_lower_edge_level', nf90_double, [id_genstrudim, id_timedim], id_genstru_edgel)
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'long_name', 'Gate lower edge level of general structure')
             ierr = nf90_put_att(irstfile, id_genstru_edgel, 'units', 'm')
@@ -2676,6 +2680,7 @@ contains
          if (network%sts%numGeneralStructures > 0) then
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_level', id_genstru_crestl)
             ierr = nf90_inq_varid(irstfile, 'general_structure_crest_width', id_genstru_crestw)
+            ierr = nf90_inq_varid(irstfile, 'general_structure_gate_height', id_genstru_gateh)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_lower_edge_level', id_genstru_edgel)
             ierr = nf90_inq_varid(irstfile, 'general_structure_gate_opening_width', id_genstru_openw)
             ierr = nf90_inq_varid(irstfile, 'general_structure_flow_area', id_genstru_area)
@@ -3336,6 +3341,7 @@ contains
          if (nlen > 0) then
             ierr = nf90_put_var(irstfile, id_genstru_crestl, valgenstru(9, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_crestw, valgenstru(10, 1:nlen), [1, itim], [nlen, 1])
+            ierr = nf90_put_var(irstfile, id_genstru_gateh, valgenstru(15, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_edgel, valgenstru(14, 1:nlen), [1, itim], [nlen, 1])
             ierr = nf90_put_var(irstfile, id_genstru_openw, valgenstru(13, 1:nlen), [1, itim], [nlen, 1])
 
@@ -3698,6 +3704,7 @@ contains
 !! unc_write_map_filepointer directly instead!
    subroutine unc_write_map(filename, iconventions)
       use m_flowparameters, only: map_write_settings
+      use m_unstruc_netcdf_data, only: flowgeom_map
       implicit none
 
       character(len=*), intent(in) :: filename
@@ -3711,6 +3718,15 @@ contains
          iconv = UNC_CONV_CFOLD
       else
          iconv = iconventions
+      end if
+
+      if (iconv == UNC_CONV_UGRID) then
+         if (.not. associated(flowgeom_map)) then
+            return
+         end if
+         if (flowgeom_map%ndx_out <= 0) then
+            return
+         end if
       end if
 
       ierr = unc_create(filename, 0, mapids%ncid)
@@ -3747,7 +3763,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, ibedlevtyp, map_write_settings
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data, hminlw_xb => hminlw
       use m_transportdata
@@ -3781,6 +3797,7 @@ contains
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
+      use m_unstruc_netcdf_data, only: flowgeom_map
 
       implicit none
 
@@ -3846,7 +3863,7 @@ contains
 
       nc_precision = netcdf_data_type(md_nc_map_precision)
 
-      if (ndxi <= 0) then
+      if (flowgeom_map%ndx_out <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
          return
       end if
@@ -4346,7 +4363,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
-               
+
                if (secchi_depth_is_time_varying) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, nc_precision, UNC_LOC_S, 'Secc', 'secchi_depth_of_sea_water', 'Secchi depth', 'm', jabndnd=jabndnd_)
                end if
@@ -4768,7 +4785,7 @@ contains
                   end if
                end if
                if (map_write_settings%wav_twav > 0 .and. allocated(twav)) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'tp', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Peak wave period', 's')
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', '', 'Peak wave period', 's')
                end if
                if (map_write_settings%wav_phiwav > 0 .and. allocated(phiwav)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree')
@@ -4782,7 +4799,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
                end if
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Wave peak period', 's') ! we assume working with the peak period in all our formulations
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', '', 'Peak wave period', 's') ! the wave period is assumed to be a peak period in all our formulations
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, nc_precision, UNC_LOC_S, 'uorb', 'sea_surface_wave_orbital_velocity', 'Wave orbital velocity', 'm s-1', jabndnd=jabndnd_) ! not CF
                !
                if (jawavestokes > NO_STOKES_DRIFT) then
@@ -6598,7 +6615,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, jacali
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data
       use m_transportdata
@@ -11239,6 +11256,43 @@ contains
 !! Processing is done elsewhere.
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
+      use dfm_error, only: dfm_noerr
+
+      character(len=*), intent(in) :: filename !< Name of NetCDF file.
+      integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
+      integer, intent(inout) :: numl_keep !< Number of netlinks to keep in existing net.
+      integer, intent(out) :: numk_read !< Number of new netnodes read from file.
+      integer, intent(out) :: numl_read !< Number of new netlinks read from file.
+      integer, intent(out) :: ierr !< Return status (NetCDF operations)
+
+      call readyy('Reading net data', 0.0_dp)
+
+      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
+
+      !
+      ! Try and read as new UGRID NetCDF format
+      !
+      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      if (ierr /= dfm_noerr) then
+         ! No UGRID, but just try to use the 'old' format now.
+         call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      end if
+
+      if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
+         ierr = detect_proj_string(crs)
+         if (ierr /= dfm_noerr) then
+            ierr = dfm_noerr
+            call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
+            if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
+               call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if projection string is unknown. Switched off.')
+               unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
+            end if
+         end if
+      end if
+   end subroutine unc_read_net
+
+   subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      use precision, only: dp
       use network_data
       use m_sferic
       use m_missing
@@ -11267,24 +11321,8 @@ contains
       integer :: L
       real(kind=dp) :: zk_fillvalue
 
-      call readyy('Reading net data', 0.0_dp)
-
-      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
-
       nerr_ = 0
       allocate (character(len=0) :: coordsyscheck)
-
-      !
-      ! Try and read as new UGRID NetCDF format
-      !
-      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
-      if (ierr == dfm_noerr) then
-         ! UGRID successfully read, we're done.
-         return
-      else
-         ! No UGRID, but just try to use the 'old' format now.
-         continue
-      end if
 
       ierr = unc_open(filename, nf90_nowrite, inetfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
@@ -11421,7 +11459,7 @@ contains
       ierr = unc_close(inetfile)
       call readyy('Reading net data', -1.0_dp)
 
-   end subroutine unc_read_net
+   end subroutine unc_read_net_old
 
 !> print MD5 checksum for net file, based on netlinks only.
 !! Only in case of loglevel is debug or all.
@@ -13789,7 +13827,7 @@ contains
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: bl, bl_min, ba
-      use m_unstruc_netcdf_data, only: flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom_map
       use m_sferic
       use m_missing
       use netcdf
@@ -13905,36 +13943,36 @@ contains
          end if
       end if
 
-      if (allocated(flowgeom%node_map_1d)) then
-         nodes_1d = flowgeom%node_map_1d
+      if (allocated(flowgeom_map%node_map_1d)) then
+         nodes_1d = flowgeom_map%node_map_1d
       else
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
+         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
       end if
 
-      if (allocated(flowgeom%face_map_2D)) then
-         faces = flowgeom%face_map_2D
+      if (allocated(flowgeom_map%face_map_2D)) then
+         faces = flowgeom_map%face_map_2D
       else
-         faces = [(i, i=1, flowgeom%mesh2d%numFace)]
+         faces = [(i, i=1, flowgeom_map%mesh2d%numFace)]
       end if
 
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
       ! All other counters (ndx, ndxi, ndx1db, lnx...) are always the global values; use m_flowgeom directly.
-      associate (ndx2d => flowgeom%mesh2d%numFace, &
-                 z2dn => flowgeom%mesh2d%nodez)
+      associate (ndx2d => flowgeom_map%mesh2d%numFace, &
+                 z2dn => flowgeom_map%mesh2d%nodez)
 
-         call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
+         call unc_write_1D_flowgeom_ugrid(flowgeom_map, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
          if (ndx2d > 0 .and. ja2D_) then
-            flowgeom%mesh2d%num_layers = layer_count
-            flowgeom%mesh2d%layertype = layer_type
-            flowgeom%mesh2d%numtopsig = numtopsig
+            flowgeom_map%mesh2d%num_layers = layer_count
+            flowgeom_map%mesh2d%layertype = layer_type
+            flowgeom_map%mesh2d%numtopsig = numtopsig
             if (layer_count > 0) then
-               flowgeom%mesh2d%layer_zs => layer_zs
-               flowgeom%mesh2d%interface_zs => interface_zs
+               flowgeom_map%mesh2d%layer_zs => layer_zs
+               flowgeom_map%mesh2d%interface_zs => interface_zs
             end if
 
-            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d)
-            call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom%edge_type)
+            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom_map%mesh2d, writeopts=unc_writeopts)
+            call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom_map%edge_type)
 
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
                ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
@@ -13976,7 +14014,7 @@ contains
          ierr = nf90_enddef(ncid)
 
          !-- Start data writing (time-independent data) ------------
-         if (flowgeom%mesh1D%numNode > 0) then
+         if (flowgeom_map%mesh1D%numNode > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(nodes_1d))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(nodes_1d))
          end if
@@ -14000,7 +14038,7 @@ contains
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(faces))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(faces))
             end if
-            if (flowgeom%mesh1D%numNode > 0) then
+            if (flowgeom_map%mesh1D%numNode > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(nodes_1d))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(nodes_1d))
             end if
@@ -14100,10 +14138,10 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      if (allocated(flowgeom%node_map_1d)) then
-         nodes_1d = flowgeom%node_map_1d
+      if (allocated(flowgeom_map%node_map_1d)) then
+         nodes_1d = flowgeom_map%node_map_1d
       else
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
+         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &
@@ -15639,7 +15677,7 @@ contains
       integer, allocatable :: tmpvar3di(:, :, :), tmpvar2di(:, :)
       integer :: strucDimErr, i, nLinks, nStru, ierr, iStru, nfuru, numlinks, strucVarErr, L, L0, nstages, maxNumStages
       integer :: id_culvert_openh, id_longculvert_valveopen, &
-                 id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
+                 id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
                  id_weirgen_crestl, id_weirgen_crestw, id_weirgen_area, id_weirgen_linkw, id_weirgen_fu, id_weirgen_ru, id_weirgen_au, id_weirgen_state, id_weirgen_sOnCrest, &
                  id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
                  id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
@@ -15753,6 +15791,19 @@ contains
                   genstr => network%sts%struct(istru)%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
+               end do
+            end if
+
+            ! read general_structure_gate_height
+            call realloc(tmpvar, nStru, stat=ierr, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, 'general_structure_gate_height', id_genstru_gateh)
+            ierr = nf90_get_var(ncid, id_genstru_gateh, tmpvar, start=[1, it_read], count=[nStru, 1])
+            call check_error(ierr, '"general_structure_gate_height", The simulation will continue but the results may not be reliable.', LEVEL_WARN)
+            if (ierr == 0) then
+               do i = 1, nStru
+                  istru = network%sts%generalStructureIndices(i)
+                  genstr => network%sts%struct(istru)%generalst
+                  genstr%gateDoorHeight = tmpvar(i)
                end do
             end if
 

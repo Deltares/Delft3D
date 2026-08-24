@@ -29,26 +29,27 @@
 
 module m_itdate
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
+
    private
 
-   character(len=8), public :: refdat
-   integer, public :: itdate !< should be user specified for (asc routines)
-   integer, public :: jul0, imonth0, iday0, iyear0
-   real(kind=dp), public :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+   public :: refdat, itdate, jul0, imonth0, iday0, iyear0, Tzone
+
+   character(len=8) :: refdat
+   integer :: itdate !< should be user specified for (asc routines)
+   integer :: jul0
+   integer :: imonth0
+   integer :: iday0
+   integer :: iyear0
+   real(kind=dp) :: Tzone ! doubling with "use m_flowtimes, only : tzone"
+
 end module m_itdate
 
-! ==========================================================================
-
-!>
 module timespace_read
-!!--description-----------------------------------------------------------------
-!
-!!--pseudo code and references--------------------------------------------------
-!
-!!--declarations----------------------------------------------------------------
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    integer, parameter :: maxnamelen = 256
    real(kind=dp), parameter :: dmiss_default = -999.0_dp ! Default missing value in meteo arrays
@@ -62,10 +63,6 @@ module timespace_read
    real(kind=dp), private, parameter :: earthrad = 6378137.0_dp ! Mathworld, IUGG
 
 contains
-   !
-   !
-   ! ==========================================================================
-   !>
    !> Parses an UDUnit-conventions datetime unit string.
    !! TODO: replace this by calling C-API from UDUnits(-2).
    function parse_ud_timeunit(timeunitstr, iunit, iyear, imonth, iday, ihour, imin, isec) result(ierr)
@@ -3150,6 +3147,8 @@ contains
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
       case (LOCTP_POLYGON_XY)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from input arrays
          call increasepol(numcoord, 0)
          xpl(1:numcoord) = xpin(1:numcoord)
@@ -3200,7 +3199,7 @@ contains
             end if
          end do
       end if
-      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+      if (loc_spec_type == LOCTP_POLYGON_FILE .or. loc_spec_type == LOCTP_POLYGON_XY) then
          call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
@@ -3234,12 +3233,8 @@ contains
          end if
       end if
    end subroutine operate
-   !
-   !
-   ! ==========================================================================
-   !>
-   function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
 
+   function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
       use kdtree2Factory
       use m_samples
       use m_netw
@@ -3266,14 +3261,13 @@ contains
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
       use m_filez, only: oldfil, doclose, newfil
 
-      implicit none
-
-      logical :: success
+      ! Arguments
 
       integer, intent(in) :: nx
+
       real(kind=dp), intent(in) :: xu(nx)
       real(kind=dp), intent(in) :: yu(nx)
-      real(kind=dp), intent(out) :: zu(nx)
+      real(kind=dp), intent(inout) :: zu(nx)
 
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
@@ -3285,36 +3279,37 @@ contains
       ! 8 : smoothing
       ! 9 : internal diffusion
       integer, intent(in) :: operand
-      real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
-      integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
-      ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
-      integer, intent(in), optional :: kcc(nx)
+      real(kind=dp), dimension(:), intent(in) :: transformcoef !< Transformation coefficients
+      integer, intent(in) :: iprimpos !< only needed for averaging, position of primitive variables in network
+                                      !! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
+      integer, dimension(nx), intent(in), optional :: kcc
+      logical :: success
 
-      real(kind=dp), allocatable :: zh(:)
+      ! Local variables
       integer :: ierr
       integer :: minp0, inside, k, jdla, mout
-      real(kind=dp), allocatable :: xx(:, :), yy(:, :)
-      integer, allocatable :: nnn(:)
-
-      real(kind=dp), allocatable :: xxx(:), yyy(:)
-      integer, allocatable :: LnnL(:), Lorg(:)
-
-      real(kind=dp) :: zz
-
       integer :: n6, L, Lk, n, n1, n2, i
       integer :: ierror, jakc
-      integer :: jakdtree = 1
-
-      real(kind=dp) :: rcel_store, percentileminmax_store
       integer :: iav_store, nummin_store
-
+      integer :: jakdtree
+      integer :: local_method
+      integer, dimension(:), allocatable :: nnn
+      integer, dimension(:), allocatable :: LnnL, Lorg
+      real(kind=dp) :: zz
+      real(kind=dp) :: rcel_store
+      real(kind=dp) :: percentileminmax_store
+      real(kind=dp), dimension(:), allocatable :: zh
+      real(kind=dp), dimension(:), allocatable :: xxx, yyy
+      real(kind=dp), dimension(:, :), allocatable :: xx, yy
       character(len=5) :: sd
-
       type(TerrorInfo) :: errorInfo
 
       success = .false.
       minp0 = 0
       jakc = 0
+      jakdtree = 1
+      local_method = method
+
       if (present(kcc)) then
          jakc = 1
       end if
@@ -3338,7 +3333,28 @@ contains
       !   ! return?
       !end if
 
-      if (method == 4) then ! polyfil
+      if (filetype == arcinfo) then
+
+         ! Remap method triangulation to bilinear for ArcInfo files.
+         if (local_method == METHOD_TRIANGULATION) then
+            local_method = METHOD_BILINEAR
+            msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for filetype ArcInfo. &
+                     Method has been set to bilinear interpolation instead.'
+            call warn_flush()
+         end if
+
+      else if (local_method == METHOD_BILINEAR) then
+
+         ! If method is bilinear, but filetype is not ArcInfo, raise error.
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for filetype ArcInfo.'
+         call err_flush()
+         return
+
+      end if
+
+      select case (local_method)
+
+      case (METHOD_CONSTANT)
 
          call savepol()
          call reapol(minp0, 0)
@@ -3358,39 +3374,54 @@ contains
          end do
          call restorepol()
 
-      else if (method == 5 .or. method == 6) then ! triangulation & averaging
+      case (METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR)
 
-         if (filetype == ncflow) then
+         select case (filetype)
+         
+         case (NCFLOW)
+
             call read_flowsamples_from_netcdf(filename, qid, ierr)
-         elseif (filetype == ncgrid) then
+
+         case (NCGRID)
+
             ! TODO: support reading initial fields from NetCDF too
             msgbuf = 'timespace::timespaceinitialfield: Error while reading '''//trim(qid)// &
                      ''' from file '''//trim(filename)//'''. File type not supported for initial fields.'
             call warn_flush()
             return
-         else if (filetype == arcinfo) then
+
+         case (ARCINFO)
+
             call read_samples_from_arcinfo(filename, 0, 0)
-         else if (filetype == geotiff) then
+
+         case (GEOTIFF)
+
             success = read_samples_from_geotiff(filename)
             if (.not. success) then
                return
             end if
-         else
+
+         case default
+
             call reasam(minp0, 0)
-         end if
 
-         if (method == 5) then
-            if (filetype == arcinfo) then
-               call bilinarc(xu, yu, zh, nx)
-            else
-               jdla = 1
-               call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, &
-                               NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef, kcc)
-            end if
+         end select         
 
-         else if (method == 6) then ! and this only applies to flow-link data
+         select case (local_method)
 
-!         store settings
+         case (METHOD_TRIANGULATION)
+
+            jdla = 1
+            call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
+               ZPL, transformcoef, kcc)
+
+         case (METHOD_BILINEAR)
+
+            call bilinarc(xu, yu, zh, nx)
+
+         case (METHOD_AVERAGING)
+
+            ! store settings
             iav_store = iav
             rcel_store = rcel
             percentileminmax_store = percentileminmax
@@ -3399,19 +3430,22 @@ contains
             if (transformcoef(4) /= DMISS) then
                iav = int(transformcoef(4))
             end if
+
             if (transformcoef(5) /= DMISS) then
                rcel = transformcoef(5)
             end if
+
             if (transformcoef(7) /= DMISS) then
                percentileminmax = transformcoef(7)
             end if
+
             if (transformcoef(8) /= DMISS) then
                nummin = int(transformcoef(8))
             end if
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
-               allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+               allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
                do L = 1, lnx
                   xx(1, L) = xzw(ln(1, L))
                   yy(1, L) = yzw(ln(1, L))
@@ -3423,6 +3457,7 @@ contains
                   xx(4, L) = xk(kn(2, Lk))
                   yy(4, L) = yk(kn(2, Lk))
                end do
+
                nnn = 4 ! array nnn
             else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
                n6 = maxval(netcell%n)
@@ -3430,18 +3465,18 @@ contains
                   n6 = n6 + 2 ! safety at poles
                end if
 
-               allocate (xx(n6, nx), yy(n6, nx), nnn(nx))
-
-               allocate (LnnL(n6), Lorg(n6))
+               allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
+               allocate(LnnL(n6), Lorg(n6))
 
                do n = 1, nx
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
-               deallocate (LnnL, Lorg)
-            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
 
+               deallocate(LnnL, Lorg)
+            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+               allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+
                do k = 1, numk
                   if (jakc == 1) then
                      if (kcc(k) /= 1) then
@@ -3449,44 +3484,47 @@ contains
                      end if
                   end if
 
-!                 get the cell list
+                  ! get the cell list
                   call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
+
                   do i = 1, nnn(k)
                      xx(i, k) = xxx(i)
                      yy(i, k) = yyy(i)
                   end do
                end do
 
-               deallocate (xxx, yyy)
+               deallocate(xxx, yyy)
             end if
 
             if (jakdtree == 1) then
-!              initialize kdtree
+               ! initialize kdtree
                call build_kdtree(treeglob, Ns, xs, ys, ierror, jsferic, dmiss)
                if (ierror /= 0) then
-!                 disable kdtree
+                  ! disable kdtree
                   call delete_kdtree2(treeglob)
                   jakdtree = 0
                end if
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
+                              dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
             deallocate (xx, yy, nnn)
 
             if (errorInfo%cntNoSamples > 0) then
                write (msgbuf, '(5a,i0,a)') 'For quantity ', trim(qid), ' in file ', trim(filename), ' no values found for ', errorInfo%cntNoSamples, ' cells/links.'
                call warn_flush()
             end if
+
             if (allocated(errorInfo%message)) then
                msgbuf = errorInfo%message
                call warn_flush()
             end if
+
             if (.not. errorInfo%success) then
                return
             end if
 
-!         restore settings
+            ! restore settings
             iav = iav_store
             rcel = rcel_store
             percentileminmax = percentileminmax_store
@@ -3496,7 +3534,7 @@ contains
                call delete_kdtree2(treeglob)
             end if
 
-         end if
+         end select
 
          do k = 1, nx
             if (zh(k) /= dmiss_default) then
@@ -3505,15 +3543,18 @@ contains
             end if
          end do
 
-!     SPvdP: sample set can be large, delete it and do not make a copy
+         ! sample set can be large, delete it and do not make a copy
          call delsam(-1)
          if (allocated(d)) then
-            deallocate (d)
+
+            deallocate(d)
             mca = 0
             nca = 0
+
          end if
 
-      end if
+      end select
+
       success = .true.
       call doclose(minp0)
 
@@ -3667,6 +3708,9 @@ module m_meteo
    use m_flow
    use m_transportdata, only: numconst, const_names, ISALT
    use m_waves
+   use m_waveconst, only: WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                          WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                          WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
    use m_ship
    use fm_external_forcings_data
    use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
@@ -3732,9 +3776,11 @@ module m_meteo
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
    integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
    integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity   
    integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
+   integer, target :: item_general_structure_gateHeight !< Unique Item id of the structure file's 'general structure gateHeight' quantity
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
    integer, target :: item_general_structure_gateOpeningWidth !< Unique Item id of the structure file's 'general structure gateOpeningWidth' quantity
    integer, target :: item_longculvert_valve_relative_opening !< Unique Item id of the structure file's 'longculvert valveRelativeOpening' quantity
@@ -3816,7 +3862,7 @@ module m_meteo
    interface
       module logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                                       xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                                      dtnodal, quiet, varname, varname2, targetMaskSelect, &
+                                                      dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                       tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                                       multuni1, multuni2, multuni3, multuni4)
@@ -3842,6 +3888,7 @@ module m_meteo
          logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
          character(len=*), optional, intent(in) :: varname !< variable name within filename
          character(len=*), optional, intent(in) :: varname2 !< variable name within filename
+         real(hp), optional, intent(in) :: data_value !< Data value used for multiplying quantities with a constant factor.
          character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
          real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
          real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -3911,9 +3958,11 @@ contains
       item_orifice_gateLowerEdgeLevel = ec_undef_int
       item_gate_crestLevel = ec_undef_int
       item_gate_gateLowerEdgeLevel = ec_undef_int
+      item_gate_gateHeight = ec_undef_int
       item_gate_gateOpeningWidth = ec_undef_int
       item_general_structure_crestLevel = ec_undef_int
       item_general_structure_gateLowerEdgeLevel = ec_undef_int
+      item_general_structure_gateHeight = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
       item_general_structure_gateOpeningWidth = ec_undef_int
       item_longculvert_valve_relative_opening = ec_undef_int
@@ -4036,6 +4085,8 @@ contains
          ec_filetype = provFile_bc
       case (NODE_ID) ! 20
          ec_filetype = provFile_bc
+      case (DATAVALUE) ! 21
+         ec_filetype = provFile_datavalue
       case (FOURIER) ! 101
          ec_filetype = provFile_fourier
       case default
@@ -4337,6 +4388,9 @@ contains
       case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateheight') ! flow1d gate
+         itemPtr1 => item_gate_gateHeight
+         !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
@@ -4345,6 +4399,9 @@ contains
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('general_structure_gateheight') ! flow1d general structure
+         itemPtr1 => item_general_structure_gateHeight
          !dataPtr1  => null() ! flow1d structure has its own data structure
       case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
@@ -4459,23 +4516,28 @@ contains
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
          map_write_settings%wav_hwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_SIGNIFICANT_HEIGHT)
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
          map_write_settings%wav_twav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_PERIOD)
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
          map_write_settings%wav_phiwav = 1
+         call register_offline_wave_input_provider(WAVE_INPUT_DIRECTION)
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
          dataPtr1 => sxwav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_X)
       case ('fy', 'ywaveforce')
          itemPtr1 => item_fy
          dataPtr1 => sywav
+         call register_offline_wave_input_provider(WAVE_INPUT_FORCE_Y)
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
@@ -4491,12 +4553,15 @@ contains
       case ('dissurf', 'wavebreakerdissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_SURFACE)
       case ('diswcap', 'whitecappingdissipation')
          itemPtr1 => item_diswcap
          dataPtr1 => dwcap
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
       case ('totalwaveenergydissipation')
          itemPtr1 => item_distot
          dataPtr1 => distot
+         call register_offline_wave_input_provider(WAVE_INPUT_DISSIPATION_TOTAL)
       case ('ubot')
          itemPtr1 => item_ubot
          dataPtr1 => uorbwav

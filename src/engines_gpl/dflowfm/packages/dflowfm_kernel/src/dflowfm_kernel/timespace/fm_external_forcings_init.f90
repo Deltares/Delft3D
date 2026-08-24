@@ -29,64 +29,256 @@
 !
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
-   use m_missing, only: dmiss => dmiss_neg
+   use m_missing, only: dmiss, imiss
 
    implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
+   real(dp), dimension(1), save, target :: GLOBAL_DUMMY_TARGET = [1.0_dp] !> dummy coordinate necessary for unc_loc_global to point to as a valid target.
 
 contains
 
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_new(external_force_file_name, iresult)
-      use properties, only: get_version_number, prop_file
-      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+   module subroutine init_new(iresult)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use fm_deprecated_keywords, only: deprecated_ext_keywords
+      use fm_external_forcings_data, only: set_lateral_count
+      use m_alloc, only: realloc
+      use m_ec_parameters, only: provFile_uniform
+      use m_deprecation, only: check_file_tree_for_deprecated_keywords
+      use m_flow, only: kmx
+      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
+      use m_meteo, only: item_waqfun, item_waqsfun
+      use m_ec_parameters, only: ec_undef_int
+      use m_source_sink, only: source_sinks
+      use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, set_lateral_count_in_external_forcings_file
-      use m_flowgeom, only: ba
-      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
+      use processes_input, only: num_time_functions, num_spatial_time_fuctions, nosfunext
+      use properties, only: MAX_PROP_LENGTH, prop_get
       use string_module, only: str_tolower
       use system_utils, only: split_filename
-      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
-      use m_ec_parameters, only: provFile_uniform
-      use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
-      use m_flow, only: kmx
-      use m_deprecation, only: check_file_tree_for_deprecated_keywords
-      use fm_deprecated_keywords, only: deprecated_ext_keywords
-      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
-      use m_alloc, only: realloc
+      use tree_data_types, only: tree_data_ptr
+      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use unstruc_inifields, only: register_waq_target
       use unstruc_messages, only: threshold_abort
-      use m_source_sink, only: source_sinks
 
-      character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
+      ! Arguments
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
 
+      ! Local variables
       integer :: initial_threshold_abort
       logical :: res
-      logical :: is_successful
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data_ptr), dimension(:), allocatable :: bnd_ptrs !< array of pointers to extForceBnd-file's [boundary] blocks, one tree for each *.ext file.
       type(tree_data), pointer :: block_ptr
       integer :: istat
       character(len=:), allocatable :: group_name
       integer :: i
+      integer :: i_ext !< Index of the external forcing file in the list of external forcing files
+      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file.
       integer :: num_items_in_file
-      character(len=INI_VALUE_LEN) :: fnam, base_dir
-      integer :: k, n, k1
-      integer :: ib, ibqh, ibt
-      integer :: maxlatsg, max_num_src
-      integer :: major, minor
-      character(len=:), allocatable :: file_name
-      integer, allocatable :: itpenzr(:), itpenur(:)
+      character(len=INI_VALUE_LEN) :: fnam
+      integer :: ib, ibqh
+      integer, dimension(:), allocatable :: itpenzr !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for z. {size=num_items_in_file}
+      integer, dimension(:), allocatable :: itpenur !< Reverse lookup table that maps boundary block number in external forcings file to boundary condition number in openbndsect for u. {size=num_items_in_file}
 
+      integer :: num_laterals !< Total number of laterals in all external forcing files
+      integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
+      integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
+      logical :: is_read
+      character(len=INI_VALUE_LEN) :: quantity
+
+      character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: file_names !< List of file names
+      character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: base_dirs !< List of base directories
+      integer, dimension(:), allocatable :: major !< Major version numbers of the external forcing files
+
+      ! Initialization
       iresult = DFM_NOERR
-      file_name = trim(external_force_file_name)
-      if (len_trim(file_name) <= 0) then
-         ! empty line in MDU is allowed: exit without error
-         return
+      num_laterals = 0
+      num_source_sinks = 0
+
+      allocate (bnd_ptrs(size(extfile_new_list)))
+      allocate (major(size(extfile_new_list)))
+      allocate (file_names(size(extfile_new_list)))
+      allocate (base_dirs(size(extfile_new_list)))
+
+      call init_registered_items()
+
+      ! First loop, validate all external forcing files and add their contents to the bnd_ptrs list.
+      do i_ext = 1, size(extfile_new_list)
+
+         call check_version_number_and_open_external_forcing_file(trim(extfile_new_list(i_ext)), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
+
+         ! Abort initialization if an external forcing file could not be validated or opened.
+         if (iresult /= DFM_NOERR) then
+
+            ! Cleanup tree structure before returning, to avoid memory leaks.
+            do i = 1, i_ext
+               call tree_destroy(bnd_ptrs(i)%node_ptr)
+            end do
+
+            return
+         end if
+
+         file_names(i_ext) = trim(extfile_new_list(i_ext))
+         call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
+
+      end do
+
+      ! Register all global WAQ functions before creating any EC target fields.
+      ! Growing funinp after a field points into it would invalidate that pointer.
+      do i_ext = 1, size(extfile_new_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+         num_items_in_file = tree_num_nodes(bnd_ptr)
+         do i = 1, num_items_in_file
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(block_ptr))
+            select case (str_tolower(group_name))
+            case ('spatial', 'parameter', 'initial')
+               quantity = ''
+               call prop_get(block_ptr, '', 'quantity', quantity, is_read)
+               if (is_read) then
+                  call register_waq_target(quantity)
+               end if
+            end select
+         end do
+      end do
+      call realloc(item_waqfun, num_time_functions, keepExisting=.false., fill=ec_undef_int)
+      nosfunext = num_spatial_time_fuctions
+      call realloc(item_waqsfun, nosfunext, keepExisting=.false., fill=ec_undef_int)
+
+      ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
+      i_bubblescreen = 0
+      do i_ext = 1, size(extfile_new_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+
+         num_laterals = num_laterals + tree_count_nodes_byname(bnd_ptr, 'lateral')
+         num_source_sinks = num_source_sinks + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+
+         call initialize_bubblescreens_in_extfile(bnd_ptr, base_dirs(i_ext), file_names(i_ext), i_bubblescreen, bubblescreen_source_sinks)
+         num_source_sinks = num_source_sinks + bubblescreen_source_sinks
+      end do
+
+      ! Allocate lateral arrays now. Reallocating in the loop would destroy target arrays in ecInstance.
+      if (num_laterals > 0) then
+         call realloc(balat, num_laterals, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, [max(1, kmx), num_laterals], keepExisting=.false., fill=0.0_dp)
+         call realloc(lat_ids, num_laterals, keepExisting=.false.)
+         call realloc(n1latsg, num_laterals, keepExisting=.false., fill=0)
+         call realloc(n2latsg, num_laterals, keepExisting=.false., fill=0)
+      end if
+
+      ! Allocate source-sink arrays now. Reallocating in the loop would destroy target arrays in ecInstance.
+      if (num_source_sinks > 0) then
+         call source_sinks%initialize(num_source_sinks)
       end if
 
       res = .true.
 
+      res = res .and. add_bubblescreen_source_sinks()
+
+      call build_itpenzr_and_itpenur(itpenzr, itpenur)
+      ib = 0
+
+      ! Third loop, read all external forcing files and initialize the boundary, lateral, spatial, and source-sink forcings.
+      do i_ext = 1, size(extfile_new_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+
+         num_items_in_file = tree_num_nodes(bnd_ptr)
+
+         ibqh = 0
+         initial_threshold_abort = threshold_abort
+         threshold_abort = LEVEL_FATAL
+         do i = 1, num_items_in_file
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(block_ptr))
+
+            select case (str_tolower(group_name))
+            case ('general')
+               ! General block, was already read.
+
+            case ('boundary')
+               res = res .and. init_boundary_forcings(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name, itpenzr, itpenur, ib, ibqh)
+
+            case ('lateral')
+               res = res .and. init_lateral_forcings(block_ptr, base_dirs(i_ext), i, major(i_ext))
+
+            case ('spatial', 'meteo', 'parameter', 'initial')
+               res = res .and. init_spatial_fields(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name)
+
+            case ('sourcesink')
+               res = res .and. init_sourcesink_forcings(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name)
+
+            case ('bubblescreen')
+               ! Empty, since bubblescreens are already initialized.
+
+            case default ! Unrecognized item in an ext block
+               ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(file_names(i_ext)), ''': [', trim(group_name), ']. Ignoring this block.'
+               call warn_flush()
+            end select
+         end do
+
+         threshold_abort = initial_threshold_abort
+
+         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''')
+
+         if (allocated(itpenzr)) then
+            deallocate (itpenzr)
+         end if
+
+         if (allocated(itpenur)) then
+            deallocate (itpenur)
+         end if
+
+      end do ! i_ext
+
+      call compute_lateral_bed_areas()
+
+      call set_lateral_count(numlatsg) ! Save number of laterals to module variable
+
+      ! Fourth loop, destroy all trees of boundary blocks to free memory.
+      do i_ext = 1, size(extfile_new_list)
+         call tree_destroy(bnd_ptrs(i_ext)%node_ptr)
+      end do
+
+      if (res) then
+         iresult = DFM_NOERR
+      else
+         iresult = DFM_WRONGINPUT
+      end if
+
+   end subroutine init_new
+
+   !> Checks the version number of the external forcing file and opens it, returning a pointer to the tree of external forcings file boundary blocks.
+   subroutine check_version_number_and_open_external_forcing_file(external_force_file_name, bnd_ptr, major, iresult)
+      use properties, only: get_version_number, prop_file
+      use tree_structures, only: tree_data, tree_create
+      use messageHandling, only: warn_flush, err_flush, msgbuf
+      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
+      use dfm_error, only: DFM_WRONGINPUT
+
+      ! Arguments
+      character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
+      type(tree_data), pointer, intent(out) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      integer, intent(out) :: major !< Major version number of ext-file
+      integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
+
+      ! Local variables
+      character(len=:), allocatable :: file_name !< Trimmed file name
+      integer :: minor !< Version numbers of the external forcing file
+      integer :: istat !< Status code for file reading
+      logical :: is_successful !< Flag indicating if the version number was successfully retrieved
+
+      ! Check if the external forcing file name is empty, if so, exit without error.
+      file_name = trim(external_force_file_name)
+      if (len_trim(file_name) <= 0) then
+         ! empty line in MDU is allowed: exit without error
+         bnd_ptr => null()
+         return
+      end if
+
+      ! Check if the external forcing file can be read.
       call tree_create(file_name, bnd_ptr)
       call prop_file('ini', file_name, bnd_ptr, istat)
       if (istat /= 0) then
@@ -96,106 +288,76 @@ contains
          return
       end if
 
-      ! check FileVersion
+      ! Check the version number of the external forcing file.
       major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
+
       if (.not. is_successful) then
+
          write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
          call warn_flush()
+
       else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
+
          call err_flush()
+
          iresult = DFM_WRONGINPUT
          return
+
       end if
 
-      call init_registered_items()
+   end subroutine check_version_number_and_open_external_forcing_file
 
-      call split_filename(file_name, base_dir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
+   !> Builds temporary reverse lookup tables that map boundary block number in external forcings file to boundary condition number in openbndsect (separate for u and z).
+   subroutine build_itpenzr_and_itpenur(itpenzr, itpenur)
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, nopenbndsect
 
-      num_items_in_file = tree_num_nodes(bnd_ptr)
+      ! Arguments
+      integer, dimension(:), allocatable, intent(out) :: itpenzr !< Reverse lookup table that maps global boundary block number in external forcings file to an open z-boundary link index {size=nbndz}.
+      integer, dimension(:), allocatable, intent(out) :: itpenur !< Reverse lookup table that maps global boundary block number in external forcings file to an open u-boundary link index {size=nbndu}.
 
-      ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
-      allocate (itpenzr(num_items_in_file))
-      allocate (itpenur(num_items_in_file))
+      ! Local variables
+      integer :: ibt
+      integer :: ib
+
+      allocate (itpenzr(nopenbndsect))
+      allocate (itpenur(nopenbndsect))
       itpenzr(:) = 0
       itpenur(:) = 0
+
       do ibt = 1, nbndz
          ib = itpenz(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
+         if (ib > 0 .and. ib <= nopenbndsect) then
             itpenzr(ib) = ibt
          end if
       end do
+
       do ibt = 1, nbndu
          ib = itpenu(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
+         if (ib > 0 .and. ib <= nopenbndsect) then
             itpenur(ib) = ibt
          end if
       end do
 
-      ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
-      if (maxlatsg > 0) then
-         call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
-         call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
-         call realloc(lat_ids, maxlatsg, keepExisting=.false.)
-         call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
-         call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
-      end if
+   end subroutine build_itpenzr_and_itpenur
 
-      ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
+   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array.
+   !! The lateral bed area is computed as the sum of the bed areas of all nodes that belong to the lateral, excluding ghost nodes.
+   subroutine compute_lateral_bed_areas()
+      use m_flowgeom, only: ba
+      use m_laterals, only: balat, n1latsg, n2latsg, kclat, numlatsg, nnlat
+      use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
 
-      max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      ! Local variables
+      integer :: n !< Lateral index
+      integer :: k1 !< Node index in lateral
+      integer :: k !< Node index in flow geometry
 
-      if (max_num_src > 0) then
-         call source_sinks%initialize(max_num_src)
-      end if
-
-      res = res .and. add_bubblescreen_source_sinks()
-
-      ib = 0
-      ibqh = 0
-      initial_threshold_abort = threshold_abort
-      threshold_abort = LEVEL_FATAL
-      do i = 1, num_items_in_file
-         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
-         group_name = trim(tree_get_name(block_ptr))
-
-         select case (str_tolower(group_name))
-         case ('general')
-            ! General block, was already read.
-
-         case ('boundary')
-            res = res .and. init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
-
-         case ('lateral')
-            res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
-
-         case ('spatial', 'meteo', 'parameter', 'initial')
-            res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
-
-         case ('sourcesink')
-            res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
-
-         case default ! Unrecognized item in an ext block
-            ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-            write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
-            call warn_flush()
-         end select
-      end do
-
-      threshold_abort = initial_threshold_abort
-
-      if (allocated(itpenzr)) then
-         deallocate (itpenzr)
-      end if
-      if (allocated(itpenur)) then
-         deallocate (itpenur)
-      end if
       if (numlatsg > 0) then
          do n = 1, numlatsg
             balat(n) = 0.0_dp
@@ -208,26 +370,18 @@ contains
                end if
             end do
          end do
+
          if (jampi > 0) then
             call reduce_sum(numlatsg, balat)
          end if
+
          if (allocated(kclat)) then
             deallocate (kclat)
          end if
+
       end if
 
-      call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
-
-      call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
-
-      call tree_destroy(bnd_ptr)
-
-      if (res) then
-         iresult = DFM_NOERR
-      else
-         iresult = DFM_WRONGINPUT
-      end if
-   end subroutine init_new
+   end subroutine compute_lateral_bed_areas
 
    !> reads boundary blocks from new external forcings file and makes required initialisations
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
@@ -264,7 +418,7 @@ contains
       ! First check for required input:
       call prop_get(block_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
@@ -283,7 +437,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -292,7 +446,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -303,16 +457,16 @@ contains
          operand = convert_operand_string_to_integer(property_value)
 
          if (len_trim(property_value) == 1) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': operand value '''//trim(property_value)//''' is deprecated. ' &
                //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
 
          if (operand == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
-         end if 
+         end if
       end if
 
       num_items_in_block = 0
@@ -400,7 +554,6 @@ contains
    subroutine read_lateral_discharge_definition(block_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
       use messageHandling, only: mess, err, LEVEL_ERROR
       use precision, only: dp
-      use m_missing, only: imiss, dmiss
       use properties, only: has_key, prop_get
       use tree_data_types, only: tree_data
       use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE
@@ -523,6 +676,7 @@ contains
       use tree_data_types, only: tree_data
       use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat, nlatnd, apply_transport
       use m_flowgeom, only: ndxi, xz, yz
+      use m_flow, only: kmx
       use m_alloc, only: realloc, reserve_sufficient_space
       use fm_external_forcings_data, only: kx, qid
       use fm_location_types, only: parse_spatial_location_type, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
@@ -614,7 +768,7 @@ contains
 
       qid = 'lateral_discharge' ! New quantity name in .bc files
       is_read = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
-                                               kx, qplat(1, :))
+                                               kx, qplat(max(1, kmx), :))
       if (is_read) then
          jaqin = 1
          lat_ids(numlatsg) = loc_id
@@ -680,12 +834,12 @@ contains
          jaspacevarcharn = merge(1, 0, str_tolower(quantity) == 'airpressure_windx_windy_charnock')
          if (jaspacevarcharn == 1) then
             call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
-            call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+            call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
          end if
 
       case ('charnock')
          call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
-         call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+         call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
 
       case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
          target_location_type = UNC_LOC_U
@@ -714,7 +868,6 @@ contains
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_alloc, only: reallocP
-      use m_missing, only: dmiss
 
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
       real(dp), intent(in) :: target_x(:), target_y(:)
@@ -803,7 +956,7 @@ contains
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower, strcmpi
+      use string_module, only: str_tolower
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
@@ -814,8 +967,9 @@ contains
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
-                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
+                                   initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -824,6 +978,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
+      use precision_basics, only: comparereal
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -841,12 +996,15 @@ contains
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
+      character(len=256) :: target_layer
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
       integer :: oper_backup
+
+      target_layer = ''
 
       res = .false.
       ec_item = ec_undef_int
@@ -856,7 +1014,9 @@ contains
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-      if (.not. res) return
+      if (.not. res) then
+         return
+      end if
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -905,7 +1065,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
             call err_flush()
             return
          end if
@@ -929,6 +1089,7 @@ contains
                   call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
+                  call prop_get(block_ptr, '', 'targetLayer', target_layer)
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
@@ -947,10 +1108,14 @@ contains
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      oper = oper_backup
-                     call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
+                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
+                        res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
+                     else
+                        call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                     end if
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
-                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
-                        painp(first_index, 1:target_num_points) = target_data(1:target_num_points)
+                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:16)) == 'waqsegmentnumber') then
+                        painp(first_index, :) = target_array_3d(first_index, :)
                         deallocate (target_array_3D)
                      end if
                      deallocate (target_data)
@@ -970,7 +1135,7 @@ contains
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if
@@ -988,20 +1153,39 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) then ! Friction coefficient is a special case, requires additional reading
-               if (strcmpi(quantity, 'frictioncoefficient')) then
-                  res = set_friction_type_values_explicit(block_ptr, input%oper)
-               end if
-            end if
-            res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
+            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper)
+            res = .true. ! Successful loading is sufficient; not every quantity requires an enablement action.
          else
-            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
-               ''': ['//group_name//']. Check previous log lines for details.'
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
+               ''': ['//trim(group_name)//']. Check previous log lines for details.'
             call err_flush()
          end if
       end associate
 
    end function init_spatial_fields
+
+   !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
+   function enable_special_quantity(quantity, block_ptr, operand) result(success)
+      use fm_external_forcings_utils, only: split_qid
+      use tree_data_types, only: tree_data
+      use unstruc_inifields, only: set_friction_type_values_explicit
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
+      type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
+      integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
+      logical :: success
+
+      character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
+
+      call split_qid(quantity, quantity_base, quantity_specific)
+      select case (str_tolower(quantity_base))
+      case ('frictioncoefficient')
+         success = set_friction_type_values_explicit(block_ptr, operand)
+      case default
+         success = .false.
+      end select
+   end function enable_special_quantity
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
    !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
@@ -1014,7 +1198,6 @@ contains
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
-      use m_missing, only: dmiss
       use m_alloc, only: realloc
       use messageHandling
 
@@ -1193,7 +1376,6 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_missing, only: dmiss
       use m_polygon, only: dzL, npl
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
@@ -1279,7 +1461,6 @@ contains
       use unstruc_files, only: resolvePath
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
-      use m_missing, only: dmiss
       use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
@@ -1341,7 +1522,7 @@ contains
       ! Create the actual source/sink based on the parsed data
       call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
@@ -1411,7 +1592,7 @@ contains
    end function init_sourcesink_forcings
 
    !> Read bubblescreen blocs from the extfile, read its polyline (file or inline coordinates), find flowcells crossed by the polyline and calculate the resulting bubblescreen area.
-   subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
+   subroutine initialize_bubblescreens_in_extfile(bnd_ptr, base_dir, file_name, i_bubblescreen, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
       use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1431,24 +1612,24 @@ contains
       use m_flowgeom, only: ndx
       use m_read_location_info, only: read_polyline_coordinates
 
-      ! Parameters
+      ! Arguments
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens
       integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
       logical :: is_successful
       integer :: i !< Loop index
-      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
-      integer :: num_bubblescreens
       integer :: num_items_in_file
       integer :: num_columns
+      integer :: num_bubblescreens_in_file !< Number of bubblescreen blocks in the external forcings file
+      integer :: total_num_bubblescreens !< Total number of bubblescreen blocks in the external forcings file and already existing in the model
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
-      character(len=:), allocatable :: id !< Bubblescreen id
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
@@ -1457,25 +1638,32 @@ contains
       integer, dimension(:), allocatable :: bubblescreen_cells
 
       ! Initialization
-      i_bubblescreen = 0
+      num_bubblescreens_in_file = 0
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
-
-      if (allocated(bubblescreens)) then
-         deallocate (bubblescreens)
-      end if
-      if (allocated(bubblescreen_air_discharge)) then
-         deallocate (bubblescreen_air_discharge)
-      end if
-      ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
-      num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
-      allocate (bubblescreens(num_bubblescreens))
-      allocate (bubblescreen_air_discharge(num_bubblescreens))
 
       ! Initialize cache
       call init_cell_geom_as_polylines()
 
-      ! Cycle through all [blocks] in the .ext file tree and find the [bubblescreen] blocks
+      ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
+      do i = 1, num_items_in_file
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         group_name = trim(tree_get_name(block_ptr))
+
+         if (str_tolower(group_name) == 'bubblescreen') then
+            num_bubblescreens_in_file = num_bubblescreens_in_file + 1
+         end if
+      end do
+
+      ! Reallocate the bubblescreens array to hold all bubblescreen blocks found in the external forcings file
+      if (allocated(bubblescreens)) then
+         total_num_bubblescreens = num_bubblescreens_in_file + size(bubblescreens)
+      else
+         total_num_bubblescreens = num_bubblescreens_in_file
+      end if
+      call reallocate_bubblescreens_array(total_num_bubblescreens)
+
+      ! Loop over all [blocks] in the external forcings file tree and initialize the [bubblescreen] blocks
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(block_ptr))
@@ -1487,7 +1675,7 @@ contains
             if (is_successful) then
                if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
                   if (any(polygon_z_coordinates /= dmiss)) then
-                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(bubblescreen%id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
                         'use zLevel to specify Bubblescreen location.'
                      call warn_flush()
                   end if
@@ -1519,7 +1707,35 @@ contains
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
       nNodesBubbleScreen = 0
 
-   end subroutine initialize_bubblescreens
+   end subroutine initialize_bubblescreens_in_extfile
+
+   !> Reallocates the bubblescreens and bubblescreen_air_discharge arrays to a new size, preserving existing data.
+   !! This routine cannot be called add_bubblescreen_sourcesinks(), since reallocating the bubblescreen arrays would break the EC connection.
+   subroutine reallocate_bubblescreens_array(new_size)
+      use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge, t_Bubblescreen
+
+      ! Arguments
+      integer, intent(in) :: new_size !< New size for the bubblescreens and bubblescreen_air_discharge arrays
+
+      ! Local variables
+      type(t_Bubblescreen), dimension(:), allocatable :: temp_bubblescreens
+      real(kind=dp), allocatable :: temp_air_discharge(:)
+      integer :: old_size
+
+      if (.not. allocated(bubblescreens)) then
+         allocate (bubblescreens(new_size))
+         allocate (bubblescreen_air_discharge(new_size))
+      else
+         old_size = size(bubblescreens)
+         allocate (temp_bubblescreens(new_size))
+         allocate (temp_air_discharge(new_size))
+         temp_bubblescreens(1:min(old_size, new_size)) = bubblescreens(1:min(old_size, new_size))
+         temp_air_discharge(1:min(old_size, new_size)) = bubblescreen_air_discharge(1:min(old_size, new_size))
+         call move_alloc(temp_bubblescreens, bubblescreens)
+         call move_alloc(temp_air_discharge, bubblescreen_air_discharge)
+      end if
+
+   end subroutine reallocate_bubblescreens_array
 
    !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.
@@ -1535,7 +1751,6 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
-      use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
@@ -1668,9 +1883,9 @@ contains
          target_x => xk(1:target_num_points)
          target_y => yk(1:target_num_points)
       case (UNC_LOC_GLOBAL)
-         target_num_points = 0
-         target_x => null()
-         target_y => null()
+         target_num_points = 1
+         target_x => GLOBAL_DUMMY_TARGET
+         target_y => GLOBAL_DUMMY_TARGET
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select

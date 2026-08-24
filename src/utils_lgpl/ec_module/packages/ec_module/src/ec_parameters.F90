@@ -97,6 +97,7 @@ module m_ec_parameters
    integer, parameter :: provFile_t3D = 16  !< temporary type for 3D salinity boundaries
    integer, parameter :: provFile_bc = 17  !< BC-format
    integer, parameter :: provFile_fourier_cor = 18  !< period(hrs), ampl(m), phas(deg) correction
+   integer, parameter :: provFile_datavalue = 19 !< provFile datavalue, not a file, but it gets a file provider
 
    ! enumeration for access types
    integer, parameter :: accessType_undefined = 0
@@ -167,6 +168,7 @@ module m_ec_parameters
    integer, parameter :: convType_qhtable = 15
    integer, parameter :: convType_sigma = 16
    integer, parameter :: convType_samples = 17
+   integer, parameter :: convType_datavalue = 18
 
    ! Error states, in addition to success=.true./.false. returns.
    integer, parameter :: EC_UNKNOWN_ERROR = -1 !< Unknown error.

@@ -52,6 +52,7 @@ module timespace_parameters
    integer, parameter :: FIELD1D = 18 ! Scalar quantity on a 1D network, used for initial/parameter fields.
    integer, parameter :: GEOTIFF = 19 ! GeoTIFF, used for initial/parameter fields.
    integer, parameter :: NODE_ID = 20 ! for a reference to a node ID
+   integer, parameter :: DATAVALUE = 21 !< Time and space independent value specified directly in ext file.
    integer, parameter :: MAX_FILE_TYPES = 103 !  max nr of supported types for end user in ext file.
    ! Enumeration for file types of sub-providers (not directly in ext file)
    integer, parameter :: FOURIER = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
@@ -89,6 +90,7 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: METHOD_BILINEAR = 7
    integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
@@ -207,6 +209,8 @@ contains
          method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
+      case ('bilinear')
+         method = METHOD_BILINEAR
       case default
          method = METHOD_UNKNOWN
       end select
@@ -226,11 +230,15 @@ contains
          method = WEIGHTFACTORS
       case ('sample')
          method = METHOD_TRIANGULATION
+      case ('arcinfo')
+         method = METHOD_BILINEAR
       case ('uniform')
          method = SPACEANDTIME
       case ('polygon')
-         method = INSIDE_POLYGON
+         method = METHOD_CONSTANT
       case ('1dfield')
+         method = JUSTUPDATE
+      case ('datavalue')
          method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
