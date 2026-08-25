@@ -4,6 +4,15 @@
 
 <!-- ONLINE AGGREGATION, ONE DOMAIN -->
 
+<!-- Since there are a number of complicated issues with the online aggregation options (see JIRA issue DELWAQ-1264)
+     and the related keywords have never been documented we think there is nobody who actually uses this.
+     Therefore they have been taken out of the code. The corresponding test cases are now obsolete.
+
+     AM: On the off chance that the issues get repaired, I am merely commenting the test cases, so that they
+     are not run.
+-->
+
+<!--
 <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">
   <path version="2026-07-09T09:08:54.002000">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
   <programs>
@@ -41,9 +50,11 @@
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
     <file name="DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum_map.nc" type="netCDF">
+-->
       <!-- Since the numbers are single-precision and in the order of 3.0e6, a sensible
            tolerance is in the order 1.0 (= epsilon * 3.0 * volume)
       -->
+<!--
       <parameters>
         <parameter name="mesh2d_agg_V-error-Ave-m3" toleranceAbsolute="1.0e0"/>
         <parameter name="mesh2d_agg_V-error-Max-m3" toleranceAbsolute="1.0e0"/>
@@ -75,7 +86,9 @@
     </file>
   </checks>
 </testCase>
+-->
 
+<!--
 <testCase name="e02_f029_c202_hyd_file_westerschelde_3d_s_vag" ref="dflowfm_platform_specific_refs">
   <path version="2026-07-09T09:08:59.359000">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
   <programs>
@@ -144,7 +157,9 @@
     </file>
   </checks>
 </testCase>
+-->
 
+<!--
 <testCase name="e02_f029_c203_hyd_file_westerschelde_3d_s_hvag" ref="dflowfm_platform_specific_refs">
   <path version="2026-07-09T09:09:04.208000">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
   <programs>
@@ -213,7 +228,9 @@
     </file>
   </checks>
 </testCase>
+-->
 
+<!--
 <testCase name="e02_f029_c204_hyd_file_westerschelde_2d_hag" ref="dflowfm_default">
   <path version="2026-07-09T09:09:09.111000">e02_dflowfm/f029_hyd_file/c204_westerschelde_2d_hag</path>
   <programs>
@@ -282,7 +299,9 @@
     </file>
   </checks>
 </testCase>
+-->
 
+<!--
 <testCase name="e02_f029_c205_hyd_file_westerschelde_3d_z_hag" ref="dflowfm_default">
   <path version="2026-07-08T12:02:55.075000">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
   <programs>
@@ -351,7 +370,9 @@
     </file>
   </checks>
 </testCase>
+-->
 
+<!--
 <testCase name="e02_f029_c206_hyd_file_westerschelde_3d_z_vag" ref="dflowfm_default">
   <path version="2026-07-08T12:02:59.500000">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
   <programs>
@@ -420,7 +441,9 @@
     </file>
   </checks>
 </testCase>
+-->
 
+<!--
 <testCase name="e02_f029_c207_hyd_file_westerschelde_3d_z_hvag" ref="dflowfm_default">
   <path version="2026-07-08T12:03:05.105000">e02_dflowfm/f029_hyd_file/c207_westerschelde_3d_z_hvag</path>
   <programs>
@@ -489,6 +512,7 @@
     </file>
   </checks>
 </testCase>
+-->
 
 <!-- OFFLINE AGGREGATION VIA AGRHYD -->
 
