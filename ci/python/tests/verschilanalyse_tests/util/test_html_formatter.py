@@ -80,8 +80,12 @@ def test_make_summary_page__find_all_sections_and_check_tags() -> None:
         "prefix-list": "ul",
         "his-water-level-tolerance-list": "ul",
         "his-flow-velocity-tolerance-list": "ul",
+        "his-salinity-tolerance-list": "ul",
+        "his-temperature-tolerance-list": "ul",
         "map-water-level-tolerance-list": "ul",
         "map-flow-velocity-tolerance-list": "ul",
+        "map-salinity-tolerance-list": "ul",
+        "map-temperature-tolerance-list": "ul",
         "links": "ul",
     }
 

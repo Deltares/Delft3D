@@ -97,7 +97,7 @@ def test_from_report_directories__verschillentool_output(
 ) -> None:
     # Arrange
     verschillen_dir = Path("verschillen")
-    for model_name in ("foo", "bar", "baz"):
+    for model_name in ("foo2d", "bar2d", "baz2d"):
         fs.create_file(
             verschillen_dir / f"verschil_{model_name}/{output_type.value}_output.xlsx",
             contents="",
@@ -119,7 +119,7 @@ def test_from_report_directories__verschillentool_output(
     assert load_workbook_mock.call_count == 3
     if output_type == OutputType.HIS:
         assert not verschilanalyse.map_outputs
-        assert sorted(verschilanalyse.his_outputs.keys()) == ["bar", "baz", "foo"]
+        assert sorted(verschilanalyse.his_outputs.keys()) == ["bar2d", "baz2d", "foo2d"]
     else:
-        assert sorted(verschilanalyse.map_outputs.keys()) == ["bar", "baz", "foo"]
+        assert sorted(verschilanalyse.map_outputs.keys()) == ["bar2d", "baz2d", "foo2d"]
         assert not verschilanalyse.his_outputs
