@@ -480,8 +480,8 @@ contains
       !                         javakeps,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
       !                         Tsigma, jarhoxu,                                                      &
-      !                         stretch_type, STRETCH_UNDEFINED, STRETCH_UNIFORM, STRETCH_USER, &
-      !                         STRETCH_EXPONENT, STRETCH_UNI_OVER_EXP, laycof
+      !                         stretch_type, STRETCH_UNIFORM, STRETCH_USER, STRETCH_EXPONENT, &
+      !                         STRETCH_UNI_OVER_EXP, laycof
 
       use m_globalparameters, only: sl
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
@@ -772,17 +772,20 @@ contains
       call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
       call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
-      call prop_get(md_ptr, 'geometry', 'StretchType', stretch_type)
+      call prop_get(md_ptr, 'geometry', 'stretchType', stretch_type, success)
       
       if (layertype == LAYTP_Z) then
-         if (stretch_type == STRETCH_UNDEFINED) then
+         if (.not. success) then
             stretch_type = STRETCH_UNI_OVER_EXP
          elseif (dztop > 0.0_dp .and. stretch_type /= STRETCH_UNI_OVER_EXP) then
-            call mess(LEVEL_WARN, 'The stretchType is reset to -1 because a strictly positive dzTop is specified.')
+            write (msgbuf, '(a,a,i0,a)'), &
+                'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
+                'Input stretchType = ', stretch_type,' is ignored.'
+            call warn_flush()
             stretch_type = STRETCH_UNI_OVER_EXP
          end if
       else
-         if (stretch_type == STRETCH_UNDEFINED .or. stretch_type == STRETCH_UNI_OVER_EXP) then
+         if (.not. success .or. stretch_type == STRETCH_UNI_OVER_EXP) then
             stretch_type = STRETCH_UNIFORM
          end if
       end if
