@@ -87,6 +87,7 @@ dependencies:
   - thread
   log_setup:
   - log
+  - serialization
   math: []
   math_c99:
   - math

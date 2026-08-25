@@ -318,6 +318,10 @@ class BoostDependencyBuilder(object):
         if "mpi_python" in deptree and "python" not in deptree["mpi_python"]:
             deptree["mpi_python"].append("python")
 
+        # libboost_log_setup.so directly links libboost_serialization.so in Boost 1.90.
+        if self.boost_version == "1.90.0" and "serialization" not in deptree["log_setup"]:
+            deptree["log_setup"].append("serialization")
+
         # Break random/math dependency cycle
         try:
             deptree["math"].remove("random")
