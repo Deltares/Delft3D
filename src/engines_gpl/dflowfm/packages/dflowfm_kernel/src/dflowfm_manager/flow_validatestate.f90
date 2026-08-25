@@ -51,7 +51,7 @@ contains
       use m_flow_validatestate_data
       use m_flow_externaloutput_direct, only: flow_externaloutput_direct
       use precision, only: dp
-      use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, warn_flush
       use m_flow
       use m_flowgeom
       use m_flowparameters
@@ -144,8 +144,8 @@ contains
          ! at least done dnt > VALIDATESTATEWINDOWSIZE time steps, to prevent the initial
          ! spin-up period to cause unwanted simulation breaks.
          if (dnt >= VALIDATESTATEWINDOWSIZE_double .and. dtavg < dtavg_min_err) then
-            write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Comp. time step average below threshold: ', dtavg, ' < ', dtavg_min_err, '.'
-            call mess(LEVEL_WARN, msgbuf)
+            write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Average computational time step below threshold: ', dtavg, ' < ', dtavg_min_err, '.'
+            call mess(LEVEL_ERROR, msgbuf)
             iresult = DFM_INVALIDSTATE
          end if
       end if
