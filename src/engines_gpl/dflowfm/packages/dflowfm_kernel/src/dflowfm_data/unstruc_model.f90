@@ -480,7 +480,8 @@ contains
       !                         javakeps,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
       !                         Tsigma, jarhoxu,                                                      &
-      !                         iStrchType, STRCH_UNIFORM, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
+      !                         stretch_type, STRETCH_UNIFORM, STRETCH_USER, STRETCH_EXPONENT, &
+      !                         STRETCH_UNI_OVER_EXP, laycof
 
       use m_globalparameters, only: sl
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
@@ -749,8 +750,8 @@ contains
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
 
-      call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
-      if (Layertype /= LAYTP_SIGMA) then
+      call prop_get(md_ptr, 'geometry', 'Layertype', layertype)
+      if (layertype /= LAYTP_SIGMA) then
          mxlayz = kmx
       end if
 
@@ -771,10 +772,22 @@ contains
       call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
       call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
-      call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
-
-      if (Dztop > 0.0_dp) then ! hk claims back original functionality
-         iStrchType = -1
+      call prop_get(md_ptr, 'geometry', 'stretchType', stretch_type, success)
+      
+      if (layertype == LAYTP_Z) then
+         if (.not. success) then
+            stretch_type = STRETCH_UNI_OVER_EXP
+         elseif (dztop > 0.0_dp .and. stretch_type /= STRETCH_UNI_OVER_EXP) then
+            write (msgbuf, '(a,a,i0,a)'), &
+                'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
+                'Input stretchType = ', stretch_type,' is ignored.'
+            call warn_flush()
+            stretch_type = STRETCH_UNI_OVER_EXP
+         end if
+      else
+         if (.not. success .or. stretch_type == STRETCH_UNI_OVER_EXP) then
+            stretch_type = STRETCH_UNIFORM
+         end if
       end if
 
       call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [geometry] block
@@ -790,7 +803,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
 
       if (kmx > 0) then
-         if (iStrchType == STRCH_USER) then
+         if (stretch_type == STRETCH_USER) then
             call realloc(laycof, kmx)
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
             sumlaycof = sum(laycof)
@@ -810,7 +823,7 @@ contains
                   call mess(LEVEL_ERROR, 'The values specified in "StretchCoef" do not add up to 100! We got: ', sumlaycof)
                end if
             end if
-         else if (iStrchType == STRCH_EXPONENT) then
+         else if (stretch_type == STRETCH_EXPONENT) then
             call realloc(laycof, 3)
             laycof(:) = dmiss
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
@@ -2590,7 +2603,7 @@ contains
       use m_flow ! ,                !  only : kmx, layertype, mxlayz, z_layer_growth_factor, numtopsig, &
       !         Iturbulencemodel, spirbeta, dztopuniabovez, dztop, jahazlayer, Floorlevtoplay ,  &
       !         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,         &
-      !         Tsigma, jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
+      !         Tsigma, jarhoxu, stretch_type, STRETCH_USER, STRETCH_EXPONENT, laycof
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
@@ -2883,10 +2896,10 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Toplayminthick', Toplayminthick, 'Minimum top layer thickness(m), only for Z-layers')
          end if
 
-         call prop_set(prop_ptr, 'geometry', 'StretchType', iStrchType, 'Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential')
-         if (iStrchType == STRCH_USER) then
+         call prop_set(prop_ptr, 'geometry', 'StretchType', stretch_type, 'Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential')
+         if (stretch_type == STRETCH_USER) then
             call prop_set(prop_ptr, 'geometry', 'StretchCoef', laycof(1:kmx), 'Layers thickness percentage')
-         else if (iStrchType == STRCH_EXPONENT) then
+         else if (stretch_type == STRETCH_EXPONENT) then
             call prop_set(prop_ptr, 'geometry', 'StretchCoef', laycof(1:3), 'Interface percentage from bed, bottom layers growth fac, top layers growth fac')
          end if
 
