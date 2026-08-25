@@ -4341,7 +4341,7 @@ contains
       case ('normalvelocitybnd')
          itemPtr1 => item_normalvelocitybnd
          dataPtr1 => zbndn
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          itemPtr1 => item_atmosphericpressure
          dataPtr1 => air_pressure
       case ('pseudoairpressure')

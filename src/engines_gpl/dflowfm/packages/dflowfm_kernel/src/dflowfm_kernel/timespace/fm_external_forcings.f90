@@ -223,7 +223,7 @@ contains
             ! Retrieve stress's y-component for ext-file quantity 'stressy'.
          else if (ec_item_id == item_stressy) then
             call get_timespace_value_by_item(item_stressy)
-            ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
+            ! Retrieve wind's p-component for ext-file quantity 'airpressure'.
          else if (ec_item_id == item_atmosphericpressure) then
             call get_timespace_value_by_item(item_atmosphericpressure)
             ! Retrieve value for ext-file quantity 'pseudo_air_pressure'.

@@ -822,7 +822,7 @@ contains
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
 
       case ('pseudoairpressure')
@@ -1250,7 +1250,7 @@ contains
       case ('airdensity')
          ja_airdensity = 1
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          air_pressure_available = .true.
 
       case ('pseudoAirPressure')
