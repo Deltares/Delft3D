@@ -366,10 +366,6 @@ class BoostDependencyBuilder(object):
                 boost_dependencies.export.dependencies[buildable_dep] = [buildable]
                 libraries[buildable_dep] = [f"boost_{buildable_dep}"]
 
-        # Boost.Test: unit_test_framework depends on all libraries of Boost.Test
-        if "unit_test_framework" in boost_dependencies.export.dependencies and "test" in module_provides_extra:
-            boost_dependencies.export.dependencies["unit_test_framework"].extend(module_provides_extra["test"].difference({"unit_test_framework"}))
-
         # python and numpy have a version suffix. Add it here.
         if "python" in libraries:
             if len(libraries["python"]) != 1:
