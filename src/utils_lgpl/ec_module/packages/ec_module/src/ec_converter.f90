@@ -4376,7 +4376,6 @@ contains
       real(dp) :: data_value !< the scalar source value
       integer :: i, j
       integer :: jmin, jmax
-      integer, allocatable :: idx(:) !< indices of the target points to update
       type(tEcField), pointer :: targetField
       integer, dimension(:), pointer :: targetMask
       logical :: status
@@ -4398,13 +4397,15 @@ contains
          end if
 
          if (associated(targetMask)) then
-            ! Gather masked in indices in `idx` array.
-            idx = pack([(j, j = jmin, jmax)], targetMask(jmin:jmax) /= 0)
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), status)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status, targetMask(jmin:jmax))
             if (.not. status) then
                return
             end if
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(idx), data_value)
+            do j = jmin, jmax
+               if (targetMask(j) /= 0) then
+                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), data_value)
+               end if
+            end do
          else
             ! Directly use `jmin:jmax` slice of `arr1dPtr`.
             call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
@@ -4463,22 +4464,40 @@ contains
    end subroutine apply_operand
 
    !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
-   subroutine check_undefined_values_for_operand(operand, target_values, istat)
+   subroutine check_undefined_values_for_operand(operand, target_values, istat, target_mask)
       ! Arguments
       integer, intent(in) :: operand !< operand type (EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
       real(dp), dimension(:), intent(in) :: target_values !< array of target values to check for undefined values
       logical, intent(out) :: istat !< status code (.true. for success, .false. for error)
+      integer, dimension(:), intent(in), optional :: target_mask !< optional mask selecting target values to check
 
-      istat = .false.
-
-      if (any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
-         if (any(target_values == ec_undef_hp)) then
-            call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
-            return
-         end if
-      end if
+      integer :: i
+      logical :: has_undefined_value
 
       istat = .true.
+      if (.not. any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
+         return
+      end if
+
+      has_undefined_value = .false.
+      if (present(target_mask)) then
+         do i = 1, size(target_values)
+            if (target_mask(i) == 0) then
+               cycle
+            end if
+            if (target_values(i) == ec_undef_hp) then
+               has_undefined_value = .true.
+               exit
+            end if
+         end do
+      else
+         has_undefined_value = any(target_values == ec_undef_hp)
+      end if
+
+      if (has_undefined_value) then
+         call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
+         istat = .false.
+      end if
 
    end subroutine check_undefined_values_for_operand
 
