@@ -47,6 +47,12 @@ class HtmlFormatter:
                     <li>Current output: {current_prefix}</li>
                     <li>Reference output: {reference_prefix}</li>
                 </ul>
+                <h3>Detailed Difference analysis</h3>
+                <p>
+                    detailed analyses are available in the JIRA Epic: 
+                    <a href="https://issuetracker.deltares.nl/browse/UNST-9541">UNST-9541</a>. An issue is created only
+                    for DIMRset versions with detected differences.
+                </p>
                 <h3>Verschillentool output</h3>
                 <p>
                     The verschillentool compared the current output files to the
