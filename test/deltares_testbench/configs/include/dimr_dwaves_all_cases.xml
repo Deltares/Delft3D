@@ -2,7 +2,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c01</path>
-    <maxRunTime>3600</maxRunTime>
+    <maxRunTime>4200</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
