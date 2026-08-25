@@ -153,6 +153,15 @@ class PreciceConan(ConanFile):
         self.cpp_info.set_property("pkg_config_name", "libprecice")
 
         self.cpp_info.libs = ["precice"]
+        self.cpp_info.requires = [
+            "boost::log",
+            "boost::log_setup",
+            "boost::program_options",
+            "boost::thread",
+            "boost::unit_test_framework",
+            "eigen::eigen3",
+            "libxml2::libxml2",
+        ]
         # preCICE headers are included as <precice/precice.hpp>, while the
         # installed target additionally exposes include/precice directly.
         self.cpp_info.includedirs = ["include", os.path.join("include", "precice")]
