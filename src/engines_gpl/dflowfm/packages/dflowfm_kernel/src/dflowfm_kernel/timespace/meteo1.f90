@@ -3749,7 +3749,7 @@ module m_meteo
    integer, target :: item_apwxwy_c !< Unique Item id of the ext-file's 'airpressure_windx_windy_charnock' quantity 'c' (space var Charnock).
    integer, target :: item_charnock !< Unique Item id of the ext-file's 'space var Charnock' quantity 'C'.
    integer, target :: item_waterlevelbnd !< Unique Item id of the ext-file's 'waterlevelbnd' quantity's ...-component.
-   integer, target :: item_atmosphericpressure !< Unique Item id of the ext-file's 'atmosphericpressure' quantity
+   integer, target :: item_airpressure !< Unique Item id of the ext-file's 'atmosphericpressure' quantity
    integer, target :: item_pseudo_air_pressure !< Unique Item id of the ext-file's 'pseudo_air_pressure' quantity
    integer, target :: item_water_level_correction !< Unique Item id of the ext-file's 'water_level_correction' quantity
    integer, target :: item_sea_ice_area_fraction !< Unique Item id of the ext-file's 'sea_ice_area_fraction' quantity
@@ -3933,7 +3933,7 @@ contains
       item_apwxwy_c = ec_undef_int
       item_charnock = ec_undef_int
       item_waterlevelbnd = ec_undef_int
-      item_atmosphericpressure = ec_undef_int
+      item_airpressure = ec_undef_int
       item_pseudo_air_pressure = ec_undef_int
       item_water_level_correction = ec_undef_int
       item_sea_ice_area_fraction = ec_undef_int
@@ -4342,7 +4342,7 @@ contains
          itemPtr1 => item_normalvelocitybnd
          dataPtr1 => zbndn
       case ('airpressure')
-         itemPtr1 => item_atmosphericpressure
+         itemPtr1 => item_airpressure
          dataPtr1 => air_pressure
       case ('pseudoairpressure')
          itemPtr1 => item_pseudo_air_pressure

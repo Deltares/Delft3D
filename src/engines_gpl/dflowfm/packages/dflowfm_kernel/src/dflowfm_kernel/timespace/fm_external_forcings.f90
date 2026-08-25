@@ -224,8 +224,8 @@ contains
          else if (ec_item_id == item_stressy) then
             call get_timespace_value_by_item(item_stressy)
             ! Retrieve wind's p-component for ext-file quantity 'airpressure'.
-         else if (ec_item_id == item_atmosphericpressure) then
-            call get_timespace_value_by_item(item_atmosphericpressure)
+         else if (ec_item_id == item_airpressure) then
+            call get_timespace_value_by_item(item_airpressure)
             ! Retrieve value for ext-file quantity 'pseudo_air_pressure'.
          else if (ec_item_id == item_pseudo_air_pressure) then
             call get_timespace_value_by_item(item_pseudo_air_pressure)
@@ -283,7 +283,7 @@ contains
          end do
       end if
 
-      if (item_atmosphericpressure /= ec_undef_int) then
+      if (item_airpressure /= ec_undef_int) then
          do k = 1, ndx
             if (comparereal(air_pressure(k), dmiss, EPS10) == 0) then
                air_pressure(k) = BACKGROUND_AIR_PRESSURE
@@ -2867,7 +2867,7 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if ((item_apwxwy_p == ec_undef_int) .and. (item_atmosphericpressure == ec_undef_int)) then
+         if ((item_apwxwy_p == ec_undef_int) .and. (item_airpressure == ec_undef_int)) then
             call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity airpressure must be provided in the .ext file.')
          end if
          if ((item_hac_air_temperature == ec_undef_int) .and. (item_hacs_air_temperature == ec_undef_int) .and. &

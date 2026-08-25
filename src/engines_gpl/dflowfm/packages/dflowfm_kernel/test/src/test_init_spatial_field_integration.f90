@@ -522,7 +522,7 @@ contains
    !! connection when its provider-specific source mapping does not support BC.
    subroutine test_airpressure_bcascii_uses_generic_source_fallback() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_atmosphericpressure
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -564,11 +564,11 @@ contains
       call tree_destroy(bnd_ptr)
 
       call f90_expect_true(success, "init_spatial_fields should use the generic fallback for bcascii airpressure")
-      call f90_expect_true(item_atmosphericpressure /= -999, "airpressure should have an EC target item")
+      call f90_expect_true(item_airpressure /= -999, "airpressure should have an EC target item")
 
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 0.0_dp)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 0.0_dp)
       value_at_t0 = air_pressure(1)
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 50.0_dp)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
       value_at_t50 = air_pressure(1)
 
       call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "airpressure at t=0 should be read from the BC file")
@@ -582,7 +582,7 @@ contains
    !> Verifies that the 'atmosphericpressure' ext alias correctly works with 'airpressure' .bc data.
    subroutine test_atmosphericpressure_alias_works_as_airpressure() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_atmosphericpressure
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -624,11 +624,11 @@ contains
       call tree_destroy(bnd_ptr)
 
       call f90_expect_true(success, "init_spatial_fields should map atmosphericpressure alias to airpressure")
-      call f90_expect_true(item_atmosphericpressure /= -999, "atmosphericpressure should have an EC target item")
+      call f90_expect_true(item_airpressure /= -999, "atmosphericpressure should have an EC target item")
 
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 0.0_dp)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 0.0_dp)
       value_at_t0 = air_pressure(1)
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 50.0_dp)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
       value_at_t50 = air_pressure(1)
 
       call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "atmosphericpressure at t=0 should be read from the BC file")
@@ -2057,7 +2057,7 @@ contains
    end subroutine run_scalar_meteo_case
 
    subroutine scalar_meteo_target(quantity, item_id, target_data)
-      use m_meteo, only: item_air_density, item_atmosphericpressure, item_air_temperature, item_cloudiness, &
+      use m_meteo, only: item_air_density, item_airpressure, item_air_temperature, item_cloudiness, &
                          item_dew_point_temperature, item_relative_humidity, item_latent_heat_flux, item_long_wave_radiation, &
                          item_solar_radiation, item_sensible_heat_flux, item_stressx, item_stressy, item_windx, item_windy
       use m_wind, only: air_density, air_pressure, air_temperature, cloudiness, dew_point_temperature, relative_humidity, &
@@ -2076,7 +2076,7 @@ contains
          item_id = item_air_density
          target_data => air_density
       case ('airpressure')
-         item_id = item_atmosphericpressure
+         item_id = item_airpressure
          target_data => air_pressure
       case ('airtemperature')
          item_id = item_air_temperature
