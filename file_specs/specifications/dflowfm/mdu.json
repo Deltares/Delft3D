@@ -112,9 +112,9 @@
                     "value_type": "string",
                     "description": "File version. Do not edit this.",
                     "status": {
-                        "value": "deprecated",
-                        "date": "2019-06-13",
-                        "comment": "Keyword has been replaced with `[general] fileVersion`."
+                        "value": "obsolete",
+                        "comment": "Use `[general] fileVersion` instead.",
+                        "since_release": 2027.01
                     }
                 },
                 {
@@ -1417,6 +1417,17 @@
                             "min_exclusive": 0.5,
                             "max_exclusive": 1.0
                         }
+                    }
+                },
+                {
+                    "key": "relax",
+                    "default_value": 0.01,
+                    "value_type": "float",
+                    "description": "",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Keyword no longer supported.",
+                        "since_release": 2027.01
                     }
                 },
                 {

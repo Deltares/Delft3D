@@ -67,7 +67,6 @@ This section contains the program name and its version.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `mduFormatVersion` ⚠️ | File version. Do not edit this. | `1.09` |  |  |  |
 | `program` | Program. | `D-Flow FM` |  |  |  |
 | `version` | Version number of computational kernel. | `1.2.60.64623M` |  |  |  |
 | `guiVersion` | Version number of GUI. | `<empty>` |  |  |  |
@@ -1087,7 +1086,6 @@ The keywords and options listed below are deprecated and will be removed in a fu
 | `[geometry] orgFloorLevTopLayDef` | Use `[geometry] floorLevTopLay` instead. |
 | `[geometry] sigmaGrowthFactor` | Use `[geometry] zLayerGrowthFactor` instead. |
 | `[model]` | Section has been replaced with `[general]` section. |
-| `[model] mduFormatVersion` | Keyword has been replaced with `[general] fileVersion`. |
 | `[numerics] keepZLayeringAtBed` | Use `[geometry] keepZLayeringAtBed` instead. |
 | `[numerics] maxItPresDens` | Keyword will be removed in a future release. |
 | `[numerics] maxItVerticalForesterSal` | Use `[numerics] maxItVerticalForester` instead. |
@@ -1111,6 +1109,8 @@ The keywords and options listed below are no longer supported and will cause an 
 
 | Keyword/value | Notes |
 | ------------- | ----- |
+| `[model] mduFormatVersion` | Use `[general] fileVersion` instead. |
+| `[numerics] relax` | Keyword no longer supported. |
 | `[physics] umodLin` | Keyword no longer supported. |
 | `[sediment] masBalMinDep` | Keyword no longer supported. |
 
