@@ -35,7 +35,7 @@ contains
    !> Gets the local layer numbers for a given grid cell.
  !! Note: works both for sigma and z, but for sigma, the return values are trivial: nlayb==1, nrlay==kmx.
    subroutine getlayerindices(n, nlayb, nrlay)
-      use m_flow, only: laydefnr, laytyp, laymx
+      use m_flow, only: laydefnr, laytyp, laymx, LAYTP_SIGMA
       use m_get_zlayer_indices, only: getzlayerindices
 
       integer, intent(in) :: n !< Flow node/grid cell number
@@ -45,7 +45,7 @@ contains
       integer :: Ltn
 
       Ltn = laydefnr(n)
-      if (laytyp(Ltn) == 1) then ! sigma
+      if (laytyp(Ltn) == LAYTP_SIGMA) then ! sigma
          nlayb = 1 ! Bottom layers always the first
          nrlay = laymx(Ltn) ! Sigma: always all layers
       else ! z-layers
