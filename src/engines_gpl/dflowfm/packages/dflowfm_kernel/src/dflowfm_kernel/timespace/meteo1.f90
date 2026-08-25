@@ -4194,6 +4194,8 @@ contains
          quantity_internal_name = 'sea_ice_thickness'
       case ('bedrocksurfaceelevation')
          quantity_internal_name = 'bedrock_surface_elevation'
+      case ('atmosphericpressure')
+         quantity_internal_name = 'airpressure'
       case default
          ! keep other names unchanged
       end select

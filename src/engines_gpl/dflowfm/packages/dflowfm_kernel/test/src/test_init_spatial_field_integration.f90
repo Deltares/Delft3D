@@ -578,6 +578,66 @@ contains
    end subroutine test_airpressure_bcascii_uses_generic_source_fallback
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_atmosphericpressure_alias_works_as_airpressure, test_atmosphericpressure_alias_works_as_airpressure,
+   !> Verifies that the 'atmosphericpressure' ext alias correctly works with 'airpressure' .bc data.
+   subroutine test_atmosphericpressure_alias_works_as_airpressure() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_atmosphericpressure
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      real(dp) :: value_at_t0, value_at_t50
+      character(len=*), parameter :: AIRPRESSURE_BC = "test_airpressure.bc"
+      character(len=*), parameter :: AIRPRESSURE_EXT = "test_atmosphericpressure.ext"
+
+      call create_file(AIRPRESSURE_BC, [ &
+                       "[General]", &
+                       "    fileVersion           = 1.01", &
+                       "    fileType              = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name                  = global", &
+                       "    function              = timeseries", &
+                       "    timeInterpolation     = linear", &
+                       "    quantity              = time", &
+                       "    unit                  = seconds since 2000-01-01 00:00:00", &
+                       "    quantity              = airpressure", &
+                       "    unit                  = Pa", &
+                       "    0    101325.0", &
+                       "    100  101300.0"])
+
+      call create_file(AIRPRESSURE_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = atmosphericpressure", &
+                       "    dataFile     = "//AIRPRESSURE_BC, &
+                       "    dataFileType = bcascii"])
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(AIRPRESSURE_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, AIRPRESSURE_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "init_spatial_fields should map atmosphericpressure alias to airpressure")
+      call f90_expect_true(item_atmosphericpressure /= -999, "atmosphericpressure should have an EC target item")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 0.0_dp)
+      value_at_t0 = air_pressure(1)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 50.0_dp)
+      value_at_t50 = air_pressure(1)
+
+      call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "atmosphericpressure at t=0 should be read from the BC file")
+      call f90_expect_near(value_at_t50, 101312.5_dp, 1.0e-6_dp, "atmosphericpressure at t=50 should be linearly interpolated")
+
+      call teardown_minimal_grid()
+   end subroutine test_atmosphericpressure_alias_works_as_airpressure
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_unknown_quantity_returns_error, test_unknown_quantity_returns_error,
    !> Verifies that a [Spatial] block with an unrecognized quantity causes
    !! init_spatial_fields to return .false.. The 'default' branch in
