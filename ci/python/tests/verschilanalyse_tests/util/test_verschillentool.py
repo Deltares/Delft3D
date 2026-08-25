@@ -1,6 +1,6 @@
 import pytest
 
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, Statistics, VerschillentoolOutput
+from ci_tools.verschilanalyse.util.verschillentool import OutputType, Statistics, VerschillentoolOutput2D
 from tests.helpers import verschilanalyse as helper
 
 
@@ -14,9 +14,9 @@ def test_from_verschillentool_workbook() -> None:
         output_type=OutputType.MAP,
     )
 
-    result = VerschillentoolOutput.from_verschillentool_workbook(workbook, OutputType.MAP)
+    result = VerschillentoolOutput2D.from_verschillentool_workbook(workbook, OutputType.MAP)
 
-    assert result == VerschillentoolOutput(
+    assert result == VerschillentoolOutput2D(
         output_type=OutputType.MAP,
         flow_velocity=flow_velocity_stats,
         water_level=water_level_stats,
@@ -28,4 +28,4 @@ def test_from_verschillentool_workbook__stat_not_found__raise_value_error() -> N
     workbook = helper.make_verschillentool_workbook()
     workbook["Averages"]["A2"].value = ">:("
     with pytest.raises(ValueError, match="Missing key"):
-        VerschillentoolOutput.from_verschillentool_workbook(workbook, OutputType.HIS)
+        VerschillentoolOutput2D.from_verschillentool_workbook(workbook, OutputType.HIS)

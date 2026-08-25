@@ -10,7 +10,8 @@ from ci_tools.verschilanalyse.util.verschillentool import (
     Statistics,
     Tolerances,
     Variable,
-    VerschillentoolOutput,
+    VerschillentoolOutput2D,
+    VerschillentoolOutput3D,
 )
 
 
@@ -55,14 +56,14 @@ def make_verschillentool_output(
     water_level: Statistics | None = None,
     flow_velocity: Statistics | None = None,
     row_count: int = 7,
-) -> VerschillentoolOutput:
+) -> VerschillentoolOutput2D:
     """Test helper factory for `VerschillentoolOuput` instances.
 
     Has default values for all parameters to make it easier to create test instances.
     """
     flow_velocity = flow_velocity or Statistics(0.0, 0.0, 0.0, 0.0)
     water_level = water_level or Statistics(0.0, 0.0, 0.0, 0.0)
-    return VerschillentoolOutput(
+    return VerschillentoolOutput2D(
         output_type=output_type,
         water_level=water_level,
         flow_velocity=flow_velocity,
@@ -75,8 +76,8 @@ def make_verschilanalyse_comparison(
     s3_reference_prefix: str = "s3://bucket/output/reference",
     current_log_data: dict[str, SlurmLogData] | None = None,
     reference_log_data: dict[str, SlurmLogData] | None = None,
-    his_outputs: dict[str, VerschillentoolOutput] | None = None,
-    map_outputs: dict[str, VerschillentoolOutput] | None = None,
+    his_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D] | None = None,
+    map_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D] | None = None,
 ) -> VerschilanalyseComparison:
     """Test helper actory for `VerschilanalyseComparison` instances.
 

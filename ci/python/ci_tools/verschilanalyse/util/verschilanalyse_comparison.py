@@ -87,7 +87,9 @@ class VerschilanalyseComparison:
         return result
 
     @staticmethod
-    def _get_verschillentool_output(verschillen_dir: Path, output_type: OutputType) -> dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D]:
+    def _get_verschillentool_output(
+        verschillen_dir: Path, output_type: OutputType
+    ) -> dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D]:
         result: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D] = {}
         for path in verschillen_dir.rglob(f"{output_type.value}_output.xlsx"):
             key = path.parent.name.removeprefix("verschil_")

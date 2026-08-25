@@ -184,7 +184,8 @@ class MapFlowVelocityTolerances:
     MAX: ClassVar[float] = 0.1  # m/s
     RMS: ClassVar[float] = 0.005  # m/s
     BIAS: ClassVar[float] = 0.0005  # m/s
-    
+
+
 class MapSalinityTolerances:
     """The maximum values of statistics above which a tolerance error is reported."""
 
@@ -240,7 +241,7 @@ class VerschillentoolOutput3D:
 
         Returns
         -------
-        VerschillentoolOutput
+        VerschillentoolOutput3D
             The information found in the verschillentool excel file.
         """
         averages_sheet = workbook["Averages"]
@@ -327,7 +328,7 @@ class VerschillentoolOutput2D:
 
         Returns
         -------
-        VerschillentoolOutput
+        VerschillentoolOutput2D
             The information found in the verschillentool excel file.
         """
         averages_sheet = workbook["Averages"]
