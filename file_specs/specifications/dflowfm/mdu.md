@@ -251,7 +251,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `waterLevelWarn` | Warning level on water level (<= 0: no check). | `0.0` |  | [m AD] |  |
 | `velocityWarn` | Warning level on velocity (<= 0: no check). | `0.0` |  | [m/s] |  |
 | `velMagnWarn` | Warning level on velocity magnitude (<= 0: no check). | `0.0` |  | [m/s] |  |
-| `minTimeStepBreak` 🔬 | Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated. | `0.0` |  | [s] |  |
+| `minTimeStepBreak` 🔬 | Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated. | `0.001` |  | [s] |  |
 | `epshu` | Threshold water depth for wetting and drying. | `0.0001` |  | [m] |  |
 | `epsMaxLev` | Stop criterion for non linear iteration. | `1e-08` |  |  |  |
 | `epsMaxLevM` | Stop criterion for Nested Newton loop in non-linear iteration. | `1e-08` |  |  |  |
