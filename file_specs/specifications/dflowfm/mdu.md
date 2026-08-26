@@ -405,6 +405,11 @@ In this field, physical model parameters can be inserted, for instance related t
 | `freeConvectionCoefficient` 🔬 | Free convection turbulence coefficient. | `0.14` |  |  |  |
 | `uniffrictcoef1dgrlay` 🔬 | Uniform ground layer friction coefficient for ocean models. | `0.05` |  | [m/s] |  |
 | `salinityDependentFreezingPoint` | Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `dynRoughVeg` 🔬 | Switch for dynamic vegetation roughness (only in combination with friction type Manning). | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `dRoot` 🔬 | Root depth. | `0.5` |  | [m] |  |
+| `dStem` 🔬 | Stem height. | `0.5` |  | [m] |  |
+| `unifFrictCoefNoVeg` 🔬 | Uniform friction (Manning) coefficient without vegetation. | `0.023` |  | [s/m^{1/3}] |  |
+| `dynVegPol` 🔬 | Polygon file (\*.pol) marking the area within which to apply dynamic vegetation roughness. | `<empty>` |  |  |  |
 
 
 <a id="supported-keywords-and-options-sediment"></a>
@@ -489,9 +494,9 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `waveModelNr` | Wave model nr. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited Hurdle-Stive</li><li>**`2`**: fetch/depth limited Young-Verhagen</li><li>**`3`**: SWAN</li><li>**`5`**: uniform</li><li>**`7`**: Offline Wave Coupling</li></ul> |  |  |
-| `waveforcing` | Wave forcing mode (only supported for waveModelNr = 7). | `0` |  |  |  |
-| `3Dwavebreakerturbulence` | Add wave-induced production terms in turbulence modelling | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `waveModelNr` | Wave model number. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited Hurdle-Stive</li><li>**`2`**: fetch/depth limited Young-Verhagen</li><li>**`3`**: online wave coupling with D-Waves</li><li>**`5`**: uniform</li><li>**`7`**: offline wave coupling</li></ul> |  |  |
+| `waveForcing` | Wave forcing mode (only supported for `waveModelNr` = 7). | `0` | <ul><li>**`0`**: none</li><li>**`1`**: radiation stresses</li><li>**`2`**: dissipation total</li><li>**`3`**: dissipation 3d</li></ul> |  |  |
+| `3dWaveBreakerTurbulence` | Add wave-induced production terms in turbulence modelling | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`none`**: none</li><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |  |
 | `gammaX` | Maximum wave height/water depth ratio. | `0.5` |  |  |  |
 | `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -504,6 +509,12 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | `3DWaveBoundaryLayer` 🔬 | Boundary layer formulation. | `1` | <ul><li>**`0`**: none</li><li>**`1`**: Sana</li></ul> |  |  |
 | `twavuni` 🔬 | Root mean square wave period. | `0.0` |  | [s] |  |
 | `uorbfac` 🔬 | Orbital velocities. | `0` | <ul><li>**`0`**: D3D style</li><li>**`1`**: Guza style</li></ul> |  |  |
+| `fwfac` 🔬 | Factor for adjusting wave boundary layer streaming. | `1.0` | `≥0.0` | [-] |  |
+| `ftauw` 🔬 | Factor for adjusting wave-related bottom shear stress. | `1.0` | `≥0.0` | [-] |  |
+| `fbreak` 🔬 | Factor for adjusting wave breaking contribution to TKE. | `1.0` | `≥0.0` | [-] |  |
+| `3Dwaveturbpendepth` 🔬 | Layer thickness as a proportion of hrms over which wave breaking adds to TKE source. | `1.5` | `≥0.0` | [-] |  |
+| `fforc` 🔬 | Factor for adjusting wave forces in momentum equation. | `1.0` | `≥0.0` | [-] |  |
+| `streamLayerFac` 🔬 | Factor for adjusting streaming layer thickness in momentum equation. | `3.0` | `>0.0` | [-] |  |
 | `3DStokesProfile` 🔬 | Stokes profile. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: uniform over depth</li><li>**`2`**: second-order Stokes theory</li><li>**`3`**: `2` with vertical stokes gradient in adve.</li></ul> |  |  |
 | `jamapsigwav` 🔬 | Wave height on map output | `0` | <ul><li>**`0`**: hrms wave height</li><li>**`1`**: sign wave height</li></ul> |  |  |
 | `hminlw` 🔬 | Cut-off depth for application of wave forces in momentum balance. | `0.2` |  |  |  |
@@ -1000,6 +1011,10 @@ The keyword and options listed below are available for research purposes.
 | `[output] wrirst_bnd` |  |
 | `[output] writeDetailedTimers` |  |
 | `[output] writeDfmInterpretedValues` |  |
+| `[physics] dRoot` |  |
+| `[physics] dStem` |  |
+| `[physics] dynRoughVeg` |  |
+| `[physics] dynVegPol` |  |
 | `[physics] EPSMin` |  |
 | `[physics] equili` |  |
 | `[physics] freeConvectionCoefficient` |  |
@@ -1018,6 +1033,7 @@ The keyword and options listed below are available for research purposes.
 | `[physics] TKEMin` |  |
 | `[physics] unifFrictCoef1D2D` |  |
 | `[physics] uniffrictcoef1dgrlay` |  |
+| `[physics] unifFrictCoefNoVeg` |  |
 | `[processes] additionalHistoryOutputFile` |  |
 | `[processes] depthDryThreshold` |  |
 | `[processes] dtProcesses` |  |
@@ -1056,11 +1072,17 @@ The keyword and options listed below are available for research purposes.
 | `[waves] 3DStokesProfile` |  |
 | `[waves] 3DWaveBoundaryLayer` |  |
 | `[waves] 3DWaveStreaming` |  |
+| `[waves] 3Dwaveturbpendepth` |  |
+| `[waves] fbreak` |  |
+| `[waves] fforc` |  |
+| `[waves] ftauw` |  |
+| `[waves] fwfac` |  |
 | `[waves] hminlw` |  |
 | `[waves] hwavuni` |  |
 | `[waves] jahissigwav` |  |
 | `[waves] jamapsigwav` |  |
 | `[waves] phiwavuni` |  |
+| `[waves] streamLayerFac` |  |
 | `[waves] tiFetchComp` |  |
 | `[waves] twavuni` |  |
 | `[waves] uorbfac` |  |
