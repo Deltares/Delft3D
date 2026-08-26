@@ -23,6 +23,7 @@
   </testCase>
   <testCase name="e03_f02_c02_scheme21" ref="dwaq_default">
     <path version="DVC">e03_waq/f02_hongkong/c02_scheme21</path>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="group2-test002.ada" type="NEFIS">
         <parameters name="DELWAQ_RESULTS">

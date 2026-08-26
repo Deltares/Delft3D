@@ -220,7 +220,7 @@ contains
    !> allocate the arrays for fourier and min/max
    subroutine alloc_fourier_analysis_arrays()
       use m_flowgeom, only: bl, bl_min, ndx
-      use m_flow, only: s1, s1max, kmx, laytyp, numtopsig
+      use m_flow, only: s1, s1max, kmx, laytyp, numtopsig, LAYTP_SIGMA
       use precision
       implicit none
 
@@ -324,7 +324,7 @@ contains
       end if
 
       ! Create fourier specific bl and s1 array, only if required
-      if (kmx > 0 .and. (laytyp(1) == 1 .or. numtopsig > 0)) then
+      if (kmx > 0 .and. (laytyp(1) == LAYTP_SIGMA .or. numtopsig > 0)) then
          call realloc(bl_min, ndx, keepExisting=.false., stat=istat)
          call realloc(s1max, ndx, keepExisting=.false., stat=istat)
          bl_min = bl
@@ -1554,7 +1554,7 @@ contains
       dtw = dts / dt_user
 
       !Update fourier specific bl and s1 array, only if required
-      if (kmx > 0 .and. (laytyp(1) == 1 .or. numtopsig > 0)) then
+      if (kmx > 0 .and. (laytyp(1) == LAYTP_SIGMA .or. numtopsig > 0)) then
          bl_min = min(bl, bl_min) ! lowest bed level
          s1max = max(s1, s1max) ! highest water level
       end if

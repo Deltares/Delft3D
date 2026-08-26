@@ -34,13 +34,16 @@ def enter_test_context(test_id: str, logger: logging.Logger) -> Iterator[None]:
     logger : logging.Logger
         The logger to attache the `test_id` attribute to.
     """
+    test_id_filter = _filter_factory(test_id)
+    logger.addFilter(test_id_filter)
     try:
-        test_id_filter = _filter_factory(test_id)
-        logger.addFilter(test_id_filter)
         logger.info("test started: %s", test_id, extra={"message_name": MessageName.TEST_STARTED})
         yield None
     except Exception:
+        # Report the failure to TeamCity, then re-raise so batch runners can
+        # fail the process (ProcessPoolExecutor / sequential job collection).
         logger.exception("test failed: %s", test_id, extra={"message_name": MessageName.TEST_FAILED})
+        raise
     finally:
         logger.info("test finished: %s", test_id, extra={"message_name": MessageName.TEST_FINISHED})
         logger.removeFilter(test_id_filter)

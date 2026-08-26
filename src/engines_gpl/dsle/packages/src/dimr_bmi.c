@@ -284,6 +284,14 @@ int get_var(const char *key, void **dst_ptr) {
   } else if (match_key(quantity, "salinity_lake")) {
     // NOTE: This is really a GET_VALUE_PTR(), called before ethe update.
     source_ptr = config.locks[lock_index].parameters3d.salinity_lake;
+  } else if (match_key(quantity, "head_lake")) {
+    source_ptr = &config.locks[lock_index].parameters.head_lake;
+  } else if (match_key(quantity, "head_sea")) {
+    source_ptr = &config.locks[lock_index].parameters.head_sea;
+  } else if (match_key(quantity, "temperature_lake")) {
+    source_ptr = &config.locks[lock_index].parameters.temperature_lake;
+  } else if (match_key(quantity, "temperature_sea")) {
+    source_ptr = &config.locks[lock_index].parameters.temperature_sea;
   } else if (match_key(quantity, "temperature_to_lake")) {
     source_ptr = config.locks[lock_index].results3d.constituent_to_lake[TEMPERATURE_CONSTITUENT_SLOT];
     source_len = config.locks[lock_index].to_lake_volumes.num_volumes;
