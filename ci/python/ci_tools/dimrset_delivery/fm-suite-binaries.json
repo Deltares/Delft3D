@@ -33,10 +33,6 @@
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_prg_exec_monitor.dll",
-            "issuedTo": "Stichting Deltares"
-        },
-        {
             "file": "bin\\boost_program_options.dll",
             "issuedTo": "Stichting Deltares"
         },
@@ -54,10 +50,6 @@
         },
         {
             "file": "bin\\boost_unit_test_framework.dll",
-            "issuedTo": "Stichting Deltares"
-        },
-        {
-            "file": "bin\\boost_wserialization.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
