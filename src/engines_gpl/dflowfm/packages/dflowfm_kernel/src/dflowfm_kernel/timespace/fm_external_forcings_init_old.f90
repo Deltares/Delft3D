@@ -47,13 +47,14 @@ contains
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr, md_mbafile
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+      use m_mass_balance_area, only: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
+      use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -80,7 +81,7 @@ contains
 
       integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat, nselected, node
       integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
@@ -95,6 +96,7 @@ contains
       real(kind=dp), external :: ran0
       character(len=256) :: rec
       integer, allocatable :: mask(:)
+      integer, allocatable :: selected_nodes(:)
       real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
@@ -108,6 +110,10 @@ contains
       xdum = 1.0_dp
       ydum = 1.0_dp
       kdum = 1
+
+      if (len_trim(md_mbafile) == 0) then
+         call initialize_mass_balance_area_arrays()
+      end if
 
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
@@ -1235,9 +1241,6 @@ contains
 
             else if (qid(1:15) == 'massbalancearea' .or. qid(1:18) == 'waqmassbalancearea') then
                if (ti_mba > 0) then
-                  if (.not. allocated(mbaname)) then
-                     allocate (mbaname(0))
-                  end if
                   imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
@@ -1245,26 +1248,28 @@ contains
                      imba = nomba
                      call realloc(mbaname, nomba, keepExisting=.true., fill=mbainputname)
                   end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., Fill=dmiss)
 
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
+                  allocate (selected_nodes(ndxi))
+                  call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
+                                                  LOCTP_POLYGON_FILE, filename)
 
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           if (mbadef(kk) /= -999) then
-                              ! warn that segment nn at xx, yy is nog mon area imba
-                           end if
-                           mbadef(kk) = imba
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mbadef(k) = imba
-                           end do
-                        end if
+                  do kk = 1, nselected
+                     node = selected_nodes(kk)
+                     if (mbadef(node) /= -999) then
+                        ! warn that segment nn at xx, yy is nog mon area imba
+                     end if
+
+                     mbadef(node) = imba
+                     call getkbotktop(node, kb, kt)
+
+                     do k = kb, kb + kmxn(node) - 1
+                        mbadef(k) = imba
                      end do
-                  end if
-                  deallocate (viuh)
+                  end do
+
+                  deallocate (selected_nodes)
+                  success = .true.
+
                else
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
@@ -1458,6 +1463,10 @@ contains
 
       end do
       call timstop(handle_extra(50)) ! extforcefile old
+
+      if (len_trim(md_mbafile) == 0) then
+         call finalize_mass_balance_area_arrays()
+      end if
 
       call init_misc(iresult)
 
@@ -1712,7 +1721,7 @@ contains
                numlatsg = numlatsg + 1
 
                L = index(filename, '.', back=.true.) - 1
-               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(1, :))
+               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(max(1, kmx), :))
                if (success) then
                   ! assign id derived from pol file
                   lat_ids(numlatsg) = filename(1:L)

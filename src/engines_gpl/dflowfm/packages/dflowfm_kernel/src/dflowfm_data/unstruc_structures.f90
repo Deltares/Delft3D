@@ -460,11 +460,12 @@ contains
             valstruct(IVAL_AREA_UNDER) = valstruct(IVAL_AREA_UNDER) + genstr%au(1, L0) ! flow area under gate
          end if
 
-         ! 2c. More specific value that applies to long culvert
-         if (istrtypein == ST_LONGCULVERT) then
-            valstruct(IVAL_LC_VALVE) = longculverts(istru)%valve_relative_opening
-         end if
       end if ! hu(L) > epshu
+
+      ! 2c. More specific value that applies to long culvert
+      if (istrtypein == ST_LONGCULVERT) then
+         valstruct(IVAL_LC_VALVE) = longculverts(istru)%valve_relative_opening
+      end if
 
       ! 2d. More specific values that apply to bridge
       if (istrtypein == ST_BRIDGE) then

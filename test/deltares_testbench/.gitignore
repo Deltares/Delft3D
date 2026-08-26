@@ -1,7 +1,9 @@
 /logs/**
+/failed/**
 /data/**
 !/data/**/
 !/data/**/*.dvc
+!/data/cases/.ignore
 
 # python virtual environment and caches
 .venv
