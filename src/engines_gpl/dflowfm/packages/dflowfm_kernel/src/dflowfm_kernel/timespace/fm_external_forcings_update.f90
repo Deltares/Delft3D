@@ -97,7 +97,6 @@ contains
       use m_structures, only: jaoldstr
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
-      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
       use m_heatu, only: heatu
       use m_flow_trachyupdate, only: flow_trachyupdate
       use m_flow_trachy_needs_update, only: flow_trachy_needs_update
@@ -105,7 +104,7 @@ contains
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
-      use m_meteo, only: item_bubblescreen_discharge, item_secchi_depth
+      use m_meteo, only: item_bubblescreen_discharge
       use m_missing, only: dmiss
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
@@ -189,10 +188,6 @@ contains
 
       if (ja_friction_coefficient_time_dependent > 0) then
          call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
-      end if
-
-      if (secchi_depth_is_time_varying) then
-         call get_timespace_value_by_item_and_array(item_secchi_depth, spatial_secchi_depth, time_in_seconds)
       end if
 
       call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))

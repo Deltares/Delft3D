@@ -1154,18 +1154,16 @@ contains
                end if
             end select
 
-            if (res .and. associated(target_data) .and. ec_item /= ec_undef_int) then
+            if (res .and. ec_item /= ec_undef_int) then
                call register_time_dependent_spatial_field_item(ec_item)
             end if
          end if
 
          !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
          !  TODO: remove them by handling time-dependence generically.
-         if (.not. is_static_field) then
-            select case (str_tolower(quantity))
-            case ('secchidepth')
-               secchi_depth_is_time_varying = .true.
-            end select
+         if (.not. is_static_field .and. str_tolower(quantity) == 'secchidepth') then
+            secchi_depth_is_time_varying = .true.
+
          end if
 
          if (res) then
@@ -1188,6 +1186,7 @@ contains
       integer :: num_items
 
       if (allocated(time_dependent_spatial_field_items)) then
+         if (any(time_dependent_spatial_field_items == ec_item)) return
          num_items = size(time_dependent_spatial_field_items)
          call realloc(time_dependent_spatial_field_items, num_items + 1, keepExisting=.true.)
       else
