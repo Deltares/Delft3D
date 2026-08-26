@@ -1423,7 +1423,7 @@
                     "key": "relax",
                     "default_value": 0.01,
                     "value_type": "float",
-                    "description": "",
+                    "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
