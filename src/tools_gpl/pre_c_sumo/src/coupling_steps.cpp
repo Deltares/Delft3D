@@ -146,19 +146,24 @@ namespace pre_c_sumo
         return false;
     }
 
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
     {
+        constexpr int check_delay_in_ms = 50;
+        constexpr int timeout_in_ms = 10000;
+        int total_delay_in_ms = 0;
         for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
             std::println("Waiting for NF2FF file: {}", file.string());
             // Wait for the NF2FF file to be available
             // TODO: Might be necessary to check whether writing the file is finished too
-            while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file))
+            while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file) && total_delay_in_ms < timeout_in_ms)
             {
                 // Throttle CPU load.
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                std::this_thread::sleep_for(std::chrono::milliseconds(check_delay_in_ms));
+                total_delay_in_ms += check_delay_in_ms;
             }
         }
+        return total_delay_in_ms < timeout_in_ms;
     }
 
     const std::vector<pre_c_sumo::NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumo_settings,
