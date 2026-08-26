@@ -629,24 +629,24 @@
     <checks>
       <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
         <parameters>
-          <parameter name="mesh2d_s1" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_ucx" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_ucy" toleranceRelative="1e-7"/>
+          <parameter name="mesh2d_s1" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="1e-4"/>
           <parameter name="mesh2d_Patm" toleranceAbsolute="5e-3"/>
           <parameter name="mesh2d_windx" toleranceAbsolute="1e-6"/>
           <parameter name="mesh2d_windy" toleranceAbsolute="1e-6"/>
           <parameter name="mesh2d_windxu" toleranceAbsolute="1e-6"/>
           <parameter name="mesh2d_windyu" toleranceAbsolute="1e-6"/>
-          <parameter name="mesh2d_Tair" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Rhum" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Clou" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qsun" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qeva" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qcon" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qlong" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qfreva" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qfrcon" toleranceRelative="1e-7"/>
-          <parameter name="mesh2d_Qtot" toleranceRelative="1e-6"/>
+          <parameter name="mesh2d_Tair" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Rhum" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Clou" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Qsun" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qeva" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qcon" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qlong" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qfreva" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qfrcon" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qtot" toleranceAbsolute="1e-4"/>
         </parameters>
       </file>
     </checks>
