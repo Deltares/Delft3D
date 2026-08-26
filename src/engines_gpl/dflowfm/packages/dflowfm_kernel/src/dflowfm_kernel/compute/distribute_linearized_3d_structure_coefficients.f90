@@ -93,10 +93,8 @@ contains
                au3 = genstr%au(3, L0) * (ff3(3, LL - Lb + 1) - ff3(3, LL - Lb))
                au(LL) = au1 + au2 + au3
                if (au(LL) > 0) then
-                  !fu(LL) = (genstr%fu(1, L0) * au1 + genstr%fu(2, L0) * au2 + genstr%fu(3, L0) * au3) / au(LL)
-                  !ru(LL) = (genstr%ru(1, L0) * au1 + genstr%ru(2, L0) * au2 + genstr%ru(3, L0) * au3) / au(LL)
-                  fu(ll) = fu(Lf)
-                  ru(LL) = ru(Lf)
+                  fu(LL) = (genstr%fu(1, L0) * au1 + genstr%fu(2, L0) * au2 + genstr%fu(3, L0) * au3) / au(LL)
+                  ru(LL) = (genstr%ru(1, L0) * au1 + genstr%ru(2, L0) * au2 + genstr%ru(3, L0) * au3) / au(LL)
                else
                   fu(LL) = 0.0_dp
                   ru(LL) = 0.0_dp

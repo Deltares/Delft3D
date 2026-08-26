@@ -266,7 +266,6 @@ contains
             end do
          end if
 
-         call furu_structures()
 
       ! end if
 
@@ -366,6 +365,7 @@ contains
 
       end do
 
+      call furu_structures()
       call furusobekstructures()
 
       if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
