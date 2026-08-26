@@ -109,19 +109,25 @@ contains
       integer, intent(in) :: max_iterations !< Maximum number of iterations for Forester filter
 
       ! Local variables
-      real(kind=dp) :: column_cell_volume(number_of_active_layers) !< Volume of the flow cells in the column
-      real(kind=dp) :: column_drhodz(number_of_active_layers) !< dhro/dz of the flow cells in the column
-      real(kind=dp), dimension(number_of_layers) :: updated_constituent !< Array to hold the updated constituent values during filtering
-      real(kind=dp), dimension(number_of_layers) :: previous_constituent !< Array to hold the constituent values from the previous iteration for comparison
+      real(kind=dp), dimension(:), allocatable :: column_cell_volume !< Volume of the flow cells in the column
+      real(kind=dp), dimension(:), allocatable :: column_drhodz !< dhro/dz of the flow cells in the column
+      real(kind=dp), dimension(:), allocatable :: updated_constituent !< Array to hold the updated constituent values during filtering
+      real(kind=dp), dimension(:), allocatable :: previous_constituent !< Array to hold the constituent values from the previous iteration for comparison
       real(kind=dp) :: difference !< Difference in constituent values between adjacent layers
       integer :: k !< Layer index
       integer :: m !< Iteration index
       logical :: filtered_this_iteration !< Flag to track if any filtering was done in the current iteration
 
+      ! Allocate local arrays for the vertical column of flow cells
+      allocate(updated_constituent(number_of_layers))
+      allocate(previous_constituent(number_of_layers))
+      allocate(column_cell_volume(number_of_active_layers))
+      allocate(column_drhodz(number_of_active_layers))
+
       ! Copy constituent values for the vertical column to a local array
-      updated_constituent(1:number_of_layers) = constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1)
-      column_cell_volume = vol1(i_bottom_layer:i_bottom_layer+number_of_active_layers-1)
-      column_drhodz = drhodz(i_bottom_layer:i_bottom_layer+number_of_active_layers-1)
+      updated_constituent(:) = constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1)
+      column_cell_volume(:) = vol1(i_bottom_layer:i_bottom_layer+number_of_active_layers-1)
+      column_drhodz(:) = drhodz(i_bottom_layer:i_bottom_layer+number_of_active_layers-1)
 
       ! Iteratively apply the Forester filter until no more filtering is needed or the maximum number of iterations is reached
       do m = 1, max_iterations
