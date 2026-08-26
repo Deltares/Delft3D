@@ -6,7 +6,8 @@ on:
       - '**'
 
 jobs:
-  build:
+  json-validation:
+    name: JSON schema validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

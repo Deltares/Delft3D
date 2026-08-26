@@ -8,7 +8,8 @@ on:
     branches: ["**"]
 
 jobs:
-  build:
+  docs-generation:
+    name: Markdown generation
     runs-on: ubuntu-latest
 
     steps:
