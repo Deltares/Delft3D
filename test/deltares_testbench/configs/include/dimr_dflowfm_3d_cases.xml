@@ -841,7 +841,7 @@
   </testCase>
   <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
-
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
         <parameters>
@@ -1015,7 +1015,7 @@
   </testCase>
   <testCase name="e02_f208_c011_gate_sub_3Dz" ref="platform_specific">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz</path>
-
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfm/dflowfmoutput/gatesub_3Dz_his.nc" type="netCDF">
         <parameters>
