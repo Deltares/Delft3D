@@ -27,10 +27,9 @@ class TestCaseConfig:
         self.__program_configs = []
         self.__errors: List[str] = []
         self.__checks: List[FileCheck] = []
-        self.__max_run_time: float = 0
+        self.__max_run_time: float | None = None
         self.__ref_run_time: float = -1
         self.__run_time: float = 0
-        self.__overrule_ref_max_run_time: bool = False
         self.__absolute_test_case_path: str = ""
         self.__absolute_test_case_reference_path: str = ""
         self.__run_file = ""
@@ -92,7 +91,7 @@ class TestCaseConfig:
         self.__absolute_test_case_reference_path = value
 
     @property
-    def max_run_time(self) -> float:
+    def max_run_time(self) -> float | None:
         """Maximum run time of the test case."""
         return self.__max_run_time
 
@@ -117,19 +116,6 @@ class TestCaseConfig:
     @run_time.setter
     def run_time(self, value: float) -> None:
         self.__run_time = value
-
-    @property
-    def overrule_ref_max_run_time(self) -> bool:
-        """Overrule reference max run time.
-
-        The maxRunTime in the config.xml is overruled by maxRunTime in reference/_tb3_char.run.
-        This can be overruled using this flag.
-        """
-        return self.__overrule_ref_max_run_time
-
-    @overrule_ref_max_run_time.setter
-    def overrule_ref_max_run_time(self, value: bool) -> None:
-        self.__overrule_ref_max_run_time = value
 
     @property
     def program_configs(self) -> List[ProgramConfig]:

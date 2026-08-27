@@ -12,17 +12,12 @@ object TemplateFunctionalityDocumentation : Template({
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """
-        %engine_dir%/*.log=>logging
-        %engine_dir%/doc/functionalities/*.pdf=>pdf
-        %engine_dir%/doc/functionalities/*.log=>logging
-        %engine_dir%/*/doc/*.pdf=>pdf/functionality
-        %engine_dir%/*/doc/*.log=>logging/functionality
+        test/deltares_testbench/data/cases/%engine_dir%/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/doc/functionalities/*.pdf=>pdf
+        test/deltares_testbench/data/cases/%engine_dir%/doc/functionalities/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/*/doc/*.pdf=>pdf/functionality
+        test/deltares_testbench/data/cases/%engine_dir%/*/doc/*.log=>logging/functionality
     """.trimIndent()
-
-    params {
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
-    }
 
     vcs {
         root(DslContext.settingsRoot)
@@ -40,8 +35,8 @@ object TemplateFunctionalityDocumentation : Template({
             command = module {
                 module = "ci_tools.documentation.generate_functionality_report"
                 scriptArguments = """
-                    --engine-dir=%engine_dir%
-                    --max-workers=8
+                    --engine-dir=test\\deltares_testbench\\data\\cases\\%engine_dir%
+                    --max-workers=1
                     --teamcity
                 """.trimIndent()
             }

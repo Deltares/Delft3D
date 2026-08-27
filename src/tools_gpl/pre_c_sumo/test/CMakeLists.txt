@@ -47,4 +47,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties(test_pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo/test)
 
 include(GoogleTest)
-gtest_discover_tests(test_pre_c_sumo_lib)
+gtest_discover_tests(test_pre_c_sumo_lib DISCOVERY_MODE PRE_TEST)
