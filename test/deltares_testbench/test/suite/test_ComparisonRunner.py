@@ -496,6 +496,51 @@ class TestComparisonRunner:
             assert f.read() == "new"
         assert not fs.exists(f"{expected_work_path}/old.txt")
 
+    def test_create_dvc_work_copies_skipped_when_input_download_skipped(self, fs: FakeFilesystem) -> None:
+        # Arrange: H7 receive already has results in input_work, plus a pristine input checkout.
+        settings = TestBenchSettings()
+        settings.command_line_settings.skip_download = [PathType.INPUT]
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        input_path = "/cases/c010_weir_timeseries/input"
+        work_path = "/cases/c010_weir_timeseries/input_work"
+        fs.makedirs(input_path, exist_ok=True)
+        fs.create_file(f"{input_path}/fresh.txt", contents="from-dvc")
+        fs.makedirs(work_path, exist_ok=True)
+        fs.create_file(f"{work_path}/h7_result.txt", contents="from-h7")
+
+        config = TestComparisonRunner.create_test_case_config("c010_weir_timeseries")
+        config.absolute_test_case_path = work_path
+
+        # Act
+        runner._TestSetRunner__create_dvc_work_copies([config])
+
+        # Assert: existing work copy (H7 output) is left intact.
+        assert fs.exists(f"{work_path}/h7_result.txt")
+        assert not fs.exists(f"{work_path}/fresh.txt")
+
+    def test_create_dvc_work_copies_from_input_when_not_skipped(self, fs: FakeFilesystem) -> None:
+        settings = TestBenchSettings()
+        settings.command_line_settings.skip_download = []
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        input_path = "/cases/c010_weir_timeseries/input"
+        work_path = "/cases/c010_weir_timeseries/input_work"
+        fs.makedirs(input_path, exist_ok=True)
+        fs.create_file(f"{input_path}/fresh.txt", contents="from-dvc")
+        fs.makedirs(work_path, exist_ok=True)
+        fs.create_file(f"{work_path}/stale.txt", contents="old")
+
+        config = TestComparisonRunner.create_test_case_config("c010_weir_timeseries")
+        config.absolute_test_case_path = work_path
+
+        runner._TestSetRunner__create_dvc_work_copies([config])
+
+        assert fs.exists(f"{work_path}/fresh.txt")
+        assert not fs.exists(f"{work_path}/stale.txt")
+
     def test_run_prepares_dvc_cases_before_dispatch(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
