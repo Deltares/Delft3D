@@ -145,7 +145,12 @@ namespace pre_c_sumo
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
         double current_time_seconds = 0.0;
-        waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+        if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
+        {
+            std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
+                         current_time_seconds);
+            return -1;
+        }
         const std::vector<NF2FFReader> initial_nf2ff_readers =
             readNF2FFFiles(csumo_settings.value(), current_time_seconds);
         ConnectedSinkSources initial_connected_sink_sources;
@@ -189,7 +194,12 @@ namespace pre_c_sumo
 
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
-            waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+            if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
+            {
+                std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
+                             current_time_seconds);
+                return -1;
+            }
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
             ConnectedSinkSources connected_sink_sources =
                 convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
