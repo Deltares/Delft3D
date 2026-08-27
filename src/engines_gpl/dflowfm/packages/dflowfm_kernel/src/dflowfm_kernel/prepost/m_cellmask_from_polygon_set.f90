@@ -194,15 +194,15 @@ contains
    end function construct_polygon_geometry
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
-   elemental function polygon_set_is_masked(this, x, y) result(is_masked)
-      class(t_polygon_set), intent(in) :: this
+   elemental function polygon_set_is_masked(self, x, y) result(is_masked)
+      class(t_polygon_set), intent(in) :: self
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       logical :: is_masked !< Whether the point should be masked.
 
       integer :: count_drypoint, i_poly
       logical :: found_inside_enclosure, is_inside
 
-      associate (geometry => this%geometry)
+      associate (geometry => self%geometry)
          count_drypoint = 0
          found_inside_enclosure = .false.
 
@@ -215,7 +215,7 @@ contains
             end if
 
             ! Point-in-polygon test
-            is_inside = this%polygon_contains_point(x, y, i_poly)
+            is_inside = self%polygon_contains_point(x, y, i_poly)
 
             if (is_inside) then
                if (geometry%is_enclosure(i_poly)) then
@@ -243,10 +243,10 @@ contains
    end function polygon_set_is_masked
 
    !> Test whether a point lies inside one cached polygon.
-   elemental function polygon_set_polygon_contains_point(this, x, y, i_poly) result(is_inside)
+   elemental function polygon_set_polygon_contains_point(self, x, y, i_poly) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
-      class(t_polygon_set), intent(in) :: this
+      class(t_polygon_set), intent(in) :: self
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       integer, intent(in) :: i_poly !< Polygon index
       logical :: is_inside !< Result
@@ -259,8 +259,8 @@ contains
          i_end = geometry%polygon_end(i_poly)
          n_points = i_end - i_start + 1
 
-         if (allocated(this%edge_index%edge_indices)) then
-            is_inside = this%edge_index%point_is_inside(x, y, i_poly, geometry)
+         if (allocated(self%edge_index%edge_indices)) then
+            is_inside = self%edge_index%point_is_inside(x, y, i_poly, geometry)
          else
             is_inside = pinpok_raycast(x, y, geometry%x(i_start:i_end), geometry%y(i_start:i_end), n_points)
          end if
@@ -317,8 +317,8 @@ contains
    !! First count the edge numbers in each bin and convert those counts into offsets in `edge_indices`.
    !! Then visit the polygon edges in polygon order and append each edge number to every bin crossed
    !! by its vertical range. Polygon order is preserved to maintain ray-casting boundary behavior.
-   subroutine binned_edge_index_populate_bin_storage(this, geometry, total_bins, total_memberships)
-      class(t_binned_edge_index), intent(inout) :: this
+   subroutine binned_edge_index_populate_bin_storage(self, geometry, total_bins, total_memberships)
+      class(t_binned_edge_index), intent(inout) :: self
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: total_bins !< Total number of bins in the polygon set.
       integer(kind=int64), intent(in) :: total_memberships !< Total edge entries in the polygon set.
@@ -328,34 +328,34 @@ contains
       integer :: next_bin, next_edge_entry
 
       ! Reserve one contiguous slice of edge_indices for every bin.
-      allocate (this%bin_offsets(total_bins + 1), this%edge_indices(int(total_memberships)))
+      allocate (self%bin_offsets(total_bins + 1), self%edge_indices(int(total_memberships)))
       next_bin = 1
       next_edge_entry = 1
       do i_poly = 1, geometry%polygon_count
-         bins = this%polygon_num_bins(i_poly)
-         call this%count_edges_per_bin(geometry, i_poly, bins, bin_edge_counts)
-         this%polygon_bin_start(i_poly) = next_bin
+         bins = self%polygon_num_bins(i_poly)
+         call self%count_edges_per_bin(geometry, i_poly, bins, bin_edge_counts)
+         self%polygon_bin_start(i_poly) = next_bin
          do i_bin = 1, bins
-            this%bin_offsets(next_bin) = next_edge_entry
+            self%bin_offsets(next_bin) = next_edge_entry
             next_edge_entry = next_edge_entry + bin_edge_counts(i_bin)
             next_bin = next_bin + 1
          end do
       end do
-      this%bin_offsets(total_bins + 1) = next_edge_entry
+      self%bin_offsets(total_bins + 1) = next_edge_entry
 
       ! Insert local edge numbers into their reserved bin slices in polygon order.
       do i_poly = 1, geometry%polygon_count
-         bins = this%polygon_num_bins(i_poly)
+         bins = self%polygon_num_bins(i_poly)
          do i_bin = 1, bins
             bin_write_positions(i_bin) = &
-               this%bin_offsets(this%polygon_bin_start(i_poly) + i_bin - 1)
+               self%bin_offsets(self%polygon_bin_start(i_poly) + i_bin - 1)
          end do
 
          num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
          do edge = 1, num_edges
-            call this%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
+            call self%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
             do i_bin = bin_first, bin_last
-               this%edge_indices(bin_write_positions(i_bin)) = edge
+               self%edge_indices(bin_write_positions(i_bin)) = edge
                bin_write_positions(i_bin) = bin_write_positions(i_bin) + 1
             end do
          end do
@@ -367,8 +367,8 @@ contains
    !! For each edge, find the first and last bin crossed by its vertical extent. Count every bin from
    !! the first through the last, including both, because the edge number is stored once in each of
    !! those bins. Sum these counts over all polygon edges.
-   function binned_edge_index_count_edge_memberships(this, geometry, i_poly, bins) result(memberships)
-      class(t_binned_edge_index), intent(in) :: this
+   function binned_edge_index_count_edge_memberships(self, geometry, i_poly, bins) result(memberships)
+      class(t_binned_edge_index), intent(in) :: self
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
       integer(kind=int64) :: memberships !< Total edge-to-bin memberships.
@@ -378,7 +378,7 @@ contains
       memberships = 0_int64
       num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
       do edge = 1, num_edges
-         call this%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
+         call self%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
          memberships = memberships + int(bin_last - bin_first + 1, int64)
       end do
    end function binned_edge_index_count_edge_memberships
@@ -387,8 +387,8 @@ contains
    !! Initialize all bin counts to zero. For every edge, find its first and last bin and increment the
    !! count of each bin from the first through the last. These counts determine the CSR slice reserved
    !! for every bin.
-   subroutine binned_edge_index_count_edges_per_bin(this, geometry, i_poly, bins, bin_counts)
-      class(t_binned_edge_index), intent(in) :: this
+   subroutine binned_edge_index_count_edges_per_bin(self, geometry, i_poly, bins, bin_counts)
+      class(t_binned_edge_index), intent(in) :: self
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
       integer, dimension(:), intent(out) :: bin_counts !< Edge count per bin.
@@ -398,7 +398,7 @@ contains
       bin_counts(1:bins) = 0
       num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
       do edge = 1, num_edges
-         call this%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
+         call self%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
          do i_bin = bin_first, bin_last
             bin_counts(i_bin) = bin_counts(i_bin) + 1
          end do
@@ -409,8 +409,8 @@ contains
    !! Obtain the edge endpoints from its polygon-local edge number, expand their minimum and maximum
    !! y-coordinates by a floating-point tolerance, and map both values to bin numbers. The tolerance
    !! includes an adjacent bin when a query and endpoint are numerically equal across a bin boundary.
-   pure subroutine binned_edge_index_edge_bin_range(this, geometry, i_poly, edge, bins, bin_first, bin_last)
-      class(t_binned_edge_index), intent(in) :: this
+   pure subroutine binned_edge_index_edge_bin_range(self, geometry, i_poly, edge, bins, bin_first, bin_last)
+      class(t_binned_edge_index), intent(in) :: self
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, edge, bins !< Polygon index, local edge index and number of bins.
       integer, intent(out) :: bin_first, bin_last !< First and last intersected bins.
@@ -430,8 +430,8 @@ contains
       ! remains a candidate when a near-equal query falls in the neighboring bin.
       lower_tolerance = 4.0_dp * epsilon(lower_y) * max(abs(lower_y), 1.0_dp)
       upper_tolerance = 4.0_dp * epsilon(upper_y) * max(abs(upper_y), 1.0_dp)
-      bin_first = this%get_bin(lower_y - lower_tolerance, geometry%y_min(i_poly), this%polygon_bin_scale(i_poly), bins)
-      bin_last = this%get_bin(upper_y + upper_tolerance, geometry%y_min(i_poly), this%polygon_bin_scale(i_poly), bins)
+      bin_first = self%get_bin(lower_y - lower_tolerance, geometry%y_min(i_poly), self%polygon_bin_scale(i_poly), bins)
+      bin_last = self%get_bin(upper_y + upper_tolerance, geometry%y_min(i_poly), self%polygon_bin_scale(i_poly), bins)
    end subroutine binned_edge_index_edge_bin_range
 
    !> Map a y-coordinate to a one-based bin within one polygon.
@@ -448,10 +448,10 @@ contains
    !> Classify a point using the polygon edges listed in its horizontal bin.
    !! Convert the point's y-coordinate to a polygon-local bin, translate that bin to its position in
    !! the shared CSR storage, and pass the corresponding ordered edge-number slice to `pinpok_raycast`.
-   pure function binned_edge_index_point_is_inside(this, x, y, i_poly, geometry) result(is_inside)
+   pure function binned_edge_index_point_is_inside(self, x, y, i_poly, geometry) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
-      class(t_binned_edge_index), intent(in) :: this
+      class(t_binned_edge_index), intent(in) :: self
       real(kind=dp), intent(in) :: x, y !< Query coordinates.
       integer, intent(in) :: i_poly !< Polygon index in this index.
       type(t_polygon_geometry), intent(in) :: geometry !< Cached polygon coordinates and metadata.
@@ -463,14 +463,14 @@ contains
       last_point = geometry%polygon_end(i_poly)
       num_points = last_point - first_point + 1
 
-      local_bin = this%get_bin(y, geometry%y_min(i_poly), this%polygon_bin_scale(i_poly), this%polygon_num_bins(i_poly))
-      global_bin = this%polygon_bin_start(i_poly) + local_bin - 1
+      local_bin = self%get_bin(y, geometry%y_min(i_poly), self%polygon_bin_scale(i_poly), self%polygon_num_bins(i_poly))
+      global_bin = self%polygon_bin_start(i_poly) + local_bin - 1
 
-      candidate_first = this%bin_offsets(global_bin)
-      candidate_last = this%bin_offsets(global_bin + 1) - 1
+      candidate_first = self%bin_offsets(global_bin)
+      candidate_last = self%bin_offsets(global_bin + 1) - 1
 
       is_inside = pinpok_raycast(x, y, geometry%x(first_point:last_point), geometry%y(first_point:last_point), num_points, &
-                                 this%edge_indices(candidate_first:candidate_last))
+                                 self%edge_indices(candidate_first:candidate_last))
    end function binned_edge_index_point_is_inside
 
    !> Construct a polygon cache containing all net-cell geometries.
@@ -517,10 +517,10 @@ contains
    end function construct_netcell_set
 
 !> Fast replacement for INCELLS using cached net-cell geometry.
-   elemental function netcell_set_find_netcell(this, x, y) result(k)
+   elemental function netcell_set_find_netcell(self, x, y) result(k)
    use geometry_module, only: pinpok_raycast
 
-      class(t_netcell_set), intent(in) :: this
+      class(t_netcell_set), intent(in) :: self
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
@@ -529,7 +529,7 @@ contains
 
       k = 0
 
-      associate (geometry => this%polygons%geometry)
+      associate (geometry => self%polygons%geometry)
          ! Loop over all netcell polygons with fast bounding box checks
          do i_poly = 1, geometry%polygon_count
 
@@ -557,14 +557,14 @@ contains
    end function netcell_set_find_netcell
 
 !> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
-   subroutine netcell_set_find_cells_crossed_by_polyline(this, xpoly, ypoly, crossed_cells, error)
+   subroutine netcell_set_find_cells_crossed_by_polyline(self, xpoly, ypoly, crossed_cells, error)
       use m_alloc, only: realloc
       use network_data, only: nump
       use m_missing, only: dmiss
 
       implicit none
 
-      class(t_netcell_set), intent(in) :: this
+      class(t_netcell_set), intent(in) :: self
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
       integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
@@ -585,12 +585,12 @@ contains
 
       ! Process each segment and put the result in cellmask
       do i = 1, npoly - 1
-         call find_cells_for_segment(this%polygons, xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
+         call find_cells_for_segment(self%polygons, xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
       end do
 
       crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
       if (size(crossed_cells) == 0) then !> check whether the whole polyline lies in a single cell if no boundaries were crossed
-         i = this%find_netcell(xpoly(1), ypoly(1))
+         i = self%find_netcell(xpoly(1), ypoly(1))
          if (i > 0) then
             crossed_cells = [i]
          end if
