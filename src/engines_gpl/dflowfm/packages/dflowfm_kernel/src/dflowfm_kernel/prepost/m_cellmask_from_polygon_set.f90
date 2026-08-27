@@ -195,7 +195,7 @@ contains
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
    elemental function polygon_set_is_masked(self, x, y) result(is_masked)
-      class(t_polygon_set), intent(in) :: self
+      class(t_polygon_set), intent(in) :: self !< Polygon set to query.
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       logical :: is_masked !< Whether the point should be masked.
 
@@ -246,7 +246,7 @@ contains
    elemental function polygon_set_polygon_contains_point(self, x, y, i_poly) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
-      class(t_polygon_set), intent(in) :: self
+      class(t_polygon_set), intent(in) :: self !< Polygon set to query.
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       integer, intent(in) :: i_poly !< Polygon index
       logical :: is_inside !< Result
@@ -318,7 +318,7 @@ contains
    !! Then visit the polygon edges in polygon order and append each edge number to every bin crossed
    !! by its vertical range. Polygon order is preserved to maintain ray-casting boundary behavior.
    subroutine binned_edge_index_populate_bin_storage(self, geometry, total_bins, total_memberships)
-      class(t_binned_edge_index), intent(inout) :: self
+      class(t_binned_edge_index), intent(inout) :: self !< Binned edge index being constructed.
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: total_bins !< Total number of bins in the polygon set.
       integer(kind=int64), intent(in) :: total_memberships !< Total edge entries in the polygon set.
@@ -368,7 +368,7 @@ contains
    !! the first through the last, including both, because the edge number is stored once in each of
    !! those bins. Sum these counts over all polygon edges.
    function binned_edge_index_count_edge_memberships(self, geometry, i_poly, bins) result(memberships)
-      class(t_binned_edge_index), intent(in) :: self
+      class(t_binned_edge_index), intent(in) :: self !< Binned edge index being constructed.
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
       integer(kind=int64) :: memberships !< Total edge-to-bin memberships.
@@ -388,7 +388,7 @@ contains
    !! count of each bin from the first through the last. These counts determine the CSR slice reserved
    !! for every bin.
    subroutine binned_edge_index_count_edges_per_bin(self, geometry, i_poly, bins, bin_counts)
-      class(t_binned_edge_index), intent(in) :: self
+      class(t_binned_edge_index), intent(in) :: self !< Binned edge index being constructed.
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
       integer, dimension(:), intent(out) :: bin_counts !< Edge count per bin.
@@ -410,7 +410,7 @@ contains
    !! y-coordinates by a floating-point tolerance, and map both values to bin numbers. The tolerance
    !! includes an adjacent bin when a query and endpoint are numerically equal across a bin boundary.
    pure subroutine binned_edge_index_edge_bin_range(self, geometry, i_poly, edge, bins, bin_first, bin_last)
-      class(t_binned_edge_index), intent(in) :: self
+      class(t_binned_edge_index), intent(in) :: self !< Binned edge index being constructed.
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, edge, bins !< Polygon index, local edge index and number of bins.
       integer, intent(out) :: bin_first, bin_last !< First and last intersected bins.
@@ -451,7 +451,7 @@ contains
    pure function binned_edge_index_point_is_inside(self, x, y, i_poly, geometry) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
-      class(t_binned_edge_index), intent(in) :: self
+      class(t_binned_edge_index), intent(in) :: self !< Binned edge index to query.
       real(kind=dp), intent(in) :: x, y !< Query coordinates.
       integer, intent(in) :: i_poly !< Polygon index in this index.
       type(t_polygon_geometry), intent(in) :: geometry !< Cached polygon coordinates and metadata.
@@ -520,7 +520,7 @@ contains
    elemental function netcell_set_find_netcell(self, x, y) result(k)
    use geometry_module, only: pinpok_raycast
 
-      class(t_netcell_set), intent(in) :: self
+      class(t_netcell_set), intent(in) :: self !< Net-cell set to query.
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
@@ -564,7 +564,7 @@ contains
 
       implicit none
 
-      class(t_netcell_set), intent(in) :: self
+      class(t_netcell_set), intent(in) :: self !< Net-cell set to query.
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
       integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
