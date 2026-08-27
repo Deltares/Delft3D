@@ -27,6 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
+!> module containing various functions that test whether a point or a line lie inside polygons.
 module m_cellmask_from_polygon_set
    use iso_fortran_env, only: int64
    use m_missing, only: jins, dmiss
@@ -38,28 +39,29 @@ module m_cellmask_from_polygon_set
 
    public :: t_netcell_set, t_polygon_set
 
-   !> Coordinates and per-polygon metadata shared by masking and net-cell lookup.
+   !> Type describing geometry of a polygon set. Contains coordinates, bounding boxes, and enclosure flags.
    type, private :: t_polygon_geometry
-      real(kind=dp), allocatable :: x(:), y(:)
-      real(kind=dp), allocatable :: x_min(:), y_min(:), x_max(:), y_max(:)
-      logical, allocatable :: is_enclosure(:)
-      integer, allocatable :: polygon_start(:), polygon_end(:)
-      integer :: polygon_count = 0
-      logical :: enclosures_present = .false.
+      real(kind=dp), dimension(:), allocatable :: x, y !< polygon x and y coordinates, separated by dmiss.
+      real(kind=dp), dimension(:), allocatable :: x_min, y_min, x_max, y_max !< Polygon bounds; size `polygon_count`.
+      logical, dimension(:), allocatable :: is_enclosure !< Whether each polygon defines an enclosure; size `polygon_count`.
+      integer, dimension(:), allocatable :: polygon_start, polygon_end !< Inclusive packed-array bounds; size `polygon_count`.
+      integer :: polygon_count = 0 !< Number of polygons in the geometry.
+      logical :: enclosures_present = .false. !< Whether the geometry contains at least one enclosure polygon.
    end type t_polygon_geometry
 
    interface t_polygon_geometry
       module procedure construct_polygon_geometry
    end interface t_polygon_geometry
 
-   !> Latitude-binned lookup table containing ordered candidate polygon edges for ray casting.
+   !> Latitude-binned lookup table containing binned polygon edges for ray-casting. T
+   ! The bins contain only edges the ray might intersect, reducing raycasting work significantly for large polygons. 
    type, private :: t_binned_edge_index
       private
-      integer, allocatable :: polygon_bin_start(:) !< First global bin for each polygon.
-      integer, allocatable :: polygon_num_bins(:) !< Number of latitude bins for each polygon.
-      integer, allocatable :: bin_offsets(:) !< CSR offsets into edge_indices for each global bin.
-      integer, allocatable :: edge_indices(:) !< Ordered local edge indices for all bins.
-      real(kind=dp), allocatable :: polygon_bin_scale(:) !< Scale from polygon y-coordinate to local bin.
+      integer, dimension(:), allocatable :: polygon_bin_start !< First global bin per polygon; size `polygon_count`.
+      integer, dimension(:), allocatable :: polygon_num_bins !< Number of latitude bins per polygon; size `polygon_count`.
+      integer, dimension(:), allocatable :: bin_offsets !< CSR offsets; size is the total number of bins plus one.
+      integer, dimension(:), allocatable :: edge_indices !< Ordered local edge indices; size is the total number of memberships.
+      real(kind=dp), dimension(:), allocatable :: polygon_bin_scale !< Coordinate-to-bin scale per polygon; size `polygon_count`.
    contains
       procedure :: point_is_inside => binned_edge_index_point_is_inside
       procedure, private :: populate_bin_storage => binned_edge_index_populate_bin_storage
@@ -73,11 +75,11 @@ module m_cellmask_from_polygon_set
       module procedure construct_binned_edge_index
    end interface t_binned_edge_index
 
-   !> Complete cached polygon set, including optional acceleration data and lifecycle state.
+   !> polygon set including geometry and optional latitude-binned edge index for fast point-in-polygon tests.
    type :: t_polygon_set
       private
-      type(t_polygon_geometry) :: geometry
-      type(t_binned_edge_index) :: edge_index
+      type(t_polygon_geometry) :: geometry !< polygon coordinates and metadata.
+      type(t_binned_edge_index) :: edge_index !< Optional latitude-binned ray-casting index for enclosure polygon sets.
    contains
       procedure :: is_masked => polygon_set_is_masked
       procedure, private :: polygon_contains_point => polygon_set_polygon_contains_point
@@ -87,10 +89,10 @@ module m_cellmask_from_polygon_set
       module procedure construct_polygon_set
    end interface t_polygon_set
 
-   !> Net-cell polygons and operations that rely on polygon indices matching net-cell indices.
+   !> Special version of a polygon set where every netcell becomes a polygon. Used for finding netcells based on coordinates.
    type :: t_netcell_set
       private
-      type(t_polygon_set) :: polygons
+      type(t_polygon_set) :: polygons !< Polygon set created from netcell geometry.
    contains
       procedure :: find_netcell => netcell_set_find_netcell
       procedure :: find_cells_crossed_by_polyline => netcell_set_find_cells_crossed_by_polyline
@@ -100,40 +102,14 @@ module m_cellmask_from_polygon_set
       module procedure construct_netcell_set
    end interface t_netcell_set
 
-   integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon.
-   integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges.
+   integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon, capped to prevent excessive memory usage.
+   integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges, to prevent excessive memory usage.
 
 contains
 
-   !> Classify a point using only the ordered polygon edges in its latitude bin.
-   pure function binned_edge_index_point_is_inside(this, x, y, i_poly, geometry) result(is_inside)
-      use geometry_module, only: pinpok_raycast
-
-      class(t_binned_edge_index), intent(in) :: this
-      real(kind=dp), intent(in) :: x, y !< Query coordinates.
-      integer, intent(in) :: i_poly !< Polygon index in this index.
-      type(t_polygon_geometry), intent(in) :: geometry !< Cached polygon coordinates and metadata.
-      logical :: is_inside
-
-      integer :: candidate_first, candidate_last, first_point, global_bin, last_point, local_bin, num_points
-
-      first_point = geometry%polygon_start(i_poly)
-      last_point = geometry%polygon_end(i_poly)
-      num_points = last_point - first_point + 1
-
-      local_bin = this%get_bin(y, geometry%y_min(i_poly), this%polygon_bin_scale(i_poly), this%polygon_num_bins(i_poly))
-      global_bin = this%polygon_bin_start(i_poly) + local_bin - 1
-
-      candidate_first = this%bin_offsets(global_bin)
-      candidate_last = this%bin_offsets(global_bin + 1) - 1
-
-      is_inside = pinpok_raycast(x, y, geometry%x(first_point:last_point), geometry%y(first_point:last_point), num_points, &
-                                 this%edge_indices(candidate_first:candidate_last))
-   end function binned_edge_index_point_is_inside
-
    !> Construct a consistent polygon cache from packed coordinates separated by missing values.
    function construct_polygon_set(x_poly, y_poly, z_poly, enable_binning) result(cache)
-      real(kind=dp), intent(in) :: x_poly(:), y_poly(:), z_poly(:) !< Packed polygon coordinate arrays.
+      real(kind=dp), dimension(:), intent(in) :: x_poly, y_poly, z_poly !< Packed polygon coordinate arrays.
       logical, intent(in) :: enable_binning !< Whether to build a latitude-binned edge index for large polygon sets.
       type(t_polygon_set) :: cache
 
@@ -149,7 +125,7 @@ contains
       use m_alloc
       use geometry_module, only: get_startend
 
-      real(kind=dp), intent(in) :: x_poly(:), y_poly(:), z_poly(:) !< Packed polygon coordinate arrays.
+      real(kind=dp), dimension(:), intent(in) :: x_poly, y_poly, z_poly !< Packed polygon coordinate arrays.
       type(t_polygon_geometry) :: geometry
 
       integer :: i_point, i_start, i_end, i_poly, polygon_points
@@ -340,7 +316,7 @@ contains
       integer, intent(in) :: total_bins !< Total number of bins in the polygon set.
       integer(kind=int64), intent(in) :: total_memberships !< Total edge entries in the polygon set.
 
-      integer :: bin_edge_counts(max_edge_bins), bin_write_positions(max_edge_bins)
+      integer, dimension(max_edge_bins) :: bin_edge_counts, bin_write_positions
       integer :: bin_first, bin_last, bins, edge, i_bin, i_poly, num_edges
       integer :: next_bin, next_edge_entry
 
@@ -403,7 +379,7 @@ contains
       class(t_binned_edge_index), intent(in) :: this
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
       integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
-      integer, intent(out) :: bin_counts(:) !< Edge count per bin.
+      integer, dimension(:), intent(out) :: bin_counts !< Edge count per bin.
 
       integer :: bin_first, bin_last, edge, i_bin, num_edges
 
@@ -454,6 +430,32 @@ contains
       i_bin = int((y - y_min) * bin_scale) + 1
       i_bin = max(1, min(bins, i_bin))
    end function binned_edge_index_get_bin
+
+   !> Classify a point using only the ordered polygon edges in its latitude bin.
+   pure function binned_edge_index_point_is_inside(this, x, y, i_poly, geometry) result(is_inside)
+      use geometry_module, only: pinpok_raycast
+
+      class(t_binned_edge_index), intent(in) :: this
+      real(kind=dp), intent(in) :: x, y !< Query coordinates.
+      integer, intent(in) :: i_poly !< Polygon index in this index.
+      type(t_polygon_geometry), intent(in) :: geometry !< Cached polygon coordinates and metadata.
+      logical :: is_inside
+
+      integer :: candidate_first, candidate_last, first_point, global_bin, last_point, local_bin, num_points
+
+      first_point = geometry%polygon_start(i_poly)
+      last_point = geometry%polygon_end(i_poly)
+      num_points = last_point - first_point + 1
+
+      local_bin = this%get_bin(y, geometry%y_min(i_poly), this%polygon_bin_scale(i_poly), this%polygon_num_bins(i_poly))
+      global_bin = this%polygon_bin_start(i_poly) + local_bin - 1
+
+      candidate_first = this%bin_offsets(global_bin)
+      candidate_last = this%bin_offsets(global_bin + 1) - 1
+
+      is_inside = pinpok_raycast(x, y, geometry%x(first_point:last_point), geometry%y(first_point:last_point), num_points, &
+                                 this%edge_indices(candidate_first:candidate_last))
+   end function binned_edge_index_point_is_inside
 
    !> Construct a polygon cache containing all net-cell geometries.
    function construct_netcell_set() result(netcells)
@@ -553,7 +555,7 @@ contains
       character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
 
       integer :: npoly, i
-      integer, allocatable :: cellmask(:) !< (nump) Mask array for net cells
+      integer, dimension(:), allocatable :: cellmask !< (nump) Mask array for net cells
 
       error = ''
 
@@ -587,7 +589,7 @@ contains
 
       class(t_polygon_set), intent(in) :: cache
       real(kind=dp), intent(in) :: xa, ya, xb, yb !< Segment endpoints
-      integer, intent(inout) :: cellmask(:) !< Cell mask array: 1=crossed, 0=not crossed
+      integer, dimension(:), intent(inout) :: cellmask !< Cell mask array: 1=crossed, 0=not crossed
 
       real(kind=dp) :: seg_xmin, seg_xmax, seg_ymin, seg_ymax
       integer :: i_poly, i_point, i_start, i_end, n_points
