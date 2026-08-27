@@ -95,6 +95,7 @@ class ModelCollector:
         self.copied_files = 0
         self.copied_bytes = 0
         self.skipped_files = 0
+        self.cancelled = False
         self.missing: set[MissingReference] = set()
         self.excluded: set[ExcludedReference] = set()
 
@@ -377,6 +378,7 @@ def stage_model(
     exclude_patterns: Iterable[str] = (),
     show_progress: bool = False,
     overwrite: bool = False,
+    confirm_copy: Callable[[ModelCollector, Path], bool] | None = None,
 ) -> tuple[ModelCollector, Path]:
     scan_progress = ScanProgress(show_progress)
     collector = ModelCollector(mdu, exclude_patterns, scan_progress.update)
@@ -400,7 +402,6 @@ def stage_model(
 
     copies: list[dict[str, str]] = []
     total_bytes = sum(collector.file_sizes.values())
-    progress = CopyProgress(total_bytes, len(files), show_progress and not dry_run)
     copied_files = 0
     skipped_files = 0
     for source in sorted(files):
@@ -420,16 +421,25 @@ def stage_model(
         else:
             copied_files += 1
             collector.copied_bytes += source_size
-        if not dry_run:
-            if target_matches:
+    collector.copied_files = copied_files
+    collector.skipped_files = skipped_files
+
+    if confirm_copy is not None and not confirm_copy(collector, source_root):
+        collector.cancelled = True
+        return collector, source_root
+
+    progress = CopyProgress(total_bytes, len(files), show_progress and not dry_run)
+    if not dry_run:
+        for source, copy in zip(sorted(files), copies, strict=True):
+            target = Path(copy["target"])
+            source_size = collector.file_sizes[source]
+            if copy["status"] == "skipped":
                 progress.skip_file(source, source_size)
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 progress.start_file(source)
                 copy_file(source, target, progress.advance)
     progress.finish()
-    collector.copied_files = copied_files
-    collector.skipped_files = skipped_files
 
     manifest = {
         "mdu": str(collector.mdu),
@@ -476,6 +486,8 @@ def parse_arguments() -> argparse.Namespace:
             "    stage_dflowfm_model.py model.mdu D:\\models\\case --dry-run\n\n"
             "  Copy or resume a previously interrupted staging run:\n"
             "    stage_dflowfm_model.py model.mdu D:\\models\\case\n\n"
+            "  Copy unattended without the confirmation prompt:\n"
+            "    stage_dflowfm_model.py model.mdu D:\\models\\case --yes\n\n"
             "  Omit meteo inputs intentionally (references remain in copied inputs):\n"
             "    stage_dflowfm_model.py model.mdu D:\\models\\case "
             "--exclude \"*/meteo/*\" --allow-missing\n\n"
@@ -510,6 +522,12 @@ def parse_arguments() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "-y",
+        "--yes",
+        action="store_true",
+        help="Proceed without the default preview and confirmation prompt",
+    )
+    parser.add_argument(
         "--no-progress",
         action="store_true",
         help="Disable live scan, sizing, and copy progress output",
@@ -541,37 +559,16 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> int:
-    arguments = parse_arguments()
-    try:
-        collector, source_root = stage_model(
-            arguments.mdu,
-            arguments.destination,
-            arguments.source_root,
-            arguments.dry_run,
-            arguments.exclude,
-            not arguments.no_progress,
-            arguments.overwrite,
-        )
-    except (OSError, RuntimeError, ValueError) as error:
-        print(f"error: {error}", file=sys.stderr)
-        return 1
-
-    total_bytes = sum(collector.file_sizes.values())
-    action = "Would transfer" if arguments.dry_run else "Transferred"
+def print_plan(collector: ModelCollector) -> None:
     print(
-        f"{action} {collector.copied_files} of {len(collector.files)} files "
+        f"Would transfer {collector.copied_files} of {len(collector.files)} files "
         f"({format_size(collector.copied_bytes)})"
     )
     if collector.skipped_files:
-        verb = "Would skip" if arguments.dry_run else "Skipped"
-        print(f"{verb} {collector.skipped_files} existing same-sized files")
-    print(f"Source root: {source_root}")
-    print(f"Staged MDU: {arguments.destination.resolve() / collector.mdu.relative_to(source_root)}")
-    if arguments.dry_run:
-        print("Files (largest first):")
-        for line in file_inventory(collector.files, collector.file_sizes):
-            print(f"  {line}")
+        print(f"Would skip {collector.skipped_files} existing same-sized files")
+    print("Files (largest first):")
+    for line in file_inventory(collector.files, collector.file_sizes):
+        print(f"  {line}")
     if collector.excluded:
         print(f"Intentionally excluded references: {len(collector.excluded)}")
         for excluded in sorted(collector.excluded, key=lambda item: str(item.path)):
@@ -581,6 +578,68 @@ def main() -> int:
         print(f"Unresolved path-like references: {len(collector.missing)}", file=sys.stderr)
         for missing in sorted(collector.missing, key=lambda item: str(item.referrer)):
             print(f"  {missing.referrer}: {missing.key} = {missing.value}", file=sys.stderr)
+
+
+def confirm_copy_interactively(collector: ModelCollector, _source_root: Path) -> bool:
+    print_plan(collector)
+    if collector.copied_files == 0:
+        print("No files need to be copied.")
+        return True
+    try:
+        answer = input("Proceed with copy? [y/N] ")
+    except EOFError:
+        return False
+    return answer.strip().lower() in {"y", "yes"}
+
+
+def main() -> int:
+    arguments = parse_arguments()
+    confirm_copy = None
+    if not arguments.dry_run and not arguments.yes:
+        confirm_copy = confirm_copy_interactively
+    try:
+        collector, source_root = stage_model(
+            arguments.mdu,
+            arguments.destination,
+            arguments.source_root,
+            arguments.dry_run,
+            arguments.exclude,
+            not arguments.no_progress,
+            arguments.overwrite,
+            confirm_copy,
+        )
+    except (OSError, RuntimeError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+
+    if collector.cancelled:
+        print("Copy cancelled; no files were changed.")
+        return 0
+
+    print(f"Source root: {source_root}")
+    print(f"Staged MDU: {arguments.destination.resolve() / collector.mdu.relative_to(source_root)}")
+    if arguments.dry_run:
+        print_plan(collector)
+        if collector.missing and not arguments.allow_missing:
+            return 2
+        return 0
+
+    print(
+        f"Transferred {collector.copied_files} of {len(collector.files)} files "
+        f"({format_size(collector.copied_bytes)})"
+    )
+    if collector.skipped_files:
+        print(f"Skipped {collector.skipped_files} existing same-sized files")
+    if collector.excluded and arguments.yes:
+        print(f"Intentionally excluded references: {len(collector.excluded)}")
+        for excluded in sorted(collector.excluded, key=lambda item: str(item.path)):
+            print(f"  {excluded.path}")
+        print("Warning: copied input files retain these references; edit them locally before running.")
+    if collector.missing and arguments.yes:
+        print(f"Unresolved path-like references: {len(collector.missing)}", file=sys.stderr)
+        for missing in sorted(collector.missing, key=lambda item: str(item.referrer)):
+            print(f"  {missing.referrer}: {missing.key} = {missing.value}", file=sys.stderr)
+    if collector.missing:
         if not arguments.allow_missing:
             return 2
     return 0

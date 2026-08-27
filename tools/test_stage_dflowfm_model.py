@@ -6,6 +6,44 @@ from stage_dflowfm_model import ModelCollector, copy_file, file_inventory, stage
 
 
 class ModelCollectorTest(unittest.TestCase):
+    def test_confirmed_plan_copies_without_another_scan(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "source"
+            destination = root / "local"
+            source.mkdir()
+            mdu = source / "model.mdu"
+            data = source / "data.nc"
+            mdu.write_text("NetFile = data.nc\n", encoding="utf-8")
+            data.write_bytes(b"data")
+            confirmations: list[set[Path]] = []
+
+            collector, _ = stage_model(
+                mdu,
+                destination,
+                confirm_copy=lambda plan, _root: confirmations.append(set(plan.files)) or True,
+            )
+
+            self.assertEqual([collector.files], confirmations)
+            self.assertFalse(collector.cancelled)
+            self.assertEqual(b"data", (destination / "data.nc").read_bytes())
+
+    def test_declined_plan_changes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "source"
+            destination = root / "local"
+            source.mkdir()
+            mdu = source / "model.mdu"
+            mdu.write_text("[General]\n", encoding="utf-8")
+
+            collector, _ = stage_model(
+                mdu, destination, confirm_copy=lambda _plan, _root: False
+            )
+
+            self.assertTrue(collector.cancelled)
+            self.assertFalse(destination.exists())
+
     def test_arl_file_is_collected_without_scanning_its_contents(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
