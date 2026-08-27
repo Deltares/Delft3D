@@ -874,6 +874,10 @@ contains
       logical :: flownode_1_is_coordinate_1, flownode_1_is_coordinate_2
       logical :: flownode_2_is_coordinate_1, flownode_2_is_coordinate_2
 
+      if (.not. newculverts) then ! old long culverts cannot use coordinate matching, but also don't need direction detection
+         return
+      end if
+
       if (longculverts(ilongc)%numlinks <= 0) then
          return
       end if
