@@ -18,9 +18,11 @@ from typing import Callable, Iterable
 
 REFERENCE_KEY = re.compile(r"file(?:new|old|s|name)?$", re.IGNORECASE)
 ASSIGNMENT = re.compile(r"^\s*([^#;=]+?)\s*=\s*(.*?)\s*$")
-TEXT_FORMATS = {
+# Only formats whose schema can point to additional input files belong here.
+# BC files contain inline forcing metadata/data; the D-Flow FM BC schema has no
+# file-valued header key, so scanning a large BC body is unnecessary.
+REFERENCE_CONTAINER_FORMATS = {
     ".arl",
-    ".bc",
     ".cld",
     ".cmp",
     ".dad",
@@ -36,8 +38,9 @@ TEXT_FORMATS = {
 }
 OUTPUT_KEYS = {"hisfile", "mapfile"}
 SHAPEFILE_SIDECARS = {".cpg", ".dbf", ".prj", ".qpj", ".shx"}
-REFERENCE_SUFFIXES = TEXT_FORMATS | {
+REFERENCE_SUFFIXES = REFERENCE_CONTAINER_FORMATS | {
     ".asc",
+    ".bc",
     ".bmp",
     ".csv",
     ".dat",
@@ -106,7 +109,7 @@ class ModelCollector:
             if self.on_scan:
                 self.on_scan(len(self.files), len(pending), path)
             self._add_sidecars(path, pending)
-            if path.suffix.lower() not in TEXT_FORMATS:
+            if path.suffix.lower() not in REFERENCE_CONTAINER_FORMATS:
                 continue
             for referenced in self._references_in(path):
                 if referenced not in self.files:

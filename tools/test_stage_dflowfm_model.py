@@ -6,6 +6,23 @@ from stage_dflowfm_model import ModelCollector, copy_file, file_inventory, stage
 
 
 class ModelCollectorTest(unittest.TestCase):
+    def test_bc_file_is_collected_without_scanning_its_contents(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            mdu = root / "model.mdu"
+            forcing = root / "large.bc"
+            mdu.write_text("forcingFile = large.bc\n", encoding="utf-8")
+            forcing.write_text(
+                "[Forcing]\nFILENAME = must_not_be_followed.nc\n",
+                encoding="utf-8",
+            )
+
+            collector = ModelCollector(mdu)
+            files = collector.collect()
+
+            self.assertEqual({mdu.resolve(), forcing.resolve()}, files)
+            self.assertFalse(collector.missing)
+
     def test_collects_file_valued_structure_parameter(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
