@@ -25,7 +25,7 @@ contains
       integer :: L0, iup, LL, kk, k1, k2
       real(kind=dp) :: hhi(3), zti(3), zbi(3)
       real(kind=dp) :: wstr, gatefraction
-      real(kind=dp) :: au1, au2, au3, autot
+      real(kind=dp) :: au1, au2, au3
       
       hhi = 0.0_dp
       zti = 0.0_dp
@@ -100,7 +100,6 @@ contains
                   ru(LL) = 0.0_dp
                end if
             end do
-            autot = sum(au(Lb:Lt))
          end if
       end do
    end subroutine distribute_linearized_3d_structure_coefficients
