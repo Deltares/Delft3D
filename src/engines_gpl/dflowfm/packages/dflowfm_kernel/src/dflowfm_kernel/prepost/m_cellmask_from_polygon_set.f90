@@ -254,7 +254,7 @@ contains
       integer :: i_start, i_end, n_points
 
       ! Get bounds for this polygon from module arrays
-      associate (geometry => this%geometry)
+      associate (geometry => self%geometry)
          i_start = geometry%polygon_start(i_poly)
          i_end = geometry%polygon_end(i_poly)
          n_points = i_end - i_start + 1
@@ -562,8 +562,6 @@ contains
       use network_data, only: nump
       use m_missing, only: dmiss
 
-      implicit none
-
       class(t_netcell_set), intent(in) :: self !< Net-cell set to query.
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
@@ -600,8 +598,6 @@ contains
 
 !> Find all cells that a segment crosses and mark them in cellmask
    subroutine find_cells_for_segment(cache, xa, ya, xb, yb, cellmask)
-
-      implicit none
 
       class(t_polygon_set), intent(in) :: cache
       real(kind=dp), intent(in) :: xa, ya, xb, yb !< Segment endpoints
