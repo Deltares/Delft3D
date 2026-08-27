@@ -46,7 +46,7 @@ contains
 
       integer, intent(in) :: polygon_points !< Number of polygon points
       integer, intent(in) :: num_netcells !< Number of points to mask
-      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
+      real(kind=dp), dimension(polygon_points), intent(in) :: x_poly, y_poly, z_poly !< Polygon coordinate arrays
       real(kind=dp), intent(in), dimension(:) :: x_points, y_points !< Point coordinates to mask
       logical, intent(in) :: enable_binning !< Whether to use latitude bins for large polygon sets.
       integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
@@ -122,7 +122,7 @@ contains
 
       if (ndx1d > 0) then
          mask(ndx2d + 1:ndxi) = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), &
-                                               yz(ndx2d + 1:ndxi), enable_binning=.false.)
+                                                yz(ndx2d + 1:ndxi), enable_binning=.false.)
       end if
 
       call delpol()

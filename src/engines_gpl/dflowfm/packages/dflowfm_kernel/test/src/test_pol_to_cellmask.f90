@@ -123,7 +123,7 @@ contains
       character(len=*), parameter :: polygon_file_a = 'test_map_mask_a.pol'
       character(len=*), parameter :: polygon_file_b = 'test_map_mask_b.pol'
       integer :: ierror, original_jsferic, original_jins
-      integer, allocatable :: mask(:)
+      integer, dimension(:), allocatable :: mask
 
       ! File A contains two polygons; file B contributes a third one.
       call write_polygon_file(polygon_file_a, [0.0_dp, 20.0_dp], ierror)
@@ -465,8 +465,8 @@ contains
       integer :: actual_mask, expected_mask, polygons_containing_point
       logical :: inside_large_polygon, inside_small_polygon
       real(kind=dp) :: angle
-      real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
-      real(kind=dp) :: x_query(query_points), y_query(query_points)
+      real(kind=dp), dimension(polygon_points) :: x_poly, y_poly, z_poly
+      real(kind=dp), dimension(query_points) :: x_query, y_query
       type(t_polygon_set) :: polygon_cache
 
       do point = 1, large_polygon_points - 1
@@ -526,9 +526,9 @@ contains
 
       integer :: actual_mask, original_jins, point, segment, step
       real(kind=dp) :: fraction
-      real(kind=dp) :: vertex_x(polygon_segments + 1), vertex_y(polygon_segments + 1)
-      real(kind=dp) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points)
-      real(kind=dp) :: x_query(query_points), y_query(query_points)
+      real(kind=dp), dimension(polygon_segments + 1) :: vertex_x, vertex_y
+      real(kind=dp), dimension(polygon_points) :: x_poly, y_poly, z_poly
+      real(kind=dp), dimension(query_points) :: x_query, y_query
       type(t_polygon_set) :: polygon_cache
 
       ! Dense L-shape: the internal horizontal edge at y=1 lies exactly on a latitude-bin boundary.
@@ -557,7 +557,7 @@ contains
       do point = 1, query_points
          actual_mask = merge(1, 0, polygon_cache%is_masked(x_query(point), y_query(point)))
          call f90_expect_eq(actual_mask, merge(1, 0, pinpok_raycast(x_query(point), y_query(point), &
-                                                                   x_poly, y_poly, polygon_points)), &
+                                                                    x_poly, y_poly, polygon_points)), &
                             "Binned and full polygon scans should agree at edges and bin boundaries")
       end do
       jins = original_jins
@@ -977,8 +977,8 @@ contains
       use network_data, only: nump
       use m_alloc, only: realloc
 
-      real(kind=dp), allocatable :: xpoly(:), ypoly(:)
-      integer, allocatable :: crossed_cells(:)
+      real(kind=dp), dimension(:), allocatable :: xpoly, ypoly
+      integer, dimension(:), allocatable :: crossed_cells
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
@@ -995,7 +995,6 @@ contains
       ! 1 | 2 | 3
       nump = 9
       call setup_grid_netcells(3, 3, 10.0_dp)
-
 
       ! Create polyline from (1, 3) to (29, 27)
       ! This goes slightly off-diagonal, crossing cells: 1, 4, 5, 6, 9
@@ -1046,8 +1045,8 @@ contains
       use network_data, only: nump
       use m_alloc, only: realloc
 
-      real(kind=dp), allocatable :: xpoly(:), ypoly(:)
-      integer, allocatable :: crossed_cells(:)
+      real(kind=dp), dimension(:), allocatable :: xpoly, ypoly
+      integer, dimension(:), allocatable :: crossed_cells
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
@@ -1108,8 +1107,8 @@ contains
       use network_data, only: nump
       use m_alloc, only: realloc
 
-      real(kind=dp), allocatable :: xpoly(:), ypoly(:)
-      integer, allocatable :: crossed_cells(:)
+      real(kind=dp), dimension(:), allocatable :: xpoly, ypoly
+      integer, dimension(:), allocatable :: crossed_cells
       character, dimension(:), allocatable :: error
       integer :: i
       logical :: found_cell
@@ -1159,7 +1158,7 @@ contains
 
    subroutine write_polygon_file(filename, x_origins, ierror)
       character(len=*), intent(in) :: filename
-      real(kind=dp), intent(in) :: x_origins(:)
+      real(kind=dp), dimension(:), intent(in) :: x_origins
       integer, intent(out) :: ierror
 
       integer :: ipolygon, unit
