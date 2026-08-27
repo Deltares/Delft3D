@@ -40,6 +40,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     use globaldata
     use string_module
     use system_utils, only: exifil
+    use m_scannr, only: scannr
     !
     implicit none
     !

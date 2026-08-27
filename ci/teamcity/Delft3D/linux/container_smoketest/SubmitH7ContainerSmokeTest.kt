@@ -34,6 +34,10 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
 
         // TeamCity configuration name for result upload
         param("teamcity_receive_config", "${LinuxReceiveH7ContainerSmokeTest.id}")
+
+        // TestBench still takes --username/--password; map them to DVC remote credentials.
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("s3_dsctestbench_secret", DslContext.getParameter("dvc_testbench_secret"))
     }
 
     vcs {
@@ -54,6 +58,7 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                     --reference
                     --skip-run 
                     --skip-post-processing 
+                    --skip-download references
                     --config configs/smoke_tests/apptainer_lnx64.xml
                     --log-level INFO
                     --parallel
@@ -67,8 +72,7 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                 --rm
                 --pull always
                 --shm-size 8G
-                -v %teamcity.build.workingDir%:/data/data/cases
-                -v %teamcity.build.workingDir%/test/deltares_testbench:/testbench
+                --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }
         script {

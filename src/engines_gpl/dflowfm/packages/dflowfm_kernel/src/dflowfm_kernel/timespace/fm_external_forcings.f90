@@ -42,7 +42,8 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
+      allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -427,7 +428,7 @@ contains
       do link = 1, number_of_links
          kb = link2cell(1, link)
          ki = link2cell(2, link)
-         hwavcom(kb) = hwavcom(ki)
+         hwav(kb) = hwav(ki)
          twav(kb) = twav(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
@@ -446,7 +447,9 @@ contains
 !> fill_open_boundary_cells_with_inner_values_fewer
    subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
       use m_waves
-      use m_flowparameters, only: jawave, waveforcing
+      use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                             WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                             WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
 
       integer, intent(in) :: number_of_links !< number of links
       integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
@@ -454,25 +457,60 @@ contains
       integer :: link !< link counter
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
+      logical :: significant_height_required
+      logical :: period_required
+      logical :: direction_required
+      logical :: force_x_required
+      logical :: force_y_required
+      logical :: dissipation_total_required
+      logical :: dissipation_surface_required
+      logical :: dissipation_white_capping_required
+      logical :: wave_kinematics_required
 
-      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
-         do link = 1, number_of_links
-            kb = link2cell(1, link)
-            ki = link2cell(2, link)
-            distot(kb) = distot(ki)
-         end do
-      end if
+      significant_height_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+      period_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
+      direction_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+      force_x_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_X)
+      force_y_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y)
+      dissipation_total_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_TOTAL)
+      dissipation_surface_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_SURFACE)
+      dissipation_white_capping_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+      wave_kinematics_required = significant_height_required .and. period_required .and. direction_required
+
       do link = 1, number_of_links
          kb = link2cell(1, link)
          ki = link2cell(2, link)
-         hwavcom(kb) = hwavcom(ki)
-         twav(kb) = twav(ki)
-         phiwav(kb) = phiwav(ki)
-         uorbwav(kb) = uorbwav(ki)
-         sxwav(kb) = sxwav(ki)
-         sywav(kb) = sywav(ki)
-         mxwav(kb) = mxwav(ki)
-         mywav(kb) = mywav(ki)
+         if (significant_height_required) then
+            hwav(kb) = hwav(ki)
+         end if
+         if (period_required) then
+            twav(kb) = twav(ki)
+         end if
+         if (direction_required) then
+            phiwav(kb) = phiwav(ki)
+         end if
+         if (force_x_required) then
+            sxwav(kb) = sxwav(ki)
+         end if
+         if (force_y_required) then
+            sywav(kb) = sywav(ki)
+         end if
+         if (dissipation_total_required) then
+            distot(kb) = distot(ki)
+         end if
+         if (dissipation_surface_required) then
+            dsurf(kb) = dsurf(ki)
+            sbxwav(kb) = sbxwav(ki)
+            sbywav(kb) = sbywav(ki)
+         end if
+         if (dissipation_white_capping_required) then
+            dwcap(kb) = dwcap(ki)
+         end if
+         if (wave_kinematics_required) then
+            uorbwav(kb) = uorbwav(ki)
+            mxwav(kb) = mxwav(ki)
+            mywav(kb) = mywav(ki)
+         end if
       end do
 
    end subroutine fill_open_boundary_cells_with_inner_values_fewer
@@ -683,7 +721,7 @@ contains
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          do i_ext = 1, size(extfile_new_list)
             call read_location_files_from_boundary_blocks(trim(extfile_new_list(i_ext)), nx, kce, num_bc_ini_blocks, &
-               numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                          numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
 
             call read_initialtracer_properties(trim(extfile_new_list(i_ext)), nx)
          end do
@@ -1862,6 +1900,64 @@ contains
 
    end function flow_initexternalforcings
 
+   !> If period is optional and present, set the requirement for period to be true so that the ec-module will update it.
+   subroutine finalize_offline_wave_input_requirements()
+      use m_flowparameters, only: jawave, waveforcing
+      use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
+
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_RADIATION_STRESS .and. &
+          wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_PERIOD)) then
+         offline_wave_input_requirements = ior(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
+      end if
+   end subroutine finalize_offline_wave_input_requirements
+
+!> Validate all external-forcing providers required by the active offline wave configuration.
+   subroutine validate_offline_wave_input_providers(iresult)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_flowparameters, only: jawave, waveforcing
+      use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      integer, intent(inout) :: iresult
+
+      logical :: missing_input
+
+      if (jawave /= WAVE_NC_OFFLINE) then
+         return
+      end if
+
+      missing_input = .false.
+      call report_missing_input(WAVE_INPUT_SIGNIFICANT_HEIGHT, 'wavesignificantheight')
+      call report_missing_input(WAVE_INPUT_PERIOD, 'waveperiod')
+      call report_missing_input(WAVE_INPUT_DIRECTION, 'wavedirection')
+      call report_missing_input(WAVE_INPUT_FORCE_X, 'xwaveforce')
+      call report_missing_input(WAVE_INPUT_FORCE_Y, 'ywaveforce')
+      call report_missing_input(WAVE_INPUT_DISSIPATION_TOTAL, 'totalwaveenergydissipation')
+      call report_missing_input(WAVE_INPUT_DISSIPATION_SURFACE, 'wavebreakerdissipation')
+      call report_missing_input(WAVE_INPUT_DISSIPATION_WHITE_CAPPING, 'whitecappingdissipation')
+
+      if (missing_input) then
+         iresult = DFM_WRONGINPUT
+      else
+         iresult = DFM_NOERR
+      end if
+
+   contains
+
+      subroutine report_missing_input(quantity_flag, quantity_name)
+         integer, intent(in) :: quantity_flag
+         character(len=*), intent(in) :: quantity_name
+
+         if (wave_input_is_required(offline_wave_input_requirements, quantity_flag) .and. &
+             .not. wave_input_is_required(offline_wave_input_providers, quantity_flag)) then
+            call mess(LEVEL_ERROR, 'Missing offline wave quantity '''//quantity_name// &
+                      ''' required by the active Wavemodelnr = 7 configuration with Waveforcing =', waveforcing)
+            missing_input = .true.
+         end if
+      end subroutine report_missing_input
+
+   end subroutine validate_offline_wave_input_providers
+
 !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
    subroutine setup(iresult)
       use dfm_error, only: DFM_NOERR
@@ -1883,6 +1979,7 @@ contains
       use m_bnd, only: alloc_bnd, dealloc_bndarr
       use messagehandling, only: msgbuf, LEVEL_WARN, mess
       use network_data, only: LINK_1D_BOUNDARY
+      use m_waves, only: reset_offline_wave_input_providers
 
       integer, intent(out) :: iresult
 
@@ -2571,6 +2668,8 @@ contains
          end if
       end if
 
+      call reset_offline_wave_input_providers()
+
       if (iresult /= DFM_NOERR) then
          call mess(LEVEL_WARN, 'Error during initialisation of External Forcings. See message:')
          call dfm_strerror(msgbuf, iresult)
@@ -2624,9 +2723,9 @@ contains
       ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
       ! capacity, while is_source_sink_bubblescreen is sized to num_total.
       if (allocated(source_sinks%is_normal)) then
-          source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
-          source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
-          source_sinks%num_normal = count(source_sinks%is_normal)
+         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+         source_sinks%num_normal = count(source_sinks%is_normal)
       end if
 
       call fill_geometry_source_sinks()
@@ -2653,14 +2752,15 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
-      type(t_storage), pointer :: stors(:)
+      type(t_storage), dimension(:), pointer :: stors
+      type(t_netcell_set) :: netcell_cache
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -2669,6 +2769,8 @@ contains
       end if
 
       call finalize_1dfield_global_values()
+      call finalize_offline_wave_input_requirements()
+      call validate_offline_wave_input_providers(ierr)
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
@@ -3023,19 +3125,17 @@ contains
                end if
             end do
          end if
-         call init_cell_geom_as_polylines()
+         netcell_cache = t_netcell_set()
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
-               ja = point_find_netcell(Xz(n), Yz(n))
+               ja = netcell_cache%find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
          !$OMP END PARALLEL DO
-         call cleanup_cell_geom_polylines()
-
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)

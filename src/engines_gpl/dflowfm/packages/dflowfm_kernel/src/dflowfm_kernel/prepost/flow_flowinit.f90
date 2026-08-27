@@ -49,7 +49,6 @@ module m_flow_flowinit
    use m_thacker1d, only: thacker1d
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
-   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
@@ -1344,24 +1343,20 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use precision, only: dp
-      use m_flowparameters, only: jawave, flow_without_waves, waveforcing, jawavestokes
+      use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
-      use m_flowgeom, only: lnx, ln, csu, snu, ndx
+      use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
-      use m_transform_wave_physics
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_waveconst, only: WAVE_SWAN_ONLINE, WAVE_UNIFORM, WAVE_NC_OFFLINE
 
       implicit none
-
-      integer, parameter :: SWAN = 3
-      integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
       integer :: right_node
-      integer :: ierror
 
       real(kind=dp) :: hw
       real(kind=dp) :: tw
@@ -1372,54 +1367,25 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
-         if (jawave >= SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         twav = twavcom
-         !
-         if (jawave == WAVE_NC_OFFLINE) then
-            !
-            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
-                               & sxwav, sywav, mxwav, mywav, &
-                               & distot, dsurf, dwcap, &
-                               & ndx, 1, hwav, twav, &
-                               & ag, .true., waveforcing, &
-                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
-         end if
-         !
-         call wave_uorbrlabda()
+         call compute_wave_parameters()
          if (kmx == 0) then
-            call wave_comp_stokes_velocities()
             call tauwave()
          end if
          call setwavfu()
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
-         ! Only compute uorb
-         ! Works both for 2D and 3D
-         if (jawave == SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         call wave_uorbrlabda() ! hwav gets depth-limited here
+         call compute_wave_parameters()
       end if
 
-      if (jawave == CONST .and. .not. flow_without_waves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
-         hwav = min(hwavcom, gammax * hs)
+         hwav = min(hwavuni, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
             if (jawavestokes > NO_STOKES_DRIFT) then
