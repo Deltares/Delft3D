@@ -16,7 +16,6 @@ module precice_adapter
    implicit none(type, external)
 
    private
-   real(kind=dp), save :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
    public :: precice_adapter_add_to_fm_administration !> Needs to be public for unittesting
    public :: precice_adapter_deallocate_read_arrays !> Needs to be public for unittesting
@@ -86,6 +85,7 @@ module precice_adapter
       real(kind=c_double), dimension(:), allocatable :: sources_sinks_discharge
       real(kind=c_double), dimension(:), allocatable :: sources_momentum_magnitude_weighted
       real(kind=c_double), dimension(:), allocatable :: sources_momentum_direction
+      real(kind=dp) :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -190,7 +190,7 @@ contains
       end if
 
       call precicef_initialize()
-      summed_time_progress = 0.0
+      self%summed_time_progress = 0.0
    end subroutine precice_adapter_initialize
 
 
@@ -226,11 +226,11 @@ contains
 
       ! Update summed time progress and check if we need to advance preCICE
       call precicef_get_max_time_step_size(max_timestep)
-      summed_time_progress = summed_time_progress + timestep
-      if (summed_time_progress > max_timestep + 1.0) then
+      self%summed_time_progress = self%summed_time_progress + timestep
+      if (self%summed_time_progress > max_timestep + 1.0) then
          call mess(LEVEL_ERROR, "Summed user time steps are beyond the preCICE coupling window!")
       end if
-      if (summed_time_progress > max_timestep - 1.0e-5) then
+      if (self%summed_time_progress > max_timestep - 1.0e-5) then
          ! Remesh the 3D mesh; that only works if the time window is complete (i.e. preCICE is ready for a new mesh).
          call precicef_is_time_window_complete(is_time_window_complete)
          if (is_time_window_complete == 1) then
@@ -243,9 +243,9 @@ contains
          call precice_adapter_add_to_fm_administration(self)
          call precicef_advance(max_timestep)
          ! Reset summed_time_progress after advancing
-         summed_time_progress = 0.0
+         self%summed_time_progress = 0.0
       else
-         write (*, *) "Not advancing preCICE yet, summed_time_progress = ", summed_time_progress, " max_timestep = ", max_timestep
+         write (*, *) "Not advancing preCICE yet, summed_time_progress = ", self%summed_time_progress, " max_timestep = ", max_timestep
       end if
    end subroutine precice_adapter_update
 
