@@ -6,6 +6,23 @@ from stage_dflowfm_model import ModelCollector, copy_file, file_inventory, stage
 
 
 class ModelCollectorTest(unittest.TestCase):
+    def test_arl_file_is_collected_without_scanning_its_contents(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            mdu = root / "model.mdu"
+            distribution = root / "trachytopes.arl"
+            mdu.write_text("TrtL = trachytopes.arl\n", encoding="utf-8")
+            distribution.write_text(
+                "1 1 100 0.5\nFILENAME = must_not_be_followed.dat\n",
+                encoding="utf-8",
+            )
+
+            collector = ModelCollector(mdu)
+            files = collector.collect()
+
+            self.assertEqual({mdu.resolve(), distribution.resolve()}, files)
+            self.assertFalse(collector.missing)
+
     def test_bc_file_is_collected_without_scanning_its_contents(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

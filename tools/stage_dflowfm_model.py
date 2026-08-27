@@ -22,7 +22,6 @@ ASSIGNMENT = re.compile(r"^\s*([^#;=]+?)\s*=\s*(.*?)\s*$")
 # BC files contain inline forcing metadata/data; the D-Flow FM BC schema has no
 # file-valued header key, so scanning a large BC body is unnecessary.
 REFERENCE_CONTAINER_FORMATS = {
-    ".arl",
     ".cld",
     ".cmp",
     ".dad",
@@ -39,6 +38,7 @@ REFERENCE_CONTAINER_FORMATS = {
 OUTPUT_KEYS = {"hisfile", "mapfile"}
 SHAPEFILE_SIDECARS = {".cpg", ".dbf", ".prj", ".qpj", ".shx"}
 REFERENCE_SUFFIXES = REFERENCE_CONTAINER_FORMATS | {
+    ".arl",
     ".asc",
     ".bc",
     ".bmp",
