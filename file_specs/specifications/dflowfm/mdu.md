@@ -1132,7 +1132,6 @@ The keywords and options listed below are no longer supported and will cause an 
 | Keyword/value | Notes |
 | ------------- | ----- |
 | `[model] mduFormatVersion` | Use `[general] fileVersion` instead. |
-| `[numerics] relax` | Keyword no longer supported. |
 | `[physics] umodLin` | Keyword no longer supported. |
 | `[sediment] masBalMinDep` | Keyword no longer supported. |
 
@@ -1196,18 +1195,19 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[geometry] Grdang` | Keyword no longer supported. |
 | `[geometry] iThinDykeScheme` | Use `[numerics] fixedWeirScheme` instead. |
 | `[geometry] manholeFile` | Use `[geometry] storageNodeFile` instead. |
-| `[geometry] nodeFile` | Keyword no longer supported. Use `[geometry] frictFile` instead. |
+| `[geometry] nodeFile` | Use `[geometry] storageNodeFile` instead. |
 | `[geometry] noOptimizedPolygon` | Keyword no longer supported. |
-| `[geometry] roughnessFiles` | Keyword no longer supported. Use `[geometry] frictFile` instead. |
-| `[geometry] thinDykeFile` | Use `[numerics] fixedWeirFile` instead. |
+| `[geometry] roughnessFiles` | Use `[geometry] frictFile` instead. |
+| `[geometry] thinDykeFile` | Use `[geometry] fixedWeirFile` instead. |
 | `[numerics] CFLWaveFrac` | Keyword no longer supported. |
 | `[numerics] filter` | Option no longer supported. |
 | `[numerics] hkad` | Keyword no longer supported. |
 | `[numerics] iThinDykeScheme` | Use `[numerics] fixedWeirScheme` instead. |
 | `[numerics] jaEmbed1d` | Keyword no longer supported. |
 | `[numerics] jaOrgSethu` | Keyword no longer supported. |
-| `[numerics] qhRelax` | Option no longer supported. |
+| `[numerics] qhRelax` | Option no longer needed due to improved semi-implicit algorithm. |
 | `[numerics] sobekdfm_minimal_1d2d_embankment` | Use `[numerics] lateral_fixedweir_minimal_1d2d_embankment` instead. |
+| `[numerics] sobekdfm_relax` | Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] sobekdfm_umin` | Use `[numerics] lateral_fixedweir_umin` instead. |
 | `[numerics] sobekdfm_umin_method` | Use `[numerics] lateral_fixedweir_umin_method` instead. |
 | `[numerics] thinDykeContraction` | Use `[numerics] fixedWeirContraction` instead. |
@@ -1218,11 +1218,11 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[output] waqFileBase` | Keyword no longer supported. |
 | `[output] wrihis_heatflux` | Renamed to `[output] wriHis_heat_fluxes`. |
 | `[output] wrimap_input_dt` | Keyword no longer supported. |
-| `[output] wrishp_enc` | Keyword no longer supported. |
+| `[output] wrishp_enc` | Use `[output] wrishp_dryarea` instead. |
 | `[output] writeBalanceFile` | Keyword no longer supported. Superseded by default information included in the history file. |
 | `[physics] effectSpiral` | Use `Espir` contained in `MorFile` instead. |
 | `[physics] stericCorrection` | Keyword no longer supported. |
-| `[processes] processFluxIntegration` | Keyword no longer supported. |
+| `[processes] processFluxIntegration` | Process fluxes integration is always done by WAQ. |
 | `[time] autoTimeStepDiff` | Use `[time] autoTimeStepVisc` instead. |
 | `[trachytopes] trtdt` | Use `[trachytopes] dtTrt` instead. |
 | `[waves] waveNikuradse` | Keyword no longer supported. |
