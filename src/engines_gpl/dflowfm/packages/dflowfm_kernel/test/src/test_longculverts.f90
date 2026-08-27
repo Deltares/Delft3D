@@ -663,9 +663,9 @@ contains
       use m_1d_structures, only: FLOWDIR_POSITIVE
       use m_flow, only: au, u1
       use m_flowgeom, only: ln
-      use m_cell_geometry, only: xz, yz
       use m_longculverts, only: default_longculverts, find1d2dculvertlinks, longculvertsToProfs, reduceFlowAreaAtLongculverts
       use m_longculverts_data, only: longculverts
+      use network_data, only: xzw, yzw
       use unstruc_channel_flow, only: network
       use dfm_error, only: DFM_NOERR
       use precision, only: dp
@@ -705,8 +705,8 @@ contains
 
       ! Simulate a partition where the first global segment is absent and the
       ! representative local flowlinks(1) corresponds to coordinate pair 2->3.
-      longculverts(1)%xcoords = [-huge(1.0_dp), xz(ln(1, lc_link)), xz(ln(2, lc_link))]
-      longculverts(1)%ycoords = [-huge(1.0_dp), yz(ln(1, lc_link)), yz(ln(2, lc_link))]
+      longculverts(1)%xcoords = [-huge(1.0_dp), xzw(ln(1, lc_link)), xzw(ln(2, lc_link))]
+      longculverts(1)%ycoords = [-huge(1.0_dp), yzw(ln(1, lc_link)), yzw(ln(2, lc_link))]
       longculverts(1)%orientation = -1
       call longculvertsToProfs(.true.)
       call f90_expect_eq(longculverts(1)%orientation, 1, &
