@@ -518,13 +518,13 @@ contains
 
 !> Fast replacement for INCELLS using cached net-cell geometry.
    elemental function netcell_set_find_netcell(self, x, y) result(k)
-   use geometry_module, only: pinpok_raycast
+      use geometry_module, only: pinpok_raycast
 
       class(t_netcell_set), intent(in) :: self !< Net-cell set to query.
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
-   integer :: first_point, i_poly, last_point, num_points
+      integer :: first_point, i_poly, last_point, num_points
       logical :: is_inside
 
       k = 0
