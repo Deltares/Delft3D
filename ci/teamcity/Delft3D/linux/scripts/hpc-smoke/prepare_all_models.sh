@@ -109,12 +109,20 @@ parse_json_config() {
 
 get_model_config_from_json() {
     local model_name="$1"
-    
+
     if [ -n "${MODEL_CONFIG[$model_name]:-}" ]; then
         echo "${MODEL_CONFIG[$model_name]}"
         return 0
     fi
-    
+
+    local key
+    for key in "${!MODEL_CONFIG[@]}"; do
+        if [[ "$model_name" == *"$key"* ]]; then
+            echo "${MODEL_CONFIG[$key]}"
+            return 0
+        fi
+    done
+
     return 1
 }
 
@@ -267,7 +275,8 @@ prepare_directory() {
     fi
     
     # Get user input for nodes and tasks
-    local model_name=$(basename "$dir")
+    local model_name
+    model_name=$(smoke_test_model_name "$dir")
     echo "    Model: $model_name"
     local nodes_tasks_output
     nodes_tasks_output=$(get_nodes_and_tasks "$model_name")
@@ -286,7 +295,7 @@ prepare_directory() {
     # Extract file information
     local mdu_file_folder=$(extract_working_dir "$dir" "$dimr_file")
     local mdu_file=$(extract_mdu_file "$dir" "$dimr_file")
-    local job_name=$(basename "$dir")
+    local job_name="$model_name"
     
     # Get platform configuration
     get_platform_config "$platform"
