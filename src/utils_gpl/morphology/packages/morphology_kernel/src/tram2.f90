@@ -320,9 +320,9 @@ contains
                    & uwc, uuu, vvv, rlabda, taubcw, &
                    & hrms, delw, uon, uoff, uwbih, &
                    & delm, fc1, fw1, phicur, rksrs, &
-                   & i2d3d, mudfrac, fsilt, taucr1, psi, &
+                   & i2d3d, mudfrac, fsilt, psi, &
                    & dzduu, dzdvv, eps, camax, iopsus, &
-                   & ag, wave, tauadd, gamtcr, betam, &
+                   & ag, wave, tauadd, &
                    & awb, wform, phi_phase, r)
       realpar(RP_DSS) = real(dss, hp)
       !

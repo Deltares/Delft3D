@@ -173,7 +173,6 @@ contains
             allocate(dunelength_tmp(1:ndx))
             dunelength_tmp = 1.0e10_fp
          end if
-         morft = -999.0_fp
          if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,dunelength_tmp, sbtot, dtmor, morft, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
