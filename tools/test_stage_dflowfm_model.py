@@ -6,6 +6,30 @@ from stage_dflowfm_model import ModelCollector, copy_file, file_inventory, stage
 
 
 class ModelCollectorTest(unittest.TestCase):
+    def test_collects_backslash_continued_file_list(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            run = root / "run"
+            geometry = root / "geometry"
+            run.mkdir()
+            geometry.mkdir()
+            mdu = run / "model.mdu"
+            mdu.write_text(
+                "CrsFile = ../geometry/first.pli \\ # first cross section\n"
+                "          ../geometry/second.pli \\\n"
+                "          local.pli # local addition\n",
+                encoding="utf-8",
+            )
+            (geometry / "first.pli").write_text("first", encoding="utf-8")
+            (geometry / "second.pli").write_text("second", encoding="utf-8")
+            (run / "local.pli").write_text("local", encoding="utf-8")
+
+            collector = ModelCollector(mdu)
+            files = collector.collect()
+
+            self.assertEqual(4, len(files))
+            self.assertFalse(collector.missing)
+
     def test_confirmed_plan_copies_without_another_scan(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

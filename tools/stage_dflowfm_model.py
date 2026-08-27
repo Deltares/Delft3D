@@ -216,9 +216,24 @@ class ModelCollector:
         except OSError as error:
             raise RuntimeError(f"Could not read {path}: {error}") from error
 
+        logical_line = ""
         for line in text.splitlines():
             line = line.split("#", 1)[0].split(";", 1)[0]
-            match = ASSIGNMENT.match(line)
+            stripped = line.strip()
+            continued = stripped.endswith("\\")
+            if continued:
+                stripped = stripped[:-1].rstrip()
+            logical_line = f"{logical_line} {stripped}".strip()
+            if continued:
+                continue
+
+            match = ASSIGNMENT.match(logical_line)
+            if match:
+                yield match.group(1).strip(), match.group(2).strip()
+            logical_line = ""
+
+        if logical_line:
+            match = ASSIGNMENT.match(logical_line)
             if match:
                 yield match.group(1).strip(), match.group(2).strip()
 
