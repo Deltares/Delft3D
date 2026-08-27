@@ -44,7 +44,7 @@ module m_cellmask_from_polygon_set
       real(kind=dp), dimension(:), allocatable :: x, y !< polygon x and y coordinates, separated by dmiss.
       real(kind=dp), dimension(:), allocatable :: x_min, y_min, x_max, y_max !< Polygon bounds; size `polygon_count`.
       logical, dimension(:), allocatable :: is_enclosure !< Whether each polygon defines an enclosure; size `polygon_count`.
-      integer, dimension(:), allocatable :: polygon_start, polygon_end !< Inclusive packed-array bounds; size `polygon_count`.
+      integer, dimension(:), allocatable :: polygon_start, polygon_end !< Start and end packed-array index; size `polygon_count`.
       integer :: polygon_count = 0 !< Number of polygons in the geometry.
       logical :: enclosures_present = .false. !< Whether the geometry contains at least one enclosure polygon.
    end type t_polygon_geometry
@@ -53,15 +53,18 @@ module m_cellmask_from_polygon_set
       module procedure construct_polygon_geometry
    end interface t_polygon_geometry
 
-   !> Latitude-binned lookup table containing binned polygon edges for ray-casting. T
-   ! The bins contain only edges the ray might intersect, reducing raycasting work significantly for large polygons. 
+   !> Index of polygon edges grouped into horizontal bands for point-in-polygon ray casting.
+   !! Each polygon's y-range is divided into its own set of latitude bins. The number of each edge is
+   !! stored in every bin between its lowest and highest y-coordinate. A point query then ray-casts
+   !! against the edges listed in the bin containing the point, instead of scanning the whole polygon.
+   !! All polygons share a single flat CSR storage; global bin indices identify positions in that storage.
    type, private :: t_binned_edge_index
       private
-      integer, dimension(:), allocatable :: polygon_bin_start !< First global bin per polygon; size `polygon_count`.
-      integer, dimension(:), allocatable :: polygon_num_bins !< Number of latitude bins per polygon; size `polygon_count`.
-      integer, dimension(:), allocatable :: bin_offsets !< CSR offsets; size is the total number of bins plus one.
-      integer, dimension(:), allocatable :: edge_indices !< Ordered local edge indices; size is the total number of memberships.
-      real(kind=dp), dimension(:), allocatable :: polygon_bin_scale !< Coordinate-to-bin scale per polygon; size `polygon_count`.
+      integer, dimension(:), allocatable :: polygon_bin_start !< First bin in flat storage per polygon; size `polygon_count`.
+      integer, dimension(:), allocatable :: polygon_num_bins !< Number of horizontal bins per polygon; size `polygon_count`.
+      integer, dimension(:), allocatable :: bin_offsets !< Start of each bin in `edge_indices`; size `total_bins + 1`.
+      integer, dimension(:), allocatable :: edge_indices !< Polygon-local edge numbers grouped by bin.
+      real(kind=dp), dimension(:), allocatable :: polygon_bin_scale !< Factor mapping y-coordinates to bins; size `polygon_count`.
    contains
       procedure :: point_is_inside => binned_edge_index_point_is_inside
       procedure, private :: populate_bin_storage => binned_edge_index_populate_bin_storage
@@ -265,10 +268,11 @@ contains
 
    end function polygon_set_polygon_contains_point
 
-   !> Build a latitude-binned edge index for the complete polygon set.
-   !! A horizontal ray can intersect only edges whose vertical extent contains the query y-coordinate.
-   !! The index stores those candidate edges per latitude bin. It changes only which edges reach the
-   !! existing ray-casting calculation; it does not approximate or simplify polygon geometry.
+   !> Build a horizontal-bin edge index for every polygon in a polygon set.
+   !! For each polygon, choose a bin count from its number of edges and calculate the factor that maps
+   !! its y-range to those bins. Determine the number of edge entries required by assigning every
+   !! edge to all bins crossed by its vertical range. If that storage remains below the configured
+   !! limit, allocate the shared CSR arrays and populate each bin with polygon-local edge numbers.
    function construct_binned_edge_index(geometry) result(index)
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry to index.
       type(t_binned_edge_index) :: index
@@ -299,7 +303,7 @@ contains
          total_memberships = total_memberships + memberships
       end do
 
-      ! Keep the direct scan if long edges make the index too large.
+      ! Use direct polygon scans when storing all edge entries would exceed the memory limit.
       if (total_memberships > max_memberships_per_edge * int(total_edges, int64)) then
          deallocate (index%polygon_bin_start, index%polygon_num_bins, index%polygon_bin_scale)
          return
@@ -309,7 +313,10 @@ contains
 
    end function construct_binned_edge_index
 
-   !> Allocate and populate the shared compressed-row storage for the complete polygon set.
+   !> Build the flat CSR arrays that store the edge numbers belonging to every bin.
+   !! First count the edge numbers in each bin and convert those counts into offsets in `edge_indices`.
+   !! Then visit the polygon edges in polygon order and append each edge number to every bin crossed
+   !! by its vertical range. Polygon order is preserved to maintain ray-casting boundary behavior.
    subroutine binned_edge_index_populate_bin_storage(this, geometry, total_bins, total_memberships)
       class(t_binned_edge_index), intent(inout) :: this
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
@@ -320,7 +327,7 @@ contains
       integer :: bin_first, bin_last, bins, edge, i_bin, i_poly, num_edges
       integer :: next_bin, next_edge_entry
 
-      ! edge_bin_offsets/edge_indices use compressed-row storage: each bin owns one contiguous slice.
+      ! Reserve one contiguous slice of edge_indices for every bin.
       allocate (this%bin_offsets(total_bins + 1), this%edge_indices(int(total_memberships)))
       next_bin = 1
       next_edge_entry = 1
@@ -336,8 +343,7 @@ contains
       end do
       this%bin_offsets(total_bins + 1) = next_edge_entry
 
-      ! Insert local edge numbers in polygon order. The indexed ray cast therefore sums crossings
-      ! in exactly the same order as the full scan, preserving floating-point and boundary behavior.
+      ! Insert local edge numbers into their reserved bin slices in polygon order.
       do i_poly = 1, geometry%polygon_count
          bins = this%polygon_num_bins(i_poly)
          do i_bin = 1, bins
@@ -357,7 +363,10 @@ contains
 
    end subroutine binned_edge_index_populate_bin_storage
 
-   !> Count memberships in O(edges), without visiting every bin that an edge spans.
+   !> Count the edge entries needed to store one polygon in the bin index.
+   !! For each edge, find the first and last bin crossed by its vertical extent. Count every bin from
+   !! the first through the last, including both, because the edge number is stored once in each of
+   !! those bins. Sum these counts over all polygon edges.
    function binned_edge_index_count_edge_memberships(this, geometry, i_poly, bins) result(memberships)
       class(t_binned_edge_index), intent(in) :: this
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
@@ -374,7 +383,10 @@ contains
       end do
    end function binned_edge_index_count_edge_memberships
 
-   !> Count candidate edges in each latitude bin for one polygon.
+   !> Count how many edge numbers each bin of one polygon will contain.
+   !! Initialize all bin counts to zero. For every edge, find its first and last bin and increment the
+   !! count of each bin from the first through the last. These counts determine the CSR slice reserved
+   !! for every bin.
    subroutine binned_edge_index_count_edges_per_bin(this, geometry, i_poly, bins, bin_counts)
       class(t_binned_edge_index), intent(in) :: this
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
@@ -393,10 +405,10 @@ contains
       end do
    end subroutine binned_edge_index_count_edges_per_bin
 
-   !> Get the inclusive bin range intersected by an edge.
-   !! Both edge endpoints and queries use get_edge_bin, so equal y-coordinates always map to the same
-   !! bin. Filling every bin from the lower endpoint through the upper endpoint preserves all edges
-   !! that the full ray cast could inspect at a query's y-coordinate.
+   !> Find the first and last bin that must contain an edge number.
+   !! Obtain the edge endpoints from its polygon-local edge number, expand their minimum and maximum
+   !! y-coordinates by a floating-point tolerance, and map both values to bin numbers. The tolerance
+   !! includes an adjacent bin when a query and endpoint are numerically equal across a bin boundary.
    pure subroutine binned_edge_index_edge_bin_range(this, geometry, i_poly, edge, bins, bin_first, bin_last)
       class(t_binned_edge_index), intent(in) :: this
       type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
@@ -422,7 +434,9 @@ contains
       bin_last = this%get_bin(upper_y + upper_tolerance, geometry%y_min(i_poly), this%polygon_bin_scale(i_poly), bins)
    end subroutine binned_edge_index_edge_bin_range
 
-   !> Map a y-coordinate to a clamped one-based latitude bin.
+   !> Map a y-coordinate to a one-based bin within one polygon.
+   !! Scale the coordinate relative to the polygon's minimum y-coordinate and clamp the result to the
+   !! valid range, so endpoint tolerance halos remain within the polygon's allocated bins.
    pure integer function binned_edge_index_get_bin(y, y_min, bin_scale, bins) result(i_bin)
       real(kind=dp), intent(in) :: y, y_min, bin_scale !< Coordinate, polygon minimum and bin scale.
       integer, intent(in) :: bins !< Number of bins.
@@ -431,7 +445,9 @@ contains
       i_bin = max(1, min(bins, i_bin))
    end function binned_edge_index_get_bin
 
-   !> Classify a point using only the ordered polygon edges in its latitude bin.
+   !> Classify a point using the polygon edges listed in its horizontal bin.
+   !! Convert the point's y-coordinate to a polygon-local bin, translate that bin to its position in
+   !! the shared CSR storage, and pass the corresponding ordered edge-number slice to `pinpok_raycast`.
    pure function binned_edge_index_point_is_inside(this, x, y, i_poly, geometry) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
