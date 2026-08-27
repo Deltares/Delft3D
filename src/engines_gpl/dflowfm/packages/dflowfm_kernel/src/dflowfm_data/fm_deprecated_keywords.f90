@@ -85,13 +85,13 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'wridia_viscosity_diffusivity_limit', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', OBSOLETE, 'Option no longer needed due to improved semi-implicit algorithm.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'allowCoolingBelowZero', OBSOLETE, &
-                                  'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
+                                  'Use [physics] salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &
                                   'This keyword is replaced with rhoWaterInWindStress in the [Wind] block in the MDU-file.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'effectSpiral', OBSOLETE, 'Use Espir contained in MorFile instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'stericCorrection', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Sedtrails', 'allowCoolingBelowZero', OBSOLETE, &
-                                  'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
+                                  'Use [physics] salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Wind', 'gapres', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Waves', 'waveNikuradse', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Time', 'autoTimeStepDiff', OBSOLETE, 'Use [Time] autoTimeStepVisc instead.')
