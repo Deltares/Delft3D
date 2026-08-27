@@ -663,7 +663,8 @@ contains
       use m_1d_structures, only: FLOWDIR_POSITIVE
       use m_flow, only: au, u1
       use m_flowgeom, only: ln
-      use m_longculverts, only: default_longculverts, find1d2dculvertlinks, reduceFlowAreaAtLongculverts
+      use m_cell_geometry, only: xz, yz
+      use m_longculverts, only: default_longculverts, find1d2dculvertlinks, longculvertsToProfs, reduceFlowAreaAtLongculverts
       use m_longculverts_data, only: longculverts
       use unstruc_channel_flow, only: network
       use dfm_error, only: DFM_NOERR
@@ -702,8 +703,147 @@ contains
       call f90_expect_true(au(lc_link) > 0.0_dp, &
                            cstr("positive flow in input-coordinate direction must remain open"))
 
+      ! Simulate a partition where the first global segment is absent and the
+      ! representative local flowlinks(1) corresponds to coordinate pair 2->3.
+      longculverts(1)%xcoords = [-huge(1.0_dp), xz(ln(1, lc_link)), xz(ln(2, lc_link))]
+      longculverts(1)%ycoords = [-huge(1.0_dp), yz(ln(1, lc_link)), yz(ln(2, lc_link))]
+      longculverts(1)%orientation = -1
+      call longculvertsToProfs(.true.)
+      call f90_expect_eq(longculverts(1)%orientation, 1, &
+             cstr("orientation reconstruction must find the second segment as the first local flow link"))
+
       call default_longculverts()
    end subroutine test_allowed_flowdir_follows_coordinate_order
+   !$f90tw)
+
+   !> Creates two otherwise identical culverts with opposite input-coordinate orders.
+   subroutine create_allowed_flowdir_structure_file(filename, allowed_flowdir)
+      character(len=*), intent(in) :: filename
+      character(len=*), intent(in) :: allowed_flowdir
+
+      integer :: file_unit
+
+      open (newunit=file_unit, file=filename, status='replace', action='write')
+      write (file_unit, '(a)') '[General]'
+      write (file_unit, '(a)') '    fileVersion     = 3.00'
+      write (file_unit, '(a)') '    fileType        = structures'
+      write (file_unit, '(a)') ''
+      write (file_unit, '(a)') '[Structure]'
+      write (file_unit, '(a)') '    id              = lc_left_to_right'
+      write (file_unit, '(a)') '    type            = longCulvert'
+      write (file_unit, '(a)') '    numCoordinates  = 2'
+      write (file_unit, '(a)') '    xCoordinates    = 50.0 350.0'
+      write (file_unit, '(a)') '    yCoordinates    = 50.0 50.0'
+      write (file_unit, '(a)') '    zCoordinates    = -5.0 -5.0'
+      write (file_unit, '(2a)') '    allowedFlowDir  = ', trim(allowed_flowdir)
+      write (file_unit, '(a)') '    width           = 2.0'
+      write (file_unit, '(a)') '    height          = 2.0'
+      write (file_unit, '(a)') '    frictionType    = Manning'
+      write (file_unit, '(a)') '    frictionValue   = 0.02'
+      write (file_unit, '(a)') '    valveRelativeOpening = 1.0'
+      write (file_unit, '(a)') ''
+      write (file_unit, '(a)') '[Structure]'
+      write (file_unit, '(a)') '    id              = lc_right_to_left'
+      write (file_unit, '(a)') '    type            = longCulvert'
+      write (file_unit, '(a)') '    numCoordinates  = 2'
+      write (file_unit, '(a)') '    xCoordinates    = 350.0 50.0'
+      write (file_unit, '(a)') '    yCoordinates    = 150.0 150.0'
+      write (file_unit, '(a)') '    zCoordinates    = -5.0 -5.0'
+      write (file_unit, '(2a)') '    allowedFlowDir  = ', trim(allowed_flowdir)
+      write (file_unit, '(a)') '    width           = 2.0'
+      write (file_unit, '(a)') '    height          = 2.0'
+      write (file_unit, '(a)') '    frictionType    = Manning'
+      write (file_unit, '(a)') '    frictionValue   = 0.02'
+      write (file_unit, '(a)') '    valveRelativeOpening = 1.0'
+      close (file_unit)
+   end subroutine create_allowed_flowdir_structure_file
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_converted_allowed_flowdir_controls_discharge, test_converted_allowed_flowdir_controls_discharge,
+   !> Verifies converted-culvert orientation using actual discharge, then checks
+   !! the complete allowedFlowDir truth table on the initialized flow links.
+   subroutine test_converted_allowed_flowdir_controls_discharge() bind(C)
+      use m_1d_structures, only: FLOWDIR_POSITIVE, FLOWDIR_NEGATIVE
+      use m_flow, only: au, hu, q1, u1
+      use m_longculverts, only: reduceFlowAreaAtLongculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, flow_link
+      integer :: flow_links(2)
+      character(len=*), parameter :: STR_FILE = "test_lc_flowdir_str.ini"
+      character(len=*), parameter :: NET_FILE = "test_lc_flowdir_net.nc"
+      character(len=256) :: mdu_file = "test_lc_flowdir.mdu"
+
+      call create_allowed_flowdir_structure_file(STR_FILE, "positive")
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+
+      call f90_assert_eq(iresult, DFM_NOERR, cstr("converted positive-flow model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, cstr("two converted positive-flow culverts should be registered"))
+      call f90_assert_eq(longculverts(1)%allowed_flowdir, FLOWDIR_POSITIVE, &
+                cstr("left-to-right culvert should retain allowedFlowDir=positive"))
+      call f90_assert_eq(longculverts(2)%allowed_flowdir, FLOWDIR_POSITIVE, &
+                cstr("right-to-left culvert should retain allowedFlowDir=positive"))
+
+      call flow_spatietimestep()
+      flow_links = [abs(longculverts(1)%flowlinks(1)), abs(longculverts(2)%flowlinks(1))]
+      call f90_expect_true(abs(q1(flow_links(1))) > 0.0_dp, &
+                  cstr("positive must permit left-to-right flow for left-to-right coordinates"))
+      call f90_expect_near(q1(flow_links(2)), 0.0_dp, 1.0e-10_dp, &
+                  cstr("positive must block left-to-right flow for right-to-left coordinates"))
+
+      do i = 1, 2
+         flow_link = flow_links(i)
+         longculverts(i)%allowed_flowdir = FLOWDIR_POSITIVE
+         au(flow_link) = 1.0_dp
+         hu(flow_link) = 1.0_dp
+         u1(flow_link) = real(longculverts(i)%orientation, dp)
+      end do
+      call reduceFlowAreaAtLongculverts()
+      call f90_expect_true(au(flow_links(1)) > 0.0_dp .and. au(flow_links(2)) > 0.0_dp, &
+                           cstr("positive must permit flow in coordinate order for both link orientations"))
+
+      do i = 1, 2
+         flow_link = flow_links(i)
+         au(flow_link) = 1.0_dp
+         hu(flow_link) = 1.0_dp
+         u1(flow_link) = -real(longculverts(i)%orientation, dp)
+      end do
+      call reduceFlowAreaAtLongculverts()
+      call f90_expect_near(au(flow_links(1)), 0.0_dp, 1.0e-10_dp, &
+                           cstr("positive must block reverse flow for the left-to-right culvert"))
+      call f90_expect_near(au(flow_links(2)), 0.0_dp, 1.0e-10_dp, &
+                           cstr("positive must block reverse flow for the right-to-left culvert"))
+
+      do i = 1, 2
+         flow_link = flow_links(i)
+         longculverts(i)%allowed_flowdir = FLOWDIR_NEGATIVE
+         au(flow_link) = 1.0_dp
+         hu(flow_link) = 1.0_dp
+         u1(flow_link) = real(longculverts(i)%orientation, dp)
+      end do
+      call reduceFlowAreaAtLongculverts()
+      call f90_expect_near(au(flow_links(1)), 0.0_dp, 1.0e-10_dp, &
+                           cstr("negative must block forward flow for the left-to-right culvert"))
+      call f90_expect_near(au(flow_links(2)), 0.0_dp, 1.0e-10_dp, &
+                           cstr("negative must block forward flow for the right-to-left culvert"))
+
+      do i = 1, 2
+         flow_link = flow_links(i)
+         au(flow_link) = 1.0_dp
+         hu(flow_link) = 1.0_dp
+         u1(flow_link) = -real(longculverts(i)%orientation, dp)
+      end do
+      call reduceFlowAreaAtLongculverts()
+      call f90_expect_true(au(flow_links(1)) > 0.0_dp .and. au(flow_links(2)) > 0.0_dp, &
+                           cstr("negative must permit reverse flow for both link orientations"))
+
+      call default_longculverts()
+   end subroutine test_converted_allowed_flowdir_controls_discharge
    !$f90tw)
 
    !> Create a 5x3-node UGRID net (4 cells wide, 2 rows).
