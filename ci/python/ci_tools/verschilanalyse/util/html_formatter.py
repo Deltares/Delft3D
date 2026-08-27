@@ -49,7 +49,7 @@ class HtmlFormatter:
                 </ul>
                 <h3>Detailed difference analysis</h3>
                 <p>
-                    Detailed analyses are available in the JIRA Epic: 
+                    Detailed analyses are available in the JIRA Epic:
                     <a href="https://issuetracker.deltares.nl/browse/UNST-9541">UNST-9541</a>. An issue is created only
                     for DIMRset versions with detected differences.
                 </p>
