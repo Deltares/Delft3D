@@ -129,9 +129,6 @@ contains
                      au(L) = pstru%au(L0)
                      call compute_general_structure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
                                                   au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
-                     if (au(L) == 0.0_dp) then
-                        hu(L) = 0.0_dp
-                     end if
                      
                   case (ST_DAMBREAK)
                      continue
