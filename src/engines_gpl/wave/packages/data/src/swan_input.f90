@@ -2497,6 +2497,11 @@ contains
       if (istat == 0) allocate (sr%xpob(nobstpnt), stat=istat)
       if (istat == 0) allocate (sr%ypob(nobstpnt), stat=istat)
       !
+      sr%ncrv = 0
+      if (istat == 0) allocate (sr%nclin(sr%ncrv), stat=istat)
+      if (istat == 0) allocate (sr%xpcu(sr%ncrv), stat=istat)
+      if (istat == 0) allocate (sr%ypcu(sr%ncrv), stat=istat)
+      !
       if (istat /= 0) then
          write (*, *) 'SWAN_INPUT: memory alloc error (nobst)'
          call handle_errors_mdw(sr)
