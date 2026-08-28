@@ -865,6 +865,7 @@ contains
 
    !> Reconstruct the flow link orientation based on input polyline
    subroutine set_longculvert_flow_direction(ilongc)
+      use m_flowparameters, only: EPS10
       use m_flowgeom, only: ln
       use network_data, only: xzw, yzw
       use precision_basics, only: equal
@@ -902,14 +903,14 @@ contains
       end if
 
       do coordinate_index = 1, min(size(longculverts(ilongc)%xcoords), size(longculverts(ilongc)%ycoords)) - 1
-         flownode_1_is_coordinate_1 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index)) .and. &
-                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index))
-         flownode_1_is_coordinate_2 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index + 1)) .and. &
-                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index + 1))
-         flownode_2_is_coordinate_1 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index)) .and. &
-                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index))
-         flownode_2_is_coordinate_2 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index + 1)) .and. &
-                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index + 1))
+         flownode_1_is_coordinate_1 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
+                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
+         flownode_1_is_coordinate_2 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
+                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index + 1), EPS10)
+         flownode_2_is_coordinate_1 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
+                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
+         flownode_2_is_coordinate_2 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
+                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index + 1), EPS10)
 
          if (flownode_1_is_coordinate_1 .and. flownode_2_is_coordinate_2) then
             longculverts(ilongc)%orientation = 1

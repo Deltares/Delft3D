@@ -705,7 +705,10 @@ contains
 
       ! Simulate a partition where the first global segment is absent and the
       ! representative local flowlinks(1) corresponds to coordinate pair 2->3.
-      longculverts(1)%xcoords = [-huge(1.0_dp), xzw(ln(1, lc_link)), xzw(ln(2, lc_link))]
+      ! Include the rounding error introduced by writing converted coordinates to an INI file.
+      longculverts(1)%xcoords = [-huge(1.0_dp), &
+                     xzw(ln(1, lc_link)) + 3.0_dp * epsilon(1.0_dp) * max(abs(xzw(ln(1, lc_link))), 1.0_dp), &
+                     xzw(ln(2, lc_link)) + 3.0_dp * epsilon(1.0_dp) * max(abs(xzw(ln(2, lc_link))), 1.0_dp)]
       longculverts(1)%ycoords = [-huge(1.0_dp), yzw(ln(1, lc_link)), yzw(ln(2, lc_link))]
       longculverts(1)%orientation = -1
       call longculvertsToProfs(.true.)
@@ -716,7 +719,7 @@ contains
    end subroutine test_allowed_flowdir_follows_coordinate_order
    !$f90tw)
 
-   !> Creates two otherwise identical culverts with opposite input-coordinate orders.
+   !> Creates two culverts with opposite input-coordinate orders and an exact duplicate of the first.
    subroutine create_allowed_flowdir_structure_file(filename, allowed_flowdir)
       character(len=*), intent(in) :: filename
       character(len=*), intent(in) :: allowed_flowdir
@@ -755,6 +758,20 @@ contains
       write (file_unit, '(a)') '    frictionType    = Manning'
       write (file_unit, '(a)') '    frictionValue   = 0.02'
       write (file_unit, '(a)') '    valveRelativeOpening = 1.0'
+      write (file_unit, '(a)') ''
+      write (file_unit, '(a)') '[Structure]'
+      write (file_unit, '(a)') '    id              = lc_left_to_right_duplicate'
+      write (file_unit, '(a)') '    type            = longCulvert'
+      write (file_unit, '(a)') '    numCoordinates  = 2'
+      write (file_unit, '(a)') '    xCoordinates    = 50.0 350.0'
+      write (file_unit, '(a)') '    yCoordinates    = 50.0 50.0'
+      write (file_unit, '(a)') '    zCoordinates    = -5.0 -5.0'
+      write (file_unit, '(2a)') '    allowedFlowDir  = ', trim(allowed_flowdir)
+      write (file_unit, '(a)') '    width           = 2.0'
+      write (file_unit, '(a)') '    height          = 2.0'
+      write (file_unit, '(a)') '    frictionType    = Manning'
+      write (file_unit, '(a)') '    frictionValue   = 0.02'
+      write (file_unit, '(a)') '    valveRelativeOpening = 1.0'
       close (file_unit)
    end subroutine create_allowed_flowdir_structure_file
 
@@ -770,7 +787,7 @@ contains
       use m_flow_spatietimestep, only: flow_spatietimestep
       use precision, only: dp
 
-      integer :: iresult, i, flow_link
+      integer :: iresult, i, flow_link, duplicate_flow_link
       integer :: flow_links(2)
       character(len=*), parameter :: STR_FILE = "test_lc_flowdir_str.ini"
       character(len=*), parameter :: NET_FILE = "test_lc_flowdir_net.nc"
@@ -783,16 +800,25 @@ contains
       call init_two_culvert_scenario(mdu_file, iresult)
 
       call f90_assert_eq(iresult, DFM_NOERR, cstr("converted positive-flow model init must succeed"))
-      call f90_assert_eq(nlongculverts, 2, cstr("two converted positive-flow culverts should be registered"))
+      call f90_assert_eq(nlongculverts, 3, cstr("three converted positive-flow culverts should be registered"))
       call f90_assert_eq(longculverts(1)%allowed_flowdir, FLOWDIR_POSITIVE, &
                 cstr("left-to-right culvert should retain allowedFlowDir=positive"))
       call f90_assert_eq(longculverts(2)%allowed_flowdir, FLOWDIR_POSITIVE, &
                 cstr("right-to-left culvert should retain allowedFlowDir=positive"))
+      call f90_assert_eq(longculverts(3)%allowed_flowdir, FLOWDIR_POSITIVE, &
+             cstr("duplicate culvert should retain allowedFlowDir=positive"))
 
       call flow_spatietimestep()
       flow_links = [abs(longculverts(1)%flowlinks(1)), abs(longculverts(2)%flowlinks(1))]
+      duplicate_flow_link = abs(longculverts(3)%flowlinks(1))
+      call f90_assert_true(duplicate_flow_link > 0 .and. duplicate_flow_link /= flow_links(1), &
+                  cstr("identical snapped culverts must retain distinct valid flow links"))
+      call f90_assert_eq(longculverts(3)%orientation, longculverts(1)%orientation, &
+                cstr("identical snapped culverts must have identical orientation"))
       call f90_expect_true(abs(q1(flow_links(1))) > 0.0_dp, &
                   cstr("positive must permit left-to-right flow for left-to-right coordinates"))
+      call f90_expect_near(q1(duplicate_flow_link), q1(flow_links(1)), 1.0e-10_dp, &
+                  cstr("identical snapped culverts must have identical discharge"))
       call f90_expect_near(q1(flow_links(2)), 0.0_dp, 1.0e-10_dp, &
                   cstr("positive must block left-to-right flow for right-to-left coordinates"))
 
