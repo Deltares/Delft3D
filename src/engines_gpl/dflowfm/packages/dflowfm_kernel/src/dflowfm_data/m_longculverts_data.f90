@@ -39,6 +39,7 @@ module m_longculverts_data
    private
 
    public :: is_2D2D_longculvertlink
+   public :: remove_longculvert_flowlinks
 
    !> Type definition for longculvert data.
    type, public :: t_longculvert
@@ -102,5 +103,36 @@ contains
       end do
       i = 0 !> No early return, no match found, return 0
    end subroutine is_2D2D_longculvertlink
+
+   !> Removes flow links administered by long culverts from a link list.
+   !! The list is compacted in place, preserving the orientation of retained links.
+   pure subroutine remove_longculvert_flowlinks(numlinks, links)
+      integer, intent(inout) :: numlinks !< Number of flow links in links.
+      integer, dimension(:), intent(inout) :: links !< Flow links to be filtered.
+
+      integer :: i, j, num_remaining
+      logical :: is_longculvert_link
+
+      num_remaining = 0
+      do i = 1, numlinks
+         is_longculvert_link = .false.
+         if (links(i) /= 0) then
+            do j = 1, nlongculverts
+               if (allocated(longculverts(j)%flowlinks)) then
+                  if (any(abs(longculverts(j)%flowlinks) == abs(links(i)))) then
+                     is_longculvert_link = .true.
+                     exit
+                  end if
+               end if
+            end do
+         end if
+
+         if (.not. is_longculvert_link) then
+            num_remaining = num_remaining + 1
+            links(num_remaining) = links(i)
+         end if
+      end do
+      numlinks = num_remaining
+   end subroutine remove_longculvert_flowlinks
 
 end module m_longculverts_data
