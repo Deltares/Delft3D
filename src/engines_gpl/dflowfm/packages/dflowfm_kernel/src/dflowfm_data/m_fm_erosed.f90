@@ -183,77 +183,77 @@ module m_fm_erosed
    character(256), dimension(:), pointer :: dll_usrfil
 
    ! sedtra
-   real(fp), dimension(:, :)   , pointer :: aks
-   real(fp), dimension(:)      , pointer :: bc_mor_array
-   real(fp), dimension(:,:)    , pointer :: dbodsd
-   real(fp), dimension(:)      , pointer :: dcwwlc
-   real(fp), dimension(:)      , pointer :: dm
+   real(fp), dimension(:, :), pointer :: aks
+   real(fp), dimension(:), pointer :: bc_mor_array
+   real(fp), dimension(:, :), pointer :: dbodsd
+   real(fp), dimension(:), pointer :: dcwwlc
+   real(fp), dimension(:), pointer :: dm
    real(fp), dimension(:), pointer :: dm_he
-   real(fp), dimension(:)      , pointer :: dg
+   real(fp), dimension(:), pointer :: dg
    real(fp), dimension(:), pointer :: dg_he
    real(fp), dimension(:), pointer :: dgsd
    real(fp), dimension(:), pointer :: dgsd_he
-   real(fp), dimension(:,:)    , pointer :: dxx
+   real(fp), dimension(:, :), pointer :: dxx
    real(fp), dimension(:, :), pointer :: dxx_he
-   real(fp), dimension(:)      , pointer :: e_dzdn
-   real(fp), dimension(:)      , pointer :: e_dzdt
-   real(fp), dimension(:)      , pointer :: epsclc
-   real(fp), dimension(:)      , pointer :: epswlc
-   real(fp), dimension(:,:)    , pointer :: fixfac
-   real(fp), dimension(:,:)    , pointer :: frac
+   real(fp), dimension(:), pointer :: e_dzdn
+   real(fp), dimension(:), pointer :: e_dzdt
+   real(fp), dimension(:), pointer :: epsclc
+   real(fp), dimension(:), pointer :: epswlc
+   real(fp), dimension(:, :), pointer :: fixfac
+   real(fp), dimension(:, :), pointer :: frac
    real(fp), dimension(:, :), pointer :: frac_he
-   integer, dimension(:)      , pointer :: kfsed
-   integer, dimension(:,:)    , pointer :: kmxsed
-   real(fp), dimension(:)      , pointer :: mudfrac
+   integer, dimension(:), pointer :: kfsed
+   integer, dimension(:, :), pointer :: kmxsed
+   real(fp), dimension(:), pointer :: mudfrac
    real(fp), dimension(:), pointer :: mudfrac_he
-   real(fp), dimension(:)      , pointer :: sandfrac
-   real(fp), dimension(:,:)    , pointer :: hidexp
-   real(fp), dimension(:)      , pointer :: poros
-   real(fp), dimension(:)      , pointer :: rsdqlc
-   real(fp), dimension(:,:)    , pointer :: sbcx
-   real(fp), dimension(:,:)    , pointer :: sbcy
-   real(fp), dimension(:,:)    , pointer :: e_sbcn
-   real(fp), dimension(:,:)    , pointer :: e_sbct
-   real(fp), dimension(:,:)    , pointer :: sbwx
-   real(fp), dimension(:,:)    , pointer :: sbwy
-   real(fp), dimension(:,:)    , pointer :: e_sbwn
-   real(fp), dimension(:,:)    , pointer :: e_sbwt
-   real(fp), dimension(:,:)    , pointer :: e_sbt
-   real(fp), dimension(:,:)    , pointer :: e_sbn
-   real(fp), dimension(:,:)    , pointer :: e_ssn
-   real(fp), dimension(:,:)    , pointer :: e_sst
-   real(fp), dimension(:,:)    , pointer :: e_sbtc
-   real(fp), dimension(:,:)    , pointer :: e_sbnc
-   real(fp), dimension(:,:)    , pointer :: e_ssnc
-   real(fp), dimension(:,:)    , pointer :: e_scrn
-   real(fp), dimension(:,:)    , pointer :: e_scrt
-   real(fp), dimension(:)      , pointer :: sddflc
-   real(fp), dimension(:,:)    , pointer :: sswx
-   real(fp), dimension(:,:)    , pointer :: sswy
-   real(fp), dimension(:,:)    , pointer :: sscx
-   real(fp), dimension(:,:)    , pointer :: sscy
-   real(fp), dimension(:,:)    , pointer :: e_sswn
-   real(fp), dimension(:,:)    , pointer :: e_sswt
-   real(fp), dimension(:,:)    , pointer :: sxtot
-   real(fp), dimension(:,:)    , pointer :: sytot
-   real(fp), dimension(:,:)    , pointer :: sbxcum
-   real(fp), dimension(:,:)    , pointer :: sbycum
-   real(fp), dimension(:,:)    , pointer :: ssxcum
-   real(fp), dimension(:,:)    , pointer :: ssycum
-   real(fp), dimension(:,:)    , pointer :: sinkse
-   real(fp), dimension(:,:)    , pointer :: sourse
-   real(fp), dimension(:,:)    , pointer :: sour_im
-   real(fp), dimension(:,:)    , pointer :: srcmax
-   real(fp), dimension(:)      , pointer :: taub
-   real(fp), dimension(:,:)    , pointer :: taurat
-   real(fp), dimension(:)      , pointer :: tcrero_bed
-   real(fp), dimension(:)      , pointer :: eropar_bed
-   real(fp), dimension(:)      , pointer :: ust2
-   real(fp), dimension(:)      , pointer :: umod
-   real(fp), dimension(:)      , pointer :: uuu
-   real(fp), dimension(:)      , pointer :: vvv
-   real(fp), dimension(:)      , pointer :: wslc
-   real(fp), dimension(:)      , pointer :: zumod
+   real(fp), dimension(:), pointer :: sandfrac
+   real(fp), dimension(:, :), pointer :: hidexp
+   real(fp), dimension(:), pointer :: poros
+   real(fp), dimension(:), pointer :: rsdqlc
+   real(fp), dimension(:, :), pointer :: sbcx
+   real(fp), dimension(:, :), pointer :: sbcy
+   real(fp), dimension(:, :), pointer :: e_sbcn
+   real(fp), dimension(:, :), pointer :: e_sbct
+   real(fp), dimension(:, :), pointer :: sbwx
+   real(fp), dimension(:, :), pointer :: sbwy
+   real(fp), dimension(:, :), pointer :: e_sbwn
+   real(fp), dimension(:, :), pointer :: e_sbwt
+   real(fp), dimension(:, :), pointer :: e_sbt
+   real(fp), dimension(:, :), pointer :: e_sbn
+   real(fp), dimension(:, :), pointer :: e_ssn
+   real(fp), dimension(:, :), pointer :: e_sst
+   real(fp), dimension(:, :), pointer :: e_sbtc
+   real(fp), dimension(:, :), pointer :: e_sbnc
+   real(fp), dimension(:, :), pointer :: e_ssnc
+   real(fp), dimension(:, :), pointer :: e_scrn
+   real(fp), dimension(:, :), pointer :: e_scrt
+   real(fp), dimension(:), pointer :: sddflc
+   real(fp), dimension(:, :), pointer :: sswx
+   real(fp), dimension(:, :), pointer :: sswy
+   real(fp), dimension(:, :), pointer :: sscx
+   real(fp), dimension(:, :), pointer :: sscy
+   real(fp), dimension(:, :), pointer :: e_sswn
+   real(fp), dimension(:, :), pointer :: e_sswt
+   real(fp), dimension(:, :), pointer :: sxtot
+   real(fp), dimension(:, :), pointer :: sytot
+   real(fp), dimension(:, :), pointer :: sbxcum
+   real(fp), dimension(:, :), pointer :: sbycum
+   real(fp), dimension(:, :), pointer :: ssxcum
+   real(fp), dimension(:, :), pointer :: ssycum
+   real(fp), dimension(:, :), pointer :: sinkse
+   real(fp), dimension(:, :), pointer :: sourse
+   real(fp), dimension(:, :), pointer :: sour_im
+   real(fp), dimension(:, :), pointer :: srcmax
+   real(fp), dimension(:), pointer :: taub
+   real(fp), dimension(:, :), pointer :: taurat
+   real(fp), dimension(:), pointer :: tcrero_bed
+   real(fp), dimension(:), pointer :: eropar_bed
+   real(fp), dimension(:), pointer :: ust2
+   real(fp), dimension(:), pointer :: umod
+   real(fp), dimension(:), pointer :: uuu
+   real(fp), dimension(:), pointer :: vvv
+   real(fp), dimension(:), pointer :: wslc
+   real(fp), dimension(:), pointer :: zumod
    real(fp), dimension(:, :), pointer :: rsedeq
    real(fp), pointer :: alfabs
    real(fp), pointer :: alfabn
@@ -270,10 +270,10 @@ module m_fm_erosed
    real(fp), pointer :: alfpa
    real(fp), pointer :: thcrpa
    logical, pointer :: neglectentrainment
-   real(fp), dimension(:,:), pointer :: rca
-   real(fp), dimension(:,:), pointer :: statqnt
+   real(fp), dimension(:, :), pointer :: rca
+   real(fp), dimension(:, :), pointer :: statqnt
 
    ! morlyr
    integer, pointer :: iconsolidate
 
-   end module m_fm_erosed
+end module m_fm_erosed
