@@ -77,18 +77,18 @@ contains
       if (.not. stm_included) then
          return
       end if
-   
+
       ! mtd: Pointer to dummies to fill later
       dzbdt => mtd%dzbdt
       seddif => mtd%seddif
       blchg => mtd%blchg
       ws => mtd%ws
       uau => mtd%uau
-   
+
       ! stmpar
       lsed => stmpar%lsedsus
       lsedtot => stmpar%lsedtot
-   
+
       ! sedpar
       nmudfrac => stmpar%sedpar%nmudfrac
       max_mud_sedtyp => stmpar%sedpar%max_mud_sedtyp
@@ -127,7 +127,7 @@ contains
       tfloc => stmpar%sedpar%tfloc
       difparam => stmpar%sedpar%difparam
       seddif_cal => stmpar%sedpar%seddif_cal
-   
+
       ! morpar
       thresh => stmpar%morpar%thresh
       sus => stmpar%morpar%sus
@@ -201,7 +201,7 @@ contains
       bermslopegamma => stmpar%morpar%bermslopegamma
       bermslopedepth => stmpar%morpar%bermslopedepth
       ithresh => stmpar%morpar%ithresh
-   
+
       ! trapar
       iform => stmpar%trapar%iform
       par => stmpar%trapar%par
@@ -215,86 +215,86 @@ contains
       dll_reals => stmpar%trapar%dll_reals
       dll_strings => stmpar%trapar%dll_strings
       dll_usrfil => stmpar%trapar%dll_usrfil
-   
+
       ! sedtra
-      aks                 => sedtra%aks
-      bc_mor_array        => sedtra%bc_mor_array
-      dbodsd              => sedtra%dbodsd
-      dcwwlc              => sedtra%dcwwlc
-      dm                  => sedtra%dm
+      aks => sedtra%aks
+      bc_mor_array => sedtra%bc_mor_array
+      dbodsd => sedtra%dbodsd
+      dcwwlc => sedtra%dcwwlc
+      dm => sedtra%dm
       dm_he => sedtra%dm_he
-      dg                  => sedtra%dg
+      dg => sedtra%dg
       dg_he => sedtra%dg_he
-      dgsd                => sedtra%dgsd
+      dgsd => sedtra%dgsd
       dgsd_he => sedtra%dgsd_he
-      dxx                 => sedtra%dxx
+      dxx => sedtra%dxx
       dxx_he => sedtra%dxx_he
-      e_dzdn              => sedtra%e_dzdn
-      e_dzdt              => sedtra%e_dzdt
-      epsclc              => sedtra%epsclc
-      epswlc              => sedtra%epswlc
-      fixfac              => sedtra%fixfac
-      frac                => sedtra%frac
+      e_dzdn => sedtra%e_dzdn
+      e_dzdt => sedtra%e_dzdt
+      epsclc => sedtra%epsclc
+      epswlc => sedtra%epswlc
+      fixfac => sedtra%fixfac
+      frac => sedtra%frac
       frac_he => sedtra%frac_he
-      kfsed               => sedtra%kfsed
-      kmxsed              => sedtra%kmxsed
-      mudfrac             => sedtra%mudfrac
+      kfsed => sedtra%kfsed
+      kmxsed => sedtra%kmxsed
+      mudfrac => sedtra%mudfrac
       mudfrac_he => sedtra%mudfrac_he
-      sandfrac            => sedtra%sandfrac
-      hidexp              => sedtra%hidexp
-      poros               => sedtra%poros
-      rsdqlc              => sedtra%rsdqlc
-      rsedeq              => sedtra%rsedeq
-      sbcx                => sedtra%sbcx
-      sbcy                => sedtra%sbcy
-      e_sbcn              => sedtra%e_sbcn
-      e_sbct              => sedtra%e_sbct
-      e_sbn               => sedtra%e_sbn
-      e_sbt               => sedtra%e_sbt
-      e_ssn               => sedtra%e_ssn
-      e_sst               => sedtra%e_sst
-      e_sbnc              => sedtra%e_sbnc
-      e_sbtc              => sedtra%e_sbtc
-      e_ssnc              => sedtra%e_ssnc
-      e_scrn              => sedtra%e_scrn
-      e_scrt              => sedtra%e_scrt
-      sbwx                => sedtra%sbwx
-      sbwy                => sedtra%sbwy
-      sscx                => sedtra%sscx
-      sscy                => sedtra%sscy
-      e_sbwn              => sedtra%e_sbwn
-      e_sbwt              => sedtra%e_sbwt
-      sddflc              => sedtra%sddflc
-      sswx                => sedtra%sswx
-      sswy                => sedtra%sswy
-      e_sswn              => sedtra%e_sswn        ! add correction part later on e_scrn, e_scrt
-      e_sswt              => sedtra%e_sswt
-      sxtot               => sedtra%sxtot
-      sytot               => sedtra%sytot
-      sbxcum              => sedtra%sbxcum
-      sbycum              => sedtra%sbycum
-      ssxcum              => sedtra%ssxcum
-      ssycum              => sedtra%ssycum
-      sinkse              => sedtra%sinkse
-      sourse              => sedtra%sourse
-      sour_im             => sedtra%sour_im
-      srcmax              => sedtra%srcmax
-      taub                => sedtra%taub
-      taurat              => sedtra%taurat
-      tcrero_bed          => sedtra%tcrero_bed
-      eropar_bed          => sedtra%eropar_bed
-      ust2                => sedtra%ust2
-      umod                => sedtra%umod
-      uuu                 => sedtra%uuu
-      vvv                 => sedtra%vvv
-      wslc                => sedtra%wslc
-      zumod               => sedtra%zumod
-      rca                 => sedtra%rca
-      statqnt             => sedtra%statqnt
-   
+      sandfrac => sedtra%sandfrac
+      hidexp => sedtra%hidexp
+      poros => sedtra%poros
+      rsdqlc => sedtra%rsdqlc
+      rsedeq => sedtra%rsedeq
+      sbcx => sedtra%sbcx
+      sbcy => sedtra%sbcy
+      e_sbcn => sedtra%e_sbcn
+      e_sbct => sedtra%e_sbct
+      e_sbn => sedtra%e_sbn
+      e_sbt => sedtra%e_sbt
+      e_ssn => sedtra%e_ssn
+      e_sst => sedtra%e_sst
+      e_sbnc => sedtra%e_sbnc
+      e_sbtc => sedtra%e_sbtc
+      e_ssnc => sedtra%e_ssnc
+      e_scrn => sedtra%e_scrn
+      e_scrt => sedtra%e_scrt
+      sbwx => sedtra%sbwx
+      sbwy => sedtra%sbwy
+      sscx => sedtra%sscx
+      sscy => sedtra%sscy
+      e_sbwn => sedtra%e_sbwn
+      e_sbwt => sedtra%e_sbwt
+      sddflc => sedtra%sddflc
+      sswx => sedtra%sswx
+      sswy => sedtra%sswy
+      e_sswn => sedtra%e_sswn ! add correction part later on e_scrn, e_scrt
+      e_sswt => sedtra%e_sswt
+      sxtot => sedtra%sxtot
+      sytot => sedtra%sytot
+      sbxcum => sedtra%sbxcum
+      sbycum => sedtra%sbycum
+      ssxcum => sedtra%ssxcum
+      ssycum => sedtra%ssycum
+      sinkse => sedtra%sinkse
+      sourse => sedtra%sourse
+      sour_im => sedtra%sour_im
+      srcmax => sedtra%srcmax
+      taub => sedtra%taub
+      taurat => sedtra%taurat
+      tcrero_bed => sedtra%tcrero_bed
+      eropar_bed => sedtra%eropar_bed
+      ust2 => sedtra%ust2
+      umod => sedtra%umod
+      uuu => sedtra%uuu
+      vvv => sedtra%vvv
+      wslc => sedtra%wslc
+      zumod => sedtra%zumod
+      rca => sedtra%rca
+      statqnt => sedtra%statqnt
+
       ! morlyr
-      iconsolidate        => stmpar%morlyr%settings%iconsolidate
-   
+      iconsolidate => stmpar%morlyr%settings%iconsolidate
+
    end subroutine inipointers_erosed
 
 end module m_inipointers_erosed

@@ -6655,7 +6655,7 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, &
-         ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
+                               ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -9433,9 +9433,9 @@ contains
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
-      
+
       if (map_write_settings%heatflux > 0) then ! Heat modelling only
-         if (temperature_model  == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_cloudiness(iid), cloudiness, [1, itim], [ndxndxi, 1])
@@ -10308,7 +10308,7 @@ contains
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
-      allocate(temp_indices(numl))
+      allocate (temp_indices(numl))
       forall (l=1:numl) temp_indices(l) = l
       temp_indices = convert_mask_to_indices(is_valid_2d2d_netlink(temp_indices))
       n2d2dcontacts = size(temp_indices)
@@ -12135,7 +12135,7 @@ contains
                                um%inode_merge)
 
       call check_error(ierr, 'waterlevels old')
-      call readyy('Reading map data', 0.35_dp)      
+      call readyy('Reading map data', 0.35_dp)
 
       ! Read chezy roughness (flow elem)
       call gettaus(2, 1) ! It can happen that `czs` is not allocated at this point (e.g., if `map_write_settings%chezy_elements = 0`)
@@ -12492,41 +12492,41 @@ contains
       if (ja_icecover == ICECOVER_SEMTNER) then
          ! Read ice thickness (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_thickness', ice_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
 
          call check_error(ierr, 'ice thickness')
          call readyy('Reading map data', 0.351_dp)
 
          ! Read ice area fraction (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_area_fraction', ice_area_fraction, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'ice area fraction')
          call readyy('Reading map data', 0.352_dp)
 
          ! Read ice pressure (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_pressure', ice_pressure, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'ice pressure')
          call readyy('Reading map data', 0.353_dp)
 
          ! Read ice temperature (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_temperature', ice_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'ice temperature')
          call readyy('Reading map data', 0.354_dp)
 
          ! Read snow thickness (flow elem)
          ierr = get_var_and_shift(imapfile, 'snow_thickness', snow_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'snow thickness')
          call readyy('Reading map data', 0.355_dp)
 
          ! Read snow temperature (flow elem)
          ierr = get_var_and_shift(imapfile, 'snow_temperature', snow_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'snow temperature')
          call readyy('Reading map data', 0.356_dp)
-      end if      
+      end if
 
       ! Read the tracers
       if (ITRA1 > 0) then
@@ -13999,88 +13999,88 @@ contains
             if (layer_count > 0) then
                flowgeom_map%mesh2d%layer_zs => layer_zs
                flowgeom_map%mesh2d%interface_zs => interface_zs
-               end if
+            end if
 
             ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom_map%mesh2d, writeopts=unc_writeopts)
             call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom_map%edge_type)
 
-         if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
-            ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
-            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
-            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'units', "m")
-            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'positive', "down")
+            if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
+               ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
+               ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
+               ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'units', "m")
+               ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'positive', "down")
 
-            if (jafou_) then
-               ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(waterlevelname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_s1max(2))
-               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'standard_name', "water level on cell centres")
-               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'units', "m")
-               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
+               if (jafou_) then
+                  ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(waterlevelname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_s1max(2))
+                  ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'standard_name', "water level on cell centres")
+                  ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'units', "m")
+                  ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
 
-               ierr = nf90_enddef(ncid)
-                  ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(faces))
-                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(faces))
-               ierr = nf90_redef(ncid)
-            else
-               ierr = nf90_enddef(ncid)
-                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(faces))
-               ierr = nf90_redef(ncid)
+                  ierr = nf90_enddef(ncid)
+                     ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(faces))
+                     ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(faces))
+                  ierr = nf90_redef(ncid)
+               else
+                  ierr = nf90_enddef(ncid)
+                     ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(faces))
+                  ierr = nf90_redef(ncid)
+               end if
             end if
          end if
-      end if
 
-      ierr = ug_inq_varid(ncid, id_tsp%meshids2d, 'node_z', id_tsp%id_netnodez(2))
+         ierr = ug_inq_varid(ncid, id_tsp%meshids2d, 'node_z', id_tsp%id_netnodez(2))
 
-      ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemba(:), nf90_double, UNC_LOC_S, 'flowelem_ba', 'cell_area', '', 'm2', 0, jabndnd=jabndnd_)
-      ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelembl(:), nf90_double, UNC_LOC_S, 'flowelem_bl', 'altitude', 'flow element center bedlevel (bl)', 'm', 0, jabndnd=jabndnd_)
+         ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemba(:), nf90_double, UNC_LOC_S, 'flowelem_ba', 'cell_area', '', 'm2', 0, jabndnd=jabndnd_)
+         ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelembl(:), nf90_double, UNC_LOC_S, 'flowelem_bl', 'altitude', 'flow element center bedlevel (bl)', 'm', 0, jabndnd=jabndnd_)
 
-      if (n1d2dcontacts > 0 .and. ja2D_) then
-         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
-      end if
+         if (n1d2dcontacts > 0 .and. ja2D_) then
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+         end if
 
-      if (jampi == 1) then
-         ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:), nf90_int, UNC_LOC_S, 'flowelem_domain', 'cell_domain_number', 'domain number of flow element', '', 0, jabndnd=jabndnd_, ivalid_max=ndomains)
-         ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemglobalnr(:), nf90_int, UNC_LOC_S, 'flowelem_globalnr', 'cell_global_number', 'global flow element numbering', '', 0, jabndnd=jabndnd_, ivalid_max=Nglobal_s)
-      end if
-      ierr = nf90_enddef(ncid)
+         if (jampi == 1) then
+            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:), nf90_int, UNC_LOC_S, 'flowelem_domain', 'cell_domain_number', 'domain number of flow element', '', 0, jabndnd=jabndnd_, ivalid_max=ndomains)
+            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemglobalnr(:), nf90_int, UNC_LOC_S, 'flowelem_globalnr', 'cell_global_number', 'global flow element numbering', '', 0, jabndnd=jabndnd_, ivalid_max=Nglobal_s)
+         end if
+         ierr = nf90_enddef(ncid)
 
-      ! -- Start data writing (time-independent data) ------------
+         ! -- Start data writing (time-independent data) ------------
          if (flowgeom_map%mesh1D%numNode > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(nodes_1d))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(nodes_1d))
-      end if
-      if (ndx2d > 0 .and. ja2D_) then
+         end if
+         if (ndx2d > 0 .and. ja2D_) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(faces))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(faces))
-         ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
-      end if
+            ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
+         end if
 
-      if (n1d2dcontacts > 0) then
-         ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
-      end if
+         if (n1d2dcontacts > 0) then
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
+         end if
 
          if (associated(layer_zs)) deallocate (layer_zs)
          if (associated(interface_zs)) deallocate (interface_zs)
          if (allocated(contacts)) deallocate (contacts)
          if (allocated(contacttype)) deallocate (contacttype)
 
-      if (jampi == 1) then
-         if (ndx2d > 0) then
+         if (jampi == 1) then
+            if (ndx2d > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(faces))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(faces))
-         end if
+            end if
             if (flowgeom_map%mesh1D%numNode > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(nodes_1d))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(nodes_1d))
-         end if
+            end if
          end if
 
-      if (mb_latmin /= dmiss .and. mb_latmax /= dmiss .and. mb_lonmin /= dmiss .and. mb_lonmax /= dmiss) then
-         ierr = ionc_add_geospatial_bounds(ncid, mb_latmin, mb_latmax, mb_lonmin, mb_lonmax)
-      end if
+         if (mb_latmin /= dmiss .and. mb_latmax /= dmiss .and. mb_lonmin /= dmiss .and. mb_lonmax /= dmiss) then
+            ierr = ionc_add_geospatial_bounds(ncid, mb_latmin, mb_latmax, mb_lonmin, mb_lonmax)
+         end if
 
-      ierr = ncu_restore_mode(ncid, jaInDefine)
+         ierr = ncu_restore_mode(ncid, jaInDefine)
          if (timon) call timstop(handle_extra(69))
-      return
+         return
 
       end associate
    end subroutine unc_write_flowgeom_filepointer_ugrid
@@ -14198,8 +14198,8 @@ contains
                if (allocated(nodelongnames) .and. associated(mesh1d%nodeidx)) then
                   nodelongnames_remap(n) = nodelongnames(mesh1d%nodeidx(n))
                end if
-         end do
-            end if
+            end do
+         end if
 
          ! --- Ensure define mode ---
          ierr = ncu_ensure_define_mode(ncid, jaInDefine)
@@ -14215,7 +14215,7 @@ contains
          call realloc(face_nodes, [0, 0])
 
          if (mesh1d%numEdge > 0) then
-               if (associated(meshgeom1d%ngeopointx)) then
+            if (associated(meshgeom1d%ngeopointx)) then
                ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids1d, mesh1dname, 1, UG_LOC_NODE + UG_LOC_EDGE, &
                                            mesh1d%numNode, mesh1d%numEdge, 0, 0, &
                                            mesh1d%edge_nodes, face_nodes, null(), null(), null(), &
@@ -14251,20 +14251,20 @@ contains
          end do
 
          if (numContPts > 0) then
-         ierr = nf90_def_dim(ncid, 'n'//trim(mesh1dname)//'_FlowElemContourPts', numContPts, id_flowelemcontourptsdim)
+            ierr = nf90_def_dim(ncid, 'n'//trim(mesh1dname)//'_FlowElemContourPts', numContPts, id_flowelemcontourptsdim)
             ierr = nf90_def_var(ncid, trim(mesh1dname)//'_FlowElemContour_x', nf90_double, &
                                 [id_flowelemcontourptsdim, id_tsp%meshids1d%dimids(mdim_node)], id_flowelemcontourx)
             ierr = nf90_def_var(ncid, trim(mesh1dname)//'_FlowElemContour_y', nf90_double, &
                                 [id_flowelemcontourptsdim, id_tsp%meshids1d%dimids(mdim_node)], id_flowelemcontoury)
-         ierr = unc_addcoordatts(ncid, id_flowelemcontourx, id_flowelemcontoury, jsferic)
-         ierr = nf90_put_att(ncid, id_flowelemcontourx, 'long_name', 'list of x-coordinates forming flow element')
-         ierr = nf90_put_att(ncid, id_flowelemcontoury, 'long_name', 'list of y-coordinates forming flow element')
-         ierr = nf90_put_att(ncid, id_flowelemcontourx, '_FillValue', dmiss)
-         ierr = nf90_put_att(ncid, id_flowelemcontoury, '_FillValue', dmiss)
-         ierr = nf90_put_att(ncid, id_tsp%meshids1d%varids(mid_nodex), 'bounds', trim(mesh1dname)//'_FlowElemContour_x')
-         ierr = nf90_put_att(ncid, id_tsp%meshids1d%varids(mid_nodey), 'bounds', trim(mesh1dname)//'_FlowElemContour_y')
+            ierr = unc_addcoordatts(ncid, id_flowelemcontourx, id_flowelemcontoury, jsferic)
+            ierr = nf90_put_att(ncid, id_flowelemcontourx, 'long_name', 'list of x-coordinates forming flow element')
+            ierr = nf90_put_att(ncid, id_flowelemcontoury, 'long_name', 'list of y-coordinates forming flow element')
+            ierr = nf90_put_att(ncid, id_flowelemcontourx, '_FillValue', dmiss)
+            ierr = nf90_put_att(ncid, id_flowelemcontoury, '_FillValue', dmiss)
+            ierr = nf90_put_att(ncid, id_tsp%meshids1d%varids(mid_nodex), 'bounds', trim(mesh1dname)//'_FlowElemContour_x')
+            ierr = nf90_put_att(ncid, id_tsp%meshids1d%varids(mid_nodey), 'bounds', trim(mesh1dname)//'_FlowElemContour_y')
 
-         ierr = nf90_enddef(ncid)
+            ierr = nf90_enddef(ncid)
 
             allocate (work2(numContPts, mesh1d%numNode))
             work2 = dmiss
@@ -14281,7 +14281,7 @@ contains
             end do
             ierr = nf90_put_var(ncid, id_flowelemcontoury, work2, [1, 1], [numContPts, mesh1d%numNode])
 
-         deallocate (work2)
+            deallocate (work2)
             ierr = nf90_redef(ncid)
          else
             ierr = nf90_enddef(ncid)
@@ -14297,13 +14297,13 @@ contains
          ! --- Populate optional output arguments ---
          if (present(numcontacts)) numcontacts = n1d2dcontacts
 
-      if (present(contacts_)) then
-         call realloc(contacts_, [2, n1d2dcontacts], fill=-999)
+         if (present(contacts_)) then
+            call realloc(contacts_, [2, n1d2dcontacts], fill=-999)
             if (allocated(flowgeom1d%contacts)) contacts_ = flowgeom1d%contacts
          end if
 
-      if (present(contacttype_)) then
-         call realloc(contacttype_, n1d2dcontacts, keepExisting=.false., fill=0)
+         if (present(contacttype_)) then
+            call realloc(contacttype_, n1d2dcontacts, keepExisting=.false., fill=0)
             if (allocated(flowgeom1d%contacttype)) contacttype_ = flowgeom1d%contacttype
          end if
 
