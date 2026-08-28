@@ -1659,6 +1659,8 @@ contains
          !
          deallocate (tmp_add_out_names)
          !
+      else
+         allocate (sr%add_out_names(n_outpars), stat=istat)
       end if
       !
       !  Interval to keep the hotfile
