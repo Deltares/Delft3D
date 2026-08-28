@@ -2187,9 +2187,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     real(fp), dimension(this%settings%nfrac)                                        , intent(in)  :: rhosol   !  density of sediment
     real(fp)                                                                        , intent(in)  :: rhow     !  density of water
     real(fp), dimension(this%settings%nmlb:this%settings%nmub,this%settings%nfrac)  , intent(in)  :: hidexp !dimensions (nmlb:nmub, lsedtot)
-!    real(fp), dimension(this%settings%nmlb:this%settings%nmub,lsedtot)              , intent(in)  :: hidexp !dimensions (nmlb:nmub, lsedtot)
-!    real(fp), dimension(:,:)              , intent(in)  :: hidexp !dimensions (nmlb:nmub, lsedtot)
-!    integer                                , intent(in)  :: lsedtot
 
 !
 ! Local variables
@@ -2210,9 +2207,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     real(fp)                , pointer :: sigma_sfm
     real(fp), dimension(:,:), pointer :: mobile
     integer                 , pointer :: imobility    
-    integer                 , pointer :: isedcrs2tr
-    integer                 , pointer :: ihidexptrcrs    
-    !real(fp), dimension(:,:), pointer :: hidexp !dimensions (nmlb:nmub, lsedtot)
     
 !
 !! executable statements -------------------------------------------------------
@@ -2222,54 +2216,49 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     sigma_sfm   => this%settings%sigma_sfm
     imobility   => this%settings%imobility
     mobile      => this%state%mobile
-    isedcrs2tr  => this%settings%isedcrs2tr
-    ihidexptrcrs => this%settings%ihidexptrcrs
     
-    !hidexp              => gdp%gderosed%hidexp
-    
-    !
-    if (imobility > MOBILITY_DISCRETE) fac = 1.0_fp/(sigma_sfm*sqrt(2.0_fp))
-    rnu = 1.0e-6
+    fac = 1.0_fp / (sigma_sfm * sqrt(2.0_fp))
+    rnu = 1.0e-6_fp
     do nm = this%settings%nmlb,this%settings%nmub
         do l = 1, this%settings%nfrac
-            if (imobility==MOBILITY_DISCRETE .or. imobility==MOBILITY_SHIELDS) then
+            if (imobility == MOBILITY_DISCRETE .or. imobility == MOBILITY_SHIELDS) then
                 !
                 !  Shear stress according to shields curve
                 !
                 del = (rhosol(l) - rhow)/rhow
-                dstar = di50(l)*(del*g/rnu/rnu)**(1./3.)
-                if (dstar<=4.) then
-                   thetcr = 0.240/dstar
-                elseif (dstar<=10.) then
-                   thetcr = 0.140/dstar**0.64
-                elseif (dstar<=20.) then
-                   thetcr = 0.040/dstar**0.10
-                elseif (dstar<=150.) then
-                   thetcr = 0.013*dstar**0.29
+                dstar = di50(l)*(del*g/rnu/rnu)**(1.0_fp/3.0_fp)
+                if (dstar <= 4.0_fp) then
+                   thetcr = 0.240_fp / dstar
+                elseif (dstar <= 10.0_fp) then
+                   thetcr = 0.140_fp / dstar**0.64_fp
+                elseif (dstar <= 20.0_fp) then
+                   thetcr = 0.040_fp / dstar**0.10_fp
+                elseif (dstar <= 150.0_fp) then
+                   thetcr = 0.013_fp * dstar**0.29_fp
                 else
-                   thetcr = 0.055
+                   thetcr = 0.055_fp
                 endif                
-                tau50 = thetcr*((rhosol(l)-rhow)*g*di50(l))
-            elseif (imobility==MOBILITY_WILCOCKMCARDELL) then
+                tau50 = thetcr * ((rhosol(l)-rhow) * g * di50(l))
+            elseif (imobility == MOBILITY_WILCOCKMCARDELL) then
                 !
                 !  Shear stress according to Wilcock and McArdell (1997)
                 !
-                tau50 = asfm*(di50(l)*1000.0_fp)**bsfm
-            elseif(imobility==MOBILITY_SEDTRANS) then
-                thetcr=0.047 !read from sediment transport relation
-                tau50=hidexp(nm,l)*thetcr*((rhosol(l)-rhow)*g*di50(l))
+                tau50 = asfm * (di50(l) * 1000.0_fp)**bsfm
+            elseif(imobility == MOBILITY_SEDTRANS) then
+                thetcr = 0.047_fp !read from sediment transport relation
+                tau50 = hidexp(nm,l) * thetcr * ((rhosol(l)-rhow) * g * di50(l))
             else
                 ! 
                 ! tau50 not used
                 ! 
             endif
             !
-            if (imobility==MOBILITY_OFF) then
+            if (imobility == MOBILITY_OFF) then
                 !
                 !  Mobility concept not used
                 !               
                 ! mobile(l,nm) = 1.0_fp
-            elseif (imobility==MOBILITY_DISCRETE .or. imobility==MOBILITY_SEDTRANS) then
+            elseif (imobility == MOBILITY_DISCRETE .or. imobility == MOBILITY_SEDTRANS) then
                 !
                 !  Discrete formulation of mobility
                 !               
@@ -2282,10 +2271,10 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
                 !
                 !  Continuous formulation of mobility
                 !
-                tau50 = max(tau50,1e-12_fp) !prevent division by 0
-                t1    = max(taub(nm)/tau50, tiny(1.0_fp)) !prevent log of 0
-                t2    = log(t1)*fac
-                mobile(l,nm) = 0.5_fp*(1.0_fp+erf(t2))
+                tau50 = max(tau50, 1e-12_fp) !prevent division by 0
+                t1    = max(taub(nm) / tau50, tiny(1.0_fp)) !prevent log of 0
+                t2    = log(t1) * fac
+                mobile(l,nm) = 0.5_fp * (1.0_fp + erf(t2))
             endif
         enddo
     enddo
@@ -3345,6 +3334,7 @@ end subroutine getsedthick_1point
 !> initialize the morlyr data
 function initmorlyr(this) result (istat)
     use precision
+    use morphology_data_module, only: HIDEXP_ACTIVE_LAYER_ONLY
     implicit none
     !
     real(fp), parameter :: rmissval = -999.0_fp
@@ -3408,7 +3398,7 @@ function initmorlyr(this) result (istat)
     settings%svgel        = 0.158_fp               ! volume fraction of pure sediment at gelling point
     settings%svmax        = 0.6_fp                 ! if svfrac > svmax, consolidation stops
     settings%isedcrs2tr   = 0
-    settings%ihidexptrcrs = 0
+    settings%ihidexptrcrs = HIDEXP_ACTIVE_LAYER_ONLY
     settings%a_max        = 20.0_fp
     settings%asfm         = 0.523_fp
     settings%bsfm         = 0.67_fp

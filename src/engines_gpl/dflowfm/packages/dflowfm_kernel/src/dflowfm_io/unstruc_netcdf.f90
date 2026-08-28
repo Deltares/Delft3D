@@ -1388,6 +1388,7 @@ contains
       use m_sferic, only: jsferic
       use network_data, only: nump1d2d, numk, netcell, numl, xzw, yzw, kn
       use m_sediment, only: stm_included, stmpar, mxgr, jaceneqtr, sed, fp, aldiff_links, grainlay
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use m_partitioninfo, only: jampi, idomain, iglobal_s
       use m_structures, only: get_max_numlinks, valculvert, valgenstru, valweirgen, valorifgen, valpump
       use m_globalparameters, only: st_general_st, st_weir, st_orifice
@@ -2146,7 +2147,7 @@ contains
                ierr = nf90_put_att(irstfile, id_preload, 'units', 'kg')
             end if
 
-            if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+            if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                ierr = nf90_def_var(irstfile, 'porosity', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_poros)
                ierr = nf90_put_att(irstfile, id_poros, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                ierr = nf90_put_att(irstfile, id_poros, 'long_name', 'Porosity of layer of the bed in flow cell center')
@@ -3189,7 +3190,7 @@ contains
                end if
                frac = -999.0_dp
 
-               if (stmpar%morlyr%settings%iporosity == 0) then
+               if (stmpar%morlyr%settings%iporosity == POROS_IN_DENSITY) then
                   dens => stmpar%sedpar%cdryb
                else
                   dens => stmpar%sedpar%rhosol
@@ -3215,7 +3216,7 @@ contains
                ierr = nf90_put_var(irstfile, id_preload, stmpar%morlyr%state%preload(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
             ! porosity
-            if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+            if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                if (.not. allocated(poros)) then
                   allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
                end if
@@ -3760,6 +3761,7 @@ contains
       use m_sferic
       use network_data
       use m_sediment
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, ibedlevtyp, map_write_settings
@@ -4627,7 +4629,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, nc_precision, UNC_LOC_S, 'lyrfrac', '', 'Volume fraction in a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
-               if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+               if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, nc_precision, UNC_LOC_S, 'poros', '', 'Porosity of a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
@@ -5834,7 +5836,7 @@ contains
                end if
                frac = -999.0_dp
 
-               if (stmpar%morlyr%settings%iporosity == 0) then
+               if (stmpar%morlyr%settings%iporosity == POROS_IN_DENSITY) then
                   dens => stmpar%sedpar%cdryb
                else
                   dens => stmpar%sedpar%rhosol
@@ -5855,7 +5857,7 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, UNC_LOC_S, frac, locdim=3, jabndnd=jabndnd_)
             end if
             !
-            if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+            if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                if (.not. allocated(poros)) then
                   allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
                end if
@@ -6642,6 +6644,7 @@ contains
       use m_sferic
       use network_data
       use m_sediment
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, jacali
@@ -7572,7 +7575,7 @@ contains
                      ierr = nf90_put_att(imapfile, id_thlyr(iid), 'units', 'm')
                   end if
 
-                  if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+                  if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                      ierr = nf90_def_var(imapfile, 'poros', nf90_double, [id_nlyrdim(iid), id_flowelemdim(iid), id_timedim(iid)], id_poros(iid))
                      ierr = nf90_put_att(imapfile, id_poros(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                      ierr = nf90_put_att(imapfile, id_poros(iid), 'long_name', 'porosity of a layer of the bed in flow cell center')
@@ -8324,7 +8327,7 @@ contains
                   ierr = nf90_inq_varid(imapfile, 'thlyr', id_thlyr(iid))
                end if
 
-               if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+               if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                   ierr = nf90_inq_varid(imapfile, 'poros', id_poros(iid))
                end if
             end select
@@ -9201,7 +9204,7 @@ contains
                   end if
                   frac = -999.0_dp
 
-                  if (stmpar%morlyr%settings%iporosity == 0) then
+                  if (stmpar%morlyr%settings%iporosity == POROS_IN_DENSITY) then
                      dens => stmpar%sedpar%cdryb
                   else
                      dens => stmpar%sedpar%rhosol
@@ -9221,7 +9224,7 @@ contains
                   end do
                end if
                !
-               if (stmpar%morlyr%settings%iporosity > 0) then
+               if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY) then
                   if (.not. allocated(poros)) then
                      allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
                   end if
@@ -9242,7 +9245,7 @@ contains
                   ierr = nf90_put_var(imapfile, id_thlyr(iid), stmpar%morlyr%state%thlyr(:, 1:ndxndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxndxi, 1])
                end if
 
-               if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
+               if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY .and. stmpar%morpar%moroutput%poros) then
                   ierr = nf90_put_var(imapfile, id_poros(iid), poros(:, 1:ndxndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxndxi, 1])
                end if
             end select
@@ -12832,7 +12835,7 @@ contains
                   if (layerfrac == 1) then
                      !
                      ! msed contains volume fractions
-                     if (stmpar%morlyr%settings%iporosity == 0) then
+                     if (stmpar%morlyr%settings%iporosity == POROS_IN_DENSITY) then
                         do l = 1, stmpar%lsedtot
                            do k = 1, stmpar%morlyr%settings%nlyr
                               do nm = 1, ndxi
@@ -12874,7 +12877,7 @@ contains
                         end do
                      end if
                   else
-                     if (stmpar%morlyr%settings%iporosity > 0) then
+                     if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY) then
                         do nm = 1, ndxi
                            sedthick = 0.0_fp
                            do l = 1, stmpar%lsedtot

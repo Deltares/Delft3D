@@ -230,7 +230,13 @@ module morphology_data_module
 ! Threshold options for FIXFAC calculation
 !
    integer, parameter, public :: THRESH_CONSTANT = 1 ! constant value specified using Thresh
-   integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 !value based on thickness of alluvial transport layer
+   integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 ! value based on thickness of alluvial transport layer
+!
+! Hiding and exposure options
+!
+   integer, parameter, public :: HIDEXP_ACTIVE_LAYER_ONLY = 0
+   integer, parameter, public :: HIDEXP_ACTIVE_AND_COARSE_LAYER = 1
+
 !
 ! collection of morphology output options
 !

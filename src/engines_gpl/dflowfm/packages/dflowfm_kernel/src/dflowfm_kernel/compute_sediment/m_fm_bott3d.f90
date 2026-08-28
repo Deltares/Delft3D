@@ -251,7 +251,7 @@ contains
             !
             ! Diffuse fractions in active layer
             !
-            if (stmpar%morlyr%settings%active_layer_diffusion > ACTIVE_LAYER_DIFFUSION_OFF) then
+            if (stmpar%morlyr%settings%active_layer_diffusion /= ACTIVE_LAYER_DIFFUSION_OFF) then
                call fm_diffusion_active_layer()
             end if
             !
@@ -261,16 +261,16 @@ contains
             ! 
             ! Compute mobile fractions
             ! 
-            if (stmpar%morlyr%settings%imobility > MOBILITY_OFF) then 
+            if (stmpar%morlyr%settings%imobility /= MOBILITY_OFF) then 
                call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
-            endif    
+            endif
             ! 
             if (stmpar%morlyr%settings%crslyr) then 
                !
                ! Compute average bed load transport in cel
                ! 
                sbtot(:, :) = hypot(sbcx(:, :), sbcy(:, :)) !sbtot(:, :) = sqrt(sbcx(:, :) * sbcx(:, :) + sbcy(:, :) * sbcy(:, :))
-            endif 
+            endif
             !
             ! Update layers and obtain the depth change
             !

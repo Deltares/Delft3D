@@ -341,21 +341,21 @@ contains
           call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
          endif
          !
-         if (iconsolidate>0) then
-            iporosity = 4
+         if (iconsolidate /= CONSOL_NONE) then
+            iporosity = POROS_SVFRAC0SM
          else
             call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
             txtput1 = 'Porosity'
             select case (iporosity)
-            case (0)
+            case (POROS_IN_DENSITY, POROS_CDRYB)
                txtput2 = '      Based on CDRYB'
-            case (1)
+            case (POROS_FRINGS)
                txtput2 = '              Linear'
-            case (2)
+            case (POROS_WELTJE)
                txtput2 = '          Non-linear'
-            case (3)
+            case (POROS_SVFRAC0)
                txtput2 = '            Constant'
-            case (4) 
+            case (POROS_SVFRAC0SM) 
                txtput2 = '      Weight Average'
             end select
             write (lundia, '(3a)') txtput1, ':', txtput2
@@ -714,36 +714,33 @@ contains
             return
          end if
          !
-         call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
-         call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
-         call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
-         !
-         write (lundia, '(a,i2)') 'ISedCrs2Tr: ', isedcrs2tr
-         write (lundia, '(a,i2)') 'IHidExpTrCrs:', ihidexptrcrs
-         write (lundia, '(a,i2)') 'IMobility:', imobility
-         !
-         txtput1 = 'Mobility model for vertical sorting'
-         select case (imobility)
-         case (0)
-            txtput2 = ' not used'
-         case (1)
-            txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
-         case (2)
-            txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
-         case (3)
-            txtput2 = ' Wilcock and McArdell (1997)'
-         case (4)
-            txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
-         case default
-            txtput2 = ' not used'
-            errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
-            write (lundia, '(3a)') txtput1, ':', txtput2
-            call write_error(errmsg, unit=lundia)
-            error = .true.
-            return
-         end select
-         write (lundia, '(3a)') txtput1, ':', txtput2
          if (crslyr) then
+            call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
+            call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+            call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
+            !
+            txtput1 = 'Mobility model for vertical sorting'
+            select case (imobility)
+            case (MOBILITY_OFF)
+               txtput2 = ' not used'
+            case (MOBILITY_DISCRETE)
+               txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
+            case (MOBILITY_SHIELDS)
+               txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
+            case (MOBILITY_WILCOCKMCARDELL)
+               txtput2 = ' Wilcock and McArdell (1997)'
+            case (MOBILITY_SEDTRANS)
+               txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
+            case default
+               txtput2 = ' not used'
+               errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
+               write (lundia, '(3a)') txtput1, ':', txtput2
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            end select
+            write (lundia, '(3a)') txtput1, ':', txtput2
+         
             associate (telfil => morpar%telfil)
                istat = bedcomp_getpointer_realfp(morlyr, 'A_max', a_max)
                if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'SinkFrac_max', sinkfrac_max)
@@ -1076,7 +1073,7 @@ contains
       !
       ! consolidation parameters
       !
-      if (iconsolidate>=0) then
+      if (iconsolidate /= CONSOL_NONE) then
           write (lundia, '(a)') '*** Start of consolidation input'  
   
           call prop_get(mor_ptr, 'Consolidate', 'svfrac0', morlyr%settings%svfrac0)
@@ -1229,7 +1226,7 @@ contains
               deallocate(cfield)
           end select
   
-          if (iconsolidate>=3) then
+          if (iconsolidate == CONSOL_TERZAGHI .or. iconsolidate == CONSOL_TERZ_PEAT) then
               call prop_get(mor_ptr, 'peat', 'ymodpeat', morlyr%settings%ymodpeat)
               txtput1 = 'ymod'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ymodpeat
@@ -1403,8 +1400,9 @@ subroutine rderosion(lundia, mor_ptr, ierosion, erosion_config)
     end select
         
 end subroutine rderosion
+
    subroutine set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
-      use bedcomposition_module, only: bedcomp_data, setbedfracprop
+      use bedcomposition_module, only: bedcomp_data, setbedfracprop, POROS_IN_DENSITY
       use morphology_data_module, only: sedpar_type
       implicit none
 
@@ -1412,7 +1410,7 @@ end subroutine rderosion
       type(bedcomp_data), pointer, intent(inout) :: morlyr
       type(sedpar_type), pointer, intent(inout) :: sedpar
 
-      if (iporosity == 0) then
+      if (iporosity == POROS_IN_DENSITY) then
          !
          ! porosity is fraction dependent and included in cdryb densities
          !
@@ -1790,7 +1788,7 @@ end subroutine rderosion
                   end if
                end if
             end do
-            if (iporosity == 0) then
+            if (iporosity == POROS_IN_DENSITY) then
                do ised = 1, lsedtot
                   if (inisedunit(ised) == 'm') then
                      do nm = 1, nmmax
@@ -2254,7 +2252,7 @@ end subroutine rderosion
                      !
                      ! convert mass fractions into volume fractions
                      !
-                     if (iporosity == 0) then
+                     if (iporosity == POROS_IN_DENSITY) then
                         if (layertype == 'mass fraction') then
                            do nm = 1, nmmax
                               cdrybavg = 0.0_fp
@@ -2490,7 +2488,7 @@ end subroutine rderosion
                      !
                      ! convert sediment mass to sediment thickness
                      !
-                     if (iporosity == 0) then
+                     if (iporosity == POROS_IN_DENSITY) then
                         if (layertype == 'sediment thickness') then
                            do ised = 1, lsedtot
                               do nm = 1, nmmax

@@ -247,7 +247,6 @@ contains
 
       integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
       integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
-      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
@@ -595,7 +594,7 @@ contains
          !
          ! determine hiding & exposure factors
          !
-         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDEXP_ACTIVE_AND_COARSE_LAYER) then 
             !In this case, the hiding and exposure factors are computed based on the mean grain
             !size of the sediment in both the active layer (which is the top layer in the bed) and
             !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
@@ -920,7 +919,7 @@ contains
          dll_reals(RP_VELMN) = real(velm, hp)
          dll_reals(RP_USTAR) = real(ustarc, hp)
          if (iconsolidate > 0) then
-            dll_reals(RP_POROS) = real(poros(nm) ,hp)
+            dll_reals(RP_POROS) = real(poros(nm), hp)
          else
             dll_reals(RP_POROS) = 0.0_dp ! RP_POROS will be set later
          endif

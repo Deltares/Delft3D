@@ -414,7 +414,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !       & -0.9512,-0.9850/
     integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
     integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
-    integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
 !
 !! executable statements -------------------------------------------------------
 !
@@ -727,7 +726,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        !
        ! determine hiding & exposure factors
        !
-       if (ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+       if (ihidexptrcrs == HIDEXP_ACTIVE_AND_COARSE_LAYER) then 
           !In this case, the hiding and exposure factors are computed based on the mean grain
           !size of the sediment in both the active layer (which is the top layer in the bed) and
           !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
