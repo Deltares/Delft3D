@@ -54,6 +54,7 @@ module m_longculverts
    public LongCulvertsToProfs
    public setFrictionForLongculverts
    public reduceFlowAreaAtLongculverts
+   public remove_longculvert_flowlinks
    public get_valve_relative_opening_c_loc
    public find1d2dculvertlinks
    public initialize_Long_Culverts
@@ -65,6 +66,50 @@ module m_longculverts
    end interface
    
 contains
+
+   !> Removes flow links administered by long culverts from a link list.
+   !! The list is compacted in place, preserving the orientation of retained links.
+   pure subroutine remove_longculvert_flowlinks(numlinks, links)
+      integer, intent(inout) :: numlinks !< Number of flow links in links.
+      integer, dimension(:), intent(inout) :: links !< Flow links to be filtered.
+
+      integer, allocatable :: longculvert_links(:)
+      integer, dimension(size(links)) :: filtered_links
+      integer :: i, j, k, num_longculvert_links
+
+      num_longculvert_links = 0
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%flowlinks)) then
+            num_longculvert_links = num_longculvert_links + count(longculverts(i)%flowlinks /= 0)
+         end if
+      end do
+
+      allocate (longculvert_links(num_longculvert_links))
+      k = 0
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%flowlinks)) then
+            do j = 1, size(longculverts(i)%flowlinks)
+               if (longculverts(i)%flowlinks(j) /= 0) then
+                  k = k + 1
+                  longculvert_links(k) = abs(longculverts(i)%flowlinks(j))
+               end if
+            end do
+         end if
+      end do
+
+      k = 0
+      do i = 1, numlinks
+         if (links(i) == 0 .or. .not. any(longculvert_links == abs(links(i)))) then
+            k = k + 1
+            filtered_links(k) = links(i)
+         end if
+      end do
+
+      if (k > 0) then
+         links(1:k) = filtered_links(1:k)
+      end if
+      numlinks = k
+   end subroutine remove_longculvert_flowlinks
 
    !> Sets ALL (scalar) variables in this module to their default values.
    !! For a reinit prior to flow computation, call reset_longculverts() instead.

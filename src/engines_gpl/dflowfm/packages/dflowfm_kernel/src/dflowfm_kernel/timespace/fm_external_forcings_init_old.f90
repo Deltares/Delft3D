@@ -68,7 +68,7 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
-      use m_longculverts_data, only: remove_longculvert_flowlinks
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
