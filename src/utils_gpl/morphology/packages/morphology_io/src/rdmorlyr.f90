@@ -51,6 +51,7 @@ contains
       use string_module
       use grid_dimens_module, only: griddimtype
       use dfparall, only: parll
+      use m_scannr, only: scannr
       !
       implicit none
 !
