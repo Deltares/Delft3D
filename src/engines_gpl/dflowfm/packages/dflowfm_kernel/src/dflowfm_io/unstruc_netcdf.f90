@@ -1375,12 +1375,12 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, & 
-         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
-         jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
-         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
-         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
-         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
+      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
+                        bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
+                        jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
+                        taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
+                        fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
+                        thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
       use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
@@ -1401,7 +1401,7 @@ contains
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
       use m_reconstruct_ucz, only: reconstructucz
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, &
-         const_units, ifrac2const
+                             const_units, ifrac2const
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
       use m_xbeach_data, only: E, thetamean, sigmwav
       use unstruc_channel_flow, only: network
@@ -1944,19 +1944,19 @@ contains
 
          ierr = nf90_def_var(irstfile, 'ice_thickness', nf90_double, [id_flowelemdim, id_timedim], id_ice_thickness)
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness') 
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness')
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'long_name', 'Thickness of floating ice cover')
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'units', 'm')
 
          ierr = nf90_def_var(irstfile, 'ice_area_fraction', nf90_double, [id_flowelemdim, id_timedim], id_ice_area_fraction)
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction') 
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction')
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'long_name', 'Fraction of the surface area covered by floating ice')
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'units', 'm2 m-2')
 
          ierr = nf90_def_var(irstfile, 'snow_thickness', nf90_double, [id_flowelemdim, id_timedim], id_snow_thickness)
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness') 
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness')
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'long_name', 'Thickness of the snow layer')
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'units', 'm')
 
@@ -14017,12 +14017,12 @@ contains
                   ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
 
                   ierr = nf90_enddef(ncid)
-                     ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(faces))
-                     ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(faces))
+                  ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(faces))
+                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(faces))
                   ierr = nf90_redef(ncid)
                else
                   ierr = nf90_enddef(ncid)
-                     ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(faces))
+                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(faces))
                   ierr = nf90_redef(ncid)
                end if
             end if
@@ -14043,7 +14043,7 @@ contains
          end if
          ierr = nf90_enddef(ncid)
 
-         ! -- Start data writing (time-independent data) ------------
+         !-- Start data writing (time-independent data) ------------
          if (flowgeom_map%mesh1D%numNode > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(nodes_1d))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(nodes_1d))

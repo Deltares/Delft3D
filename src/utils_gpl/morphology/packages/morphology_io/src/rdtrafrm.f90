@@ -1204,7 +1204,7 @@ contains
          endif
       elseif (iform == -2) then
          name = 'Van Rijn (2007): TRANSPOR2004'
-         nparopt = 9
+         nparopt = 10
          parkeyw(1) = 'IopSus'
          pardef(1) = 0.0_fp
          parkeyw(2) = 'Pangle'
