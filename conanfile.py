@@ -104,3 +104,4 @@ class Delft3DRecipe(ConanFile):
         self.options["boost"].without_type_erasure = True
         self.options["boost"].without_url = True
         self.options["boost"].without_wave = True
+        self.options["gtest"].shared = True
