@@ -574,7 +574,7 @@ end subroutine read_grd
 !==============================================================================
 subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax, kmax, &
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
-                         & filename_tmp, flowLinkConnectivity)
+                         & filename_tmp, flowLinkConnectivity, quadrilaterals, triangles)
     use netcdf
     use nc_check, only : nc_check_err
     use dwaves_version_module
@@ -598,6 +598,8 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     real(hp)                         , intent(out) :: xymiss
     integer , dimension(:,:), pointer              :: codb
     integer , dimension(:,:), pointer              :: covered
+   integer , dimension(:,:), pointer, intent(out) :: quadrilaterals
+   integer , dimension(:,:), pointer, intent(out) :: triangles
     integer , dimension(:),   pointer              :: numenclptsppart
     real(hp), dimension(:,:), pointer              :: xcc
     real(hp), dimension(:,:), pointer              :: ycc
@@ -1168,8 +1170,17 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     deallocate (grid_corner, STAT=ierror)
     deallocate (nelmslice  , STAT=ierror)
     if (sferic) then
+       allocate (quadrilaterals(4,0), STAT=ierror)
+       allocate (triangles     (3,0), STAT=ierror)
        deallocate (mask_area  , STAT=ierror)
     else
+       if (regulargrid) then
+          allocate (quadrilaterals(4,maxelem), source=elemconn(:,1:maxelem), STAT=ierror)
+          allocate (triangles     (3,0), STAT=ierror)
+       else
+          allocate (quadrilaterals(4,0), STAT=ierror)
+          allocate (triangles     (3,maxelem), source=elemconn(:3,1:maxelem), STAT=ierror)
+       endif
        deallocate ( elemconn, STAT=ierror)
        deallocate (nelemconn, STAT=ierror)
        deallocate (flowlink, STAT=ierror)

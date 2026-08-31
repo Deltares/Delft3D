@@ -80,17 +80,3 @@ elseif (WIN32)
 endif()
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/wave/scripts/run_dwaves.${platform_extension}  DESTINATION bin)
-if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION bin)
-    find_program(ESMF_REGRIDWEIGHTGEN_EXECUTABLE ESMF_RegridWeightGen REQUIRED)
-    install(PROGRAMS ${ESMF_REGRIDWEIGHTGEN_EXECUTABLE} DESTINATION bin)
-endif(UNIX)
-if(WIN32)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)
-    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION bin
-FILES_MATCHING
-PATTERN "*.dll"
-PATTERN "*.dll.a"
-)
-    install (PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ESMF_RegridWeightGen.exe DESTINATION bin)
-endif(WIN32)
