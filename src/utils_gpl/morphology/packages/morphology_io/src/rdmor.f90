@@ -310,10 +310,6 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
        morpar%moroutput%poros = .false.
        morpar%moroutput%td = .false.
        morpar%moroutput%preload = .false.
-       morpar%moroutput%preload = .false.
-       morpar%moroutput%cmudlyr = .false.
-       morpar%moroutput%csandlyr = .false.
-       morpar%moroutput%conclyr = .false.
     end if
     !
     if (sedpar%anymud) then
@@ -946,9 +942,6 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%td)
     call prop_get(mor_ptr, 'Output', 'preload'                     , moroutput%preload)
     call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
-    call prop_get(mor_ptr, 'Output', 'BedLayerMudConcentration'    , moroutput%cmudlyr)
-    call prop_get(mor_ptr, 'Output', 'BedLayerSandConcentration'   , moroutput%csandlyr)
-    call prop_get(mor_ptr, 'Output', 'BedLayerConcentrations'      , moroutput%conclyr)
     !
     call prop_get(mor_ptr, 'Output', 'FluffDepositionFlux'         , moroutput%depflxf)
     call prop_get(mor_ptr, 'Output', 'FluffErosionFlux'            , moroutput%eroflxf)

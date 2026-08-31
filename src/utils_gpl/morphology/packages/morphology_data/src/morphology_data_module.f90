@@ -319,10 +319,6 @@ module morphology_data_module
       logical :: sxytot
       logical :: sxyavg
       !
-      logical :: cmudlyr
-      logical :: csandlyr
-      logical :: conclyr
-      !
       logical :: burflxf
       logical :: depflxf
       logical :: eroflxf
@@ -1865,10 +1861,6 @@ end subroutine clrsedpar
       moroutput%aldiff = no
       moroutput%preload = no
       moroutput%morfac = yes
-      !
-      moroutput%cmudlyr = no
-      moroutput%csandlyr = no
-      moroutput%conclyr = no
       !
       moroutput%burflxf = no
       moroutput%depflxf = no
