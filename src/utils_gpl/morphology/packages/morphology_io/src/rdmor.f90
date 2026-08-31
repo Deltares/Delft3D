@@ -1051,6 +1051,7 @@ subroutine read_morphology_process_string(pxxstr, nxxuser, max_nuserfrac, rfield
     use properties
     use string_module
     use message_module
+    use m_scannr, only: scannr
     
     implicit none
     

@@ -32,8 +32,9 @@ module m_fm_wq_processes_sub
 
    private
 
-   public :: default_fm_wq_processes, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
-             get_waqinputname, WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER
+   public :: default_fm_wq_processes, finalize_waq_spatial_fields, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
+             get_waqinputname
+   public :: WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER
 
    interface
 
@@ -44,6 +45,10 @@ module m_fm_wq_processes_sub
       module subroutine fm_wq_processes_ini_sub()
          implicit none
       end subroutine fm_wq_processes_ini_sub
+
+      module subroutine finalize_waq_spatial_fields()
+         implicit none
+      end subroutine finalize_waq_spatial_fields
 
       module subroutine fm_wq_processes_ini_proc()
          implicit none
@@ -59,7 +64,7 @@ module m_fm_wq_processes_sub
 
       module subroutine get_waqinputname(qid, inputname, qidname)
          !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
-    !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
+         !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
          implicit none
 
          character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'waqfunctionradsurf'.

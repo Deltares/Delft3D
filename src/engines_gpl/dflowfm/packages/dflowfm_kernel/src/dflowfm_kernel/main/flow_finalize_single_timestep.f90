@@ -61,7 +61,7 @@ contains
       use m_gui
       use dfm_error
       use dfm_signals
-      use m_mass_balance_areas, only: jamba
+      use m_mass_balance_area_data, only: jamba
       use m_partitioninfo, only: jampi, my_rank
       use m_integralstats, is_is_numndvals => is_numndvals
       use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, updateTotalInflowLat, &

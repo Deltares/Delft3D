@@ -145,19 +145,34 @@ namespace pre_c_sumo
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
         double current_time_seconds = 0.0;
-        waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+        if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
+        {
+            std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
+                         current_time_seconds);
+            return -1;
+        }
         const std::vector<NF2FFReader> initial_nf2ff_readers =
             readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-        ConnectedSinkSources initial_connected_sink_sources =
-            convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+        ConnectedSinkSources initial_connected_sink_sources;
+        try
+        {
+            initial_connected_sink_sources =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+        }
+        catch (const std::exception& exception)
+        {
+            std::println(stderr, "Error: Unable to convert NF2FF data: {}", exception.what());
+            return -1;
+        }
 
         // Set sources_sinks mesh
+        constexpr std::string_view sources_sinks_mesh = "sources_sinks_nodes";
         SourcesSinks sources_sinks;
         const std::size_t initial_sources_sinks_size = initial_connected_sink_sources.get_number_of_entries() == 0
                                                            ? 1
                                                            : initial_connected_sink_sources.get_number_of_entries();
         sources_sinks.setCoordinatesDimension(initial_sources_sinks_size);
-        participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
+        participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
             try
@@ -179,10 +194,29 @@ namespace pre_c_sumo
 
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
-            waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+            if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
+            {
+                std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
+                             current_time_seconds);
+                return -1;
+            }
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
             ConnectedSinkSources connected_sink_sources =
                 convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+
+            if (participant.isTimeWindowComplete())
+            {
+                participant.resetMesh(sources_sinks_mesh);
+                sources_sinks.setCoordinatesDimension(connected_sink_sources.get_number_of_entries());
+                participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
+                std::println("Reset Sources_Sinks. Mesh set to {} vertices.",
+                             connected_sink_sources.get_number_of_entries());
+            }
+            else
+            {
+                std::println("Skipped mesh reset. Want to write {} entries, mesh has {} vertices.",
+                             connected_sink_sources.get_number_of_entries(), sources_sinks.precice_ids.size());
+            }
 
             try
             {

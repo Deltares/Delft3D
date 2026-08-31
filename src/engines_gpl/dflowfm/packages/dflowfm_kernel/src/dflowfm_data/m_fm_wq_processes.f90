@@ -69,6 +69,7 @@ module m_fm_wq_processes
 
    integer, parameter :: NAMWAQLEN = 128
    integer :: jawaqproc = 0 !< switch for water quality processes (1 = substances initiated, 2 = processes activated too)
+   integer, allocatable :: waq_segment_number_indices(:) !< Indices of waqsegmentnumber inputs in paname and painp.
    real(hp) :: waq_vol_dry_thr = 1.0e-3_dp !< minimum volume for processes to be active
    real(hp) :: waq_dep_dry_thr = 1.0e-3_dp !< minimum depth for processes to be active
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
@@ -153,4 +154,39 @@ module m_fm_wq_processes
    real(hp), allocatable, dimension(:, :, :), target :: flxdmp !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :) :: flxdmpreduce !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :), target :: flxdmptot !< Total fluxes at dump segments
+
+contains
+
+   !> reset "waq_segment_number_indices" but keep it allocated with size 0.
+   subroutine reset_waq_segment_number_indices()
+      if (allocated(waq_segment_number_indices)) then
+         deallocate (waq_segment_number_indices)
+      end if
+      allocate (waq_segment_number_indices(0))
+   end subroutine reset_waq_segment_number_indices
+
+   !> Register a new waq index in the list of indices if it is not already present.
+   subroutine register_waq_segment_number_index(waq_input_index)
+      integer, intent(in) :: waq_input_index
+
+      integer, allocatable :: updated_indices(:)
+      integer :: number_of_indices
+
+      if (.not. allocated(waq_segment_number_indices)) then
+         allocate (waq_segment_number_indices(0))
+      end if
+
+      if (any(waq_segment_number_indices == waq_input_index)) then
+         return
+      end if
+
+      number_of_indices = size(waq_segment_number_indices)
+      allocate (updated_indices(number_of_indices + 1))
+      if (number_of_indices > 0) then
+         updated_indices(1:number_of_indices) = waq_segment_number_indices
+      end if
+      updated_indices(number_of_indices + 1) = waq_input_index
+      call move_alloc(updated_indices, waq_segment_number_indices)
+   end subroutine register_waq_segment_number_index
+
 end module m_fm_wq_processes

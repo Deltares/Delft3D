@@ -378,6 +378,7 @@ contains
       !     No spatial parameters for now, they should come from DFM
       num_spatial_parameters = 0
       call realloc(paname, num_spatial_parameters)
+      call reset_waq_segment_number_indices()
 
       !      Use functions to set 2D (or 0D variables) from DFM per column
       num_time_functions = 0
@@ -398,6 +399,117 @@ contains
          call timstop(ithndl)
       end if
    end subroutine fm_wq_processes_ini_sub
+
+   !> Finalizes all registered waqsegmentnumber inputs by translating their
+   !! global segment numbers to local WAQ segment indices and filling the
+   !! corresponding vertical painp entries for each D-Flow FM water column.
+   module subroutine finalize_waq_spatial_fields()
+      use m_fm_wq_processes, only: kbx, waq_segment_number_indices
+      use m_flow, only: kmx, kmxn
+      use m_flowgeom, only: Ndxi
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: Nglobal_s, iglobal_s, jampi
+      use processes_input, only: painp
+
+      integer :: waq_index_position
+      integer :: waq_input_index
+      integer :: horizontal_index
+      integer :: vertical_index
+      integer :: global_segment_2d
+      integer :: segment_layer
+      integer :: local_segment_2d
+      integer :: source_bottom_index
+      integer :: source_top_index
+      integer :: target_bottom_index
+      integer :: target_top_index
+      integer :: number_of_layers
+      real(dp) :: global_segment_number
+
+      if (.not. allocated(waq_segment_number_indices)) then
+         return
+      end if
+      if (.not. allocated(painp)) then
+         return
+      end if
+      if (size(waq_segment_number_indices) == 0 .or. size(painp, 1) == 0 .or. Ndxi <= 0) then
+         return
+      end if
+
+      do waq_index_position = 1, size(waq_segment_number_indices)
+         if (waq_segment_number_indices(waq_index_position) < 1 .or. waq_segment_number_indices(waq_index_position) > size(painp, 1)) then
+            cycle
+         end if
+
+         waq_input_index = waq_segment_number_indices(waq_index_position)
+         do horizontal_index = 1, Ndxi
+            global_segment_number = painp(waq_input_index, horizontal_index)
+            if (global_segment_number == dmiss) then
+               cycle
+            end if
+            if (jampi == 0) then
+               global_segment_2d = mod(int(global_segment_number) - 1, Ndxi) + 1
+               segment_layer = (int(global_segment_number) - 1) / Ndxi + 1
+            else if (Nglobal_s > 0) then
+               global_segment_2d = mod(int(global_segment_number) - 1, Nglobal_s) + 1
+               segment_layer = (int(global_segment_number) - 1) / Nglobal_s + 1
+            else
+               global_segment_2d = 0
+               segment_layer = 0
+            end if
+
+            local_segment_2d = global_to_local_segment(global_segment_2d)
+            if (local_segment_2d >= 1 .and. local_segment_2d <= Ndxi .and. segment_layer >= 1 .and. segment_layer <= max(1, kmx)) then
+               call getkbotktop(local_segment_2d, source_bottom_index, source_top_index)
+               number_of_layers = get_number_of_layers(horizontal_index)
+               painp(waq_input_index, horizontal_index) = max(source_bottom_index, source_bottom_index + number_of_layers - segment_layer) - kbx + 1
+            else
+               painp(waq_input_index, horizontal_index) = -999.0_dp
+            end if
+
+            call getkbotktop(horizontal_index, target_bottom_index, target_top_index)
+            number_of_layers = get_number_of_layers(horizontal_index)
+            do vertical_index = target_bottom_index, target_bottom_index + number_of_layers - 1
+               painp(waq_input_index, vertical_index) = painp(waq_input_index, horizontal_index)
+            end do
+         end do
+      end do
+
+   contains
+
+      !> Translates a global waqsegmentfunction index to a local segment index based on the iglobal_s mapping.
+      integer elemental function global_to_local_segment(global_segment_index)
+         integer, intent(in) :: global_segment_index !< The global segment index to be translated to a local segment index.
+
+         integer :: global_index
+
+         if (jampi == 0) then
+            global_to_local_segment = global_segment_index
+         else
+            global_to_local_segment = 0
+            if (allocated(iglobal_s)) then
+               do global_index = 1, size(iglobal_s)
+                  if (iglobal_s(global_index) == global_segment_index) then
+                     global_to_local_segment = global_index
+                     exit
+                  end if
+               end do
+            end if
+         end if
+      end function global_to_local_segment
+
+      !> Tiny helper function to avoid a 5-line if-statement. Returns kmxn if allocated, otherwise returns 1.
+      integer elemental function get_number_of_layers(horizontal_index)
+         integer, intent(in) :: horizontal_index !< The horizontal index for which to retrieve the number of layers.
+
+         if (allocated(kmxn)) then
+            get_number_of_layers = kmxn(horizontal_index)
+         else
+            get_number_of_layers = 1
+         end if
+      end function get_number_of_layers
+
+   end subroutine finalize_waq_spatial_fields
 
    module subroutine fm_wq_processes_ini_proc()
       use m_getkbotktopmax, only: getkbotktopmax
@@ -1355,7 +1467,7 @@ contains
    module subroutine fm_wq_processes_step(dt, time, processselection)
       use m_fm_wq_processes
       use m_wq_processes_proces
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_flow, only: vol1
       use timers
 
@@ -1934,6 +2046,7 @@ contains
       implicit none
 
       jawaqproc = 0
+      call reset_waq_segment_number_indices()
       md_subfile = ''
       md_ehofile = ''
       md_sttfile = ''

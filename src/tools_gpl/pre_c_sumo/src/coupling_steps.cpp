@@ -12,6 +12,8 @@
 #include <limits>
 #include <numbers> // for std::numbers::pi
 #include <cmath>   // for atan2,sin,cos
+#include <string>
+#include <fstream>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -130,19 +132,38 @@ namespace pre_c_sumo
         }
     }
 
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
+    bool is_complete_nf2ff_file(std::filesystem::path filename)
     {
+        std::ifstream file(filename);
+        std::string str;
+        while (std::getline(file, str))
+        {
+            if (str.contains("</NF2FF>"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
+    {
+        constexpr int check_delay_in_ms = 50;
+        constexpr int timeout_in_ms = 10000;
+        int total_delay_in_ms = 0;
         for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
             std::println("Waiting for NF2FF file: {}", file.string());
             // Wait for the NF2FF file to be available
             // TODO: Might be necessary to check whether writing the file is finished too
-            while (!std::filesystem::exists(file))
+            while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file) && total_delay_in_ms < timeout_in_ms)
             {
                 // Throttle CPU load.
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                std::this_thread::sleep_for(std::chrono::milliseconds(check_delay_in_ms));
+                total_delay_in_ms += check_delay_in_ms;
             }
         }
+        return total_delay_in_ms < timeout_in_ms;
     }
 
     const std::vector<pre_c_sumo::NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumo_settings,
@@ -260,6 +281,11 @@ namespace pre_c_sumo
             for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
             {
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
+                if (delta_s < 0.0)
+                {
+                    throw std::runtime_error("Negative entrainment factor for sink " + std::to_string(sink_index) +
+                                             ": " + std::to_string(delta_s));
+                }
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;
@@ -273,33 +299,49 @@ namespace pre_c_sumo
                         single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
                     double source_z_bottom =
                         single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
-                    double source_moment_direction = source.has_u ? source.u_direction : 0.0;
+                    // Momentum is only defined for the source points, not for the entrainment part
+                    // Entrainment related momentum should be switched on in D-Flow FM using "NFEntrainmentMomentum = 1"
+                    // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, source_moment_magnitude,
-                                                   source_moment_direction);
+                                                   source_z_top, discharge, 0.0, 0.0);
                 }
             }
 
             // Match nearfield dischargeToSrc behavior: add explicit source discharge
             // terms independent of entrainment sink deltas.
+            //
+            // momentum_magnitude must be scaled by weight_fraction^2 to match the behavior of the original
+            // DIMR-exchange:
+            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude_weighted
+            // - Comment copied from nearfield.f90::dischargeToSrc, line 828:
+            //       Area of this fraction is total area divided by the weight factor:
+            //       Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2,
+            //       ...):
+            //                  Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
+            //       Since w1+w2+...=1.0, we can write this as:
+            //               w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
+            //       =>
+            //               wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
+            //       =>
+            //               ai = Atot / wi
             if (!sources.empty())
             {
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 for (const auto& source : sources)
                 {
-                    double discharge =
-                        source_flow_rate * (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double weight_fraction = (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double discharge = source_flow_rate * weight_fraction;
                     double source_z_top =
                         single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
                     double source_z_bottom =
                         single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude = source.has_u ? source.u_magnitude : 0.0;
+                    double source_moment_magnitude_weighted =
+                        source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge, source_moment_magnitude,
-                                                   source_moment_direction);
+                                                   source_z_bottom, source_z_top, discharge,
+                                                   source_moment_magnitude_weighted, source_moment_direction);
                 }
             }
 
@@ -318,11 +360,11 @@ namespace pre_c_sumo
                 {
                     // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
                     const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
-                    intakes.push_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
-                                                 .y_coordinate = intake_xy.y_coordinate,
-                                                 .z_coordinate = 0.0,
-                                                 .weight = 0.0,
-                                                 .has_weight = false});
+                    intakes.emplace_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
+                                                    .y_coordinate = intake_xy.y_coordinate,
+                                                    .z_coordinate = 0.0,
+                                                    .weight = 0.0,
+                                                    .has_weight = false});
                 }
                 if (!intakes.empty())
                 {
