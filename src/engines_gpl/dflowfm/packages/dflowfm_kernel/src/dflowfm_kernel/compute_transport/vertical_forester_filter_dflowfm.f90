@@ -139,7 +139,7 @@ contains
          ! Loop over layers in the vertical column and apply the Forester filter based on the difference between adjacent layers
          do k = 1, number_of_layers - 1
             difference = previous_constituent(k + 1) - previous_constituent(k)
-            if (column_drhodz(k) > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
+            if (column_drhodz(k) < EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
                if (column_cell_volume(k) > EPS10 .and. column_cell_volume(k + 1) > EPS10) then
                   filtered_this_iteration = .true.
                   difference = difference / 6.0_dp * (column_cell_volume(k + 1) + column_cell_volume(k))
