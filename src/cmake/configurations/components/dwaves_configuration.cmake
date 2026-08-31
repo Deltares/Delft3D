@@ -97,5 +97,10 @@ if(NOT TARGET swan)
     add_subdirectory(${checkout_src_root}/${swan_omp_module} swan_omp)
 endif()
 
+
+# Tests
+# =====
+add_subdirectory(${unit_tests_dir}/engines_gpl/wave tests_unit_wave)
+
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(dwaves)

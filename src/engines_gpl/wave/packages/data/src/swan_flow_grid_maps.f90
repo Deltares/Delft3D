@@ -69,6 +69,8 @@ module swan_flow_grid_maps
       integer :: numenclparts ! number of parts of grid enclosure (exteriors+interior rings)
       integer, dimension(:, :), pointer :: kcs ! mask-array inactive points
       integer, dimension(:, :), pointer :: covered ! mask-array points covered by "other" program
+      integer, dimension(:, :), pointer :: quadrilaterals ! source-center quadrilateral connectivity
+      integer, dimension(:, :), pointer :: triangles ! source-center triangle connectivity
       integer, dimension(:), pointer :: numenclptsppart ! number of enclosure points per enclosure part
       real(kind=hp) :: xymiss ! missing value
       real(kind=hp), dimension(:, :), pointer :: x ! x-coordinates cell center
@@ -232,7 +234,7 @@ contains
             write (*, '(a)') '*** ERROR: on calling read_netcdf_grd: filename not specified.'
             call wavestop(1, '*** ERROR: on calling read_netcdf_grd: filename not specified.')
          end if
-         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, g%numenclpts, g%numenclparts, g%numenclptsppart, filename, flowLinkConnectivity)
+         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, g%numenclpts, g%numenclparts, g%numenclptsppart, filename, flowLinkConnectivity, g%quadrilaterals, g%triangles)
       case default
          ! grid type not supported
          write (*, '(3a)') '*** ERROR: Grid type ''', trim(grid_file_type), ''' not supported.'
@@ -304,9 +306,7 @@ contains
 !
 !==============================================================================
    subroutine make_grid_map(i1, i2, g1, g2, gm, external_mapper)
-      use system_utils, only: ARCH
-      use netcdf
-      use nc_check, only : nc_check_err
+      use m_wave_regrid, only: generate_regrid_weights
       use m_polygon
       use m_tpoly
       implicit none
@@ -321,34 +321,26 @@ contains
       !
       ! Locals
       !
-      logical :: b
       logical :: keepExisting
       integer :: i
       integer :: j
       integer :: n
       integer :: ierror
       integer :: in
-      integer :: ind
       integer :: iprint
-      integer :: idfile
-      integer :: iddim_nb
-      integer :: iddim_ns
-      integer :: idvar_col
-      integer :: idvar_fracb
-      integer :: idvar_row
-      integer :: idvar_s
-      integer :: nvert
       integer :: numpli
       integer, dimension(:), allocatable :: iflag, nrin, nrx, nry
-      integer, dimension(:), allocatable :: vertex
+      integer, dimension(:), allocatable :: native_columns
+      integer, dimension(:), allocatable :: native_rows
       integer, dimension(:, :), allocatable :: ncontrib
+      real(kind=hp), dimension(:), allocatable :: native_weights
+      real(kind=hp), dimension(:), allocatable :: source_x
+      real(kind=hp), dimension(:), allocatable :: source_y
+      real(kind=hp), dimension(:), allocatable :: target_x
+      real(kind=hp), dimension(:), allocatable :: target_y
       real(kind=hp), dimension(:), allocatable :: xs
       real(kind=hp), dimension(:), allocatable :: ys
       real, dimension(:, :), allocatable :: testfield
-      character(1024) :: command
-      character(1024) :: tmpstr
-      character(50) :: searchstring
-      character(NF90_MAX_NAME) :: string
       type(tpoly), dimension(:), allocatable :: pli_loc
       !
       ! body
@@ -361,67 +353,55 @@ contains
       gm%grids_linked = .false.
       !
       if (gm%ext_mapper) then
-         gm%grids_linked = .true.
-         !
-         ! The following weights filename will do as long as there is only one Flow-source file involved
-         !
-         gm%w_tmp_filename = trim(gm%r_tmp_filename)
-         write (searchstring, '(a,i4.4,a)') "destination_", i2, ".nc"
-         ind = index(gm%w_tmp_filename, trim(searchstring), back=.true.)
-         if (ind > 0) then
-            tmpstr = gm%w_tmp_filename(1:ind - 1) ! Cannot write and read from w_tmp_filename at the same time.
-            write (gm%w_tmp_filename, '(2a,i4.4,a,i4.4,a)') tmpstr(1:ind - 1), 'weights_', i1, 'to', i2, '.nc'
-         else
-            write (*, '(4a)') '*** ERROR: unable to locate "', trim(searchstring), '" in "', trim(gm%w_tmp_filename), '"'
-            call wavestop(1, 'unable to locate "'//trim(searchstring)//'" in "'//trim(gm%w_tmp_filename)//'"')
+         if (.not. associated(g1%quadrilaterals) .or. .not. associated(g1%triangles)) then
+            call wavestop(1, 'Native regridding requires source-grid connectivity.')
+            return
          end if
-         write (*, '(a)') '<<Run ESMF_RegridWeightGen...'
-         if (ARCH == 'linux') then
-            write (*, '(a)') '>>...Check file esmf_sh.log'
-            write (command, '(a)') 'ESMF_RegridWeightGen_in_Delft3D-WAVE.sh'
-         else
-            write (*, '(a)') '>>...Check file esmf_bat.log'
-            write (command, '(a)') 'ESMF_RegridWeightGen_in_Delft3D-WAVE.bat'
-         end if
-         command = trim(command)//' '//trim(gm%p_tmp_filename)//' '//trim(gm%r_tmp_filename)//' '//trim(gm%w_tmp_filename)
-         if (.not. g1%sferic) then
-            write (command, '(2a)') trim(command), " CARTESIAN"
-         end if
-         write (*, '(3a)') 'Executing command: "', trim(command), '"'
-         !
-         ! util_system needs some spaces at the end of command!
-         !
-         call util_system(command(1:len_trim(command) + 5))
-         write (*, '(a)') '>>...End of ESMF_RegridWeightGen run'
-         !
-         ! Read weights from ESMF_Regrid file
-         !
-         ierror = nf90_open(gm%w_tmp_filename, NF90_NOWRITE, idfile); call nc_check_err(ierror, "opening file", gm%w_tmp_filename)
+
+         allocate (source_x(g1%npts), source_y(g1%npts), target_x(g2%npts), target_y(g2%npts), stat=ierror)
          if (ierror /= 0) then
-            write (*, '(3a)') "ERROR Unable to open file """, trim(gm%w_tmp_filename), """."
-            call wavestop(1, "Unable to open file """//trim(gm%w_tmp_filename)//""".")
+            call wavestop(1, 'Unable to allocate native regridding coordinates.')
+            return
          end if
-         !
-         ierror = nf90_inq_dimid(idfile, 'n_b', iddim_nb); call nc_check_err(ierror, "inq_dimid n_b", gm%w_tmp_filename)
-         ierror = nf90_inq_dimid(idfile, 'n_s', iddim_ns); call nc_check_err(ierror, "inq_dimid n_s", gm%w_tmp_filename)
-         ierror = nf90_inquire_dimension(idfile, iddim_nb, string, gm%n_b); call nc_check_err(ierror, "inq_dim n_b", gm%w_tmp_filename)
-         ierror = nf90_inquire_dimension(idfile, iddim_ns, string, gm%n_s); call nc_check_err(ierror, "inq_dim n_s", gm%w_tmp_filename)
-         ierror = nf90_inq_varid(idfile, 'col', idvar_col); call nc_check_err(ierror, "inq_varid col", gm%w_tmp_filename)
-         ierror = nf90_inq_varid(idfile, 'row', idvar_row); call nc_check_err(ierror, "inq_varid row", gm%w_tmp_filename)
-         ierror = nf90_inq_varid(idfile, 'S', idvar_s); call nc_check_err(ierror, "inq_varid S", gm%w_tmp_filename)
-         ierror = nf90_inq_varid(idfile, 'frac_b', idvar_fracb); call nc_check_err(ierror, "inq_varid frac_b", gm%w_tmp_filename)
-         !
-         ! ESMF_regridder, Cartesian grid with bilinear method:
-         ! Introduced in version 7.0.0.beta.snapshot38:
-         ! 2D Cartesian grids => n_b = mmax * nmax
-         !
-         if (gm%n_b /= g2%mmax * g2%nmax) then
-            write (*, '(a,i0,a,i0,a)') "ERROR dimension n_b (", gm%n_b, ") from ESMF_RegridWeight file does not match the WAVE grid dimension (", (g2%mmax - 1) * (g2%nmax - 1), ")."
-            call wavestop(1, "Dimension n_b from ESMF_RegridWeight file does not match the WAVE grid dimension.")
+
+         n = 0
+         do j = 1, g1%nmax
+            do i = 1, g1%mmax
+               n = n + 1
+               source_x(n) = g1%x(i, j)
+               source_y(n) = g1%y(i, j)
+            end do
+         end do
+         n = 0
+         if (g1%sferic) then
+            do i = 1, g2%mmax
+               do j = 1, g2%nmax
+                  n = n + 1
+                  target_x(n) = g2%x(i, j)
+                  target_y(n) = g2%y(i, j)
+               end do
+            end do
+         else
+            do j = 1, g2%nmax
+               do i = 1, g2%mmax
+                  n = n + 1
+                  target_x(n) = g2%x(i, j)
+                  target_y(n) = g2%y(i, j)
+               end do
+            end do
          end if
+
+         if (size(g1%triangles, 2) > 0) then
+            call generate_regrid_weights(source_x, source_y, g1%quadrilaterals, target_x, target_y, &
+                                         g1%sferic, native_columns, native_rows, native_weights, gm%n_s, &
+                                         g1%triangles)
+         else
+            call generate_regrid_weights(source_x, source_y, g1%quadrilaterals, target_x, target_y, &
+                                         g1%sferic, native_columns, native_rows, native_weights, gm%n_s)
+         end if
+
+         gm%n_b = g2%npts
          if (gm%n_s == 0) then
-            !write(*,'(3a)') "ERROR dimension n_s from ESMF_RegridWeight is zero."
-            !call wavestop(1, "Dimension n_s from ESMF_RegridWeight is zero.")
             write (*, '(a,i0,a,i0,a)') "WARNING Flow grid ", i1, " is not overlapping with WAVE grid ", i2, ". Mapper not filled with weights."
             gm%grids_linked = .false.
             return
@@ -434,11 +414,14 @@ contains
             write (*, '(a)') "ERROR allocating in make_grid_map"
             call wavestop(1, "ERROR allocating in make_grid_map")
          end if
-         ierror = nf90_get_var(idfile, idvar_col, gm%col, start=(/1/), count=(/gm%n_s/)); call nc_check_err(ierror, "get_var col", gm%w_tmp_filename)
-         ierror = nf90_get_var(idfile, idvar_row, gm%row, start=(/1/), count=(/gm%n_s/)); call nc_check_err(ierror, "get_var row", gm%w_tmp_filename)
-         ierror = nf90_get_var(idfile, idvar_s, gm%s, start=(/1/), count=(/gm%n_s/)); call nc_check_err(ierror, "get_var s", gm%w_tmp_filename)
-         ierror = nf90_get_var(idfile, idvar_fracb, gm%frac_b, start=(/1/), count=(/gm%n_b/)); call nc_check_err(ierror, "get_var frac_b", gm%w_tmp_filename)
-         ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", gm%w_tmp_filename)
+         gm%col = native_columns
+         gm%row = native_rows
+         gm%s = native_weights
+         gm%frac_b = 0.0_hp
+         do n = 1, gm%n_s
+            gm%frac_b(gm%row(n)) = 1.0_hp
+         end do
+         gm%grids_linked = .true.
          !
          ! Check coverage of g2 grid
          !

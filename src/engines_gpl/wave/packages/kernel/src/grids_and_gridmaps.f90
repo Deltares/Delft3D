@@ -59,9 +59,7 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
    integer                           :: partitionlocation
    logical                           :: exists
    logical                           :: netcdf_files     ! .true.: Flow data is read from  NetCDF file(s)
-                                                         !         Wave data is written to NetCDF file(s)
-                                                         !         Mapping between grids is done using an external program e.g. ESMF_RegridWeightGen
-                                                         !         Therefore all grids are written to a temporary NetCDF file in a specific format
+                                                         !         Mapping from FM to SWAN uses native sparse weights
    character (256) ,dimension(nswmax):: swangrid
    character (256)                   :: grid_name        ! name of grid
    character (4)                     :: grid_file_type   ! type of grid file (SWAN/FLOW/COM/TRIM)
@@ -122,9 +120,6 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
       xy_loc         ='CORNER'
       call Alloc_and_get_grid(i, swan_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity)
       call write_bnd_loc(i,swan_grids(i))
-      if (netcdf_files) then
-         call write_wave_grid_netcdf(i, swan_grids(i), grid_name, flow2swan_maps(i,1)%r_tmp_filename)
-      endif
    enddo
 
    do i=1,n_flow_grids

@@ -30,6 +30,7 @@ if (WIN32)
                             gridgeom
                             io_netcdf
                             io_netcdf_data
+                            kdtree_wrapper
                             nefis
                             netCDF::netcdff)
     target_link_libraries(${library_name} ${oss_dependencies})
@@ -50,6 +51,7 @@ if (UNIX)
                             gridgeom
                             io_netcdf
                             io_netcdf_data
+                            kdtree_wrapper
                             nefis
                             netCDF::netcdff
     )
