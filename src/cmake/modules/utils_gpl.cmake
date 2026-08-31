@@ -1,6 +1,9 @@
 # File to define the utils_gpl components and their corresponding tests
 set(utils_gpl_path utils_gpl)
 
+# CGAL triangulation
+set(cgal_triangulation_module ${utils_gpl_path}/cgal_triangulation)
+
 # Ice
 set(ice_module_path "${utils_gpl_path}/ice/packages")
 set(ice_data_module ${ice_module_path}/ice_data)

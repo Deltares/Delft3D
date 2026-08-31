@@ -24,7 +24,7 @@ target_link_libraries(gridgeom_dll PRIVATE
     io_netcdf_data
     kdtree_wrapper
     kdtree2
-    triangle::triangle
+    cgal_triangulation
     gridgeom
 )
 

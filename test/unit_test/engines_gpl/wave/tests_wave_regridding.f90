@@ -1,5 +1,6 @@
 module tests_wave_regridding
    use assertions_gtest, only: f90_expect_near, f90_expect_true
+   use m_ec_basic_interpolation, only: tricall
    use m_wave_regrid, only: generate_regrid_weights, generate_triangle_regrid_weights, quadrilateral_bilinear_weights, &
                             triangle_barycentric_weights
    use precision_basics, only: hp
@@ -382,6 +383,71 @@ contains
          call f90_expect_near(weights, permuted_weights, 0.0_hp, &
                               'Permutation must not change cocircular interpolation weights')
       end subroutine cocircular_delaunay_permutation
+      !$f90tw)
+
+      !$f90tw TESTCODE(TEST, wave_regridding, constrained_polygon_mesh, constrained_polygon_mesh,
+      subroutine constrained_polygon_mesh() bind(C)
+         use iso_c_binding, only: c_double, c_int
+
+         integer(c_int), parameter :: maximum_output_size = 1000
+         integer(c_int), parameter :: number_of_boundary_points = 4
+         real(c_double), parameter :: maximum_area = 0.05_c_double
+         real(c_double), dimension(number_of_boundary_points) :: boundary_x
+         real(c_double), dimension(number_of_boundary_points) :: boundary_y
+         integer(c_int), dimension(3, maximum_output_size) :: triangle_nodes
+         integer(c_int), dimension(2, 1) :: unused_edge_nodes
+         integer(c_int), dimension(3, 1) :: unused_triangle_edges
+         real(c_double), dimension(maximum_output_size) :: mesh_x
+         real(c_double), dimension(maximum_output_size) :: mesh_y
+         integer(c_int) :: mode
+         integer(c_int) :: number_of_edges
+         integer(c_int) :: number_of_mesh_points
+         integer(c_int) :: number_of_triangles
+         integer(c_int) :: triangle
+         real(c_double) :: area
+         real(c_double) :: twice_area
+         real(c_double) :: requested_area
+
+         boundary_x = [0.0_c_double, 1.0_c_double, 1.0_c_double, 0.0_c_double]
+         boundary_y = [0.0_c_double, 0.0_c_double, 1.0_c_double, 1.0_c_double]
+         mode = 2
+         number_of_edges = 0
+         number_of_mesh_points = 1
+         number_of_triangles = 1
+         requested_area = maximum_area
+
+         call tricall(mode, boundary_x, boundary_y, number_of_boundary_points, triangle_nodes, number_of_triangles, &
+                      unused_edge_nodes, number_of_edges, unused_triangle_edges, mesh_x, mesh_y, &
+                      number_of_mesh_points, requested_area)
+
+         call f90_expect_true(number_of_triangles < 0, 'Insufficient triangle capacity must return required size')
+         call f90_expect_true(number_of_mesh_points < 0, 'Insufficient point capacity must return required size')
+
+         number_of_mesh_points = maximum_output_size
+         number_of_triangles = maximum_output_size
+         call tricall(mode, boundary_x, boundary_y, number_of_boundary_points, triangle_nodes, number_of_triangles, &
+                      unused_edge_nodes, number_of_edges, unused_triangle_edges, mesh_x, mesh_y, &
+                      number_of_mesh_points, requested_area)
+
+         call f90_expect_true(number_of_triangles > 0, 'Constrained polygon must produce triangles')
+         call f90_expect_true(number_of_mesh_points >= number_of_boundary_points, 'Mesh must retain polygon vertices')
+         call f90_expect_true(all(triangle_nodes(:, 1:number_of_triangles) >= 1), 'Triangle nodes must be one-based')
+         call f90_expect_true(all(triangle_nodes(:, 1:number_of_triangles) <= number_of_mesh_points), &
+                              'Triangle nodes must reference generated points')
+
+         do triangle = 1, number_of_triangles
+            twice_area = abs( &
+               mesh_x(triangle_nodes(1, triangle)) * &
+                  (mesh_y(triangle_nodes(2, triangle)) - mesh_y(triangle_nodes(3, triangle))) + &
+               mesh_x(triangle_nodes(2, triangle)) * &
+                  (mesh_y(triangle_nodes(3, triangle)) - mesh_y(triangle_nodes(1, triangle))) + &
+               mesh_x(triangle_nodes(3, triangle)) * &
+                  (mesh_y(triangle_nodes(1, triangle)) - mesh_y(triangle_nodes(2, triangle))))
+            area = 0.5_c_double * twice_area
+            call f90_expect_true(area <= maximum_area * (1.0_c_double + 1.0e-12_c_double), &
+                                 'Generated triangle must satisfy maximum area')
+         end do
+      end subroutine constrained_polygon_mesh
       !$f90tw)
 
    !$f90tw TESTCODE(TEST, wave_regridding, triangle_regrid_weights, triangle_regrid_weights,

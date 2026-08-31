@@ -1,5 +1,9 @@
 # Wave modules
 # ============
+if(NOT TARGET cgal_triangulation)
+    add_subdirectory(${checkout_src_root}/${cgal_triangulation_module} cgal_triangulation)
+endif()
+
 add_subdirectory(${checkout_src_root}/${wave_data_module} wave_data)
 add_subdirectory(${checkout_src_root}/${wave_io_module} wave_io)
 add_subdirectory(${checkout_src_root}/${wave_kernel_module} wave_kernel)

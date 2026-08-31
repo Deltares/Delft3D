@@ -5,7 +5,7 @@ target_link_libraries(gridgeom PRIVATE
     io_netcdf_data
     kdtree_wrapper
     kdtree2
-    triangle::triangle
+    cgal_triangulation
 )
 
 target_include_directories(gridgeom PRIVATE ${version_include_dir} ${rc_dir})

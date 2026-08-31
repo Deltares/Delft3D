@@ -1,5 +1,9 @@
 # RR Rainfall Runoff
 # ============
+if(NOT TARGET cgal_triangulation)
+    add_subdirectory(${checkout_src_root}/${cgal_triangulation_module} cgal_triangulation)
+endif()
+
 add_subdirectory(${checkout_src_root}/${rr_dll_module} rr_dll)
 add_subdirectory(${checkout_src_root}/${rr_kernel_c_module} rr_kernel_c)
 add_subdirectory(${checkout_src_root}/${rr_kernel_f_module} rr_kernel_f)

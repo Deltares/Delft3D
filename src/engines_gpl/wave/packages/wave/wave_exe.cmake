@@ -24,7 +24,7 @@ target_link_libraries(${executable_name} PRIVATE
     wave_manager
     nefis
     netCDF::netcdff
-    triangle::triangle
+    cgal_triangulation
     swan
 )
 

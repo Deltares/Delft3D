@@ -1,4 +1,8 @@
 # Specify the modules to be included
+if(NOT TARGET cgal_triangulation)
+    add_subdirectory(${checkout_src_root}/${cgal_triangulation_module} cgal_triangulation)
+endif()
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()

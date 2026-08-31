@@ -63,7 +63,7 @@ find_package(TIFF CONFIG REQUIRED)
 find_package(PROJ CONFIG REQUIRED)
 find_package(GDAL CONFIG REQUIRED)
 find_package(PETSc CONFIG REQUIRED)
-find_package(triangle CONFIG REQUIRED)
+find_package(CGAL CONFIG REQUIRED)
 find_package(Boost CONFIG REQUIRED)
 find_package(precice CONFIG REQUIRED)
 

@@ -15,7 +15,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("gdal/3.12.1")
         self.requires("expat/2.8.0")
         self.requires("petsc/3.25.3")
-        self.requires("triangle/1.6-deltares.2")
+        self.requires("cgal/6.2")
         self.requires("boost/1.90.0")
         self.requires("eigen/5.0.1")
         self.requires("libxml2/2.15.3")

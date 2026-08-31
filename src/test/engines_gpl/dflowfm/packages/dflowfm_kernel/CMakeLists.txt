@@ -30,7 +30,7 @@ target_link_libraries(${executable_name} PRIVATE
     polypack
     trachytopes_io
     trachytopes_kernel
-    triangle::triangle
+    cgal_triangulation
     wq_processes
     waq_process
     waq_utils_c
