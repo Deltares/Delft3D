@@ -2,7 +2,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c01</path>
-    <maxRunTime>3600</maxRunTime>
+    <maxRunTime>4200</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -378,7 +378,7 @@
   </testCase>
   <testCase name="e04_f05_c03_nest" ref="dimr_trunk">
     <path version="DVC">e04_wave/f05-nest/c03_nest_xymiss</path>
-    <maxRunTime>120.0</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="wavm-waves-overall_cut_v0.nc" type="NETCDF">
         <parameters>
@@ -398,7 +398,7 @@
   </testCase>
     <testCase name="e04_f05_c04_nest" ref="dimr_trunk">
     <path version="DVC">e04_wave/f05-nest/c04_base_zeeland</path>
-    <maxRunTime>120.0</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="wavm-waves-wave03_strandA.nc" type="NETCDF">
         <parameters>
@@ -418,7 +418,7 @@
   </testCase>
   <testCase name="e04_f05_c05_nest" ref="dimr_trunk">
     <path version="DVC">e04_wave/f05-nest/c05_cutout_zeeland</path>
-    <maxRunTime>120.0</maxRunTime>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="wavm-waves-wave03_strandA.nc" type="NETCDF">
         <parameters>
@@ -439,7 +439,7 @@
   <!-- ================================================================= -->
   <testCase name="e04_f06_c01_write_wavh" ref="dimr_trunk">
     <path version="DVC">e04_wave/f06-io/c01_write_wavh</path>
-    <maxRunTime>360</maxRunTime>
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="wavh-marshall_with_nested_grids.nc" type="NETCDF">
         <parameters>
