@@ -1645,7 +1645,7 @@ contains
       use string_module, only: strcmpi, str_tolower
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
@@ -1678,6 +1678,7 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
+      type(t_netcell_set) :: netcell_cache
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
 
@@ -1686,8 +1687,7 @@ contains
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
+      netcell_cache = t_netcell_set()
 
       ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1725,7 +1725,8 @@ contains
                   end if
                end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
-               call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
+               call netcell_cache%find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, &
+                                                                 bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
                ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
@@ -1746,7 +1747,6 @@ contains
          end if
       end do
 
-      call cleanup_cell_geom_polylines()
       ! initialize global geometry
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
       nNodesBubbleScreen = 0
@@ -1790,7 +1790,6 @@ contains
       use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
       use m_polygon, only: xpl, ypl, zpl, npl
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
       use network_data
       use m_flow
       use fm_external_forcings_data

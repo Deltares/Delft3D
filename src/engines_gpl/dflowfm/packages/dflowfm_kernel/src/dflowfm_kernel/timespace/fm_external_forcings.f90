@@ -2869,14 +2869,15 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
-      type(t_storage), pointer :: stors(:)
+      type(t_storage), dimension(:), pointer :: stors
+      type(t_netcell_set) :: netcell_cache
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -3242,19 +3243,17 @@ contains
                end if
             end do
          end if
-         call init_cell_geom_as_polylines()
+         netcell_cache = t_netcell_set()
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
-               ja = point_find_netcell(Xz(n), Yz(n))
+               ja = netcell_cache%find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
          !$OMP END PARALLEL DO
-         call cleanup_cell_geom_polylines()
-
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)
