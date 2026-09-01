@@ -32,11 +32,22 @@ module precice_adapter
 
    !> Container with all quantities used by the adapter.
    type :: quantities_t
+      ! TODO: Add constituents C01..C10
       ! Writing
       type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
       type(quantity_t) :: s1 = quantity_t(standard_name="sea_surface_height", is_active=.true.)
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
+      type(quantity_t) :: c01 = quantity_t(standard_name="C01", is_active=.true.)
+      type(quantity_t) :: c02 = quantity_t(standard_name="C02", is_active=.true.)
+      type(quantity_t) :: c03 = quantity_t(standard_name="C03", is_active=.true.)
+      type(quantity_t) :: c04 = quantity_t(standard_name="C04", is_active=.true.)
+      type(quantity_t) :: c05 = quantity_t(standard_name="C05", is_active=.true.)
+      type(quantity_t) :: c06 = quantity_t(standard_name="C06", is_active=.true.)
+      type(quantity_t) :: c07 = quantity_t(standard_name="C07", is_active=.true.)
+      type(quantity_t) :: c08 = quantity_t(standard_name="C08", is_active=.true.)
+      type(quantity_t) :: c09 = quantity_t(standard_name="C09", is_active=.true.)
+      type(quantity_t) :: c10 = quantity_t(standard_name="C10", is_active=.true.)
       ! Reading
       type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
       type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
@@ -328,9 +339,11 @@ contains
       use precice, only: precicef_write_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, s1
+      use m_flow, only: hs, s1, kmx, ndkx
       use m_flowgeom, only: bl, ndx2d
       use m_turbulence, only: potential_density
+      use m_transport, only: NUMCONST, constituents
+            
       implicit none(type, external)
       class(precice_adapter_t), intent(in) :: self
 
@@ -353,6 +366,62 @@ contains
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%rho%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
+      end if
+      ! Constituents
+      write (*,*) "[DEBUG] NUMCONST = ", NUMCONST
+      write (*,*) "[DEBUG] ndkx = ", ndkx
+      write (*,*) "[DEBUG] kmz = ", kmx
+      write (*,*) "[DEBUG] size C(1,:) = ", SIZE(constituents(1,:))
+      write (*,*) "[DEBUG] num 3d verts  (ndx*kmx)= ", SIZE(self%vertex_ids_3d)
+      if (NUMCONST >= 1 .and. self%quantities%c01%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c01%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(1,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c01%standard_name)))
+      end if
+      if (NUMCONST >= 2 .and. self%quantities%c02%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c02%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(2,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c02%standard_name)))
+      end if
+      if (NUMCONST >= 3 .and. self%quantities%c03%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c03%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(3,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c03%standard_name)))
+      end if
+      if (NUMCONST >= 4 .and. self%quantities%c04%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c04%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(4,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c04%standard_name)))
+      end if
+      if (NUMCONST >= 5 .and. self%quantities%c05%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c05%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(5,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c05%standard_name)))
+      end if
+      if (NUMCONST >= 6 .and. self%quantities%c06%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c06%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(6,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c06%standard_name)))
+      end if
+      if (NUMCONST >= 7 .and. self%quantities%c07%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c07%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(7,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c07%standard_name)))
+      end if
+      if (NUMCONST >= 8 .and. self%quantities%c08%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c08%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(8,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c08%standard_name)))
+      end if
+      if (NUMCONST >= 9 .and. self%quantities%c09%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c09%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(9,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c09%standard_name)))
+      end if
+      if (NUMCONST >= 10 .and. self%quantities%c10%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%c10%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(10,:), len(self%cell_center_mesh_3d_name), len(trim(self%quantities%c10%standard_name)))
       end if
    end subroutine precice_adapter_write_data
 
