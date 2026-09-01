@@ -1,8 +1,9 @@
 module test_init_spatial_fields_integration
    use assertions_gtest
+   use iso_c_utils, only: cstr
    use fm_external_forcings, only: init_spatial_fields
    use m_meteo, only: initialize_ec_module, jarain
-   use m_wind, only: rain
+   use m_wind, only: air_pressure, rain
    use m_cell_geometry, only: xz, yz, ndx
    use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
@@ -19,6 +20,22 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: EXT_FILENAME = "test_spatial.ext"
    character(len=*), parameter :: BC_FILENAME = "test_rain.bc"
    character(len=*), parameter :: BASE_DIR = "."
+   integer, parameter :: NUM_SCALAR_METEO_CASES = 15
+   character(len=32), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_QUANTITIES = [character(len=32) :: &
+      'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
+      'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
+      'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
+   character(len=48), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VARIABLES = [character(len=48) :: &
+      'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
+      'sshf', 'tauu', 'tauv', 'u10', 'v10']
+   character(len=64), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_STANDARD_NAMES = [character(len=64) :: &
+      'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
+      'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
+      'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
+      'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
+   real(dp), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VALUES = [ &
+      1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
+      50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
 
 contains
 
@@ -41,6 +58,7 @@ contains
       if (allocated(yz)) deallocate (yz)
       if (allocated(kcs)) deallocate (kcs)
       if (allocated(rain)) deallocate (rain)
+      if (allocated(air_pressure)) deallocate (air_pressure)
    end subroutine teardown_minimal_grid
 
    !> Parse a mini ext-file containing a single [Spatial] block and return
@@ -55,6 +73,339 @@ contains
       call prop_file('ini', file_name, bnd_ptr, istat)
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
+
+   subroutine setup_minimal_grid_with_points(npoints)
+      integer, intent(in) :: npoints
+
+      ndx = npoints
+      ndxi = npoints
+      if (allocated(xz)) deallocate (xz)
+      if (allocated(yz)) deallocate (yz)
+      if (allocated(kcs)) deallocate (kcs)
+      allocate (xz(npoints), yz(npoints), kcs(npoints))
+      xz = 0.0_dp
+      yz = 0.0_dp
+      kcs = 1
+   end subroutine setup_minimal_grid_with_points
+
+   subroutine create_scalar_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, ssrd_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_scalar_netcdf
+
+   subroutine create_netcdf_timeseries_with_coordinates(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, x_varid, y_varid, ssrd_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [time_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [time_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
+      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, x_varid, [1.0_dp, 2.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, y_varid, [3.0_dp, 4.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_netcdf_timeseries_with_coordinates
+
+   subroutine create_windxy_netcdf(file_name)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      integer :: ncid, time_dimid, time_varid, u10_varid, v10_varid
+      real(dp), parameter :: FILL_VALUE = -999.0_dp
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 3, time_dimid))
+      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      call check_netcdf(nf90_def_var(ncid, 'u10', NF90_DOUBLE, [time_dimid], u10_varid))
+      call check_netcdf(nf90_put_att(ncid, u10_varid, 'standard_name', 'eastward_wind'))
+      call check_netcdf(nf90_put_att(ncid, u10_varid, 'units', 'm s-1'))
+      call check_netcdf(nf90_def_var(ncid, 'v10', NF90_DOUBLE, [time_dimid], v10_varid))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, 'standard_name', 'northward_wind'))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, 'units', 'm s-1'))
+      call check_netcdf(nf90_put_att(ncid, v10_varid, '_FillValue', FILL_VALUE))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp, 200.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, u10_varid, [2.0_dp, 6.0_dp, 10.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, v10_varid, [-4.0_dp, FILL_VALUE, 4.0_dp]))
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_windxy_netcdf
+
+   subroutine check_netcdf(status)
+      use netcdf, only: NF90_NOERR, nf90_strerror
+
+      integer, intent(in) :: status
+
+      if (status /= NF90_NOERR) error stop nf90_strerror(status)
+   end subroutine check_netcdf
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_polygon_preserves_uncovered_values, test_polygon_preserves_uncovered_values,
+   subroutine test_polygon_preserves_uncovered_values() bind(C)
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use fm_location_types, only: UNC_LOC_S
+      use m_polygon, only: m_polygon_destructor
+      use timespace, only: timespaceinitialfield
+      use timespace_parameters, only: INSIDE_POLYGON, OPERAND_OVERRIDE
+
+      character(len=*), parameter :: POL_FILE = "test_partial_polygon.pol"
+      real(dp), dimension(NTRANSFORMCOEF) :: transformcoef
+      real(dp), dimension(2) :: x, y, values
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "enclosing_first_point", &
+                       "5  2", &
+                       "-1.0  -1.0", &
+                       " 1.0  -1.0", &
+                       " 1.0   1.0", &
+                       "-1.0   1.0", &
+                       "-1.0  -1.0"])
+      x = [0.0_dp, 2.0_dp]
+      y = [0.0_dp, 2.0_dp]
+      values = [7.0_dp, 7.0_dp]
+      transformcoef = -999.0_dp
+      transformcoef(1) = 4.0_dp
+      ierr = m_polygon_destructor()
+
+      success = timespaceinitialfield(x, y, values, size(values), POL_FILE, INSIDE_POLYGON, 4, &
+                                      OPERAND_OVERRIDE, transformcoef, UNC_LOC_S)
+
+      call f90_expect_true(success, "polygon initialization should succeed")
+      call f90_expect_eq(values(1), 4.0_dp, "the enclosed point should receive the polygon value")
+      call f90_expect_eq(values(2), 7.0_dp, "an uncovered point should retain its existing value")
+      ierr = m_polygon_destructor()
+   end subroutine test_polygon_preserves_uncovered_values
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_preserves_uncovered_values, test_waqparameter_polygon_preserves_uncovered_values,
+   subroutine test_waqparameter_polygon_preserves_uncovered_values() bind(C)
+      use m_flow, only: kmx, ndkx
+      use m_polygon, only: m_polygon_destructor
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      character(len=*), parameter :: POL_FILE = "test_nonoverlapping_waq_parameter.pol"
+      character(len=*), parameter :: EXT_FILE = "test_nonoverlapping_waq_parameter.ext"
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "polygon_away_from_grid", &
+                       "5  2", &
+                       "9.0   9.0", &
+                       "11.0  9.0", &
+                       "11.0 11.0", &
+                       "9.0  11.0", &
+                       "9.0   9.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqparameterSOD", &
+                       "    forcingFile         = "//POL_FILE, &
+                       "    forcingFileType     = Polygon", &
+                       "    interpolationMethod = constant", &
+                       "    operand              = override", &
+                       "    value                = 4.0"])
+
+      call setup_minimal_grid()
+      kmx = 0
+      ndkx = ndx
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call register_waq_target('waqparameterSOD')
+      painp(1, 1) = 2.5_dp
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 2.5_dp, &
+                         "an uncovered WAQ parameter cell should retain its existing value")
+
+      num_spatial_parameters = 0
+      kmx = 0
+      ndkx = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqparameter_polygon_preserves_uncovered_values
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_populates_3d_layers, test_waqparameter_polygon_populates_3d_layers,
+   subroutine test_waqparameter_polygon_populates_3d_layers() bind(C)
+      use m_flow, only: kmx, ndkx, kbot, ktop, kmxn, zws
+      use m_polygon, only: m_polygon_destructor
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      character(len=*), parameter :: POL_FILE = "test_3d_waq_parameter.pol"
+      character(len=*), parameter :: EXT_FILE = "test_3d_waq_parameter.ext"
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+
+      call create_file(POL_FILE, [ &
+                       "polygon_around_grid", &
+                       "5  2", &
+                       "-1.0  -1.0", &
+                       " 1.0  -1.0", &
+                       " 1.0   1.0", &
+                       "-1.0   1.0", &
+                       "-1.0  -1.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqparameterSOD", &
+                       "    forcingFile         = "//POL_FILE, &
+                       "    forcingFileType     = Polygon", &
+                       "    interpolationMethod = constant", &
+                       "    operand              = override", &
+                       "    value                = 4.0"])
+
+      call setup_minimal_grid()
+      kmx = 2
+      ndkx = 3
+      call realloc(kbot, ndx, fill=2, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=2, keepExisting=.false.)
+      call realloc(kmxn, ndx, fill=2, keepExisting=.false.)
+      call realloc(zws, ndkx, fill=0.0_dp, keepExisting=.false.)
+      zws = [-2.0_dp, -1.0_dp, 0.0_dp]
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call register_waq_target('waqparameterSOD')
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "WAQ parameter polygon initialization should succeed")
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 4.0_dp, "the 2D representative should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, "the bottom layer should receive the polygon value")
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, &
+                "the inactive layer above the water surface should receive the polygon value")
+
+      num_spatial_parameters = 0
+      kmx = 0
+      ndkx = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+      if (allocated(zws)) deallocate (zws)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqparameter_polygon_populates_3d_layers
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqsegmentnumber_finalization, test_waqsegmentnumber_finalization,
+   !> Verifies that encoded serial WAQ segment numbers are converted to the local
+   !! process-space layer index and copied over each target water column.
+   subroutine test_waqsegmentnumber_finalization() bind(C)
+      use m_fm_wq_processes, only: kbx, reset_waq_segment_number_indices
+      use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
+      use m_flow, only: kbot, ktop, kmx, kmxn, ndkx
+      use m_flowgeom, only: ndxi
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi
+      use processes_input, only: num_spatial_parameters, painp, paname
+      use unstruc_inifields, only: register_waq_target
+
+      logical :: segment_number_registered
+
+      ndxi = 2
+      kmx = 3
+      ndkx = 7
+      kbx = 3
+      jampi = 0
+      call realloc(kbot, ndxi, keepExisting=.false.)
+      call realloc(ktop, ndxi, keepExisting=.false.)
+      call realloc(kmxn, ndxi, keepExisting=.false.)
+      kbot = [3, 6]
+      ktop = [5, 7]
+      kmxn = [3, 2]
+
+      num_spatial_parameters = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      allocate (paname(0))
+      call reset_waq_segment_number_indices()
+      call register_waq_target('waqsegmentnumberSegment')
+      segment_number_registered = allocated(painp) .and. size(painp, 1) == 1
+      call f90_expect_true(segment_number_registered, 'WAQ segment-number target should be registered')
+
+      ! Global segment 5 is column 1, layer 3; global segment 4 is column 2, layer 2.
+      painp(1, :) = [5.0_dp, 4.0_dp, 5.0_dp, 5.0_dp, 5.0_dp, 4.0_dp, 4.0_dp]
+      call finalize_waq_spatial_fields()
+
+      call f90_expect_eq(real(painp(1, 1), kind=dp), 1.0_dp, 'column 1 representative should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 3), kind=dp), 1.0_dp, 'column 1 bottom layer should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 5), kind=dp), 1.0_dp, 'column 1 top layer should map to process segment 1')
+      call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, 'column 2 representative should map to process segment 4')
+      call f90_expect_eq(real(painp(1, 6), kind=dp), 4.0_dp, 'column 2 bottom layer should map to process segment 4')
+      call f90_expect_eq(real(painp(1, 7), kind=dp), 4.0_dp, 'column 2 top layer should map to process segment 4')
+
+      ! Layer 4 is outside the configured maximum of three layers.
+      painp(1, 1) = 7.0_dp
+      painp(1, 3:5) = 7.0_dp
+      call finalize_waq_spatial_fields()
+      call f90_expect_eq(real(painp(1, 1), kind=dp), -999.0_dp, 'an invalid encoded layer should be marked invalid')
+      call f90_expect_eq(real(painp(1, 3), kind=dp), -999.0_dp, 'an invalid encoded layer should fill the complete column')
+
+      num_spatial_parameters = 0
+      ndxi = 0
+      ndkx = 0
+      kmx = 0
+      kbx = 0
+      jampi = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+      call reset_waq_segment_number_indices()
+   end subroutine test_waqsegmentnumber_finalization
+   !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
    !> When no averaging keywords are present, read_averaging_input must return
@@ -93,7 +444,7 @@ contains
       use fm_external_forcings_data, only: NTRANSFORMCOEF
 
       type(t_averaging_input) :: avg
-      real(dp) :: tc(NTRANSFORMCOEF)
+      real(dp), dimension(NTRANSFORMCOEF) :: tc
 
       avg%averaging_type = 4 ! e.g. nearestNb
       avg%rel_size = 2.5_dp
@@ -164,6 +515,67 @@ contains
       call f90_expect_true(ecInstancePtr%nItems > 0, "EC instance should have at least one registered item after init_spatial_fields")
       call teardown_minimal_grid()
    end subroutine test_rainfall_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airpressure_bcascii_uses_generic_source_fallback, test_airpressure_bcascii_uses_generic_source_fallback,
+   !> Verifies that a simple recognized scalar can use the generic source-item
+   !! connection when its provider-specific source mapping does not support BC.
+   subroutine test_airpressure_bcascii_uses_generic_source_fallback() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_atmosphericpressure
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      real(dp) :: value_at_t0, value_at_t50
+      character(len=*), parameter :: AIRPRESSURE_BC = "test_airpressure.bc"
+      character(len=*), parameter :: AIRPRESSURE_EXT = "test_airpressure.ext"
+
+      call create_file(AIRPRESSURE_BC, [ &
+                       "[General]", &
+                       "    fileVersion           = 1.01", &
+                       "    fileType              = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name                  = global", &
+                       "    function              = timeseries", &
+                       "    timeInterpolation     = linear", &
+                       "    quantity              = time", &
+                       "    unit                  = seconds since 2000-01-01 00:00:00", &
+                       "    quantity              = airpressure", &
+                       "    unit                  = Pa", &
+                       "    0    101325.0", &
+                       "    100  101300.0"])
+
+      call create_file(AIRPRESSURE_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = airpressure", &
+                       "    forcingFile     = "//AIRPRESSURE_BC, &
+                       "    forcingFileType = bcascii"])
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(AIRPRESSURE_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, AIRPRESSURE_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "init_spatial_fields should use the generic fallback for bcascii airpressure")
+      call f90_expect_true(item_atmosphericpressure /= -999, "airpressure should have an EC target item")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 0.0_dp)
+      value_at_t0 = air_pressure(1)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 50.0_dp)
+      value_at_t50 = air_pressure(1)
+
+      call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "airpressure at t=0 should be read from the BC file")
+      call f90_expect_near(value_at_t50, 101312.5_dp, 1.0e-6_dp, "airpressure at t=50 should be linearly interpolated")
+
+      call teardown_minimal_grid()
+   end subroutine test_airpressure_bcascii_uses_generic_source_fallback
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_unknown_quantity_returns_error, test_unknown_quantity_returns_error,
@@ -374,6 +786,374 @@ contains
       if (allocated(qext)) deallocate (qext)
       call teardown_minimal_grid()
    end subroutine test_qext_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_solarradiation_scalar_netcdf_broadcast, test_solarradiation_scalar_netcdf_broadcast,
+   subroutine test_solarradiation_scalar_netcdf_broadcast() bind(C)
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_solar_radiation
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_solarradiation_uniform.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_solarradiation_uniform.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_scalar_netcdf(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+
+      call setup_minimal_grid_with_points(2)
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'scalar NetCDF initialization should succeed')
+      call f90_expect_true(item_solar_radiation > 0, 'solar radiation target item should be registered')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'scalar NetCDF update at t=0 should succeed')
+      call f90_expect_near(solar_radiation(1), 100.0_dp, 1.0e-6_dp, 'first target should receive t=0 value')
+      call f90_expect_near(solar_radiation(2), 100.0_dp, 1.0e-6_dp, 'second target should receive t=0 value')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'scalar NetCDF update at t=50 should succeed')
+      call f90_expect_near(solar_radiation(1), 200.0_dp, 1.0e-6_dp, 'first target should receive interpolated value')
+      call f90_expect_near(solar_radiation(2), 200.0_dp, 1.0e-6_dp, 'second target should receive interpolated value')
+
+      solar_radiation_available = .false.
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      call teardown_minimal_grid()
+   end subroutine test_solarradiation_scalar_netcdf_broadcast
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_located_timeseries_netcdf_is_not_scalar, test_located_timeseries_netcdf_is_not_scalar,
+   subroutine test_located_timeseries_netcdf_is_not_scalar() bind(C)
+      use m_meteo, only: initialize_ec_module
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_located_timeseries.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_located_timeseries.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_netcdf_timeseries_with_coordinates(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+
+      call setup_minimal_grid()
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'time-only data with horizontal coordinates should not be treated as scalar')
+
+      solar_radiation_available = .false.
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      call teardown_minimal_grid()
+   end subroutine test_located_timeseries_netcdf_is_not_scalar
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_scalar_netcdf_override_and_multiply, test_windxy_scalar_netcdf_override_and_multiply,
+   subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_windxy_x
+      use m_sferic, only: jsferic
+      use m_wind, only: jawind, wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+
+      character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
+      character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_windxy_netcdf(NC_FILE)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = windxy', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override'])
+      call create_file(FACTOR_EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = windxy', &
+                       '    forcingFileType = datavalue', &
+                       '    dataValue       = 0.5', &
+                       '    operand         = multiply'])
+
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call setup_minimal_grid_with_points(2)
+      lnx = 2
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx))
+      xu = [0.0_dp, 10.0_dp]
+      yu = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'scalar NetCDF windxy initialization should succeed')
+
+      call parse_spatial_block(FACTOR_EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, FACTOR_EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'windxy dataValue multiply initialization should succeed')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'windxy update at t=0 should succeed')
+      call f90_expect_near(wx(1), 1.0_dp, 1.0e-6_dp, 'first x target should be overridden and multiplied at t=0')
+      call f90_expect_near(wx(2), 1.0_dp, 1.0e-6_dp, 'second x target should be overridden and multiplied at t=0')
+      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should be overridden and multiplied at t=0')
+      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should be overridden and multiplied at t=0')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'windxy update at t=50 should succeed')
+      call f90_expect_near(wx(1), 2.0_dp, 1.0e-6_dp, 'first x target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wx(2), 2.0_dp, 1.0e-6_dp, 'second x target should be interpolated and multiplied at t=50')
+      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should use the available time level at t=50')
+      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should use the available time level at t=50')
+
+      jawind = 0
+      lnx = 0
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call teardown_minimal_grid()
+   end subroutine test_windxy_scalar_netcdf_override_and_multiply
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_netcdf_target_index_updates_complete_coordinate, test_scalar_netcdf_target_index_updates_complete_coordinate,
+   subroutine test_scalar_netcdf_target_index_updates_complete_coordinate() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_parameters, only: convType_netcdf, EC_OPERAND_REPLACE, elmSetType_cartesian, elmSetType_scalar, &
+                                 interpolate_spacetimeSaveWeightFactors
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem, tEcItemPtr, tEcQuantity
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcField), target :: source_t0, source_t1, target_field
+      type(tEcQuantity), target :: source_quantity
+      type(tEcElementSet), target :: source_element_set, target_element_set
+      type(c_time) :: conversion_time
+      real(dp), target :: source_value_t0(1), source_value_t1(1), target_values(6)
+      logical :: success
+
+      source_value_t0 = 4.0_dp
+      source_value_t1 = 4.0_dp
+      target_values = 9.0_dp
+
+      source_t0%arr1dPtr => source_value_t0
+      source_t0%timesteps = 0.0_dp
+      source_t1%arr1dPtr => source_value_t1
+      source_t1%timesteps = 100.0_dp
+      target_field%arr1dPtr => target_values
+
+      source_element_set%ofType = elmSetType_scalar
+      source_element_set%nCoordinates = 0
+      target_element_set%ofType = elmSetType_cartesian
+      target_element_set%nCoordinates = 2
+
+      source_item%sourceT0FieldPtr => source_t0
+      source_item%sourceT1FieldPtr => source_t1
+      source_item%quantityPtr => source_quantity
+      source_item%elementSetPtr => source_element_set
+      target_item%targetFieldPtr => target_field
+      target_item%elementSetPtr => target_element_set
+
+      converter%ofType = convType_netcdf
+      converter%operandType = EC_OPERAND_REPLACE
+      converter%interpolationType = interpolate_spacetimeSaveWeightFactors
+      converter%targetIndex = 2
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+
+      call conversion_time%set(50.0_dp)
+      success = ecConverterPerformConversions(connection, conversion_time)
+
+      call f90_expect_true(success, 'indexed scalar conversion should succeed')
+      call f90_expect_true(all(target_values(1:3) == 9.0_dp), 'the unselected coordinate should remain unchanged')
+      call f90_expect_true(all(target_values(4:6) == 4.0_dp), 'all values of the selected coordinate should be replaced')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
+   end subroutine test_scalar_netcdf_target_index_updates_complete_coordinate
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,
+   !> Verifies that a time-varying WAQ function uses a one-element global target,
+   !! matching the dummy target used by the old external-forcings initialization.
+   subroutine test_waqfunction_uses_global_ec_target() bind(C)
+      use m_flowtimes, only: irefdate, refdate_mjd, tzone, tunit, tstart_user
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_waqfun
+      use processes_input, only: funinp, funame, num_time_functions
+      use time_module, only: ymd2modified_jul
+      use unstruc_inifields, only: register_waq_target
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: WAQ_TIM = "test_waqfunction.tim"
+      character(len=*), parameter :: WAQ_EXT = "test_waqfunction.ext"
+
+      call create_file(WAQ_TIM, [ &
+                       "0.0    10.0", &
+                       "100.0  20.0"])
+      call create_file(WAQ_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity            = waqfunctionTest", &
+                       "    forcingFile         = "//WAQ_TIM, &
+                       "    forcingFileType     = uniform", &
+                       "    interpolationMethod = linearSpaceTime", &
+                       "    operand              = override"])
+
+      irefdate = 20000101
+      success = ymd2modified_jul(irefdate, refdate_mjd)
+      call f90_assert_true(success, "the test reference date should convert to MJD")
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      num_time_functions = 0
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      allocate (funame(0))
+      call register_waq_target('waqfunctionTest')
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(WAQ_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, WAQ_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_assert_true(success, "init_spatial_fields should succeed for a WAQ function")
+      call f90_assert_true(allocated(item_waqfun), "item_waqfun should be allocated")
+      call f90_assert_true(item_waqfun(1) > 0, "the WAQ function EC item should be registered")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      call f90_assert_true(success, "the WAQ function should update at t=0")
+      call f90_expect_near(funinp(1, 1), 10.0_dp, 1.0e-6_dp, &
+                           "the WAQ function value at t=0 should be 10")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
+                                               irefdate, tzone, tunit, 3000.0_dp)
+      call f90_assert_true(success, "the WAQ function should update at t=3000 seconds")
+      call f90_expect_near(funinp(1, 1), 15.0_dp, 1.0e-6_dp, &
+                           "the WAQ function value at 50 minutes should be linearly interpolated")
+
+      num_time_functions = 0
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(item_waqfun)) deallocate (item_waqfun)
+      call teardown_minimal_grid()
+   end subroutine test_waqfunction_uses_global_ec_target
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_register_waq_targets, test_register_waq_targets,
+   !> Verifies that the new external-forcings pre-scan registers every WAQ input
+   !! type handled by the legacy pre-scan before dependent arrays are sized.
+   subroutine test_register_waq_targets() bind(C)
+      use m_flow, only: ndkx
+      use processes_input, only: painp, paname, num_spatial_parameters, &
+                                 funinp, funame, num_time_functions, &
+                                 sfuninp, sfunname, num_spatial_time_fuctions
+      use unstruc_inifields, only: register_waq_target
+
+      ndkx = 2
+      num_spatial_parameters = 0
+      num_time_functions = 0
+      num_spatial_time_fuctions = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(sfunname)) deallocate (sfunname)
+      if (associated(sfuninp)) deallocate (sfuninp)
+      allocate (paname(0))
+      allocate (funame(0))
+      allocate (sfunname(0))
+
+      call register_waq_target('waqparameterParameter')
+      call register_waq_target('waqsegmentnumberSegment')
+      call register_waq_target('waqfunctionFunction')
+      call register_waq_target('waqsegmentfunctionSegmentFunction')
+
+      call f90_expect_eq(num_spatial_parameters, 2, "two WAQ spatial parameters should be registered")
+      call f90_assert_streq(cstr(paname(1)), cstr("Parameter"), cstr("the WAQ parameter suffix should be retained"))
+      call f90_assert_streq(cstr(paname(2)), cstr("Segment"), cstr("the WAQ segment-number suffix should be retained"))
+      call f90_expect_eq(size(painp, 2), ndkx, "spatial parameter storage should cover all WAQ segments")
+      call f90_expect_eq(num_time_functions, 1, "one WAQ function should be registered")
+      call f90_assert_streq(cstr(funame(1)), cstr("Function"), cstr("the WAQ function suffix should be retained"))
+      call f90_expect_eq(size(funinp, 2), 1, "WAQ function storage should contain one global value")
+      call f90_expect_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")
+      call f90_assert_streq(cstr(sfunname(1)), cstr("SegmentFunction"), cstr("the WAQ segment function suffix should be retained"))
+      call f90_assert_true(associated(sfuninp), "WAQ segment function target storage should be allocated")
+      call f90_expect_eq(size(sfuninp, 1), 1, "target storage should contain one segment function")
+      call f90_expect_eq(size(sfuninp, 2), ndkx, "target storage should cover all WAQ segments")
+
+      num_spatial_parameters = 0
+      num_time_functions = 0
+      num_spatial_time_fuctions = 0
+      if (allocated(paname)) deallocate (paname)
+      if (allocated(painp)) deallocate (painp)
+      if (allocated(funame)) deallocate (funame)
+      if (associated(funinp)) deallocate (funinp)
+      if (allocated(sfunname)) deallocate (sfunname)
+      if (associated(sfuninp)) deallocate (sfuninp)
+      ndkx = 0
+   end subroutine test_register_waq_targets
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterlevel_static_field_populated_at_init, test_initialwaterlevel_static_field_populated_at_init,
@@ -778,6 +1558,121 @@ contains
    end subroutine test_advectiontype_integer_field_populated
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqbot_vertical_layer_selection, test_waqbot_vertical_layer_selection,
+   subroutine test_waqbot_vertical_layer_selection() bind(C)
+      use m_flow, only: kmx, kbot, ktop, kmxn
+      use timespace_parameters, only: OPERAND_OVERRIDE
+      use unstruc_inifields, only: apply_waqbot_target_layer
+
+      real(dp), dimension(1) :: input_2d
+      real(dp), dimension(9) :: output_3d
+      logical :: success
+
+      kmx = 8
+      call realloc(kbot, 1, fill=2, keepExisting=.false.)
+      call realloc(ktop, 1, fill=7, keepExisting=.false.)
+      call realloc(kmxn, 1, fill=8, keepExisting=.false.)
+      input_2d = 1.0_dp
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, 'bottom', 'initialwaqbottestbot', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "targetLayer should be accepted")
+      call f90_expect_eq(output_3d(2), 1.0_dp, "targetLayer should select the active bottom layer")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "targetLayer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "layer 4 should be accepted")
+      call f90_expect_eq(output_3d(5), 1.0_dp, "layer 4 should be counted from the deepest model plane")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "a fixed layer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "layer 8 should be accepted")
+      call f90_expect_eq(output_3d(9), 1.0_dp, "an inactive maximum layer should be initialized for restart")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "a maximum fixed layer should update one layer")
+
+      kmx = 0
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(kmxn)) deallocate (kmxn)
+   end subroutine test_waqbot_vertical_layer_selection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqmassbalancearea_polygon_populated, test_waqmassbalancearea_polygon_populated,
+   !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
+   !! named mass-balance area and assigns its integer ID to enclosed cells.
+   subroutine test_waqmassbalancearea_polygon_populated() bind(C)
+      use m_flow, only: ndkx, kmxn
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
+      use m_mass_balance_area, only: read_and_initialize_mass_balance_area
+      use m_mass_balance_area_data, only: mbadef, mbaname, nomba
+      use m_partitioninfo, only: jampi
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: md_mbafile
+
+      integer :: ierr
+      character(len=*), parameter :: POL_FILE = "test_mba.pol"
+      character(len=*), parameter :: MBA_FILE = "test_mba.ini"
+
+      call create_file(POL_FILE, [ &
+                       "enclosing_polygon", &
+                       "5  2", &
+                       "-2.0  -2.0", &
+                       " 2.0  -2.0", &
+                       " 2.0   2.0", &
+                       "-2.0   2.0", &
+                       "-2.0  -2.0"])
+      call create_file(MBA_FILE, [ &
+                       "[General]", &
+                       "fileVersion = 1.00", &
+                       "fileType    = massBalanceAreas", &
+                       "", &
+                       "[MassBalanceArea]", &
+                       "name         = test_mba", &
+                       "locationFile = "//POL_FILE])
+
+      call setup_minimal_grid()
+      jampi = 0
+      md_mbafile = MBA_FILE
+      ndxi = ndx
+      ndkx = ndx
+      ndx2D = 0
+      allocate (kmxn(1))
+      kmxn = 1
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ti_mba = 60.0_dp
+      threshold_abort = LEVEL_FATAL
+      nomba = 0
+      if (allocated(mbaname)) deallocate (mbaname)
+      if (allocated(mbadef)) deallocate (mbadef)
+      allocate (mbaname(0))
+      allocate (mbadef(ndkx), source=-999)
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call read_and_initialize_mass_balance_area(MBA_FILE)
+
+      call f90_expect_eq(nomba, 1, "one mass-balance area should be registered")
+      call f90_assert_streq(cstr(mbaname(1)), cstr("test_mba"), cstr("the mass-balance area suffix should be retained"))
+      call f90_expect_eq(mbadef(1), 1, "the enclosed cell should belong to the registered area")
+
+      ti_mba = 0.0_dp
+      nomba = 0
+      ndxi = 0
+      ndkx = 0
+      ndx2D = 0
+      deallocate (kmxn)
+      if (allocated(mbaname)) deallocate (mbaname)
+      if (allocated(mbadef)) deallocate (mbadef)
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_waqmassbalancearea_polygon_populated
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialsalinity_3d_field_populated, test_initialsalinity_3d_field_populated,
    !> Verifies that an initialsalinity [Initial] block populates constituents(ISALT,:)
    !! via the static 3D path: timespaceinitialfield (2D interp) + initialfield2Dto3D_dbl_indx.
@@ -1002,153 +1897,356 @@ contains
    end subroutine test_field1d_global_value_applied_to_frictioncoefficient
    !$f90tw)
 
-   !!$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_timedep_uses_item_frcu, test_frictioncoefficient_timedep_uses_item_frcu,
-   !!> Regression test for the ec_addtimespacerelation bug where targetItemPtr1 was
-   !!! unconditionally overridden by tgt_item1 even when fm_ext_force_name_to_ec_item
-   !!! had already wired item_frcu. The symptom was: frcu never updated during the run
-   !!! because the EC connection pointed at a disconnected scratch item.
-   !!!
-   !!! Proof: after init_spatial_fields, calling ec_gettimespacevalue_by_itemID with
-   !!! item_frcu (the registered hardcoded item) must update frcu. If the bug were
-   !!! still present, item_frcu would have no connection and the call would silently
-   !!! leave frcu unchanged.
-   !subroutine test_frictioncoefficient_timedep_uses_item_frcu() bind(C)
-   !   use m_meteo,      only: ecInstancePtr, ec_gettimespacevalue_by_itemID, item_frcu, initialize_ec_module
-   !   use m_flow,       only: frcu
-   !   use m_flowgeom,   only: lnx, xu, yu
-   !   use m_flowtimes,  only: irefdate, tzone, tunit, tstart_user
-   !   use m_alloc,      only: realloc
-   !   use m_polygon,    only: m_polygon_destructor
-   !   use netcdf
-   !
-   !   type(tree_data), pointer :: bnd_ptr, block_ptr
-   !   logical :: success
-   !   real(dp) :: value_at_t0, value_at_t50
-   !   integer :: ierr
-   !   character(len=*), parameter :: NC_FILE  = "test_frcu_tv.nc"
-   !   character(len=*), parameter :: EXT_FILE = "test_frcu_tv.ext"
-   !
-   !   ! ARRANGE: create a minimal 2-timestep NetCDF with friction_coefficient at one grid point.
-   !   call create_friction_netcdf(NC_FILE, &
-   !                               times   = [0.0_dp, 100.0_dp], &
-   !                               values  = [0.02_dp, 0.04_dp], &
-   !                               x_coord = 0.0_dp, &
-   !                               y_coord = 0.0_dp)
-   !
-   !   call create_file(EXT_FILE, [ &
-   !                    "[Parameter]", &
-   !                    "    quantity        = frictioncoefficient", &
-   !                    "    forcingFile     = "//NC_FILE, &
-   !                    "    forcingFileType = netcdf"])
-   !
-   !   call setup_minimal_grid()
-   !   lnx = 1
-   !   if (allocated(xu)) deallocate(xu)
-   !   if (allocated(yu)) deallocate(yu)
-   !   allocate(xu(lnx), yu(lnx))
-   !   xu = [0.0_dp]
-   !   yu = [0.0_dp]
-   !   call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
-   !
-   !   irefdate    = 20000101
-   !   tzone       = 0.0_dp
-   !   tstart_user = 0.0_dp
-   !   threshold_abort = LEVEL_FATAL
-   !   call initialize_ec_module()
-   !   ierr = m_polygon_destructor()
-   !
-   !   ! ACT
-   !   call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
-   !   success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Parameter')
-   !   call tree_destroy(bnd_ptr)
-   !
-   !   call f90_assert_true(success, "init_spatial_fields should succeed for netcdf frictioncoefficient")
-   !
-   !   ! KEY ASSERTION: item_frcu must be a valid registered item. If targetItemPtr1 had
-   !   ! been overridden by the bug, fm_ext_force_name_to_ec_item would have set item_frcu
-   !   ! but then it would have been replaced by a disconnected scratch item.
-   !   call f90_assert_true(item_frcu > 0, "item_frcu must be registered (> 0)")
-   !
-   !   ! Verify the EC relation is live by querying item_frcu at two timesteps.
-   !   success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_frcu, &
-   !                                            irefdate, tzone, tunit, 0.0_dp, target_array = frcu)
-   !   call f90_assert_true(success, "ec_gettimespacevalue_by_itemID must succeed at t=0")
-   !   value_at_t0 = frcu(1)
-   !
-   !   success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_frcu, &
-   !                                            irefdate, tzone, tunit, 50.0_dp, target_array = frcu)
-   !   call f90_assert_true(success, "ec_gettimespacevalue_by_itemID must succeed at t=50")
-   !   value_at_t50 = frcu(1)
-   !
-   !   call f90_expect_near(value_at_t0,  0.02_dp, 1.0e-6_dp, "frcu at t=0 should be 0.02")
-   !   call f90_expect_near(value_at_t50, 0.03_dp, 1.0e-6_dp, "frcu at t=50 should be 0.03 (linearly interpolated)")
-   !   ! Crucially, the two values must differ: if item_frcu had no connection (bug) both
-   !   ! would remain at the initial fill value 0.0.
-   !   call f90_expect_true(abs(value_at_t50 - value_at_t0) > 1.0e-6_dp, &
-   !                        "frcu must change over time, proving item_frcu is live")
-   !
-   !   ! CLEANUP
-   !   lnx = 0
-   !   if (allocated(xu))   deallocate(xu)
-   !   if (allocated(yu))   deallocate(yu)
-   !   if (allocated(frcu)) deallocate(frcu)
-   !   call teardown_minimal_grid()
-   !end subroutine test_frictioncoefficient_timedep_uses_item_frcu
-   !!$f90tw)
-   !
-   !!> Creates a minimal CF-compliant NetCDF file with a single spatial point and
-   !!! a `friction_coefficient` variable varying over time.
-   !subroutine create_friction_netcdf(filename, times, values, x_coord, y_coord)
-   !   use netcdf
-   !   character(len=*), intent(in) :: filename
-   !   real(dp),         intent(in) :: times(:)    !< seconds since 2000-01-01
-   !   real(dp),         intent(in) :: values(:)   !< friction_coefficient values
-   !   real(dp),         intent(in) :: x_coord, y_coord
-   !
-   !   integer :: ncid, time_dimid, x_dimid, y_dimid
-   !   integer :: time_varid, x_varid, y_varid, frcu_varid
-   !   integer :: n
-   !
-   !   n = size(times)
-   !   call check_nc(nf90_create(filename, NF90_CLOBBER, ncid))
-   !
-   !   ! Dimensions
-   !   call check_nc(nf90_def_dim(ncid, 'time', NF90_UNLIMITED, time_dimid))
-   !   call check_nc(nf90_def_dim(ncid, 'y',    1,              y_dimid))
-   !   call check_nc(nf90_def_dim(ncid, 'x',    1,              x_dimid))
-   !
-   !   ! time variable
-   !   call check_nc(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-   !   call check_nc(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-   !   call check_nc(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-   !
-   !   ! x / y coordinate variables
-   !   call check_nc(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
-   !   call check_nc(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
-   !   call check_nc(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
-   !   call check_nc(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
-   !
-   !   ! friction_coefficient data variable (time, y, x)
-   !   call check_nc(nf90_def_var(ncid, 'friction_coefficient', NF90_DOUBLE, &
-   !                              [x_dimid, y_dimid, time_dimid], frcu_varid))
-   !   call check_nc(nf90_put_att(ncid, frcu_varid, 'standard_name', 'friction_coefficient'))
-   !   call check_nc(nf90_put_att(ncid, frcu_varid, 'coordinates',   'x y'))
-   !
-   !   call check_nc(nf90_enddef(ncid))
-   !
-   !   ! Write data
-   !   call check_nc(nf90_put_var(ncid, time_varid, times))
-   !   call check_nc(nf90_put_var(ncid, x_varid,    [x_coord]))
-   !   call check_nc(nf90_put_var(ncid, y_varid,    [y_coord]))
-   !   call check_nc(nf90_put_var(ncid, frcu_varid, reshape(values, [1, 1, n])))
-   !
-   !   call check_nc(nf90_close(ncid))
-   !end subroutine create_friction_netcdf
-   !
-   !subroutine check_nc(ierr)
-   !   use netcdf
-   !   integer, intent(in) :: ierr
-   !   if (ierr /= NF90_NOERR) error stop nf90_strerror(ierr)
-   !end subroutine check_nc
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_bcascii_matrix, test_scalar_meteo_bcascii_matrix,
+   subroutine test_scalar_meteo_bcascii_matrix() bind(C)
+      character(len=*), parameter :: BC_FILE = 'test_scalar_meteo.bc'
+      character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo.ext'
+      integer :: i
+
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call reset_scalar_meteo_state()
+         call create_scalar_meteo_bc(BC_FILE, SCALAR_METEO_QUANTITIES(i), SCALAR_METEO_VALUES(i))
+         call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), BC_FILE, 'bcascii', EXT_FILE, SCALAR_METEO_VALUES(i))
+      end do
+
+      call cleanup_scalar_meteo_state()
+   end subroutine test_scalar_meteo_bcascii_matrix
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_netcdf_matrix, test_scalar_meteo_netcdf_matrix,
+   subroutine test_scalar_meteo_netcdf_matrix() bind(C)
+      character(len=*), parameter :: NC_FILE = 'test_scalar_meteo.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo_netcdf.ext'
+      integer :: i
+
+      call create_meteo_netcdf(NC_FILE, scalar_source=.true.)
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call reset_scalar_meteo_state()
+         call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), NC_FILE, 'netcdf', EXT_FILE, SCALAR_METEO_VALUES(i))
+      end do
+
+      call cleanup_scalar_meteo_state()
+   end subroutine test_scalar_meteo_netcdf_matrix
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_gridded_meteo_netcdf_matrix, test_gridded_meteo_netcdf_matrix,
+   subroutine test_gridded_meteo_netcdf_matrix() bind(C)
+      character(len=*), parameter :: NC_FILE = 'test_gridded_meteo.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_gridded_meteo.ext'
+      integer :: i
+
+      call create_meteo_netcdf(NC_FILE, scalar_source=.false.)
+      do i = 1, NUM_SCALAR_METEO_CASES
+         call reset_scalar_meteo_state()
+         call run_scalar_meteo_case(SCALAR_METEO_QUANTITIES(i), NC_FILE, 'netcdf', EXT_FILE, SCALAR_METEO_VALUES(i))
+      end do
+      call cleanup_scalar_meteo_state()
+   end subroutine test_gridded_meteo_netcdf_matrix
+   !$f90tw)
+
+   subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, initialize_ec_module
+      use m_ec_parameters, only: ec_undef_int
+
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: forcing_file
+      character(len=*), intent(in) :: forcing_file_type
+      character(len=*), intent(in) :: ext_file
+      real(dp), intent(in) :: expected_value
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      real(dp), dimension(:), pointer :: target_data
+      integer :: item_id
+      logical :: success
+
+      call create_file(ext_file, [ &
+                       '[Spatial]', &
+                       '    quantity        = '//trim(quantity), &
+                       '    forcingFile     = '//trim(forcing_file), &
+                       '    forcingFileType = '//trim(forcing_file_type)])
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call parse_spatial_block(ext_file, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, ext_file, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, trim(quantity)//' should initialize from '//trim(forcing_file_type))
+      if (.not. success) return
+
+      call scalar_meteo_target(quantity, item_id, target_data)
+      call f90_expect_true(item_id /= ec_undef_int, trim(quantity)//' should have a target item')
+      call f90_expect_true(associated(target_data), trim(quantity)//' should have target storage')
+      if (item_id == ec_undef_int .or. .not. associated(target_data)) return
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_id, irefdate, tzone, tunit, 0.0_dp, target_array=target_data)
+      call f90_expect_true(success, trim(quantity)//' should update at t=0')
+      if (trim(forcing_file_type) == 'netcdf') then
+         call f90_expect_near(ecInstancePtr%ecFileReadersPtr(1)%ptr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr(1), expected_value, &
+                  1.0e-6_dp, trim(quantity)//' source value at t=0')
+      end if
+      call f90_expect_near(target_data(1), expected_value, 1.0e-6_dp, trim(quantity)//' value at t=0')
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_id, irefdate, tzone, tunit, 50.0_dp, target_array=target_data)
+      call f90_expect_true(success, trim(quantity)//' should update at t=50')
+      call f90_expect_near(target_data(1), expected_value + 1.0_dp, 1.0e-6_dp, trim(quantity)//' interpolated value at t=50')
+   end subroutine run_scalar_meteo_case
+
+   subroutine scalar_meteo_target(quantity, item_id, target_data)
+      use m_meteo, only: item_air_density, item_atmosphericpressure, item_air_temperature, item_cloudiness, &
+                         item_dew_point_temperature, item_relative_humidity, item_latent_heat_flux, item_long_wave_radiation, &
+                         item_solar_radiation, item_sensible_heat_flux, item_stressx, item_stressy, item_windx, item_windy
+      use m_wind, only: air_density, air_pressure, air_temperature, cloudiness, dew_point_temperature, relative_humidity, &
+                        latent_heat_flux, long_wave_radiation, solar_radiation, sensible_heat_flux, wx, wy
+      use m_flow, only: wdsu_x, wdsu_y
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity
+      integer, intent(out) :: item_id
+      real(dp), dimension(:), pointer, intent(out) :: target_data
+
+      item_id = -999
+      target_data => null()
+      select case (str_tolower(quantity))
+      case ('airdensity')
+         item_id = item_air_density
+         target_data => air_density
+      case ('airpressure')
+         item_id = item_atmosphericpressure
+         target_data => air_pressure
+      case ('airtemperature')
+         item_id = item_air_temperature
+         target_data => air_temperature
+      case ('cloudiness')
+         item_id = item_cloudiness
+         target_data => cloudiness
+      case ('dewpoint')
+         item_id = item_dew_point_temperature
+         target_data => dew_point_temperature
+      case ('humidity')
+         item_id = item_relative_humidity
+         target_data => relative_humidity
+      case ('latentheatflux')
+         item_id = item_latent_heat_flux
+         target_data => latent_heat_flux
+      case ('longwaveradiation')
+         item_id = item_long_wave_radiation
+         target_data => long_wave_radiation
+      case ('netsolarradiation', 'solarradiation')
+         item_id = item_solar_radiation
+         target_data => solar_radiation
+      case ('sensibleheatflux')
+         item_id = item_sensible_heat_flux
+         target_data => sensible_heat_flux
+      case ('stressx')
+         item_id = item_stressx
+         target_data => wdsu_x
+      case ('stressy')
+         item_id = item_stressy
+         target_data => wdsu_y
+      case ('windx')
+         item_id = item_windx
+         target_data => wx
+      case ('windy')
+         item_id = item_windy
+         target_data => wy
+      end select
+   end subroutine scalar_meteo_target
+
+   subroutine create_scalar_meteo_bc(filename, quantity, initial_value)
+      character(len=*), intent(in) :: filename
+      character(len=*), intent(in) :: quantity
+      real(dp), intent(in) :: initial_value
+      character(len=64) :: value0, value1
+
+      write (value0, '(es24.16)') initial_value
+      write (value1, '(es24.16)') initial_value + 2.0_dp
+      call create_file(filename, [ &
+                       '[General]', &
+                       '    fileVersion           = 1.01', &
+                       '    fileType              = boundConds', &
+                       '', &
+                       '[forcing]', &
+                       '    name                  = global', &
+                       '    function              = timeseries', &
+                       '    timeInterpolation     = linear', &
+                       '    quantity              = time', &
+                       '    unit                  = seconds since 2000-01-01 00:00:00', &
+                       '    quantity              = '//trim(quantity), &
+                       '    unit                  = 1', &
+                       '    0    '//trim(value0), &
+                       '    100  '//trim(value1)])
+   end subroutine create_scalar_meteo_bc
+
+   subroutine create_meteo_netcdf(filename, scalar_source)
+      use netcdf
+
+      character(len=*), intent(in) :: filename
+      logical, intent(in) :: scalar_source
+      integer :: ncid, time_dimid, x_dimid, y_dimid, time_varid, x_varid, y_varid
+      integer, dimension(NUM_SCALAR_METEO_CASES) :: variable_ids
+      integer :: i, ierr
+      real(dp), dimension(2) :: times, x_coord, y_coord
+      real(dp), dimension(2, 2, 2) :: values
+
+      x_dimid = -1
+      y_dimid = -1
+      x_varid = -1
+      y_varid = -1
+
+      call check_meteo_netcdf(nf90_create(filename, NF90_CLOBBER, ncid), 'create NetCDF file')
+      call check_meteo_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid), 'define time dimension')
+      call check_meteo_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid), 'define x dimension')
+      call check_meteo_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid), 'define y dimension')
+
+      call check_meteo_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid), 'define time')
+      call check_meteo_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'), 'set time standard name')
+      call check_meteo_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'), 'set time units')
+      call check_meteo_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid), 'define x')
+      call check_meteo_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'), 'set x standard name')
+      call check_meteo_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid), 'define y')
+      call check_meteo_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'), 'set y standard name')
+
+      do i = 1, NUM_SCALAR_METEO_CASES
+         if (scalar_source) then
+            call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
+                                                         [time_dimid], variable_ids(i)), &
+                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+         else
+            call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
+                                                         [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
+                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+         end if
+         call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'standard_name', trim(SCALAR_METEO_STANDARD_NAMES(i))), &
+                                        'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
+         if (.not. scalar_source) then
+            call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'coordinates', 'x y'), &
+                                           'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
+         end if
+      end do
+
+      call check_meteo_netcdf(nf90_enddef(ncid), 'finish NetCDF definition')
+      times = [0.0_dp, 100.0_dp]
+      x_coord = [-1.0_dp, 1.0_dp]
+      y_coord = [-1.0_dp, 1.0_dp]
+      call check_meteo_netcdf(nf90_put_var(ncid, time_varid, times), 'write time')
+      call check_meteo_netcdf(nf90_put_var(ncid, x_varid, x_coord), 'write x')
+      call check_meteo_netcdf(nf90_put_var(ncid, y_varid, y_coord), 'write y')
+      do i = 1, NUM_SCALAR_METEO_CASES
+         if (scalar_source) then
+            ierr = nf90_put_var(ncid, variable_ids(i), [SCALAR_METEO_VALUES(i), SCALAR_METEO_VALUES(i) + 2.0_dp])
+         else
+            values(:, :, 1) = SCALAR_METEO_VALUES(i)
+            values(:, :, 2) = SCALAR_METEO_VALUES(i) + 2.0_dp
+            ierr = nf90_put_var(ncid, variable_ids(i), values)
+         end if
+         call check_meteo_netcdf(ierr, 'write '//trim(SCALAR_METEO_VARIABLES(i)))
+      end do
+      call check_meteo_netcdf(nf90_close(ncid), 'close NetCDF file')
+   end subroutine create_meteo_netcdf
+
+   subroutine check_meteo_netcdf(ierr, operation)
+      use netcdf, only: nf90_noerr
+
+      integer, intent(in) :: ierr
+      character(len=*), intent(in) :: operation
+
+      call f90_expect_eq(ierr, nf90_noerr, operation)
+   end subroutine check_meteo_netcdf
+
+   subroutine reset_scalar_meteo_state()
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_flowparameters, only: itempforcingtyp
+      use m_meteo, only: initialize_ec_module
+      use m_wind, only: wx, wy, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
+                        air_pressure, pseudo_air_pressure, water_level_correction, rain, qext, air_temperature, &
+                        dew_point_temperature, relative_humidity, cloudiness, air_density, solar_radiation, &
+                        net_solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux, &
+                        jawind, jaspacevarcharn, jawindstressgiven, jastresstowind, ja_airdensity, jarain, jaevap, jaqin, jaQext, &
+                        solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        sensible_heat_flux_available, latent_heat_flux_available, air_pressure_available, &
+                        pseudo_air_pressure_available, water_level_correction_available
+
+      call initialize_ec_module()
+      call release_scalar_meteo_arrays()
+      jawind = 0
+      jaspacevarcharn = 0
+      jawindstressgiven = 0
+      jastresstowind = 0
+      ja_airdensity = 0
+      jarain = 0
+      jaevap = 0
+      jaqin = 0
+      jaQext = 0
+      solar_radiation_available = .false.
+      net_solar_radiation_available = .false.
+      long_wave_radiation_available = .false.
+      sensible_heat_flux_available = .false.
+      latent_heat_flux_available = .false.
+      air_pressure_available = .false.
+      pseudo_air_pressure_available = .false.
+      water_level_correction_available = .false.
+      itempforcingtyp = 0
+
+      call setup_minimal_grid()
+      lnx = 1
+      allocate (xu(lnx), yu(lnx))
+      xu = 0.0_dp
+      yu = 0.0_dp
+   end subroutine reset_scalar_meteo_state
+
+   subroutine cleanup_scalar_meteo_state()
+      use m_flowgeom, only: lnx
+      use m_meteo, only: initialize_ec_module
+
+      call initialize_ec_module()
+      call release_scalar_meteo_arrays()
+      lnx = 0
+   end subroutine cleanup_scalar_meteo_state
+
+   subroutine release_scalar_meteo_arrays()
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx, xu, yu
+      use m_wind, only: wx, wy, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
+                        air_pressure, pseudo_air_pressure, water_level_correction, rain, qext, air_temperature, &
+                        dew_point_temperature, relative_humidity, cloudiness, air_density, solar_radiation, &
+                        net_solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
+
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      if (allocated(ec_pwxwy_x)) deallocate (ec_pwxwy_x)
+      if (allocated(ec_pwxwy_y)) deallocate (ec_pwxwy_y)
+      if (allocated(ec_pwxwy_c)) deallocate (ec_pwxwy_c)
+      if (allocated(ec_charnock)) deallocate (ec_charnock)
+      if (allocated(wcharnock%values)) deallocate (wcharnock%values)
+      if (allocated(air_pressure)) deallocate (air_pressure)
+      if (allocated(pseudo_air_pressure)) deallocate (pseudo_air_pressure)
+      if (allocated(water_level_correction)) deallocate (water_level_correction)
+      if (allocated(rain)) deallocate (rain)
+      if (allocated(qext)) deallocate (qext)
+      if (allocated(air_temperature)) deallocate (air_temperature)
+      if (allocated(dew_point_temperature)) deallocate (dew_point_temperature)
+      if (allocated(relative_humidity)) deallocate (relative_humidity)
+      if (allocated(cloudiness)) deallocate (cloudiness)
+      if (allocated(air_density)) deallocate (air_density)
+      if (allocated(solar_radiation)) deallocate (solar_radiation)
+      if (allocated(net_solar_radiation)) deallocate (net_solar_radiation)
+      if (allocated(long_wave_radiation)) deallocate (long_wave_radiation)
+      if (allocated(sensible_heat_flux)) deallocate (sensible_heat_flux)
+      if (allocated(latent_heat_flux)) deallocate (latent_heat_flux)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      call teardown_minimal_grid()
+      lnx = 0
+      ndxi = 0
+   end subroutine release_scalar_meteo_arrays
 
 end module test_init_spatial_fields_integration
