@@ -36,7 +36,7 @@ namespace pre_c_sumo
     struct FarFieldPoint2D
     {
         parsing_utils::Point2D position;   ///< Horizontal position of the point [m].
-        double water_depth{};              ///< Total water depth at this point [m] (written to <waterDepth>).
+        double water_depth{};              ///< Total water depth at this point [m] (written to &lt;waterDepth&gt;).
         std::vector<FarFieldLayer> layers; ///< Per-layer structure (velocity, density, constituents).
     };
 

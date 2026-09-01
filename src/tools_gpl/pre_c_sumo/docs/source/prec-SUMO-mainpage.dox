@@ -1,3 +1,37 @@
-\mainpage preC-SUMO Developer Guide
+/*! \mainpage preC-SUMO Developer Guide
+
+	ableofcontents
+
+\section intro Introduction
+preC-SUMO is the coupling-side translator between D-FlowFM and C-SUMO in a preCICE setup.
+
+Current core responsibilities are:
+- read and validate C-SUMO settings,
+- register preCICE meshes and data channels,
+- receive far-field data from preCICE and write FF2NF input files,
+- wait for and read NF2FF output files,
+- convert NF2FF results to connected source/sink writes for D-FlowFM.
+
+\section workflow Core Workflow
+The diagram below reflects the current code path in
+pre_c_sumo::run(), receiveFFData(), writeFF2NFFiles(), waitForNF2FFFiles(),
+readNF2FFFiles(), and convertNFtoConnectedSinkSources().
+
+\dotfile preC_SUMO_Swimlanes.dot "preC-SUMO core coupling workflow (current implementation)"
+
+\section code_map Code Entry Points
+Main implementation entry points:
+- pre_c_sumo::run in pre_c_sumo_lib.hpp / pre_c_sumo_lib.cpp
+- pre_c_sumo::readCsumoSettingsFile in coupling_steps.hpp / coupling_steps.cpp
+- pre_c_sumo::receiveFFData in coupling_steps.hpp / coupling_steps.cpp
+- pre_c_sumo::writeFF2NFFiles in coupling_steps.hpp / coupling_steps.cpp
+- pre_c_sumo::waitForNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
+- pre_c_sumo::readNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
+- pre_c_sumo::convertNFtoConnectedSinkSources in coupling_steps.hpp / coupling_steps.cpp
+
+\section notes Diagram Source Files
+Diagrams are maintained in docs/include as .dot and .drawio source files.
+Use \dotfile for .dot diagrams in Doxygen.
+*/
 
 

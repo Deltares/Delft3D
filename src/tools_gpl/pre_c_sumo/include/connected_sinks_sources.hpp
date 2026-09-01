@@ -46,6 +46,7 @@ namespace pre_c_sumo
 
         /**
          * @brief Writes all accrued data to preCICE as the specified participant on the specified
+         * @anchor precsumo_write_to_precice
          * mesh and accompanying vertices. After writing the data, the accrued data is cleared.
          * @param participant preCICE participant of the connection
          * @param mesh_name Provided mesh name

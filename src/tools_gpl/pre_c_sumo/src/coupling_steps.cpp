@@ -236,10 +236,6 @@ namespace pre_c_sumo
      *
      * For each diffuser this constructs sink-source pairs based on sinks after the first
      * sink point, and optionally intake-related pairs when intake is configured.
-     *
-     * @param csumoSettings Parsed C-SUMO settings.
-     * @param nf2ff_readers NF2FF snapshots for the current coupling time.
-     * @return Connected source/sink data ready to write via preCICE.
      */
     ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
                                                          const std::vector<NF2FFReader>& nf2ff_readers)

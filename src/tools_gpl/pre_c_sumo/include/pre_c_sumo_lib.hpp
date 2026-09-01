@@ -128,6 +128,11 @@ namespace pre_c_sumo
 
     /**
      * @brief Entry point into the C-SUMO preCICE library.
+      * @anchor precsumo_run_main
+        *
+        * High-level coupling architecture:
+        * @dotfile coupled_solvers_fm_csumo.dot
+        * @image html coupled_solvers_fm_csumo.svg "Coupled D-FlowFM, preC-SUMO, and C-SUMO architecture" width=900px
      *
      * @param csumoConfigFileName Path and filename of C-SUMO configuration XML file.
      * @param adapterConfigFileName Path and filename of preCICE adapter configuration file.

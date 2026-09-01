@@ -199,7 +199,7 @@ STRIP_FROM_PATH        = ..
 # specify the list of include paths that are normally passed to the compiler
 # using the -I flag.
 
-STRIP_FROM_INC_PATH    = ../include
+STRIP_FROM_INC_PATH    =
 
 # If the SHORT_NAMES tag is set to YES, Doxygen will generate much shorter (but
 # less readable) file names. This can be useful if your file system doesn't
@@ -991,9 +991,8 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../include \
-                         ../src \
-                         README.md
+INPUT                  = ../src \
+                         ../src
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1128,7 +1127,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = .
+EXAMPLE_PATH           = ..
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1148,7 +1147,7 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = include
+IMAGE_PATH             =
 
 # The INPUT_FILTER tag can be used to specify a program that Doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -2508,7 +2507,7 @@ SEARCH_INCLUDES        = YES
 # This tag requires that the tag SEARCH_INCLUDES is set to YES.
 
 INCLUDE_PATH           = ../include \
-                         ../src
+                         .
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
 # patterns (like *.h and *.hpp) to filter out the header-files in the

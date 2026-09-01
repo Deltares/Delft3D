@@ -16,12 +16,15 @@
 namespace pre_c_sumo
 {
     /**
-     * @file pre_c_sumo_internal.hpp
+     * @file coupling_steps.hpp
      * @brief Internal helper functions for the preC-SUMO tool.
      *
      * These functions are internal implementation helpers used by the
      * preC-SUMO library. They handle timestepping control, configuration and settings
      * files parsing and the conversion/communication of NF/FF data.
+        *
+        * Workflow overview for the current implementation:
+        * @dotfile preC_SUMO_Swimlanes.dot
      */
     // TODO?: Move/fold into class(es)?
     constexpr std::string_view water_levels_id = "sea_surface_height";
@@ -51,6 +54,7 @@ namespace pre_c_sumo
 
     /**
      * @brief Read and parse the C-SUMO settings file.
+        * @anchor precsumo_read_settings
      *
      * Attempts to read the C-SUMO settings from the given file.
      * On success returns a populated `CSumoSettingsReader`. On failure
@@ -64,6 +68,7 @@ namespace pre_c_sumo
 
     /**
      * @brief Receive farfield (FF) data from external sources via preCICE.
+        * @anchor precsumo_receive_ff_data
      *
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
@@ -73,17 +78,22 @@ namespace pre_c_sumo
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
+        * @anchor precsumo_write_ff2nf
      *
      * Writes a FF2NF file for each configured diffuser.
      * If `csumoSettings` holds an error, no files are written.
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+    * @param csumo_2d_mesh 2D mesh data received from preCICE.
+    * @param csumo_3d_mesh 3D mesh data received from preCICE.
+    * @param current_time_seconds Current coupling time in seconds.
      */
     void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
                          double current_time_seconds);
 
     /**
      * @brief Wait until NF2FF files become available.
+        * @anchor precsumo_wait_nf2ff
      *
      * For each diffuser configured in `csumoSettings` this will wait for
      * the corresponding NF2FF file to appear. If `csumoSettings` contains
@@ -100,11 +110,13 @@ namespace pre_c_sumo
 
     /**
      * @brief Read NF2FF files and extract the required data.
+        * @anchor precsumo_read_nf2ff
      *
      * Reads NF2FF files referenced in `csumoSettings` and extracts the
      * data that will be converted to sources/sinks.
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+    * @param current_time_seconds Current coupling time in seconds.
      * @returns std::vector<NF2FFReader> with the content of all NF2FF files of all
      * diffusers in the settings.
      */
@@ -122,8 +134,10 @@ namespace pre_c_sumo
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
+        * @anchor precsumo_convert_nf
      *
      * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
+    * Part of the core workflow documented by the preC_SUMO_Swimlanes.dot diagram.
      *
      * @param csumoSettings Parsed C-SUMO settings.
      * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
@@ -138,7 +152,8 @@ namespace pre_c_sumo
      * Sends the converted sources and sinks to the farfield component.
      * The demo implementation logs an informational message.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+    * @param participant preCICE participant used for writing values.
+    * @param sources_sinks Connected source/sink data prepared for writing.
      */
     void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 

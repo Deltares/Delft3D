@@ -75,18 +75,18 @@ namespace pre_c_sumo
 
         /**
          * @brief Construct the (expected) filepath of the FF2NF file for this diffuser.
-         * @param int subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
-         * array)
-         * @param double current_time_seconds The time of the current time stp in seconds.
+         * @param subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
+         * array).
+         * @param current_time_seconds The time of the current time step in seconds.
          * @return std::filesystem::path With the complete FF2NF filepath for this diffuser.
          */
         [[nodiscard]] const std::filesystem::path ff2nfFilepath(int subgrid_model_nr,
                                                                 double current_time_seconds) const;
         /**
          * @brief Construct the (expected) filepath of the NF2FF file for this diffuser.
-         * @param int subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
-         * array)
-         * @param double current_time_seconds The time of the current time stp in seconds.
+         * @param subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
+         * array).
+         * @param current_time_seconds The time of the current time step in seconds.
          * @return std::filesystem::path With the complete NF2FF filepath for this diffuser.
          */
         [[nodiscard]] const std::filesystem::path nf2ffFilepath(int subgrid_model_nr,
@@ -108,7 +108,7 @@ namespace pre_c_sumo
         /**
          * @brief Create by reading and parsing an XML file.
          * @param csumo_config_file Path to the C-SUMO configuration xml file.
-         * @return The reader on success, or a @ref ParseError describing the failure.
+         * @return The reader on success, or a @ref parsing_utils::ParseError describing the failure.
          */
         [[nodiscard]] static std::expected<CSumoSettingsReader, parsing_utils::ParseError> fromFile(
             const std::filesystem::path& csumo_config_file);
@@ -120,7 +120,7 @@ namespace pre_c_sumo
          * unit tests.
          *
          * @param xml Raw UTF-8 XML content.
-         * @return The reader on success, or a @ref ParseError describing the failure.
+         * @return The reader on success, or a @ref parsing_utils::ParseError describing the failure.
          */
         [[nodiscard]] static std::expected<CSumoSettingsReader, parsing_utils::ParseError> fromString(
             std::string_view xml);
@@ -141,7 +141,7 @@ namespace pre_c_sumo
         /**
          * @brief Construct the FF2NF file paths for a given timestep.
          *
-         * @param current time in seconds.
+         * @param current_time_seconds Current time in seconds.
          * @return std::vector<std::filesystem::path> with the expected file paths.
          */
         [[nodiscard]] const std::vector<std::filesystem::path> ff2nfFilepaths(double current_time_seconds) const;
@@ -149,7 +149,7 @@ namespace pre_c_sumo
         /**
          * @brief Construct the (expected) NF2FF file paths for a given timestep.
          *
-         * @param current time in seconds.
+         * @param current_time_seconds Current time in seconds.
          * @return std::vector<std::filesystem::path> with the expected filepaths.
          */
         [[nodiscard]] const std::vector<std::filesystem::path> nf2ffFilepaths(double current_time_seconds) const;

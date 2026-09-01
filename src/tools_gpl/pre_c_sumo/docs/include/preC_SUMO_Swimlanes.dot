@@ -1,90 +1,63 @@
-// Swim lane diagram: preC-SUMO workflow showing interactions between
-// C-SUMO application, preC-SUMO adapter, and preCICE interface
-
 digraph preCSUMOSwimlanes {
-
-  rankdir=TB;
+  rankdir=LR;
   compound=true;
   splines=ortho;
-  nodesep=0.2;
-  ranksep=0.08;
+  nodesep=0.35;
+  ranksep=0.55;
   fontname="Helvetica";
   fontsize=10;
 
-  node [shape=box, style=rounded, fontname="Helvetica", fontsize=9];
-  edge [fontname="Helvetica", fontsize=8];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=9, color="#555555", fillcolor="#FFFFFF"];
+  edge [fontname="Helvetica", fontsize=8, color="#444444"];
 
-  // Layer 1: External C-SUMO Application (top)
-  subgraph cluster_csumo_app {
-    label="C-SUMO Application\n(External Nearfield Calc)";
-    style="rounded,filled";
-    fillcolor="#E6F0FF";
-    fontsize=10;
-    fontweight=bold;
-
-    task4 [label="4. Calculate\nNearfield\nPlume", fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
-  }
-
-  // Layer 2: preC-SUMO (combined application with two sub-boxes)
   subgraph cluster_precsumo {
-    label="preC-SUMO";
-    style="rounded,filled";
-    fillcolor="#FFE6E6";
-    fontsize=11;
-    fontweight=bold;
+    label="preC-SUMO core (run)";
+    color="#F26422";
+    style="rounded";
 
-    // Sub-box 1: Core Logic
-    subgraph cluster_core {
-      label="Core Logic";
-      style="rounded,dashed";
-      fillcolor="#FFF5F5";
-      fontsize=9;
+    s0 [label="Read C-SUMO settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref precsumo_read_settings", tooltip="Open readCsumoSettingsFile docs"];
+    s1 [label="Build and register meshes\ngetMesh2D3D(), setMeshVertices()", fillcolor="#FFE3D1", URL="\\ref precsumo_run_main", tooltip="Open run() setup phase docs"];
+    s2 [label="Initial NF2FF bootstrap\nwaitForNF2FFFiles()\nreadNF2FFFiles()\nconvertNFtoConnectedSinkSources()", fillcolor="#FFE3D1", URL="\\ref precsumo_wait_nf2ff", tooltip="Open initial NF2FF bootstrap docs"];
+    s3 [label="participant.initialize()\noptional requiresInitialData write", fillcolor="#FFE3D1", URL="\\ref precsumo_run_main", tooltip="Open participant initialization docs"];
 
-    task1 [label="1. Read\nConfig", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    task3 [label="3. Write\nFF2NF.xml", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    task5 [label="5. Read\nNF2FF.xml", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    task6 [label="6. DESA", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    task7 [label="7. Prepare\nCloud", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref precsumo_receive_ff_data", tooltip="Open receiveFFData docs"];
+    l1 [label="writeFF2NFFiles()", fillcolor="#FFF6E8", URL="\\ref precsumo_write_ff2nf", tooltip="Open writeFF2NFFiles docs"];
+    l2 [label="waitForNF2FFFiles()", fillcolor="#FFF6E8", URL="\\ref precsumo_wait_nf2ff", tooltip="Open waitForNF2FFFiles docs"];
+    l3 [label="readNF2FFFiles()", fillcolor="#FFF6E8", URL="\\ref precsumo_read_nf2ff", tooltip="Open readNF2FFFiles docs"];
+    l4 [label="convertNFtoConnectedSinkSources()", fillcolor="#FFF6E8", URL="\\ref precsumo_convert_nf", tooltip="Open convertNFtoConnectedSinkSources docs"];
+    l5 [label="Reset/write source-sink mesh\nwrite_to_precice()", fillcolor="#FFF6E8", URL="\\ref precsumo_write_to_precice", tooltip="Open write_to_precice docs"];
+    l6 [label="participant.advance(dt)", fillcolor="#FFF6E8", URL="\\ref precsumo_run_main", tooltip="Open run() loop docs"];
 
-    task1 -> task3 [style=dotted];
-    task3 -> task5;
-    task5 -> task6;
-    task6 -> task7;
-    }
-
-    // Sub-box 2: Interface
-    subgraph cluster_precice {
-      label="preCICE Interface";
-      style="rounded,dashed";
-      fillcolor="#F0F0F0";
-      fontsize=9;
-
-      task2 [label="2. Receive\nAmbient", fillcolor="#DDDDDD", style="rounded,filled"];
-      task7b [label="7b. Send\nto FM", fillcolor="#DDDDDD", style="rounded,filled"];
-
-      task2 -> task7b [style=invis];
-    }
+    s0 -> s1 -> s2 -> s3 -> l0 -> l1 -> l2 -> l3 -> l4 -> l5 -> l6;
+    l6 -> l0 [label="while isCouplingOngoing()", color="#666666"];
   }
 
-  // Interactions within preC-SUMO
-  task1 -> task2 [xlabel="coordinates", minlen=1];
-  task2 -> task3 [xlabel="read", minlen=1];
-  task7 -> task7b [xlabel="write"];
+  subgraph cluster_precice {
+    label="preCICE interface";
+    color="#A5B51B";
+    style="rounded";
 
-  // Interactions with C-SUMO Application
-  task3 -> task4 [xlabel="FF2NF", constraint=false];
-  task4 -> task5 [xlabel="NF2FF", constraint=false];
+    p0 [label="readData()\nwater level / bed level / depth / density", fillcolor="#EEF3C9", URL="\\ref precsumo_receive_ff_data", tooltip="Open preCICE readData phase docs"];
+    p1 [label="setMeshVertices() / resetMesh()\nsources_sinks_nodes", fillcolor="#EEF3C9", URL="\\ref precsumo_run_main", tooltip="Open mesh registration/reset docs"];
+    p2 [label="writeData()\nsink/source fields", fillcolor="#EEF3C9", URL="\\ref precsumo_write_to_precice", tooltip="Open write_to_precice docs"];
+  }
 
-  // Place C-SUMO application to the left of preC-SUMO (same vertical level)
-  //rank=same; task4; task1; }
-  //sk4 -> task1 [style=invis, constraint=false, weight=200];
+  subgraph cluster_csumo {
+    label="C-SUMO process";
+    color="#1285F0";
+    style="rounded";
 
+    c0 [label="Consume FF2NF xml", fillcolor="#DDEBFF", URL="\\ref precsumo_write_ff2nf", tooltip="Produced by writeFF2NFFiles"];
+    c1 [label="Run near-field model", fillcolor="#DDEBFF", URL="\\ref precsumo_run_main", tooltip="External step between FF2NF and NF2FF"];
+    c2 [label="Produce NF2FF xml", fillcolor="#DDEBFF", URL="\\ref precsumo_read_nf2ff", tooltip="Consumed by readNF2FFFiles"];
+    c0 -> c1 -> c2;
+  }
 
-  // Coupling window boundaries
-  START [label="Coupling step Start", shape=ellipse, fillcolor="#90EE90", style=filled, fontsize=8];
-  END [label="Coupling step End", shape=ellipse, fillcolor="#FFB6C1", style=filled, fontsize=8];
-  
-  START -> task1;
-  task7b -> END;
+  l0 -> p0 [label="receive ambient + layered state", lhead=cluster_precice];
+  l5 -> p1 [label="(re)define source-sink vertices", lhead=cluster_precice];
+  l5 -> p2 [label="send converted source/sink values", lhead=cluster_precice];
+
+  l1 -> c0 [label="write FF2NF", lhead=cluster_csumo];
+  c2 -> l2 [label="NF2FF available", ltail=cluster_csumo];
 }
 
