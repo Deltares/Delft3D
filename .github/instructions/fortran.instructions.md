@@ -35,6 +35,13 @@ pain.
   discourage use of `implicit none` in functions and subroutines.
 - Modules should use `private` by default, exposing only what is needed with `public ::`.
 
+## Declarations
+
+- Declare array shapes with the `dimension` attribute before `::`, for dummy arguments,
+  local variables, derived-type components, allocatables, pointers, and fixed-size arrays.
+  For example, use `real(kind=dp), dimension(:), intent(in) :: values` instead of
+  `real(kind=dp), intent(in) :: values(:)`.
+
 ## Documentation
 
 - Flag missing docstrings for *new* public functions, submodules, module variables, types,
