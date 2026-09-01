@@ -882,7 +882,7 @@ contains
       integer, dimension(:), intent(in) :: mask
       integer, intent(in) :: kx, filetype, method, oper
       integer, intent(inout) :: ec_item
-      real(dp), dimension(:), pointer intent(out) :: target_data
+      real(dp), dimension(:), pointer, intent(out) :: target_data
       logical, intent(in) :: is_static_field
       logical :: res
 
