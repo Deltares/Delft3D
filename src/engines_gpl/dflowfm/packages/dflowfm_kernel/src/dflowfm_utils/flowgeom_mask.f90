@@ -225,8 +225,8 @@ contains
       integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
       ! Local variables
+      integer :: i !< Loop variable for mask array.
       integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
-      integer, dimension(:), allocatable :: polygon_mask !< Direct mask of points selected by the polygon.
       integer :: number_of_selected_points !< The number of selected points based on the target mask file.
       integer :: point !< Loop variable for points.
       logical :: spatial_mask_applied !< Flag to indicate whether a spatial mask has already been applied to the mask array.
@@ -266,12 +266,13 @@ contains
          end select
 
          if (spatial_mask_applied) then
-            allocate (polygon_mask(size(mask)))
-            polygon_mask = 0
-            do point = 1, number_of_selected_points
-               polygon_mask(selected_points(point)) = 1
+            do i = 1, size(mask)
+               if (mask(i) == 1 .and. any(i == selected_points)) then
+                  mask(i) = 1
+               else
+                  mask(i) = 0
+               end if
             end do
-            mask = mask * polygon_mask
          else
             do point = 1, number_of_selected_points
                mask(selected_points(point)) = 1
