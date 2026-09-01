@@ -112,9 +112,9 @@
                     "value_type": "string",
                     "description": "File version. Do not edit this.",
                     "status": {
-                        "value": "deprecated",
-                        "date": "2019-06-13",
-                        "comment": "Keyword has been replaced with `[general] fileVersion`."
+                        "value": "obsolete",
+                        "comment": "Use `[general] fileVersion` instead.",
+                        "since_release": 2027.01
                     }
                 },
                 {
@@ -220,7 +220,12 @@
                     "key": "iniFieldFile",
                     "default_value": "",
                     "value_type": "path",
-                    "description": "Initial and parameter field file (*.ini)."
+                    "description": "Initial and parameter field file (*.ini).",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.",
+                        "date": "2026-08-06"
+                    }
                 },
                 {
                     "key": "waterLevIniFile",
@@ -1071,7 +1076,7 @@
                     "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Use `[numerics] fixedWeirFile` instead.",
+                        "comment": "Use `[geometry] fixedWeirFile` instead.",
                         "since_release": 2022.02
                     }
                 },
@@ -1104,7 +1109,7 @@
                     "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Keyword no longer supported. Use `[geometry] frictFile` instead.",
+                        "comment": "Use `[geometry] frictFile` instead.",
                         "since_release": 2022.02
                     }
                 },
@@ -1115,7 +1120,7 @@
                     "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Keyword no longer supported. Use `[geometry] frictFile` instead.",
+                        "comment": "Use `[geometry] storageNodeFile` instead.",
                         "since_release": 2022.02
                     }
                 },
@@ -1421,7 +1426,7 @@
                     "description": "Relaxation on Q-h open boundaries.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Option no longer supported.",
+                        "comment": "Option no longer needed due to improved semi-implicit algorithm.",
                         "since_release": 2022.02
                     }
                 },
@@ -1607,7 +1612,7 @@
                 },
                 {
                     "key": "minTimeStepBreak",
-                    "default_value": 0.0,
+                    "default_value": 0.001,
                     "value_type": "float",
                     "description": "Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated.",
                     "unit": "s",
@@ -2609,7 +2614,7 @@
                         "value": "obsolete",
                         "comment": "Keyword no longer supported.",
                         "since_release": 2022.02
-                     }
+                    }
                 },
                 {
                     "key": "sobekdfm_umin",
@@ -2645,6 +2650,17 @@
                     }
                 },
                 {
+                    "key": "sobekdfm_relax",
+                    "default_value": 0.01,
+                    "value_type": "float",
+                    "description": "Keyword is obsolete.",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] lateral_fixedweir_relax` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
                     "key": "wridia_viscosity_diffusivity_limit",
                     "default_value": "",
                     "value_type": "string",
@@ -2656,22 +2672,22 @@
                     }
                 },
                 {
-                  "key": "maxSSC",
-                  "value_type": "float",
-                  "default_value": 1000000.0,
-                  "description": "Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)"
+                    "key": "maxSSC",
+                    "value_type": "float",
+                    "default_value": 1000000.0,
+                    "description": "Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)"
                 },
                 {
-                  "key": "perotWeightUpdate",
-                  "default_value": 0,
-                  "value_type": "int",
-                  "description": "Perot weight update option."
+                    "key": "perotWeightUpdate",
+                    "default_value": 0,
+                    "value_type": "int",
+                    "description": "Perot weight update option."
                 },
                 {
-                  "key": "perotType",
-                  "default_value": 1,
-                  "value_type": "int",
-                  "description": "Perot discretization type."
+                    "key": "perotType",
+                    "default_value": 1,
+                    "value_type": "int",
+                    "description": "Perot discretization type."
                 }
             ]
         },
@@ -3333,6 +3349,54 @@
                         "comment": "Keyword no longer supported.",
                         "since_release": 2022.02
                     }
+                },
+                {
+                    "key": "dynRoughVeg",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Switch for dynamic vegetation roughness (only in combination with friction type Manning).",
+                    "status": {
+                        "value": "research"
+                    }
+                },
+                {
+                    "key": "dRoot",
+                    "value_type": "float",
+                    "default_value": 0.5,
+                    "description": "Root depth.",
+                    "unit": "m",
+                    "status": {
+                        "value": "research"
+                    }
+                },
+                {
+                    "key": "dStem",
+                    "value_type": "float",
+                    "default_value": 0.5,
+                    "description": "Stem height.",
+                    "unit": "m",
+                    "status": {
+                        "value": "research"
+                    }
+                },
+                {
+                    "key": "unifFrictCoefNoVeg",
+                    "value_type": "float",
+                    "default_value": 0.023,
+                    "description": "Uniform friction (Manning) coefficient without vegetation.",
+                    "unit": "s/m^{1/3}",
+                    "status": {
+                        "value": "research"
+                    }
+                },
+                {
+                    "key": "dynVegPol",
+                    "value_type": "path",
+                    "default_value": "",
+                    "description": "Polygon file (*.pol) marking the area within which to apply dynamic vegetation roughness.",
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -3413,23 +3477,23 @@
                     }
                 },
                 {
-                  "key": "dredgeFile",
-                  "default_value": "",
-                  "value_type": "path",
-                  "description": "Dredging/dumping settings file (*.dad)"
+                    "key": "dredgeFile",
+                    "default_value": "",
+                    "value_type": "path",
+                    "description": "Dredging/dumping settings file (*.dad)"
                 },
                 {
-                  "key": "bndTreatment",
-                  "value_type": "intbool",
-                  "default_value": 0,
-                  "description": "Separate treatment boundary links in upwinding transports."
+                    "key": "bndTreatment",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Separate treatment boundary links in upwinding transports."
                 },
                 {
-                  "key": "sourSink",
-                  "value_type": "intenum",
-                  "default_value": 1,
-                  "description": "Switch off source or sink terms for sed advection.",
-                  "enum_values": {
+                    "key": "sourSink",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Switch off source or sink terms for sed advection.",
+                    "enum_values": {
                         "0": "off",
                         "1": "source+sink",
                         "2": "source",
@@ -3437,137 +3501,143 @@
                     }
                 },
                 {
-                  "key": "cRefCav",
-                  "value_type": "float",
-                  "default_value": 20.0,
-                  "description": "Calibration par only in jased==3, default=20.0 ( ) "
+                    "key": "cRefCav",
+                    "value_type": "float",
+                    "default_value": 20.0,
+                    "description": "Calibration par only in jased==3, default=20.0 ( ) "
                 },
                 {
-                  "key": "d50",
-                  "default_value": 0.0002,
-                  "value_type": "float",
-                  "description": "Mean Sandgrain diameter (m), e.g. 0.0001"
+                    "key": "d50",
+                    "default_value": 0.0002,
+                    "value_type": "float",
+                    "description": "Mean Sandgrain diameter (m), e.g. 0.0001"
                 },
                 {
-                  "key": "morFac",
-                  "default_value": 1.0,
-                  "value_type": "float",
-                  "description": "Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc"
+                    "key": "morFac",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Morphological acceleration factor (), bottom updates active for morfac > 0, 1.0=realtime, etc"
                 },
                 {
-                  "key": "rhoSed",
-                  "default_value": 2650.0,
-                  "value_type": "float",
-                  "description": "Mean Sandgrain rho (kg/m3) , e.g. 2650"
+                    "key": "rhoSed",
+                    "default_value": 2650.0,
+                    "value_type": "float",
+                    "description": "Mean Sandgrain rho (kg/m3) , e.g. 2650"
                 },
                 {
-                  "key": "numIntVerticalEinstein",
-                  "default_value": 10,
-                  "value_type": "int",
-                  "description": "Number of vertical intervals in Einstein integrals ( ) "
+                    "key": "numIntVerticalEinstein",
+                    "default_value": 10,
+                    "value_type": "int",
+                    "description": "Number of vertical intervals in Einstein integrals ( ) "
                 },
                 {
-                  "key": "alfaBed",
-                  "default_value": 1.0,
-                  "value_type": "float",
-                  "description": "Calibration par bed      load, default=1.0 ( ) "
+                    "key": "alfaBed",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Calibration par bed      load, default=1.0 ( ) "
                 },
                 {
-                  "key": "tMorfSpinup",
-                  "default_value": 0.0,
-                  "value_type": "float",
-                  "description": "Spin up time for morphological adaptations (s)"
+                    "key": "tMorfSpinup",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Spin up time for morphological adaptations (s)"
                 },
                 {
-                  "key": "initialSedimentConcentration",
-                  "default_value": 0.0,
-                  "value_type": "float",
-                  "description": "Initial Sediment Concentration in jased==3 (kg/m3)  "
+                    "key": "initialSedimentConcentration",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Initial Sediment Concentration in jased==3 (kg/m3)  "
                 },
                 {
-                  "key": "uniformErodableThickness",
-                  "default_value": 1.0,
-                  "value_type": "float",
-                  "description": "Uniform erodable layer thickness (m)"
+                    "key": "uniformErodableThickness",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Uniform erodable layer thickness (m)"
                 },
                 {
-                  "key": "alfaSus",
-                  "default_value": 1.0,
-                  "value_type": "float",
-                  "description": "Calibration par suspended load, default=1.0 ( ) "
+                    "key": "alfaSus",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Calibration par suspended load, default=1.0 ( ) "
                 },
                 {
-                  "key": "morCFL",
-                  "value_type": "intbool",
-                  "default_value": 1,
-                  "description": "Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)"
+                    "key": "morCFL",
+                    "value_type": "intbool",
+                    "default_value": 1,
+                    "description": "Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)"
                 },
                 {
-                  "key": "DzbDtMax",
-                  "value_type": "float",
-                  "default_value": 0.1,
-                  "description": "Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)"
+                    "key": "DzbDtMax",
+                    "value_type": "float",
+                    "default_value": 0.1,
+                    "description": "Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)"
                 },
                 {
-                  "key": "masBalMinDep",
-                  "value_type": "float",
-                  "default_value": 0.0,
-                  "description": "Minimum depth after bottom update for SSC adaptation mass balance.",
-                  "status": {
-                      "value": "obsolete",
-                      "since_release": 2027.01,
-                      "comment": "Keyword no longer supported."
-                  }
+                    "key": "masBalMinDep",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Minimum depth after bottom update for SSC adaptation mass balance.",
+                    "status": {
+                        "value": "obsolete",
+                        "since_release": 2027.01,
+                        "comment": "Keyword no longer supported."
+                    }
                 },
                 {
-                  "key": "morphoPol",
-                  "default_value": "",
-                  "value_type": "path",
-                  "description": "Only apply bed updating within specified polygon (*.pol)"
+                    "key": "morphoPol",
+                    "default_value": "",
+                    "value_type": "path",
+                    "description": "Only apply bed updating within specified polygon (*.pol)"
                 },
                 {
-                  "key": "ws",
-                  "default_value": [0.0003],
-                  "value_type": "list[float]",
-                  "description": "Fall velocity (m/s), e.g. 0.0005 m/s"
+                    "key": "ws",
+                    "default_value": [
+                        0.0003
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Fall velocity (m/s), e.g. 0.0005 m/s"
                 },
                 {
-                  "key": "erosionPar",
-                  "default_value": [0.0001],
-                  "value_type": "list[float]",
-                  "description": "Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s)"
+                    "key": "erosionPar",
+                    "default_value": [
+                        0.0001
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Krone Partheniades erosion parameter, e.g. 0.0001  (kg/(m2s)"
                 },
                 {
-                  "key": "tauCre",
-                  "default_value": [0.3],
-                  "value_type": "list[float]",
-                  "description": "Critical shear stress for erosion    (N/m2), e.g. 0.3"
+                    "key": "tauCre",
+                    "default_value": [
+                        0.3
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Critical shear stress for erosion    (N/m2), e.g. 0.3"
                 },
                 {
-                  "key": "inMorphoPol",
-                  "value_type": "intenum",
-                  "default_value": 1,
-                  "description": "Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)",
-                  "enum_values": {
-                    "0": "inside polygon no update",
-                    "1": "inside polygon yes update"
-                  }
+                    "key": "inMorphoPol",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)",
+                    "enum_values": {
+                        "0": "inside polygon no update",
+                        "1": "inside polygon yes update"
+                    }
                 },
                 {
-                  "key": "mormergeDtUser",
-                  "value_type": "intenum",
-                  "default_value": 0,
-                  "description": "Mormerge operation",
-                  "enum_values": {
-                    "0": "at dts",
-                    "1": "at dtuser timesteps"
-                  }
+                    "key": "mormergeDtUser",
+                    "value_type": "intenum",
+                    "default_value": 0,
+                    "description": "Mormerge operation",
+                    "enum_values": {
+                        "0": "at dts",
+                        "1": "at dtuser timesteps"
+                    }
                 },
                 {
-                  "key": "upperLimitSSC",
-                  "value_type": "float",
-                  "default_value": 1e-6,
-                  "description": "Upper limit of cell centre SSC concentration after transport timestep."
+                    "key": "upperLimitSSC",
+                    "value_type": "float",
+                    "default_value": 1e-6,
+                    "description": "Upper limit of cell centre SSC concentration after transport timestep."
                 }
             ]
         },
@@ -3602,9 +3672,11 @@
                 },
                 {
                     "key": "sedtrailsInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
-                    "description": "Sedtrails output, given as 'interval' 'start period' 'end period'.", 
+                    "description": "Sedtrails output, given as 'interval' 'start period' 'end period'.",
                     "status": {
                         "value": "research"
                     },
@@ -3800,27 +3872,33 @@
                     "key": "waveModelNr",
                     "default_value": 0,
                     "value_type": "intenum",
-                    "description": "Wave model nr.",
+                    "description": "Wave model number.",
                     "enum_values": {
                         "0": "none",
                         "1": "fetch/depth limited Hurdle-Stive",
                         "2": "fetch/depth limited Young-Verhagen",
-                        "3": "SWAN",
+                        "3": "online wave coupling with D-Waves",
                         "5": "uniform",
-                        "7": "Offline Wave Coupling"
+                        "7": "offline wave coupling"
                     }
                 },
                 {
-                  "key": "waveforcing",
-                  "default_value": 0,
-                  "value_type": "int",
-                  "description": "Wave forcing mode (only supported for waveModelNr = 7)."
+                    "key": "waveForcing",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Wave forcing mode (only supported for `waveModelNr` = 7).",
+                    "enum_values": {
+                        "0": "none",
+                        "1": "radiation stresses",
+                        "2": "dissipation total",
+                        "3": "dissipation 3d"
+                    }
                 },
                 {
-                  "key": "3Dwavebreakerturbulence",
-                  "value_type": "intbool",
-                  "default_value": 1,
-                  "description": "Add wave-induced production terms in turbulence modelling"
+                    "key": "3dWaveBreakerTurbulence",
+                    "value_type": "intbool",
+                    "default_value": 1,
+                    "description": "Add wave-induced production terms in turbulence modelling"
                 },
                 {
                     "key": "rouWav",
@@ -3945,6 +4023,96 @@
                     "enum_values": {
                         "0": "D3D style",
                         "1": "Guza style"
+                    }
+                },
+                {
+                    "key": "fwfac",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Factor for adjusting wave boundary layer streaming.",
+                    "unit": "-",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "ftauw",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Factor for adjusting wave-related bottom shear stress.",
+                    "unit": "-",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "fbreak",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Factor for adjusting wave breaking contribution to TKE.",
+                    "unit": "-",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "3Dwaveturbpendepth",
+                    "value_type": "float",
+                    "default_value": 1.5,
+                    "description": "Layer thickness as a proportion of hrms over which wave breaking adds to TKE source.",
+                    "unit": "-",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "fforc",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Factor for adjusting wave forces in momentum equation.",
+                    "unit": "-",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "streamLayerFac",
+                    "value_type": "float",
+                    "default_value": 3.0,
+                    "description": "Factor for adjusting streaming layer thickness in momentum equation.",
+                    "unit": "-",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_exclusive": 0.0
+                        }
                     }
                 },
                 {
@@ -4310,7 +4478,12 @@
                     "key": "extForceFile",
                     "default_value": "",
                     "value_type": "path",
-                    "description": "Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification."
+                    "description": "Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.",
+                        "date": "2026-08-06"
+                    }
                 },
                 {
                     "key": "extForceFileNew",
@@ -4463,7 +4636,7 @@
                     "description": "Writing enclosures to shape file.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Keyword no longer supported.",
+                        "comment": "Use `[output] wrishp_dryarea` instead.",
                         "since_release": 2022.02
                     }
                 },
@@ -4545,12 +4718,12 @@
                     "value_type": "path",
                     "description": "*_flowgeom.nc Flow geometry file in NetCDF format."
                 },
-               {
-                  "key": "mapOutputPolygonFile",
-                  "default_value": [],
-                  "value_type": "list[path]",
-                  "description": "Space-separated list of output polygon files to restrict map output to (e.g., *_out.pol)"
-               },
+                {
+                    "key": "mapOutputPolygonFile",
+                    "default_value": [],
+                    "value_type": "list[path]",
+                    "description": "Space-separated list of output polygon files to restrict map output to (e.g., *_out.pol)"
+                },
                 {
                     "key": "obsFile",
                     "default_value": [],
@@ -4594,7 +4767,9 @@
                 },
                 {
                     "key": "hisInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "History output, given as 'interval' 'start period' 'end period'.",
                     "unit": "s",
@@ -4618,7 +4793,9 @@
                 },
                 {
                     "key": "mapInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Map file output, given as 'interval' 'start period' 'end period'.",
                     "unit": "s",
@@ -4629,7 +4806,9 @@
                 },
                 {
                     "key": "rstInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Restart file output, given as 'interval' 'start period' 'end period'.",
                     "unit": "s",
@@ -4640,7 +4819,9 @@
                 },
                 {
                     "key": "comInterval",
-                    "default_value": [300.0],
+                    "default_value": [
+                        300.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`.",
                     "unit": "s",
@@ -5389,7 +5570,9 @@
                 },
                 {
                     "key": "avgWaveOutputInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Average wave output, given as 'interval' 'start period' 'end period'.",
                     "unit": "s",
@@ -5418,7 +5601,9 @@
                 },
                 {
                     "key": "classMapInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Interval between class map file outputs, given as 'interval' 'start period' 'end period'.",
                     "unit": "s",
@@ -5429,7 +5614,9 @@
                 },
                 {
                     "key": "waqInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Interval between DELWAQ file outputs, given as 'interval' 'start period' 'end period'.",
                     "unit": "s",
@@ -5447,7 +5634,9 @@
                 },
                 {
                     "key": "timingsInterval",
-                    "default_value": [0.0],
+                    "default_value": [
+                        0.0
+                    ],
                     "value_type": "list[float]",
                     "description": "Timings output interval.",
                     "unit": "s"
@@ -5520,6 +5709,12 @@
                     "status": {
                         "value": "research"
                     }
+                },
+                {
+                    "key": "mbaFile",
+                    "default_value": "",
+                    "value_type": "path",
+                    "description": "Space-separated input mass balance area file(s) (*_mba.ini)."
                 },
                 {
                     "key": "mbaInterval",
@@ -5844,7 +6039,7 @@
                     "description": "Process fluxes integration option.",
                     "status": {
                         "value": "obsolete",
-                        "comment": "Keyword no longer supported.",
+                        "comment": "Process fluxes integration is always done by WAQ.",
                         "since_release": 2022.02
                     },
                     "enum_values": {
