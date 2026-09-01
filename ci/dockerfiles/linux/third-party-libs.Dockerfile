@@ -333,20 +333,6 @@ make install
 popd
 EOF-esmf
 
-FROM base AS googletest
-
-RUN <<"EOF-googletest"
-set -eo pipefail
-dnf install --assumeyes gtest-devel
-
-mkdir -p /usr/local/lib
-cp /usr/lib64/libgtest.so* /usr/local/lib/
-cp /usr/lib64/libgtest_main.so* /usr/local/lib/
-
-mkdir -p /usr/local/include
-cp -r /usr/include/gtest /usr/local/include/
-EOF-googletest
-
 FROM base AS pugixml
 
 ARG DEBUG
@@ -397,5 +383,4 @@ COPY --from=uuid --link /usr/local /usr/local/
 COPY --from=metis --link /usr/local /usr/local/
 COPY --from=xerces-c --link /usr/local /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
-COPY --from=googletest --link /usr/local/ /usr/local/
 COPY --from=pugixml --link /usr/local/ /usr/local/
