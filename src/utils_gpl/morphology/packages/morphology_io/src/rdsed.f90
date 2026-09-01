@@ -80,8 +80,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                           , pointer :: d_micro
     real(fp)                           , pointer :: ustar_macro
     integer                            , pointer :: nmudfrac
-    !integer                            , pointer :: peatfrac
-    !real(fp)         , dimension(:)    , pointer :: peatflag
     integer                            , pointer :: sc_mudfac
     logical          , dimension(:)    , pointer :: cmpupdfrac
     real(fp)         , dimension(:)    , pointer :: tpsnumber
@@ -133,7 +131,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     integer          , dimension(:,:)  , pointer :: floclist
     character(20)    , dimension(:)    , pointer :: namclay
     character(20)    , dimension(:)    , pointer :: namflocpop
-    !character(40)                                :: txtput1
 !
 ! Arguments
 !
@@ -154,7 +151,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
     type(griddimtype)             , target   , intent(in)  :: griddim
-    !type(bedcomp_data)                       , pointer     :: work
 !
 ! Local variables
 !
@@ -207,8 +203,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     nflocpop             => sedpar%nflocpop
     nflocsizes           => sedpar%nflocsizes
     nmudfrac             => sedpar%nmudfrac
-    !peatfrac             => sedpar%peatfrac
-    !peatflag             => sedpar%peatflag
     sc_mudfac            => sedpar%sc_mudfac
     flocsize             => sedpar%flocsize
     floclist             => sedpar%floclist
@@ -273,7 +267,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        if (istat==0) allocate (sedpar%sedd90    (                          lsedtot), stat = istat)
        !
        if (istat==0) allocate (sedpar%cdryb     (                          lsedtot), stat = istat)
-       !if (istat==0) allocate (sedpar%peatflag  (                          lsedtot), stat = istat)
        if (istat==0) allocate (sedpar%dstar     (                          lsedtot), stat = istat)
        if (istat==0) allocate (sedpar%taucr     (                          lsedtot), stat = istat)
        if (istat==0) allocate (sedpar%tetacr    (                          lsedtot), stat = istat)
@@ -317,7 +310,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        sedd90        => sedpar%sedd90
        !
        cdryb         => sedpar%cdryb
-       !peatflag      => sedpar%peatflag
        dstar         => sedpar%dstar
        taucr         => sedpar%taucr
        tetacr        => sedpar%tetacr
@@ -876,17 +868,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           cdryb(l) = rmissval
           call prop_get(sedblock_ptr, '*', 'CDryB', cdryb(l))
           !
-          !call prop_get(mor_ptr, 'sediment peat', 'peatfrac', sedpar%peatfrac)
-          !txtput1 = 'peat fraction'       
-          !write (lundia, '(2a,i2)') txtput1, ':', sedpar%peatfrac
-          !sedpar%peatfrac = rmissval
-          !call prop_get(sedblock_ptr, 'sediment', 'peatfrac', sedpar%peatfrac)
-          
-          !peatflag(l) = rmissval
-          !call prop_get(sedblock_ptr, '*', 'peatflag', peatflag(l))
-          !txtput1 = 'peatflag'       
-          !write (lundia, '(2a,e12.4)') txtput1, ':', peatflag(l)
-          !
           ! First assume that 'IniSedThick'/'SdBUni' contains a filename
           ! If the file does not exist, assume that 'SdBUni' contains a uniform value (real)
           !
@@ -1298,7 +1279,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     logical                                  , intent(out) :: error   !< Flag=TRUE if an error is encountered
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
-    !type(bedcomp_data)                       , pointer     :: peatpar
 !
 ! Local variables
 !
@@ -1322,7 +1302,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)        , dimension(:)    , pointer :: seddm
     real(fp)        , dimension(:)    , pointer :: sedd90
     real(fp)        , dimension(:)    , pointer :: cdryb
-    !real(fp)        , dimension(:)    , pointer :: peatflag
     real(fp)        , dimension(:,:)  , pointer :: dss
     real(fp)        , dimension(:)    , pointer :: facdss
     real(fp)        , dimension(:)    , pointer :: sdbuni
@@ -1384,7 +1363,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     seddm                => sedpar%seddm
     sedd90               => sedpar%sedd90
     cdryb                => sedpar%cdryb
-    !peatflag             => peatpar%work%peatflag
     dss                  => sedpar%dss
     facdss               => sedpar%facdss
     sdbuni               => sedpar%sdbuni
@@ -1907,12 +1885,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
        end if
        txtput1 = '  Dry bed (bulk) density (CDRYB)'
        write (lundia, '(2a,e12.4)') txtput1, ':', cdryb(l)
-       
-       !txtput1 = 'peatfrac'       
-       !write (lundia, '(2a,i2)') txtput1, ':', sedpar%peatfrac
-       
-      ! txtput1 = '  peatflag'
-      ! write (lundia, '(2a,e12.4)') txtput1, ':', peatflag(l)
        
        if (flsdbd(l) /= ' ') then
           if (inisedunit(l) == 'kg/m2') then

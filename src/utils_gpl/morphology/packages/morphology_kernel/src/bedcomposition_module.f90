@@ -1371,9 +1371,10 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     kero1 = k-1
     remove = .true.
     do while (dz>0.0_fp .and. k<=nlyr)
-        mpeat = 0.0_fp
         if (peatfrac>0) then
            mpeat = msed(peatfrac, k, nm)
+        else
+           mpeat = 0.0_fp
         endif
         if (mpeat>0.0_fp) then
             ! don't erode into a peat layer with non-zero thickness
@@ -4670,7 +4671,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     real(fp), pointer  :: pard
     real(fp), pointer  :: peatthick
     real(fp)           :: para
-    real(fp)           :: mpeat
 
     !critical porosity
     real(fp)           :: critpor
@@ -5033,7 +5033,6 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp), pointer  :: pard
     real(fp), pointer  :: peatthick
     real(fp)           :: para
-    real(fp)           :: mpeat
 
     !critical porosity
     real(fp)           :: critpor
@@ -5506,9 +5505,10 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
         svmax_allowed = max(eps_sv, min(0.99_fp, svmax_allowed))
 
         ! Peat mass in layer k.
-        mpeat = 0.0_fp
         if (peatfrac > 0 .and. peatfrac <= this%settings%nfrac) then
             mpeat = msed(peatfrac, k, nm)
+        else
+            mpeat = 0.0_fp
         endif
 
         oldload = preload(k, nm)
