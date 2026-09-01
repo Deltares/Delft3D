@@ -865,8 +865,8 @@ contains
 
    end function resolve_meteo_target
 
-!> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
-!! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
+   !> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
+   !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
    function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
                                 filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
       use m_setzcs, only: setzcs
@@ -876,34 +876,45 @@ contains
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_alloc, only: reallocP
 
+      ! Arguments
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
-      real(dp), intent(in) :: target_x(:), target_y(:)
-      integer, intent(in) :: mask(:), kx, filetype, method, oper
+      real(dp), dimension(:), intent(in) :: target_x, target_y
+      integer, dimension(:), intent(in) :: mask
+      integer, intent(in) :: kx, filetype, method, oper
       integer, intent(inout) :: ec_item
-      real(dp), pointer, intent(out) :: target_data(:)
+      real(dp), dimension(:), pointer intent(out) :: target_data
       logical, intent(in) :: is_static_field
       logical :: res
 
-      integer, pointer :: pkbot(:), pktop(:)
+      ! Local variables
+      integer, dimension(:), pointer :: pkbot, pktop
 
+      ! Allocate target_data if it is a static field, otherwise set it to null. 
+      ! Else the EC module will update the array for every timestep, which is not desired for static fields.
       if (is_static_field) then
          call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
       else
          target_data => null()
       end if
+      
       call setzcs()
+
       pkbot => kbot
       pktop => ktop
 
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
+
+      ! If the field is static, read the data into target_data. If not, set ec_item to undefined.
+      ! Else the EC module will update the array for every timestep, which is not desired for static fields.
       if (is_static_field) then
          res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
                                 tunit, tstart_user, target_data)
       else
          ec_item = ec_undef_int
       end if
+
    end function read_3d_sigma_field
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
