@@ -51,7 +51,7 @@ def make_log_data(
     )
 
 
-def make_verschillentool_output3D(
+def make_verschillentool_output_3d(
     output_type: OutputType = OutputType.HIS,
     water_level: Statistics | None = None,
     flow_velocity: Statistics | None = None,
@@ -77,7 +77,7 @@ def make_verschillentool_output3D(
     )
 
 
-def make_verschillentool_output2D(
+def make_verschillentool_output_2d(
     output_type: OutputType = OutputType.HIS,
     water_level: Statistics | None = None,
     flow_velocity: Statistics | None = None,
@@ -115,12 +115,12 @@ def make_verschilanalyse_comparison(
     if reference_log_data is None:
         reference_log_data = {name: make_log_data() for name in default_models}
     if his_outputs is None:
-        his_outputs_2d = {name: make_verschillentool_output2D(output_type=OutputType.HIS) for name in default_models}
-        his_outputs_3d = {name: make_verschillentool_output3D(output_type=OutputType.HIS) for name in default_models}
+        his_outputs_2d = {name: make_verschillentool_output_2d(output_type=OutputType.HIS) for name in default_models}
+        his_outputs_3d = {name: make_verschillentool_output_3d(output_type=OutputType.HIS) for name in default_models}
         his_outputs = {**his_outputs_2d, **his_outputs_3d}
     if map_outputs is None:
-        map_outputs_2d = {name: make_verschillentool_output2D(output_type=OutputType.MAP) for name in default_models}
-        map_outputs_3d = {name: make_verschillentool_output3D(output_type=OutputType.MAP) for name in default_models}
+        map_outputs_2d = {name: make_verschillentool_output_2d(output_type=OutputType.MAP) for name in default_models}
+        map_outputs_3d = {name: make_verschillentool_output_3d(output_type=OutputType.MAP) for name in default_models}
         map_outputs = {**map_outputs_3d, **map_outputs_2d}
 
     return VerschilanalyseComparison(
@@ -133,7 +133,7 @@ def make_verschilanalyse_comparison(
     )
 
 
-def make_verschillentool_workbook3D(
+def make_verschillentool_workbook_3d(
     water_level_stats: Statistics | None = None,
     flow_velocity_stats: Statistics | None = None,
     salinity_stats: Statistics | None = None,
@@ -208,7 +208,7 @@ def make_verschillentool_workbook3D(
     return workbook
 
 
-def make_verschillentool_workbook2D(
+def make_verschillentool_workbook_2d(
     water_level_stats: Statistics | None = None,
     flow_velocity_stats: Statistics | None = None,
     row_count: int = 10,

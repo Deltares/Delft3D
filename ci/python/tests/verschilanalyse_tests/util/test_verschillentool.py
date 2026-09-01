@@ -9,7 +9,7 @@ from ci_tools.verschilanalyse.util.verschillentool import (
 from tests.helpers import verschilanalyse as helper
 
 
-def test_from_verschillentool_workbook3D() -> None:
+def test_from_verschillentool_workbook_3d() -> None:
     flow_velocity_stats = Statistics(1.0, 2.0, 3.0, 0.0)
     water_level_stats = Statistics(4.0, 5.0, 6.0, 0.0)
     salinity_stats = Statistics(1.0, 2.0, 3.0, 0.0)
@@ -35,7 +35,7 @@ def test_from_verschillentool_workbook3D() -> None:
     )
 
 
-def test_from_verschillentool_workbook2D() -> None:
+def test_from_verschillentool_workbook_2d() -> None:
     flow_velocity_stats = Statistics(1.0, 2.0, 3.0, 0.0)
     water_level_stats = Statistics(4.0, 5.0, 6.0, 0.0)
     workbook = helper.make_verschillentool_workbook2D(

@@ -92,7 +92,7 @@ def test_from_report_directories__gather_slurm_log_data_from_directories(
 
 
 @pytest.mark.parametrize("output_type", OutputType)
-def test_from_report_directories__verschillentool_output3D(
+def test_from_report_directories__verschillentool_output_3d(
     output_type: OutputType, fs: FakeFilesystem, mocker: MockerFixture
 ) -> None:
     # Arrange
@@ -126,7 +126,7 @@ def test_from_report_directories__verschillentool_output3D(
 
 
 @pytest.mark.parametrize("output_type", OutputType)
-def test_from_report_directories__verschillentool_output2D(
+def test_from_report_directories__verschillentool_output_2d(
     output_type: OutputType, fs: FakeFilesystem, mocker: MockerFixture
 ) -> None:
     # Arrange
