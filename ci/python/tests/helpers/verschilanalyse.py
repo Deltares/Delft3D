@@ -51,13 +51,39 @@ def make_log_data(
     )
 
 
-def make_verschillentool_output(
+def make_verschillentool_output3D(
+    output_type: OutputType = OutputType.HIS,
+    water_level: Statistics | None = None,
+    flow_velocity: Statistics | None = None,
+    salinity: Statistics | None = None,
+    temperature: Statistics | None = None,
+    row_count: int = 7,
+) -> VerschillentoolOutput3D:
+    """Test helper factory for `VerschillentoolOuput3D` instances.
+
+    Has default values for all parameters to make it easier to create test instances.
+    """
+    flow_velocity = flow_velocity or Statistics(0.0, 0.0, 0.0, 0.0)
+    water_level = water_level or Statistics(0.0, 0.0, 0.0, 0.0)
+    salinity = salinity or Statistics(0.0, 0.0, 0.0, 0.0)
+    temperature = temperature or Statistics(0.0, 0.0, 0.0, 0.0)
+    return VerschillentoolOutput3D(
+        output_type=output_type,
+        water_level=water_level,
+        flow_velocity=flow_velocity,
+        salinity=salinity,
+        temperature=temperature,
+        row_count=row_count,
+    )
+
+
+def make_verschillentool_output2D(
     output_type: OutputType = OutputType.HIS,
     water_level: Statistics | None = None,
     flow_velocity: Statistics | None = None,
     row_count: int = 7,
 ) -> VerschillentoolOutput2D:
-    """Test helper factory for `VerschillentoolOuput` instances.
+    """Test helper factory for `VerschillentoolOuput2D` instances.
 
     Has default values for all parameters to make it easier to create test instances.
     """
@@ -89,9 +115,13 @@ def make_verschilanalyse_comparison(
     if reference_log_data is None:
         reference_log_data = {name: make_log_data() for name in default_models}
     if his_outputs is None:
-        his_outputs = {name: make_verschillentool_output(output_type=OutputType.HIS) for name in default_models}
+        his_outputs_2d = {name: make_verschillentool_output2D(output_type=OutputType.HIS) for name in default_models}
+        his_outputs_3d = {name: make_verschillentool_output3D(output_type=OutputType.HIS) for name in default_models}
+        his_outputs = {**his_outputs_2d, **his_outputs_3d}
     if map_outputs is None:
-        map_outputs = {name: make_verschillentool_output(output_type=OutputType.MAP) for name in default_models}
+        map_outputs_2d = {name: make_verschillentool_output2D(output_type=OutputType.MAP) for name in default_models}
+        map_outputs_3d = {name: make_verschillentool_output3D(output_type=OutputType.MAP) for name in default_models}
+        map_outputs = {**map_outputs_3d, **map_outputs_2d}
 
     return VerschilanalyseComparison(
         s3_current_prefix=s3_current_prefix,
@@ -103,7 +133,82 @@ def make_verschilanalyse_comparison(
     )
 
 
-def make_verschillentool_workbook(
+def make_verschillentool_workbook3D(
+    water_level_stats: Statistics | None = None,
+    flow_velocity_stats: Statistics | None = None,
+    salinity_stats: Statistics | None = None,
+    temperature_stats: Statistics | None = None,
+    row_count: int = 10,
+    output_type: OutputType = OutputType.HIS,
+) -> openpyxl.Workbook:
+    if water_level_stats is None:
+        water_level_stats = Statistics(0.0, 0.0, 0.0, 0.0)
+    if flow_velocity_stats is None:
+        flow_velocity_stats = Statistics(0.0, 0.0, 0.0, 0.0)
+    if salinity_stats is None:
+        salinity_stats = Statistics(0.0, 0.0, 0.0, 0.0)
+    if temperature_stats is None:
+        temperature_stats = Statistics(0.0, 0.0, 0.0, 0.0)
+
+    workbook = openpyxl.Workbook()
+
+    # Write statistics sheet.
+    stats_sheet = workbook.active
+    if stats_sheet is None:
+        raise RuntimeError("active sheet is None")
+    stats_sheet.title = "Statistics"
+    if output_type == OutputType.HIS:
+        stats_sheet.append(["stations", "station_x_coordinate", "station_y_coordinate"])
+        for i in range(row_count):
+            stats_sheet.append([f"station_{i}", random.random() * 100, random.random() * 100])
+    else:
+        now = datetime.now(timezone.utc) - timedelta(days=row_count)
+        stats_sheet.append(
+            [
+                "time",
+                "sea_surface_height_bias",
+                "sea_water_level_bias",
+                "sea_water_temperature_bias",
+                "sea_water_salinity_bias ",
+            ]
+        )
+        for i in range(row_count):
+            stats_sheet.append([(now + timedelta(days=i)).isoformat(), random.random(), random.random()])
+
+    # Leave maxima sheet empty for now.
+    maxima_sheet = workbook.create_sheet(title="Maxima")
+    for row in [
+        ["", "Time", "Maximum value over all times", "layers of max"],
+        ["sea_surface_height (m)", "2-1-2035  11:00:00", water_level_stats.max, "2D variable"],
+        ["sea_water_speed (m s-1)", "2-1-2035  06:00:00", flow_velocity_stats.max, "2D variable"],
+        ["sea_water_salinity (1e-3)", "2-1-2035  11:00:00", salinity_stats.max, "3D variable"],
+        ["sea_water_temperature (degC)", "2-1-2035  06:00:00", temperature_stats.max, "3D variable"],
+    ]:
+        maxima_sheet.append(row)
+
+    # Write averages sheet.
+    averages_sheet = workbook.create_sheet(title="Averages")
+    for row in [
+        ["", "Average over all stations"],
+        ["sea_water_speed_max (m s-1)", flow_velocity_stats.avg_max],
+        ["sea_water_speed_bias (m s-1)", flow_velocity_stats.avg_bias],
+        ["sea_water_speed_rms (m s-1)", flow_velocity_stats.avg_rms],
+        ["sea_surface_height_max (m)", water_level_stats.avg_max],
+        ["sea_surface_height_bias (m)", water_level_stats.avg_bias],
+        ["sea_surface_height_rms (m)", water_level_stats.avg_rms],
+        ["sea_water_temperature_bias (degC)", temperature_stats.avg_bias],
+        ["sea_water_temperature_max (degC)", temperature_stats.avg_max],
+        ["sea_water_temperature_rms (degC)", temperature_stats.avg_rms],
+        ["sea_water_salinity_bias (1e-3)", salinity_stats.avg_bias],
+        ["sea_water_salinity_max (1e-3)", salinity_stats.avg_max],
+        ["sea_water_salinity_rms (1e-3)", salinity_stats.avg_rms],
+    ]:
+        averages_sheet.append(row)
+
+    return workbook
+
+
+def make_verschillentool_workbook2D(
     water_level_stats: Statistics | None = None,
     flow_velocity_stats: Statistics | None = None,
     row_count: int = 10,

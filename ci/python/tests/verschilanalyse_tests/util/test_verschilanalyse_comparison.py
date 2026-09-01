@@ -92,7 +92,41 @@ def test_from_report_directories__gather_slurm_log_data_from_directories(
 
 
 @pytest.mark.parametrize("output_type", OutputType)
-def test_from_report_directories__verschillentool_output(
+def test_from_report_directories__verschillentool_output3D(
+    output_type: OutputType, fs: FakeFilesystem, mocker: MockerFixture
+) -> None:
+    # Arrange
+    verschillen_dir = Path("verschillen")
+    for model_name in ("foo3d", "bar3d", "baz3d"):
+        fs.create_file(
+            verschillen_dir / f"verschil_{model_name}/{output_type.value}_output.xlsx",
+            contents="",
+        )
+
+    load_workbook_mock = mocker.patch("openpyxl.load_workbook")
+    load_workbook_mock.return_value = helper.make_verschillentool_workbook3D(output_type=output_type)
+
+    # Act
+    verschilanalyse = VerschilanalyseComparison.from_report_directories(
+        current_log_dir=Path("current_logs"),
+        reference_log_dir=Path("reference_logs"),
+        verschillen_dir=verschillen_dir,
+        s3_current_prefix="s3://bucket/latest",
+        s3_reference_prefix="s3://bucket/last-week",
+    )
+
+    # Assert
+    assert load_workbook_mock.call_count == 3
+    if output_type == OutputType.HIS:
+        assert not verschilanalyse.map_outputs
+        assert sorted(verschilanalyse.his_outputs.keys()) == ["bar3d", "baz3d", "foo3d"]
+    else:
+        assert sorted(verschilanalyse.map_outputs.keys()) == ["bar3d", "baz3d", "foo3d"]
+        assert not verschilanalyse.his_outputs
+
+
+@pytest.mark.parametrize("output_type", OutputType)
+def test_from_report_directories__verschillentool_output2D(
     output_type: OutputType, fs: FakeFilesystem, mocker: MockerFixture
 ) -> None:
     # Arrange
@@ -104,7 +138,7 @@ def test_from_report_directories__verschillentool_output(
         )
 
     load_workbook_mock = mocker.patch("openpyxl.load_workbook")
-    load_workbook_mock.return_value = helper.make_verschillentool_workbook(output_type=output_type)
+    load_workbook_mock.return_value = helper.make_verschillentool_workbook2D(output_type=output_type)
 
     # Act
     verschilanalyse = VerschilanalyseComparison.from_report_directories(
