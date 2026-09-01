@@ -2779,7 +2779,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     real(fp) , dimension(:,:)  , pointer :: svfrac
     real(fp) , dimension(:,:)  , pointer :: thlyr
     !
-    !
     ! Local variables
     !
     integer                                 :: l             !< fraction index - loop variable 
@@ -2858,14 +2857,15 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
 
     select case(this%settings%iunderlyr)
     case (BED_MIXED)
-        !
+        poros(:) = 0.0_fp
+        tcrero(:) = 1.0_fp
+        eropar(:) = 1.0_fp
+        
     case (BED_LAYERED)
         !
         ! Porosity is obtained based on transport layer only
         !
-        do nm = nmfrom, nmto
-            poros(nm) = 1.0_fp - svfrac(1, nm)
-        enddo
+        poros(:) = 1.0_fp - svfrac(1, :)
         !
         if (ierosion == EROS_CONST) then
             !
@@ -2906,6 +2906,7 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
                     ! prevous code in erosilt: tcrero = e1 * (phi_mud*rhosol) ** e2
                     ! e1 = 0.0012_fp, e2 = 1.2_fp
                     tcrero(nm) = 0.0012_fp * (phi_mud * phi_sand)**1.2_fp
+                    eropar(nm) = 1.0_fp
 
                 case (EROS_LE_HIR)
                     !
@@ -2988,6 +2989,7 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
                     else
                         tcrero(nm) = taucr_min2
                     endif
+                    eropar(nm) = 1.0_fp
 
                 endselect
             enddo

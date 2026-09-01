@@ -1071,6 +1071,10 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
              ! l <= lsed for fractions with advection-diffusion transport
              !
              dll_reals(RP_SETVL) = real(ws(nm, kbed, l)  ,hp) ! Vertical velocity near bedlevel
+             if (iconsolidate == CONSOL_NONE) then
+                dll_reals(RP_POROS) = 1.0_hp - real(cdryb(l)/rhosol(l), hp)
+             endif
+             !
              if (flmd2l) then
                  localpar(11) = entr(nm)
              endif

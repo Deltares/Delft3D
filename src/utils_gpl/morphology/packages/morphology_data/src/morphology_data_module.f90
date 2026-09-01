@@ -143,8 +143,7 @@ module morphology_data_module
    integer, parameter, public :: RP_DM = 54 ! median sediment diameter of particle size mix of the part of the bed exposed to transport [m]
    integer, parameter, public :: RP_ZB = 55 ! bed level (positive up) [m]
    integer, parameter, public :: RP_TAUCR = 56 ! critical shear stress of bed material [N/m2]
-   integer, parameter, public :: RP_DBG = 57 ! debug array value from eqtran [-]
-   integer, parameter, public :: MAX_RP = 57 ! maximum number of real parameters
+   integer, parameter, public :: MAX_RP = 56 ! maximum number of real parameters
 !
    integer, parameter, public :: IP_NM = 1 ! local (i.e. within partition) cell index
    integer, parameter, public :: IP_N = 2 ! local (i.e. within partition) fastest dimension index -- only for structured mesh models

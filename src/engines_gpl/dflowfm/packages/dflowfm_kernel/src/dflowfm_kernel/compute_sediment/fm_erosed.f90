@@ -105,7 +105,7 @@ contains
                              cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
                              frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
       use m_fm_erosed, only: difparam, seddif_cal
-      use m_fm_erosed, only: poros, tcrero_bed, eropar_bed, iconsolidate
+      use m_fm_erosed, only: poros, tcrero_bed, eropar_bed, iconsolidate, CONSOL_NONE
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -215,7 +215,6 @@ contains
       real(fp) :: vmean
       real(fp) :: z0rou
       real(fp) :: zvelb
-      real(fp) :: tporos
       real(fp) :: wstau ! dummy for erosilt
       real(fp), dimension(:), allocatable :: evel ! erosion velocity [m/s]
       real(fp), dimension(0:kmax2d) :: dcww2d
@@ -918,11 +917,7 @@ contains
          dll_reals(RP_VMEAN) = real(vmean, hp)
          dll_reals(RP_VELMN) = real(velm, hp)
          dll_reals(RP_USTAR) = real(ustarc, hp)
-         if (iconsolidate > 0) then
-            dll_reals(RP_POROS) = real(poros(nm), hp)
-         else
-            dll_reals(RP_POROS) = 0.0_dp ! RP_POROS will be set later
-         endif
+         dll_reals(RP_POROS) = real(poros(nm), hp)
          dll_reals(RP_BLCHG) = real(dzbdt(nm), hp) ! for dilatancy
          dll_reals(RP_DZDX) = real(dzdx(nm), hp) ! for dilatancy
          dll_reals(RP_DZDY) = real(dzdy(nm), hp) ! for dilatancy
@@ -1122,12 +1117,8 @@ contains
             dll_reals(RP_DSS) = real(tdss, hp)
             dll_reals(RP_DSTAR) = real(dstar(l), hp)
             dll_reals(RP_SETVL) = real(twsk, hp) ! Settling velocity near bedlevel
-            !
-            ! Calculate bed porosity for dilatancy
-            !
-            if (iconsolidate == 0) then
-               tporos = 1.0_dp - cdryb(l)/rhosol(l)
-               dll_reals(RP_POROS) = real(tporos  ,hp)
+            if (iconsolidate == CONSOL_NONE) then
+               dll_reals(RP_POROS) = 1.0_hp - real(cdryb(l)/rhosol(l), hp)
             endif
             !
             localpar(1) = ag
