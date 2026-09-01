@@ -104,7 +104,7 @@ def test_from_report_directories__verschillentool_output_3d(
         )
 
     load_workbook_mock = mocker.patch("openpyxl.load_workbook")
-    load_workbook_mock.return_value = helper.make_verschillentool_workbook3D(output_type=output_type)
+    load_workbook_mock.return_value = helper.make_verschillentool_workbook_3d(output_type=output_type)
 
     # Act
     verschilanalyse = VerschilanalyseComparison.from_report_directories(
@@ -138,7 +138,7 @@ def test_from_report_directories__verschillentool_output_2d(
         )
 
     load_workbook_mock = mocker.patch("openpyxl.load_workbook")
-    load_workbook_mock.return_value = helper.make_verschillentool_workbook2D(output_type=output_type)
+    load_workbook_mock.return_value = helper.make_verschillentool_workbook_2d(output_type=output_type)
 
     # Act
     verschilanalyse = VerschilanalyseComparison.from_report_directories(

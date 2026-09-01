@@ -172,13 +172,13 @@ def test_make_summary_page__model_run_table() -> None:
 @pytest.mark.parametrize("output_type", OutputType)
 def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
     # Arrange
-    foo_output = helper.make_verschillentool_output2D(  # All variables within tolerance.
+    foo_output = helper.make_verschillentool_output_2d(  # All variables within tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, -1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, -1e-6),
         row_count=42,
     )
-    bar_output = helper.make_verschillentool_output2D(  # Flow velocity above tolerance.
+    bar_output = helper.make_verschillentool_output_2d(  # Flow velocity above tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, -1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, 1e-6),

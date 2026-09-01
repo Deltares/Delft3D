@@ -58,13 +58,13 @@ def test_make_summary_workbook__log_comparisons() -> None:
 def test_make_summary_workbook(output_type: OutputType) -> None:
     # Arrange
     red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
-    foo_output = helper.make_verschillentool_output2D(  # All stats within tolerance.
+    foo_output = helper.make_verschillentool_output_2d(  # All stats within tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=-1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=-1e-6),
         row_count=42,
     )
-    bar_output = helper.make_verschillentool_output2D(  # All stats over tolerance.
+    bar_output = helper.make_verschillentool_output_2d(  # All stats over tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=1e-6),
