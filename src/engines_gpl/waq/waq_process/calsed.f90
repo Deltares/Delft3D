@@ -159,7 +159,7 @@ contains
 
                 fpom = 1.0
                 if ( usepom ) then
-                    fpom = max( 1.0, ( pom / pom_crit ) ** pom_crit )
+                    fpom = max( 1.0, ( pom / pom_crit ) ** pom_exp )
                 endif
 
                 !     Bereken VSED
