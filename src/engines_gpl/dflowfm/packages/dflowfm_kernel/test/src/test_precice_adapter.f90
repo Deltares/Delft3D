@@ -48,7 +48,7 @@ contains
    !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_fm_administration, test_adapter_add_to_fm_administration,
    subroutine test_adapter_add_to_fm_administration() bind(C)
       use m_flow_geominit, only: flow_geominit
-      use m_cellmask_from_polygon_set, only: t_netcell_set
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use precice_adapter
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_alloc, only: realloc
@@ -56,7 +56,6 @@ contains
 
       type(t_grid_helper) :: grid_helper
       type(precice_adapter_t) :: adapter
-      type(t_netcell_set) :: netcell_cache
       integer :: expected_sink_cell
       integer :: expected_source_cell
 
@@ -71,9 +70,10 @@ contains
          )
       call flow_geominit(0)
 
-      netcell_cache = t_netcell_set()
-      expected_sink_cell = netcell_cache%find_netcell(5.0_dp, 5.0_dp)
-      expected_source_cell = netcell_cache%find_netcell(15.0_dp, 7.0_dp)
+      call init_cell_geom_as_polylines()
+      expected_sink_cell = point_find_netcell(5.0_dp, 5.0_dp)
+      expected_source_cell = point_find_netcell(15.0_dp, 7.0_dp)
+      call cleanup_cell_geom_polylines()
 
       ! Setup adapter
       call precice_adapter_allocate_read_arrays(adapter, 1)
@@ -104,6 +104,7 @@ contains
       call f90_assert_near(source_sink_all_discharges(1, 1), 9.10_dp, 1e-5_dp, "Unexpected source_sink_all_discharges(1, 1) in source sinks"//c_null_char)
 
       ! Cleanup
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
       call precice_adapter_deallocate_read_arrays(adapter)
       call resetfullflowmodel()

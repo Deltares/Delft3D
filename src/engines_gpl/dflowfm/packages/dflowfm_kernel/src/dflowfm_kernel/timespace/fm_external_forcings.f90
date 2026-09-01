@@ -42,8 +42,8 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
-      allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
+      public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
+         allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -2752,15 +2752,14 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
-      use m_cellmask_from_polygon_set, only: t_netcell_set
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
-      type(t_storage), dimension(:), pointer :: stors
-      type(t_netcell_set) :: netcell_cache
+      type(t_storage), pointer :: stors(:)
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -3125,17 +3124,19 @@ contains
                end if
             end do
          end if
-         netcell_cache = t_netcell_set()
+         call init_cell_geom_as_polylines()
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
-               ja = netcell_cache%find_netcell(Xz(n), Yz(n))
+               ja = point_find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
          !$OMP END PARALLEL DO
+         call cleanup_cell_geom_polylines()
+
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)

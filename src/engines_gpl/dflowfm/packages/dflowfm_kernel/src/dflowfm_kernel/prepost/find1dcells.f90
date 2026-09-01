@@ -50,7 +50,7 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-      use m_cellmask_from_polygon_set, only: t_netcell_set
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
       implicit none
 
@@ -60,21 +60,22 @@ contains
       logical :: Lisnew
       integer :: ierror
       integer :: nump1d
-      type(t_netcell_set) :: netcell_cache
 
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
-      netcell_cache = t_netcell_set()
+      call init_cell_geom_as_polylines()
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D
          if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
-            left_2D_cells(L) = netcell_cache%find_netcell(Xk(KN(1, L)), Yk(KN(1, L)))
-            right_2D_cells(L) = netcell_cache%find_netcell(Xk(KN(2, L)), Yk(KN(2, L)))
+            left_2D_cells(L) = point_find_netcell(Xk(KN(1, L)), Yk(KN(1, L)))
+            right_2D_cells(L) = point_find_netcell(Xk(KN(2, L)), Yk(KN(2, L)))
          end if
       end do
       !$OMP END PARALLEL DO
+      call cleanup_cell_geom_polylines()
+
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES
 

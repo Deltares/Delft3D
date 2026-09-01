@@ -27,9 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-!> module containing various functions that test whether a point or a line lie inside polygons.
 module m_cellmask_from_polygon_set
-   use iso_fortran_env, only: int64
    use m_missing, only: jins, dmiss
    use precision, only: dp
 
@@ -37,120 +35,55 @@ module m_cellmask_from_polygon_set
 
    private
 
-   public :: t_netcell_set, t_polygon_set
+   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
+   public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+   public :: find_cells_crossed_by_polyline
 
-   !> Type describing geometry of a polygon set. Contains coordinates, bounding boxes, and enclosure flags.
-   type, private :: t_polygon_geometry
-      real(kind=dp), dimension(:), allocatable :: x, y !< polygon x and y coordinates, separated by dmiss.
-      real(kind=dp), dimension(:), allocatable :: x_min, y_min, x_max, y_max !< Polygon bounds; size `polygon_count`.
-      logical, dimension(:), allocatable :: is_enclosure !< Whether each polygon defines an enclosure; size `polygon_count`.
-      integer, dimension(:), allocatable :: polygon_start, polygon_end !< Start and end packed-array index; size `polygon_count`.
-      integer :: polygon_count = 0 !< Number of polygons in the geometry.
-      logical :: enclosures_present = .false. !< Whether the geometry contains at least one enclosure polygon.
-   end type t_polygon_geometry
+   real(kind=dp), allocatable, dimension(:) :: xpl_cache
+   real(kind=dp), allocatable, dimension(:) :: ypl_cache
+   real(kind=dp), allocatable, dimension(:) :: zpl_cache
+   integer :: npl_cache = 0 !< Number of points in the cached polygon arrays, including dmiss separators
 
-   interface t_polygon_geometry
-      module procedure construct_polygon_geometry
-   end interface t_polygon_geometry
-
-   !> Index of polygon edges grouped into horizontal bands for point-in-polygon ray casting.
-   !! Each polygon's y-range is divided into its own set of latitude bins. The number of each edge is
-   !! stored in every bin between its lowest and highest y-coordinate. A point query then ray-casts
-   !! against the edges listed in the bin containing the point, instead of scanning the whole polygon.
-   !! All polygons share a single flat CSR storage; global bin indices identify positions in that storage.
-   type, private :: t_binned_edge_index
-      private
-      integer, dimension(:), allocatable :: polygon_bin_start !< First bin in flat storage per polygon; size `polygon_count`.
-      integer, dimension(:), allocatable :: polygon_num_bins !< Number of horizontal bins per polygon; size `polygon_count`.
-      integer, dimension(:), allocatable :: bin_offsets !< Start of each bin in `edge_indices`; size `total_bins + 1`.
-      integer, dimension(:), allocatable :: edge_indices !< Polygon-local edge numbers grouped by bin.
-      real(kind=dp), dimension(:), allocatable :: polygon_bin_scale !< Factor mapping y-coordinates to bins; size `polygon_count`.
-   contains
-      procedure :: point_is_inside => binned_edge_index_point_is_inside
-      procedure, private :: populate_bin_storage => binned_edge_index_populate_bin_storage
-      procedure, private :: count_edge_memberships => binned_edge_index_count_edge_memberships
-      procedure, private :: count_edges_per_bin => binned_edge_index_count_edges_per_bin
-      procedure, private :: edge_bin_range => binned_edge_index_edge_bin_range
-      procedure, nopass, private :: get_bin => binned_edge_index_get_bin
-   end type t_binned_edge_index
-
-   interface t_binned_edge_index
-      module procedure construct_binned_edge_index
-   end interface t_binned_edge_index
-
-   !> polygon set including geometry and optional latitude-binned edge index for fast point-in-polygon tests.
-   type :: t_polygon_set
-      private
-      type(t_polygon_geometry) :: geometry !< polygon coordinates and metadata.
-      type(t_binned_edge_index) :: edge_index !< Optional latitude-binned ray-casting index for enclosure polygon sets.
-   contains
-      procedure :: is_masked => polygon_set_is_masked
-      procedure, private :: polygon_contains_point => polygon_set_polygon_contains_point
-   end type t_polygon_set
-
-   interface t_polygon_set
-      module procedure construct_polygon_set
-   end interface t_polygon_set
-
-   !> Special version of a polygon set where every netcell becomes a polygon. Used for finding netcells based on coordinates.
-   type :: t_netcell_set
-      private
-      type(t_polygon_set) :: polygons !< Polygon set created from netcell geometry.
-   contains
-      procedure :: find_netcell => netcell_set_find_netcell
-      procedure :: find_cells_crossed_by_polyline => netcell_set_find_cells_crossed_by_polyline
-   end type t_netcell_set
-
-   interface t_netcell_set
-      module procedure construct_netcell_set
-   end interface t_netcell_set
-
-   integer, parameter :: max_edge_bins = 1024 !< Maximum number of latitude bins per polygon, capped to prevent excessive memory usage.
-   integer(kind=int64), parameter :: max_memberships_per_edge = 8_int64 !< Memory/work cap for vertically long edges, to prevent excessive memory usage.
+   integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
+   real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
+   real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates, (dim = polygons)
+   real(kind=dp), allocatable :: polygon_type(:) !< Polygon type, positive or dmiss = drypoint , negative = enclosure (dim = polygons)
+   integer, allocatable :: i_poly_start(:), i_poly_end(:) !< Polygon start and end indices in coordinate arrays (dim = polygons)
+   logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
+   logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
 
 contains
 
-   !> Construct a consistent polygon cache from packed coordinates separated by missing values.
-   function construct_polygon_set(x_poly, y_poly, z_poly, enable_binning) result(cache)
-      real(kind=dp), dimension(:), intent(in) :: x_poly, y_poly, z_poly !< Packed polygon coordinate arrays.
-      logical, intent(in) :: enable_binning !< Whether to build a latitude-binned edge index for large polygon sets.
-      type(t_polygon_set) :: cache
-
-      cache%geometry = t_polygon_geometry(x_poly, y_poly, z_poly)
-      if (enable_binning .and. cache%geometry%polygon_count > 0) then
-         cache%edge_index = t_binned_edge_index(cache%geometry)
-      end if
-
-   end function construct_polygon_set
-
-   !> Construct polygon geometry and metadata from packed coordinates separated by missing values.
-   function construct_polygon_geometry(x_poly, y_poly, z_poly) result(geometry)
+   !> Initialize module-level cellmask polygon data structures, such as the bounding boxes, cache and iistart/iiend
+   ! this keeps the actual calculation routines elemental.
+   subroutine cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
       use m_alloc
       use geometry_module, only: get_startend
 
-      real(kind=dp), dimension(:), intent(in) :: x_poly, y_poly, z_poly !< Packed polygon coordinate arrays.
-      type(t_polygon_geometry) :: geometry
+      integer, intent(in) :: polygon_points !< Number of polygon points
+      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
 
-      integer :: i_point, i_start, i_end, i_poly, polygon_points
+      integer :: i_point, i_start, i_end, i_poly
 
-      polygon_points = size(x_poly)
-      call realloc(geometry%x, polygon_points, keepExisting=.false.)
-      call realloc(geometry%y, polygon_points, keepExisting=.false.)
-      geometry%x = x_poly
-      geometry%y = y_poly
+      if (cellmask_initialized) then
+         call cellmask_from_polygon_set_cleanup()
+      end if
+
+      call init_geom_cache(polygon_points, x_poly, y_poly, z_poly)
 
       if (polygon_points == 0) then
+         cellmask_initialized = .true.
          return
       end if
 
       !> allocate maximum size arrays
-      call realloc(geometry%x_min, polygon_points, keepExisting=.false.)
-      call realloc(geometry%x_max, polygon_points, keepExisting=.false.)
-      call realloc(geometry%y_min, polygon_points, keepExisting=.false.)
-      call realloc(geometry%y_max, polygon_points, keepExisting=.false.)
-      call realloc(geometry%polygon_start, polygon_points, keepExisting=.false.)
-      call realloc(geometry%polygon_end, polygon_points, keepExisting=.false.)
-      call realloc(geometry%is_enclosure, polygon_points, keepExisting=.false.)
+      call realloc(x_poly_min, polygon_points, keepExisting=.false.)
+      call realloc(x_poly_max, polygon_points, keepExisting=.false.)
+      call realloc(y_poly_min, polygon_points, keepExisting=.false.)
+      call realloc(y_poly_max, polygon_points, keepExisting=.false.)
+      call realloc(i_poly_start, polygon_points, keepExisting=.false.)
+      call realloc(i_poly_end, polygon_points, keepExisting=.false.)
+      call realloc(polygon_type, polygon_points, keepExisting=.false.)
 
       i_point = 1
       i_poly = 0
@@ -167,86 +100,137 @@ contains
             exit
          end if
 
-         geometry%x_min(i_poly) = minval(x_poly(i_start:i_end))
-         geometry%x_max(i_poly) = maxval(x_poly(i_start:i_end))
-         geometry%y_min(i_poly) = minval(y_poly(i_start:i_end))
-         geometry%y_max(i_poly) = maxval(y_poly(i_start:i_end))
+         x_poly_min(i_poly) = minval(x_poly(i_start:i_end))
+         x_poly_max(i_poly) = maxval(x_poly(i_start:i_end))
+         y_poly_min(i_poly) = minval(y_poly(i_start:i_end))
+         y_poly_max(i_poly) = maxval(y_poly(i_start:i_end))
 
-         geometry%polygon_start(i_poly) = i_start
-         geometry%polygon_end(i_poly) = i_end
-         geometry%is_enclosure(i_poly) = z_poly(i_start) /= dmiss .and. z_poly(i_start) <= 0.0_dp
+         i_poly_start(i_poly) = i_start
+         i_poly_end(i_poly) = i_end
+         polygon_type(i_poly) = z_poly(i_start)
 
          i_point = i_end + 2
       end do
 
-      geometry%polygon_count = i_poly
+      polygons = i_poly
 
       !> resize arrays to actual number of polygons
-      call realloc(geometry%x_min, geometry%polygon_count, keepExisting=.true.)
-      call realloc(geometry%x_max, geometry%polygon_count, keepExisting=.true.)
-      call realloc(geometry%y_min, geometry%polygon_count, keepExisting=.true.)
-      call realloc(geometry%y_max, geometry%polygon_count, keepExisting=.true.)
-      call realloc(geometry%polygon_start, geometry%polygon_count, keepExisting=.true.)
-      call realloc(geometry%polygon_end, geometry%polygon_count, keepExisting=.true.)
-      call realloc(geometry%is_enclosure, geometry%polygon_count, keepExisting=.true.)
-      geometry%enclosures_present = any(geometry%is_enclosure)
+      call realloc(x_poly_min, polygons, keepExisting=.true.)
+      call realloc(x_poly_max, polygons, keepExisting=.true.)
+      call realloc(y_poly_min, polygons, keepExisting=.true.)
+      call realloc(y_poly_max, polygons, keepExisting=.true.)
+      call realloc(i_poly_start, polygons, keepExisting=.true.)
+      call realloc(i_poly_end, polygons, keepExisting=.true.)
+      call realloc(polygon_type, polygons, keepExisting=.true.)
 
-   end function construct_polygon_geometry
+      ! check if there are any enclosure polygons
+      do i_poly = 1, polygons
+         if (polygon_type(i_poly) < 0.0_dp .and. polygon_type(i_poly) /= dmiss) then
+            enclosures_present = .true.
+            exit
+         end if
+      end do
+      cellmask_initialized = .true.
+
+   end subroutine cellmask_from_polygon_set_init
 
    !> Check if a point should be masked, either is_inside a dry-area polygon or outside an enclosure polygon.
-   elemental function polygon_set_is_masked(self, x, y) result(is_masked)
-      class(t_polygon_set), intent(in) :: self !< Polygon set to query.
+   elemental function cellmask_from_polygon_set(x, y) result(mask)
+
+      integer :: mask
       real(kind=dp), intent(in) :: x, y !< Point coordinates
-      logical :: is_masked !< Whether the point should be masked.
 
-      integer :: count_drypoint, i_poly
+      integer :: count_drypoint, i_poly, num_enclosures
       logical :: found_inside_enclosure, is_inside
+      real(kind=dp) :: z_poly_val
 
-      associate (geometry => self%geometry)
-         count_drypoint = 0
-         found_inside_enclosure = .false.
+      mask = 0
+      if (.not. cellmask_initialized) then
+         return
+      end if
 
-         ! Single loop over all polygons
-         do i_poly = 1, geometry%polygon_count
-            ! Bounding box check
-            if (x < geometry%x_min(i_poly) .or. x > geometry%x_max(i_poly) .or. &
-                y < geometry%y_min(i_poly) .or. y > geometry%y_max(i_poly)) then
-               cycle
-            end if
+      num_enclosures = 0
+      count_drypoint = 0
+      found_inside_enclosure = .false.
+      is_inside = .false.
 
-            ! Point-in-polygon test
-            is_inside = self%polygon_contains_point(x, y, i_poly)
+      ! Single loop over all polygons
+      do i_poly = 1, polygons
+         z_poly_val = polygon_type(i_poly)
 
+         ! Bounding box check
+         if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
+             y < y_poly_min(i_poly) .or. y > y_poly_max(i_poly)) then
+            cycle
+         end if
+
+         ! Point-in-polygon test
+         is_inside = pinpok_elemental(x, y, i_poly)
+
+         if (z_poly_val == dmiss .or. z_poly_val > 0.0_dp) then
+            ! Dry point polygon
             if (is_inside) then
-               if (geometry%is_enclosure(i_poly)) then
-                  found_inside_enclosure = .true.
-               else
-                  count_drypoint = count_drypoint + 1
-               end if
+               count_drypoint = count_drypoint + 1
             end if
-         end do
-
-         ! Apply odd-even rule only if counting was needed
-         if (jins == 1) then
-            is_masked = mod(count_drypoint, 2) == 1
-         else
-            is_masked = mod(count_drypoint, 2) == 0
+         else if (z_poly_val < 0.0_dp .and. is_inside) then
+            found_inside_enclosure = .true.
          end if
+      end do
 
-         ! if an enclosure is present, the point must lie is_inside at least one
-         ! NOTE: this means we do not handle nested enclosure polygons.
-         if (geometry%enclosures_present .and. .not. found_inside_enclosure) then
-            is_masked = .true.
+      ! Apply odd-even rule only if counting was needed
+      if (jins == 1) then
+         if (mod(count_drypoint, 2) == 1) then
+            mask = 1
          end if
-      end associate
+      else
+         if (mod(count_drypoint, 2) == 0) then
+            mask = 1
+         end if
+      end if
 
-   end function polygon_set_is_masked
+      ! if an enclosure is present, the point must lie is_inside at least one
+      ! NOTE: this means we do not handle nested enclosure polygons.
+      if (enclosures_present .and. .not. found_inside_enclosure) then
+         mask = 1
+      end if
 
-   !> Test whether a point lies inside one cached polygon.
-   elemental function polygon_set_polygon_contains_point(self, x, y, i_poly) result(is_inside)
+   end function cellmask_from_polygon_set
+
+   !> Clean up module-level cellmask polygon data structures.
+   subroutine cellmask_from_polygon_set_cleanup()
+
+      if (allocated(x_poly_min)) then
+         deallocate (x_poly_min)
+      end if
+      if (allocated(x_poly_max)) then
+         deallocate (x_poly_max)
+      end if
+      if (allocated(y_poly_min)) then
+         deallocate (y_poly_min)
+      end if
+      if (allocated(y_poly_max)) then
+         deallocate (y_poly_max)
+      end if
+      if (allocated(polygon_type)) then
+         deallocate (polygon_type)
+      end if
+      if (allocated(i_poly_start)) then
+         deallocate (i_poly_start)
+      end if
+      if (allocated(i_poly_end)) then
+         deallocate (i_poly_end)
+      end if
+
+      polygons = 0
+      cellmask_initialized = .false.
+      enclosures_present = .false.
+
+   end subroutine cellmask_from_polygon_set_cleanup
+
+!> Elemental wrapper for cellmask operations using module-level polygon arrays
+   elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
       use geometry_module, only: pinpok_raycast
 
-      class(t_polygon_set), intent(in) :: self !< Polygon set to query.
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       integer, intent(in) :: i_poly !< Polygon index
       logical :: is_inside !< Result
@@ -254,233 +238,45 @@ contains
       integer :: i_start, i_end, n_points
 
       ! Get bounds for this polygon from module arrays
-      associate (geometry => self%geometry)
-         i_start = geometry%polygon_start(i_poly)
-         i_end = geometry%polygon_end(i_poly)
-         n_points = i_end - i_start + 1
+      i_start = i_poly_start(i_poly)
+      i_end = i_poly_end(i_poly)
+      n_points = i_end - i_start + 1
 
-         if (allocated(self%edge_index%edge_indices)) then
-            is_inside = self%edge_index%point_is_inside(x, y, i_poly, geometry)
-         else
-            is_inside = pinpok_raycast(x, y, geometry%x(i_start:i_end), geometry%y(i_start:i_end), n_points)
-         end if
-      end associate
+      ! Call the shared optimized algorithm with array slice
+      is_inside = pinpok_raycast(x, y, xpl_cache(i_start:i_end), ypl_cache(i_start:i_end), n_points)
 
-   end function polygon_set_polygon_contains_point
+   end function pinpok_elemental
 
-   !> Build a horizontal-bin edge index for every polygon in a polygon set.
-   !! For each polygon, choose a bin count from its number of edges and calculate the factor that maps
-   !! its y-range to those bins. Determine the number of edge entries required by assigning every
-   !! edge to all bins crossed by its vertical range. If that storage remains below the configured
-   !! limit, allocate the shared CSR arrays and populate each bin with polygon-local edge numbers.
-   function construct_binned_edge_index(geometry) result(index)
-      type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry to index.
-      type(t_binned_edge_index) :: index
+   !> Manually init geometry cache (used for dry points, test_pol_to_cellmask)
+   subroutine init_geom_cache(npl_init, xpl_init, ypl_init, zpl_init)
+      use m_alloc
 
-      integer :: bins, i_poly, num_edges, total_bins, total_edges
-      integer(kind=int64) :: memberships, total_memberships
+      integer, intent(in) :: npl_init
+      real(kind=dp), intent(in) :: xpl_init(npl_init), ypl_init(npl_init), zpl_init(npl_init)
 
-      allocate (index%polygon_bin_start(geometry%polygon_count), index%polygon_num_bins(geometry%polygon_count), &
-                index%polygon_bin_scale(geometry%polygon_count))
-      total_edges = 0
-      total_bins = 0
-      total_memberships = 0_int64
+      call realloc(xpl_cache, npl_init, keepExisting=.false.)
+      call realloc(ypl_cache, npl_init, keepExisting=.false.)
+      call realloc(zpl_cache, npl_init, keepExisting=.false.)
 
-      do i_poly = 1, geometry%polygon_count
-         num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
-         if (geometry%y_max(i_poly) > geometry%y_min(i_poly)) then
-            bins = min(max_edge_bins, max(1, num_edges / 4))
-            index%polygon_bin_scale(i_poly) = real(bins, dp) / (geometry%y_max(i_poly) - geometry%y_min(i_poly))
-         else
-            bins = 1
-            index%polygon_bin_scale(i_poly) = 0.0_dp
-         end if
-         index%polygon_num_bins(i_poly) = bins
-         total_edges = total_edges + num_edges
-         total_bins = total_bins + bins
+      xpl_cache = xpl_init
+      ypl_cache = ypl_init
+      zpl_cache = zpl_init
+      npl_cache = npl_init
 
-         memberships = index%count_edge_memberships(geometry, i_poly, bins)
-         total_memberships = total_memberships + memberships
-      end do
 
-      ! Use direct polygon scans when storing all edge entries would exceed the memory limit.
-      if (total_memberships > max_memberships_per_edge * int(total_edges, int64)) then
-         deallocate (index%polygon_bin_start, index%polygon_num_bins, index%polygon_bin_scale)
-         return
-      end if
+   end subroutine init_geom_cache
 
-      call index%populate_bin_storage(geometry, total_bins, total_memberships)
-
-   end function construct_binned_edge_index
-
-   !> Build the flat CSR arrays that store the edge numbers belonging to every bin.
-   !! First count the edge numbers in each bin and convert those counts into offsets in `edge_indices`.
-   !! Then visit the polygon edges in polygon order and append each edge number to every bin crossed
-   !! by its vertical range. Polygon order is preserved to maintain ray-casting boundary behavior.
-   subroutine binned_edge_index_populate_bin_storage(self, geometry, total_bins, total_memberships)
-      class(t_binned_edge_index), intent(inout) :: self !< Binned edge index being constructed.
-      type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
-      integer, intent(in) :: total_bins !< Total number of bins in the polygon set.
-      integer(kind=int64), intent(in) :: total_memberships !< Total edge entries in the polygon set.
-
-      integer, dimension(max_edge_bins) :: bin_edge_counts, bin_write_positions
-      integer :: bin_first, bin_last, bins, edge, i_bin, i_poly, num_edges
-      integer :: next_bin, next_edge_entry
-
-      ! Reserve one contiguous slice of edge_indices for every bin.
-      allocate (self%bin_offsets(total_bins + 1), self%edge_indices(int(total_memberships)))
-      next_bin = 1
-      next_edge_entry = 1
-      do i_poly = 1, geometry%polygon_count
-         bins = self%polygon_num_bins(i_poly)
-         call self%count_edges_per_bin(geometry, i_poly, bins, bin_edge_counts)
-         self%polygon_bin_start(i_poly) = next_bin
-         do i_bin = 1, bins
-            self%bin_offsets(next_bin) = next_edge_entry
-            next_edge_entry = next_edge_entry + bin_edge_counts(i_bin)
-            next_bin = next_bin + 1
-         end do
-      end do
-      self%bin_offsets(total_bins + 1) = next_edge_entry
-
-      ! Insert local edge numbers into their reserved bin slices in polygon order.
-      do i_poly = 1, geometry%polygon_count
-         bins = self%polygon_num_bins(i_poly)
-         do i_bin = 1, bins
-            bin_write_positions(i_bin) = &
-               self%bin_offsets(self%polygon_bin_start(i_poly) + i_bin - 1)
-         end do
-
-         num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
-         do edge = 1, num_edges
-            call self%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
-            do i_bin = bin_first, bin_last
-               self%edge_indices(bin_write_positions(i_bin)) = edge
-               bin_write_positions(i_bin) = bin_write_positions(i_bin) + 1
-            end do
-         end do
-      end do
-
-   end subroutine binned_edge_index_populate_bin_storage
-
-   !> Count the edge entries needed to store one polygon in the bin index.
-   !! For each edge, find the first and last bin crossed by its vertical extent. Count every bin from
-   !! the first through the last, including both, because the edge number is stored once in each of
-   !! those bins. Sum these counts over all polygon edges.
-   function binned_edge_index_count_edge_memberships(self, geometry, i_poly, bins) result(memberships)
-      class(t_binned_edge_index), intent(in) :: self !< Binned edge index being constructed.
-      type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
-      integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
-      integer(kind=int64) :: memberships !< Total edge-to-bin memberships.
-
-      integer :: bin_first, bin_last, edge, num_edges
-
-      memberships = 0_int64
-      num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
-      do edge = 1, num_edges
-         call self%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
-         memberships = memberships + int(bin_last - bin_first + 1, int64)
-      end do
-   end function binned_edge_index_count_edge_memberships
-
-   !> Count how many edge numbers each bin of one polygon will contain.
-   !! Initialize all bin counts to zero. For every edge, find its first and last bin and increment the
-   !! count of each bin from the first through the last. These counts determine the CSR slice reserved
-   !! for every bin.
-   subroutine binned_edge_index_count_edges_per_bin(self, geometry, i_poly, bins, bin_counts)
-      class(t_binned_edge_index), intent(in) :: self !< Binned edge index being constructed.
-      type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
-      integer, intent(in) :: i_poly, bins !< Polygon index and number of bins.
-      integer, dimension(:), intent(out) :: bin_counts !< Edge count per bin.
-
-      integer :: bin_first, bin_last, edge, i_bin, num_edges
-
-      bin_counts(1:bins) = 0
-      num_edges = geometry%polygon_end(i_poly) - geometry%polygon_start(i_poly) + 1
-      do edge = 1, num_edges
-         call self%edge_bin_range(geometry, i_poly, edge, bins, bin_first, bin_last)
-         do i_bin = bin_first, bin_last
-            bin_counts(i_bin) = bin_counts(i_bin) + 1
-         end do
-      end do
-   end subroutine binned_edge_index_count_edges_per_bin
-
-   !> Find the first and last bin that must contain an edge number.
-   !! Obtain the edge endpoints from its polygon-local edge number, expand their minimum and maximum
-   !! y-coordinates by a floating-point tolerance, and map both values to bin numbers. The tolerance
-   !! includes an adjacent bin when a query and endpoint are numerically equal across a bin boundary.
-   pure subroutine binned_edge_index_edge_bin_range(self, geometry, i_poly, edge, bins, bin_first, bin_last)
-      class(t_binned_edge_index), intent(in) :: self !< Binned edge index being constructed.
-      type(t_polygon_geometry), intent(in) :: geometry !< Polygon geometry being indexed.
-      integer, intent(in) :: i_poly, edge, bins !< Polygon index, local edge index and number of bins.
-      integer, intent(out) :: bin_first, bin_last !< First and last intersected bins.
-
-      integer :: current_point, previous_point
-      real(kind=dp) :: lower_tolerance, lower_y, upper_tolerance, upper_y
-
-      current_point = geometry%polygon_start(i_poly) + edge - 1
-      previous_point = current_point - 1
-      if (edge == 1) then
-         previous_point = geometry%polygon_end(i_poly)
-      end if
-      lower_y = min(geometry%y(previous_point), geometry%y(current_point))
-      upper_y = max(geometry%y(previous_point), geometry%y(current_point))
-
-      ! pinpok_raycast treats y-coordinates within 2 epsilon as equal. Use a larger halo so an edge
-      ! remains a candidate when a near-equal query falls in the neighboring bin.
-      lower_tolerance = 4.0_dp * epsilon(lower_y) * max(abs(lower_y), 1.0_dp)
-      upper_tolerance = 4.0_dp * epsilon(upper_y) * max(abs(upper_y), 1.0_dp)
-      bin_first = self%get_bin(lower_y - lower_tolerance, geometry%y_min(i_poly), self%polygon_bin_scale(i_poly), bins)
-      bin_last = self%get_bin(upper_y + upper_tolerance, geometry%y_min(i_poly), self%polygon_bin_scale(i_poly), bins)
-   end subroutine binned_edge_index_edge_bin_range
-
-   !> Map a y-coordinate to a one-based bin within one polygon.
-   !! Scale the coordinate relative to the polygon's minimum y-coordinate and clamp the result to the
-   !! valid range, so endpoint tolerance halos remain within the polygon's allocated bins.
-   pure integer function binned_edge_index_get_bin(y, y_min, bin_scale, bins) result(i_bin)
-      real(kind=dp), intent(in) :: y, y_min, bin_scale !< Coordinate, polygon minimum and bin scale.
-      integer, intent(in) :: bins !< Number of bins.
-
-      i_bin = int((y - y_min) * bin_scale) + 1
-      i_bin = max(1, min(bins, i_bin))
-   end function binned_edge_index_get_bin
-
-   !> Classify a point using the polygon edges listed in its horizontal bin.
-   !! Convert the point's y-coordinate to a polygon-local bin, translate that bin to its position in
-   !! the shared CSR storage, and pass the corresponding ordered edge-number slice to `pinpok_raycast`.
-   pure function binned_edge_index_point_is_inside(self, x, y, i_poly, geometry) result(is_inside)
-      use geometry_module, only: pinpok_raycast
-
-      class(t_binned_edge_index), intent(in) :: self !< Binned edge index to query.
-      real(kind=dp), intent(in) :: x, y !< Query coordinates.
-      integer, intent(in) :: i_poly !< Polygon index in this index.
-      type(t_polygon_geometry), intent(in) :: geometry !< Cached polygon coordinates and metadata.
-      logical :: is_inside
-
-      integer :: candidate_first, candidate_last, first_point, global_bin, last_point, local_bin, num_points
-
-      first_point = geometry%polygon_start(i_poly)
-      last_point = geometry%polygon_end(i_poly)
-      num_points = last_point - first_point + 1
-
-      local_bin = self%get_bin(y, geometry%y_min(i_poly), self%polygon_bin_scale(i_poly), self%polygon_num_bins(i_poly))
-      global_bin = self%polygon_bin_start(i_poly) + local_bin - 1
-
-      candidate_first = self%bin_offsets(global_bin)
-      candidate_last = self%bin_offsets(global_bin + 1) - 1
-
-      is_inside = pinpok_raycast(x, y, geometry%x(first_point:last_point), geometry%y(first_point:last_point), num_points, &
-                                 self%edge_indices(candidate_first:candidate_last))
-   end function binned_edge_index_point_is_inside
-
-   !> Construct a polygon cache containing all net-cell geometries.
-   function construct_netcell_set() result(netcells)
+   !> Initialize xpl, ypl, zpl arrays with all netcell geometries (called once)
+   subroutine init_cell_geom_as_polylines()
       use network_data
       use m_alloc
 
-      type(t_netcell_set) :: netcells
       integer :: k, n, k1, total_points, ipoint
-      real(kind=dp), allocatable, dimension(:) :: xpl_init, ypl_init, zpl_init
+      real(kind=dp), allocatable, dimension(:) :: xpl_init, ypl_init, zpl_init      
+
+      if (cellmask_initialized) then !> reuse cellmask cache boolean
+         call cleanup_cell_geom_polylines()
+      end if
 
       ! calculate total points needed: sum(netcell(k)%n + 1) for all cells
       ! +1 for dmiss separator after each polygon
@@ -512,64 +308,66 @@ contains
          zpl_init(ipoint) = dmiss
       end do
 
-      netcells%polygons = t_polygon_set(xpl_init, ypl_init, zpl_init, enable_binning=.false.)
+      npl_cache = ipoint
 
-   end function construct_netcell_set
+      ! initialize the cellmask module with these polygons
+      ! this builds bounding boxes and polygon indices
+      call cellmask_from_polygon_set_init(npl_cache, xpl_init, ypl_init, zpl_init)
 
-!> Fast replacement for INCELLS using cached net-cell geometry.
-   elemental function netcell_set_find_netcell(self, x, y) result(k)
-      use geometry_module, only: pinpok_raycast
+   end subroutine init_cell_geom_as_polylines
 
-      class(t_netcell_set), intent(in) :: self !< Net-cell set to query.
+   !> call general polygon cleanup and restore previous polygon data
+   subroutine cleanup_cell_geom_polylines()
+      call cellmask_from_polygon_set_cleanup()
+   end subroutine cleanup_cell_geom_polylines
+
+!> Fast replacement for INCELLS using cached geometry in global polygon arrays
+   elemental function point_find_netcell(x, y) result(k)
+
       real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
       integer :: k !< cell number of enclosing netcell, or 0 if not found
 
-      integer :: first_point, i_poly, last_point, num_points
+      integer :: i_poly
       logical :: is_inside
 
       k = 0
 
-      associate (geometry => self%polygons%geometry)
-         ! Loop over all netcell polygons with fast bounding box checks
-         do i_poly = 1, geometry%polygon_count
+      ! Loop over all netcell polygons with fast bounding box checks
+      do i_poly = 1, polygons
 
-            ! Quick bbox rejection
-            if (x < geometry%x_min(i_poly) .or. x > geometry%x_max(i_poly) .or. &
-                y < geometry%y_min(i_poly) .or. y > geometry%y_max(i_poly)) then
-               cycle
-            end if
+         ! Quick bbox rejection
+         if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
+             y < y_poly_min(i_poly) .or. y > y_poly_max(i_poly)) then
+            cycle
+         end if
 
-            ! Detailed point-in-polygon check
-            first_point = geometry%polygon_start(i_poly)
-            last_point = geometry%polygon_end(i_poly)
-            num_points = last_point - first_point + 1
-            ! explicit inlined call + first point + offset passing of an explicitly sized array to help compiler.
-            is_inside = pinpok_raycast(x, y, geometry%x(first_point), geometry%y(first_point), num_points)
+         ! Detailed point-in-polygon check
+         is_inside = pinpok_elemental(x, y, i_poly)
 
-            if (is_inside) then
-               ! cell index equals polygon index
-               k = i_poly
-               return
-            end if
-         end do
-      end associate
+         if (is_inside) then
+            ! cell index equals polygon index
+            k = i_poly
+            return
+         end if
+      end do
 
-   end function netcell_set_find_netcell
+   end function point_find_netcell
 
 !> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
-   subroutine netcell_set_find_cells_crossed_by_polyline(self, xpoly, ypoly, crossed_cells, error)
+   subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
       use m_alloc, only: realloc
       use network_data, only: nump
       use m_missing, only: dmiss
 
-      class(t_netcell_set), intent(in) :: self !< Net-cell set to query.
+      implicit none
+
       real(kind=dp), dimension(:), intent(in) :: xpoly !< Polyline x-coordinates
       real(kind=dp), dimension(:), intent(in) :: ypoly !< Polyline y-coordinates
       integer, dimension(:), allocatable, intent(out) :: crossed_cells !> Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
 
       integer :: npoly, i
-      integer, dimension(:), allocatable :: cellmask !< (nump) Mask array for net cells
+      integer, allocatable :: cellmask(:) !< (nump) Mask array for net cells
 
       error = ''
 
@@ -578,30 +376,31 @@ contains
          error = 'Invalid polyline input'
          return
       end if
-
+      
       call realloc(cellmask, nump, keepexisting=.false., fill=0)
 
       ! Process each segment and put the result in cellmask
       do i = 1, npoly - 1
-         call find_cells_for_segment(self%polygons, xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
+         call find_cells_for_segment(xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
       end do
 
       crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
       if (size(crossed_cells) == 0) then !> check whether the whole polyline lies in a single cell if no boundaries were crossed
-         i = self%find_netcell(xpoly(1), ypoly(1))
+         i = point_find_netcell(xpoly(1),ypoly(1))
          if (i > 0) then
             crossed_cells = [i]
          end if
       end if
 
-   end subroutine netcell_set_find_cells_crossed_by_polyline
+   end subroutine find_cells_crossed_by_polyline
 
 !> Find all cells that a segment crosses and mark them in cellmask
-   subroutine find_cells_for_segment(cache, xa, ya, xb, yb, cellmask)
+   subroutine find_cells_for_segment(xa, ya, xb, yb, cellmask)
 
-      class(t_polygon_set), intent(in) :: cache
+      implicit none
+
       real(kind=dp), intent(in) :: xa, ya, xb, yb !< Segment endpoints
-      integer, dimension(:), intent(inout) :: cellmask !< Cell mask array: 1=crossed, 0=not crossed
+      integer, intent(inout) :: cellmask(:) !< Cell mask array: 1=crossed, 0=not crossed
 
       real(kind=dp) :: seg_xmin, seg_xmax, seg_ymin, seg_ymax
       integer :: i_poly, i_point, i_start, i_end, n_points
@@ -614,42 +413,39 @@ contains
       seg_ymin = min(ya, yb)
       seg_ymax = max(ya, yb)
 
-      associate (geometry => cache%geometry)
-         !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(i_start, i_end, n_points, i, i_point, ip1, intersects)
-         do i_poly = 1, geometry%polygon_count
-            ! Skip if already marked
-            if (cellmask(i_poly) == 1) then
-               cycle
+      !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(i_start, i_end, n_points, i, i_point, ip1, intersects)
+      do i_poly = 1, polygons
+         ! Skip if already marked
+         if (cellmask(i_poly) == 1) then
+            cycle
+         end if
+
+         ! Quick bbox rejection
+         if (seg_xmax < x_poly_min(i_poly) .or. seg_xmin > x_poly_max(i_poly) .or. &
+             seg_ymax < y_poly_min(i_poly) .or. seg_ymin > y_poly_max(i_poly)) then
+            cycle
+         end if
+
+         ! Get cached polygon geometry
+         i_start = i_poly_start(i_poly)
+         i_end = i_poly_end(i_poly)
+         n_points = i_end - i_start + 1
+
+         ! Check if segment crosses ANY edge of this cached polygon
+         do i = 0, n_points - 1
+            i_point = i_start + i
+            ip1 = i_point + 1
+            if (ip1 > i_end) ip1 = i_start ! Wrap around
+
+            intersects = line_segments_intersect(xa, ya, xb, yb, xpl_cache(i_point), ypl_cache(i_point), xpl_cache(ip1), ypl_cache(ip1))
+
+            if (intersects) then
+               cellmask(i_poly) = 1
+               exit ! No need to check other edges
             end if
-
-            ! Quick bbox rejection
-            if (seg_xmax < geometry%x_min(i_poly) .or. seg_xmin > geometry%x_max(i_poly) .or. &
-                seg_ymax < geometry%y_min(i_poly) .or. seg_ymin > geometry%y_max(i_poly)) then
-               cycle
-            end if
-
-            ! Get cached polygon geometry
-            i_start = geometry%polygon_start(i_poly)
-            i_end = geometry%polygon_end(i_poly)
-            n_points = i_end - i_start + 1
-
-            ! Check if segment crosses ANY edge of this cached polygon
-            do i = 0, n_points - 1
-               i_point = i_start + i
-               ip1 = i_point + 1
-               if (ip1 > i_end) ip1 = i_start ! Wrap around
-
-               intersects = line_segments_intersect(xa, ya, xb, yb, geometry%x(i_point), geometry%y(i_point), &
-                                                    geometry%x(ip1), geometry%y(ip1))
-
-               if (intersects) then
-                  cellmask(i_poly) = 1
-                  exit ! No need to check other edges
-               end if
-            end do
          end do
-         !$OMP END PARALLEL DO
-      end associate
+      end do
+      !$OMP END PARALLEL DO
 
    end subroutine find_cells_for_segment
 

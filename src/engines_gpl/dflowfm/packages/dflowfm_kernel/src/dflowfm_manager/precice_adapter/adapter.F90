@@ -488,21 +488,20 @@ contains
    !! TODO, optionally: lump sources/sinks in the same cell
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
-      use m_cellmask_from_polygon_set, only: t_netcell_set
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
       class(precice_adapter_t), intent(inout) :: self
       integer :: i
       integer :: sink_cell
       integer :: source_cell
-      type(t_netcell_set) :: netcell_cache
 
-      netcell_cache = t_netcell_set()
+      call init_cell_geom_as_polylines()
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       
       do i = 1, self%mesh_sources_sinks_size
-         sink_cell = netcell_cache%find_netcell(self%sinks_x(i), self%sinks_y(i))
-         source_cell = netcell_cache%find_netcell(self%sources_x(i), self%sources_y(i))
+         sink_cell = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
+         source_cell = point_find_netcell(self%sources_x(i), self%sources_y(i))
          ! sink_cell=0 and source_cell=0: 
          !    Both source and sink location are outside this domain
          !    Still this source_sink needs to be added to avoid hampering the MPI communication in D-Flow FM (see subroutine reduce_srsn)
@@ -530,6 +529,7 @@ contains
          end if
       end do
 
+      call cleanup_cell_geom_polylines()
    end subroutine precice_adapter_add_to_fm_administration
 
 end module precice_adapter
