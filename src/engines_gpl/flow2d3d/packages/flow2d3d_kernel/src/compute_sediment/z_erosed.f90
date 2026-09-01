@@ -223,8 +223,9 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer                              , pointer :: iunderlyr
     real(fp)         , dimension(:,:)    , pointer :: depfac
     real(fp)         , dimension(:,:)    , pointer :: mfluff
-    include 'flow_steps_f.inc'
     integer                              , pointer :: ithresh
+    integer                              , pointer :: iconsolidate
+    include 'flow_steps_f.inc'
 !
 ! Local parameters
 !
@@ -550,6 +551,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     wetslope            => gdp%gdmorpar%wetslope
     ithresh             => gdp%gdmorpar%ithresh
+    iconsolidate        => gdp%gdmorlyr%settings%iconsolidate
     !
     allocate (localpar (npar), stat = istat)
     !

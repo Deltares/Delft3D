@@ -233,6 +233,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: mfluff
     integer                              , pointer :: ihidexptrcrs
     integer                              , pointer :: ithresh
+    integer                              , pointer :: iconsolidate
     include 'flow_steps_f.inc'
 !
 ! Local parameters
@@ -563,6 +564,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     wetslope            => gdp%gdmorpar%wetslope
     ihidexptrcrs        => gdp%gdmorlyr%settings%ihidexptrcrs
     ithresh             => gdp%gdmorpar%ithresh
+    iconsolidate        => gdp%gdmorlyr%settings%iconsolidate
     !
     allocate (localpar (npar), stat = istat)
     !
