@@ -48,9 +48,9 @@ module fm_external_forcings
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
-   character(len=max_registered_item_id), allocatable :: registered_items(:)
+   character(len=max_registered_item_id), dimension(:), allocatable :: registered_items
    integer :: num_registered_items = 0
-   integer, allocatable :: time_dependent_spatial_field_items(:)
+   integer, dimension(:), allocatable :: time_dependent_spatial_field_items
 
    interface
       module subroutine set_external_forcings_boundaries(time, iresult)
