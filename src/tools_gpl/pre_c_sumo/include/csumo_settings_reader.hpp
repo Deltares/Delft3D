@@ -97,7 +97,7 @@ namespace pre_c_sumo
      * @brief Reads C-SUMO settings from a configuration XML file.
      *
      * Expected XML format:
-     * @include docs/full_settings_example.xml
+    * @include full_settings_example.xml
      *
      * Use @ref fromFile to construct from a path, or @ref fromString to construct
      * directly from XML text (useful in tests).

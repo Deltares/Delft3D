@@ -1,0 +1,90 @@
+// Swim lane diagram: preC-SUMO workflow showing interactions between
+// C-SUMO application, preC-SUMO adapter, and preCICE interface
+
+digraph preCSUMOSwimlanes {
+
+  rankdir=TB;
+  compound=true;
+  splines=ortho;
+  nodesep=0.2;
+  ranksep=0.08;
+  fontname="Helvetica";
+  fontsize=10;
+
+  node [shape=box, style=rounded, fontname="Helvetica", fontsize=9];
+  edge [fontname="Helvetica", fontsize=8];
+
+  // Layer 1: External C-SUMO Application (top)
+  subgraph cluster_csumo_app {
+    label="C-SUMO Application\n(External Nearfield Calc)";
+    style="rounded,filled";
+    fillcolor="#E6F0FF";
+    fontsize=10;
+    fontweight=bold;
+
+    task4 [label="4. Calculate\nNearfield\nPlume", fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
+  }
+
+  // Layer 2: preC-SUMO (combined application with two sub-boxes)
+  subgraph cluster_precsumo {
+    label="preC-SUMO";
+    style="rounded,filled";
+    fillcolor="#FFE6E6";
+    fontsize=11;
+    fontweight=bold;
+
+    // Sub-box 1: Core Logic
+    subgraph cluster_core {
+      label="Core Logic";
+      style="rounded,dashed";
+      fillcolor="#FFF5F5";
+      fontsize=9;
+
+    task1 [label="1. Read\nConfig", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+    task3 [label="3. Write\nFF2NF.xml", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+    task5 [label="5. Read\nNF2FF.xml", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+    task6 [label="6. DESA", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+    task7 [label="7. Prepare\nCloud", fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+
+    task1 -> task3 [style=dotted];
+    task3 -> task5;
+    task5 -> task6;
+    task6 -> task7;
+    }
+
+    // Sub-box 2: Interface
+    subgraph cluster_precice {
+      label="preCICE Interface";
+      style="rounded,dashed";
+      fillcolor="#F0F0F0";
+      fontsize=9;
+
+      task2 [label="2. Receive\nAmbient", fillcolor="#DDDDDD", style="rounded,filled"];
+      task7b [label="7b. Send\nto FM", fillcolor="#DDDDDD", style="rounded,filled"];
+
+      task2 -> task7b [style=invis];
+    }
+  }
+
+  // Interactions within preC-SUMO
+  task1 -> task2 [xlabel="coordinates", minlen=1];
+  task2 -> task3 [xlabel="read", minlen=1];
+  task7 -> task7b [xlabel="write"];
+
+  // Interactions with C-SUMO Application
+  task3 -> task4 [xlabel="FF2NF", constraint=false];
+  task4 -> task5 [xlabel="NF2FF", constraint=false];
+
+  // Place C-SUMO application to the left of preC-SUMO (same vertical level)
+  //rank=same; task4; task1; }
+  //sk4 -> task1 [style=invis, constraint=false, weight=200];
+
+
+  // Coupling window boundaries
+  START [label="Coupling step Start", shape=ellipse, fillcolor="#90EE90", style=filled, fontsize=8];
+  END [label="Coupling step End", shape=ellipse, fillcolor="#FFB6C1", style=filled, fontsize=8];
+  
+  START -> task1;
+  task7b -> END;
+}
+
