@@ -33,7 +33,7 @@ del /f /q cosumo\precice_debug_output.txt >del.log 2>&1
 del /f /q csumo_to_dflowfm.nc >del.log 2>&1
 del /f /q precice_debug_output.txt >del.log 2>&1
 del /f /q precice-profiling\*.* >del.log 2>&1
-rmdir /s /q precice-run/* >del.log 2>&1
+rmdir /s /q precice-run\preC-SUMO-fm >del.log 2>&1
 del /f /q del.log
 echo ... Cleaning done
 if "%cleanupOnly%"=="1" goto :eof
