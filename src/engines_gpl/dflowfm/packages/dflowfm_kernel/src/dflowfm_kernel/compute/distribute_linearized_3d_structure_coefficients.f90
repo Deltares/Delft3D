@@ -76,6 +76,7 @@ contains
             ff3(:, 0) = 0.0_dp
             do LL = Lb, Lt
                kk = ln(iup, LL)
+               ff3(:, LL - Lb + 1) = 0.0_dp
                if (genstr%au(1, L0) > 0) then
                   ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
                end if
