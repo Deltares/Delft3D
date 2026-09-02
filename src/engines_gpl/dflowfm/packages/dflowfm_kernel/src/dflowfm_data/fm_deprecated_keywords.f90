@@ -30,6 +30,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterTolerance', DEPRECATED, 'Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'IniFieldFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Grdang', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
@@ -38,9 +39,13 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'filter', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
@@ -82,7 +87,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_umin_method', OBSOLETE, 'Use [Numerics] lateral_fixedweir_umin_method instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_minimal_1d2d_embankment', OBSOLETE, 'Use [Numerics] lateral_fixedweir_1d2d_embankment instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'wridia_viscosity_diffusivity_limit', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', OBSOLETE, 'Option no longer needed due to improved semi-implicit algorithm.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'allowCoolingBelowZero', OBSOLETE, &
