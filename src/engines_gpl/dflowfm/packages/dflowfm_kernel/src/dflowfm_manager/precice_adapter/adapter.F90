@@ -326,8 +326,6 @@ contains
       call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_magnitude_weighted, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_direction, self%mesh_sources_sinks_size, keepExisting=.false.)
-      
-      write (*,*) "[DEBUG] self%mesh_sources_sinks_size = ", self%mesh_sources_sinks_size
       call realloc(self%sources_sinks_constituents, [10, self%mesh_sources_sinks_size], keepExisting=.false.)
    end subroutine precice_adapter_allocate_read_arrays
 
@@ -344,7 +342,7 @@ contains
       use precice, only: precicef_write_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, s1, kmx, ndkx
+      use m_flow, only: hs, s1, ndkx
       use m_flowgeom, only: bl, ndx2d
       use m_turbulence, only: potential_density
       use m_transport, only: NUMCONST, constituents
@@ -375,19 +373,12 @@ contains
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
       ! Constituents
-      write (*,*) "[DEBUG] NUMCONST = ", NUMCONST
-      write (*,*) "[DEBUG] ndkx = ", ndkx
-      write (*,*) "[DEBUG] kmz = ", kmx
-      write (*,*) "[DEBUG] num 3d verts  (ndx*kmx)= ", SIZE(self%vertex_ids_3d)
       do constituent_index = 1, NUMCONST
-         write (*,*) "[DEBUG] size C(", constituent_index, ",:) = ", SIZE(constituents(constituent_index,:))
-         write (*,*) "[DEBUG] name = ", trim(self%quantities%constituents(constituent_index)%standard_name)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   constituents(constituent_index,:), len(self%cell_center_mesh_3d_name), &
                                   len(trim(self%quantities%constituents(constituent_index)%standard_name)))
       end do
-      write (*, *) "[DEBUG] Done writing."
    end subroutine precice_adapter_write_data
 
 
@@ -511,11 +502,7 @@ contains
                               self%sources_momentum_direction, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_momentum_direction%standard_name)))
       ! Read constituents
-      write (*,*) "[DEBUG] self%mesh_sources_sinks_size = ", self%mesh_sources_sinks_size
       do constituent_index = 1, NUMCONST
-         write (*,*) "[DEBUG] Reading ", constituent_index
-         write (*,*) "[DEBUG] size C(", constituent_index, ",:) = ", SIZE(self%sources_sinks_constituents(constituent_index,:))
-         write (*,*) "[DEBUG] name = ", trim(self%quantities%constituents(constituent_index)%standard_name)
          call precicef_read_data(self%sources_sinks_mesh_name, &
                                  self%quantities%constituents(constituent_index)%standard_name, &
                                  self%mesh_sources_sinks_size, &
