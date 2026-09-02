@@ -88,6 +88,16 @@
     <use-data name="sources_sinks_discharge" />
     <use-data name="sources_momentum_magnitude_weighted" />
     <use-data name="sources_momentum_direction" />
+    <use-data name="C01" />
+    <use-data name="C02" />
+    <use-data name="C03" />
+    <use-data name="C04" />
+    <use-data name="C05" />
+    <use-data name="C06" />
+    <use-data name="C07" />
+    <use-data name="C08" />
+    <use-data name="C09" />
+    <use-data name="C10" />
   </mesh>
 
   <participant name="fm">
@@ -119,6 +129,16 @@
     <read-data name="sources_sinks_discharge" mesh="sources_sinks_nodes" />
     <read-data name="sources_momentum_magnitude_weighted" mesh="sources_sinks_nodes" />
     <read-data name="sources_momentum_direction" mesh="sources_sinks_nodes" />
+    <read-data name="C01" mesh="sources_sinks_nodes" />
+    <read-data name="C02" mesh="sources_sinks_nodes" />
+    <read-data name="C03" mesh="sources_sinks_nodes" />
+    <read-data name="C04" mesh="sources_sinks_nodes" />
+    <read-data name="C05" mesh="sources_sinks_nodes" />
+    <read-data name="C06" mesh="sources_sinks_nodes" />
+    <read-data name="C07" mesh="sources_sinks_nodes" />
+    <read-data name="C08" mesh="sources_sinks_nodes" />
+    <read-data name="C09" mesh="sources_sinks_nodes" />
+    <read-data name="C10" mesh="sources_sinks_nodes" />
     <export:vtu directory="precice-exports" />
   </participant>
 
@@ -153,6 +173,16 @@
     <write-data name="sources_sinks_discharge" mesh="sources_sinks_nodes" />
     <write-data name="sources_momentum_magnitude_weighted" mesh="sources_sinks_nodes" />
     <write-data name="sources_momentum_direction" mesh="sources_sinks_nodes" />
+    <write-data name="C01" mesh="sources_sinks_nodes" />
+    <write-data name="C02" mesh="sources_sinks_nodes" />
+    <write-data name="C03" mesh="sources_sinks_nodes" />
+    <write-data name="C04" mesh="sources_sinks_nodes" />
+    <write-data name="C05" mesh="sources_sinks_nodes" />
+    <write-data name="C06" mesh="sources_sinks_nodes" />
+    <write-data name="C07" mesh="sources_sinks_nodes" />
+    <write-data name="C08" mesh="sources_sinks_nodes" />
+    <write-data name="C09" mesh="sources_sinks_nodes" />
+    <write-data name="C10" mesh="sources_sinks_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells" to="csumo_2d_nodes" constraint="consistent" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells_3d" to="csumo_3d_nodes" constraint="consistent" />
     <export:vtu directory="precice-exports" />
@@ -189,6 +219,16 @@
     <exchange data="sources_sinks_discharge" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
     <exchange data="sources_momentum_magnitude_weighted" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
     <exchange data="sources_momentum_direction" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C01" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C02" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C03" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C04" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C05" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C06" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C07" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C08" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C09" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="C10" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
 
   </coupling-scheme:parallel-explicit>
 </precice-configuration>
