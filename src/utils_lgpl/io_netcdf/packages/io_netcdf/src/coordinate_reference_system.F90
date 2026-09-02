@@ -47,6 +47,8 @@ module coordinate_reference_system
          !< Projection string for Dutch RijksDriehoek system. See https://publicwiki.deltares.nl/display/NETCDF/Coordinates :
          !! "note that the default proj4 (epsg) string for the Dutch RD system (EPSG:28992 & EPSG:7415) is wrong, it contains an erroneous ellipse reference, hence the full ellipse values need to be supplied."
 
+   logical :: proj_create_failure_reported = .false.
+
    contains
 
 !!
@@ -266,9 +268,13 @@ end function get_proj_string_from_epsg
       else
          dst_x = src_x
          dst_y = src_y
-         write (message, *) 'transform_coordinates: proj_create_crs_to_crs failed. len(src)=', &
-            len_trim(src_proj_string), ', len(dst)=', len_trim(dst_proj_string)
-         call mess(LEVEL_WARN, trim(message))
+         if (.not. proj_create_failure_reported) then
+            message = 'Failed to convert projected coordinates to longitude/latitude. ' // &
+               'Check the model coordinate reference system or set NcWriteLatLon = 0 to disable longitude/latitude output. ' // &
+               'The longitude/latitude values are invalid. This warning is reported only once.'
+            call mess(LEVEL_WARN, trim(message))
+            proj_create_failure_reported = .true.
+         end if
       end if
 
       coord_trans = proj_destroy(coord_trans)
