@@ -2179,7 +2179,6 @@ contains
       call prop_get(md_ptr, 'output', 'MbaLumpSourceSinks', jambalumpsrc, success)
       call prop_get(md_ptr, 'output', 'MbaLumpProcesses', jambalumpproc, success)
 
-!    call prop_get(md_ptr, 'output', 'WaqFileBase', md_waqfilebase, success)
       ! Default basename of Delwaq files is model identifier:
       if (len_trim(md_waqfilebase) == 0) then
          md_waqfilebase = md_ident
@@ -3876,8 +3875,6 @@ contains
       end if
 
       call prop_set(prop_ptr, 'output', 'StatsInterval', ti_stat, 'Screen step output interval in seconds simulation time, if negative in seconds wall clock time')
-
-      ! call prop_set(prop_ptr, 'output', 'SnapshotDir', trim(md_snapshotdir), 'Directory where snapshots/screendumps are saved.')
 
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
