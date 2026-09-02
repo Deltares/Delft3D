@@ -11273,19 +11273,24 @@ contains
 
       call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
 
-      !
       ! Try and read as new UGRID NetCDF format
-      !
       call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       if (ierr /= dfm_noerr) then
          ! No UGRID, but just try to use the 'old' format now.
          call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       end if
-
-      if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
-         ierr = detect_proj_string(crs)
+      if (ierr /= dfm_noerr) then
+         ! An error occurred while reading the net-file; no reason to continue.
+         return
       end if
       
+      ! File reading went fine, now check the coordinate system.
+      if (crs%proj_string == ' ') then
+         ierr = detect_proj_string(crs)
+         ierr = dfm_noerr ! don't stumble over proj string detection errors
+      end if
+
+      ! Check the coordinate transformation to lat/lon if requested.
       if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
          call transform_coordinates(crs%proj_string, WGS84_PROJ_STRING, xk(1:1), yk(1:1), lonn, latn, success)
          if (.not. success) then
