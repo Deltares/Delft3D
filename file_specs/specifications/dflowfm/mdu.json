@@ -2661,6 +2661,17 @@
                     }
                 },
                 {
+                    "key": "relax",
+                    "default_value": 0.01,
+                    "value_type": "float",
+                    "description": "Keyword is obsolete.",
+                    "status": {
+                        "value": "obsolete",
+                        "comment": "Use `[numerics] lateral_fixedweir_relax` instead.",
+                        "since_release": 2022.02
+                    }
+                },
+                {
                     "key": "wridia_viscosity_diffusivity_limit",
                     "default_value": "",
                     "value_type": "string",

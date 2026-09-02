@@ -1206,6 +1206,7 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[numerics] jaEmbed1d` | Keyword no longer supported. |
 | `[numerics] jaOrgSethu` | Keyword no longer supported. |
 | `[numerics] qhRelax` | Option no longer needed due to improved semi-implicit algorithm. |
+| `[numerics] relax` | Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] sobekdfm_minimal_1d2d_embankment` | Use `[numerics] lateral_fixedweir_minimal_1d2d_embankment` instead. |
 | `[numerics] sobekdfm_relax` | Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] sobekdfm_umin` | Use `[numerics] lateral_fixedweir_umin` instead. |
