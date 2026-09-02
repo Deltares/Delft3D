@@ -46,7 +46,7 @@ integer, parameter, public :: TRACHY_MISSING_VALUE    = -88888     ! missing val
 integer, parameter, public :: TRACHY_UNDEFINED        = -99999     ! not defined
 integer, parameter, public :: TRACHY_WATERLEVEL_TYPE  = 1
 integer, parameter, public :: TRACHY_DISCHARGE_TYPE   = 2
-integer, parameter, public :: MAXFLD = 13
+integer, parameter, public :: MAXFLD = 15
 !
 ! public data types
 !

@@ -512,7 +512,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     nropar(156) = 6
     nropar(158) = 10
     nropar(159) = 6
-    nropar(160) = 11
+    nropar(160) = 13
     nropar(161) = 7
     !
     ! 201-249: Vegetation roughness predictors (linear)
@@ -1848,8 +1848,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     ntrtobs = 0
     n_q     = 0
     n_zs    = 0
-    nroupa = 12
-    !nroupa = 14
+    nroupa = 14
     do jdir = 1,nodir
        nttaru        => gdtrachy%dir(jdir)%nttaru
        nttaru = 0
