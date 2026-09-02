@@ -328,7 +328,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       ! Van Rijn 1993
       !
       call tram1(numrealpar, realpar, wave, npar, par, &
-               & num_layers_grid, bed, taucrb, &
+               & num_layers_grid, bed, &
                & tauadd, taucr0, aks, eps, camax, &
                & frac, sig, thick, ws, &
                & dicww, ltur, &

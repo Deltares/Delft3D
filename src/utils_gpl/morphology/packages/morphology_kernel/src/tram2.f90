@@ -109,7 +109,6 @@ contains
 !
 
       logical :: epspar
-      integer :: itaucr
       integer :: iopsus
       integer :: k
       integer :: subiw
@@ -129,8 +128,6 @@ contains
       real(fp) :: bakdif
       real(fp) :: betam
       real(fp) :: chezy
-      real(fp) :: cmax
-      real(fp) :: cmaxs
       real(fp) :: d10
       real(fp) :: d90
       real(fp) :: delm
@@ -145,9 +142,6 @@ contains
       real(fp) :: epsmxc
       real(fp) :: fc1
       real(fp) :: fcc
-      real(fp) :: fch1
-      real(fp) :: fclay
-      real(fp) :: fpack
       real(fp) :: fcwc
       real(fp) :: fcwt
       real(fp) :: ff
@@ -191,7 +185,6 @@ contains
       real(fp) :: ta
       real(fp) :: taubcw
       real(fp) :: tauc
-      real(fp) :: taucrb
       real(fp) :: taucr1
       real(fp) :: tauwav
       real(fp) :: tc
@@ -262,7 +255,6 @@ contains
       vonkar = real(realpar(RP_VNKAR), fp)
       z0cur = real(realpar(RP_Z0CUR), fp)
       z0rou = real(realpar(RP_Z0ROU), fp)
-      taucrb = real(realpar(RP_TAUCR),fp)
       !
       iopsus = int(par(11))
       pangle = par(12)
@@ -273,7 +265,6 @@ contains
       salmax = par(17)
       betam = par(18)
       wform = int(par(19))
-      itaucr = int(par(20))
       ! ----
       ! SANTOSS only
       sw_effects = int(par(21))
@@ -294,23 +285,6 @@ contains
          ws0 = 1.1_fp * sqrt(drho * ag * di50)
       end if
       !
-      if (itaucr == 1) then
-          fclay = 1.0_fp
-          fpack = 1.0_fp
-          fch1  = 1.0_fp
-          if (di50 < dsand) then
-             cmaxs = 0.65_fp
-             fch1  = max((dsand/di50)**gamtcr, 1.0_fp)
-             cmax  = min(max((di50/dsand)*cmaxs , 0.05_fp) , cmaxs)
-             fpack = min(cmax/cmaxs , 1.0_fp)
-          else
-             fclay = min((1.0_fp+mudfrac)**betam, 2.0_fp)
-          endif
-          taucr1 = fpack * fch1 * fclay * taucr0
-      else
-          taucr1 = taucrb
-      endif
-      !
       call bedbc2004(tp, rhowat, &
                    & h1, umod, d10, zumod, di50, &
                    & d90, z0cur, z0rou, drho, dstar, &
@@ -320,9 +294,9 @@ contains
                    & uwc, uuu, vvv, rlabda, taubcw, &
                    & hrms, delw, uon, uoff, uwbih, &
                    & delm, fc1, fw1, phicur, rksrs, &
-                   & i2d3d, mudfrac, fsilt, psi, &
+                   & i2d3d, mudfrac, fsilt, taucr1, psi, &
                    & dzduu, dzdvv, eps, camax, iopsus, &
-                   & ag, wave, tauadd, &
+                   & ag, wave, tauadd, gamtcr, betam, &
                    & awb, wform, phi_phase, r)
       realpar(RP_DSS) = real(dss, hp)
       !
