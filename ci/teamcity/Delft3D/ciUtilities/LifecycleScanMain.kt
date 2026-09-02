@@ -67,10 +67,6 @@ object LifecycleScanMain : BuildType({
 
     if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
         triggers {
-            vcs {
-                branchFilter = "+:<default>"
-                perCheckinTriggering = false
-            }
             schedule {
                 schedulingPolicy = daily {
                     hour = 3

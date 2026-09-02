@@ -56,10 +56,6 @@ object SigCi : BuildType({
 
     if (DslContext.getParameter("enable_sigrid_trigger").lowercase() == "true") {
         triggers {
-            vcs {
-                branchFilter = "+:<default>"
-                perCheckinTriggering = false
-            }
             schedule {
                 schedulingPolicy = daily {
                     hour = 3
