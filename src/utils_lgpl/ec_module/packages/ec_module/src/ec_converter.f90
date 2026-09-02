@@ -1263,6 +1263,7 @@ contains
                      valuesT(i) = valuesT1(i)
                   else if  (valuesT0(i) /= dmiss .and. valuesT1(i) == dmiss) then
                      valuesT(i) = valuesT0(i)
+!                  end if   
                   else 
                      ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
                      valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1

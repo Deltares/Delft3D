@@ -97,25 +97,29 @@ contains
 
          do i = 1, n
             call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp)
-            if (jaoutside == 1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
-               call find_nearest_1D_or_boundary_flownode_bruteforce(xx(i), yy(i), k1b)
-               if (k /= 0 .and. k1b /= 0) then
-                  d1 = dbdistance(xz(k1b), yz(k1b), xx(i), yy(i), jsferic, jasfer3D, dmiss)
-                  d2 = dbdistance(xz(k), yz(k), xx(i), yy(i), jsferic, jasfer3D, dmiss)
-                  if (d1 < d2) then
+            if (jaoutside == 1) then
+               if (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL) then
+                  call find_nearest_1D_or_boundary_flownode_bruteforce(xx(i), yy(i), k1b)
+                  if (k /= 0 .and. k1b /= 0) then
+                     d1 = dbdistance(xz(k1b), yz(k1b), xx(i), yy(i), jsferic, jasfer3D, dmiss)
+                     d2 = dbdistance(xz(k), yz(k), xx(i), yy(i), jsferic, jasfer3D, dmiss)
+                     if (d1 < d2) then
+                        k = k1b
+                     end if
+                  else if (k1b /= 0) then
                      k = k1b
                   end if
-               else if (k1b /= 0) then
-                  k = k1b
+               ! For nesting of discharge boundaries; find nearest internal point!  
+               else if  (iLocTp == INDTP_2D) then
+                  call find_nearest_2D_internal_bruteforce(xx(i), yy(i), k)
                end if
-               node_nrs_nearest(i) = 0
-               if (k /= 0) then
-                  if (nd(k)%lnx > 0) then
-                     node_nrs_nearest(i) = k
-                  end if
+            end if   
+            
+            node_nrs_nearest(i) = 0
+            if (k /= 0) then
+               if (nd(k)%lnx > 0) then
+                  node_nrs_nearest(i) = k
                end if
-            else if (jaoutside == 1 .and. iLocTp == INDTP_2D) then
-               call find_nearest_2D_internal_bruteforce(xx(i), yy(i), node_nrs_nearest(i))
             end if
             
          end do
@@ -345,17 +349,17 @@ contains
       integer, intent(out) :: node_nr_nearest !< Node number of nearest 1D or boundary flow node.
 
       real(dp)             :: dist, distmin
-      integer              :: k
+      integer              :: i_node
 
       node_nr_nearest = 0
 
       distmin = huge(1.0_dp)
       
-      do k = 1, ndxi
-          dist = dbdistance(x, y, xz(k), yz(k), jsferic, jasfer3D, dmiss)
+      do i_node = 1, ndxi
+          dist = dbdistance(x, y, xz(i_node), yz(i_node), jsferic, jasfer3D, dmiss)
           if (dist < distmin) then
               distmin = dist
-              node_nr_nearest = k
+              node_nr_nearest = i_node
           end if
       end do
 
