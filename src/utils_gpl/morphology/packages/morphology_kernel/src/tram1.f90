@@ -235,7 +235,7 @@ contains
                    & tauc, taubcw, taurat, ta, caks, &
                    & dss, eps, aksfac, rwave, &
                    & camax, rdc, rdw, iopkcw, iopsus, &
-                   & vonkar, wave, tauadd, betam, awb)
+                   & vonkar, wave, tauadd, awb)
       realpar(RP_DSS) = real(dss, hp)
       !
       ! Find bottom cell for SAND sediment calculations and store for use
