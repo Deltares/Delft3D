@@ -1,3 +1,8 @@
+module m_bedtr1993
+   implicit none
+
+contains
+
 subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
                    & h1        ,taurat    ,ustarc    ,muc       ,rhosol    , &
                    & dstar     ,ws        ,hrms      ,tp        ,teta      , &
@@ -363,3 +368,5 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
     ! end of computing bed-load transport on flat plane
     !
 end subroutine bedtr1993
+
+end module m_bedtr1993

@@ -1,3 +1,8 @@
+module m_eqsettle
+   implicit none
+
+contains
+
 subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings, &
                   & dll_integers, dll_reals, dll_strings, lundia, iform_settle, &
                   & parloc, npar, wsloc, error)
@@ -351,3 +356,5 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        wsloc = wsloc * hinset**5
     end subroutine hinset_Richardson_and_Zaki
 end subroutine eqsettle
+
+end module m_eqsettle

@@ -1,3 +1,8 @@
+module m_soursin_3d
+   implicit none
+
+contains
+
 subroutine soursin_3d(h1          ,thick0      ,thick1      ,sigsed      ,thicksed    , &
                     & r0          ,vicmol      ,sigmol      ,seddif      ,rhosol      , &
                     & caks        ,ws          ,aks         , &
@@ -165,3 +170,5 @@ subroutine soursin_3d(h1          ,thick0      ,thick1      ,sigsed      ,thicks
        sink    = ws/thick1
     endif
 end subroutine soursin_3d
+
+end module m_soursin_3d

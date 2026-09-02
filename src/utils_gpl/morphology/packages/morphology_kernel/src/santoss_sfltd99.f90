@@ -1,3 +1,8 @@
+module m_santoss_sfltd99
+   implicit none
+
+contains
+
 subroutine santoss_sfltd99(d50, sc, st, swc, swt, udeltanet, sfltc, sfltt)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -94,3 +99,5 @@ subroutine santoss_sfltd99(d50, sc, st, swc, swt, udeltanet, sfltc, sfltt)
         endif
     endif
 end subroutine santoss_sfltd99
+
+end module m_santoss_sfltd99

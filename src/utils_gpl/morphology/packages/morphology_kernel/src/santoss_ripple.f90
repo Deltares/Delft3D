@@ -1,3 +1,8 @@
+module m_santoss_ripple
+   implicit none
+
+contains
+
 subroutine santoss_ripple(d50, uwc, uwt, delta, g, aw, rh, rl)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -90,3 +95,5 @@ subroutine santoss_ripple(d50, uwc, uwt, delta, g, aw, rh, rl)
     rh = aw*mn*nn*(0.275_fp-0.022_fp*psimax**0.42_fp)
     rl = aw*ml*nl*(1.970_fp-0.440_fp*psimax**0.21_fp)
 end subroutine santoss_ripple
+
+end module m_santoss_ripple

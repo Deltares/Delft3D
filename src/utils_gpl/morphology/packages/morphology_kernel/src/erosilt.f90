@@ -1,3 +1,8 @@
+module m_erosilt
+   implicit none
+
+contains
+
 subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
                  & thick0   ,thick1    ,fixfac    ,srcmax   , &
                  & frac     ,oldmudfrac,flmd2l    ,iform    , &
@@ -284,3 +289,5 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     sourse  = sour       / thick0
     sinktot = wstau      / thick1
 end subroutine erosilt
+
+end module m_erosilt

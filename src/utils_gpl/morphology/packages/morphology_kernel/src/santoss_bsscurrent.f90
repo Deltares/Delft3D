@@ -1,3 +1,8 @@
+module m_santoss_bsscurrent
+   implicit none
+
+contains
+
 subroutine santoss_bsscurrent(i2d3d, g, d, d50, d90, delta, unet, ang, &
                & zref, rh, rl, unet_delwblt, delwblt, sc, scx, scy)
 !----- GPL ---------------------------------------------------------------------
@@ -138,3 +143,5 @@ subroutine santoss_bsscurrent(i2d3d, g, d, d50, d90, delta, unet, ang, &
     scx = sc * cos(ang*degrad)
     scy = sc * sin(ang*degrad)
 end subroutine santoss_bsscurrent
+
+end module m_santoss_bsscurrent

@@ -1,3 +1,8 @@
+module m_santoss_rrr12
+   implicit none
+
+contains
+
 subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -102,3 +107,5 @@ subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
     ! Veen (2014), eq. (B.13)
     r_ab   = 0.0517_fp*bm**3 - 0.4095_fp*bm**2 + 1.0853_fp*bm - 0.0099_fp
 end subroutine santoss_rrr12
+
+end module m_santoss_rrr12

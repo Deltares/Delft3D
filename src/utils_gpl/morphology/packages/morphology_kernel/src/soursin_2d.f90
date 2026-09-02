@@ -1,3 +1,8 @@
+module m_soursin_2d
+   implicit none
+
+contains
+
 subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
                     & ws        ,tsd       ,rsedeq    ,factsd    , &
                     & sour_ex   ,sour_im   ,sink      )
@@ -119,3 +124,4 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     endif
 end subroutine soursin_2d
 
+end module m_soursin_2d

@@ -1,3 +1,8 @@
+module m_bedbc1993
+   implicit none
+
+contains
+
 subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
                    & zumod     ,d50       ,d90       ,z0cur     ,z0rou     , &
                    & dstar     ,taucr     ,aks       ,usus      ,zusus     , &
@@ -286,3 +291,5 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
        endif
     endif
 end subroutine bedbc1993
+
+end module m_bedbc1993

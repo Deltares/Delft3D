@@ -1,3 +1,8 @@
+module m_osmom
+   implicit none
+
+contains
+
 subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
                & qbb       ,ev1b      ,ev2b      ,ev3b      ,ev5b      , &
                & od2b      ,od3b      ,od4b      )
@@ -191,3 +196,5 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
     od3b    = od3b*sqrtgh3
     od4b    = od4b*sqrtgh3*sqrtgh
 end subroutine osmom
+
+end module m_osmom

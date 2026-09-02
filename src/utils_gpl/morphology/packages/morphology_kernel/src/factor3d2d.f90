@@ -1,3 +1,8 @@
+module m_factor3d2d
+   implicit none
+
+contains
+
 subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thick     , &
                     & seddif    ,ws        ,bakdif    ,z0rou     ,h1        , &
                     & factor    )
@@ -156,3 +161,5 @@ subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thi
     !
     factor = sumcu/max(sumu, 1.0e-6_fp)
 end subroutine factor3d2d
+
+end module m_factor3d2d

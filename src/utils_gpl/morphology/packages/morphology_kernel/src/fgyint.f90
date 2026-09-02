@@ -1,3 +1,8 @@
+module m_fgyint
+   implicit none
+
+contains
+
 function fgyint(a         ,b         ,z         ,eps       ,terfgy    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -81,3 +86,5 @@ function fgyint(a         ,b         ,z         ,eps       ,terfgy    )
   200 continue
     fgyint = real(som, fp)
 end function fgyint
+
+end module m_fgyint

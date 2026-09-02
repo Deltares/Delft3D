@@ -51,6 +51,9 @@ contains
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module ! for MISSING_VALUE and various RP_* parameters
+      use m_bedbc1993, only: bedbc1993
+      use m_bedtr1993, only: bedtr1993
+      use m_calseddf1993, only: calseddf1993
       !
       implicit none
 !

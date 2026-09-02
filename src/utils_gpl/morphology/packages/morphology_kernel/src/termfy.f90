@@ -1,3 +1,8 @@
+module m_termfy
+   implicit none
+
+contains
+
 function termfy(n         ,y         ,z         )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -70,3 +75,5 @@ function termfy(n         ,y         ,z         )
               & *((teller*y**(real(n, hp) - z))/(noemer*(real(n, hp) - z)))
     endif
 end function termfy
+
+end module m_termfy

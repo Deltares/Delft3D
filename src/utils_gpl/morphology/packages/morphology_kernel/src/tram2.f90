@@ -1,4 +1,8 @@
 module m_tram2
+   use m_calseddf2004, only: calseddf2004
+   use m_bedbc2004, only: bedbc2004
+   use m_bedtr2004, only: bedtr2004
+   use m_santoss, only: santoss
    implicit none
 
 contains

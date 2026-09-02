@@ -4,6 +4,20 @@
 !! See: \ref santoss
 !!
 
+module m_santoss
+   use m_santoss_abreu, only: santoss_abreu
+   use m_santoss_bss1, only: santoss_bss1
+   use m_santoss_bss2, only: santoss_bss2
+   use m_santoss_bsscurrent, only: santoss_bsscurrent
+   use m_santoss_core, only: santoss_core
+   use m_santoss_orb, only: santoss_orb
+   use m_santoss_ripple, only: santoss_ripple
+   use m_santoss_rrr12, only: santoss_rrr12
+   use m_santoss_sfltd99, only: santoss_sfltd99
+   implicit none
+
+contains
+
 !> \anchor santoss
 !! Main routine  of the SANTOSS practical sand transport model, version 2.08
 !! Computations of the orbital motions in the nearshore morphodynamical model
@@ -490,3 +504,5 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
     deallocate(tw             , STAT = istat)
     deallocate(uorb_time_serie, STAT = istat)
 end subroutine santoss
+
+end module m_santoss

@@ -1,3 +1,8 @@
+module m_bedtr2004
+   implicit none
+
+contains
+
 subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & tp        ,teta      ,uon       ,uoff      ,uwb       , &
                    & taucr     ,delm      ,ra        ,z0cur     ,fc1       , &
@@ -460,3 +465,5 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
        qswv = 0.0_fp
     endif
 end subroutine bedtr2004
+
+end module m_bedtr2004

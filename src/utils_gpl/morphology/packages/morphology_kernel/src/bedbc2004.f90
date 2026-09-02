@@ -1,3 +1,8 @@
+module m_bedbc2004
+   implicit none
+
+contains
+
 subroutine bedbc2004(tp        ,rhowat    , &
                    & h1        ,umod      ,d10       ,zumod     ,d50       , &
                    & d90       ,z0cur     ,z0rou     ,drho      ,dstar     , &
@@ -438,3 +443,5 @@ subroutine bedbc2004(tp        ,rhowat    , &
        dss = max(dss , 0.5_fp*dsilt)
     endif
 end subroutine bedbc2004
+
+end module m_bedbc2004

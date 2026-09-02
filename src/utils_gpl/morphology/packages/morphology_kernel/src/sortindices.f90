@@ -1,3 +1,8 @@
+module m_sortindices
+   implicit none
+
+contains
+
 subroutine sortindices(nm     ,npnt   ,val    ,nmlb   ,nmub   ,increasing)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -107,3 +112,5 @@ subroutine sortindices(nm     ,npnt   ,val    ,nmlb   ,nmub   ,increasing)
     enddo
     !
 end subroutine sortindices
+
+end module m_sortindices

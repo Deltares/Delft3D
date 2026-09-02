@@ -1,3 +1,8 @@
+module m_santoss_orb
+   implicit none
+
+contains
+
 subroutine santoss_orb(nt, as_effects, tw, uorb, unet, ang, tp, &
                & rhowat, d, hw, aw, uw, uwc, uwt, uwcrepr, uwtrepr, &
                & tc, tcu, tcd, tt, ttu, ttd, uc, ut, ucx, utx, ucy, uty, &
@@ -263,3 +268,5 @@ subroutine santoss_orb(nt, as_effects, tw, uorb, unet, ang, tp, &
     deallocate(ab_ts, STAT = istat)
     deallocate(ub_ts, STAT = istat)
 end subroutine santoss_orb
+
+end module m_santoss_orb

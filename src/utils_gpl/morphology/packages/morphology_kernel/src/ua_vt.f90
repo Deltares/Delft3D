@@ -1,3 +1,8 @@
+module m_ua_vt
+   implicit none
+
+contains
+
 subroutine ua_vt(facas,      facsk,        sws,      h,   &
                & hrms,       tp,           ag,       urms,&
                & ua)
@@ -101,3 +106,5 @@ subroutine ua_vt(facas,      facsk,        sws,      h,   &
    ua = sws*(facsk*sk-facas*as)*urms   ! urms, not uorb
    
 end subroutine ua_vt
+
+end module m_ua_vt

@@ -40,6 +40,7 @@ module m_fm_bott3d
    use m_bndmorlyr, only: bndmorlyr
    use m_bermslopenudging, only: bermslopenudging
    use precision
+   use m_fluff_burial, only: fluff_burial
 
    implicit none
 

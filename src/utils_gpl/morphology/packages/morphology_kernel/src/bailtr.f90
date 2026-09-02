@@ -1,3 +1,8 @@
+module m_bailtr
+   implicit none
+
+contains
+
 subroutine bailtr(h         ,hrms      ,tp        ,thetaw    ,w         , &
                 & dzdx      ,dzdy      ,sbksi     ,sbeta     ,ssksi     , &
                 & sseta     ,epssl     ,faca      ,facu      ,ag        )
@@ -35,6 +40,7 @@ subroutine bailtr(h         ,hrms      ,tp        ,thetaw    ,w         , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
+    use m_osmom, only: osmom
     !
     implicit none
     !
@@ -110,3 +116,5 @@ subroutine bailtr(h         ,hrms      ,tp        ,thetaw    ,w         , &
     sbeta = facb*(odd3*sn + even3b*dzdy/tanpsi)
     sseta = facs*(odd4*sn + even5b*dzdy*epssl/w)
 end subroutine bailtr
+
+end module m_bailtr

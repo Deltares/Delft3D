@@ -41,6 +41,11 @@ module m_fm_erosed_sub
    use m_compdiam, only: compdiam
    use m_comphidexp, only: comphidexp
    use m_compsandfrac, only: compsandfrac
+   use m_updmorfac, only: updmorfac
+   use m_soursin_2d, only: soursin_2d
+   use m_soursin_3d, only: soursin_3d
+   use m_eqtran, only: eqtran
+   use m_erosilt, only: erosilt
 
    implicit none
 

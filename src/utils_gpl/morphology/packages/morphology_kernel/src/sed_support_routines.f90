@@ -28,7 +28,6 @@ module sed_support_routines
 !  
 !  
 !-------------------------------------------------------------------------------
-
 implicit none
 
 private
@@ -214,6 +213,8 @@ end subroutine calculate_critical_velocities
 subroutine calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
     use precision
     use mathconsts
+    use m_ua_rvr, only: ua_rvr
+    use m_ua_vt, only: ua_vt
     implicit none
     
     integer                     , intent(in)     :: waveform

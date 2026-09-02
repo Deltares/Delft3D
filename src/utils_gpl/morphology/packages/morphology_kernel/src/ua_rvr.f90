@@ -1,3 +1,8 @@
+module m_ua_rvr
+   implicit none
+
+contains
+
 subroutine ua_rvr(facas,    facsk,    sws,    h,    hrms, &
                &  rlabda, urms, ua)
 !----- GPL ---------------------------------------------------------------------
@@ -80,3 +85,5 @@ subroutine ua_rvr(facas,    facsk,    sws,    h,    hrms, &
     ua = sws*(facsk*sk-facas*as)*urms
    
 end subroutine ua_rvr
+
+end module m_ua_rvr

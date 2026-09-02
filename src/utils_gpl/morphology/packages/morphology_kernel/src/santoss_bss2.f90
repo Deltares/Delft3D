@@ -1,3 +1,8 @@
+module m_santoss_bss2
+   implicit none
+
+contains
+
 subroutine santoss_bss2(sw_effects, as_effects, g, d, rhow, rhos, delta, &
                & d50, d90, b, r, t, uw, aw, uwc, uwt, uc, ut, unet_delwblt, &
                & ang, delwblt, alpha, ksw, ksc, fw, fcw, tc, tt, tcu, tcd, &
@@ -250,3 +255,5 @@ subroutine santoss_bss2(sw_effects, as_effects, g, d, rhow, rhos, delta, &
         st = sqrt(stx**2 + sty**2)
      endif
 end subroutine santoss_bss2
+
+end module m_santoss_bss2

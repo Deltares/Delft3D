@@ -1,3 +1,8 @@
+module m_santoss_core
+   implicit none
+
+contains
+
 subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
                       & delta, tp, r, b, tc, tt, tcu, tcd, ttu, ttd, sfltc, sfltt, &
                       & wss, rh, scr_c, scr_t, sc, st, scx, scy, stx, sty, &
@@ -253,3 +258,5 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
     qsx = phix*sqrt(delta*g*d50**3)        ! transport in x-direction [m2/s]
     qsy = phiy*sqrt(delta*g*d50**3)        ! transport in y-direction [m2/s]
 end subroutine santoss_core
+
+end module m_santoss_core

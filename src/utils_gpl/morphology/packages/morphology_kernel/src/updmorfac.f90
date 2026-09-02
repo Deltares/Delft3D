@@ -1,3 +1,8 @@
+module m_updmorfac
+   implicit none
+
+contains
+
 subroutine updmorfac(morpar, timhr, refjulday)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -63,3 +68,5 @@ subroutine updmorfac(morpar, timhr, refjulday)
            & timhr, refjulday, errmsg)
     morpar%morfac = value(1)
 end subroutine updmorfac
+
+end module m_updmorfac

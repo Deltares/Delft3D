@@ -1,3 +1,8 @@
+module m_santoss_bss1
+   implicit none
+
+contains
+
 subroutine santoss_bss1(i2d3d, g, d, d50, d90, delta, aw, uw, &
                & unet, zref, rh, rl, uwc, uwt, ang, uc, ut, &
                & theta, ksw, ksc, fc, fw, fcw, unet_delwblt, alpha, delwblt)
@@ -201,3 +206,5 @@ subroutine santoss_bss1(i2d3d, g, d, d50, d90, delta, aw, uw, &
         endif
     endif
 end subroutine santoss_bss1
+
+end module m_santoss_bss1

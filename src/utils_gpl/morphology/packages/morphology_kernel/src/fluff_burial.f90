@@ -1,3 +1,8 @@
+module m_fluff_burial
+   implicit none
+
+contains
+
 subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac, iconsolidate, rhosol, rhowat2d)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -98,3 +103,5 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac,
        enddo
     endif
 end subroutine fluff_burial
+
+end module m_fluff_burial

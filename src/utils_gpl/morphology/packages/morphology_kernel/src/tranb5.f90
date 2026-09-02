@@ -1,4 +1,9 @@
 module m_tranb5
+   use m_tranb5_wave, only: wave
+   use m_termgy, only: termgy
+   use m_termfy, only: termfy
+   use m_fgyint, only: fgyint
+   use m_bailtr, only: bailtr
    implicit none
 
 contains
@@ -113,9 +118,6 @@ contains
       real(fp) :: w ! flow velocity in z
       real(fp) :: z
       real(fp) :: zfact
-      real(fp), external :: fgyint
-      real(hp), external :: termfy
-      real(hp), external :: termgy
       real(fp) :: epssl
       real(fp) :: faca
       real(fp) :: facu

@@ -274,6 +274,7 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
     use dredge_data_module
     use morphology_data_module
     use message_module
+    use m_sortindices, only: sortindices
     implicit none
       
     real(fp)                                 , intent(in)    :: dt         !< time step
@@ -1374,6 +1375,7 @@ subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lund
     use precision
     use dredge_data_module
     use message_module
+    use m_sortindices, only: sortindices
     implicit none
 
     type (dredge_type)                          , target , intent(inout) :: dadpar     !< data structure for dredging and dumping settings

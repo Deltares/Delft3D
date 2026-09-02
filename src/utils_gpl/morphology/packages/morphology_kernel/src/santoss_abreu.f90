@@ -1,3 +1,8 @@
+module m_santoss_abreu
+   implicit none
+
+contains
+
 subroutine santoss_abreu(hrms, km, d, r_ab, phi_ab, urms, tp, nt, tw, uorb)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -86,3 +91,5 @@ subroutine santoss_abreu(hrms, km, d, r_ab, phi_ab, urms, tp, nt, tw, uorb)
         endif
     enddo
 end subroutine santoss_abreu
+
+end module m_santoss_abreu

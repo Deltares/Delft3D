@@ -1,3 +1,8 @@
+module m_tranb5_wave
+   implicit none
+
+contains
+
 subroutine wave(uo        ,t         ,uuvar     ,pi        ,wh        , &
               & c         ,rk        ,h         ,ag        ,wavek     )
 !----- GPL ---------------------------------------------------------------------
@@ -83,3 +88,5 @@ subroutine wave(uo        ,t         ,uuvar     ,pi        ,wh        , &
     var = rksi*uor
     uuvar = uuvar + .5*var*var
 end subroutine wave
+
+end module m_tranb5_wave

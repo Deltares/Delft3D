@@ -1,3 +1,8 @@
+module m_calseddf1993
+   implicit none
+
+contains
+
 subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
                       & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
                       & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
@@ -144,3 +149,5 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
        enddo
     endif
 end subroutine calseddf1993
+
+end module m_calseddf1993

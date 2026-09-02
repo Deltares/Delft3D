@@ -1,3 +1,8 @@
+module m_calseddf2004
+   implicit none
+
+contains
+
 subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , &
                       & seddif    ,num_layers_grid      ,sig       ,thick     ,dicww     , &
                       & tauwav    ,tauc      ,ltur      ,delw      ,rhowat    , &
@@ -44,6 +49,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     use precision
     use mathconsts
     use sediment_basics_module
+    use m_calseddf1993, only: calseddf1993
     !
     implicit none
 !
@@ -206,3 +212,5 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
        caks_ss3d = c
     endif
 end subroutine calseddf2004
+
+end module m_calseddf2004

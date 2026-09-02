@@ -68,6 +68,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     use dfparall
     use sediment_basics_module
     use morstatistics, only: morstats
+    use m_fluff_burial, only: fluff_burial
     !
     implicit none
     !

@@ -1,3 +1,8 @@
+module m_termgy
+   implicit none
+
+contains
+
 function termgy(n         ,y         ,z         )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -71,3 +76,5 @@ function termgy(n         ,y         ,z         )
               & *(((real(n, hp) - z)*log(y) - 1.d0)/((real(n, hp) - z)*(real(n, hp) - z)))
     endif
 end function termgy
+
+end module m_termgy

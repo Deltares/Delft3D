@@ -3,6 +3,11 @@
 !! The subroutine \em eqtran provides a standardized interface for calling
 !! any sediment transport in the library.
 
+module m_eqtran
+   implicit none
+
+contains
+
 subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
                 & frac, sigmol, dicww, lundia, taucr0, &
                 & rksrs, i2d3d, lsecfl, spirint, suspfrac, &
@@ -75,6 +80,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    use m_trab19, only: trab19
    use m_trab20, only: trab20
    use m_asmita, only: asmita
+   use m_factor3d2d, only: factor3d2d
    !
    implicit none
 !
@@ -859,3 +865,5 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    end if
    dss = real(realpar(RP_DSS), fp)
 end subroutine eqtran
+
+end module m_eqtran
