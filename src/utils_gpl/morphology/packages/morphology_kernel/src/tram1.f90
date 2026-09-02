@@ -1,18 +1,3 @@
-module m_tram1
-   implicit none
-
-contains
-
-   subroutine tram1(numrealpar, realpar, wave, npar, par, &
-                   & num_layers_grid, bed, taucrb, &
-                   & tauadd, taucr0, aks, eps, camax, &
-                   & frac, sig, thick, ws, &
-                   & dicww, ltur, &
-                   & kmaxsd, taurat, caks, &
-                   & seddif, sigmol, rsedeq, scour, bedw, &
-                   & susw, sbcu, sbcv, sbwu, sbwv, &
-                   & sswu, sswv, conc2d, error, &
-                   & message)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -39,23 +24,35 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tram1
+   implicit none
+   private
+   public tram1
+
+contains
+
+   subroutine tram1(numrealpar, realpar, wave, npar, par, &
+                   & num_layers_grid, bed, taucrb, &
+                   & tauadd, taucr0, aks, eps, camax, &
+                   & frac, sig, thick, ws, &
+                   & dicww, ltur, &
+                   & kmaxsd, taurat, caks, &
+                   & seddif, sigmol, rsedeq, scour, bedw, &
+                   & susw, sbcu, sbcv, sbwu, sbwv, &
+                   & sswu, sswv, conc2d, error, &
+                   & message)
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
 ! the formula of Van Rijn 1993
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module ! for MISSING_VALUE and various RP_* parameters
       use m_bedbc1993, only: bedbc1993
       use m_bedtr1993, only: bedtr1993
       use m_calseddf1993, only: calseddf1993
-      !
-      implicit none
 !
 ! Arguments
 !
@@ -235,7 +232,7 @@ contains
                    & tauc, taubcw, taurat, ta, caks, &
                    & dss, eps, aksfac, rwave, &
                    & camax, rdc, rdw, iopkcw, iopsus, &
-                   & vonkar, wave, tauadd, betam, awb)
+                   & vonkar, wave, tauadd, awb)
       realpar(RP_DSS) = real(dss, hp)
       !
       ! Find bottom cell for SAND sediment calculations and store for use

@@ -4,6 +4,33 @@
 !! See: \ref santoss
 !!
 
+!----- GPL ---------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
 module m_santoss
    use m_santoss_abreu, only: santoss_abreu
    use m_santoss_bss1, only: santoss_bss1
@@ -15,6 +42,8 @@ module m_santoss
    use m_santoss_rrr12, only: santoss_rrr12
    use m_santoss_sfltd99, only: santoss_sfltd99
    implicit none
+   private
+   public santoss
 
 contains
 
@@ -31,41 +60,11 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
                  & screpr, strepr, pc, pt, occ, otc, ott, oct, tc, tt, &
                  & phicx, phitx, qsu, sk, as, &
                  & error, message)
-!----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!  
-!  
 !!--declarations----------------------------------------------------------------
     use precision
     use morphology_data_module
     use mathconsts, only: sqrt2, degrad, raddeg
     use ieee_arithmetic, only: ieee_is_nan
-
-    implicit none
 !
 ! arguments
 !

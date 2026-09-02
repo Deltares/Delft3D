@@ -1,5 +1,34 @@
+!----- GPL ---------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
 module m_erosilt
    implicit none
+   private
+   public erosilt
 
 contains
 
@@ -13,34 +42,6 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
 ! output:
                  & error    ,wstau     ,sinktot   ,sourse   , &
                  & sourf    )
-!----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!  
-!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes sediment fluxes for cohesive sediment fractions
@@ -48,16 +49,12 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
 !              are the Partheniades-Krone formulations, optional external
 !              lib may be used.
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use sediment_basics_module
     use morphology_data_module, only: RP_RHOSL, RP_TAUB, RP_MUDFR, RP_D50, RP_POROS
     use message_module, only: write_error
     use iso_c_binding, only: c_char
-    !
-    implicit none
     !
     integer                             , intent(in)    :: iform
     integer                             , intent(in)    :: iflufflyr

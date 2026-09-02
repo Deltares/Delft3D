@@ -1,32 +1,31 @@
-module bedcomposition_module
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+
+module bedcomposition_module
 !!--module description----------------------------------------------------------
 !
 ! This module keeps track of the bed composition at one or more locations. The
@@ -37,6 +36,8 @@ module bedcomposition_module
 !!--module declarations---------------------------------------------------------
 use precision
 use sediment_basics_module, only: SEDTYP_SILT
+implicit none
+
 private
 
 !
@@ -400,7 +401,6 @@ end subroutine bedcomposition_module_info
 
 
 subroutine set_default_fractions(this)
-    implicit none
     !
     ! Call variables
     !
@@ -422,7 +422,6 @@ end subroutine set_default_fractions
 function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) result (istat)
     use precision
     use message_module, only: message_stack, message_len, addmessage
-    implicit none
     !
     ! Call variables
     !
@@ -1011,8 +1010,6 @@ subroutine getthicklayer(this, nm, k, thick)
 !
     use precision
     !
-    implicit none
-    !
     ! Function/routine arguments
     !
     type(bedcomp_data)        , intent(in)  :: this
@@ -1051,8 +1048,6 @@ subroutine getthicklayermobile(this, nm, k, thick)
 !
     use precision
     !
-    implicit none
-    !
     ! Function/routine arguments
     !
     type(bedcomp_data)        , intent(in)  :: this
@@ -1090,8 +1085,6 @@ end subroutine getthicklayermobile
 function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     use precision
     use message_module
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1305,8 +1298,6 @@ end function gettoplyr
 !! transport and exchange layers
 subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preload and td information as well
     use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1527,8 +1518,6 @@ end subroutine lyrerosion
 ! !!--declarations----------------------------------------------------------------
 !     use precision
 !     !
-!     implicit none
-!     !
 !     ! Function/routine arguments
 !     !
 !     type(bedcomp_data)                                    :: this    
@@ -1726,9 +1715,6 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
@@ -1915,9 +1901,6 @@ end subroutine lyrsedimentation
 !! layers
 subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
     use precision
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
@@ -2175,9 +2158,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
@@ -2291,7 +2271,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
 !!--declarations----------------------------------------------------------------
     use precision
     use message_module
-    implicit none
     !
     ! Call variables
     !
@@ -2413,8 +2392,6 @@ end subroutine updcrslyr
 !
 subroutine lyrdiffusion(this, dt)
     use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -2552,8 +2529,6 @@ end subroutine lyrdiffusion
 !! DEPRECATED FUNCTIONALITY; use mudfrac (sum of frac over mud fractions) instead
 subroutine detthcmud(this, thcmud)
     use precision
-    !
-    implicit none
 !
 ! Function/routine arguments
 !
@@ -2587,9 +2562,6 @@ end subroutine detthcmud
 !! DEPRECATED FUNCTIONALITY; use getsedthick instead.
 subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
     use precision 
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
@@ -2661,8 +2633,6 @@ end subroutine getalluvthick
 !! of all sediment fractions are the same.
 subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, ifracreq,kfrom, kto)
     use precision 
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -2752,8 +2722,6 @@ end subroutine getfrac
 subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     use precision 
     use sediment_basics_module
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3002,7 +2970,6 @@ end subroutine getbedprop
 !> Determines the mass fractions for the top layer
 subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3067,7 +3034,6 @@ end subroutine getmfrac
 !> Update the bed composition of the top layer given the mass fraction data
 subroutine setmfrac(this, frac, nmfrom, nmto)
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3120,7 +3086,6 @@ end subroutine setmfrac
 !> Determines the volume fractions for the top layer
 subroutine getvfrac(this, frac, nmfrom, nmto, kfrom, kto)
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3193,7 +3158,6 @@ end subroutine getvfrac
 !> Update the bed composition of the top layer given the volume fraction data
 subroutine setvfrac(this, frac, nmfrom, nmto)
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3261,7 +3225,6 @@ end subroutine setvfrac
 !> Determines total thickness of sediment deposit at all points
 subroutine getsedthick_allpoints(this, seddep)
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3300,7 +3263,6 @@ end subroutine getsedthick_allpoints
 !> Determines total thickness of sediment deposit at one point
 subroutine getsedthick_1point(this, nm, seddep)
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3338,7 +3300,6 @@ end subroutine getsedthick_1point
 function initmorlyr(this) result (istat)
     use precision
     use morphology_data_module, only: HIDEXP_ACTIVE_LAYER_ONLY
-    implicit none
     !
     real(fp), parameter :: rmissval = -999.0_fp
     !
@@ -3540,7 +3501,6 @@ end function initmorlyr
 !> allocate the morlyr data arrays
 function allocmorlyr(this) result (istat)
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3667,7 +3627,6 @@ end function allocmorlyr
 !> initialize the morlyr work arrays
 function allocwork(this) result (istat)
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3729,7 +3688,6 @@ end function allocwork
 !> deallocate the work arrays
 function deallocwork(this) result (istat)
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3769,7 +3727,6 @@ end function deallocwork
 !> deallocate the morlyr arrays
 function clrmorlyr(this) result (istat)
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -3831,7 +3788,6 @@ end function clrmorlyr
 
 !> Set sediment fraction properties
 subroutine setbedfracprop(this, sedtyp, sedd50, logsedsig, rhofrac)
-    implicit none
     !
     ! Call variables
     !
@@ -3871,7 +3827,6 @@ end subroutine setbedfracprop
 !> Get the pointer to a scalar logical
 function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -3908,7 +3863,6 @@ end function bedcomp_getpointer_logical_scalar
 !> Get the pointer to a scalar integer
 function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -3982,7 +3936,6 @@ end function bedcomp_getpointer_integer_scalar
 function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
     use precision
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -4030,7 +3983,6 @@ end function bedcomp_getpointer_fp_scalar
 function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
     use precision
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -4080,7 +4032,6 @@ end function bedcomp_getpointer_fp_1darray
 function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
     use precision
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -4124,7 +4075,6 @@ end function bedcomp_getpointer_fp_2darray
 function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
     use precision
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -4156,7 +4106,6 @@ end function bedcomp_getpointer_fp_3darray
 function bedcomp_getpointer_prec_2darray(this, variable, val) result (istat)
     use precision
     use string_module
-    implicit none
     !
     ! Call variables
     !
@@ -4187,7 +4136,6 @@ end function bedcomp_getpointer_prec_2darray
 !> Use the values of BODSED to compute other quantities
 subroutine bedcomp_use_bodsed(this)
     use precision
-    implicit none
     !
     ! Call variables
     !
@@ -4340,7 +4288,6 @@ end subroutine bedcomp_use_bodsed
 !> Copy the bed composition from nmfrom to nmto
 subroutine copybedcomp(this, nmfrom, nmto)
     use precision
-    implicit none
     !
     ! Call variables
     !
@@ -4387,7 +4334,6 @@ end subroutine copybedcomp
 !> Update the porosity for layer k in column nm
 subroutine updateporosity(this, nm, k)
     use precision
-    implicit none
     !
     ! Call variables
     !
@@ -4436,7 +4382,6 @@ end subroutine updateporosity
 !> Compute the porosity
 subroutine getporosity(this, mfrac, poros)
     use precision
-    implicit none
     !
     ! Call variables
     !
@@ -4508,8 +4453,6 @@ end subroutine getporosity
 !> Consolidate the bed of column nm
 subroutine consolidate(this, nm, morft, dtmor)
     use precision
-    
-    implicit none
     !
     ! Call variables
     !
@@ -4560,7 +4503,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     use sediment_basics_module
     use morphology_data_module
     
-    implicit none
     !
     ! Call variables
     !
@@ -4921,7 +4863,6 @@ subroutine consolidate_decon(this, nm, dtmor)
     use sediment_basics_module
     use morphology_data_module
     
-    implicit none
     !
     ! Call variables
     !
@@ -5210,8 +5151,7 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
     use precision
     use sediment_basics_module
     use morphology_data_module
-    
-    implicit none
+
     !
     ! Call variables
     !
@@ -5368,8 +5308,6 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     use precision
     use sediment_basics_module
     use morphology_data_module
-
-    implicit none
 
     ! Call variables
     type(bedcomp_data)                                             :: this     !< bed composition object
@@ -5651,7 +5589,6 @@ end subroutine consolidate_no_compaction
 !> Initialize the preload array assuming that all sediment is fully consolidated.
 subroutine initpreload(this)
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !

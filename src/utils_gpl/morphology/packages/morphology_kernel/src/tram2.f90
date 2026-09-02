@@ -1,22 +1,3 @@
-module m_tram2
-   use m_calseddf2004, only: calseddf2004
-   use m_bedbc2004, only: bedbc2004
-   use m_bedtr2004, only: bedtr2004
-   use m_santoss, only: santoss
-   implicit none
-
-contains
-
-   subroutine tram2(numrealpar, realpar, wave, i2d3d, npar, &
-                   & par, num_layers_grid, bed, dzduu, dzdvv, &
-                   & rksrs, tauadd, taucr0, aks, eps, &
-                   & camax, frac, sig, thick, ws, &
-                   & dicww, ltur, aks_ss3d, iform, &
-                   & kmaxsd, taurat, caks, caks_ss3d, concin, &
-                   & seddif, sigmol, rsedeq, scour, bedw, &
-                   & susw, sbcu, sbcv, sbwu, sbwv, &
-                   & sswu, sswv, tetacr, conc2d, error, &
-                   & message)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -43,21 +24,37 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tram2
+   use m_calseddf2004, only: calseddf2004
+   use m_bedbc2004, only: bedbc2004
+   use m_bedtr2004, only: bedtr2004
+   use m_santoss, only: santoss
+   implicit none
+   private
+   public tram2
+
+contains
+
+   subroutine tram2(numrealpar, realpar, wave, i2d3d, npar, &
+                   & par, num_layers_grid, bed, dzduu, dzdvv, &
+                   & rksrs, tauadd, taucr0, aks, eps, &
+                   & camax, frac, sig, thick, ws, &
+                   & dicww, ltur, aks_ss3d, iform, &
+                   & kmaxsd, taurat, caks, caks_ss3d, concin, &
+                   & seddif, sigmol, rsedeq, scour, bedw, &
+                   & susw, sbcu, sbcv, sbwu, sbwv, &
+                   & sswu, sswv, tetacr, conc2d, error, &
+                   & message)
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
 ! the formula of Van Rijn 2004
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module ! for MISSING_VALUE and various RP_* parameters
       use sediment_basics_module, only: dsand, dgravel
-      !
-      implicit none
 !
 ! Arguments
 !
