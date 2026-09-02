@@ -49,6 +49,15 @@ object LifecycleScanTestBench : BuildType({
                 branchFilter = "+:<default>"
                 perCheckinTriggering = false
             }
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 3
+                    minute = 30
+                }
+                branchFilter = "+:<default>"
+                triggerBuild = always()
+                withPendingChangesOnly = false
+            }
         }
     }
 })
