@@ -1809,6 +1809,9 @@ contains
 
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
+      if (len_trim(md_extfile) > 0) then
+         call mess(LEVEL_FATAL, 'External forcing file specified.')
+      end if
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
 
       if (allocated(extfile_new_list)) then

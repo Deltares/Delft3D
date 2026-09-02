@@ -30,7 +30,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterTolerance', DEPRECATED, 'Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'IniFieldFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', OBSOLETE, &
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterSal', DEPRECATED, 'Use maxItVerticalForester instead.')
