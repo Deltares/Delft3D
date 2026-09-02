@@ -10,7 +10,8 @@ namespace pre_c_sumo
 {
     void ConnectedSinkSources::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
-                                         double discharge, double momentum_magnitude, double momentum_direction)
+                                         double discharge, double momentum_magnitude_weighted,
+                                         double momentum_direction)
     {
         sink_x_vector.push_back(sink_x);
         sink_y_vector.push_back(sink_y);
@@ -21,7 +22,7 @@ namespace pre_c_sumo
         source_z_bottom_vector.push_back(source_z_bottom);
         source_z_top_vector.push_back(source_z_top);
         discharge_vector.push_back(discharge);
-        momentum_magnitude_vector.push_back(momentum_magnitude);
+        momentum_magnitude_weighted_vector.push_back(momentum_magnitude_weighted);
         momentum_direction_vector.push_back(momentum_direction);
     }
 
@@ -39,7 +40,7 @@ namespace pre_c_sumo
         source_z_bottom_vector.clear();
         source_z_top_vector.clear();
         discharge_vector.clear();
-        momentum_magnitude_vector.clear();
+        momentum_magnitude_weighted_vector.clear();
         momentum_direction_vector.clear();
     }
 
@@ -97,7 +98,7 @@ namespace pre_c_sumo
         write_or_zero("sources_z_min", source_z_bottom_vector);
         write_or_zero("sources_z_max", source_z_top_vector);
         write_or_zero("sources_sinks_discharge", discharge_vector);
-        write_or_zero("sources_momentum_magnitude", momentum_magnitude_vector);
+        write_or_zero("sources_momentum_magnitude_weighted", momentum_magnitude_weighted_vector);
         write_or_zero("sources_momentum_direction", momentum_direction_vector);
 
         // After the write, we can clear the list.
