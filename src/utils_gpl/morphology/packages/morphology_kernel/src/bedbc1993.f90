@@ -5,12 +5,12 @@ contains
 
 subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
                    & zumod     ,d50       ,d90       ,z0cur     ,z0rou     , &
-                   & dstar     ,taucr     ,aks       ,usus      ,zusus     , &
+                   & dstar     ,taucr1    ,aks       ,usus      ,zusus     , &
                    & uwb       ,delr      ,muc       ,tauwav    ,ustarc    , &
                    & tauc      ,taubcw    ,taurat    ,ta        ,caks      , &
-                   & dss       ,mudfrac   ,eps       ,aksfac    ,rwave     , &
+                   & dss       ,eps       ,aksfac    ,rwave     , &
                    & camax     ,rdc       ,rdw       ,iopkcw    ,iopsus    , &
-                   & vonkar    ,wave      ,tauadd    ,betam     ,awb       )
+                   & vonkar    ,wave      ,tauadd    ,awb       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -56,7 +56,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
 !
     real(fp), intent(out)   :: aks    !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(out)   :: awb
-    real(fp), intent(in)    :: betam
     real(fp), intent(out)   :: caks
     real(fp), intent(in)    :: d50
     real(fp), intent(in)    :: d90
@@ -65,12 +64,11 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp), intent(in)    :: dstar
     real(fp), intent(in)    :: h1
     real(fp), intent(out)   :: muc
-    real(fp), intent(in)    :: mudfrac
     real(fp), intent(in)    :: rhowat !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(out)   :: ta
     real(fp), intent(out)   :: taubcw
     real(fp), intent(out)   :: tauc
-    real(fp), intent(in)    :: taucr
+    real(fp), intent(in)    :: taucr1
     real(fp), intent(out)   :: taurat
     real(fp), intent(out)   :: tauwav
     real(fp), intent(in)    :: tp     !  Description and declaration in esm_alloc_real.f90
@@ -108,7 +106,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp) :: ra
     real(fp) :: rc
     real(fp) :: rw
-    real(fp) :: taucr1
 !
 !! executable statements -------------------------------------------------------
 !
@@ -262,7 +259,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     ! Note: this ignores bed-slope effects on initiation of motion
     !
     taubcw = muc*tauc + muw*tauwav
-    taucr1 = taucr*(1.0_fp + mudfrac)**betam
     taurat = taubcw/taucr1
     !
     ! Calculate Van Rijn's Dimensionless bed-shear stress for reference

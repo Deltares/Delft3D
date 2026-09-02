@@ -230,10 +230,10 @@ contains
       !
       call bedbc1993(tp, uorb, rhowat, h1, umod, &
                    & zumod, di50, d90, z0cur, z0rou, &
-                   & dstar, taucr0, aks, usus, zusus, &
+                   & dstar, taucr1, aks, usus, zusus, &
                    & uwb, delr, muc, tauwav, ustarc, &
                    & tauc, taubcw, taurat, ta, caks, &
-                   & dss, mudfrac, eps, aksfac, rwave, &
+                   & dss, eps, aksfac, rwave, &
                    & camax, rdc, rdw, iopkcw, iopsus, &
                    & vonkar, wave, tauadd, betam, awb)
       realpar(RP_DSS) = real(dss, hp)

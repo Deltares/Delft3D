@@ -318,15 +318,15 @@ contains
       call bedbc2004(tp, rhowat, &
                    & h1, umod, d10, zumod, di50, &
                    & d90, z0cur, z0rou, drho, dstar, &
-                   & taucr0, u2dhim, aks, ra, usus, &
+                   & taucr1, u2dhim, aks, ra, usus, &
                    & zusus, uwb, muc, tauwav, ustarc, &
                    & tauc, taurat, ta, caks, dss, &
                    & uwc, uuu, vvv, rlabda, taubcw, &
                    & hrms, delw, uon, uoff, uwbih, &
                    & delm, fc1, fw1, phicur, rksrs, &
-                   & i2d3d, mudfrac, fsilt, taucr1, psi, &
+                   & i2d3d, mudfrac, fsilt, psi, &
                    & dzduu, dzdvv, eps, camax, iopsus, &
-                   & ag, wave, tauadd, gamtcr, betam, &
+                   & ag, wave, tauadd, &
                    & awb, wform, phi_phase, r)
       realpar(RP_DSS) = real(dss, hp)
       !
