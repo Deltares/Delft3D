@@ -16,6 +16,7 @@ set(test_target test_dflowfm_kernel_gtest)
 f90twtest(${test_target}
     CFILES test_dflowfm_kernel.cpp
     F90FILES
+        src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90 # This must be the first Fortran file, as it is referenced in test_dflowfm_kernel.cpp!!
         src/test_3d_layer_administration.f90
         src/test_pol_to_cellmask.f90
