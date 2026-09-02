@@ -459,7 +459,6 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     integer(pntrsize)                    , pointer :: ubnd
     integer(pntrsize), dimension(:, :)   , pointer :: nprptr
     integer                              , pointer :: rtcact
-    real(fp)      , dimension(:)         , pointer :: rhosol
     integer                              , pointer :: ifirst
     integer                              , pointer :: nubnd
     real(fp)                             , pointer :: windxt
@@ -909,7 +908,6 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     tprofc              => gdp%gdr_i_ch%tprofc
     tprofu              => gdp%gdr_i_ch%tprofu
     rtcact              => gdp%gdrtc%rtcact
-    rhosol              => gdp%gdsedpar%rhosol
     ifirst              => gdp%gdtrisol%ifirst
     nubnd               => gdp%gdtrisol%nubnd
     ubnd                => gdp%gdtrisol%ubnd
@@ -1166,7 +1164,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
           call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
                   & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
                   & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-                  & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+                  & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
           call timer_stop(timer_dens, gdp)
           !
           ! z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
