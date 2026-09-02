@@ -94,8 +94,9 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      * @param current_time_seconds Current time in seconds.
+     * @returns true on successful wait, false on timeout.
      */
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
      * @brief Read NF2FF files and extract the required data.

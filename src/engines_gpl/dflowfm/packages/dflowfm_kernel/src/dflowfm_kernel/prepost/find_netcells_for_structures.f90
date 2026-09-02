@@ -33,7 +33,7 @@
 !> Finds indices of netcells that relate to structures.
 !! The indices will be used when partitioning the mesh with METIS, by giving a special weight on the netcells.
 !! As a result, structures will not intercross the partition boundaries
-!! NOTE: This functionality ONLY supports when using "polylinefile" to specify the structure location
+!! NOTE: This functionality ONLY supports when using "polylinefile" or "locationfile" to specify the structure location
 !! TODO: extend it to support other ways of specifying the structure location.
 submodule(m_find_netcells_for_structures) m_find_netcells_for_structures_
 
@@ -119,12 +119,16 @@ contains
          end if
 
          call prop_get_alloc_string(str_ptr, '', 'polylinefile', str_buf, success)
+         if (.not.success) then
+            call prop_get_alloc_string(str_ptr, '', 'locationfile', str_buf, success)
+         end if
+
          if (success) then
             loc_spec_type = LOCTP_POLYLINE_FILE
             plifile = str_buf
             call resolvePath(plifile, md_structurefile_dir)
          else
-            write (msgbuf, '(a,a,A)') 'Field ''polylinefile'' missing in structure ''', trim(strid), '''. Skip this structure.'
+            write (msgbuf, '(a,a,A)') 'Field ''polylinefile'' and ''locationFile'' are missing in structure ''', trim(strid), '''. Skip this structure.'
             call msg_flush()
             cycle
          end if

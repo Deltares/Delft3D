@@ -39,6 +39,10 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
         password("h7_account_password", DslContext.getParameter("ad_h7_smoke_test_password"))
         
         param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma8-%dep.${LinuxBuild.id}.product%-%dep.${LinuxBuild.id}.commit_id%")
+
+        // TestBench still takes --username/--password; map them to DVC remote credentials.
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("s3_dsctestbench_secret", DslContext.getParameter("dvc_testbench_secret"))
     }
 
     vcs {
@@ -92,8 +96,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
                 --rm
                 --pull always
                 --shm-size 8G
-                -v %teamcity.build.workingDir%:/data/data/cases
-                -v %teamcity.build.workingDir%/test/deltares_testbench:/testbench
+                --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }
     }
