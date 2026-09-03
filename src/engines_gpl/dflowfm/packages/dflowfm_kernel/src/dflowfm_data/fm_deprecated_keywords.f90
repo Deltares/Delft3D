@@ -24,6 +24,7 @@ contains
       ! Adding DEPRECATED MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'AutoStart', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'ConvertLongCulverts', DEPRECATED, 'Unconverted long culverts (ConvertLongCulverts=0) will be removed in a future release.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Model', 'mduFormatVersion', DEPRECATED, 'Use [General] fileVersion (with version >= 1.07) instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'sigmaGrowthFactor', DEPRECATED, 'Use zLayerGrowthFactor instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterMethod', DEPRECATED, 'Once the keyword is removed/becomes obsolete, the "allNetlinksLoop" method will be used.')
@@ -40,7 +41,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'filter', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
@@ -52,7 +52,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
 
       ! Adding OBSOLETE MDU keywords
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Model', 'mduFormatVersion', OBSOLETE, 'Use [General] fileVersion (with version >= 1.07) instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bathymetryFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bedLevelFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'botLevUni', OBSOLETE)
@@ -87,6 +86,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_umin_method', OBSOLETE, 'Use [Numerics] lateral_fixedweir_umin_method instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_minimal_1d2d_embankment', OBSOLETE, 'Use [Numerics] lateral_fixedweir_1d2d_embankment instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'wridia_viscosity_diffusivity_limit', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', OBSOLETE, 'Option no longer needed due to improved semi-implicit algorithm.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'allowCoolingBelowZero', OBSOLETE, &
