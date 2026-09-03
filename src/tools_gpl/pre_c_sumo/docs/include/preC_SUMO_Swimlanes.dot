@@ -1,8 +1,8 @@
 digraph preCSUMOSwimlanes {
-  rankdir=LR;
+  rankdir=TB;
   compound=true;
   splines=ortho;
-  nodesep=0.35;
+  nodesep=0.32;
   ranksep=0.55;
   fontname="Helvetica";
   fontsize=10;
@@ -11,53 +11,53 @@ digraph preCSUMOSwimlanes {
   edge [fontname="Helvetica", fontsize=8, color="#444444"];
 
   subgraph cluster_precsumo {
-    label="preC-SUMO core (run)";
+    label="preC-SUMO";
     color="#F26422";
     style="rounded";
 
-    s0 [label="Read C-SUMO settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref precsumo_read_settings", tooltip="Open readCsumoSettingsFile docs"];
-    s1 [label="Build and register meshes\ngetMesh2D3D(), setMeshVertices()", fillcolor="#FFE3D1", URL="\\ref precsumo_run_main", tooltip="Open run() setup phase docs"];
-    s2 [label="Initial NF2FF bootstrap\nwaitForNF2FFFiles()\nreadNF2FFFiles()\nconvertNFtoConnectedSinkSources()", fillcolor="#FFE3D1", URL="\\ref precsumo_wait_nf2ff", tooltip="Open initial NF2FF bootstrap docs"];
-    s3 [label="participant.initialize()\noptional requiresInitialData write", fillcolor="#FFE3D1", URL="\\ref precsumo_run_main", tooltip="Open participant initialization docs"];
+    s0 [label="settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::readCsumoSettingsFile", tooltip="Open readCsumoSettingsFile docs"];
+    s1 [label="mesh\nsetup", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open run() setup phase docs"];
+    s2 [label="wait + read\nNF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open initial NF2FF bootstrap docs"];
+    s3 [label="init\nparticipant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open participant initialization docs"];
 
-    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref precsumo_receive_ff_data", tooltip="Open receiveFFData docs"];
-    l1 [label="writeFF2NFFiles()", fillcolor="#FFF6E8", URL="\\ref precsumo_write_ff2nf", tooltip="Open writeFF2NFFiles docs"];
-    l2 [label="waitForNF2FFFiles()", fillcolor="#FFF6E8", URL="\\ref precsumo_wait_nf2ff", tooltip="Open waitForNF2FFFiles docs"];
-    l3 [label="readNF2FFFiles()", fillcolor="#FFF6E8", URL="\\ref precsumo_read_nf2ff", tooltip="Open readNF2FFFiles docs"];
-    l4 [label="convertNFtoConnectedSinkSources()", fillcolor="#FFF6E8", URL="\\ref precsumo_convert_nf", tooltip="Open convertNFtoConnectedSinkSources docs"];
-    l5 [label="Reset/write source-sink mesh\nwrite_to_precice()", fillcolor="#FFF6E8", URL="\\ref precsumo_write_to_precice", tooltip="Open write_to_precice docs"];
-    l6 [label="participant.advance(dt)", fillcolor="#FFF6E8", URL="\\ref precsumo_run_main", tooltip="Open run() loop docs"];
+    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open receiveFFData docs"];
+    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
+    l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
+    l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
+    l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertNFtoConnectedSinkSources", tooltip="Open convertNFtoConnectedSinkSources docs"];
+    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::sendSourcesSinksToFF", tooltip="Open write_to_precice docs"];
+    l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
 
     s0 -> s1 -> s2 -> s3 -> l0 -> l1 -> l2 -> l3 -> l4 -> l5 -> l6;
-    l6 -> l0 [label="while isCouplingOngoing()", color="#666666"];
+    l6 -> l0 [color="#666666"];
   }
 
   subgraph cluster_precice {
-    label="preCICE interface";
+    label="preCICE";
     color="#A5B51B";
     style="rounded";
 
-    p0 [label="readData()\nwater level / bed level / depth / density", fillcolor="#EEF3C9", URL="\\ref precsumo_receive_ff_data", tooltip="Open preCICE readData phase docs"];
-    p1 [label="setMeshVertices() / resetMesh()\nsources_sinks_nodes", fillcolor="#EEF3C9", URL="\\ref precsumo_run_main", tooltip="Open mesh registration/reset docs"];
-    p2 [label="writeData()\nsink/source fields", fillcolor="#EEF3C9", URL="\\ref precsumo_write_to_precice", tooltip="Open write_to_precice docs"];
+    p0 [label="readData()", fillcolor="#EEF3C9", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open preCICE readData phase docs"];
+    p1 [label="mesh reset", fillcolor="#EEF3C9", URL="\\ref pre_c_sumo::run()", tooltip="Open mesh registration/reset docs"];
+    p2 [label="writeData()", fillcolor="#EEF3C9", URL="\\ref pre_c_sumo::sendSourcesSinksToFF", tooltip="Open write_to_precice docs"];
   }
 
   subgraph cluster_csumo {
-    label="C-SUMO process";
+    label="C-SUMO";
     color="#1285F0";
     style="rounded";
 
-    c0 [label="Consume FF2NF xml", fillcolor="#DDEBFF", URL="\\ref precsumo_write_ff2nf", tooltip="Produced by writeFF2NFFiles"];
-    c1 [label="Run near-field model", fillcolor="#DDEBFF", URL="\\ref precsumo_run_main", tooltip="External step between FF2NF and NF2FF"];
-    c2 [label="Produce NF2FF xml", fillcolor="#DDEBFF", URL="\\ref precsumo_read_nf2ff", tooltip="Consumed by readNF2FFFiles"];
+    c0 [label="FF2NF", fillcolor="#DDEBFF", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Produced by writeFF2NFFiles"];
+    c1 [label="near-field", fillcolor="#DDEBFF", URL="\\ref pre_c_sumo::run()", tooltip="External step between FF2NF and NF2FF"];
+    c2 [label="NF2FF", fillcolor="#DDEBFF", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Consumed by readNF2FFFiles"];
     c0 -> c1 -> c2;
   }
 
-  l0 -> p0 [label="receive ambient + layered state", lhead=cluster_precice];
-  l5 -> p1 [label="(re)define source-sink vertices", lhead=cluster_precice];
-  l5 -> p2 [label="send converted source/sink values", lhead=cluster_precice];
+  l0 -> p0 [lhead=cluster_precice];
+  l5 -> p1 [lhead=cluster_precice];
+  l5 -> p2 [lhead=cluster_precice];
 
-  l1 -> c0 [label="write FF2NF", lhead=cluster_csumo];
-  c2 -> l2 [label="NF2FF available", ltail=cluster_csumo];
+  l1 -> c0 [lhead=cluster_csumo];
+  c2 -> l2 [ltail=cluster_csumo];
 }
 

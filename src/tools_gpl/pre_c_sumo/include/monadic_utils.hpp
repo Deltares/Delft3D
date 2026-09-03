@@ -6,36 +6,55 @@
 
 namespace monadic_utils::internal
 {
-    /// @brief Type trait that is true when @p T is a std::optional specialisation.
+    /**
+     * @anchor monadic_utils_is_optional_v
+     * @brief Type trait indicating whether T is a std::optional specialization.
+     */
     template <typename T>
     inline constexpr bool is_optional_v = false;
     template <typename T>
     inline constexpr bool is_optional_v<std::optional<T>> = true;
 
-    /// @brief Type trait that is true when @p T is a std::expected specialisation.
+    /**
+     * @anchor monadic_utils_is_expected_v
+     * @brief Type trait indicating whether T is a std::expected specialization.
+     */
     template <typename T>
     inline constexpr bool is_expected_v = false;
     template <typename T, typename E>
     inline constexpr bool is_expected_v<std::expected<T, E>> = true;
 
-    /// @brief Satisfied when @p T is a std::optional specialisation.
+    /**
+     * @anchor monadic_utils_is_optional
+     * @brief Concept satisfied by std::optional-like types.
+     */
     template <typename T>
     concept IsOptional = is_optional_v<std::remove_cvref_t<T>>;
 
-    /// @brief Satisfied when @p T is a std::expected specialisation.
+    /**
+     * @anchor monadic_utils_is_expected
+     * @brief Concept satisfied by std::expected-like types.
+     */
     template <typename T>
     concept IsExpected = is_expected_v<std::remove_cvref_t<T>>;
 
-    /// @brief Satisfied when @p T is either std::optional or std::expected.
+    /**
+     * @anchor monadic_utils_is_monadic
+     * @brief Concept satisfied by either std::optional or std::expected values.
+     */
     template <typename T>
     concept IsMonadic = IsOptional<T> || IsExpected<T>;
 
     /**
-     * @brief Extracts an early-return value from an invalid monadic result.
+     * @anchor monadic_utils_make_error_return
+     * @brief Produces the early-return error value for invalid monadic results.
      *
-     * For std::expected, returns std::unexpected wrapping the error.
-     * For std::optional, returns std::nullopt.
-     * Used internally by the ASSIGN_OR_RETURN and RETURN_IF_ERROR macros.
+     * For std::expected, returns std::unexpected wrapping the error. For std::optional, returns std::nullopt.
+     * This helper is used internally by the ASSIGN_OR_RETURN and RETURN_IF_ERROR macros.
+     *
+     * @tparam ExprType Monadic result type to unwrap.
+     * @param res Value to inspect.
+     * @return Error value matching the enclosing function return type.
      */
     template <IsMonadic ExprType>
     [[nodiscard]] constexpr auto makeErrorReturn(ExprType&& res)
