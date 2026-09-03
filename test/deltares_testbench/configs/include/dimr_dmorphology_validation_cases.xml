@@ -297,4 +297,59 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f048_c01_full_Gibson" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c01_full_Gibson</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c02_DECON" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c02_DECON</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c03_Terzaghi" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c03_Terzaghi</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+          <parameter name="preload" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c04_Terzaghi_peat" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c04_Terzaghi_peat</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+          <parameter name="preload" toleranceAbsolute="1.0"/>
+          <parameter name="msedPeat" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
 </testCases>
