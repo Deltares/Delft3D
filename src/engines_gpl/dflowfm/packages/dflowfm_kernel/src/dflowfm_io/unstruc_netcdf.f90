@@ -11257,6 +11257,7 @@ contains
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
       use dfm_error, only: dfm_noerr
+      use network_data, only: xk,yk
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
@@ -11265,28 +11266,38 @@ contains
       integer, intent(out) :: numl_read !< Number of new netlinks read from file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
+      logical :: success ! Flag to check if coordinate transformation is successful.
+      real(hp), dimension(1) :: lonn, latn ! Temporary arrays to receive test conversion.
+
       call readyy('Reading net data', 0.0_dp)
 
       call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
 
-      !
       ! Try and read as new UGRID NetCDF format
-      !
       call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       if (ierr /= dfm_noerr) then
          ! No UGRID, but just try to use the 'old' format now.
          call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       end if
-
-      if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
+      if (ierr /= dfm_noerr) then
+         ! An error occurred while reading the net-file; no reason to continue.
+         return
+      end if
+      
+      ! File reading went fine, now check the coordinate system.
+      if (crs%proj_string == ' ') then
          ierr = detect_proj_string(crs)
-         if (ierr /= dfm_noerr) then
-            ierr = dfm_noerr
-            call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
-            if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
-               call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if projection string is unknown. Switched off.')
-               unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
-            end if
+         ierr = dfm_noerr ! don't stumble over proj string detection errors
+      end if
+
+      ! Check the coordinate transformation to lat/lon if requested.
+      if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
+         call transform_coordinates(crs%proj_string, WGS84_PROJ_STRING, xk(1:1), yk(1:1), lonn, latn, success)
+         if (.not. success) then
+            call mess(LEVEL_WARN, 'Unable to transform coordinates to WGS84; most likely the projection is not specified.')
+            call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if transformation fails. Switched off.')
+            unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
+            crs%proj_string = ' ' ! set_model_boundingbox checks for empty proj string
          end if
       end if
    end subroutine unc_read_net

@@ -23,8 +23,8 @@ add_executable(test_pre_c_sumo_lib ${source_files})
 target_link_libraries(test_pre_c_sumo_lib PRIVATE
     compiler_warnings_settings
     pre_c_sumo_lib
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
     precice::precice
     pugixml::pugixml
     Boost::headers
@@ -47,4 +47,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties(test_pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo/test)
 
 include(GoogleTest)
-gtest_discover_tests(test_pre_c_sumo_lib DISCOVERY_MODE PRE_TEST)
+gtest_discover_tests(test_pre_c_sumo_lib)
