@@ -45,14 +45,12 @@ contains
    subroutine apply_vertical_forester_filter_to_salinity()
       use m_flow, only: kbot, ktop, max_iterations_vertical_forester_sal, vol1, kmxn
       use m_flowgeom, only: ndxi
-      use m_physcoef, only: use_salinity_freezing_point
       use m_transportdata, only: isalt
       use string_module, only: str_tolower
       use timers, only: timon, timstrt, timstop
 
       ! Local variables
       integer :: i_bottom_layer
-      integer :: i_constituent
       integer :: i_flowcell
       integer :: number_of_layers
       integer(4), save :: timer_handle = 0
@@ -90,14 +88,12 @@ contains
    subroutine apply_vertical_forester_filter_to_temperature()
       use m_flow, only: kbot, ktop, max_iterations_vertical_forester_tem, vol1, kmxn
       use m_flowgeom, only: ndxi
-      use m_physcoef, only: use_salinity_freezing_point
       use m_transportdata, only: itemp
       use string_module, only: str_tolower
       use timers, only: timon, timstrt, timstop
 
       ! Local variables
       integer :: i_bottom_layer
-      integer :: i_constituent
       integer :: i_flowcell
       integer :: number_of_layers
       integer(4), save :: timer_handle = 0
