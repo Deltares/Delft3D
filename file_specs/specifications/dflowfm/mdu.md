@@ -67,6 +67,7 @@ This section contains the program name and its version.
 
 | Keyword | Description | Default | Supported values | Unit | Format |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
+| `mduFormatVersion` ⚠️ | File version. Do not edit this. | `1.09` |  |  |  |
 | `program` | Program. | `D-Flow FM` |  |  |  |
 | `version` | Version number of computational kernel. | `1.2.60.64623M` |  |  |  |
 | `guiVersion` | Version number of GUI. | `<empty>` |  |  |  |
@@ -182,6 +183,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `keepZLay1BedVol` 🔬 | Correct volumes when `keepZLayeringAtBed`=1. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `orgFloorLevTopLayDef` ⚠️ | Backward compatibility option: floorlevtoplay is dztop below specified level. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `bedLevMode` | Bed level mode. | `1` |  |  |  |
+| `Grdang` ⚠️ | Keyword is no longer supported. | `<empty>` |  |  |  |
 
 
 <a id="supported-keywords-and-options-volumetables"></a>
@@ -231,6 +233,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `drop1D` | Limit the downstream water level in the momentum equation to the downstream invert level, BOBdown (ζ ∗ down = max (BOBdown, ζdown)). | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `chkAdvd` | Check advection terms if depth < `chkAdvd`. | `0.1` |  | [m] |  |
 | `teta0` | Theta (implicitness) of time integration. | `0.55` | `(0.5, 1.0)` | [-] |  |
+| `filter` ⚠️ | Keyword is no longer supported. | `<empty>` |  |  |  |
 | `cstBnd` | Delft3D-FLOW type velocity treatment near boundaries for small coastal models or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `maxItVerticalForesterSal` ⚠️ | Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations). | `0` | `≥0` |  |  |
 | `maxItVerticalForester` | Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations). | `0` | `≥0` |  |  |
@@ -324,6 +327,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `dtol` 🔬 | TODO. | `0.0` |  |  |  |
 | `pillarFarFieldVelocity` 🔬 | Use far-field velocity for pillars. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `minWaterlevelChangeBreak` | Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0). | `0.0` |  | [m] |  |
+| `sobekdfm_relax` ⚠️ | Keyword is no longer supported. | `0.01` |  |  |  |
 | `maxSSC` | Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off) | `1000000.0` |  |  |  |
 | `perotWeightUpdate` | Perot weight update option. | `0` |  |  |  |
 | `perotType` | Perot discretization type. | `1` |  |  |  |
@@ -401,6 +405,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `prandtlNumberTemperature` 🔬 | Turbulent Prandtl number for temperature. | `0.7` |  |  |  |
 | `schmidtNumberSalinity` 🔬 | Turbulent Schmidt number for salinity. | `0.7` |  |  |  |
 | `schmidtNumberTracer` 🔬 | Turbulent Schmidt number for tracer(s). | `1.0` |  |  |  |
+| `umodLin` ⚠️ | Linear friction umod. | `1.0` |  |  |  |
 | `jadelvappos` ⚠️ | Only positive forced evaporation fluxes. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `freeConvectionCoefficient` 🔬 | Free convection turbulence coefficient. | `0.14` |  |  |  |
 | `uniffrictcoef1dgrlay` 🔬 | Uniform ground layer friction coefficient for ocean models. | `0.05` |  | [m/s] |  |
@@ -1104,19 +1109,24 @@ The keywords and options listed below are deprecated and will be removed in a fu
 | `[general] convertLongCulverts` | Unconverted long culverts (convertLongCulverts=0) will be removed in a future release. |
 | `[geometry] circumcenterMethod` | Once the keyword is removed/becomes obsolete, the `allNetlinksLoop` method will be used. |
 | `[geometry] circumcenterTolerance` | Once the keyword is removed/becomes obsolete, a fixed tolerance will be used. |
+| `[geometry] Grdang` | Keyword no longer supported, the provided value is ignored. |
 | `[geometry] iniFieldFile` | Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details. |
 | `[geometry] orgFloorLevTopLayDef` | Use `[geometry] floorLevTopLay` instead. |
 | `[geometry] sigmaGrowthFactor` | Use `[geometry] zLayerGrowthFactor` instead. |
 | `[model]` | Section has been replaced with `[general]` section. |
+| `[model] mduFormatVersion` | Use `[general] fileVersion` instead. |
+| `[numerics] filter` | Keyword no longer supported, the provided value is ignored. |
 | `[numerics] keepZLayeringAtBed` | Use `[geometry] keepZLayeringAtBed` instead. |
 | `[numerics] maxItPresDens` | Keyword will be removed in a future release. |
 | `[numerics] maxItVerticalForesterSal` | Use `[numerics] maxItVerticalForester` instead. |
 | `[numerics] maxItVerticalForesterTem` | Use `[numerics] maxItVerticalForester` instead. |
+| `[numerics] sobekdfm_relax` | Keyword no longer supported, the provided value is ignored. Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] vertAdvTypSal` | Use `[numerics] verticalAdvectionType` instead. |
 | `[numerics] vertAdvTypTem` | Use `[numerics] verticalAdvectionType` instead. |
 | `[physics] jadelvappos` | Keyword will be removed in a future release. |
 | `[physics] SecchiDepth2` | Use `[physics] SecchiDepthNonPenetrative` instead. |
 | `[physics] SecchiDepth2Fraction` | Use `[physics] SecchiDepthNonPenetrativeFraction` instead. |
+| `[physics] umodLin` | Keyword no longer supported, the provided value is ignored. |
 | `[processes] dtMassBalance` | Use `[output] MbaInterval` instead. |
 | `[processes] thetaVertical` | Use `[numerics] verticalAdvectionType` instead. |
 
@@ -1131,8 +1141,6 @@ The keywords and options listed below are no longer supported and will cause an 
 
 | Keyword/value | Notes |
 | ------------- | ----- |
-| `[model] mduFormatVersion` | Use `[general] fileVersion` instead. |
-| `[physics] umodLin` | Keyword no longer supported. |
 | `[sediment] masBalMinDep` | Keyword no longer supported. |
 
 <a id="release-2026.02"></a>
@@ -1192,7 +1200,6 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[geometry] bedLevelFile` | Use `[geometry] iniFieldFile` instead. That keyword should point to a file which contains a reference to the bed level samples file, which was originally referenced by this keyword. See manual for more information. |
 | `[geometry] botLevType` | Use `[geometry] bedLevType` instead. |
 | `[geometry] botLevUni` | Use `[geometry] bedLevUni` instead. |
-| `[geometry] Grdang` | Keyword no longer supported. |
 | `[geometry] iThinDykeScheme` | Use `[numerics] fixedWeirScheme` instead. |
 | `[geometry] manholeFile` | Use `[geometry] storageNodeFile` instead. |
 | `[geometry] nodeFile` | Use `[geometry] storageNodeFile` instead. |
@@ -1200,7 +1207,6 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[geometry] roughnessFiles` | Use `[geometry] frictFile` instead. |
 | `[geometry] thinDykeFile` | Use `[geometry] fixedWeirFile` instead. |
 | `[numerics] CFLWaveFrac` | Keyword no longer supported. |
-| `[numerics] filter` | Option no longer supported. |
 | `[numerics] hkad` | Keyword no longer supported. |
 | `[numerics] iThinDykeScheme` | Use `[numerics] fixedWeirScheme` instead. |
 | `[numerics] jaEmbed1d` | Keyword no longer supported. |
@@ -1208,7 +1214,6 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[numerics] qhRelax` | Option no longer needed due to improved semi-implicit algorithm. |
 | `[numerics] relax` | Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] sobekdfm_minimal_1d2d_embankment` | Use `[numerics] lateral_fixedweir_minimal_1d2d_embankment` instead. |
-| `[numerics] sobekdfm_relax` | Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] sobekdfm_umin` | Use `[numerics] lateral_fixedweir_umin` instead. |
 | `[numerics] sobekdfm_umin_method` | Use `[numerics] lateral_fixedweir_umin_method` instead. |
 | `[numerics] thinDykeContraction` | Use `[numerics] fixedWeirContraction` instead. |
