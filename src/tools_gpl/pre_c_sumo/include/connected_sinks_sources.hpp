@@ -3,16 +3,25 @@
 
 #include <precice/precice.hpp>
 #include <vector>
+#include <string>
+#include <expected>
 
 namespace pre_c_sumo
 {
     /**
-     * @anchor pre_c_sumo_connected_sink_sources
-     * @brief Collects sink/source pairs sent through preCICE.
-     *
-     * This class stores source and sink data in parallel vectors so that all values for a single entry stay aligned.
-     * In the context of preC-SUMO, these entries are handled as connected sink/source pairs, and preCICE writes each
-     * attribute as a separate vector.
+     * @brief Error returned when we entounted a runtime problem.
+     */
+    struct ConnectedSinkSourcesError
+    {
+        std::string message;
+    };
+
+    /**
+     * @brief Connected Sinks and Sources administration
+     * This class collects the sinks and sources data that is sent through preCICE.
+     * In the context of preC-SUMO, these connected sinks and sources are handled by sink and/or source
+     * pairs. preCICE handles communications per attribute. This is why data is stored here as a struct of vectors
+     * instead of a vector of structs. The member functions assure that all vectors have consistent lengths.
      */
     class ConnectedSinkSources
     {
@@ -58,9 +67,10 @@ namespace pre_c_sumo
          * @param participant preCICE participant used for the write operation.
          * @param mesh_name Name of the mesh on which vertices are registered.
          * @param precice_ids Vertex IDs registered on the provided mesh.
+         * @return std::expected containing void on success or pre_C_sumo::ConnectedSinkSourcesError on failure;
          */
-        void write_to_precice(precice::Participant& participant, std::string_view mesh_name,
-                              const std::vector<int>& precice_ids);
+        [[nodiscard]] std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> write_to_precice(
+            precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids);
 
         /**
          * @anchor pre_c_sumo_connected_sink_sources_get_discharge_value

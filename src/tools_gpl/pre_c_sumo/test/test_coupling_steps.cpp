@@ -140,7 +140,7 @@ namespace
 
         std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
         nf2ff_readers.emplace_back(std::move(*reader));
-        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers).value();
     }
 
     /**
@@ -162,7 +162,7 @@ namespace
 
         std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
         nf2ff_readers.emplace_back(std::move(*reader));
-        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers).value();
     }
 } // namespace
 
@@ -280,7 +280,8 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
 
     const auto connected_sources_sinks = pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
 
-    EXPECT_EQ(connected_sources_sinks.get_number_of_entries(), 2000u);
+    EXPECT_TRUE(connected_sources_sinks.has_value());
+    EXPECT_EQ(connected_sources_sinks.value().get_number_of_entries(), 2000u);
 }
 
 TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGeneratedDiffuserModelWithOneSink)
@@ -315,7 +316,8 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
 
     const auto connected_sources_sinks = pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
 
-    EXPECT_EQ(connected_sources_sinks.get_number_of_entries(), 1000u);
+    EXPECT_TRUE(connected_sources_sinks.has_value());
+    EXPECT_EQ(connected_sources_sinks.value().get_number_of_entries(), 1000u);
 }
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticNF2FFCasesYieldExpectedConnectedCounts)
@@ -408,9 +410,10 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
     EXPECT_TRUE(nf2ff_readers.front().intakes().empty());
 
     const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
-    ASSERT_EQ(connected.get_number_of_entries(), 2000u);
+    ASSERT_TRUE(connected.has_value());
+    ASSERT_EQ(connected.value().get_number_of_entries(), 2000u);
 
-    const auto& discharges = connected.get_discharge_value();
+    const auto& discharges = connected.value().get_discharge_value();
     ASSERT_EQ(discharges.size(), 2000u);
     EXPECT_NEAR(discharges[0], 0.04, 1e-12);
     EXPECT_NEAR(discharges[999], 0.04, 1e-12);
@@ -606,14 +609,14 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     ASSERT_GT(nf2ff_readers[0].sinks()[0].entrainment, nf2ff_readers[0].sinks()[1].entrainment);
 
     // Verify that the error message contains the sink index and the negative delta_s value
-    try
+    auto result = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+    if (result.has_value())
     {
-        pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
-        FAIL() << "Expected std::runtime_error to be thrown";
+        FAIL() << "Expected pre_c_sumo::ConnectedSourceSourcesError to be returned";
     }
-    catch (const std::runtime_error& e)
+    else
     {
-        const std::string error_message = e.what();
+        const std::string error_message = result.error().message;
         // Verify that the error message contains "Negative entrainment factor"
         EXPECT_PRED2(test_utilities::contains, error_message, "Negative entrainment factor");
         // Verify that the error message contains the sink index (should be 1, since delta from sink 0 to 1)
@@ -622,6 +625,6 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
         EXPECT_PRED2(test_utilities::contains, error_message, "-");
     }
 
-    // Verify that the exception is thrown
-    EXPECT_THROW(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers), std::runtime_error);
+    // Verify (once more) that an error was returned.
+    EXPECT_FALSE(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers).has_value());
 }
