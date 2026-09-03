@@ -14529,3 +14529,4 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "CriPOAlg30","x"," ",    1.00000    ,"(gDM/m3)            ","critical concentration POM for settling algae 30  ","volume    ","volume    "," ","                              "
 "ExpPOAlg30","x"," ",    0.00000    ,"(-)                 ","exponent for influence POM on settling algae 30   ","volume    ","volume    "," ","                              "
 "POMFuAlg30","x"," ",   -999.000    ,"(-)                 ","POM function on settling algae type 30            ","volume    ","volume    "," ","                              "
+"UseRadAve ","x"," ",    0.00000    ,"(-)                 ","use average (1) or actual irradiation (0)         ","volume    ","volume    "," ","                              "
