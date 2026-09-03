@@ -78,6 +78,7 @@ contains
       use m_wrihistek
       use m_unc_write_his, only: unc_write_his
       use m_print_timings, only: print_timings
+      use m_flow_initwaveforcings_runtime, only: close_file_readers, open_file_readers
 
 #ifdef _OPENMP
       use omp_lib
@@ -88,6 +89,7 @@ contains
       real(dp) :: time_com_ctv
       real(kind=dp) :: runtime
       real(kind=dp) :: tem_dif
+      integer :: ierror
 
       call inctime_split(tim)
 
@@ -209,6 +211,7 @@ contains
       ! Write com file
       if (jawave == WAVE_SWAN_ONLINE) then
          !
+         ierror = close_file_readers()
          if (ti_com /= dt_user .or. ti_ctv(1) > 0) then
             !
             if (comparereal(tim, time_com, EPS10) >= 0) then
@@ -241,6 +244,7 @@ contains
             call wricom(tim) ! legacy behaviour, write at dt_user
             !call mess(LEVEL_INFO,'com file written at t=', tim)
          end if ! ti_com
+         ierror = open_file_readers()
       end if ! jawave
 
       if (ti_xls > 0) then

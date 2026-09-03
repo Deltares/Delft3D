@@ -70,6 +70,8 @@ contains
          ! com file already exists
          !
          ierr = nf90_open(filnam, NF90_WRITE, comids%ncid)
+         call check_error(ierr, "Error opening existing com file: " // trim(filnam), LEVEL_WARN)
+         
       elseif (comids%ncid == 0 .and. jawave == WAVE_SWAN_ONLINE) then
          !
          ! No communication yet via com file:
@@ -82,6 +84,7 @@ contains
             write (msg, '(3a)') "File '", trim(filnam), "' already exists. Assuming that it contains valid WAVE information. FLOW data will be added."
             call mess(LEVEL_WARN, trim(msg))
             ierr = nf90_open(filnam, NF90_WRITE, comids%ncid)
+            call check_error(ierr, "Error opening existing com file: " // trim(filnam))
          else
             ! No com file yet. Create a new one and write FLOW parameters
             !

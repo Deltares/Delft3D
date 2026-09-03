@@ -38,10 +38,112 @@ module m_flow_initwaveforcings_runtime
    implicit none
 
    private
+   integer, dimension(12) :: wave_items
 
    public :: flow_initwaveforcings_runtime
+   public :: close_file_readers
+   public :: open_file_readers
 
 contains
+
+   function close_file_reader(item_id) result(retval)
+      use m_ec_support
+      use m_ec_typedefs
+      use netcdf
+      use m_meteo, only: ecInstancePtr
+
+      integer, intent(in) :: item_id
+      integer :: ierror, i, j
+      logical :: retval
+
+      type(tEcItem), pointer :: item, source_item !< Item under consideration
+      type(tEcFileReader), pointer             :: fileReaderPtr         !< helper pointer for a file reader
+      retval = .true.
+
+      item => ecSupportFindItem(ecInstancePtr, item_id)
+      if (associated(item)) then
+         do i=1, item%nConnections
+            do j=1, item%connectionsPtr(i)%ptr%nSourceItems
+               source_item => item%connectionsPtr(i)%ptr%sourceItemsPtr(j)%ptr         
+
+               fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, source_item%providerId)
+               ierror = nf90_inquire(fileReaderPtr%fileHandle)
+               if (ierror == nf90_noerr) then
+                  ierror = nf90_close(fileReaderPtr%fileHandle)
+               end if
+
+               if (ierror /= nf90_noerr) then
+                  retval = .false.
+               end if      
+
+            end do
+         end do   
+      end if
+
+   end function close_file_reader
+
+   function open_file_reader(item_id) result(retval)
+      use m_ec_support
+      use m_ec_typedefs
+      use netcdf
+      use m_meteo, only: ecInstancePtr
+
+      integer, intent(in) :: item_id
+      integer :: ierror, chunkSize, i, j
+      logical :: retval
+      type(tEcItem), pointer :: item, source_item !< Item under consideration
+      type(tEcFileReader), pointer             :: fileReaderPtr         !< helper pointer for a file reader
+
+      retval = .true.
+
+      item => ecSupportFindItem(ecInstancePtr, item_id)
+      if (associated(item)) then
+         do i=1, item%nConnections
+            do j=1, item%connectionsPtr(i)%ptr%nSourceItems
+               source_item => item%connectionsPtr(i)%ptr%sourceItemsPtr(j)%ptr         
+
+               fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, source_item%providerId)
+               chunkSize = 4096
+               ierror = nf90_open(trim(fileReaderPtr%fileName), NF90_NOWRITE, fileReaderPtr%fileHandle, chunkSize)
+               if (ierror /= nf90_noerr) then
+                  retval = .false.
+               end if      
+
+            end do
+         end do   
+      end if
+
+   end function open_file_reader
+
+   function close_file_readers() result(retval)
+      use m_meteo
+      
+      logical :: retval      
+      integer :: i, item_id
+
+      retval = .true.
+      do i = 1, size(wave_items)
+         item_id = wave_items(i)
+         if (item_id /= ec_undef_int) then
+            retval = retval .and. close_file_reader(item_id)
+         end if
+      end do
+   end function close_file_readers
+
+   function open_file_readers() result(retval)
+      use m_meteo
+      
+      logical :: retval      
+      integer :: i, item_id
+
+      retval = .true.
+      do i = 1, size(wave_items)
+         item_id = wave_items(i)
+         if (item_id /= ec_undef_int) then
+            retval = retval .and. open_file_reader(item_id)
+         end if
+      end do
+   end function open_file_readers
 
    function flow_initwaveforcings_runtime() result(retval)
       use m_flowparameters
@@ -69,6 +171,8 @@ contains
          retval = .true.
          return
       end if
+
+      wave_items = ec_undef_int
 
       filetype_l = 14 ! netcdf
       method_l = 7 ! only time interpolation, extrapolation allowed (online WAVE)
@@ -193,6 +297,9 @@ contains
       retval = success
 
 888   continue
+      if (retval) then
+         wave_items = [item_hrms, item_tp, item_dir, item_fx, item_fy, item_wsbu, item_wsbv, item_mx, item_my, item_ubot, item_dissurf, item_diswcap]
+      end if
       extfor_wave_initialized = retval ! Becomes .true. or .false., depending on whether the timespace relations have been created succesfully.
 
    end function flow_initwaveforcings_runtime
