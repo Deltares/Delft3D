@@ -24,6 +24,9 @@ module precice_adapter
    !> Maximum length for preCICE standard name strings stored in quantity_t.
    integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
 
+   !> Fixed number of constituents we communicate.
+   integer, parameter :: NUM_CONSTITUENTS = 10
+
    !> A single quantity that can be exchanged with preCICE.
    type :: quantity_t
       character(kind=c_char, len=MAX_STANDARD_NAME_LENGTH) :: standard_name
@@ -39,7 +42,7 @@ module precice_adapter
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
       ! Constituents (reading and writing)
-      type(quantity_t), dimension(10) :: constituents
+      type(quantity_t), dimension(NUM_CONSTITUENTS) :: constituents
       ! Reading
       type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
       type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
@@ -150,8 +153,8 @@ contains
       adapter_instance%cell_center_mesh_coordinates_2d = cell_center_mesh_coordinates_2d
       adapter_instance%cell_center_mesh_coordinates_3d = cell_center_mesh_coordinates_3d
 
-      ! Set up constituents (fixed to 10 and named C01..C10 for now)
-      do constituent_index = 1,10
+      ! Set up constituents (fixed to NUM_CONSTITUENTS and named C01..C10 for now)
+      do constituent_index = 1,NUM_CONSTITUENTS
          write(constituent_name, '(A, I2.2)') 'C', constituent_index
          adapter_instance%quantities%constituents(constituent_index) = quantity_t(standard_name=constituent_name, is_active=.true.)
       end do
@@ -326,7 +329,7 @@ contains
       call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_magnitude_weighted, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_direction, self%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(self%sources_sinks_constituents, [10, self%mesh_sources_sinks_size], keepExisting=.false.)
+      call realloc(self%sources_sinks_constituents, [NUM_CONSTITUENTS, self%mesh_sources_sinks_size], keepExisting=.false.)
    end subroutine precice_adapter_allocate_read_arrays
 
 
@@ -373,7 +376,7 @@ contains
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
       ! Constituents
-      do constituent_index = 1, NUMCONST
+      do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   constituents(constituent_index,:), len(self%cell_center_mesh_3d_name), &
@@ -502,7 +505,7 @@ contains
                               self%sources_momentum_direction, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_momentum_direction%standard_name)))
       ! Read constituents
-      do constituent_index = 1, NUMCONST
+      do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
          call precicef_read_data(self%sources_sinks_mesh_name, &
                                  self%quantities%constituents(constituent_index)%standard_name, &
                                  self%mesh_sources_sinks_size, &
