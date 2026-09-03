@@ -345,8 +345,8 @@ contains
       use precice, only: precicef_write_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, s1, ndkx
-      use m_flowgeom, only: bl, ndx2d
+      use m_flow, only: hs, s1
+      use m_flowgeom, only: bl, ndx2d,  ndx
       use m_turbulence, only: potential_density
       use m_transport, only: NUMCONST, constituents
             
@@ -379,7 +379,7 @@ contains
       do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
-                                  constituents(constituent_index,:), len(self%cell_center_mesh_3d_name), &
+                                  constituents(constituent_index,ndx+1:), len(self%cell_center_mesh_3d_name), &
                                   len(trim(self%quantities%constituents(constituent_index)%standard_name)))
       end do
    end subroutine precice_adapter_write_data
