@@ -16,8 +16,8 @@ digraph preCSUMOWorkflow {
   /* -------------------------
      Input Sources
   --------------------------*/
-  CSUMOConfig [label="CSUMO Config.xml\n(Diffuser + Ambient\nLocations)", shape=note, fillcolor="#CCE6FF", style=filled];
-  ProC_Adapter [label="preC-SUMO Adapter\n(preCICE Interface)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
+  CSUMOConfig [label="CSUMO Config.xml\n(diffusers + ambient\nlocations)", shape=note, fillcolor="#CCE6FF", style=filled];
+  ProC_Adapter [label="preC-SUMO Adapter\n(preCICE interface)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
 
   /* -------------------------
      Core Tasks
@@ -26,45 +26,45 @@ digraph preCSUMOWorkflow {
     label="preC-SUMO Core Workflow";
     style="rounded,filled";
     fillcolor="#FFE6E6";
-    
-    task1 [label="1. Read CSUMO Config.xml\n(Diffuser + Ambient\nLocations)", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    
-    task2 [label="2. Receive Ambient Data\nat Locations from\nAdapter (preCICE)", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    
-    task3 [label="3. Write FF2NF.xml\n(Far-field → Near-field\nConditions)", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    
-    task4 [label="4. External C-SUMO\nNearfield Calculation\n(Produces NF2FF.xml)", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
-    
-    task5 [label="5. Read NF2FF.xml\n(Near-field → Far-field\nResults)", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    
-    task6 [label="6. DESA Routine\n(Create Source/Sink\nStructures)", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    
-    task7 [label="7. Send Source/Sink\nCloud to FM\n(via preCICE)", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
-    
-    task1 -> task2 [label="Locations"];
-    task2 -> task3 [label="Ambient data"];
-    task3 -> task4 [label="FF2NF.xml"];
-    task4 -> task5 [label="NF2FF.xml"];
-    task5 -> task6 [label="NF results"];
-    task6 -> task7 [label="Point cloud"];
+
+    task1 [label="readCsumoSettingsFile()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_csumo_settings_file", tooltip="Open readCsumoSettingsFile docs"];
+
+    task2 [label="receiveFFData()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_receive_ff_data", tooltip="Open receiveFFData docs"];
+
+    task3 [label="writeFF2NFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open writeFF2NFFiles docs"];
+
+    task4 [label="C-SUMO near-field", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="FF2NF to NF2FF exchange"];
+
+    task5 [label="readNF2FFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Open readNF2FFFiles docs"];
+
+    task6 [label="convertNFtoConnectedSinkSources()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_connected_sink_sources", tooltip="Open conversion docs"];
+
+    task7 [label="write_to_precice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_to_precice", tooltip="Open write_to_precice docs"];
+
+    task1 -> task2;
+    task2 -> task3;
+    task3 -> task4;
+    task4 -> task5;
+    task5 -> task6;
+    task6 -> task7;
   }
 
   /* -------------------------
      Output
   --------------------------*/
-  FMAdapter [label="FM Adapter\n(preCICE Receiver)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
+  FMAdapter [label="FM Adapter\n(preCICE receiver)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
 
   /* -------------------------
      Data Flow
   --------------------------*/
-  CSUMOConfig -> task1 [label="reads"];
-  ProC_Adapter -> task2 [label="provides data"];
-  task7 -> FMAdapter [label="sends data"];
+  CSUMOConfig -> task1;
+  ProC_Adapter -> task2;
+  task7 -> FMAdapter;
 
   /* -------------------------
      External Coupling
   --------------------------*/
-  ExtCSUMO [label="External C-SUMO App\n(Nearfield Calculator)", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
-  task3 -> ExtCSUMO [label="  FM conditions"];
-  ExtCSUMO -> task4 [label="  nearfield plume"];
+  ExtCSUMO [label="External C-SUMO\nnear-field solver", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
+  task3 -> ExtCSUMO;
+  ExtCSUMO -> task4;
 }

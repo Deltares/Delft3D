@@ -59,7 +59,7 @@ namespace pre_c_sumo
         std::size_t get_number_of_entries() const;
 
         /**
-         * @anchor pre_c_sumo_write_to_precice
+         * @anchor pre_c_sumo_connected_sink_sources_write_to_precice
          * @brief Writes all accrued data to preCICE for the specified participant and mesh.
          *
          * After writing the data, the stored values are cleared.

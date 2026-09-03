@@ -11,27 +11,27 @@
 #include <vector>
 
 /*** Example input file.
- * <NF2FF>
- *    <fileVersion>0.3</fileVersion>
- *    <discharge>
- *       <Qintake>10.0</Qintake>
- *       <Qsource>10.0</Qsource>
+ * &lt;NF2FF&gt;
+ *    &lt;fileVersion&gt;0.3&lt;/fileVersion&gt;
+ *    &lt;discharge&gt;
+ *       &lt;Qintake&gt;10.0&lt;/Qintake&gt;
+ *       &lt;Qsource&gt;10.0&lt;/Qsource&gt;
  *       <!--  Constituents in fixed order: Temperature, Salinity, Sediments, Tracers
  *             Operator: "absolute" values or "excess" (dT,dS,d..)  -->
- *       <constituentsOperator>excess</constituentsOperator>
- *       <constituents>10.0 0.0</constituents>
- *    </discharge>
- *    <NFResult>
- *       <sinks>
+ *       &lt;constituentsOperator&gt;excess&lt;/constituentsOperator&gt;
+ *       &lt;constituents&gt;10.0 0.0&lt;/constituents&gt;
+ *    &lt;/discharge&gt;
+ *    &lt;NFResult&gt;
+ *       &lt;sinks&gt;
  *          250.000 350.087 9.700 1.000 0.000 0.000
  *          252.500 350.048 9.700 5     0.250 0.380
- *       </sinks>
- *       <sources>
+ *       &lt;/sinks&gt;
+ *       &lt;sources&gt;
  *          1050.000 350.365 5.000 5.000 5 15.000
  *          1050.500 350.365 5.000 5.000 5 15.000
- *       </sources>
- *    </NFResult>
- * </NF2FF>
+ *       &lt;/sources&gt;
+ *    &lt;/NFResult&gt;
+ * &lt;/NF2FF&gt;
  ***/
 
 namespace pre_c_sumo

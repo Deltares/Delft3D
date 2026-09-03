@@ -173,9 +173,9 @@ namespace pre_c_sumo
      * @dotfile preC_SUMO_Swimlanes.dot
      * @image html preC_SUMO_Swimlanes.svg "preC-SUMO coupling workflow" width=900px
      *
-     * The core sequence is: @ref pre_c_sumo_read_settings -> @ref pre_c_sumo_receive_ff_data ->
+     * The core sequence is: @ref pre_c_sumo_read_csumo_settings_file -> @ref pre_c_sumo_receive_ff_data ->
      * @ref pre_c_sumo_write_ff2nf -> @ref pre_c_sumo_wait_nf2ff -> @ref pre_c_sumo_read_nf2ff ->
-     * @ref pre_c_sumo_convert_nf -> @ref pre_c_sumo_connected_sink_sources.
+     * @ref pre_c_sumo_convert_nf_to_connected_sink_sources -> @ref pre_c_sumo_send_sources_sinks_to_ff.
      *
      * @param csumoConfigFileName Path and filename of the C-SUMO configuration XML file.
      * @param adapterConfigFileName Path and filename of the preCICE adapter configuration file.
