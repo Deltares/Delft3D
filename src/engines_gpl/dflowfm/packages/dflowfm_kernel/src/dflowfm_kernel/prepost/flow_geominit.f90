@@ -570,12 +570,12 @@ contains
       call realloc(ln0, [2, lnx])
       call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
 
-      call realloc(xu, lnx, keepExisting=.false., stat=ierr)
-      call aerr('xu(lnx)', ierr, lnx)
-      call realloc(yu, lnx, keepExisting=.false., stat=ierr)
-      call aerr('yu(lnx)', ierr, lnx)
-      call realloc(blu, lnx, keepExisting=.false., stat=ierr, fill=dmiss)
-      call aerr('blu(lnx)', ierr, lnx)
+      if (allocated(xu)) then
+         deallocate (xu, yu, blu)
+      end if
+      allocate (xu(lnx), yu(lnx), blu(lnx), stat=ierr)
+      call aerr('xu(lnx), yu(lnx) , blu(lnx)', ierr, 3 * lnx)
+      blu = dmiss
       if (jafullgridoutput > 0) then
          call realloc(blup, lnx, keepExisting=.false., fill=dmiss, stat=ierr)
          call aerr('blup(lnx)', ierr, lnx)
