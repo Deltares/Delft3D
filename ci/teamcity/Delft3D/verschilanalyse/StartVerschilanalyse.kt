@@ -4,6 +4,7 @@ import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 
 import Delft3D.verschilanalyse.ReportVerschilanalyse
 
@@ -18,12 +19,16 @@ object StartVerschilanalyse : BuildType({
         cleanCheckout = true
     }
 
-    if (DslContext.getParameter("start_verschilanalyze").lowercase() == "true") {
+    if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
         triggers {
             finishBuildTrigger {
                 buildType = "Delft3D_Publish"
                 successfulOnly = true
-                branchFilter = branchFilters
+		branchFilter = """
+		    +:<default>
+		    +:main
+		    +:all/release/*
+		""".trimIndent()
             }
         }
     }   
