@@ -32,7 +32,7 @@ contains
 
       character(len=256), allocatable :: lines(:)
       character(len=64) :: id, allowed_flowdir, friction_type
-      integer :: i, line_count, num_culverts, num_coordinates, structure_start
+      integer :: i, num_culverts, num_coordinates, structure_start
       real(kind=dp) :: width, height, friction_value, valve_opening
 
       num_coordinates = size(x_coordinates, 1)
@@ -43,7 +43,6 @@ contains
 
       allocate (lines(3 + 14 * num_culverts))
       lines(1:4) = [character(len=256) :: "[General]", "    fileVersion     = 3.00", "    fileType        = structures", ""]
-      line_count = 4
 
       do i = 1, num_culverts
          write (id, '("lc",i2.2)') i
@@ -76,11 +75,10 @@ contains
             valve_opening = valve_openings(i)
          end if
 
+         structure_start = 4 + (i - 1) * 14
          if (i > 1) then
-            line_count = line_count + 1
-            lines(line_count) = ""
+            lines(structure_start) = ""
          end if
-         structure_start = line_count
          lines(structure_start + 1) = "[Structure]"
          lines(structure_start + 2) = "    id              = "//trim(id)
          lines(structure_start + 3) = "    type            = longCulvert"
@@ -94,10 +92,9 @@ contains
          lines(structure_start + 11) = "    frictionType    = "//trim(friction_type)
          write (lines(structure_start + 12), '(a,g0)') "    frictionValue   = ", friction_value
          write (lines(structure_start + 13), '(a,g0)') "    valveRelativeOpening = ", valve_opening
-         line_count = structure_start + 13
       end do
 
-      call create_file(filename, lines(:line_count))
+      call create_file(filename, lines)
    end subroutine create_longculvert_structure_file
 
    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts__single_four_point, test_convert1d2dlongculverts__single_four_point,
