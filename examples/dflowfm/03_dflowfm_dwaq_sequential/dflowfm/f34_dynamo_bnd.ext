@@ -1,101 +1,377 @@
 [General]
-fileVersion=2.02
-fileType=extForce
+fileVersion = 2.02
+fileType    = extForce
+
+[Spatial]
+quantity       = waqparameterVWind
+targetMaskFile = fullextent.pol
+operand        = override
+dataValue      = 7.2
 
 [Boundary]
-quantity=waterlevelbnd
-locationFile=f34_NW.pli
-forcingFile=f34_NW.bc
+quantity     = waterlevelbnd
+locationFile = f34_NW.pli
+forcingFile  = f34_NW.bc
 
 [Boundary]
-quantity=waterlevelbnd
-locationFile=f34_NE.pli
-forcingFile=f34_NE.bc
+quantity     = waterlevelbnd
+locationFile = f34_NE.pli
+forcingFile  = f34_NE.bc
 
 [Boundary]
-quantity=tracerbndIM1
-locationFile=f34_NW_IM1_dynamo.pli
-forcingFile=f34_NW_IM1_dynamo.bc
+quantity     = tracerbndIM1
+locationFile = f34_NW_IM1_dynamo.pli
+forcingFile  = f34_NW_IM1_dynamo.bc
 
 [Boundary]
-quantity=tracerbndIM1
-locationFile=f34_NE_IM1_dynamo.pli
-forcingFile=f34_NE_IM1_dynamo.bc
+quantity     = tracerbndIM1
+locationFile = f34_NE_IM1_dynamo.pli
+forcingFile  = f34_NE_IM1_dynamo.bc
 
 [Boundary]
-quantity=tracerbndIM2
-locationFile=f34_NW_IM2_dynamo.pli
-forcingFile=f34_NW_IM2_dynamo.bc
+quantity     = tracerbndIM2
+locationFile = f34_NW_IM2_dynamo.pli
+forcingFile  = f34_NW_IM2_dynamo.bc
 
 [Boundary]
-quantity=tracerbndIM2
-locationFile=f34_NE_IM2_dynamo.pli
-forcingFile=f34_NE_IM2_dynamo.bc
+quantity     = tracerbndIM2
+locationFile = f34_NE_IM2_dynamo.pli
+forcingFile  = f34_NE_IM2_dynamo.bc
 
 [Boundary]
-quantity=tracerbndOXY
-locationFile=f34_NW_OXY.pli
-forcingFile=f34_NW_OXY.bc
+quantity     = tracerbndOXY
+locationFile = f34_NW_OXY.pli
+forcingFile  = f34_NW_OXY.bc
 
 [Boundary]
-quantity=tracerbndOXY
-locationFile=f34_NE_OXY.pli
-forcingFile=f34_NE_OXY.bc
+quantity     = tracerbndOXY
+locationFile = f34_NE_OXY.pli
+forcingFile  = f34_NE_OXY.bc
 
 [Boundary]
-quantity=tracerbndNH4
-locationFile=f34_NW_NH4.pli
-forcingFile=f34_NW_NH4.bc
+quantity     = tracerbndNH4
+locationFile = f34_NW_NH4.pli
+forcingFile  = f34_NW_NH4.bc
 
 [Boundary]
-quantity=tracerbndNH4
-locationFile=f34_NE_NH4.pli
-forcingFile=f34_NE_NH4.bc
+quantity     = tracerbndNH4
+locationFile = f34_NE_NH4.pli
+forcingFile  = f34_NE_NH4.bc
 
 [Boundary]
-quantity=tracerbndNO3
-locationFile=f34_NW_NO3.pli
-forcingFile=f34_NW_NO3.bc
+quantity     = tracerbndNO3
+locationFile = f34_NW_NO3.pli
+forcingFile  = f34_NW_NO3.bc
 
 [Boundary]
-quantity=tracerbndNO3
-locationFile=f34_NE_NO3.pli
-forcingFile=f34_NE_NO3.bc
+quantity     = tracerbndNO3
+locationFile = f34_NE_NO3.pli
+forcingFile  = f34_NE_NO3.bc
 
 [Boundary]
-quantity=tracerbndPO4
-locationFile=f34_NW_PO4.pli
-forcingFile=f34_NW_PO4.bc
+quantity     = tracerbndPO4
+locationFile = f34_NW_PO4.pli
+forcingFile  = f34_NW_PO4.bc
 
 [Boundary]
-quantity=tracerbndPO4
-locationFile=f34_NE_PO4.pli
-forcingFile=f34_NE_PO4.bc
+quantity     = tracerbndPO4
+locationFile = f34_NE_PO4.pli
+forcingFile  = f34_NE_PO4.bc
 
 [Boundary]
-quantity=tracerbndDiat
-locationFile=f34_NW_Diat.pli
-forcingFile=f34_NW_Diat.bc
+quantity     = tracerbndDiat
+locationFile = f34_NW_Diat.pli
+forcingFile  = f34_NW_Diat.bc
 
 [Boundary]
-quantity=tracerbndDiat
-locationFile=f34_NE_Diat.pli
-forcingFile=f34_NE_Diat.bc
+quantity     = tracerbndDiat
+locationFile = f34_NE_Diat.pli
+forcingFile  = f34_NE_Diat.bc
 
 [Boundary]
-quantity=tracerbndGreen
-locationFile=f34_NW_Green.pli
-forcingFile=f34_NW_Green.bc
+quantity     = tracerbndGreen
+locationFile = f34_NW_Green.pli
+forcingFile  = f34_NW_Green.bc
 
 [Boundary]
-quantity=tracerbndGreen
-locationFile=f34_NE_Green.pli
-forcingFile=f34_NE_Green.bc
+quantity     = tracerbndGreen
+locationFile = f34_NE_Green.pli
+forcingFile  = f34_NE_Green.bc
 
 [Meteo]
-quantity=windxy
-forcingFile=f34.wnd
-forcingFileType=uniMagDir
-interpolationMethod=linearSpaceTime
-operand=O
+quantity            = windxy
+forcingFile         = f34.wnd
+forcingFileType     = uniMagDir
+interpolationMethod = linearSpaceTime
+operand             = override
+
+[Initial]
+quantity              = initialtracerIM1    
+dataFile              = initialtracerIM1.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerIM1    
+dataFile              = para1.pol           
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e+001      
+
+[Initial]
+quantity              = initialtracerIM1    
+dataFile              = para2.pol           
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e+001      
+
+[Initial]
+quantity              = initialtracerIM1    
+dataFile              = para3.pol           
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 2.0000000e+001      
+
+[Initial]
+quantity              = initialtracerIM2    
+dataFile              = initialtracerIM2.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerIM2    
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 3.0000000e+000      
+
+[Initial]
+quantity              = initialtracerOXY    
+dataFile              = initialtracerOXY.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerOXY    
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 8.0000000e+000      
+
+[Initial]
+quantity              = initialtracerNH4    
+dataFile              = initialtracerNH4.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerNH4    
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 4.0000000e-001      
+
+[Initial]
+quantity              = initialtracerNO3    
+dataFile              = initialtracerNO3.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerNO3    
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e-001      
+
+[Initial]
+quantity              = initialtracerPO4    
+dataFile              = initialtracerPO4.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerPO4    
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 5.0000000e-002      
+
+[Initial]
+quantity              = initialtracerDiat   
+dataFile              = initialtracerDiat.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerDiat   
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e-001      
+
+[Initial]
+quantity              = initialtracerGreen  
+dataFile              = initialtracerGreen.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerGreen  
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e-001      
+
+[Initial]
+quantity              = initialtracerDetC   
+dataFile              = initialtracerDetC.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerDetC   
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e+000      
+
+[Initial]
+quantity              = initialtracerDetN   
+dataFile              = initialtracerDetN.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerDetN   
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e-001      
+
+[Initial]
+quantity              = initialtracerDetP   
+dataFile              = initialtracerDetP.xyz
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerDetP   
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 1.0000000e-002      
+
+[Initial]
+quantity              = initialtracerSi     
+dataFile              = initialtracerSi.xyz 
+dataFileType          = sample              
+interpolationMethod   = averaging           
+operand               = override
+averagingType         = nearestNb           
+averagingRelSize      = 1.0000000e+000      
+averagingNumMin       = 1                   
+averagingPercentile   = 0.0000000e+000      
+locationType          = 2d                  
+
+[Initial]
+quantity              = initialtracerSi     
+dataFile              = fullextent.pol      
+dataFileType          = polygon             
+interpolationMethod   = constant            
+operand               = override
+locationType          = 2d                  
+value                 = 4.2000000e+000      
 

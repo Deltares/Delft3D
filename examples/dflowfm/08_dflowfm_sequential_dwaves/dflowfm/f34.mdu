@@ -222,6 +222,8 @@ Wrimap_heat_fluxes                = 0                                           
 ClassMapFile                      =                                                                     # Class map file *_clm.nc
 ClassMapInterval                  = 0                                                                   # Class output interval [Dd HH:MM:SS.ZZZ]
 Richardsononoutput                = 1                                                                   # Write Richardson numbers (1: yes, 0: no)
+ncMapDataPrecision                = double
+ncHisDataPrecision                = double
 
 [trachytopes]
 TrtRou                            = N                                                                   # Include alluvial and vegetation roughness (trachytopes) (Y: yes, N: no)

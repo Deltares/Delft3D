@@ -167,7 +167,6 @@ XLSInterval                       =                                             
 MapFile                           =                                                                     # Map file output file *_map.nc in NetCDF format
 MapInterval                       = 0                                                                   # Map file output times, given as 'interval' 'start period' 'end period'
 RstInterval                       = 0                                                                   # Restart file output times, given as 'interval' 'start period' 'end period'
-S1incinterval                     =                                                                     # Interval (m) in incremental file for water levels s1
 WaqFileBase                       =                                                                     # Basename (without extension) for all Delwaq files to be written.
 WaqInterval                       = 0                                                                   # Interval (in s) between DELWAQ file outputs
 StatsInterval                     =                                                                     # Interval (in s) between simulation statistics output [Dd HH:MM:SS.ZZZ]
@@ -226,6 +225,8 @@ Wrihis_sediment                   = 1                                           
 Wrihis_constituents               = 1                                                                   # Write tracers to his file (1: yes, 0: no)
 ClassMapFile                      =                                                                     # Class map file *_clm.nc
 ClassMapInterval                  = 0                                                                   # Class output interval [Dd HH:MM:SS.ZZZ]
+ncMapDataPrecision                = double
+ncHisDataPrecision                = double
 
 [trachytopes]
 TrtRou                            = N                                                                   # Include alluvial and vegetation roughness (trachytopes) (Y: yes, N: no)

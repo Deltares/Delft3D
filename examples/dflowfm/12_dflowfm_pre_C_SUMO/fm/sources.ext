@@ -29,3 +29,13 @@ zSource        = -5 -5
 Area           = 0.0
 discharge      = source.bc
 temperatureDelta  = source.bc
+
+[Initial]
+quantity            = initialtracerTracer1 # Name of the quantity. See UM Table D.2.
+dataFile            = fullextent.pol       # Name of file containing field data values.
+dataFileType        = polygon              # Type of dataFile.
+interpolationMethod = constant             # Type of (spatial) interpolation.
+operand             = override             # How this data is combined with previous data for the same quantity (if any).
+extrapolationMethod = 0                    # Option for (spatial) extrapolation.
+locationType        = all                  # Target location of interpolation.
+value               = 1.0                  # Only for dataFileType=polygon. The constant value to be set inside for all model points inside the polygon.
