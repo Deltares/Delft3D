@@ -44,7 +44,6 @@ project {
     template(TemplateFailureCondition)
     template(TemplateValidationDocumentation)
     template(TemplateFunctionalityDocumentation)
-    template(TemplateDownloadFromS3)
     template(TemplateDownloadFromDVC)
     template(TemplateDockerRegistry)
     template(TemplateBuildConcurrency)
