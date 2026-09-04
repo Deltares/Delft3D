@@ -865,35 +865,56 @@ contains
 
    end function resolve_meteo_target
 
-!> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
-!! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
+   !> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
+   !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
    function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+                                filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_ec_parameters, only: ec_undef_int
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_alloc, only: reallocP
 
+      ! Arguments
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
-      real(dp), intent(in) :: target_x(:), target_y(:)
-      integer, intent(in) :: mask(:), kx, filetype, method, oper
+      real(dp), dimension(:), intent(in) :: target_x, target_y
+      integer, dimension(:), intent(in) :: mask
+      integer, intent(in) :: kx, filetype, method, oper
       integer, intent(inout) :: ec_item
-      real(dp), pointer, intent(out) :: target_data(:)
+      real(dp), dimension(:), pointer, intent(out) :: target_data
+      logical, intent(in) :: is_static_field
       logical :: res
 
-      integer, pointer :: pkbot(:), pktop(:)
+      ! Local variables
+      integer, dimension(:), pointer :: pkbot, pktop
 
-      call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      ! Allocate target_data if it is a static field, otherwise set it to null. 
+      ! Else the EC module will update the array for every timestep, which is not desired for static fields.
+      if (is_static_field) then
+         call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      else
+         target_data => null()
+      end if
+      
       call setzcs()
+
       pkbot => kbot
       pktop => ktop
 
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
-      res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                     tunit, tstart_user, target_data)
+
+      ! If the field is static, read the data into target_data. If not, set ec_item to undefined.
+      ! Else the EC module will update the array for every timestep, which is not desired for static fields.
+      if (is_static_field) then
+         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                tunit, tstart_user, target_data)
+      else
+         ec_item = ec_undef_int
+      end if
+
    end function read_3d_sigma_field
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
@@ -980,7 +1001,6 @@ contains
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
       use processes_input, only: painp
-      use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
@@ -1109,7 +1129,7 @@ contains
                   else if (associated(target_data_integer)) then
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
                   else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
@@ -1138,23 +1158,23 @@ contains
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else if (target_location_type == UNC_LOC_S3D) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
+
+            if (res .and. ec_item /= ec_undef_int) then
+               call register_time_dependent_spatial_field_item(ec_item)
+            end if
          end if
 
          !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
          !  TODO: remove them by handling time-dependence generically.
-         if (.not. is_static_field) then
-            select case (str_tolower(quantity))
-            case ('frictioncoefficient')
-               ja_friction_coefficient_time_dependent = 1
-            case ('secchidepth')
-               secchi_depth_is_time_varying = .true.
-            end select
+         if (.not. is_static_field .and. str_tolower(quantity) == 'secchidepth') then
+            secchi_depth_is_time_varying = .true.
+
          end if
 
          if (res) then
@@ -1169,6 +1189,24 @@ contains
       end associate
 
    end function init_spatial_fields
+
+   subroutine register_time_dependent_spatial_field_item(ec_item)
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: ec_item
+      integer :: num_items
+
+      if (allocated(time_dependent_spatial_field_items)) then
+         if (any(time_dependent_spatial_field_items == ec_item)) return
+         num_items = size(time_dependent_spatial_field_items)
+         call realloc(time_dependent_spatial_field_items, num_items + 1, keepExisting=.true.)
+      else
+         num_items = 0
+         allocate (time_dependent_spatial_field_items(1))
+      end if
+
+      time_dependent_spatial_field_items(num_items + 1) = ec_item
+   end subroutine register_time_dependent_spatial_field_item
 
    !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
    function enable_special_quantity(quantity, block_ptr, operand) result(success)
