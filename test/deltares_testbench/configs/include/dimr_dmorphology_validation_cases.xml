@@ -332,7 +332,6 @@
           <parameter name="thlyr" toleranceAbsolute="0.001"/>
           <parameter name="poros" toleranceAbsolute="0.001"/>
           <parameter name="msed" toleranceAbsolute="1.0"/>
-          <parameter name="preload" toleranceAbsolute="1.0"/>
         </parameters>
       </file>
     </checks>
@@ -346,8 +345,6 @@
           <parameter name="thlyr" toleranceAbsolute="0.001"/>
           <parameter name="poros" toleranceAbsolute="0.001"/>
           <parameter name="msed" toleranceAbsolute="1.0"/>
-          <parameter name="preload" toleranceAbsolute="1.0"/>
-          <parameter name="msedPeat" toleranceAbsolute="1.0"/>
         </parameters>
       </file>
     </checks>
