@@ -40,7 +40,7 @@ module m_spatial_field
    private
 
    public :: t_spatial_field_input, t_averaging_input
-   public :: read_spatial_field_block, validate_spatial_field_input
+   public :: read_spatial_field_block, validate_spatial_field_input, select_spatial_field_method
    public :: read_averaging_input, averaging_params_to_transformcoef
    public :: allocate_time_dependent_spatial_quantities, deallocate_time_dependent_spatial_quantities, &
              register_time_dependent_spatial_quantity
@@ -199,13 +199,32 @@ contains
 
    end function is_static_file_type
 
+   !> Select the interpolation method for a spatial field input.
+   function select_spatial_field_method(forcing_file_type, interpolation_method, is_extrapolation_allowed) result(method)
+      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
+                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation
+
+      character(len=*), intent(in) :: forcing_file_type !< File type used to select the default method and apply fallbacks.
+      character(len=*), intent(in) :: interpolation_method !< Explicit interpolation method, or empty to use the file type default.
+      logical, intent(in) :: is_extrapolation_allowed !< Whether to select the extrapolating variant of the method.
+      integer :: method
+
+      if (len_trim(interpolation_method) > 0) then
+         method = convert_method_string_to_integer(interpolation_method)
+         call update_method_with_weightfactor_fallback(forcing_file_type, method)
+      else
+         method = get_default_method_for_file_type(forcing_file_type)
+      end if
+      if (method /= -1) then
+         call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
+      end if
+   end function select_spatial_field_method
+
    !> Validate a t_spatial_field_input. Derives method and filetype.
    !! Returns .false. and writes error messages on failure.
    function validate_spatial_field_input(input, file_name, group_name, base_dir) result(is_successful)
       use messageHandling, only: err_flush, warn_flush, msgbuf
-      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
-                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
-                           convert_file_type_string_to_integer
+      use timespace, only: convert_file_type_string_to_integer
       use timespace_parameters, only: DATAVALUE, FILE_TYPE_UNKNOWN
       use m_wind, only: jaQext
       use string_module, only: strcmpi
@@ -304,12 +323,7 @@ contains
       end if
 
       has_interpolation_method = len_trim(input%interpolation_method) > 0
-      if (has_interpolation_method) then
-         input%method = convert_method_string_to_integer(input%interpolation_method)
-         call update_method_with_weightfactor_fallback(input%forcing_file_type, input%method)
-      else
-         input%method = get_default_method_for_file_type(input%forcing_file_type)
-      end if
+      input%method = select_spatial_field_method(input%forcing_file_type, input%interpolation_method, input%is_extrapolation_allowed)
 
       if (input%method == -1) then
          if (has_interpolation_method) then
@@ -322,8 +336,6 @@ contains
          call err_flush()
          return
       end if
-      call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
-
       input%is_static_field = is_static_file_type(input%forcing_file_type, input%method, input%quantity)
 
       select case (trim(input%quantity))

@@ -264,12 +264,11 @@ contains
    !> Collect quantities with an input that is updated during the time loop.
    subroutine scan_time_dependent_spatial_inputs(bnd_ptrs)
       use m_meteo, only: quantity_name_config_file_to_internal_name
-      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, is_static_file_type, &
-                                 allocate_time_dependent_spatial_quantities, register_time_dependent_spatial_quantity
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, select_spatial_field_method, &
+                                 is_static_file_type, allocate_time_dependent_spatial_quantities, &
+                                 register_time_dependent_spatial_quantity
       use precision_basics, only: comparereal
       use string_module, only: str_tolower
-      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
-                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation
       use tree_data_types, only: tree_data, tree_data_ptr
       use tree_structures, only: tree_get_name, tree_num_nodes
 
@@ -307,14 +306,8 @@ contains
             if (len_trim(input%quantity) == 0 .or. len_trim(input%forcing_file_type) == 0) then
                cycle
             end if
-            if (len_trim(input%interpolation_method) > 0) then
-               input%method = convert_method_string_to_integer(input%interpolation_method)
-               call update_method_with_weightfactor_fallback(input%forcing_file_type, input%method)
-            else
-               input%method = get_default_method_for_file_type(input%forcing_file_type)
-            end if
+            input%method = select_spatial_field_method(input%forcing_file_type, input%interpolation_method, input%is_extrapolation_allowed)
             if (input%method == -1) cycle
-            call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
 
             if (.not. is_static_file_type(input%forcing_file_type, input%method)) then
                call register_time_dependent_spatial_quantity(input%quantity)
