@@ -123,6 +123,7 @@ contains
          maxSearchRadius = -1
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname, sourcemask, maxSearchRadius)
          if (ja == 1) then
+            qid = quantity_name_config_file_to_internal_name(qid)
             call resolvePath(filename, md_extfile_dir)
 
             call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
