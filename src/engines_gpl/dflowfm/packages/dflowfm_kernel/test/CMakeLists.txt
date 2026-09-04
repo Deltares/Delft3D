@@ -37,6 +37,7 @@ f90twtest(${test_target}
         src/test_atmospheric_stability.f90
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
+        src/test_generate_partition_mdu_file.f90
     F2HFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
@@ -59,6 +60,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_atmospheric_stability.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_precice_adapter.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_fm_external_forcings_utils.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_generate_partition_mdu_file.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
