@@ -124,7 +124,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
 ! Local parameters
 !
     integer, parameter :: IROUGH = 300
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -512,6 +511,10 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     !     Vaestilae & Jaervelae (2017) and Jarvela (2004) vegetation formulations
     nropar(155) = 10
     nropar(156) = 6
+    nropar(158) = 10
+    nropar(159) = 6
+    nropar(160) = 13
+    nropar(161) = 7
     !
     ! 201-249: Vegetation roughness predictors (linear)
     !
@@ -1134,7 +1137,6 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -1796,7 +1798,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
+    
 !
 ! Global variables
 !
@@ -1848,7 +1850,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     ntrtobs = 0
     n_q     = 0
     n_zs    = 0
-    nroupa = 12
+    nroupa = 14
     do jdir = 1,nodir
        nttaru        => gdtrachy%dir(jdir)%nttaru
        nttaru = 0
@@ -2052,13 +2054,13 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    )
 !    use globaldata
     use system_utils, only: exifil
     use MessageHandling
+    use trachytopes_data_module, only: MAXFLD
     !
     implicit none
     !
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
