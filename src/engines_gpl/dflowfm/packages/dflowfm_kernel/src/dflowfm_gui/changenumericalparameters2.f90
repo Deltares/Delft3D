@@ -38,7 +38,7 @@ contains
 
    subroutine CHANGENUMERICALPARAMETERS2()
       use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, &
-         cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, jalogprofatubndin, &
+         cffachormom, cfexphormom, cfconhormom, javatem, jaqaisq1, jalogprofatubndin, &
          javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
       use m_source_sink, only: source_sinks
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
@@ -283,8 +283,6 @@ contains
       i = i + 1
       call IFORMPUTINTEGER(2 * i, JAVATEM)
       i = i + 1
-      call IFORMputINTEGER(2 * i, javiuplus3D)
-      i = i + 1
       call IFORMputINTEGER(2 * i, jaqaisq1)
       i = i + 1
       if (source_sinks%add_k_to_turkin) then
@@ -374,8 +372,6 @@ contains
             call IFORMGETdouble(2 * i, Cfconhormom)
             i = i + 1
             call IFORMGETINTEGER(2 * i, JAVATEM)
-            i = i + 1
-            call IFORMGETINTEGER(2 * i, javiuplus3D)
             i = i + 1
             call IFORMGETINTEGER(2 * i, jaqaisq1)
             i = i + 1
