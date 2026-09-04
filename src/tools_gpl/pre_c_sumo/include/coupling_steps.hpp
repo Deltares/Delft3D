@@ -28,6 +28,16 @@ namespace pre_c_sumo
     constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
     constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
     constexpr std::string_view densities_id = "sea_water_potential_density";
+    constexpr std::string_view c01_id = "C01";
+    constexpr std::string_view c02_id = "C02";
+    constexpr std::string_view c03_id = "C03";
+    constexpr std::string_view c04_id = "C04";
+    constexpr std::string_view c05_id = "C05";
+    constexpr std::string_view c06_id = "C06";
+    constexpr std::string_view c07_id = "C07";
+    constexpr std::string_view c08_id = "C08";
+    constexpr std::string_view c09_id = "C09";
+    constexpr std::string_view c10_id = "C10";
 
     struct DiffuserMapping
     {

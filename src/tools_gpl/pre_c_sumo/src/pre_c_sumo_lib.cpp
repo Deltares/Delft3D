@@ -143,6 +143,16 @@ namespace pre_c_sumo
         participant.setMeshVertices(csumo_3d_mesh.name, csumo_3d_mesh.coordinates, csumo_3d_mesh.vertex_ids);
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c01_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c02_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c03_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c04_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c05_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c06_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c07_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c08_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c09_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c10_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
         double current_time_seconds = 0.0;
         if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
