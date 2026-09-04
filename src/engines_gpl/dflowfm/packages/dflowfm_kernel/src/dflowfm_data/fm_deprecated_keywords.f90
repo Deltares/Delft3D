@@ -87,7 +87,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'wridia_viscosity_diffusivity_limit', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', OBSOLETE, 'Option no longer needed due to improved semi-implicit algorithm.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForester', OBSOLETE, 'obsolete.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'allowCoolingBelowZero', OBSOLETE, &
                                   'Use [physics] salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &
