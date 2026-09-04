@@ -1534,7 +1534,7 @@ contains
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDSTRESSX, &
                              'Wrihis_windstress', 'windstressx', 'wind stress on flow element center, x-component', 'surface_downward_x_stress', &
-                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write wind stress to his-file', &
                     nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDSTRESSX_SFERIC, &
                              'Wrihis_windstress', 'windstressx', 'wind stress on flow element center, x-component', 'surface_downward_eastward_stress', &

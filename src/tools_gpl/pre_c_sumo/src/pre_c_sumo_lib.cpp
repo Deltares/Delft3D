@@ -3,6 +3,7 @@
 #include <precice/precice.hpp>
 #include <print>
 #include <string_view>
+#include <stdexcept>
 #include <vector>
 #include <map>
 
@@ -112,6 +113,7 @@ namespace pre_c_sumo
 {
     /**
      * @details Entry point into the preC-SUMO preCICE library.
+     * Note: Consider refactoring/clean up
      */
     int run(const std::string_view csumo_settings_file_name, const std::string_view precice_config_file_name)
     {
@@ -142,34 +144,91 @@ namespace pre_c_sumo
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
+        double current_time_seconds = 0.0;
+        if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
+        {
+            std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
+                         current_time_seconds);
+            return -1;
+        }
+        const std::vector<NF2FFReader> initial_nf2ff_readers =
+            readNF2FFFiles(csumo_settings.value(), current_time_seconds);
+        auto initial_result = convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+
+        if (!initial_result.has_value())
+        {
+            std::println(stderr, "Error: Unable to convert initial NF2FF data: {}", initial_result.error().message);
+            return -1;
+        }
+
+        ConnectedSinkSources initial_connected_sink_sources = initial_result.value();
+
         // Set sources_sinks mesh
-        // ConnectedSinkSources connected_sink_sources;
-        // TESTDATA based on file NF2FF__FlowFM_SubMod001_120.000.xml
-        // TODO: Just-In-Time remeshing?
+        constexpr std::string_view sources_sinks_mesh = "sources_sinks_nodes";
         SourcesSinks sources_sinks;
-        sources_sinks.setCoordinatesDimension(5);
-        participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
+        const std::size_t initial_sources_sinks_size = initial_connected_sink_sources.get_number_of_entries() == 0
+                                                           ? 1
+                                                           : initial_connected_sink_sources.get_number_of_entries();
+        sources_sinks.setCoordinatesDimension(initial_sources_sinks_size);
+        participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
-            sendSourcesSinksToFF(participant, sources_sinks);
-            // connected_sink_sources.write_to_precice(participant, "sources_sink_nodes", sources_sinks.precice_ids);
+            auto write_result = initial_connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes",
+                                                                                sources_sinks.precice_ids);
+            if (!write_result.has_value())
+            {
+                std::println(stderr, "Error: Unable to write initial sources/sinks data: {}",
+                             write_result.error().message);
+                return -1;
+            }
         }
 
         participant.initialize();
-        double current_time_seconds = 0.0;
         while (participant.isCouplingOngoing())
         {
             double coupling_time_step = participant.getMaxTimeStepSize();
 
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
-            waitForNF2FFFiles(csumo_settings.value(), current_time_seconds);
+            if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
+            {
+                std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
+                             current_time_seconds);
+                return -1;
+            }
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-            ConnectedSinkSources connected_sink_sources =
-                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+            auto conversion_result = convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+            if (!conversion_result.has_value())
+            {
+                std::println(stderr, "Unable to convert NF to ConnectedSinkSources: {}",
+                             conversion_result.error().message);
+                return -1;
+            }
+            ConnectedSinkSources connected_sink_sources = conversion_result.value();
 
-            // sendSourcesSinksToFF(participant, sources_sinks);
-            connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
+            if (participant.isTimeWindowComplete())
+            {
+                participant.resetMesh(sources_sinks_mesh);
+                sources_sinks.setCoordinatesDimension(connected_sink_sources.get_number_of_entries());
+                participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
+                std::println("Reset Sources_Sinks. Mesh set to {} vertices.",
+                             connected_sink_sources.get_number_of_entries());
+            }
+            else
+            {
+                std::println("Skipped mesh reset. Want to write {} entries, mesh has {} vertices.",
+                             connected_sink_sources.get_number_of_entries(), sources_sinks.precice_ids.size());
+            }
+
+            auto write_result =
+                connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
+
+            if (!write_result.has_value())
+            {
+                std::println(stderr, "Error: Unable to write sources/sinks data at time {} s: {}", current_time_seconds,
+                             write_result.error().message);
+                return -1;
+            }
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;

@@ -70,6 +70,7 @@ contains
          ! com file already exists
          !
          ierr = nf90_open(filnam, NF90_WRITE, comids%ncid)
+         call check_error(ierr, "Error opening existing com file: " // trim(filnam), LEVEL_ERROR)
       elseif (comids%ncid == 0 .and. jawave == WAVE_SWAN_ONLINE) then
          !
          ! No communication yet via com file:
@@ -84,8 +85,12 @@ contains
             ierr = nf90_open(filnam, NF90_WRITE, comids%ncid)
          else
             ! No com file yet. Create a new one and write FLOW parameters
-            !
-            ierr = unc_create(filnam, 0, comids%ncid)
+            ! keep netcdf on classic (3). HDF5 (mode 4) will cause a lot of problems
+            ! due to the fact that you can't have the same file open in WRITE and READ mode
+            ! in the same time (due to some HDF5/NetCDF library cache stuff).
+            ! We need to keep this file open in EC Module and we 
+            ! don't have a practical mode to open and close it as needed without performance impact
+            ierr = unc_create(filnam, NF90_CLASSIC_MODEL, comids%ncid, .true.)
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'Could not create com file.')
                comids%ncid = 0

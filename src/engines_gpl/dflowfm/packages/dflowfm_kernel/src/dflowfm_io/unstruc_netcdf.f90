@@ -65,7 +65,7 @@ module unstruc_netcdf
    use m_unc_put_var_map
    use m_unc_put_var_map_generated
 
-   implicit none(type,external)
+   implicit none(type, external)
 
    private :: nerr_, err_firsttime_, err_firstline_, &
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
@@ -913,15 +913,23 @@ contains
 
 !> Creates or opens a NetCDF file for writing.
 !! The file is maintained in the open-file-list.
-   function unc_create(filename, cmode, ncid)
+   function unc_create(filename, cmode, ncid, overwrite_cmode)
       character(len=*), intent(in) :: filename !< Filename to be created
       integer, intent(in) :: cmode !< Creation mode, must be a valid NetCDF flags integer.
       integer, intent(out) :: ncid !< Resulting NetCDF data set id, undefined in case an error occurred.
+      logical, optional, intent(in) :: overwrite_cmode !< Flag indicating whether to overwrite existing cmode (or perform ior).
       integer :: unc_create !< Integer result status (nf90_noerr if successful).
 
       integer :: cmode_
-
-      cmode_ = ior(cmode, unc_cmode)
+      if (present(overwrite_cmode)) then
+         if (overwrite_cmode) then
+            cmode_ = cmode
+         else
+            cmode_ = ior(cmode, unc_cmode)
+         end if
+      else
+         cmode_ = ior(cmode, unc_cmode)
+      end if
 
       unc_create = nf90_create(filename, cmode_, ncid)
       if (unc_create == nf90_noerr) then
@@ -3704,6 +3712,7 @@ contains
 !! unc_write_map_filepointer directly instead!
    subroutine unc_write_map(filename, iconventions)
       use m_flowparameters, only: map_write_settings
+      use m_unstruc_netcdf_data, only: flowgeom_map
       implicit none
 
       character(len=*), intent(in) :: filename
@@ -3717,6 +3726,15 @@ contains
          iconv = UNC_CONV_CFOLD
       else
          iconv = iconventions
+      end if
+
+      if (iconv == UNC_CONV_UGRID) then
+         if (.not. associated(flowgeom_map)) then
+            return
+         end if
+         if (flowgeom_map%ndx_out <= 0) then
+            return
+         end if
       end if
 
       ierr = unc_create(filename, 0, mapids%ncid)
@@ -3753,7 +3771,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, ibedlevtyp, map_write_settings
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data, hminlw_xb => hminlw
       use m_transportdata
@@ -3787,6 +3805,7 @@ contains
       use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
+      use m_unstruc_netcdf_data, only: flowgeom_map
 
       implicit none
 
@@ -3852,7 +3871,7 @@ contains
 
       nc_precision = netcdf_data_type(md_nc_map_precision)
 
-      if (ndxi <= 0) then
+      if (flowgeom_map%ndx_out <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
          return
       end if
@@ -4352,7 +4371,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
-               
+
                if (secchi_depth_is_time_varying) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_secchi_depth, nc_precision, UNC_LOC_S, 'Secc', 'secchi_depth_of_sea_water', 'Secchi depth', 'm', jabndnd=jabndnd_)
                end if
@@ -4774,7 +4793,7 @@ contains
                   end if
                end if
                if (map_write_settings%wav_twav > 0 .and. allocated(twav)) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'tp', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Peak wave period', 's')
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', '', 'Peak wave period', 's')
                end if
                if (map_write_settings%wav_phiwav > 0 .and. allocated(phiwav)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree')
@@ -4788,7 +4807,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
                end if
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Wave peak period', 's') ! we assume working with the peak period in all our formulations
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', '', 'Peak wave period', 's') ! the wave period is assumed to be a peak period in all our formulations
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, nc_precision, UNC_LOC_S, 'uorb', 'sea_surface_wave_orbital_velocity', 'Wave orbital velocity', 'm s-1', jabndnd=jabndnd_) ! not CF
                !
                if (jawavestokes > NO_STOKES_DRIFT) then
@@ -6604,7 +6623,7 @@ contains
       use m_bedform
       use m_wind
       use m_flowparameters, only: jatrt, jacali
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_fm_wq_processes
       use m_xbeach_data
       use m_transportdata
@@ -11245,6 +11264,54 @@ contains
 !! Processing is done elsewhere.
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
+      use dfm_error, only: dfm_noerr
+      use network_data, only: xk,yk
+
+      character(len=*), intent(in) :: filename !< Name of NetCDF file.
+      integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
+      integer, intent(inout) :: numl_keep !< Number of netlinks to keep in existing net.
+      integer, intent(out) :: numk_read !< Number of new netnodes read from file.
+      integer, intent(out) :: numl_read !< Number of new netlinks read from file.
+      integer, intent(out) :: ierr !< Return status (NetCDF operations)
+
+      logical :: success ! Flag to check if coordinate transformation is successful.
+      real(hp), dimension(1) :: lonn, latn ! Temporary arrays to receive test conversion.
+
+      call readyy('Reading net data', 0.0_dp)
+
+      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
+
+      ! Try and read as new UGRID NetCDF format
+      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      if (ierr /= dfm_noerr) then
+         ! No UGRID, but just try to use the 'old' format now.
+         call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      end if
+      if (ierr /= dfm_noerr) then
+         ! An error occurred while reading the net-file; no reason to continue.
+         return
+      end if
+      
+      ! File reading went fine, now check the coordinate system.
+      if (crs%proj_string == ' ') then
+         ierr = detect_proj_string(crs)
+         ierr = dfm_noerr ! don't stumble over proj string detection errors
+      end if
+
+      ! Check the coordinate transformation to lat/lon if requested.
+      if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
+         call transform_coordinates(crs%proj_string, WGS84_PROJ_STRING, xk(1:1), yk(1:1), lonn, latn, success)
+         if (.not. success) then
+            call mess(LEVEL_WARN, 'Unable to transform coordinates to WGS84; most likely the projection is not specified.')
+            call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if transformation fails. Switched off.')
+            unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
+            crs%proj_string = ' ' ! set_model_boundingbox checks for empty proj string
+         end if
+      end if
+   end subroutine unc_read_net
+
+   subroutine unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
+      use precision, only: dp
       use network_data
       use m_sferic
       use m_missing
@@ -11273,24 +11340,8 @@ contains
       integer :: L
       real(kind=dp) :: zk_fillvalue
 
-      call readyy('Reading net data', 0.0_dp)
-
-      call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
-
       nerr_ = 0
       allocate (character(len=0) :: coordsyscheck)
-
-      !
-      ! Try and read as new UGRID NetCDF format
-      !
-      call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
-      if (ierr == dfm_noerr) then
-         ! UGRID successfully read, we're done.
-         return
-      else
-         ! No UGRID, but just try to use the 'old' format now.
-         continue
-      end if
 
       ierr = unc_open(filename, nf90_nowrite, inetfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
@@ -11427,7 +11478,7 @@ contains
       ierr = unc_close(inetfile)
       call readyy('Reading net data', -1.0_dp)
 
-   end subroutine unc_read_net
+   end subroutine unc_read_net_old
 
 !> print MD5 checksum for net file, based on netlinks only.
 !! Only in case of loglevel is debug or all.
@@ -13795,7 +13846,7 @@ contains
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: bl, bl_min, ba
-      use m_unstruc_netcdf_data, only: flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom_map
       use m_sferic
       use m_missing
       use netcdf
@@ -13911,36 +13962,36 @@ contains
          end if
       end if
 
-      if (allocated(flowgeom%node_map_1d)) then
-         nodes_1d = flowgeom%node_map_1d
+      if (allocated(flowgeom_map%node_map_1d)) then
+         nodes_1d = flowgeom_map%node_map_1d
       else
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
+         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
       end if
 
-      if (allocated(flowgeom%face_map_2D)) then
-         faces = flowgeom%face_map_2D
+      if (allocated(flowgeom_map%face_map_2D)) then
+         faces = flowgeom_map%face_map_2D
       else
-         faces = [(i, i=1, flowgeom%mesh2d%numFace)]
+         faces = [(i, i=1, flowgeom_map%mesh2d%numFace)]
       end if
 
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
       ! All other counters (ndx, ndxi, ndx1db, lnx...) are always the global values; use m_flowgeom directly.
-      associate (ndx2d => flowgeom%mesh2d%numFace, &
-                 z2dn => flowgeom%mesh2d%nodez)
+      associate (ndx2d => flowgeom_map%mesh2d%numFace, &
+                 z2dn => flowgeom_map%mesh2d%nodez)
 
-         call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
+         call unc_write_1D_flowgeom_ugrid(flowgeom_map, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
          if (ndx2d > 0 .and. ja2D_) then
-            flowgeom%mesh2d%num_layers = layer_count
-            flowgeom%mesh2d%layertype = layer_type
-            flowgeom%mesh2d%numtopsig = numtopsig
+            flowgeom_map%mesh2d%num_layers = layer_count
+            flowgeom_map%mesh2d%layertype = layer_type
+            flowgeom_map%mesh2d%numtopsig = numtopsig
             if (layer_count > 0) then
-               flowgeom%mesh2d%layer_zs => layer_zs
-               flowgeom%mesh2d%interface_zs => interface_zs
+               flowgeom_map%mesh2d%layer_zs => layer_zs
+               flowgeom_map%mesh2d%interface_zs => interface_zs
             end if
 
-            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d)
-            call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom%edge_type)
+            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom_map%mesh2d, writeopts=unc_writeopts)
+            call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom_map%edge_type)
 
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
                ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
@@ -13982,7 +14033,7 @@ contains
          ierr = nf90_enddef(ncid)
 
          !-- Start data writing (time-independent data) ------------
-         if (flowgeom%mesh1D%numNode > 0) then
+         if (flowgeom_map%mesh1D%numNode > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(nodes_1d))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(nodes_1d))
          end if
@@ -14006,7 +14057,7 @@ contains
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(faces))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(faces))
             end if
-            if (flowgeom%mesh1D%numNode > 0) then
+            if (flowgeom_map%mesh1D%numNode > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(nodes_1d))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(nodes_1d))
             end if
@@ -14106,10 +14157,10 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      if (allocated(flowgeom%node_map_1d)) then
-         nodes_1d = flowgeom%node_map_1d
+      if (allocated(flowgeom_map%node_map_1d)) then
+         nodes_1d = flowgeom_map%node_map_1d
       else
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
+         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &

@@ -229,7 +229,7 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
       do i = 1, Network%sts%numPumps
          istru = indices(i)
          pump => structs(istru)%pump
-         L = structs(istru)%linknumbers(1)
+         L = abs(structs(istru)%linknumbers(1))
          if (pump%direction * pump%capacity(1) > 0) then
             suctionsideNode = ln2nd(1,L)
          else

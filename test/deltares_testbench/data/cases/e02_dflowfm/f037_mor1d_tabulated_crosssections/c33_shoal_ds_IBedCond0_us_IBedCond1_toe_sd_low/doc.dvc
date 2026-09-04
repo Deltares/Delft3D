@@ -1,0 +1,6 @@
+outs:
+- md5: 19ce7e9db90aed85c5faceabeece5925.dir
+  size: 8003
+  nfiles: 4
+  hash: md5
+  path: doc

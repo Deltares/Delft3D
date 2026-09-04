@@ -120,57 +120,129 @@ stocfl,stocsu,stocsc
 "dDetPUpt  ","POP1      ",  -1.00000
 "dDetCUpt  ","POC1      ",  -1.00000
 "dPrProdOxy","OXY       ",   2.67000
-"dProdAlg  ","APHANFIX  ",   1.00000
-"dProdAlg  ","APHANIZO  ",   1.00000
-"dProdAlg  ","BLUEGRN   ",   1.00000
-"dProdAlg  ","DINOFLAG  ",   1.00000
-"dProdAlg  ","DINOMIX   ",   1.00000
-"dProdAlg  ","FDIATOMS  ",   1.00000
-"dProdAlg  ","FFLAGELA  ",   1.00000
-"dProdAlg  ","GREENS    ",   1.00000
-"dProdAlg  ","MDIATOMS  ",   1.00000
-"dProdAlg  ","MFLAGELA  ",   1.00000
-"dProdAlg  ","MICROCYS  ",   1.00000
-"dProdAlg  ","OSCILAT   ",   1.00000
-"dProdAlg  ","PHAEOCYS  ",   1.00000
-"dProdAlg  ","UlvaF     ",   1.00000
-"dProdAlg  ","UlvaS     ",   1.00000
-"dProdAlg  ","NODULA    ",   1.00000
-"dProdAlg  ","ANABAENA  ",   1.00000
-"dProdAlg  ","CYLINFIX  ",   1.00000
-"dProdAlg  ","ARTHROSP  ",   1.00000
-"dProdAlg  ","PLANKTOL  ",   1.00000
-"dProdAlg  ","PSEUDOAN  ",   1.00000
-"dProdAlg01","BLOOMALG01",   1.00000
-"dProdAlg02","BLOOMALG02",   1.00000
-"dProdAlg03","BLOOMALG03",   1.00000
-"dProdAlg04","BLOOMALG04",   1.00000
-"dProdAlg05","BLOOMALG05",   1.00000
-"dProdAlg06","BLOOMALG06",   1.00000
-"dProdAlg07","BLOOMALG07",   1.00000
-"dProdAlg08","BLOOMALG08",   1.00000
-"dProdAlg09","BLOOMALG09",   1.00000
-"dProdAlg10","BLOOMALG10",   1.00000
-"dProdAlg11","BLOOMALG11",   1.00000
-"dProdAlg12","BLOOMALG12",   1.00000
-"dProdAlg13","BLOOMALG13",   1.00000
-"dProdAlg14","BLOOMALG14",   1.00000
-"dProdAlg15","BLOOMALG15",   1.00000
-"dProdAlg16","BLOOMALG16",   1.00000
-"dProdAlg17","BLOOMALG17",   1.00000
-"dProdAlg18","BLOOMALG18",   1.00000
-"dProdAlg19","BLOOMALG19",   1.00000
-"dProdAlg20","BLOOMALG20",   1.00000
-"dProdAlg21","BLOOMALG21",   1.00000
-"dProdAlg22","BLOOMALG22",   1.00000
-"dProdAlg23","BLOOMALG23",   1.00000
-"dProdAlg24","BLOOMALG24",   1.00000
-"dProdAlg25","BLOOMALG25",   1.00000
-"dProdAlg26","BLOOMALG26",   1.00000
-"dProdAlg27","BLOOMALG27",   1.00000
-"dProdAlg28","BLOOMALG28",   1.00000
-"dProdAlg29","BLOOMALG29",   1.00000
-"dProdAlg30","BLOOMALG30",   1.00000
+"dGPPrAlg  ","APHANFIX  ",   1.00000
+"dGPPrAlg  ","APHANIZO  ",   1.00000
+"dGPPrAlg  ","BLUEGRN   ",   1.00000
+"dGPPrAlg  ","DINOFLAG  ",   1.00000
+"dGPPrAlg  ","DINOMIX   ",   1.00000
+"dGPPrAlg  ","FDIATOMS  ",   1.00000
+"dGPPrAlg  ","FFLAGELA  ",   1.00000
+"dGPPrAlg  ","GREENS    ",   1.00000
+"dGPPrAlg  ","MDIATOMS  ",   1.00000
+"dGPPrAlg  ","MFLAGELA  ",   1.00000
+"dGPPrAlg  ","MICROCYS  ",   1.00000
+"dGPPrAlg  ","OSCILAT   ",   1.00000
+"dGPPrAlg  ","PHAEOCYS  ",   1.00000
+"dGPPrAlg  ","UlvaF     ",   1.00000
+"dGPPrAlg  ","UlvaS     ",   1.00000
+"dGPPrAlg  ","NODULA    ",   1.00000
+"dGPPrAlg  ","ANABAENA  ",   1.00000
+"dGPPrAlg  ","CYLINFIX  ",   1.00000
+"dGPPrAlg  ","ARTHROSP  ",   1.00000
+"dGPPrAlg  ","PLANKTOL  ",   1.00000
+"dGPPrAlg  ","PSEUDOAN  ",   1.00000
+"dRespAlg  ","APHANFIX  ",  -1.00000
+"dRespAlg  ","APHANIZO  ",  -1.00000
+"dRespAlg  ","BLUEGRN   ",  -1.00000
+"dRespAlg  ","DINOFLAG  ",  -1.00000
+"dRespAlg  ","DINOMIX   ",  -1.00000
+"dRespAlg  ","FDIATOMS  ",  -1.00000
+"dRespAlg  ","FFLAGELA  ",  -1.00000
+"dRespAlg  ","GREENS    ",  -1.00000
+"dRespAlg  ","MDIATOMS  ",  -1.00000
+"dRespAlg  ","MFLAGELA  ",  -1.00000
+"dRespAlg  ","MICROCYS  ",  -1.00000
+"dRespAlg  ","OSCILAT   ",  -1.00000
+"dRespAlg  ","PHAEOCYS  ",  -1.00000
+"dRespAlg  ","UlvaF     ",  -1.00000
+"dRespAlg  ","UlvaS     ",  -1.00000
+"dRespAlg  ","NODULA    ",  -1.00000
+"dRespAlg  ","ANABAENA  ",  -1.00000
+"dRespAlg  ","CYLINFIX  ",  -1.00000
+"dRespAlg  ","ARTHROSP  ",  -1.00000
+"dRespAlg  ","PLANKTOL  ",  -1.00000
+"dRespAlg  ","PSEUDOAN  ",  -1.00000
+"dMortAlg  ","APHANFIX  ",  -1.00000
+"dMortAlg  ","APHANIZO  ",  -1.00000
+"dMortAlg  ","BLUEGRN   ",  -1.00000
+"dMortAlg  ","DINOFLAG  ",  -1.00000
+"dMortAlg  ","DINOMIX   ",  -1.00000
+"dMortAlg  ","FDIATOMS  ",  -1.00000
+"dMortAlg  ","FFLAGELA  ",  -1.00000
+"dMortAlg  ","GREENS    ",  -1.00000
+"dMortAlg  ","MDIATOMS  ",  -1.00000
+"dMortAlg  ","MFLAGELA  ",  -1.00000
+"dMortAlg  ","MICROCYS  ",  -1.00000
+"dMortAlg  ","OSCILAT   ",  -1.00000
+"dMortAlg  ","PHAEOCYS  ",  -1.00000
+"dMortAlg  ","UlvaF     ",  -1.00000
+"dMortAlg  ","UlvaS     ",  -1.00000
+"dMortAlg  ","NODULA    ",  -1.00000
+"dMortAlg  ","ANABAENA  ",  -1.00000
+"dMortAlg  ","CYLINFIX  ",  -1.00000
+"dMortAlg  ","ARTHROSP  ",  -1.00000
+"dMortAlg  ","PLANKTOL  ",  -1.00000
+"dMortAlg  ","PSEUDOAN  ",  -1.00000
+"dGPPrAlg01","BLOOMALG01",   1.00000
+"dGPPrAlg02","BLOOMALG02",   1.00000
+"dGPPrAlg03","BLOOMALG03",   1.00000
+"dGPPrAlg04","BLOOMALG04",   1.00000
+"dGPPrAlg05","BLOOMALG05",   1.00000
+"dGPPrAlg06","BLOOMALG06",   1.00000
+"dGPPrAlg07","BLOOMALG07",   1.00000
+"dGPPrAlg08","BLOOMALG08",   1.00000
+"dGPPrAlg09","BLOOMALG09",   1.00000
+"dGPPrAlg10","BLOOMALG10",   1.00000
+"dGPPrAlg11","BLOOMALG11",   1.00000
+"dGPPrAlg12","BLOOMALG12",   1.00000
+"dGPPrAlg13","BLOOMALG13",   1.00000
+"dGPPrAlg14","BLOOMALG14",   1.00000
+"dGPPrAlg15","BLOOMALG15",   1.00000
+"dGPPrAlg16","BLOOMALG16",   1.00000
+"dGPPrAlg17","BLOOMALG17",   1.00000
+"dGPPrAlg18","BLOOMALG18",   1.00000
+"dGPPrAlg19","BLOOMALG19",   1.00000
+"dGPPrAlg20","BLOOMALG20",   1.00000
+"dGPPrAlg21","BLOOMALG21",   1.00000
+"dGPPrAlg22","BLOOMALG22",   1.00000
+"dGPPrAlg23","BLOOMALG23",   1.00000
+"dGPPrAlg24","BLOOMALG24",   1.00000
+"dGPPrAlg25","BLOOMALG25",   1.00000
+"dGPPrAlg26","BLOOMALG26",   1.00000
+"dGPPrAlg27","BLOOMALG27",   1.00000
+"dGPPrAlg28","BLOOMALG28",   1.00000
+"dGPPrAlg29","BLOOMALG29",   1.00000
+"dGPPrAlg30","BLOOMALG30",   1.00000
+"dRespAlg01","BLOOMALG01",  -1.00000
+"dRespAlg02","BLOOMALG02",  -1.00000
+"dRespAlg03","BLOOMALG03",  -1.00000
+"dRespAlg04","BLOOMALG04",  -1.00000
+"dRespAlg05","BLOOMALG05",  -1.00000
+"dRespAlg06","BLOOMALG06",  -1.00000
+"dRespAlg07","BLOOMALG07",  -1.00000
+"dRespAlg08","BLOOMALG08",  -1.00000
+"dRespAlg09","BLOOMALG09",  -1.00000
+"dRespAlg10","BLOOMALG10",  -1.00000
+"dRespAlg11","BLOOMALG11",  -1.00000
+"dRespAlg12","BLOOMALG12",  -1.00000
+"dRespAlg13","BLOOMALG13",  -1.00000
+"dRespAlg14","BLOOMALG14",  -1.00000
+"dRespAlg15","BLOOMALG15",  -1.00000
+"dRespAlg16","BLOOMALG16",  -1.00000
+"dRespAlg17","BLOOMALG17",  -1.00000
+"dRespAlg18","BLOOMALG18",  -1.00000
+"dRespAlg19","BLOOMALG19",  -1.00000
+"dRespAlg20","BLOOMALG20",  -1.00000
+"dRespAlg21","BLOOMALG21",  -1.00000
+"dRespAlg22","BLOOMALG22",  -1.00000
+"dRespAlg23","BLOOMALG23",  -1.00000
+"dRespAlg24","BLOOMALG24",  -1.00000
+"dRespAlg25","BLOOMALG25",  -1.00000
+"dRespAlg26","BLOOMALG26",  -1.00000
+"dRespAlg27","BLOOMALG27",  -1.00000
+"dRespAlg28","BLOOMALG28",  -1.00000
+"dRespAlg29","BLOOMALG29",  -1.00000
+"dRespAlg30","BLOOMALG30",  -1.00000
 "dMortAlg01","BLOOMALG01",  -1.00000
 "dMortAlg02","BLOOMALG02",  -1.00000
 "dMortAlg03","BLOOMALG03",  -1.00000

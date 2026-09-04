@@ -94,8 +94,9 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      * @param current_time_seconds Current time in seconds.
+     * @returns true on successful wait, false on timeout.
      */
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -122,15 +123,16 @@ namespace pre_c_sumo
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
      *
-     * Uses the data referenced in `nf2ff_readers' and 'csumoSettings` to perform the conversion.
+     * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
      *
-     * @param csumoSettings C-SUMO settings
-     * @param nf2ff_readers vector of NF2FFReader objects containing the latest NF2FF data
+     * @param csumoSettings Parsed C-SUMO settings.
+     * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
      *
-     * @returns pre_c_sumo::ConnectedSinkSources object containing the converted sources and sinks.
+     * @return Connected source/sink pairs to be written to preCICE.
      */
-    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
-        const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers);
+    [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
+    convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumoSettings,
+                                    const std::vector<NF2FFReader>& nf2ff_readers);
     /**
      * @brief Send computed sources/sinks to the farfield model.
      *
@@ -159,7 +161,7 @@ namespace pre_c_sumo
      * @brief Create an approximate diffuser model from NF source data.
      *
      * When diffusers are not modelled explicitly this function creates
-     * the sources for a simplified diffuser representation that cen be used
+     * the sources for a simplified diffuser representation that can be used
      * to create the farfield component.
      */
     std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFReader& diffuser);

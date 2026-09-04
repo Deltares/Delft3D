@@ -2,13 +2,13 @@
 module fm_deprecated_keywords
    use m_deprecation
 
-   implicit none
+   implicit none(type, external)
 
    type(deprecated_keyword_set), target :: deprecated_mdu_keywords, deprecated_ext_keywords
 
 contains
 
-!> subroutine that initialises all deprecated keyword sets
+   !> subroutine that initialises all deprecated keyword sets
    subroutine default_fm_deprecated_keywords()
 
       if (allocated(deprecated_mdu_keywords%deprecated_keyword_list)) then
@@ -24,18 +24,28 @@ contains
       ! Adding DEPRECATED MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'AutoStart', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'ConvertLongCulverts', DEPRECATED, 'Unconverted long culverts (ConvertLongCulverts=0) will be removed in a future release.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Model', 'mduFormatVersion', DEPRECATED, 'Use [General] fileVersion (with version >= 1.07) instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'sigmaGrowthFactor', DEPRECATED, 'Use zLayerGrowthFactor instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterMethod', DEPRECATED, 'Once the keyword is removed/becomes obsolete, the "allNetlinksLoop" method will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterTolerance', DEPRECATED, 'Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'IniFieldFile', DEPRECATED, &
+                                  'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Grdang', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
+                                  'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterSal', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterTem', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'filter', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
@@ -50,9 +60,13 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'manholeFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'noOptimizedPolygon', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenter', OBSOLETE, 'Use [Geometry] circumcenterMethod instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'thinDykeFile', OBSOLETE, 'Use [Geometry] fixedWeirFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', '1dNetworkFile', OBSOLETE, 'Use individual keywords such as [Geometry] StructureFile, CrossDefFile, etc. instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'roughnessFiles', OBSOLETE, 'Use [Geometry] frictFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'nodeFile', OBSOLETE, 'Use [Geometry] storageNodeFile instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'hkad', OBSOLETE)
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'iThinDykeScheme', OBSOLETE)
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'thinDykeContraction', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'iThinDykeScheme', OBSOLETE, 'Use [Numerics] fixedWeirScheme instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'thinDykeContraction', OBSOLETE, 'Use [Numerics] fixedWeirContraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'transportMethod', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'transportTimeStepping', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'barocZLayBed', OBSOLETE)
@@ -65,12 +79,38 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurbVer', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsTKE', OBSOLETE, 'Use [Physics] TKEMin instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsEPS', OBSOLETE, 'Use [Physics] EPSMin (k-epsilon turbulence model) or [Physics] TAUmin (k-tau turbulence model) instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Allowcoolingbelowzero', OBSOLETE, &
-                                  'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaOrgSethu', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'CFLWaveFrac', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaEmbed1d', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_umin', OBSOLETE, 'Use [Numerics] lateral_fixedweir_umin instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_umin_method', OBSOLETE, 'Use [Numerics] lateral_fixedweir_umin_method instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_minimal_1d2d_embankment', OBSOLETE, 'Use [Numerics] lateral_fixedweir_1d2d_embankment instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'wridia_viscosity_diffusivity_limit', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', OBSOLETE, 'Option no longer needed due to improved semi-implicit algorithm.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'allowCoolingBelowZero', OBSOLETE, &
+                                  'Use [physics] salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &
                                   'This keyword is replaced with rhoWaterInWindStress in the [Wind] block in the MDU-file.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'effectSpiral', OBSOLETE, 'Use Espir contained in MorFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'stericCorrection', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Sedtrails', 'allowCoolingBelowZero', OBSOLETE, &
+                                  'Use [physics] salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Wind', 'gapres', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Waves', 'waveNikuradse', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Time', 'autoTimeStepDiff', OBSOLETE, 'Use [Time] autoTimeStepVisc instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Trachytopes', 'trtdt', OBSOLETE, 'Use [Trachytopes] dtTrt instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'writeBalanceFile', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 's1incInterval', OBSOLETE, 'Use [Output] classMapFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'waqFileBase', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'snapshotdir', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'heatFluxesOnOutput', OBSOLETE, 'Use [Output] wrihis_heatfluxes and wrimap_heatfluxes instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrimap_input_dt', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrihis_heatflux', OBSOLETE, 'Renamed to [Output] wrihis_heatfluxes.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrishp_enc', OBSOLETE, 'Use [Output] Wrishp_dryarea instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'wriWaqBot3dOutput', OBSOLETE, 'Remove it or use [Output] wriHis_wqBot3d and wriMap_wqBot3d instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'processFluxIntegration', OBSOLETE, 'Process fluxes integration is always done by WAQ.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Sediment', 'MasBalMinDep', OBSOLETE)
 
    end subroutine default_fm_deprecated_keywords
