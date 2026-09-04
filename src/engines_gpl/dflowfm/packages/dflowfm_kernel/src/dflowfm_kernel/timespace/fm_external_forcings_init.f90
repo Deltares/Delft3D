@@ -61,6 +61,7 @@ contains
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use unstruc_inifields, only: register_waq_target
       use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_ERROR, mess
 
       ! Arguments
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -203,7 +204,10 @@ contains
             case ('lateral')
                res = res .and. init_lateral_forcings(block_ptr, base_dirs(i_ext), i, major(i_ext))
 
-            case ('spatial', 'meteo', 'parameter', 'initial')
+            case ('meteo')
+                call mess(LEVEL_FATAL, 'This testcase contains a extForceFileNew that has a [meteo] block.')
+               
+            case ('spatial', 'parameter', 'initial')
                res = res .and. init_spatial_fields(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name)
 
             case ('sourcesink')
