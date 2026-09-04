@@ -56,12 +56,15 @@ contains
                         EPS10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
                         ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
+      use m_timer, only: jatimer, starttimer, stoptimer, IFMWAQ
       use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, &
                             rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
-      use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
+      use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra, ti_waqproc
       use m_flowparameters, only: jadiagnostictransport
       use m_transport, only: numconst, constituents, isalt, itemp, ised1
+      use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNADSSEDMOR
+      use m_fm_wq_processes, only: perform_waq_sediment_transport_coupling
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -175,6 +178,21 @@ contains
          end if
          dvolbot = 0.0_dp
 
+      end if
+
+      ! Calculate WAQ processes at hydrodynamic time step (if ti_waqproc < 0.0)
+      if (ti_waqproc < 0.0_dp .or. perform_waq_sediment_transport_coupling) then
+         if (jatimer == 1) then
+            call starttimer(IFMWAQ)
+         end if
+         if (ti_waqproc < 0.0_dp) then
+            call fm_wq_processes_step(dts, time1, WQ_RUNALL)
+         else
+            call fm_wq_processes_step(dts, time1, WQ_RUNADSSEDMOR)
+         end if
+         if (jatimer == 1) then
+            call stoptimer(IFMWAQ)
+         end if
       end if
 
       if (jadiagnostictransport == 0) then ! if jadiagnostictransport = 1 then update of constituents is skipped (all constituents are then "frozen")
